@@ -8,10 +8,10 @@ interface College {
 }
 
 const COLLEGES: readonly College[] = [
-  { code: "CITE", name: "College of Information Technology Education", logo: "/images/departments/cite.png" },
-  { code: "CBA", name: "College of Business Administration", logo: "/images/departments/cba.png" },
-  { code: "COC", name: "College of Criminology", logo: "/images/departments/coc.png" },
-  { code: "COED", name: "College of Education", logo: "/images/departments/coed.png" },
+  { code: "CITE", name: "College of Information Technology Education", logo: "/images/departments/cite.avif" },
+  { code: "CBA", name: "College of Business Administration", logo: "/images/departments/cba.avif" },
+  { code: "COC", name: "College of Criminology", logo: "/images/departments/coc.avif" },
+  { code: "COED", name: "College of Education", logo: "/images/departments/coed.avif" },
 ];
 
 /** Social proof: the four colleges the scheduler is built for. */
