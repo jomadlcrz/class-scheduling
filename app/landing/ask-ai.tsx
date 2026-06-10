@@ -79,7 +79,6 @@ function PanelContent({ onClose }: { onClose: () => void }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        onClick={onClose}
         className="fixed inset-0 z-40 bg-navy-950/40"
         aria-hidden="true"
       />
