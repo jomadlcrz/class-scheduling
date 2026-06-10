@@ -25,8 +25,8 @@ export function SiteFooter() {
             <div className="flex items-center gap-3">
               {/* Colored mark on the light footer, white mark on the dark footer. */}
               <a
-                href="#top"
-                aria-label="GWC Class Scheduling — back to top"
+                href="/"
+                aria-label="GWC Class Scheduling — home"
                 className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
               >
                 <img
@@ -86,7 +86,21 @@ export function SiteFooter() {
           <p className="text-xs text-slate-500">
             &copy; {new Date().getFullYear()} GWC Class Scheduling. All rights reserved.
           </p>
-          <ThemeToggle />
+          <div className="flex items-center gap-5">
+            <a
+              href="/privacy-policy"
+              className="text-xs text-slate-500 transition-colors duration-200 hover:text-gold-600 focus-visible:text-gold-600 focus-visible:outline-none dark:text-slate-400 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="/terms-of-use"
+              className="text-xs text-slate-500 transition-colors duration-200 hover:text-gold-600 focus-visible:text-gold-600 focus-visible:outline-none dark:text-slate-400 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
+            >
+              Terms of Use
+            </a>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </footer>

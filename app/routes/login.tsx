@@ -158,7 +158,7 @@ function LoginPage() {
                     Password
                   </label>
                   <a
-                    href="#"
+                    href="/forgot-password"
                     className="font-sans text-xs text-navy-600 transition-colors duration-150 hover:text-gold-600 focus-visible:outline-none focus-visible:text-gold-600 dark:text-navy-300 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
                   >
                     Forgot password?
@@ -201,6 +201,25 @@ function LoginPage() {
                 )}
               </button>
             </form>
+
+            {/* Legal consent */}
+            <p className="mt-5 text-center font-sans text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+              By logging in, you agree to our{" "}
+              <a
+                href="/terms-of-use"
+                className="underline underline-offset-2 transition-colors duration-150 hover:text-navy-600 focus-visible:outline-none focus-visible:text-navy-600 dark:hover:text-slate-300 dark:focus-visible:text-slate-300"
+              >
+                Terms of Use
+              </a>{" "}
+              and{" "}
+              <a
+                href="/privacy-policy"
+                className="underline underline-offset-2 transition-colors duration-150 hover:text-navy-600 focus-visible:outline-none focus-visible:text-navy-600 dark:hover:text-slate-300 dark:focus-visible:text-slate-300"
+              >
+                Privacy Policy
+              </a>
+              .
+            </p>
           </div>
 
           {/* Back to home */}

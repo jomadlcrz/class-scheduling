@@ -179,8 +179,8 @@ function BrandLockup() {
   return (
     <div className="flex items-center gap-3">
       <a
-        href="#top"
-        aria-label="GWC Class Scheduling — back to top"
+        href="/"
+        aria-label="GWC Class Scheduling — home"
         className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
       >
         <img
