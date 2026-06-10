@@ -37,11 +37,11 @@ export function ScheduleCard() {
     <motion.div
       whileHover={reduceMotion ? undefined : { rotateX: 3, rotateY: -3 }}
       transition={{ type: "spring", stiffness: 200, damping: 18 }}
-      style={{ transformPerspective: 1000 }}
-      className="w-full max-w-md [transform-style:preserve-3d]"
+      style={{ transformPerspective: 1000, willChange: "transform" }}
+      className="w-full min-w-0 max-w-md sm:max-w-lg transform-3d"
     >
-      <div className="rounded-3xl border border-white/60 bg-white/80 p-5 shadow-2xl shadow-slate-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/40">
-        <header className="mb-4 flex items-center justify-between">
+      <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-4 sm:p-5 shadow-2xl shadow-slate-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/6 dark:shadow-black/40">
+        <header className="mb-3 sm:mb-4 flex items-center justify-between">
           <div>
             <p className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
               Spring Term
@@ -57,7 +57,7 @@ export function ScheduleCard() {
         </header>
 
         {/* Weekday header */}
-        <div className="mb-2 grid grid-cols-5 gap-1.5">
+        <div className="mb-2 grid grid-cols-5 gap-1 sm:gap-1.5">
           {DAYS.map((day) => (
             <div
               key={day}
@@ -73,8 +73,7 @@ export function ScheduleCard() {
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-5 grid-rows-5 gap-1.5"
-          style={{ height: "15rem" }}
+          className="grid grid-cols-5 grid-rows-5 gap-1 sm:gap-1.5 h-44 sm:h-52 lg:h-60"
         >
           {BLOCKS.map((block) => (
             <motion.div
@@ -85,12 +84,14 @@ export function ScheduleCard() {
                 gridRowStart: block.start,
                 gridRowEnd: `span ${block.span}`,
               }}
-              className={`flex flex-col justify-between rounded-xl border p-2 ${TONE_STYLES[block.tone]}`}
+              className={`flex flex-col justify-between overflow-hidden rounded-xl border p-1.5 sm:p-2 ${TONE_STYLES[block.tone]}`}
             >
-              <span className="text-[0.7rem] font-semibold leading-tight text-navy-700 dark:text-white">
+              <span className="overflow-hidden wrap-break-word text-[0.65rem] font-semibold leading-tight text-navy-700 dark:text-white">
                 {block.title}
               </span>
-              <span className="text-[0.6rem] text-slate-500 dark:text-slate-300">{block.room}</span>
+              <span className="truncate text-[0.55rem] text-slate-500 dark:text-slate-300">
+                {block.room}
+              </span>
             </motion.div>
           ))}
         </motion.div>

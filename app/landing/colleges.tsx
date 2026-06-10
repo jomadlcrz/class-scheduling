@@ -31,7 +31,7 @@ export function Colleges() {
             <motion.div
               key={college.code}
               variants={fadeUp}
-              className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/70 p-6 text-center backdrop-blur transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-gold-400/40"
+              className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/70 p-6 text-center backdrop-blur transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-white/4 dark:hover:border-gold-400/40"
             >
               <span className="grid size-16 place-items-center">
                 <img

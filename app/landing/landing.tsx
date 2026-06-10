@@ -30,7 +30,7 @@ export function Landing() {
 /** Layered atmosphere: cover photo, blueprint grid, and navy + gold glows. */
 function Backdrop() {
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 contain-strict">
       {/* Cover image — faint, behind a theme-matched scrim. */}
       <img
         src="/images/covers/home-cover.avif"
@@ -38,21 +38,27 @@ function Backdrop() {
         className="absolute inset-0 size-full object-cover opacity-[0.06] dark:opacity-[0.10]"
       />
       {/* Blueprint timetable grid. */}
-      <div className="blueprint-grid absolute inset-0 text-navy-900/[0.06] dark:text-white/[0.05]" />
-      {/* Gold radial glow, top-center. */}
-      <div className="absolute -top-40 left-1/2 size-[40rem] -translate-x-1/2 rounded-full bg-gold-400/20 blur-3xl dark:bg-gold-400/15" />
+      <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-white/5" />
+      {/* Gold radial glow, top-center — radial-gradient skips the GPU blur filter pass. */}
+      <div
+        className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-20 dark:opacity-[0.15]"
+        style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
+      />
       {/* Navy depth glow, lower-left. */}
-      <div className="absolute top-1/3 -left-32 size-[32rem] rounded-full bg-navy-400/15 blur-3xl dark:bg-navy-500/25" />
+      <div
+        className="absolute top-1/3 -left-32 size-128 opacity-[0.15] dark:opacity-25"
+        style={{ background: "radial-gradient(circle, rgb(30 58 110) 0%, transparent 65%)" }}
+      />
       {/* Fine grain texture for premium depth. */}
       <div
-        className="absolute inset-0 opacity-[0.18] mix-blend-soft-light dark:opacity-[0.12]"
+        className="absolute inset-0 opacity-[0.08] dark:opacity-[0.05]"
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
         }}
       />
       {/* Bottom fade into the base surface. */}
-      <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-cream-50 to-transparent dark:from-navy-950" />
+      <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-cream-50 to-transparent dark:from-navy-950" />
     </div>
   );
 }

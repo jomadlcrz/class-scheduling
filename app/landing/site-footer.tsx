@@ -19,7 +19,7 @@ export function SiteFooter() {
   return (
     <footer className="relative z-10 border-t border-slate-200 bg-cream-100 text-slate-600 dark:border-white/10 dark:bg-navy-950 dark:text-slate-300">
       {/* Hairline gold accent along the top edge. */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-400/50 to-transparent" />
+      <div className="h-px w-full bg-linear-to-r from-transparent via-gold-400/50 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">

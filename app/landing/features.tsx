@@ -58,7 +58,7 @@ export function Features() {
             <motion.article
               key={feature.title}
               variants={fadeUp}
-              className="group rounded-2xl border border-slate-200 bg-white/70 p-7 backdrop-blur transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-gold-400/40"
+              className="group rounded-2xl border border-slate-200 bg-white/70 p-7 backdrop-blur transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-white/4 dark:hover:border-gold-400/40"
             >
               <span className="inline-grid size-12 place-items-center rounded-xl bg-gold-400/15 text-navy-600 dark:text-gold-300">
                 <svg

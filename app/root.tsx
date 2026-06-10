@@ -30,6 +30,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preload" href="/fonts/BebasNeue.woff" as="font" type="font/woff" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/CenturyGothic.woff" as="font" type="font/woff" crossOrigin="anonymous" />
         <Meta />
         <Links />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

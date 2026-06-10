@@ -7,7 +7,7 @@ export function Cta() {
     <section id="get-started" className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <motion.div
         {...inViewSection}
-        className="relative overflow-hidden rounded-3xl border border-gold-400/30 bg-gradient-to-br from-navy-500/12 to-gold-400/8 px-6 py-16 text-center sm:px-12"
+        className="relative overflow-hidden rounded-3xl border border-gold-400/30 bg-linear-to-br from-navy-500/12 to-gold-400/8 px-6 py-16 text-center sm:px-12"
       >
         {/* Subtle glow accent */}
         <div
