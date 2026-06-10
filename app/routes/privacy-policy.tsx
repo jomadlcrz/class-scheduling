@@ -41,7 +41,7 @@ const SECTIONS = [
   {
     id: "contact",
     heading: "Contact",
-    body: "Questions about this Privacy Policy can be directed to the GWC IT Office through the official institutional channels listed on the Gateways Western College website.",
+    body: "Questions about this Privacy Policy can be directed to the GWC IT Office through the official institutional channels listed on the Golden West Colleges, Inc. website.",
   },
 ];
 
@@ -50,7 +50,7 @@ export default function PrivacyPolicy() {
     <LegalLayout
       activePage="privacy-policy"
       title="Privacy Policy"
-      intro="This Privacy Policy describes how GWC Class Scheduling collects, uses, and protects information about users of the scheduling platform operated by Gateways Western College."
+      intro="This Privacy Policy describes how GWC Class Scheduling collects, uses, and protects information about users of the scheduling platform operated by Golden West Colleges, Inc.."
     >
       {SECTIONS.map((s) => (
         <LegalSection key={s.id} id={s.id} heading={s.heading} body={s.body} />

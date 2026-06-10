@@ -50,13 +50,13 @@ export function SiteFooter() {
                 <span className="font-display text-3xl tracking-wide text-navy-700 dark:text-white">
                   GWC
                 </span>
-                <span className="-mt-0.5 font-sans text-sm tracking-wide text-navy-500 dark:text-navy-300">
+                <span className="-mt-2 font-sans text-sm tracking-wide text-navy-500 dark:text-navy-300">
                   Class Scheduling
                 </span>
               </span>
             </div>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-              Conflict-free academic timetables for Gateways Western College and
+              Conflict-free academic timetables for Golden West Colleges, Inc. and
               every department within it.
             </p>
           </div>

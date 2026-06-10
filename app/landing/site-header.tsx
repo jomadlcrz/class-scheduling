@@ -196,7 +196,7 @@ function BrandLockup() {
         <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-white sm:text-[1.7rem]">
           GWC
         </span>
-        <span className="font-sans text-[0.65rem] tracking-wide text-navy-500 dark:text-navy-300 sm:text-xs">
+        <span className="-mt-2 font-sans text-[0.65rem] tracking-wide text-navy-500 dark:text-navy-300 sm:text-xs">
           Class Scheduling
         </span>
       </span>
