@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ThemeProvider } from "../landing/theme-provider";
-import { ThemeToggle } from "../landing/theme-toggle";
 
 export function meta() {
   return [
@@ -23,9 +22,18 @@ export default function ForgotPassword() {
 function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const email = String(new FormData(e.currentTarget).get("email") ?? "").trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    setError(null);
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -37,7 +45,6 @@ function ForgotPasswordPage() {
     <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-navy-950">
       {/* Ambient background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
-        <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-white/5" />
         <div
           className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-20 dark:opacity-[0.12]"
           style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
@@ -48,10 +55,14 @@ function ForgotPasswordPage() {
         />
       </div>
 
-      {/* Theme toggle */}
-      <div className="fixed right-4 top-4 z-50">
-        <ThemeToggle />
-      </div>
+      {/* Back to log in */}
+      <a
+        href="/login"
+        aria-label="Back to log in"
+        className="fixed left-4 top-4 z-50 grid size-9 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10"
+      >
+        <ArrowLeftIcon />
+      </a>
 
       {/* Centered layout */}
       <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 py-16 sm:px-8">
@@ -71,26 +82,15 @@ function ForgotPasswordPage() {
               className="size-14 object-contain"
             />
           </a>
-          <div className="flex flex-col items-center leading-none">
-            <span className="font-display text-4xl tracking-wide text-navy-700 dark:text-white">
-              GWC
-            </span>
-            <span className="font-sans text-xs tracking-wide text-navy-500 dark:text-navy-300">
-              Class Scheduling
-            </span>
-          </div>
         </div>
 
-        {/* Card */}
-        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white/90 px-8 py-10 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-800/60">
+        {/* Form — flat, no card */}
+        <div className="w-full max-w-sm">
           {sent ? (
             <SuccessState />
           ) : (
             <>
               <div className="flex flex-col items-center text-center">
-                <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
-                  <LockIcon />
-                </div>
                 <h1 className="font-display text-3xl tracking-wide text-navy-700 dark:text-white">
                   Reset password
                 </h1>
@@ -100,6 +100,16 @@ function ForgotPasswordPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5" noValidate>
+                {/* Error feedback */}
+                {error && (
+                  <div
+                    role="alert"
+                    className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 font-sans text-sm text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-300"
+                  >
+                    {error}
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="email"
@@ -114,14 +124,14 @@ function ForgotPasswordPage() {
                     autoComplete="email"
                     required
                     placeholder="you@gwc.edu.ph"
-                    className="w-full rounded-lg border border-slate-300 bg-transparent px-3.5 py-2.5 font-sans text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 dark:border-white/15 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/20"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 font-sans text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-800 py-2.5 font-sans text-sm font-medium text-white transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
+                  className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-800 py-3 font-sans text-base font-medium text-white transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
                 >
                   {isLoading ? (
                     <>
@@ -137,14 +147,6 @@ function ForgotPasswordPage() {
           )}
         </div>
 
-        {/* Back to log in */}
-        <a
-          href="/login"
-          className="mt-6 flex cursor-pointer items-center gap-1.5 font-sans text-sm text-slate-500 transition-colors duration-150 hover:text-slate-700 focus-visible:outline-none focus-visible:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 dark:focus-visible:text-slate-300"
-        >
-          <ArrowLeftIcon />
-          Back to log in
-        </a>
       </div>
     </div>
   );
@@ -208,8 +210,8 @@ function CheckIcon() {
 function ArrowLeftIcon() {
   return (
     <svg
-      width="14"
-      height="14"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

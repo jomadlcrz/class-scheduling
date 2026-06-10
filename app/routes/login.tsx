@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ThemeProvider } from "../landing/theme-provider";
-import { ThemeToggle } from "../landing/theme-toggle";
 
 export function meta() {
   return [
@@ -23,9 +22,24 @@ export default function Login() {
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const email = String(data.get("identifier") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+
+    if (!email || !password) {
+      setError("Enter your email and password.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    setError(null);
     setIsLoading(true);
     setTimeout(() => setIsLoading(false), 1500);
   }
@@ -34,7 +48,6 @@ function LoginPage() {
     <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-navy-950">
       {/* Ambient background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
-        <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-white/5" />
         <div
           className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-20 dark:opacity-[0.12]"
           style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
@@ -45,16 +58,10 @@ function LoginPage() {
         />
       </div>
 
-      {/* Theme toggle */}
-      <div className="fixed right-4 top-4 z-50">
-        <ThemeToggle />
-      </div>
-
       <div className="relative z-10 flex min-h-dvh">
         {/* ── Left branding panel (desktop only) ── */}
         <div className="relative hidden lg:flex lg:w-[45%] xl:w-1/2 flex-col items-center justify-center overflow-hidden bg-navy-500 dark:bg-navy-900 px-12">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            <div className="blueprint-grid absolute inset-0 text-white/4" />
             <div
               className="absolute -top-32 -left-32 size-128 opacity-[0.08]"
               style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
@@ -68,6 +75,11 @@ function LoginPage() {
           <div className="relative max-w-md text-center">
             {/* Logo */}
             <div className="flex flex-col items-center gap-4">
+              <a
+                href="/"
+                aria-label="GWC Class Scheduling — back to home"
+                className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+              >
               <img
                 src="/images/logos/gwc-logo.avif"
                 alt="GWC logo"
@@ -76,11 +88,12 @@ function LoginPage() {
                 loading="eager"
                 className="size-16 object-contain xl:size-20"
               />
+              </a>
               <div className="flex flex-col items-center leading-none">
                 <span className="font-display text-5xl tracking-wide text-white xl:text-6xl">
                   GWC
                 </span>
-                <span className="font-sans text-sm tracking-wide text-gold-300 xl:text-base">
+                <span className="-mt-2 font-sans text-sm tracking-wide text-gold-300 xl:text-base">
                   Class Scheduling
                 </span>
               </div>
@@ -101,6 +114,11 @@ function LoginPage() {
         <div className="flex flex-1 flex-col items-center justify-center px-4 py-16 sm:px-8">
           {/* Mobile-only logo */}
           <div className="mb-10 flex flex-col items-center gap-3 lg:hidden">
+          <a
+              href="/"
+              aria-label="GWC Class Scheduling — back to home"
+              className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+            >
             <img
               src="/images/logos/gwc-logo.avif"
               alt="GWC logo"
@@ -109,26 +127,34 @@ function LoginPage() {
               loading="eager"
               className="size-14 object-contain"
             />
+            </a>
             <div className="flex flex-col items-center leading-none">
               <span className="font-display text-4xl tracking-wide text-navy-700 dark:text-white">
                 GWC
               </span>
-              <span className="font-sans text-xs tracking-wide text-navy-500 dark:text-navy-300">
+              <span className="-mt-2 font-sans text-xs tracking-wide text-navy-500 dark:text-navy-300">
                 Class Scheduling
               </span>
             </div>
           </div>
 
-          {/* Form card */}
-          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white/90 px-8 py-10 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-800/60">
-            <h1 className="font-display text-3xl tracking-wide text-navy-700 dark:text-white">
-              Welcome back
-            </h1>
-            <p className="mt-1.5 font-sans text-sm text-slate-500 dark:text-navy-300">
+          {/* Form — flat, no card */}
+          <div className="w-full max-w-sm">
+            <h1 className="hidden font-display text-3xl tracking-wide text-navy-700 dark:text-white lg:block">
               Log in to your GWC account
-            </p>
+            </h1>
 
             <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5" noValidate>
+              {/* Error feedback */}
+              {error && (
+                <div
+                  role="alert"
+                  className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 font-sans text-sm text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-300"
+                >
+                  {error}
+                </div>
+              )}
+
               {/* Identifier */}
               <div className="flex flex-col gap-1.5">
                 <label
@@ -144,7 +170,7 @@ function LoginPage() {
                   autoComplete="username"
                   required
                   placeholder="you@gwc.edu.ph"
-                  className="w-full rounded-lg border border-slate-300 bg-transparent px-3.5 py-2.5 font-sans text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 dark:border-white/15 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/20"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 font-sans text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25"
                 />
               </div>
 
@@ -172,7 +198,7 @@ function LoginPage() {
                     autoComplete="current-password"
                     required
                     placeholder="••••••••"
-                    className="w-full rounded-lg border border-slate-300 bg-transparent py-2.5 pl-3.5 pr-10 font-sans text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 dark:border-white/15 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/20"
+                    className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-4 pr-11 font-sans text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25"
                   />
                   <button
                     type="button"
@@ -185,11 +211,24 @@ function LoginPage() {
                 </div>
               </div>
 
+              {/* Remember me */}
+              <div className="flex w-fit items-center gap-2">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  name="remember"
+                  className="size-4 cursor-pointer accent-navy-800 dark:accent-gold-400"
+                />
+                <span className="font-sans text-sm text-slate-600 dark:text-slate-300">
+                  Remember me
+                </span>
+              </div>
+
               {/* Submit */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-800 py-2.5 font-sans text-sm font-medium text-white transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
+                className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-800 py-3 font-sans text-base font-medium text-white transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
               >
                 {isLoading ? (
                   <>
@@ -222,14 +261,6 @@ function LoginPage() {
             </p>
           </div>
 
-          {/* Back to home */}
-          <a
-            href="/"
-            className="mt-6 flex cursor-pointer items-center gap-1.5 font-sans text-sm text-slate-500 transition-colors duration-150 hover:text-slate-700 focus-visible:outline-none focus-visible:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 dark:focus-visible:text-slate-300"
-          >
-            <ArrowLeftIcon />
-            Back to home
-          </a>
         </div>
       </div>
     </div>
