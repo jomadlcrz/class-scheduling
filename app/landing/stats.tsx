@@ -34,7 +34,7 @@ export function Stats() {
           <motion.div
             key={stat.label}
             variants={fadeUp}
-            className="flex flex-col items-center gap-1 bg-cream-50/90 px-6 py-9 text-center backdrop-blur dark:bg-navy-900/80"
+            className="flex flex-col items-center gap-1 bg-cream-50/98 px-6 py-9 text-center dark:bg-navy-900/95"
           >
             <dd className="font-display text-5xl tracking-wide text-navy-700 dark:text-white sm:text-6xl">
               <CountUp value={stat.value} suffix={stat.suffix} />

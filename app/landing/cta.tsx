@@ -12,7 +12,8 @@ export function Cta() {
         {/* Subtle glow accent */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-24 left-1/2 size-72 -translate-x-1/2 rounded-full bg-gold-400/25 blur-3xl"
+          className="pointer-events-none absolute -top-24 left-1/2 size-72 -translate-x-1/2"
+          style={{ background: "radial-gradient(circle, rgba(212,175,55,0.35) 0%, transparent 70%)" }}
         />
         <motion.h2
           variants={fadeUp}

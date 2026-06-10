@@ -37,10 +37,10 @@ export function ScheduleCard() {
     <motion.div
       whileHover={reduceMotion ? undefined : { rotateX: 3, rotateY: -3 }}
       transition={{ type: "spring", stiffness: 200, damping: 18 }}
-      style={{ transformPerspective: 1000, willChange: "transform" }}
+      style={{ transformPerspective: 1000 }}
       className="w-full min-w-0 max-w-md sm:max-w-lg transform-3d"
     >
-      <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-4 sm:p-5 shadow-2xl shadow-slate-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/6 dark:shadow-black/40">
+      <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/95 p-4 sm:p-5 shadow-2xl shadow-slate-900/10 dark:border-white/10 dark:bg-navy-800/90 dark:shadow-black/40">
         <header className="mb-3 sm:mb-4 flex items-center justify-between">
           <div>
             <p className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">

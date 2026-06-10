@@ -14,7 +14,7 @@ export function Hero() {
       >
         <motion.span
           variants={fadeUp}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/60 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-navy-600 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/90 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-navy-600 dark:border-white/10 dark:bg-white/10 dark:text-slate-300"
         >
           <span className="size-1.5 rounded-full bg-gold-400" />
           Gateways Western College

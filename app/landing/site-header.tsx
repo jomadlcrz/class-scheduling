@@ -20,7 +20,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-30 transition-colors duration-300 ${
         scrolled
-          ? "border-b border-slate-900/10 bg-cream-50/80 backdrop-blur-md dark:border-white/10 dark:bg-navy-950/70"
+          ? "border-b border-slate-900/10 bg-cream-50/95 dark:border-white/10 dark:bg-navy-950/95"
           : "border-b border-transparent bg-transparent"
       }`}
     >

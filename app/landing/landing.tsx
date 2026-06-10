@@ -1,11 +1,11 @@
-import { ThemeProvider } from "./theme-provider";
-import { SiteHeader } from "./site-header";
-import { Hero } from "./hero";
-import { Stats } from "./stats";
-import { Features } from "./features";
 import { Colleges } from "./colleges";
 import { Cta } from "./cta";
+import { Features } from "./features";
+import { Hero } from "./hero";
 import { SiteFooter } from "./site-footer";
+import { SiteHeader } from "./site-header";
+import { Stats } from "./stats";
+import { ThemeProvider } from "./theme-provider";
 
 /** The GWC Class Scheduling landing page. */
 export function Landing() {
@@ -30,7 +30,7 @@ export function Landing() {
 /** Layered atmosphere: cover photo, blueprint grid, and navy + gold glows. */
 function Backdrop() {
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 contain-strict">
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 sm:fixed">
       {/* Cover image — faint, behind a theme-matched scrim. */}
       <img
         src="/images/covers/home-cover.avif"
@@ -48,14 +48,6 @@ function Backdrop() {
       <div
         className="absolute top-1/3 -left-32 size-128 opacity-[0.15] dark:opacity-25"
         style={{ background: "radial-gradient(circle, rgb(30 58 110) 0%, transparent 65%)" }}
-      />
-      {/* Fine grain texture for premium depth. */}
-      <div
-        className="absolute inset-0 opacity-[0.08] dark:opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        }}
       />
       {/* Bottom fade into the base surface. */}
       <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-cream-50 to-transparent dark:from-navy-950" />
