@@ -16,51 +16,70 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
   return (
     <ThemeProvider>
       <div className="relative min-h-dvh overflow-x-clip bg-cream-50 dark:bg-navy-950">
+        {/* Ambient background */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
           <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-white/5" />
+          <div
+            className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-[0.12] dark:opacity-[0.08]"
+            style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
+          />
         </div>
 
         <SiteHeader />
 
-        <main className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        {/* ── Full-width page title bar ── */}
+        <div className="relative z-10 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900">
+          <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
+            <h1 className="font-display text-4xl tracking-wide text-navy-700 dark:text-white sm:text-[2.75rem]">
+              {title}
+            </h1>
+          </div>
+        </div>
+
+        {/* ── Main layout ── */}
+        <main className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex gap-8 lg:gap-10">
-            {/* ── Left sidebar ── */}
+            {/* ── Left sidebar — flat, no card ── */}
             <aside className="hidden lg:block w-52 xl:w-60 shrink-0">
               <div className="sticky top-24">
-                <nav aria-label="Legal pages">
-                  <SidebarLink
-                    href="/privacy-policy"
-                    active={activePage === "privacy-policy"}
-                    position={activePage === "terms-of-use" ? "above-active" : "active"}
-                  >
+                <nav
+                  aria-label="Legal pages"
+                  className="overflow-hidden rounded-sm border border-slate-200 bg-white/90 divide-y divide-slate-200 dark:border-white/10 dark:bg-navy-800/60 dark:divide-white/10"
+                >
+                  <SidebarLink href="/privacy-policy" active={activePage === "privacy-policy"}>
                     Privacy Policy
                   </SidebarLink>
-                  <SidebarLink
-                    href="/terms-of-use"
-                    active={activePage === "terms-of-use"}
-                    position={activePage === "privacy-policy" ? "below-active" : "active"}
-                  >
+                  <SidebarLink href="/terms-of-use" active={activePage === "terms-of-use"}>
                     Terms of Use
                   </SidebarLink>
                 </nav>
               </div>
             </aside>
 
-            {/* ── Main content ── */}
+            {/* ── Content ── */}
             <div className="flex-1 min-w-0">
-              <div className="rounded-2xl border border-slate-200 bg-white/90 px-8 py-10 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-800/60 sm:px-12 sm:py-12">
-                <div className="border-b border-slate-200 pb-8 dark:border-white/10">
-                  <h1 className="font-display text-4xl tracking-wide text-navy-700 dark:text-white sm:text-5xl">
-                    {title}
-                  </h1>
-                  <p className="mt-3 font-sans text-sm text-slate-500 dark:text-navy-300">
-                    Effective date: June 10, 2026 &nbsp;·&nbsp; Gateways Western College
-                  </p>
-                  <p className="mt-4 font-sans text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              {/* Mobile tab switcher */}
+              <div className="mb-6 flex gap-1 rounded-lg border border-slate-200 bg-white/80 p-1 backdrop-blur-sm dark:border-white/10 dark:bg-navy-800/60 lg:hidden">
+                <MobileTab href="/privacy-policy" active={activePage === "privacy-policy"}>
+                  Privacy Policy
+                </MobileTab>
+                <MobileTab href="/terms-of-use" active={activePage === "terms-of-use"}>
+                  Terms of Use
+                </MobileTab>
+              </div>
+
+              <div className="rounded-sm border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-800/60">
+                {/* Intro */}
+                <div className="border-b border-slate-200 px-8 py-8 dark:border-white/10 sm:px-12">
+                  <p className="font-sans text-sm leading-7 text-slate-600 dark:text-slate-300">
                     {intro}
                   </p>
                 </div>
-                <div className="mt-10 space-y-10">{children}</div>
+
+                {/* Sections */}
+                <div className="divide-y divide-slate-100 px-8 dark:divide-white/5 sm:px-12">
+                  {children}
+                </div>
               </div>
             </div>
           </div>
@@ -72,56 +91,67 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
   );
 }
 
-/** Individual section block — used by both legal route files. */
-export function LegalSection({
-  id,
-  heading,
-  body,
-}: {
-  id: string;
-  heading: string;
-  body: string;
-}) {
+/** Individual section block shared by both legal pages. */
+export function LegalSection({ id, heading, body }: { id: string; heading: string; body: string }) {
   return (
-    <section id={id} className="scroll-mt-24">
+    <section id={id} className="scroll-mt-24 py-8">
       <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
         {heading}
       </h2>
-      <p className="mt-2.5 font-sans text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+      <p className="mt-3 font-sans text-sm leading-7 text-slate-600 dark:text-slate-300">
         {body}
       </p>
     </section>
   );
 }
 
-type SidebarPosition = "active" | "above-active" | "below-active";
-
 function SidebarLink({
   href,
   active,
-  position,
   children,
 }: {
   href: string;
   active: boolean;
-  position: SidebarPosition;
   children: ReactNode;
 }) {
-  const borderClass =
-    position === "below-active"
-      ? "border-x border-b border-slate-200 dark:border-white/10"
-      : position === "above-active"
-        ? "border border-b-0 border-slate-200 dark:border-white/10"
-        : "border border-slate-200 dark:border-white/10";
-
   return (
     <a
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`block cursor-pointer px-4 py-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-gold-400 ${borderClass} ${
+      className={`relative block cursor-pointer px-4 py-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-gold-400 ${
         active
           ? "bg-white/90 font-semibold text-navy-700 dark:bg-navy-800/80 dark:text-white"
           : "text-slate-500 hover:bg-slate-50 hover:text-navy-600 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
+      }`}
+    >
+      {active && (
+        <span
+          className="absolute left-0 inset-y-0 w-0.5 bg-gold-400"
+          aria-hidden="true"
+        />
+      )}
+      <span className="pl-1">{children}</span>
+    </a>
+  );
+}
+
+function MobileTab({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`flex-1 cursor-pointer rounded-md px-4 py-2 text-center font-sans text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+        active
+          ? "bg-navy-800 text-white dark:bg-white dark:text-navy-900"
+          : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
       }`}
     >
       {children}

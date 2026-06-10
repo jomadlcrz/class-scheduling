@@ -8,8 +8,8 @@ interface NavLink {
 }
 
 const NAV_LINKS: readonly NavLink[] = [
-  { label: "Features", href: "#features" },
-  { label: "Colleges", href: "#colleges" },
+  { label: "Features", href: "/#features" },
+  { label: "Colleges", href: "/#colleges" },
 ];
 
 /** Sticky navbar: brand on the left, nav centered (desktop), action buttons on the right. */
