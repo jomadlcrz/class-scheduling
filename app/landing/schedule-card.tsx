@@ -38,12 +38,12 @@ export function ScheduleCard() {
       whileHover={reduceMotion ? undefined : { rotateX: 3, rotateY: -3 }}
       transition={{ type: "spring", stiffness: 200, damping: 18 }}
       style={{ transformPerspective: 1000 }}
-      className="w-full min-w-0 max-w-md sm:max-w-lg transform-3d"
+      className="w-full min-w-0 max-w-sm sm:max-w-md lg:max-w-lg transform-3d"
     >
-      <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/95 p-4 sm:p-5 shadow-2xl shadow-slate-900/10 dark:border-white/10 dark:bg-navy-800/90 dark:shadow-black/40">
-        <header className="mb-3 sm:mb-4 flex items-center justify-between">
+      <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/95 p-3 sm:p-4 lg:p-5 shadow-2xl shadow-slate-900/10 dark:border-white/10 dark:bg-navy-800/90 dark:shadow-black/40">
+        <header className="mb-2 sm:mb-3 lg:mb-4 flex items-center justify-between">
           <div>
-            <p className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+            <p className="font-display text-lg sm:text-xl lg:text-2xl tracking-wide text-navy-700 dark:text-white">
               Spring Term
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -61,7 +61,7 @@ export function ScheduleCard() {
           {DAYS.map((day) => (
             <div
               key={day}
-              className="text-center text-[0.65rem] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500"
+              className="text-center text-[0.6rem] sm:text-[0.65rem] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500"
             >
               {day}
             </div>
@@ -73,7 +73,7 @@ export function ScheduleCard() {
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-5 grid-rows-5 gap-1 sm:gap-1.5 h-44 sm:h-52 lg:h-60"
+          className="grid grid-cols-5 grid-rows-5 gap-1 sm:gap-1.5 h-40 sm:h-48 lg:h-60"
         >
           {BLOCKS.map((block) => (
             <motion.div
@@ -84,9 +84,9 @@ export function ScheduleCard() {
                 gridRowStart: block.start,
                 gridRowEnd: `span ${block.span}`,
               }}
-              className={`flex flex-col justify-between overflow-hidden rounded-xl border p-1.5 sm:p-2 ${TONE_STYLES[block.tone]}`}
+              className={`flex flex-col justify-between overflow-hidden rounded-lg sm:rounded-xl border p-1 sm:p-1.5 lg:p-2 ${TONE_STYLES[block.tone]}`}
             >
-              <span className="overflow-hidden wrap-break-word text-[0.65rem] font-semibold leading-tight text-navy-700 dark:text-white">
+              <span className="overflow-hidden wrap-break-word text-[0.65rem] font-semibold leading-tight text-navy-700 dark:text-gold-400">
                 {block.title}
               </span>
               <span className="truncate text-[0.55rem] text-slate-500 dark:text-slate-300">

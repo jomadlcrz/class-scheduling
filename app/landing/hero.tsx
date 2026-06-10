@@ -5,12 +5,12 @@ import { ScheduleCard } from "./schedule-card";
 /** Hero: the brand promise on the left, the live schedule card on the right. */
 export function Hero() {
   return (
-    <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pb-24 pt-12 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:pb-32 lg:pt-20">
+    <section className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 pb-20 pt-10 sm:px-6 md:grid-cols-2 md:gap-10 md:pb-28 md:pt-16 lg:gap-8 lg:px-8 lg:pb-32 lg:pt-20">
       <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="text-center lg:text-left"
+        className="text-center md:text-left"
       >
         <motion.span
           variants={fadeUp}
@@ -22,7 +22,7 @@ export function Hero() {
 
         <motion.h1
           variants={fadeUp}
-          className="mt-6 font-display text-6xl leading-[0.95] tracking-wide text-navy-700 dark:text-white sm:text-7xl lg:text-8xl"
+          className="mt-6 font-display text-5xl leading-[0.95] tracking-wide text-navy-700 dark:text-white sm:text-6xl md:text-7xl lg:text-8xl"
         >
           Conflict-free
           <br />
@@ -32,7 +32,7 @@ export function Hero() {
 
         <motion.p
           variants={fadeUp}
-          className="mx-auto mt-6 max-w-md text-base leading-relaxed text-slate-600 dark:text-slate-300 lg:mx-0 lg:text-lg"
+          className="mx-auto mt-6 max-w-md text-base leading-relaxed text-slate-600 dark:text-slate-300 md:mx-0 lg:text-lg"
         >
           GWC Class Scheduling turns rooms, faculty, and sections into a clean
           weekly plan — detecting clashes before they reach a single student.
@@ -40,7 +40,7 @@ export function Hero() {
 
         <motion.div
           variants={fadeUp}
-          className="mt-9 flex flex-col items-center gap-3 sm:flex-row lg:justify-start"
+          className="mt-9 flex flex-col items-center gap-3 sm:flex-row md:justify-start"
         >
           <a
             href="#get-started"
@@ -61,7 +61,7 @@ export function Hero() {
         variants={fadeUp}
         initial="hidden"
         animate="visible"
-        className="flex justify-center lg:justify-end"
+        className="flex justify-center md:justify-end"
       >
         <ScheduleCard />
       </motion.div>

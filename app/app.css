@@ -51,6 +51,11 @@ body {
   @apply bg-cream-50 text-slate-900 dark:bg-navy-950 dark:text-[#e6eaf2];
 }
 
+::selection {
+  background-color: var(--color-gold-400);
+  color: var(--color-navy-700);
+}
+
 html.dark {
   color-scheme: dark;
 }
