@@ -1,19 +1,24 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { FormError } from "../components/forms/form-error";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 import { Input, PasswordInput } from "../components/ui/input";
 import { isValidEmail } from "../lib/validators";
+import { useAuth } from "./auth-provider";
 
 export function LoginForm() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const email = String(data.get("identifier") ?? "").trim();
     const password = String(data.get("password") ?? "");
+    const remember = data.get("remember") === "on";
 
     if (!email || !password) {
       setError("Enter your email and password.");
@@ -26,8 +31,17 @@ export function LoginForm() {
 
     setError(null);
     setIsLoading(true);
-    // TODO: POST credentials to the login endpoint.
-    setTimeout(() => setIsLoading(false), 1500);
+    try {
+      const user = await login({ email, password, remember });
+      navigate(user.mustChangePassword ? "/change-password?force=true" : "/dashboard", {
+        replace: true,
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again.",
+      );
+      setIsLoading(false);
+    }
   }
 
   return (

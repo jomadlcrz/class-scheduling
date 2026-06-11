@@ -3,12 +3,13 @@ import { FormError } from "../components/forms/form-error";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { isValidEmail } from "../lib/validators";
+import { authService } from "../services/auth.service";
 
 export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = String(new FormData(e.currentTarget).get("email") ?? "").trim();
 
@@ -19,11 +20,16 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
 
     setError(null);
     setIsLoading(true);
-    // TODO: POST the email to the password-reset endpoint.
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authService.requestPasswordReset(email);
       onSent();
-    }, 1500);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

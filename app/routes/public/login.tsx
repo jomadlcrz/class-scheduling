@@ -1,4 +1,5 @@
 import { AmbientBackground, BrandLogo } from "../../auth/auth-layout";
+import { GuestGuard } from "../../auth/guest-guard";
 import { LoginForm } from "../../auth/login-form";
 import { SchedulePreview } from "../../auth/schedule-preview";
 import { ThemeProvider } from "../../components/theme/theme-provider";
@@ -16,7 +17,9 @@ export function meta() {
 export default function Login() {
   return (
     <ThemeProvider>
-      <LoginPage />
+      <GuestGuard>
+        <LoginPage />
+      </GuestGuard>
     </ThemeProvider>
   );
 }

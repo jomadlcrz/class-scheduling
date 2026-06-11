@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { AuthHeading, AuthLayout } from "../../auth/auth-layout";
-import { PasswordForm } from "../../auth/password-form";
+import { PasswordForm, type PasswordFormValues } from "../../auth/password-form";
 import { ResultState } from "../../components/feedback/result-state";
+import { authService } from "../../services/auth.service";
 
 export function meta() {
   return [
@@ -27,9 +28,8 @@ function ResetPasswordContent() {
   const token = searchParams.get("token");
   const [done, setDone] = useState(false);
 
-  async function handleSubmit() {
-    // TODO: POST token + new password to the reset endpoint.
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  async function handleSubmit({ newPassword }: PasswordFormValues) {
+    await authService.resetPassword(token ?? "", newPassword);
     setDone(true);
   }
 

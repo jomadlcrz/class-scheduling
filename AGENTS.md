@@ -4,7 +4,9 @@ Guidance for AI agents and contributors working in this repo. Follow these conve
 
 ## Project overview
 
-A class-scheduling web app for GWC (builds conflict-free academic timetables). Frontend only — there is **no API layer yet**; form submits use simulated `setTimeout` calls marked with `// TODO: POST …` comments. Keep that pattern until the services layer is implemented.
+A class-scheduling web app for GWC (builds conflict-free academic timetables). Frontend only — there is **no backend yet**. Data access goes through `app/services/*.service.ts` with **mock implementations** (in-memory data + fake latency + browser-storage persistence). Components must never know data is mocked: always call the service, never inline mock data in components. When a real backend lands, only service internals change.
+
+The auth slice is live end-to-end on mocks: login/logout, session persistence ("remember me" → localStorage, otherwise sessionStorage under `gwc-session`), guards, and the forced change-password flow. Demo accounts are documented at the top of `app/services/auth.service.ts`.
 
 **Stack:** React Router 7 (framework mode, SSR), React 19, TypeScript (strict), Tailwind CSS v4 (CSS-first config in `app/app.css`), `motion` for animation. No state-management or data-fetching library.
 
@@ -27,7 +29,7 @@ app/
 ├── app.css                # Tailwind v4 @theme tokens (colors, fonts) + custom utilities
 ├── routes/
 │   ├── public/            # Unauthenticated pages (login, forgot/reset/change-password, legal, home)
-│   └── app/               # Authenticated app pages (EMPTY STUBS — not yet wired into routes.ts)
+│   └── app/               # Authenticated app pages (dashboard is live; rest are EMPTY STUBS)
 ├── auth/                  # Auth forms, guards, AuthLayout (page chrome for auth flows)
 ├── components/
 │   ├── ui/                # Generic primitives: button, input, checkbox, spinner, icons, …
@@ -37,10 +39,10 @@ app/
 ├── features/<domain>/     # Feature-specific components (scheduling, faculty, rooms, ai, …)
 ├── landing/               # Marketing/landing page components (header, hero, footer, legal-layout)
 ├── layouts/               # App-shell layouts (EMPTY STUBS)
-├── hooks/                 # Shared hooks (use-theme is live; rest are stubs)
-├── lib/                   # Pure utilities (validators is live; api/storage/etc. are stubs)
-├── services/              # API service modules (EMPTY STUBS — future data layer)
-└── types/                 # Domain types (EMPTY STUBS)
+├── hooks/                 # Shared hooks (use-theme, use-auth are live; rest are stubs)
+├── lib/                   # Pure utilities (validators, storage are live; api/etc. are stubs)
+├── services/              # Data layer — MOCK implementations (auth is live; rest are stubs)
+└── types/                 # Domain types (user, auth are live; rest are stubs)
 ```
 
 **Where code goes:** generic, reusable UI → `components/ui`; domain-specific UI → `features/<domain>/`; pure logic → `lib/`; route files stay thin (meta + layout + composition — no markup-heavy forms or duplicated chrome inside routes).
@@ -72,6 +74,11 @@ app/
 | Shared reset/change password form | `PasswordForm` — `app/auth/password-form.tsx` |
 | Email/password validation | `isValidEmail`, `validateNewPassword`, `MIN_PASSWORD_LENGTH` — `app/lib/validators.ts` |
 | Theme context | `ThemeProvider` (`components/theme/theme-provider.tsx`), `useTheme` (`hooks/use-theme.ts`) |
+| Auth state (user, login, logout) | `AuthProvider` (`app/auth/auth-provider.tsx`), `useAuth` (`hooks/use-auth.ts`) — provider is mounted in `root.tsx` |
+| Route protection | `AuthGuard` / `GuestGuard` — `app/auth/auth-guard.tsx`, `guest-guard.tsx` |
+| Auth/session API (mocked) | `authService` — `services/auth.service.ts` |
+| Safe browser storage (SSR-proof) | `loadJson`/`saveJson`/`removeJson` — `lib/storage.ts` |
+| Full-screen loading spinner | `LoadingState` — `components/feedback/loading-state.tsx` |
 
 ## Design system
 
@@ -88,6 +95,7 @@ Tokens are defined in `app/app.css` under `@theme` — use the Tailwind names, n
 2. Wire it in `app/routes.ts`.
 3. Compose from shared components; put any new form/feature component in `app/auth/` or `app/features/<domain>/`, not in the route file.
 4. Auth-flow pages wrap content in `AuthLayout`; standalone pages must wrap in `ThemeProvider` themselves.
+5. Authenticated pages wrap content in `AuthGuard`; guest-only pages (login) in `GuestGuard`.
 
 ## Definition of done
 

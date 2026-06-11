@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { AuthHeading, AuthLayout } from "../../auth/auth-layout";
-import { PasswordForm } from "../../auth/password-form";
+import { PasswordForm, type PasswordFormValues } from "../../auth/password-form";
 import { ResultState } from "../../components/feedback/result-state";
+import { authService } from "../../services/auth.service";
 
 export function meta() {
   return [
@@ -30,9 +31,8 @@ export default function ChangePassword() {
 function ChangePasswordContent({ isForced }: { isForced: boolean }) {
   const [done, setDone] = useState(false);
 
-  async function handleSubmit() {
-    // TODO: POST current + new password to the change-password endpoint.
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  async function handleSubmit({ currentPassword, newPassword }: PasswordFormValues) {
+    await authService.changePassword(newPassword, currentPassword);
     setDone(true);
   }
 
@@ -41,7 +41,7 @@ function ChangePasswordContent({ isForced }: { isForced: boolean }) {
       <ResultState
         tone="success"
         title="Password changed"
-        action={{ href: "/", label: "Continue" }}
+        action={{ href: "/dashboard", label: "Continue" }}
       >
         Your password has been updated. Use it the next time you log in.
       </ResultState>
@@ -55,8 +55,9 @@ function ChangePasswordContent({ isForced }: { isForced: boolean }) {
           ? "For security reasons, you must create a new password before continuing."
           : "Enter your current password and choose a new one."}
       </AuthHeading>
+      {/* Forced flow: the fresh login already proved the current password. */}
       <PasswordForm
-        requireCurrentPassword
+        requireCurrentPassword={!isForced}
         submitLabel="Update Password"
         loadingLabel="Updating…"
         onSubmit={handleSubmit}

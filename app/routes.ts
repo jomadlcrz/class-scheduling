@@ -9,4 +9,5 @@ export default [
   route("privacy-policy", "routes/public/privacy-policy.tsx"),
   route("terms-of-use", "routes/public/terms-of-use.tsx"),
   route("unauthorized", "routes/unauthorized.tsx"),
+  route("dashboard", "routes/app/dashboard.tsx"),
 ] satisfies RouteConfig;
