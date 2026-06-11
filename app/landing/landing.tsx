@@ -5,7 +5,7 @@ import { Hero } from "./hero";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { Stats } from "./stats";
-import { ThemeProvider } from "./theme-provider";
+import { ThemeProvider } from "../components/theme/theme-provider";
 
 /** The GWC Class Scheduling landing page. */
 export function Landing() {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ThemeToggle } from "./theme-toggle";
-import { AskAiPanel } from "./ask-ai";
+import { ThemeToggle } from "../components/theme/theme-toggle";
+import { AskAiPanel } from "../features/ai/ask-ai-panel";
 
 interface NavLink {
   label: string;

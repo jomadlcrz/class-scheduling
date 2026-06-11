@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ThemeProvider } from "./theme-provider";
+import { ThemeProvider } from "../components/theme/theme-provider";
 import { SiteHeader } from "./site-header";
 import { SiteFooter } from "./site-footer";
 
