@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { EyeIcon, EyeOffIcon } from "./icons";
 
-const inputClassName =
+export const inputClassName =
   "w-full rounded-lg border border-slate-300 bg-white px-4 py-3 font-sans text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25";
 
 const labelClassName = "font-sans text-sm font-medium text-slate-700 dark:text-slate-300";
@@ -15,7 +15,7 @@ type FieldChromeProps = {
   children: ReactNode;
 };
 
-function FieldChrome({ id, label, labelEnd, hint, children }: FieldChromeProps) {
+export function FieldChrome({ id, label, labelEnd, hint, children }: FieldChromeProps) {
   return (
     <div className="flex flex-col gap-1.5">
       {labelEnd ? (

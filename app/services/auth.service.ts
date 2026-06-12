@@ -1,58 +1,16 @@
 import { loadJson, removeJson, saveJson } from "../lib/storage";
 import type { AuthSession, LoginCredentials } from "../types/auth";
-import type { User } from "../types/user";
+import { accounts, delay, toUser } from "./mock-data";
 
 /**
- * MOCK auth service — no backend yet. Accounts live in memory and the
+ * MOCK auth service — no backend yet. Accounts live in the shared
+ * in-memory store (see mock-data.ts for demo credentials) and the
  * session persists to browser storage, so the full login/logout and
  * password flows work end-to-end in the UI. Swap the internals for real
  * API calls later; the exported surface must stay the same.
- *
- * Demo accounts (password after the colon):
- *   admin@gwc.edu.ph     : admin12345
- *   registrar@gwc.edu.ph : registrar12345
- *   faculty@gwc.edu.ph   : faculty12345   (forced change-password on first login)
  */
 
 const SESSION_KEY = "gwc-session";
-const LATENCY_MS = 700;
-
-type MockAccount = User & { password: string };
-
-const accounts: MockAccount[] = [
-  {
-    id: "u-1",
-    name: "Alma Reyes",
-    email: "admin@gwc.edu.ph",
-    role: "admin",
-    mustChangePassword: false,
-    password: "admin12345",
-  },
-  {
-    id: "u-2",
-    name: "Bea Santos",
-    email: "registrar@gwc.edu.ph",
-    role: "registrar",
-    mustChangePassword: false,
-    password: "registrar12345",
-  },
-  {
-    id: "u-3",
-    name: "Carlo Dizon",
-    email: "faculty@gwc.edu.ph",
-    role: "faculty",
-    mustChangePassword: true,
-    password: "faculty12345",
-  },
-];
-
-function delay() {
-  return new Promise((resolve) => setTimeout(resolve, LATENCY_MS));
-}
-
-function toUser({ password: _password, ...user }: MockAccount): User {
-  return user;
-}
 
 async function login(credentials: LoginCredentials): Promise<AuthSession> {
   await delay();
@@ -61,6 +19,9 @@ async function login(credentials: LoginCredentials): Promise<AuthSession> {
   );
   if (!account || account.password !== credentials.password) {
     throw new Error("Invalid email or password.");
+  }
+  if (account.status === "inactive") {
+    throw new Error("Your account has been deactivated. Contact your administrator.");
   }
 
   const session: AuthSession = {

@@ -6,7 +6,9 @@ Guidance for AI agents and contributors working in this repo. Follow these conve
 
 A class-scheduling web app for GWC (builds conflict-free academic timetables). Frontend only — there is **no backend yet**. Data access goes through `app/services/*.service.ts` with **mock implementations** (in-memory data + fake latency + browser-storage persistence). Components must never know data is mocked: always call the service, never inline mock data in components. When a real backend lands, only service internals change.
 
-The auth slice is live end-to-end on mocks: login/logout, session persistence ("remember me" → localStorage, otherwise sessionStorage under `gwc-session`), guards, and the forced change-password flow. Demo accounts are documented at the top of `app/services/auth.service.ts`.
+The auth slice is live end-to-end on mocks: login/logout, session persistence ("remember me" → localStorage, otherwise sessionStorage under `gwc-session`), guards, and the forced change-password flow. All mock services share one in-memory store — `app/services/mock-data.ts` — where the demo accounts and credentials are documented; deactivating a user there really blocks their login.
+
+**Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Users + Roles admin pages are live (`/users`, `/roles`).
 
 **Stack:** React Router 7 (framework mode, SSR), React 19, TypeScript (strict), Tailwind CSS v4 (CSS-first config in `app/app.css`), `motion` for animation. No state-management or data-fetching library.
 
@@ -41,8 +43,9 @@ app/
 ├── layouts/               # App-shell layouts (EMPTY STUBS)
 ├── hooks/                 # Shared hooks (use-theme, use-auth are live; rest are stubs)
 ├── lib/                   # Pure utilities (validators, storage are live; api/etc. are stubs)
-├── services/              # Data layer — MOCK implementations (auth is live; rest are stubs)
-└── types/                 # Domain types (user, auth are live; rest are stubs)
+├── services/              # Data layer — MOCK implementations over mock-data.ts shared store
+│                          #   (auth, user, role are live; rest are stubs)
+└── types/                 # Domain types (user, auth, role are live; rest are stubs)
 ```
 
 **Where code goes:** generic, reusable UI → `components/ui`; domain-specific UI → `features/<domain>/`; pure logic → `lib/`; route files stay thin (meta + layout + composition — no markup-heavy forms or duplicated chrome inside routes).
@@ -75,7 +78,12 @@ app/
 | Email/password validation | `isValidEmail`, `validateNewPassword`, `MIN_PASSWORD_LENGTH` — `app/lib/validators.ts` |
 | Theme context | `ThemeProvider` (`components/theme/theme-provider.tsx`), `useTheme` (`hooks/use-theme.ts`) |
 | Auth state (user, login, logout) | `AuthProvider` (`app/auth/auth-provider.tsx`), `useAuth` (`hooks/use-auth.ts`) — provider is mounted in `root.tsx` |
-| Route protection | `AuthGuard` / `GuestGuard` — `app/auth/auth-guard.tsx`, `guest-guard.tsx` |
+| Route protection | `AuthGuard` / `GuestGuard` / `RoleGuard` — `app/auth/auth-guard.tsx`, `guest-guard.tsx`, `role-guard.tsx` |
+| Badges (incl. role/status) | `Badge` (`components/ui/badge.tsx`), `RoleBadge` (`features/users/role-badge.tsx`) |
+| Tables | `Table`/`TableHead`/`TableBody`/`TableRow`/`TableHeader`/`TableCell` — `components/ui/table.tsx` |
+| Modals & confirmations | `Modal`, `ConfirmDialog` — `components/ui/modal.tsx` |
+| Select dropdown | `Select` — `components/ui/select.tsx` (shares `FieldChrome`/`inputClassName` from input.tsx) |
+| Empty list placeholder | `EmptyState` — `components/ui/empty-state.tsx` |
 | Auth/session API (mocked) | `authService` — `services/auth.service.ts` |
 | Safe browser storage (SSR-proof) | `loadJson`/`saveJson`/`removeJson` — `lib/storage.ts` |
 | Full-screen loading spinner | `LoadingState` — `components/feedback/loading-state.tsx` |

@@ -39,31 +39,77 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: "Scheduling",
     items: [
       { label: "Schedules", href: "/schedules", icon: CalendarIcon, soon: true },
-      { label: "Conflicts", href: "/conflicts", icon: AlertTriangleIcon, soon: true },
+      {
+        label: "Conflicts",
+        href: "/conflicts",
+        icon: AlertTriangleIcon,
+        roles: ["admin", "registrar", "dean", "faculty"],
+        soon: true,
+      },
     ],
   },
   {
     heading: "Academics",
     items: [
-      { label: "Curriculum", href: "/curriculum", icon: BookOpenIcon, soon: true },
-      { label: "Subjects", href: "/subjects", icon: BookIcon, soon: true },
-      { label: "Sections", href: "/sections", icon: LayersIcon, soon: true },
-      { label: "Faculty", href: "/faculty", icon: UsersIcon, soon: true },
+      {
+        label: "Curriculum",
+        href: "/curriculum",
+        icon: BookOpenIcon,
+        roles: ["admin", "registrar", "dean"],
+        soon: true,
+      },
+      {
+        label: "Subjects",
+        href: "/subjects",
+        icon: BookIcon,
+        roles: ["admin", "registrar", "dean"],
+        soon: true,
+      },
+      {
+        label: "Sections",
+        href: "/sections",
+        icon: LayersIcon,
+        roles: ["admin", "registrar", "dean"],
+        soon: true,
+      },
+      {
+        label: "Faculty",
+        href: "/faculty",
+        icon: UsersIcon,
+        roles: ["admin", "registrar", "dean"],
+        soon: true,
+      },
     ],
   },
   {
     heading: "Facilities",
-    items: [{ label: "Rooms", href: "/rooms", icon: BuildingIcon, soon: true }],
+    items: [
+      {
+        label: "Rooms",
+        href: "/rooms",
+        icon: BuildingIcon,
+        roles: ["admin", "registrar"],
+        soon: true,
+      },
+    ],
   },
   {
     heading: "Insights",
-    items: [{ label: "Reports", href: "/reports", icon: ChartIcon, soon: true }],
+    items: [
+      {
+        label: "Reports",
+        href: "/reports",
+        icon: ChartIcon,
+        roles: ["admin", "registrar", "dean"],
+        soon: true,
+      },
+    ],
   },
   {
     heading: "Administration",
     items: [
-      { label: "Users", href: "/users", icon: UserIcon, roles: ["admin"], soon: true },
-      { label: "Roles", href: "/roles", icon: ShieldIcon, roles: ["admin"], soon: true },
+      { label: "Users", href: "/users", icon: UserIcon, roles: ["admin"] },
+      { label: "Roles", href: "/roles", icon: ShieldIcon, roles: ["admin"] },
     ],
   },
 ];
