@@ -60,6 +60,12 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Slim, theme-tinted scrollbar for in-app scroll panes (sidebar, drawers). */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 20%, transparent) transparent;
+}
+
 /* Blueprint timetable grid — the signature background texture for both themes. */
 @utility blueprint-grid {
   background-image:
