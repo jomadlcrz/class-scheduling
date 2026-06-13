@@ -46,6 +46,16 @@
   --color-cream-100: #eeeee6;
 }
 
+/* Chart palette — mirrors shadcn/ui --chart-N convention. */
+:root {
+  --chart-1: 216 67% 16%;
+  --chart-2: 152 63% 32%;
+  --chart-3: 43 64% 50%;
+  --chart-4: 200 93% 40%;
+  --chart-5: 347 90% 50%;
+  --chart-6: 215 14% 40%;
+}
+
 html,
 body {
   @apply bg-cream-50 text-slate-900 dark:bg-navy-950 dark:text-[#e6eaf2];

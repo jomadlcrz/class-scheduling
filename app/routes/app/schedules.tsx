@@ -6,13 +6,11 @@ import { EmptyState } from "../../components/ui/empty-state";
 import { PlusIcon } from "../../components/ui/icons";
 import { Input } from "../../components/ui/input";
 import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Pagination } from "../../components/ui/pagination";
 import { Select } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
 import { ScheduleForm } from "../../features/schedules/schedule-form";
 import { ScheduleTable } from "../../features/schedules/schedule-table";
 import { PageHeader } from "../../layouts/page-header";
-import { usePagination } from "../../hooks/use-pagination";
 import { facultyService } from "../../services/faculty.service";
 import { programService } from "../../services/program.service";
 import { roomService } from "../../services/room.service";
@@ -89,8 +87,6 @@ function SchedulesPage() {
     });
   }, []);
 
-  const resetKey = `${schoolYear}|${semester}|${search}|${dayFilter}|${programFilter}`;
-
   const visibleSchedules = useMemo(() => {
     if (!data) return [];
     const query = search.trim().toLowerCase();
@@ -119,8 +115,6 @@ function SchedulesPage() {
           a.startTime.localeCompare(b.startTime),
       );
   }, [data, schoolYear, semester, search, dayFilter, programFilter]);
-
-  const pagination = usePagination(visibleSchedules, resetKey);
 
   async function handleEdit(input: CreateScheduleInput) {
     if (!editTarget) return;
@@ -227,24 +221,12 @@ function SchedulesPage() {
             No schedules match the current filters. Try adjusting the term or add a new schedule.
           </EmptyState>
         ) : (
-          <>
-            <ScheduleTable
-              schedules={pagination.pageItems}
-              programs={data!.programs}
-              onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
-            />
-            <Pagination
-              page={pagination.page}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
-            />
-          </>
+          <ScheduleTable
+            schedules={visibleSchedules}
+            programs={data!.programs}
+            onEdit={setEditTarget}
+            onDelete={setDeleteTarget}
+          />
         )}
       </div>
 
