@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
-import type { Building } from "../../../types/building";
+import { getBuildingTone, type Building } from "../../../types/building";
 
 type BuildingTableProps = {
   buildings: Building[];
@@ -37,7 +37,7 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
               <span className="font-medium text-navy-700 dark:text-white">{building.name}</span>
             </TableCell>
             <TableCell>
-              <Badge tone="navy">{building.code}</Badge>
+              <Badge tone={getBuildingTone(building.code)}>{building.code}</Badge>
             </TableCell>
             <TableCell className="hidden sm:table-cell">{building.floorCount}</TableCell>
             <TableCell>

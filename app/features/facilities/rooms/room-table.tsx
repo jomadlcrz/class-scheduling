@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
+import { getBuildingTone } from "../../../types/building";
 import type { Room } from "../../../types/room";
 import { ROOM_STATUS_LABELS, ROOM_TYPE_LABELS } from "../../../types/room";
 
@@ -47,7 +48,7 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
               <span className="font-medium text-navy-700 dark:text-white">{room.name}</span>
             </TableCell>
             <TableCell>
-              <Badge tone="navy">{room.buildingCode}</Badge>
+              <Badge tone={getBuildingTone(room.buildingCode)}>{room.buildingCode}</Badge>
             </TableCell>
             <TableCell className="hidden sm:table-cell">{room.floor}</TableCell>
             <TableCell className="hidden md:table-cell">{room.capacity}</TableCell>

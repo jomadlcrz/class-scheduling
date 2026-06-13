@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { getBuildingTone } from "../../types/building";
 import { getDeptTone, type Department } from "../../types/department";
 
 type DepartmentTableProps = {
@@ -39,7 +40,9 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-white">{dept.name}</span>
             </TableCell>
-            <TableCell className="hidden sm:table-cell">{dept.buildingCode}</TableCell>
+            <TableCell className="hidden sm:table-cell">
+              <Badge tone={getBuildingTone(dept.buildingCode)}>{dept.buildingCode}</Badge>
+            </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">
                 <button

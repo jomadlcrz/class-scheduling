@@ -1,3 +1,14 @@
+import type { BadgeTone } from "../components/ui/badge";
+
+export const BUILDING_BADGE_TONES: Record<string, BadgeTone> = {
+  SHS: "navy",
+  MB: "gold",
+};
+
+export function getBuildingTone(code: string): BadgeTone {
+  return BUILDING_BADGE_TONES[code] ?? "slate";
+}
+
 export type Building = {
   id: string;
   name: string;

@@ -111,9 +111,8 @@ export const accounts: AccountRecord[] = [
 // ─── Buildings ──────────────────────────────────────────────────────────────
 
 export const buildings: Building[] = [
-  { id: "bldg-1", name: "Main Building", code: "MB", floorCount: 3 },
-  { id: "bldg-2", name: "Science and Technology Building", code: "STB", floorCount: 4 },
-  { id: "bldg-3", name: "Business Administration Building", code: "BAB", floorCount: 3 },
+  { id: "bldg-1", name: "Main Building", code: "MB", floorCount: 4 },
+  { id: "bldg-2", name: "SHS Building", code: "SHS", floorCount: 3 },
 ];
 
 let buildingIdCounter = buildings.length;
@@ -129,11 +128,11 @@ export const rooms: Room[] = [
   { id: "r-1", buildingId: "bldg-1", buildingCode: "MB", floor: 1, name: "Room 101", capacity: 40, type: "lecture", status: "vacant" },
   { id: "r-2", buildingId: "bldg-1", buildingCode: "MB", floor: 1, name: "Room 102", capacity: 40, type: "lecture", status: "occupied" },
   { id: "r-3", buildingId: "bldg-1", buildingCode: "MB", floor: 2, name: "Room 201", capacity: 35, type: "lecture", status: "vacant" },
-  { id: "r-4", buildingId: "bldg-2", buildingCode: "STB", floor: 1, name: "Lab 101", capacity: 30, type: "laboratory", status: "vacant" },
-  { id: "r-5", buildingId: "bldg-2", buildingCode: "STB", floor: 1, name: "Lab 102", capacity: 30, type: "laboratory", status: "maintenance" },
-  { id: "r-6", buildingId: "bldg-2", buildingCode: "STB", floor: 2, name: "Room 201", capacity: 40, type: "lecture", status: "vacant" },
-  { id: "r-7", buildingId: "bldg-3", buildingCode: "BAB", floor: 1, name: "Room 101", capacity: 40, type: "lecture", status: "vacant" },
-  { id: "r-8", buildingId: "bldg-3", buildingCode: "BAB", floor: 2, name: "Room 201", capacity: 35, type: "lecture", status: "occupied" },
+  { id: "r-4", buildingId: "bldg-1", buildingCode: "MB", floor: 2, name: "Room 202", capacity: 35, type: "lecture", status: "vacant" },
+  { id: "r-5", buildingId: "bldg-2", buildingCode: "SHS", floor: 1, name: "Lab 101", capacity: 30, type: "laboratory", status: "vacant" },
+  { id: "r-6", buildingId: "bldg-2", buildingCode: "SHS", floor: 1, name: "Lab 102", capacity: 30, type: "laboratory", status: "maintenance" },
+  { id: "r-7", buildingId: "bldg-2", buildingCode: "SHS", floor: 2, name: "Room 201", capacity: 40, type: "lecture", status: "vacant" },
+  { id: "r-8", buildingId: "bldg-2", buildingCode: "SHS", floor: 2, name: "Room 202", capacity: 40, type: "lecture", status: "occupied" },
 ];
 
 let roomIdCounter = rooms.length;
@@ -146,9 +145,10 @@ export function newRoomId(): string {
 // ─── Departments ─────────────────────────────────────────────────────────────
 
 export const departments: Department[] = [
-  { id: "dept-1", code: "CITE", name: "College of Information Technology Education", buildingId: "bldg-2", buildingCode: "STB" },
-  { id: "dept-2", code: "CBA", name: "College of Business Administration", buildingId: "bldg-3", buildingCode: "BAB" },
+  { id: "dept-1", code: "CITE", name: "College of Information Technology Education", buildingId: "bldg-2", buildingCode: "SHS" },
+  { id: "dept-2", code: "CBA", name: "College of Business Administration", buildingId: "bldg-1", buildingCode: "MB" },
   { id: "dept-3", code: "COEd", name: "College of Education", buildingId: "bldg-1", buildingCode: "MB" },
+  { id: "dept-4", code: "COC", name: "College of Criminology", buildingId: "bldg-1", buildingCode: "MB" },
 ];
 
 let departmentIdCounter = departments.length;
@@ -161,10 +161,17 @@ export function newDepartmentId(): string {
 // ─── Programs ────────────────────────────────────────────────────────────────
 
 export const programs: Program[] = [
-  { id: "prog-1", departmentId: "dept-1", departmentCode: "CITE", code: "BSIS", name: "Bachelor of Science in Information Systems", type: "bachelor", lengthYears: 4 },
-  { id: "prog-2", departmentId: "dept-1", departmentCode: "CITE", code: "BSCS", name: "Bachelor of Science in Computer Science", type: "bachelor", lengthYears: 4 },
-  { id: "prog-3", departmentId: "dept-2", departmentCode: "CBA", code: "BSBA", name: "Bachelor of Science in Business Administration", type: "bachelor", lengthYears: 4 },
-  { id: "prog-4", departmentId: "dept-3", departmentCode: "COEd", code: "BSED", name: "Bachelor of Secondary Education", type: "bachelor", lengthYears: 4 },
+  // CITE
+  { id: "prog-1", departmentId: "dept-1", departmentCode: "CITE", code: "BSIT", name: "Bachelor of Science in Information Technology", type: "bachelor", lengthYears: 4 },
+  { id: "prog-2", departmentId: "dept-1", departmentCode: "CITE", code: "ACS", name: "Associate in Computer Science", type: "associate", lengthYears: 2 },
+  { id: "prog-3", departmentId: "dept-1", departmentCode: "CITE", code: "BSCS", name: "Bachelor of Science in Computer Science", type: "bachelor", lengthYears: 4 },
+  // COC
+  { id: "prog-4", departmentId: "dept-4", departmentCode: "COC", code: "BSCRIM", name: "Bachelor of Science in Criminology", type: "bachelor", lengthYears: 4 },
+  // CBA
+  { id: "prog-5", departmentId: "dept-2", departmentCode: "CBA", code: "BSBA", name: "Bachelor of Science in Business Administration", type: "bachelor", lengthYears: 4 },
+  // COEd
+  { id: "prog-6", departmentId: "dept-3", departmentCode: "COEd", code: "BEED", name: "Bachelor of Elementary Education", type: "bachelor", lengthYears: 4 },
+  { id: "prog-7", departmentId: "dept-3", departmentCode: "COEd", code: "BSED", name: "Bachelor of Secondary Education", type: "bachelor", lengthYears: 4 },
 ];
 
 /** Alias for backward-compatible imports — same mutable reference as programs[]. */
@@ -182,7 +189,7 @@ export function newProgramId(): string {
 export const subjects: Subject[] = [
   {
     id: "s-1",
-    program: "BSIS",
+    program: "BSIT",
     yearLevel: 1,
     semester: 1,
     code: "CS 101",
@@ -195,7 +202,7 @@ export const subjects: Subject[] = [
   },
   {
     id: "s-2",
-    program: "BSIS",
+    program: "BSIT",
     yearLevel: 1,
     semester: 2,
     code: "CS 102",
@@ -208,7 +215,7 @@ export const subjects: Subject[] = [
   },
   {
     id: "s-3",
-    program: "BSIS",
+    program: "BSIT",
     yearLevel: 2,
     semester: 1,
     code: "CS 201",
@@ -221,7 +228,7 @@ export const subjects: Subject[] = [
   },
   {
     id: "s-4",
-    program: "BSIS",
+    program: "BSIT",
     yearLevel: 1,
     semester: 1,
     code: "MATH 101",
@@ -234,7 +241,7 @@ export const subjects: Subject[] = [
   },
   {
     id: "s-5",
-    program: "BSIS",
+    program: "BSIT",
     yearLevel: 1,
     semester: 1,
     code: "ENG 101",
@@ -247,7 +254,7 @@ export const subjects: Subject[] = [
   },
   {
     id: "s-6",
-    program: "BSIS",
+    program: "BSIT",
     yearLevel: 1,
     semester: 2,
     code: "FIL 101",
@@ -260,7 +267,7 @@ export const subjects: Subject[] = [
   },
   {
     id: "s-7",
-    program: "BSIS",
+    program: "BSIT",
     yearLevel: 1,
     semester: 1,
     code: "PE 101",
@@ -302,10 +309,10 @@ export const subjects: Subject[] = [
 // ─── Sets ─────────────────────────────────────────────────────────────────────
 
 export const sets: ClassSet[] = [
-  { id: "set-1", program: "BSIS", yearLevel: 1, setCode: "A" },
-  { id: "set-2", program: "BSIS", yearLevel: 1, setCode: "B" },
-  { id: "set-3", program: "BSIS", yearLevel: 2, setCode: "A" },
-  { id: "set-4", program: "BSIS", yearLevel: 2, setCode: "B" },
+  { id: "set-1", program: "BSIT", yearLevel: 1, setCode: "A" },
+  { id: "set-2", program: "BSIT", yearLevel: 1, setCode: "B" },
+  { id: "set-3", program: "BSIT", yearLevel: 2, setCode: "A" },
+  { id: "set-4", program: "BSIT", yearLevel: 2, setCode: "B" },
   { id: "set-5", program: "BSCS", yearLevel: 1, setCode: "A" },
   { id: "set-6", program: "BSBA", yearLevel: 1, setCode: "A" },
 ];

@@ -8,8 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { YEAR_LEVEL_LABELS } from "../../types/subject";
+import { PROGRAMS } from "../../services/mock-data";
 import { type ClassSet } from "../../types/set";
+import { YEAR_LEVEL_LABELS } from "../../types/subject";
+import { getProgramTone } from "../../types/program";
 
 type SetTableProps = {
   sets: ClassSet[];
@@ -38,7 +40,7 @@ export function SetTable({ sets, onEdit, onDelete }: SetTableProps) {
               <span className="font-medium text-navy-700 dark:text-white">{set.setCode}</span>
             </TableCell>
             <TableCell>
-              <Badge tone="navy">{set.program}</Badge>
+              <Badge tone={getProgramTone(set.program, PROGRAMS)}>{set.program}</Badge>
             </TableCell>
             <TableCell>{YEAR_LEVEL_LABELS[set.yearLevel]}</TableCell>
             <TableCell>

@@ -9,6 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { PROGRAMS } from "../../services/mock-data";
+import { getProgramTone } from "../../types/program";
 import { SEMESTER_LABELS, YEAR_LEVEL_LABELS, type Subject } from "../../types/subject";
 import { SubjectTypeBadge } from "./subject-type-badge";
 
@@ -53,7 +55,7 @@ export function SubjectTable({ subjects, allSubjects, onEdit, onDelete }: Subjec
             </TableCell>
             <TableCell>{subject.title}</TableCell>
             <TableCell className="hidden sm:table-cell">
-              <Badge tone="navy">{subject.program}</Badge>
+              <Badge tone={getProgramTone(subject.program, PROGRAMS)}>{subject.program}</Badge>
             </TableCell>
             <TableCell className="hidden sm:table-cell">
               {YEAR_LEVEL_LABELS[subject.yearLevel]} · {SEMESTER_LABELS[subject.semester]}
