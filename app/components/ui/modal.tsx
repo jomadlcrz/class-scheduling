@@ -104,13 +104,22 @@ function ModalContent({
   title: string;
   children: ReactNode;
 }) {
+  // Freeze body scroll while the modal is open; tall content scrolls
+  // inside the panel instead (same pattern as the mobile nav drawer).
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
+  // Escape is intentionally NOT wired — modal closes only via its own buttons.
 
   return (
     <>
@@ -120,7 +129,6 @@ function ModalContent({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
-        onClick={onClose}
         className="fixed inset-0 z-40 bg-navy-950/40"
         aria-hidden="true"
       />
@@ -135,9 +143,9 @@ function ModalContent({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
-          className="pointer-events-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-navy-900"
+          className="pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-navy-900"
         >
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex shrink-0 items-start justify-between gap-4">
             <h2 className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
               {title}
             </h2>
@@ -150,7 +158,8 @@ function ModalContent({
               <CloseIcon />
             </button>
           </div>
-          <div className="mt-4">{children}</div>
+          {/* -mx-6 px-6 keeps focus rings visible at the scroll pane edges. */}
+          <div className="scrollbar-thin -mx-6 mt-4 overflow-y-auto px-6">{children}</div>
         </motion.div>
       </div>
     </>

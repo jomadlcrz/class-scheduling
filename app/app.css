@@ -60,6 +60,16 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Hide the native datalist dropdown button across engines — suggestion
+   popups still work; only the in-field arrow goes away. */
+input[list]::-webkit-calendar-picker-indicator {
+  display: none !important;
+  opacity: 0;
+}
+input[list]::-webkit-list-button {
+  display: none !important;
+}
+
 /* Slim, theme-tinted scrollbar for in-app scroll panes (sidebar, drawers). */
 @utility scrollbar-thin {
   scrollbar-width: thin;

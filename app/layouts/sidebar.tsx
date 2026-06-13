@@ -63,14 +63,12 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/subjects",
         icon: BookIcon,
         roles: ["admin", "registrar", "dean"],
-        soon: true,
       },
       {
-        label: "Sections",
-        href: "/sections",
+        label: "Sets",
+        href: "/sets",
         icon: LayersIcon,
         roles: ["admin", "registrar", "dean"],
-        soon: true,
       },
       {
         label: "Faculty",

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 export function Table({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5">
+    <div className="scrollbar-thin overflow-x-auto rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5">
       <table className="w-full text-left font-sans text-sm">{children}</table>
     </div>
   );
@@ -18,9 +18,17 @@ export function TableHead({ children }: { children: ReactNode }) {
   );
 }
 
-export function TableHeader({ children }: { children?: ReactNode }) {
+export function TableHeader({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
   return (
-    <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+    <th
+      className={`px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500 ${className ?? ""}`}
+    >
       {children}
     </th>
   );
@@ -38,6 +46,16 @@ export function TableRow({ children }: { children: ReactNode }) {
   );
 }
 
-export function TableCell({ children }: { children?: ReactNode }) {
-  return <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{children}</td>;
+export function TableCell({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <td className={`px-4 py-3 text-slate-700 dark:text-slate-300 ${className ?? ""}`}>
+      {children}
+    </td>
+  );
 }

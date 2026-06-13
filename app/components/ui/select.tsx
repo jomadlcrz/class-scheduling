@@ -17,7 +17,9 @@ export function Select({ id, label, hint, children, ...selectProps }: SelectProp
           id={id}
           name={id}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          className={`${inputClassName} cursor-pointer appearance-none pr-10`}
+          // Native dropdown popups ignore the field styling, so the options
+          // need explicit colors or they're unreadable in dark mode.
+          className={`${inputClassName} cursor-pointer appearance-none pr-10 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-navy-900 dark:[&>option]:text-white`}
           {...selectProps}
         >
           {children}

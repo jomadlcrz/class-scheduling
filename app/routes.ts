@@ -15,5 +15,8 @@ export default [
     route("dashboard", "routes/app/dashboard.tsx"),
     route("users", "routes/app/users.tsx"),
     route("roles", "routes/app/roles.tsx"),
+    route("subjects", "routes/app/subjects.tsx"),
+    route("subjects/new", "routes/app/subjects-new.tsx"),
+    route("sets", "routes/app/sets.tsx"),
   ]),
 ] satisfies RouteConfig;

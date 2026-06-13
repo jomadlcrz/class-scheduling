@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Pagination } from "../../components/ui/pagination";
+import { usePagination } from "../../hooks/use-pagination";
 import { RoleGuard } from "../../auth/role-guard";
 import { EmptyState } from "../../components/ui/empty-state";
 import { Button } from "../../components/ui/button";
@@ -59,6 +61,8 @@ function UsersPage() {
     [users, filters],
   );
 
+  const pagination = usePagination(visibleUsers, JSON.stringify(filters));
+
   function replaceUser(updated: User) {
     setUsers((current) => current!.map((u) => (u.id === updated.id ? updated : u)));
   }
@@ -106,15 +110,27 @@ function UsersPage() {
             No users match the current filters. Adjust the search or filters and try again.
           </EmptyState>
         ) : (
-          <UserTable
-            users={visibleUsers}
-            currentUserId={currentUser?.id}
-            onEdit={(user) => setFormTarget(user)}
-            onToggleStatus={(user) =>
-              user.status === "active" ? setDeactivateTarget(user) : setActivateTarget(user)
-            }
-            onResetPassword={(user) => setResetTarget(user)}
-          />
+          <>
+            <UserTable
+              users={pagination.pageItems}
+              currentUserId={currentUser?.id}
+              onEdit={(user) => setFormTarget(user)}
+              onToggleStatus={(user) =>
+                user.status === "active" ? setDeactivateTarget(user) : setActivateTarget(user)
+              }
+              onResetPassword={(user) => setResetTarget(user)}
+            />
+            <Pagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              rangeStart={pagination.rangeStart}
+              rangeEnd={pagination.rangeEnd}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setPage}
+              onPageSizeChange={pagination.setPageSize}
+            />
+          </>
         )}
       </div>
 

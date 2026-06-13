@@ -44,8 +44,8 @@ app/
 ├── hooks/                 # Shared hooks (use-theme, use-auth are live; rest are stubs)
 ├── lib/                   # Pure utilities (validators, storage are live; api/etc. are stubs)
 ├── services/              # Data layer — MOCK implementations over mock-data.ts shared store
-│                          #   (auth, user, role are live; rest are stubs)
-└── types/                 # Domain types (user, auth, role are live; rest are stubs)
+│                          #   (auth, user, role, subject are live; rest are stubs)
+└── types/                 # Domain types (user, auth, role, subject are live; rest are stubs)
 ```
 
 **Where code goes:** generic, reusable UI → `components/ui`; domain-specific UI → `features/<domain>/`; pure logic → `lib/`; route files stay thin (meta + layout + composition — no markup-heavy forms or duplicated chrome inside routes).

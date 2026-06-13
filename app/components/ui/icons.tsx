@@ -130,9 +130,9 @@ export function MenuIcon() {
   );
 }
 
-export function CloseIcon() {
+export function CloseIcon({ size = 16 }: { size?: number }) {
   return (
-    <IconBase size={16}>
+    <IconBase size={size}>
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </IconBase>
@@ -257,6 +257,22 @@ export function ChevronDownIcon() {
   );
 }
 
+export function ChevronLeftIcon() {
+  return (
+    <IconBase size={16}>
+      <polyline points="15 18 9 12 15 6" />
+    </IconBase>
+  );
+}
+
+export function ChevronRightIcon() {
+  return (
+    <IconBase size={16}>
+      <polyline points="9 18 15 12 9 6" />
+    </IconBase>
+  );
+}
+
 export function EditIcon() {
   return (
     <IconBase size={16}>
@@ -290,6 +306,27 @@ export function UserCheckIcon() {
       <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
       <circle cx="8.5" cy="7" r="4" />
       <polyline points="17 11 19 13 23 9" />
+    </IconBase>
+  );
+}
+
+export function MoreVerticalIcon() {
+  return (
+    <IconBase size={16}>
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="19" r="1" />
+    </IconBase>
+  );
+}
+
+export function TrashIcon() {
+  return (
+    <IconBase size={16}>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <line x1="10" y1="11" x2="10" y2="17" />
+      <line x1="14" y1="11" x2="14" y2="17" />
     </IconBase>
   );
 }
