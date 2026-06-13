@@ -90,7 +90,6 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/faculty",
         icon: UsersIcon,
         roles: ["admin", "registrar", "dean"],
-        soon: true,
       },
     ],
   },

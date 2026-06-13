@@ -1,5 +1,6 @@
 import type { Building } from "../types/building";
 import type { Department } from "../types/department";
+import type { Faculty } from "../types/faculty";
 import type { Program } from "../types/program";
 import type { Room } from "../types/room";
 import type { ClassSet } from "../types/set";
@@ -182,6 +183,24 @@ let programIdCounter = programs.length;
 export function newProgramId(): string {
   programIdCounter += 1;
   return `prog-${programIdCounter}`;
+}
+
+// ─── Faculty ─────────────────────────────────────────────────────────────────
+
+export const faculty: Faculty[] = [
+  { id: "fac-1", firstName: "Ana", lastName: "Reyes", email: "a.reyes@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Web Development", status: "active" },
+  { id: "fac-2", firstName: "Ben", lastName: "Santos", email: "b.santos@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Data Science", status: "active" },
+  { id: "fac-3", firstName: "Clara", lastName: "Dizon", email: "c.dizon@gwc.edu.ph", departmentId: "dept-2", departmentCode: "CBA", specialization: "Business Management", status: "active" },
+  { id: "fac-4", firstName: "David", lastName: "Ramos", email: "d.ramos@gwc.edu.ph", departmentId: "dept-3", departmentCode: "COEd", specialization: "Elementary Education", status: "inactive" },
+  { id: "fac-5", firstName: "Eva", lastName: "Cruz", email: "ev.cruz@gwc.edu.ph", departmentId: "dept-4", departmentCode: "COC", specialization: "Criminal Law", status: "active" },
+  { id: "fac-6", firstName: "Felix", lastName: "Lim", email: "f.lim@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Computer Networks", status: "active" },
+];
+
+let facultyIdCounter = faculty.length;
+
+export function newFacultyId(): string {
+  facultyIdCounter += 1;
+  return `fac-${facultyIdCounter}`;
 }
 
 // ─── Subjects ────────────────────────────────────────────────────────────────
