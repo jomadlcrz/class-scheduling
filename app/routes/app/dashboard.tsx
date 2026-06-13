@@ -33,12 +33,12 @@ export function meta() {
 }
 
 const CHART_COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--chart-6))",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
 ];
 
 type PageData = {
@@ -99,7 +99,9 @@ export default function Dashboard() {
 
   const pieConfig = useMemo<ChartConfig>(() => {
     const cfg: ChartConfig = { count: { label: "Slots" } };
-    for (const { program, fill } of byProgram) cfg[program] = { label: program, color: fill };
+    byProgram.forEach(({ program }, i) => {
+      cfg[program] = { label: program, color: CHART_COLORS[i % CHART_COLORS.length] };
+    });
     return cfg;
   }, [byProgram]);
 
@@ -238,7 +240,7 @@ function SkeletonCharts() {
       <div className="rounded-xl border border-slate-200 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
         <div className="mb-1 h-4 w-28 animate-pulse rounded bg-slate-200 dark:bg-white/10" />
         <div className="mb-4 h-3 w-44 animate-pulse rounded bg-slate-100 dark:bg-white/5" />
-        <div className="h-62.5 w-full animate-pulse rounded-full bg-slate-100 dark:bg-white/5" />
+        <div className="h-62.5 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-white/5" />
       </div>
     </div>
   );

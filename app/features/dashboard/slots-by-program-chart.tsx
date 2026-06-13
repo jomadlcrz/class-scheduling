@@ -1,8 +1,6 @@
-import { Cell, LabelList, Pie, PieChart } from "recharts";
+import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
@@ -23,35 +21,43 @@ export function SlotsByProgramChart({ data, config }: SlotsByProgramChartProps) 
           By Program
         </h2>
         <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
-          Slot distribution across programs
+          Slots per program, ranked
         </p>
       </div>
-      <ChartContainer config={config} className="h-72 pb-0">
-        <PieChart>
-          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-          <Pie
-            data={data}
-            dataKey="count"
-            nameKey="program"
-            outerRadius="80%"
-            strokeWidth={2}
-            stroke="transparent"
-          >
+      <ChartContainer config={config} className="h-72 px-2 pb-4 pt-4">
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
+          barCategoryGap="25%"
+        >
+          <XAxis
+            type="number"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={4}
+            tick={{ fontSize: 11, fill: "currentColor" }}
+            allowDecimals={false}
+          />
+          <YAxis
+            type="category"
+            dataKey="program"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tick={{ fontSize: 11, fill: "currentColor" }}
+            width={56}
+          />
+          <ChartTooltip
+            cursor={{ fill: "currentColor", fillOpacity: 0.04 }}
+            content={<ChartTooltipContent indicator="dot" />}
+          />
+          <Bar dataKey="count" radius={4} maxBarSize={28}>
             {data.map((entry, i) => (
               <Cell key={i} fill={entry.fill} />
             ))}
-            <LabelList
-              dataKey="count"
-              className="fill-white"
-              stroke="none"
-              fontSize={13}
-              fontWeight={600}
-            />
-          </Pie>
-          <ChartLegend
-            content={<ChartLegendContent nameKey="program" />}
-          />
-        </PieChart>
+          </Bar>
+        </BarChart>
       </ChartContainer>
     </div>
   );

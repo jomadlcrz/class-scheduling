@@ -46,14 +46,14 @@
   --color-cream-100: #eeeee6;
 }
 
-/* Chart palette — mirrors shadcn/ui --chart-N convention. */
+/* Chart palette — full color values so var(--chart-N) resolves directly. */
 :root {
-  --chart-1: 216 67% 16%;
-  --chart-2: 152 63% 32%;
-  --chart-3: 43 64% 50%;
-  --chart-4: 200 93% 40%;
-  --chart-5: 347 90% 50%;
-  --chart-6: 215 14% 40%;
+  --chart-1: hsl(216 75% 52%);
+  --chart-2: hsl(152 60% 42%);
+  --chart-3: hsl(43 80% 52%);
+  --chart-4: hsl(200 90% 46%);
+  --chart-5: hsl(347 80% 55%);
+  --chart-6: hsl(270 60% 58%);
 }
 
 html,
