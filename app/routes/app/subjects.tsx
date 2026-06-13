@@ -13,8 +13,9 @@ import { Spinner } from "../../components/ui/spinner";
 import { SubjectForm } from "../../features/subjects/subject-form";
 import { SubjectTable } from "../../features/subjects/subject-table";
 import { PageHeader } from "../../layouts/page-header";
-import { PROGRAMS } from "../../services/mock-data";
+import { programService } from "../../services/program.service";
 import { subjectService } from "../../services/subject.service";
+import type { Program } from "../../types/program";
 import {
   YEAR_LEVEL_LABELS,
   YEAR_LEVELS,
@@ -43,6 +44,7 @@ export default function Subjects() {
 function SubjectsPage() {
   const navigate = useNavigate();
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
+  const [programs, setPrograms] = useState<Program[] | null>(null);
   const [search, setSearch] = useState("");
   const [program, setProgram] = useState("all");
   const [yearLevel, setYearLevel] = useState("all");
@@ -52,7 +54,10 @@ function SubjectsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Subject | null>(null);
 
   useEffect(() => {
-    subjectService.list().then(setSubjects);
+    Promise.all([subjectService.list(), programService.list()]).then(([s, p]) => {
+      setSubjects(s);
+      setPrograms(p);
+    });
   }, []);
 
   const resetKey = `${search}|${program}|${yearLevel}`;
@@ -128,7 +133,7 @@ function SubjectsPage() {
             onChange={(e) => setProgram(e.target.value)}
           >
             <option value="all">All programs</option>
-            {PROGRAMS.map((p) => (
+            {(programs ?? []).map((p) => (
               <option key={p.code} value={p.code}>
                 {p.code} — {p.name}
               </option>
@@ -149,7 +154,7 @@ function SubjectsPage() {
           </Select>
         </div>
 
-        {subjects === null ? (
+        {subjects === null || programs === null ? (
           <div
             role="status"
             aria-label="Loading subjects"
@@ -166,6 +171,7 @@ function SubjectsPage() {
             <SubjectTable
               subjects={pagination.pageItems}
               allSubjects={subjects}
+              programs={programs!}
               onEdit={(subject) => setEditTarget(subject)}
               onDelete={(subject) => setDeleteTarget(subject)}
             />
@@ -188,6 +194,7 @@ function SubjectsPage() {
           <SubjectForm
             subject={editTarget}
             allSubjects={subjects ?? []}
+            programs={programs!}
             onSubmit={handleFormSubmit}
             onCancel={() => setEditTarget(null)}
           />

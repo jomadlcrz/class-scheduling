@@ -11,9 +11,10 @@ import { Spinner } from "../../components/ui/spinner";
 import { SetForm } from "../../features/sets/set-form";
 import { SetTable } from "../../features/sets/set-table";
 import { PageHeader } from "../../layouts/page-header";
-import { PROGRAMS } from "../../services/mock-data";
+import { programService } from "../../services/program.service";
 import { setService } from "../../services/set.service";
 import { usePagination } from "../../hooks/use-pagination";
+import type { Program } from "../../types/program";
 import type { ClassSet, CreateSetInput } from "../../types/set";
 import { YEAR_LEVEL_LABELS, YEAR_LEVELS } from "../../types/subject";
 
@@ -34,6 +35,7 @@ export default function Sets() {
 
 function SetsPage() {
   const [sets, setSets] = useState<ClassSet[] | null>(null);
+  const [programs, setPrograms] = useState<Program[] | null>(null);
 
   const [search, setSearch] = useState("");
   const [program, setProgram] = useState("all");
@@ -44,7 +46,10 @@ function SetsPage() {
   const [deleteTarget, setDeleteTarget] = useState<ClassSet | null>(null);
 
   useEffect(() => {
-    setService.list().then(setSets);
+    Promise.all([setService.list(), programService.list()]).then(([s, p]) => {
+      setSets(s);
+      setPrograms(p);
+    });
   }, []);
 
   const resetKey = `${search}|${program}|${yearLevel}`;
@@ -122,7 +127,7 @@ function SetsPage() {
             onChange={(e) => setProgram(e.target.value)}
           >
             <option value="all">All programs</option>
-            {PROGRAMS.map((p) => (
+            {(programs ?? []).map((p) => (
               <option key={p.code} value={p.code}>
                 {p.code} — {p.name}
               </option>
@@ -143,7 +148,7 @@ function SetsPage() {
           </Select>
         </div>
 
-        {sets === null ? (
+        {sets === null || programs === null ? (
           <div
             role="status"
             aria-label="Loading sets"
@@ -159,6 +164,7 @@ function SetsPage() {
           <>
             <SetTable
               sets={pagination.pageItems}
+              programs={programs!}
               onEdit={(set) => setEditTarget(set)}
               onDelete={(set) => setDeleteTarget(set)}
             />
@@ -177,13 +183,14 @@ function SetsPage() {
       </div>
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Set">
-        <SetForm onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
+        <SetForm programs={programs ?? []} onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
       </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Set">
         {editTarget && (
           <SetForm
             set={editTarget}
+            programs={programs ?? []}
             onSubmit={handleEdit}
             onCancel={() => setEditTarget(null)}
           />

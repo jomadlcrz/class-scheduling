@@ -8,13 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { PROGRAMS } from "../../services/mock-data";
+import { getProgramTone, type Program } from "../../types/program";
 import { type ClassSet } from "../../types/set";
 import { YEAR_LEVEL_LABELS } from "../../types/subject";
-import { getProgramTone } from "../../types/program";
 
 type SetTableProps = {
   sets: ClassSet[];
+  programs: Program[];
   onEdit: (set: ClassSet) => void;
   onDelete: (set: ClassSet) => void;
 };
@@ -22,7 +22,7 @@ type SetTableProps = {
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function SetTable({ sets, onEdit, onDelete }: SetTableProps) {
+export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
   return (
     <Table>
       <TableHead>
@@ -40,7 +40,7 @@ export function SetTable({ sets, onEdit, onDelete }: SetTableProps) {
               <span className="font-medium text-navy-700 dark:text-white">{set.setCode}</span>
             </TableCell>
             <TableCell>
-              <Badge tone={getProgramTone(set.program, PROGRAMS)}>{set.program}</Badge>
+              <Badge tone={getProgramTone(set.program, programs)}>{set.program}</Badge>
             </TableCell>
             <TableCell>{YEAR_LEVEL_LABELS[set.yearLevel]}</TableCell>
             <TableCell>

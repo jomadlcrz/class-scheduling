@@ -11,8 +11,9 @@ import {
   type PendingEntry,
 } from "../../features/subjects/curriculum-structure";
 import { PageHeader } from "../../layouts/page-header";
-import { PROGRAMS } from "../../services/mock-data";
+import { programService } from "../../services/program.service";
 import { subjectService } from "../../services/subject.service";
+import type { Program } from "../../types/program";
 import type { CreateSubjectInput, Subject } from "../../types/subject";
 
 export function meta() {
@@ -36,7 +37,8 @@ export default function SubjectsNew() {
 function SubjectsNewPage() {
   const navigate = useNavigate();
   const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
-  const [program, setProgram] = useState(PROGRAMS[0].code);
+  const [programs, setPrograms] = useState<Program[] | null>(null);
+  const [program, setProgram] = useState("");
   const [pending, setPending] = useState<PendingEntry[]>([]);
   /** Pending entry pulled back into the form for changes. */
   const [editing, setEditing] = useState<PendingEntry | null>(null);
@@ -45,7 +47,11 @@ function SubjectsNewPage() {
   const tempIdCounter = useRef(0);
 
   useEffect(() => {
-    subjectService.list().then(setAllSubjects);
+    Promise.all([subjectService.list(), programService.list()]).then(([s, p]) => {
+      setAllSubjects(s);
+      setPrograms(p);
+      setProgram(p[0]?.code ?? "");
+    });
   }, []);
 
   const savedForProgram = useMemo(
@@ -168,7 +174,7 @@ function SubjectsNewPage() {
         }
       />
 
-      {allSubjects === null ? (
+      {allSubjects === null || programs === null ? (
         <div
           role="status"
           aria-label="Loading subjects"
@@ -192,7 +198,7 @@ function SubjectsNewPage() {
                     : undefined
                 }
               >
-                {PROGRAMS.map((p) => (
+                {programs.map((p) => (
                   <option key={p.code} value={p.code}>
                     {p.code} — {p.name}
                   </option>

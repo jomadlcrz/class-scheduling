@@ -3,19 +3,20 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Select } from "../../components/ui/select";
 import { Textarea } from "../../components/ui/textarea";
-import { PROGRAMS } from "../../services/mock-data";
+import type { Program } from "../../types/program";
 import { type ClassSet, type CreateSetInput } from "../../types/set";
 import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "../../types/subject";
 
 type SetFormProps = {
   /** Provided when editing an existing set. */
   set?: ClassSet;
+  programs: Program[];
   /** Called with one input per set code line (create); one item for edit. */
   onSubmit: (inputs: CreateSetInput[]) => Promise<void>;
   onCancel: () => void;
 };
 
-export function SetForm({ set, onSubmit, onCancel }: SetFormProps) {
+export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,9 +61,9 @@ export function SetForm({ set, onSubmit, onCancel }: SetFormProps) {
       <Select
         id="set-program"
         label="Program"
-        defaultValue={set?.program ?? PROGRAMS[0].code}
+        defaultValue={set?.program ?? programs[0]?.code}
       >
-        {PROGRAMS.map((p) => (
+        {programs.map((p) => (
           <option key={p.code} value={p.code}>
             {p.code} — {p.name}
           </option>

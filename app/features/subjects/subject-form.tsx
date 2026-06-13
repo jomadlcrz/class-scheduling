@@ -3,7 +3,7 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Select } from "../../components/ui/select";
-import { PROGRAMS } from "../../services/mock-data";
+import type { Program } from "../../types/program";
 import {
   SEMESTER_LABELS,
   SEMESTERS,
@@ -24,12 +24,13 @@ type SubjectFormProps = {
   subject: Subject;
   /** Full catalog — prerequisite candidates come from the selected program. */
   allSubjects: Subject[];
+  programs: Program[];
   onSubmit: (input: CreateSubjectInput) => Promise<void>;
   onCancel: () => void;
 };
 
 /** Edit form for an existing subject (creation happens on /subjects/new). */
-export function SubjectForm({ subject, allSubjects, onSubmit, onCancel }: SubjectFormProps) {
+export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel }: SubjectFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,7 +108,7 @@ export function SubjectForm({ subject, allSubjects, onSubmit, onCancel }: Subjec
         value={program}
         onChange={(e) => handleProgramChange(e.target.value)}
       >
-        {PROGRAMS.map((p) => (
+        {programs.map((p) => (
           <option key={p.code} value={p.code}>
             {p.code} — {p.name}
           </option>
