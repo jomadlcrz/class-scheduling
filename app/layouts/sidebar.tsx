@@ -41,7 +41,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     heading: "Scheduling",
     items: [
-      { label: "Schedules", href: "/schedules", icon: CalendarIcon, soon: true },
+      { label: "Schedules", href: "/schedules", icon: CalendarIcon },
       {
         label: "Conflicts",
         href: "/conflicts",

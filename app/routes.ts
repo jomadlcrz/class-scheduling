@@ -23,5 +23,7 @@ export default [
     route("subjects/new", "routes/app/subjects-new.tsx"),
     route("sets", "routes/app/sets.tsx"),
     route("faculty", "routes/app/faculty.tsx"),
+    route("schedules", "routes/app/schedules.tsx"),
+    route("schedules/new", "routes/app/schedules-new.tsx"),
   ]),
 ] satisfies RouteConfig;

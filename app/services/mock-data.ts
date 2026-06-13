@@ -3,6 +3,7 @@ import type { Department } from "../types/department";
 import type { Faculty } from "../types/faculty";
 import type { Program } from "../types/program";
 import type { Room } from "../types/room";
+import type { Schedule } from "../types/schedule";
 import type { ClassSet } from "../types/set";
 import type { Subject } from "../types/subject";
 import type { User } from "../types/user";
@@ -324,6 +325,23 @@ export const subjects: Subject[] = [
     prerequisiteIds: [],
   },
 ];
+
+// ─── Schedules ───────────────────────────────────────────────────────────────
+
+export const schedules: Schedule[] = [
+  { id: "sch-1", schoolYear: "2025-2026", semester: 1, subjectId: "s-1", subjectCode: "CS 101", subjectTitle: "Introduction to Computing", setId: "set-1", setCode: "A", program: "BSIT", yearLevel: 1, facultyId: "fac-1", facultyName: "Ana Reyes", roomId: "r-5", roomName: "Lab 101", buildingCode: "SHS", day: "M", startTime: "07:00", endTime: "10:00" },
+  { id: "sch-2", schoolYear: "2025-2026", semester: 1, subjectId: "s-4", subjectCode: "MATH 101", subjectTitle: "College Algebra", setId: "set-1", setCode: "A", program: "BSIT", yearLevel: 1, facultyId: "fac-2", facultyName: "Ben Santos", roomId: "r-1", roomName: "Room 101", buildingCode: "MB", day: "T", startTime: "07:00", endTime: "10:00" },
+  { id: "sch-3", schoolYear: "2025-2026", semester: 1, subjectId: "s-5", subjectCode: "ENG 101", subjectTitle: "Purposive Communication", setId: "set-1", setCode: "A", program: "BSIT", yearLevel: 1, facultyId: "fac-6", facultyName: "Felix Lim", roomId: "r-1", roomName: "Room 101", buildingCode: "MB", day: "W", startTime: "07:00", endTime: "10:00" },
+  { id: "sch-4", schoolYear: "2025-2026", semester: 1, subjectId: "s-1", subjectCode: "CS 101", subjectTitle: "Introduction to Computing", setId: "set-2", setCode: "B", program: "BSIT", yearLevel: 1, facultyId: "fac-1", facultyName: "Ana Reyes", roomId: "r-5", roomName: "Lab 101", buildingCode: "SHS", day: "M", startTime: "10:00", endTime: "13:00" },
+  { id: "sch-5", schoolYear: "2025-2026", semester: 1, subjectId: "s-8", subjectCode: "ACCTG 101", subjectTitle: "Fundamentals of Accounting", setId: "set-6", setCode: "A", program: "BSBA", yearLevel: 1, facultyId: "fac-3", facultyName: "Clara Dizon", roomId: "r-3", roomName: "Room 201", buildingCode: "MB", day: "Th", startTime: "07:00", endTime: "10:00" },
+];
+
+let scheduleIdCounter = schedules.length;
+
+export function newScheduleId(): string {
+  scheduleIdCounter += 1;
+  return `sch-${scheduleIdCounter}`;
+}
 
 // ─── Sets ─────────────────────────────────────────────────────────────────────
 
