@@ -7,20 +7,18 @@ function findSet(id: string): ClassSet {
   return set;
 }
 
-/** Set codes are unique per subject + semester + school year. */
+/** Set codes are unique per program + year level. */
 function codeTaken(
-  subjectId: string,
+  program: string,
+  yearLevel: number,
   setCode: string,
-  schoolYear: string,
-  semester: number,
   excludeId?: string,
 ): boolean {
   return sets.some(
     (s) =>
       s.id !== excludeId &&
-      s.subjectId === subjectId &&
-      s.schoolYear === schoolYear &&
-      s.semester === semester &&
+      s.program === program &&
+      s.yearLevel === yearLevel &&
       s.setCode.toLowerCase() === setCode.trim().toLowerCase(),
   );
 }
@@ -31,10 +29,10 @@ async function list(): Promise<ClassSet[]> {
 }
 
 async function create(input: CreateSetInput): Promise<ClassSet> {
-  await delay();
-  if (codeTaken(input.subjectId, input.setCode, input.schoolYear, input.semester)) {
+  await delay(300);
+  if (codeTaken(input.program, input.yearLevel, input.setCode)) {
     throw new Error(
-      `Set "${input.setCode}" already exists for this subject in ${input.schoolYear} Sem ${input.semester}.`,
+      `Set "${input.setCode}" already exists for ${input.program} Year ${input.yearLevel}.`,
     );
   }
   const set: ClassSet = { id: newSetId(), ...input };
@@ -45,14 +43,13 @@ async function create(input: CreateSetInput): Promise<ClassSet> {
 async function update(id: string, input: UpdateSetInput): Promise<ClassSet> {
   await delay();
   const set = findSet(id);
-  const subjectId = input.subjectId ?? set.subjectId;
+  const program = input.program ?? set.program;
+  const yearLevel = input.yearLevel ?? set.yearLevel;
   const setCode = input.setCode ?? set.setCode;
-  const schoolYear = input.schoolYear ?? set.schoolYear;
-  const semester = input.semester ?? set.semester;
 
-  if (codeTaken(subjectId, setCode, schoolYear, semester, id)) {
+  if (codeTaken(program, yearLevel, setCode, id)) {
     throw new Error(
-      `Set "${setCode}" already exists for this subject in ${schoolYear} Sem ${semester}.`,
+      `Set "${setCode}" already exists for ${program} Year ${yearLevel}.`,
     );
   }
   Object.assign(set, input);

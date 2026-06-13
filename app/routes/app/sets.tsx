@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pagination } from "../../components/ui/pagination";
-import { usePagination } from "../../hooks/use-pagination";
 import { RoleGuard } from "../../auth/role-guard";
 import { Button } from "../../components/ui/button";
 import { EmptyState } from "../../components/ui/empty-state";
 import { PlusIcon } from "../../components/ui/icons";
 import { Input } from "../../components/ui/input";
 import { ConfirmDialog, Modal } from "../../components/ui/modal";
+import { Pagination } from "../../components/ui/pagination";
 import { Select } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
 import { SetForm } from "../../features/sets/set-form";
@@ -14,9 +13,9 @@ import { SetTable } from "../../features/sets/set-table";
 import { PageHeader } from "../../layouts/page-header";
 import { PROGRAMS } from "../../services/mock-data";
 import { setService } from "../../services/set.service";
-import { subjectService } from "../../services/subject.service";
+import { usePagination } from "../../hooks/use-pagination";
 import type { ClassSet, CreateSetInput } from "../../types/set";
-import { SEMESTER_LABELS, SEMESTERS, type Subject } from "../../types/subject";
+import { YEAR_LEVEL_LABELS, YEAR_LEVELS } from "../../types/subject";
 
 export function meta() {
   return [
@@ -35,72 +34,53 @@ export default function Sets() {
 
 function SetsPage() {
   const [sets, setSets] = useState<ClassSet[] | null>(null);
-  const [allSubjects, setAllSubjects] = useState<Subject[]>([]);
 
   const [search, setSearch] = useState("");
   const [program, setProgram] = useState("all");
-  const [semester, setSemester] = useState("all");
+  const [yearLevel, setYearLevel] = useState("all");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ClassSet | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ClassSet | null>(null);
 
   useEffect(() => {
-    Promise.all([setService.list(), subjectService.list()]).then(([s, sub]) => {
-      setSets(s);
-      setAllSubjects(sub);
-    });
+    setService.list().then(setSets);
   }, []);
 
-  const subjectById = useMemo(
-    () => new Map(allSubjects.map((s) => [s.id, s])),
-    [allSubjects],
-  );
-
-  const resetKey = `${search}|${program}|${semester}`;
+  const resetKey = `${search}|${program}|${yearLevel}`;
 
   const visibleSets = useMemo(() => {
     if (!sets) return [];
     const query = search.trim().toLowerCase();
     return sets
       .filter((set) => {
-        const subject = subjectById.get(set.subjectId);
-        if (program !== "all" && subject?.program !== program) return false;
-        if (semester !== "all" && set.semester !== Number(semester)) return false;
-        if (
-          query &&
-          !set.setCode.toLowerCase().includes(query) &&
-          !subject?.code.toLowerCase().includes(query) &&
-          !subject?.title.toLowerCase().includes(query)
-        ) {
-          return false;
-        }
+        if (program !== "all" && set.program !== program) return false;
+        if (yearLevel !== "all" && set.yearLevel !== Number(yearLevel)) return false;
+        if (query && !set.setCode.toLowerCase().includes(query)) return false;
         return true;
       })
-      .sort((a, b) => {
-        const sa = subjectById.get(a.subjectId);
-        const sb = subjectById.get(b.subjectId);
-        return (
-          (sa?.program ?? "").localeCompare(sb?.program ?? "") ||
-          (sa?.yearLevel ?? 0) - (sb?.yearLevel ?? 0) ||
-          a.semester - b.semester ||
-          (sa?.code ?? "").localeCompare(sb?.code ?? "") ||
-          a.setCode.localeCompare(b.setCode)
-        );
-      });
-  }, [sets, subjectById, search, program, semester]);
+      .sort(
+        (a, b) =>
+          a.program.localeCompare(b.program) ||
+          a.yearLevel - b.yearLevel ||
+          a.setCode.localeCompare(b.setCode),
+      );
+  }, [sets, search, program, yearLevel]);
 
   const pagination = usePagination(visibleSets, resetKey);
 
-  async function handleCreate(input: CreateSetInput) {
-    const created = await setService.create(input);
-    setSets((current) => [...(current ?? []), created]);
+  async function handleCreate(inputs: CreateSetInput[]) {
+    const created: ClassSet[] = [];
+    for (const input of inputs) {
+      created.push(await setService.create(input));
+    }
+    setSets((current) => [...(current ?? []), ...created]);
     setCreateOpen(false);
   }
 
-  async function handleEdit(input: CreateSetInput) {
-    if (!editTarget) return;
-    const updated = await setService.update(editTarget.id, input);
+  async function handleEdit(inputs: CreateSetInput[]) {
+    if (!editTarget || inputs.length === 0) return;
+    const updated = await setService.update(editTarget.id, inputs[0]);
     setSets((current) => current!.map((s) => (s.id === updated.id ? updated : s)));
     setEditTarget(null);
   }
@@ -110,13 +90,11 @@ function SetsPage() {
     setSets((current) => current!.filter((s) => s.id !== target.id));
   }
 
-  const deleteSubject = deleteTarget ? subjectById.get(deleteTarget.subjectId) : null;
-
   return (
     <>
       <PageHeader
         title="Sets"
-        description="Class sets grouped by subject, program, and academic term."
+        description="Class sets grouped by program and year level."
         actions={
           <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
             <PlusIcon />
@@ -132,7 +110,7 @@ function SetsPage() {
               id="set-search"
               label="Search"
               type="search"
-              placeholder="Set code or subject…"
+              placeholder="Set code…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -151,15 +129,15 @@ function SetsPage() {
             ))}
           </Select>
           <Select
-            id="set-semester-filter"
-            label="Semester"
-            value={semester}
-            onChange={(e) => setSemester(e.target.value)}
+            id="set-year-filter"
+            label="Year Level"
+            value={yearLevel}
+            onChange={(e) => setYearLevel(e.target.value)}
           >
-            <option value="all">All semesters</option>
-            {SEMESTERS.map((sem) => (
-              <option key={sem} value={sem}>
-                {SEMESTER_LABELS[sem]}
+            <option value="all">All year levels</option>
+            {YEAR_LEVELS.map((year) => (
+              <option key={year} value={year}>
+                {YEAR_LEVEL_LABELS[year]}
               </option>
             ))}
           </Select>
@@ -181,7 +159,6 @@ function SetsPage() {
           <>
             <SetTable
               sets={pagination.pageItems}
-              allSubjects={allSubjects}
               onEdit={(set) => setEditTarget(set)}
               onDelete={(set) => setDeleteTarget(set)}
             />
@@ -200,18 +177,13 @@ function SetsPage() {
       </div>
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Set">
-        <SetForm
-          allSubjects={allSubjects}
-          onSubmit={handleCreate}
-          onCancel={() => setCreateOpen(false)}
-        />
+        <SetForm onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
       </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Set">
         {editTarget && (
           <SetForm
             set={editTarget}
-            allSubjects={allSubjects}
             onSubmit={handleEdit}
             onCancel={() => setEditTarget(null)}
           />
@@ -231,10 +203,7 @@ function SetsPage() {
         <span className="font-medium text-navy-700 dark:text-white">
           {deleteTarget?.setCode}
         </span>{" "}
-        for{" "}
-        <span className="font-medium text-navy-700 dark:text-white">
-          {deleteSubject?.code ?? "this subject"}
-        </span>{" "}
+        ({deleteTarget?.program}, {deleteTarget ? YEAR_LEVEL_LABELS[deleteTarget.yearLevel] : ""}){" "}
         will be permanently removed.
       </ConfirmDialog>
     </>

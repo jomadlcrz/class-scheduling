@@ -347,3 +347,30 @@ export function ShieldIcon() {
     </IconBase>
   );
 }
+
+export function DoorIcon() {
+  return (
+    <IconBase>
+      <path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14" />
+      <path d="M2 20h20" />
+      <circle cx="14" cy="12" r="0.5" fill="currentColor" stroke="none" />
+    </IconBase>
+  );
+}
+
+export function FolderIcon() {
+  return (
+    <IconBase>
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </IconBase>
+  );
+}
+
+export function GraduationCapIcon() {
+  return (
+    <IconBase>
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </IconBase>
+  );
+}

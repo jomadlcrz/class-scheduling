@@ -8,6 +8,9 @@ import {
   CalendarIcon,
   ChartIcon,
   DashboardIcon,
+  DoorIcon,
+  FolderIcon,
+  GraduationCapIcon,
   LayersIcon,
   ShieldIcon,
   UserIcon,
@@ -59,6 +62,18 @@ export const NAV_SECTIONS: NavSection[] = [
         soon: true,
       },
       {
+        label: "Departments",
+        href: "/departments",
+        icon: FolderIcon,
+        roles: ["admin", "registrar", "dean"],
+      },
+      {
+        label: "Programs",
+        href: "/programs",
+        icon: GraduationCapIcon,
+        roles: ["admin", "registrar", "dean"],
+      },
+      {
         label: "Subjects",
         href: "/subjects",
         icon: BookIcon,
@@ -83,11 +98,16 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: "Facilities",
     items: [
       {
-        label: "Rooms",
-        href: "/rooms",
+        label: "Buildings",
+        href: "/buildings",
         icon: BuildingIcon,
         roles: ["admin", "registrar"],
-        soon: true,
+      },
+      {
+        label: "Rooms",
+        href: "/rooms",
+        icon: DoorIcon,
+        roles: ["admin", "registrar"],
       },
     ],
   },
