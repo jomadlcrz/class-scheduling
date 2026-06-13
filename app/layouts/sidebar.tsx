@@ -147,7 +147,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         return (
           <div key={section.heading ?? "overview"}>
             {section.heading && (
-              <p className="mb-2 px-3 font-sans text-[0.65rem] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <p className="mb-2 px-3 font-sans text-[0.65rem] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">
                 {section.heading}
               </p>
             )}
@@ -173,7 +173,7 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
 
   if (item.soon) {
     return (
-      <div aria-disabled="true" className={`${entryClassName} cursor-default text-slate-400 dark:text-slate-600`}>
+      <div aria-disabled="true" className={`${entryClassName} cursor-default text-slate-400 dark:text-slate-500`}>
         <Icon />
         <span className="flex-1">{item.label}</span>
         <span className="rounded-full border border-slate-200 px-1.5 py-0.5 font-sans text-[0.6rem] uppercase tracking-wide text-slate-400 dark:border-white/10 dark:text-slate-500">
@@ -190,8 +190,8 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
       className={({ isActive }) =>
         `${entryClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
           isActive
-            ? "bg-navy-800 text-white dark:bg-white/10"
-            : "text-slate-600 hover:bg-slate-200/60 hover:text-navy-700 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+            ? "bg-navy-700 text-white dark:bg-white/10 dark:text-white"
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
         }`
       }
     >
@@ -228,11 +228,11 @@ export function SidebarBrand() {
 /** Desktop-only sidebar; mobile uses the MobileNav drawer instead. */
 export function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white/60 lg:flex dark:border-white/10 dark:bg-navy-900/60">
-      <div className="flex h-16 shrink-0 items-center border-b border-slate-200 px-5 dark:border-white/10">
+    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex dark:border-white/8 dark:bg-navy-900">
+      <div className="flex h-16 shrink-0 items-center border-b border-slate-100 px-5 dark:border-white/8">
         <SidebarBrand />
       </div>
-      <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-5 text-slate-400 dark:text-slate-500">
+      <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-5">
         <SidebarNav />
       </div>
     </aside>

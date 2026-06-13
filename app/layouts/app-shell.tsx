@@ -25,16 +25,10 @@ function Shell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="relative flex min-h-dvh bg-cream-50 dark:bg-navy-950">
-      {/* Signature blueprint texture behind the content. */}
-      <div
-        aria-hidden="true"
-        className="blueprint-grid pointer-events-none fixed inset-0 text-navy-900/4 dark:text-white/4"
-      />
-
+    <div className="flex min-h-dvh bg-slate-50 dark:bg-navy-950">
       <Sidebar />
 
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <Navbar onOpenMobileNav={() => setMobileNavOpen(true)} />
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <Outlet />
