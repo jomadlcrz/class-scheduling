@@ -32,6 +32,7 @@ export default [
     route("reports", "routes/app/reports.tsx"),
 
     layout("layouts/settings-layout.tsx", [
+      route("settings", "routes/app/settings/index.tsx"),
       route("settings/profile", "routes/app/settings/profile.tsx"),
       route("settings/appearance", "routes/app/settings/appearance.tsx"),
       route("settings/security", "routes/app/settings/security.tsx"),

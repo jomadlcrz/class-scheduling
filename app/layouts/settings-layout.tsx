@@ -1,22 +1,32 @@
+import type { ComponentType } from "react";
 import { NavLink, Outlet } from "react-router";
 import { KeyIcon, PaletteIcon, TrashIcon, UserIcon } from "../components/ui/icons";
-import type { ComponentType } from "react";
+import { useAuth } from "../hooks/use-auth";
+import type { Role } from "../types/user";
 import { PageHeader } from "./page-header";
 
 type SettingsNavItem = {
   label: string;
   href: string;
   icon: ComponentType;
+  roles?: Role[];
 };
 
 const SETTINGS_NAV: SettingsNavItem[] = [
   { label: "Profile", href: "/settings/profile", icon: UserIcon },
   { label: "Appearance", href: "/settings/appearance", icon: PaletteIcon },
   { label: "Security", href: "/settings/security", icon: KeyIcon },
-  { label: "Recently Deleted", href: "/settings/recently-deleted", icon: TrashIcon },
+  { label: "Recently Deleted", href: "/settings/recently-deleted", icon: TrashIcon, roles: ["admin"] },
 ];
 
 export default function SettingsLayout() {
+  const { user } = useAuth();
+  const role = user?.role;
+
+  const visibleNav = SETTINGS_NAV.filter(
+    (item) => !item.roles || (role && item.roles.includes(role)),
+  );
+
   return (
     <>
       <PageHeader title="Settings" description="Manage your account and preferences." />
@@ -26,7 +36,7 @@ export default function SettingsLayout() {
           aria-label="Settings navigation"
           className="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-white/8"
         >
-          {SETTINGS_NAV.map((item) => (
+          {visibleNav.map((item) => (
             <NavLink
               key={item.href}
               to={item.href}

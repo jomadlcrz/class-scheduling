@@ -1,3 +1,4 @@
+import { RoleGuard } from "../../../auth/role-guard";
 import { RecentlyDeleted } from "../../../features/settings/recently-deleted";
 
 export function meta() {
@@ -8,5 +9,9 @@ export function meta() {
 }
 
 export default function RecentlyDeletedRoute() {
-  return <RecentlyDeleted />;
+  return (
+    <RoleGuard allow={["admin"]}>
+      <RecentlyDeleted />
+    </RoleGuard>
+  );
 }

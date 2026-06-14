@@ -12,6 +12,7 @@ import {
   FolderIcon,
   GraduationCapIcon,
   LayersIcon,
+  SettingsIcon,
   ShieldIcon,
   UserIcon,
   UsersIcon,
@@ -141,6 +142,11 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Users", href: "/users", icon: UserIcon, roles: ["admin"] },
       { label: "Roles", href: "/roles", icon: ShieldIcon, roles: ["admin"] },
+    ],
+  },
+  {
+    items: [
+      { label: "Settings", href: "/settings", icon: SettingsIcon },
     ],
   },
 ];
