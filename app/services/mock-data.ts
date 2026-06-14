@@ -1,6 +1,7 @@
 import type { Building } from "../types/building";
 import type { Department } from "../types/department";
 import type { Faculty } from "../types/faculty";
+import type { Student } from "../types/student";
 import type { Program } from "../types/program";
 import type { Room } from "../types/room";
 import type { Schedule } from "../types/schedule";
@@ -376,6 +377,25 @@ export function newSubjectId(): string {
   subjectIdCounter += 1;
   return `s-${subjectIdCounter}`;
 }
+
+// ─── Students ────────────────────────────────────────────────────────────────
+
+export const students: Student[] = [
+  { id: "stu-1", studentNumber: "2024-001", firstName: "Maria", lastName: "Garcia", email: "m.garcia@gwc.edu.ph", program: "BSIT", yearLevel: 1, setCode: "A", status: "enrolled" },
+  { id: "stu-2", studentNumber: "2024-002", firstName: "Jose", lastName: "Reyes", email: "j.reyes@gwc.edu.ph", program: "BSIT", yearLevel: 1, setCode: "A", status: "enrolled" },
+  { id: "stu-3", studentNumber: "2024-003", firstName: "Ana", lastName: "Santos", email: "a.santos@gwc.edu.ph", program: "BSIT", yearLevel: 1, setCode: "B", status: "enrolled" },
+  { id: "stu-4", studentNumber: "2023-001", firstName: "Pedro", lastName: "Lim", email: "p.lim@gwc.edu.ph", program: "BSIT", yearLevel: 2, setCode: "A", status: "enrolled" },
+  { id: "stu-5", studentNumber: "2023-002", firstName: "Luisa", lastName: "Cruz", email: "l.cruz@gwc.edu.ph", program: "BSBA", yearLevel: 1, setCode: "A", status: "enrolled" },
+  { id: "stu-6", studentNumber: "2022-001", firstName: "Ramon", lastName: "Torres", email: "r.torres@gwc.edu.ph", program: "BSIT", yearLevel: 3, setCode: "A", status: "inactive" },
+];
+
+let studentIdCounter = students.length;
+
+export function newStudentId(): string {
+  studentIdCounter += 1;
+  return `stu-${studentIdCounter}`;
+}
+
 
 export function delay(ms = 700): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

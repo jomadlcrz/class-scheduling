@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ThemeToggle } from "../components/theme/theme-toggle";
 import { LogoutIcon, MenuIcon } from "../components/ui/icons";
 import { useAuth } from "../hooks/use-auth";
@@ -31,10 +31,14 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
       <ThemeToggle />
 
       {user && (
-        <div className="ml-1 flex items-center gap-2.5">
+        <Link
+          to="/settings/profile"
+          className="ml-1 flex items-center gap-2.5 rounded-lg px-1 py-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8"
+          title="Account settings"
+        >
           <span
             aria-hidden="true"
-            className="grid size-9 place-items-center rounded-full bg-navy-800 font-sans text-xs font-medium text-white dark:bg-white dark:text-navy-900"
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-navy-800 font-sans text-xs font-medium text-white dark:bg-white dark:text-navy-900"
           >
             {initials(user.name)}
           </span>
@@ -46,7 +50,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
               {user.role}
             </span>
           </span>
-        </div>
+        </Link>
       )}
 
       <button

@@ -25,5 +25,17 @@ export default [
     route("faculty", "routes/app/faculty.tsx"),
     route("schedules", "routes/app/schedules.tsx"),
     route("schedules/new", "routes/app/schedules-new.tsx"),
+    route("curriculum", "routes/app/curriculum.tsx"),
+    route("facilities", "routes/app/facilities.tsx"),
+    route("students", "routes/app/students.tsx"),
+    route("conflicts", "routes/app/conflicts.tsx"),
+    route("reports", "routes/app/reports.tsx"),
+
+    layout("layouts/settings-layout.tsx", [
+      route("settings/profile", "routes/app/settings/profile.tsx"),
+      route("settings/appearance", "routes/app/settings/appearance.tsx"),
+      route("settings/security", "routes/app/settings/security.tsx"),
+      route("settings/recently-deleted", "routes/app/settings/recently-deleted.tsx"),
+    ]),
   ]),
 ] satisfies RouteConfig;

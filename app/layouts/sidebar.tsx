@@ -47,7 +47,6 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/conflicts",
         icon: AlertTriangleIcon,
         roles: ["admin", "registrar", "dean", "faculty"],
-        soon: true,
       },
     ],
   },
@@ -59,7 +58,6 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/curriculum",
         icon: BookOpenIcon,
         roles: ["admin", "registrar", "dean"],
-        soon: true,
       },
       {
         label: "Departments",
@@ -108,6 +106,12 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: DoorIcon,
         roles: ["admin", "registrar"],
       },
+      {
+        label: "Overview",
+        href: "/facilities",
+        icon: ChartIcon,
+        roles: ["admin", "registrar"],
+      },
     ],
   },
   {
@@ -118,7 +122,17 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/reports",
         icon: ChartIcon,
         roles: ["admin", "registrar", "dean"],
-        soon: true,
+      },
+    ],
+  },
+  {
+    heading: "Students",
+    items: [
+      {
+        label: "Students",
+        href: "/students",
+        icon: GraduationCapIcon,
+        roles: ["admin", "registrar"],
       },
     ],
   },
