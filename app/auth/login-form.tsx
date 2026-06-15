@@ -4,7 +4,7 @@ import { FormError } from "../components/forms/form-error";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 import { Input, PasswordInput } from "../components/ui/input";
-import { isValidEmail } from "../lib/validators";
+import { loginSchema } from "../schemas/auth.schema";
 import { useAuth } from "./auth-provider";
 
 export function LoginForm() {
@@ -20,12 +20,9 @@ export function LoginForm() {
     const password = String(data.get("password") ?? "");
     const remember = data.get("remember") === "on";
 
-    if (!email || !password) {
-      setError("Enter your email and password.");
-      return;
-    }
-    if (!isValidEmail(email)) {
-      setError("Enter a valid email address.");
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 

@@ -3,6 +3,7 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Select } from "../../components/ui/select";
+import { studentSchema } from "../../schemas/student.schema";
 import type { CreateStudentInput, Student } from "../../types/student";
 import { STUDENT_STATUSES, STUDENT_STATUS_LABELS } from "../../types/student";
 import type { Program } from "../../types/program";
@@ -34,16 +35,9 @@ export function StudentForm({ student, programs, onSubmit, onCancel }: StudentFo
       status: String(data.get("status") ?? "enrolled") as CreateStudentInput["status"],
     };
 
-    if (!input.firstName || !input.lastName) {
-      setError("First name and last name are required.");
-      return;
-    }
-    if (!input.studentNumber) {
-      setError("Student number is required.");
-      return;
-    }
-    if (!input.program) {
-      setError("Please select a program.");
+    const result = studentSchema.safeParse(input);
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 

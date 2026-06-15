@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/button";
 import { Select } from "../../components/ui/select";
 import { Textarea } from "../../components/ui/textarea";
 import type { Program } from "../../types/program";
+import { setSchema } from "../../schemas/set.schema";
 import { type ClassSet, type CreateSetInput } from "../../types/set";
 import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "../../types/subject";
 
@@ -35,8 +36,11 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
       .map((c) => c.trim())
       .filter(Boolean);
 
-    if (!program) { setError("Select a program."); return; }
-    if (codes.length === 0) { setError("Enter at least one set code."); return; }
+    const result = setSchema.safeParse({ program, yearLevel, codes });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
 
     const inputs: CreateSetInput[] = codes.map((setCode) => ({
       program,

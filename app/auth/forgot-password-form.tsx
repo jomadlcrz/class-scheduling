@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FormError } from "../components/forms/form-error";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { isValidEmail } from "../lib/validators";
+import { forgotPasswordSchema } from "../schemas/auth.schema";
 import { authService } from "../services/auth.service";
 
 export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
@@ -13,8 +13,9 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
     e.preventDefault();
     const email = String(new FormData(e.currentTarget).get("email") ?? "").trim();
 
-    if (!email || !isValidEmail(email)) {
-      setError("Enter a valid email address.");
+    const result = forgotPasswordSchema.safeParse({ email });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 

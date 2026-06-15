@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FormError } from "../../../components/forms/form-error";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
+import { buildingSchema } from "../../../schemas/building.schema";
 import type { Building, CreateBuildingInput } from "../../../types/building";
 
 type BuildingFormProps = {
@@ -22,9 +23,11 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
     const code = String(data.get("building-code") ?? "").trim().toUpperCase();
     const floorCount = Number(data.get("building-floors"));
 
-    if (!name) { setError("Enter a building name."); return; }
-    if (!code) { setError("Enter a building code."); return; }
-    if (!floorCount || floorCount < 1) { setError("Enter a valid floor count."); return; }
+    const result = buildingSchema.safeParse({ name, code, floorCount });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
 
     setError(null);
     setIsLoading(true);

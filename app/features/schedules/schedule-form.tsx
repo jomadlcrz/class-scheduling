@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/button";
 import { Select } from "../../components/ui/select";
 import type { Faculty } from "../../types/faculty";
 import type { Room } from "../../types/room";
+import { scheduleSchema } from "../../schemas/schedule.schema";
 import {
   DAYS,
   DAY_LABELS,
@@ -83,18 +84,21 @@ export function ScheduleForm({
     const startTime = String(data.get("sched-start") ?? "");
     const endTime = String(data.get("sched-end") ?? "");
 
+    const result = scheduleSchema.safeParse({ subjectId, setId, facultyId, roomId, day, startTime, endTime });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+
     const subject = subjects.find((s) => s.id === subjectId);
     const set = sets.find((s) => s.id === setId);
     const member = faculty.find((f) => f.id === facultyId);
     const room = rooms.find((r) => r.id === roomId);
 
-    if (!subject) { setError("Select a subject."); return; }
-    if (!set) { setError("Select a set."); return; }
-    if (!member) { setError("Select a faculty member."); return; }
-    if (!room) { setError("Select a room."); return; }
-    if (!day) { setError("Select a day."); return; }
-    if (!startTime || !endTime) { setError("Select start and end times."); return; }
-    if (startTime >= endTime) { setError("End time must be after start time."); return; }
+    if (!subject || !set || !member || !room) {
+      setError("Something went wrong. Please try again.");
+      return;
+    }
 
     setError(null);
     setIsLoading(true);

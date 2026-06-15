@@ -3,6 +3,7 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Select } from "../../components/ui/select";
+import { departmentSchema } from "../../schemas/department.schema";
 import type { Building } from "../../types/building";
 import type { CreateDepartmentInput, Department } from "../../types/department";
 
@@ -25,8 +26,12 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
     const name = String(data.get("dept-name") ?? "").trim();
     const buildingId = String(data.get("dept-building") ?? "");
 
-    if (!code) { setError("Enter a department code."); return; }
-    if (!name) { setError("Enter a department name."); return; }
+    const result = departmentSchema.safeParse({ code, name, buildingId });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+
     const building = buildings.find((b) => b.id === buildingId);
     if (!building) { setError("Select a building."); return; }
 

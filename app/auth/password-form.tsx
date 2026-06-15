@@ -2,7 +2,8 @@ import { useState } from "react";
 import { FormError } from "../components/forms/form-error";
 import { Button } from "../components/ui/button";
 import { PasswordInput } from "../components/ui/input";
-import { MIN_PASSWORD_LENGTH, validateNewPassword } from "../lib/validators";
+import { MIN_PASSWORD_LENGTH } from "../lib/validators";
+import { makeChangePasswordSchema } from "../schemas/auth.schema";
 
 export type PasswordFormValues = {
   currentPassword?: string;
@@ -39,14 +40,10 @@ export function PasswordForm({
     const newPassword = String(data.get("new-password") ?? "");
     const confirmPassword = String(data.get("confirm-password") ?? "");
 
-    const validationError = validateNewPassword({
-      newPassword,
-      confirmPassword,
-      currentPassword,
-      requireCurrentPassword,
-    });
-    if (validationError) {
-      setError(validationError);
+    const schema = makeChangePasswordSchema(requireCurrentPassword);
+    const result = schema.safeParse({ currentPassword, newPassword, confirmPassword });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 

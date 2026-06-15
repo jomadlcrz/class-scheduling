@@ -3,7 +3,7 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Select } from "../../components/ui/select";
-import { isValidEmail } from "../../lib/validators";
+import { userSchema } from "../../schemas/user.schema";
 import type { CreateUserInput, Role, User } from "../../types/user";
 import { ROLE_LABELS } from "./role-badge";
 
@@ -26,12 +26,9 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     const email = String(data.get("user-email") ?? "").trim();
     const role = String(data.get("user-role") ?? "") as Role;
 
-    if (!name) {
-      setError("Enter the user's full name.");
-      return;
-    }
-    if (!isValidEmail(email)) {
-      setError("Enter a valid email address.");
+    const result = userSchema.safeParse({ name, email, role });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 

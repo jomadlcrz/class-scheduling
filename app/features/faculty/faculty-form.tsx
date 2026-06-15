@@ -3,6 +3,7 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Select } from "../../components/ui/select";
+import { facultySchema } from "../../schemas/faculty.schema";
 import type { Department } from "../../types/department";
 import {
   FACULTY_STATUS_LABELS,
@@ -36,12 +37,14 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
     const specialization = String(data.get("faculty-specialization") ?? "").trim();
     const status = String(data.get("faculty-status") ?? "") as FacultyStatus;
 
-    const dept = departments.find((d) => d.id === departmentId);
+    const result = facultySchema.safeParse({ firstName, lastName, email, departmentId, specialization, status });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
 
-    if (!firstName) { setError("Enter the first name."); return; }
-    if (!lastName) { setError("Enter the last name."); return; }
-    if (!email) { setError("Enter the email address."); return; }
-    if (!departmentId || !dept) { setError("Select a department."); return; }
+    const dept = departments.find((d) => d.id === departmentId);
+    if (!dept) { setError("Select a department."); return; }
 
     setError(null);
     setIsLoading(true);

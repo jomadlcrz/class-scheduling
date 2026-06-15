@@ -17,6 +17,7 @@ import {
   type SubjectType,
   type YearLevel,
 } from "../../types/subject";
+import { subjectSchema } from "../../schemas/subject.schema";
 import { PrerequisitePicker } from "./prerequisite-picker";
 
 type SubjectFormProps = {
@@ -60,20 +61,20 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
     const lectureHours = Number(data.get("subject-lecture-hours"));
     const labHours = Number(data.get("subject-lab-hours"));
 
-    if (!code) {
-      setError("Enter the subject code.");
-      return;
-    }
-    if (!title) {
-      setError("Enter the descriptive title.");
-      return;
-    }
-    if (!Number.isFinite(units) || units < 1) {
-      setError("Units must be at least 1.");
-      return;
-    }
-    if (!Number.isFinite(lectureHours) || lectureHours < 0 || !Number.isFinite(labHours) || labHours < 0) {
-      setError("Hours can't be negative.");
+    const result = subjectSchema.safeParse({
+      code,
+      title,
+      units,
+      lectureHours,
+      labHours,
+      program,
+      yearLevel,
+      semester,
+      subjectType,
+      prerequisiteIds,
+    });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 

@@ -3,6 +3,7 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Select } from "../../components/ui/select";
+import { programSchema } from "../../schemas/program.schema";
 import type { Department } from "../../types/department";
 import type { CreateProgramInput, Program, ProgramType } from "../../types/program";
 import { PROGRAM_TYPE_LABELS, PROGRAM_TYPE_YEARS, PROGRAM_TYPES } from "../../types/program";
@@ -28,11 +29,14 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
     const type = String(data.get("prog-type")) as ProgramType;
     const lengthYears = Number(data.get("prog-years"));
 
+    const result = programSchema.safeParse({ departmentId, code, name, type, lengthYears });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+
     const department = departments.find((d) => d.id === departmentId);
     if (!department) { setError("Select a department."); return; }
-    if (!code) { setError("Enter a program code."); return; }
-    if (!name) { setError("Enter a program name."); return; }
-    if (!lengthYears || lengthYears < 1) { setError("Enter a valid program length."); return; }
 
     setError(null);
     setIsLoading(true);

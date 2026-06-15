@@ -3,6 +3,7 @@ import { FormError } from "../../../components/forms/form-error";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Select } from "../../../components/ui/select";
+import { roomSchema } from "../../../schemas/room.schema";
 import type { Building } from "../../../types/building";
 import type { CreateRoomInput, Room, RoomStatus, RoomType } from "../../../types/room";
 import { ROOM_STATUSES, ROOM_STATUS_LABELS, ROOM_TYPES, ROOM_TYPE_LABELS } from "../../../types/room";
@@ -29,11 +30,14 @@ export function RoomForm({ room, buildings, onSubmit, onCancel }: RoomFormProps)
     const type = String(data.get("room-type")) as RoomType;
     const status = String(data.get("room-status")) as RoomStatus;
 
+    const result = roomSchema.safeParse({ buildingId, name, floor, capacity, type, status });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+
     const building = buildings.find((b) => b.id === buildingId);
     if (!building) { setError("Select a building."); return; }
-    if (!name) { setError("Enter a room name."); return; }
-    if (!floor || floor < 1) { setError("Enter a valid floor number."); return; }
-    if (!capacity || capacity < 1) { setError("Enter a valid capacity."); return; }
 
     setError(null);
     setIsLoading(true);
