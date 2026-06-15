@@ -44,7 +44,7 @@ export function StudentForm({ student, programs, onSubmit, onCancel }: StudentFo
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(result.data as CreateStudentInput);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {

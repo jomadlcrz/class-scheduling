@@ -38,7 +38,7 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({ code, name, buildingId: building.id, buildingCode: building.code });
+      await onSubmit({ ...result.data, buildingCode: building.code });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setIsLoading(false);

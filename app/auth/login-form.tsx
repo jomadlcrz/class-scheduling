@@ -29,7 +29,7 @@ export function LoginForm() {
     setError(null);
     setIsLoading(true);
     try {
-      const user = await login({ email, password, remember });
+      const user = await login({ ...result.data, remember });
       navigate(user.mustChangePassword ? "/change-password?force=true" : "/dashboard", {
         replace: true,
       });

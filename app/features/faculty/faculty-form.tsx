@@ -49,15 +49,7 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({
-        firstName,
-        lastName,
-        email,
-        departmentId,
-        departmentCode: dept.code,
-        specialization,
-        status,
-      });
+      await onSubmit({ ...result.data, departmentCode: dept.code });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setIsLoading(false);

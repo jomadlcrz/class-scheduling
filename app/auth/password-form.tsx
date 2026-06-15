@@ -51,8 +51,8 @@ export function PasswordForm({
     setIsLoading(true);
     try {
       await onSubmit({
-        ...(requireCurrentPassword ? { currentPassword } : {}),
-        newPassword,
+        ...(requireCurrentPassword ? { currentPassword: result.data.currentPassword } : {}),
+        newPassword: result.data.newPassword,
       });
     } catch (err) {
       setError(

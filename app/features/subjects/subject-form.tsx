@@ -82,16 +82,9 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
     setIsLoading(true);
     try {
       await onSubmit({
-        program,
-        yearLevel,
-        semester,
-        code,
-        title,
-        units,
-        subjectType,
-        lectureHours,
-        labHours,
-        prerequisiteIds,
+        ...result.data,
+        yearLevel: result.data.yearLevel as YearLevel,
+        semester: result.data.semester as Semester,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

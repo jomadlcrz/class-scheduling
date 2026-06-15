@@ -35,7 +35,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({ name, email, role });
+      await onSubmit(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setIsLoading(false);

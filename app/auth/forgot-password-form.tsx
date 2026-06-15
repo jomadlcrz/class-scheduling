@@ -22,7 +22,7 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
     setError(null);
     setIsLoading(true);
     try {
-      await authService.requestPasswordReset(email);
+      await authService.requestPasswordReset(result.data.email);
       onSent();
     } catch (err) {
       setError(

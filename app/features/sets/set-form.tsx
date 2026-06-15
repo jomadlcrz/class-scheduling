@@ -42,9 +42,9 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
       return;
     }
 
-    const inputs: CreateSetInput[] = codes.map((setCode) => ({
-      program,
-      yearLevel,
+    const inputs: CreateSetInput[] = result.data.codes.map((setCode) => ({
+      program: result.data.program,
+      yearLevel: result.data.yearLevel as YearLevel,
       setCode,
     }));
 

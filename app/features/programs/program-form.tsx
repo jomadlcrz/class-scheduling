@@ -41,14 +41,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({
-        departmentId: department.id,
-        departmentCode: department.code,
-        code,
-        name,
-        type,
-        lengthYears,
-      });
+      await onSubmit({ ...result.data, departmentCode: department.code });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setIsLoading(false);

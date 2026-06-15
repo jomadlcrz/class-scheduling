@@ -106,21 +106,21 @@ export function ScheduleForm({
       await onSubmit({
         schoolYear,
         semester,
-        subjectId,
+        subjectId: result.data.subjectId,
         subjectCode: subject.code,
         subjectTitle: subject.title,
-        setId,
+        setId: result.data.setId,
         setCode: set.setCode,
         program: set.program,
         yearLevel: set.yearLevel,
-        facultyId,
+        facultyId: result.data.facultyId,
         facultyName: `${member.firstName} ${member.lastName}`,
-        roomId,
+        roomId: result.data.roomId,
         roomName: room.name,
         buildingCode: room.buildingCode,
-        day,
-        startTime,
-        endTime,
+        day: result.data.day as Day,
+        startTime: result.data.startTime,
+        endTime: result.data.endTime,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

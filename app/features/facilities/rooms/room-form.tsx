@@ -42,7 +42,7 @@ export function RoomForm({ room, buildings, onSubmit, onCancel }: RoomFormProps)
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({ buildingId: building.id, buildingCode: building.code, floor, name, capacity, type, status });
+      await onSubmit({ ...result.data, buildingCode: building.code });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setIsLoading(false);
