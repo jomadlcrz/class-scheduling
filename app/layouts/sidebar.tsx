@@ -16,6 +16,7 @@ import {
   ShieldIcon,
   UserIcon,
   UsersIcon,
+  WrenchIcon,
 } from "../components/ui/icons";
 import { useAuth } from "../hooks/use-auth";
 import type { Role } from "../types/user";
@@ -35,7 +36,7 @@ type NavSection = {
   items: NavItem[];
 };
 
-export const NAV_SECTIONS: NavSection[] = [
+const NAV_SECTIONS: NavSection[] = [
   {
     items: [{ label: "Dashboard", href: "/dashboard", icon: DashboardIcon }],
   },
@@ -54,6 +55,18 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     heading: "Academics",
     items: [
+      {
+        label: "Academic Years",
+        href: "/academic-years",
+        icon: CalendarIcon,
+        roles: ["admin", "registrar"],
+      },
+      {
+        label: "Subject Offerings",
+        href: "/subject-offerings",
+        icon: WrenchIcon,
+        roles: ["admin", "registrar", "dean"],
+      },
       {
         label: "Curriculum",
         href: "/curriculum",

@@ -38,9 +38,20 @@ export function TableBody({ children }: { children: ReactNode }) {
   return <tbody className="divide-y divide-slate-200 dark:divide-white/10">{children}</tbody>;
 }
 
-export function TableRow({ children }: { children: ReactNode }) {
+export function TableRow({
+  children,
+  className,
+  onClick,
+}: {
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
   return (
-    <tr className="transition-colors duration-150 hover:bg-slate-100/60 dark:hover:bg-white/5">
+    <tr
+      className={`transition-colors duration-150 hover:bg-slate-100/60 dark:hover:bg-white/5 ${className ?? ""}`}
+      onClick={onClick}
+    >
       {children}
     </tr>
   );

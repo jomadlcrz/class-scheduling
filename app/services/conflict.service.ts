@@ -1,7 +1,7 @@
 import type { Schedule } from "../types/schedule";
 import { delay, schedules } from "./mock-data";
 
-export type ConflictType = "faculty" | "room" | "section";
+type ConflictType = "faculty" | "room" | "section";
 
 export type Conflict = {
   id: string;

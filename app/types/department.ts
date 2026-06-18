@@ -1,7 +1,7 @@
 import type { BadgeTone } from "../components/ui/badge";
 
 /** Badge color per department code — defaults to slate for unknown codes. */
-export const DEPARTMENT_BADGE_TONES: Record<string, BadgeTone> = {
+const DEPARTMENT_BADGE_TONES: Record<string, BadgeTone> = {
   CITE: "slate",
   CBA: "navy",
   COC: "sky",

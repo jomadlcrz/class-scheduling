@@ -1,6 +1,6 @@
 import type { BadgeTone } from "../components/ui/badge";
 
-export const BUILDING_BADGE_TONES: Record<string, BadgeTone> = {
+const BUILDING_BADGE_TONES: Record<string, BadgeTone> = {
   SHS: "navy",
   MB: "gold",
 };

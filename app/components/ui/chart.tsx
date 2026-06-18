@@ -11,7 +11,7 @@ export type ChartConfig = Record<
 type ChartContextValue = { config: ChartConfig };
 const ChartContext = React.createContext<ChartContextValue>({ config: {} });
 
-export function useChart() {
+function useChart() {
   return React.useContext(ChartContext);
 }
 
@@ -122,7 +122,7 @@ type ChartLegendContentProps = {
   nameKey?: string;
 };
 
-export function ChartLegendContent({ payload, nameKey }: ChartLegendContentProps) {
+function ChartLegendContent({ payload, nameKey }: ChartLegendContentProps) {
   const { config } = useChart();
   if (!payload?.length) return null;
 
@@ -149,4 +149,4 @@ export function ChartLegendContent({ payload, nameKey }: ChartLegendContentProps
 
 // Re-export recharts Tooltip / Legend with our content as default.
 export const ChartTooltip = Tooltip;
-export const ChartLegend = Legend;
+const ChartLegend = Legend;

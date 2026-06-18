@@ -1,3 +1,4 @@
+import type { AcademicYear } from "../types/academic-year";
 import type { Building } from "../types/building";
 import type { Department } from "../types/department";
 import type { Faculty } from "../types/faculty";
@@ -5,8 +6,10 @@ import type { Student } from "../types/student";
 import type { Program } from "../types/program";
 import type { Room } from "../types/room";
 import type { Schedule } from "../types/schedule";
+import type { AcademicSemester } from "../types/semester";
 import type { ClassSet } from "../types/set";
 import type { Subject } from "../types/subject";
+import type { SubjectOffering } from "../types/subject-offering";
 import type { User } from "../types/user";
 
 /**
@@ -178,7 +181,7 @@ export const programs: Program[] = [
 ];
 
 /** Alias for backward-compatible imports — same mutable reference as programs[]. */
-export const PROGRAMS = programs;
+const PROGRAMS = programs;
 
 let programIdCounter = programs.length;
 
@@ -396,6 +399,57 @@ export function newStudentId(): string {
   return `stu-${studentIdCounter}`;
 }
 
+
+// ─── Academic Years ───────────────────────────────────────────────────────────
+
+export const academicYears: AcademicYear[] = [
+  { id: "ay-1", label: "2023-2024", status: "archived" },
+  { id: "ay-2", label: "2024-2025", status: "archived" },
+  { id: "ay-3", label: "2025-2026", status: "active" },
+  { id: "ay-4", label: "2026-2027", status: "upcoming" },
+];
+
+let academicYearIdCounter = academicYears.length;
+
+export function newAcademicYearId(): string {
+  academicYearIdCounter += 1;
+  return `ay-${academicYearIdCounter}`;
+}
+
+// ─── Academic Semesters ───────────────────────────────────────────────────────
+
+export const academicSemesters: AcademicSemester[] = [
+  { id: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, status: "active" },
+  { id: "sem-2", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 2, status: "upcoming" },
+  { id: "sem-3", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 3, status: "upcoming" },
+  { id: "sem-4", academicYearId: "ay-2", academicYearLabel: "2024-2025", semester: 1, status: "completed" },
+  { id: "sem-5", academicYearId: "ay-2", academicYearLabel: "2024-2025", semester: 2, status: "completed" },
+];
+
+let semesterIdCounter = academicSemesters.length;
+
+export function newSemesterId(): string {
+  semesterIdCounter += 1;
+  return `sem-${semesterIdCounter}`;
+}
+
+// ─── Subject Offerings ────────────────────────────────────────────────────────
+
+export const subjectOfferings: SubjectOffering[] = [
+  { id: "off-1", semesterId: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, subjectId: "s-1", subjectCode: "CS 101", subjectTitle: "Introduction to Computing", program: "BSIT", yearLevel: 1, units: 3 },
+  { id: "off-2", semesterId: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, subjectId: "s-4", subjectCode: "MATH 101", subjectTitle: "College Algebra", program: "BSIT", yearLevel: 1, units: 3 },
+  { id: "off-3", semesterId: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, subjectId: "s-5", subjectCode: "ENG 101", subjectTitle: "Purposive Communication", program: "BSIT", yearLevel: 1, units: 3 },
+  { id: "off-4", semesterId: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, subjectId: "s-7", subjectCode: "PE 101", subjectTitle: "Physical Fitness and Wellness", program: "BSIT", yearLevel: 1, units: 2 },
+  { id: "off-5", semesterId: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, subjectId: "s-8", subjectCode: "ACCTG 101", subjectTitle: "Fundamentals of Accounting", program: "BSBA", yearLevel: 1, units: 3 },
+  { id: "off-6", semesterId: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, subjectId: "s-9", subjectCode: "CS 101", subjectTitle: "Introduction to Computing", program: "BSCS", yearLevel: 1, units: 3 },
+];
+
+let offeringIdCounter = subjectOfferings.length;
+
+export function newOfferingId(): string {
+  offeringIdCounter += 1;
+  return `off-${offeringIdCounter}`;
+}
 
 export function delay(ms = 700): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

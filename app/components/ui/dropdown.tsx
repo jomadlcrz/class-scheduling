@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { MoreVerticalIcon } from "./icons";
 
-export type DropdownItem = {
+type DropdownItem = {
   label: string;
   icon?: ReactNode;
   /** "danger" renders the item in red (e.g. Delete). */
