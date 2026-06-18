@@ -1,3 +1,5 @@
+import { Label } from "./label";
+
 type SwitchProps = {
   id: string;
   label: string;
@@ -11,12 +13,12 @@ export function Switch({ id, label, description, checked, onChange, disabled = f
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex flex-col gap-0.5">
-        <label
+        <Label
           htmlFor={id}
-          className="cursor-pointer font-sans text-sm font-medium text-slate-700 dark:text-slate-300"
+          className="cursor-pointer"
         >
           {label}
-        </label>
+        </Label>
         {description && (
           <p className="font-sans text-xs text-slate-400 dark:text-slate-500">{description}</p>
         )}
