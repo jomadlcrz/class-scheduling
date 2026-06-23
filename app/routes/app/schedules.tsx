@@ -31,6 +31,7 @@ import {
   type Schedule,
   type ScheduleSemester,
 } from "../../types/schedule";
+import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../types/subject";
 import type { ClassSet } from "../../types/set";
 import type { Subject } from "../../types/subject";
 
@@ -68,8 +69,9 @@ function SchedulesPage() {
 
   // Secondary filters.
   const [search, setSearch] = useState("");
-  const [dayFilter, setDayFilter] = useState("all");
   const [programFilter, setProgramFilter] = useState("all");
+  const [yearLevelFilter, setYearLevelFilter] = useState<YearLevel | "all">("all");
+  const [setFilter, setSetFilter] = useState("all");
 
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
@@ -94,7 +96,8 @@ function SchedulesPage() {
       .filter((s) => {
         if (s.schoolYear !== schoolYear || s.semester !== semester) return false;
         if (programFilter !== "all" && s.program !== programFilter) return false;
-        if (dayFilter !== "all" && s.day !== dayFilter) return false;
+        if (yearLevelFilter !== "all" && s.yearLevel !== yearLevelFilter) return false;
+        if (setFilter !== "all" && s.setCode !== setFilter) return false;
         if (
           query &&
           !s.subjectCode.toLowerCase().includes(query) &&
@@ -114,7 +117,7 @@ function SchedulesPage() {
           DAYS.indexOf(a.day) - DAYS.indexOf(b.day) ||
           a.startTime.localeCompare(b.startTime),
       );
-  }, [data, schoolYear, semester, search, dayFilter, programFilter]);
+  }, [data, schoolYear, semester, search, programFilter, yearLevelFilter, setFilter]);
 
   async function handleEdit(input: CreateScheduleInput) {
     if (!editTarget) return;
@@ -173,7 +176,7 @@ function SchedulesPage() {
 
       <div className="mt-4 flex flex-col gap-4">
         {/* Secondary filters */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="col-span-2 sm:col-span-1">
             <Input
               id="sched-search"
@@ -196,14 +199,25 @@ function SchedulesPage() {
             ))}
           </Select>
           <Select
-            id="sched-day-filter"
-            label="Day"
-            value={dayFilter}
-            onChange={(e) => setDayFilter(e.target.value)}
+            id="sched-year-level-filter"
+            label="Year Level"
+            value={yearLevelFilter}
+            onChange={(e) => setYearLevelFilter(e.target.value === "all" ? "all" : Number(e.target.value) as YearLevel)}
           >
-            <option value="all">All days</option>
-            {DAYS.map((d) => (
-              <option key={d} value={d}>{DAY_LABELS[d]}</option>
+            <option value="all">All year levels</option>
+            {YEAR_LEVELS.map((yl) => (
+              <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+            ))}
+          </Select>
+          <Select
+            id="sched-set-filter"
+            label="Set"
+            value={setFilter}
+            onChange={(e) => setSetFilter(e.target.value)}
+          >
+            <option value="all">All sets</option>
+            {[...new Set((data?.sets ?? []).map((s) => s.setCode))].sort().map((code) => (
+              <option key={code} value={code}>{code}</option>
             ))}
           </Select>
         </div>
@@ -234,6 +248,7 @@ function SchedulesPage() {
         {editTarget && data && (
           <ScheduleForm
             schedule={editTarget}
+            programs={data.programs}
             subjects={data.subjects}
             sets={data.sets}
             faculty={data.faculty}

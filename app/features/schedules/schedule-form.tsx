@@ -3,6 +3,7 @@ import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
 import { Select } from "../../components/ui/select";
 import type { Faculty } from "../../types/faculty";
+import type { Program } from "../../types/program";
 import type { Room } from "../../types/room";
 import { scheduleSchema } from "../../schemas/schedule.schema";
 import {
@@ -20,10 +21,11 @@ import {
 } from "../../types/schedule";
 import type { ClassSet } from "../../types/set";
 import type { Subject } from "../../types/subject";
-import { YEAR_LEVEL_LABELS } from "../../types/subject";
+import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../types/subject";
 
 type ScheduleFormProps = {
   schedule?: Schedule;
+  programs: Program[];
   subjects: Subject[];
   sets: ClassSet[];
   faculty: Faculty[];
@@ -38,6 +40,7 @@ const TIME_SLOTS = generateTimeSlots();
 
 export function ScheduleForm({
   schedule,
+  programs,
   subjects,
   sets,
   faculty,
@@ -50,24 +53,51 @@ export function ScheduleForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState(
-    schedule?.subjectId ?? subjects[0]?.id ?? "",
+  const [selectedProgram, setSelectedProgram] = useState<string>(
+    schedule?.program ?? programs[0]?.code ?? "",
   );
 
-  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+  const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">(
+    schedule?.yearLevel ??
+      (YEAR_LEVELS.find((yl) =>
+        subjects.some((s) => s.program === (schedule?.program ?? programs[0]?.code ?? "") && s.yearLevel === yl),
+      ) ?? ""),
+  );
 
-  // Only show sets matching the selected subject's program + year level.
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
+    schedule?.subjectId ?? "",
+  );
+
+  const availableYearLevels = YEAR_LEVELS.filter((yl) =>
+    subjects.some((s) => s.program === selectedProgram && s.yearLevel === yl),
+  );
+
+  const availableSubjects = subjects.filter(
+    (s) => s.program === selectedProgram && s.yearLevel === selectedYearLevel,
+  );
+
   const availableSets = sets.filter(
-    (s) =>
-      selectedSubject &&
-      s.program === selectedSubject.program &&
-      s.yearLevel === selectedSubject.yearLevel,
+    (s) => s.program === selectedProgram && s.yearLevel === selectedYearLevel,
   );
+
+  const effectiveSubjectId = availableSubjects.some((s) => s.id === selectedSubjectId)
+    ? selectedSubjectId
+    : (availableSubjects[0]?.id ?? "");
 
   const activeFaculty = faculty.filter((f) => f.status === "active");
 
-  function handleSubjectChange(subjectId: string) {
-    setSelectedSubjectId(subjectId);
+  function handleProgramChange(program: string) {
+    setSelectedProgram(program);
+    const newYl =
+      YEAR_LEVELS.find((yl) => subjects.some((s) => s.program === program && s.yearLevel === yl)) ??
+      (1 as YearLevel);
+    setSelectedYearLevel(newYl);
+    setSelectedSubjectId(subjects.find((s) => s.program === program && s.yearLevel === newYl)?.id ?? "");
+  }
+
+  function handleYearLevelChange(yl: YearLevel) {
+    setSelectedYearLevel(yl);
+    setSelectedSubjectId(subjects.find((s) => s.program === selectedProgram && s.yearLevel === yl)?.id ?? "");
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -153,39 +183,64 @@ export function ScheduleForm({
         </Select>
       </div>
 
+      <div className="grid grid-cols-2 gap-3">
+        <Select
+          id="sched-program"
+          label="Program"
+          value={selectedProgram}
+          onChange={(e) => handleProgramChange(e.target.value)}
+        >
+          {programs.map((p) => (
+            <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
+          ))}
+        </Select>
+        <Select
+          id="sched-year-level"
+          label="Year Level"
+          value={selectedYearLevel}
+          onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
+        >
+          {availableYearLevels.length === 0 ? (
+            <option value="">No year levels</option>
+          ) : (
+            availableYearLevels.map((yl) => (
+              <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+            ))
+          )}
+        </Select>
+      </div>
+
       <Select
         id="sched-subject"
         label="Subject"
-        value={selectedSubjectId}
-        onChange={(e) => handleSubjectChange(e.target.value)}
+        value={effectiveSubjectId}
+        onChange={(e) => setSelectedSubjectId(e.target.value)}
       >
-        {[...subjects]
-          .sort(
-            (a, b) =>
-              a.program.localeCompare(b.program) ||
-              a.yearLevel - b.yearLevel ||
-              a.semester - b.semester ||
-              a.code.localeCompare(b.code),
-          )
-          .map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.code} — {s.title} ({s.program} {YEAR_LEVEL_LABELS[s.yearLevel as 1]})
-            </option>
-          ))}
+        {availableSubjects.length === 0 ? (
+          <option value="">No subjects for this program &amp; year level</option>
+        ) : (
+          [...availableSubjects]
+            .sort((a, b) => a.semester - b.semester || a.code.localeCompare(b.code))
+            .map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.code} — {s.title}
+              </option>
+            ))
+        )}
       </Select>
 
       <Select
         id="sched-set"
         label="Set"
         defaultValue={schedule?.setId ?? availableSets[0]?.id}
-        key={selectedSubjectId}
+        key={`${selectedProgram}-${selectedYearLevel}`}
       >
         {availableSets.length === 0 ? (
           <option value="">No sets for this program &amp; year level</option>
         ) : (
           availableSets.map((s) => (
             <option key={s.id} value={s.id}>
-              {s.program} {YEAR_LEVEL_LABELS[s.yearLevel as 1]} — Set {s.setCode}
+              Set {s.setCode}
             </option>
           ))
         )}

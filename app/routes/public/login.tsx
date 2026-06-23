@@ -59,14 +59,14 @@ function LoginPage() {
               By logging in, you agree to our{" "}
               <a
                 href="/terms-of-use"
-                className="underline underline-offset-2 transition-colors duration-150 hover:text-navy-600 focus-visible:outline-none focus-visible:text-navy-600 dark:hover:text-slate-300 dark:focus-visible:text-slate-300"
+                className="font-semibold hover:underline hover:underline-offset-2 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-2"
               >
                 Terms of Use
               </a>{" "}
               and{" "}
               <a
                 href="/privacy-policy"
-                className="underline underline-offset-2 transition-colors duration-150 hover:text-navy-600 focus-visible:outline-none focus-visible:text-navy-600 dark:hover:text-slate-300 dark:focus-visible:text-slate-300"
+                className="font-semibold hover:underline hover:underline-offset-2 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-2"
               >
                 Privacy Policy
               </a>

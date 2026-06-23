@@ -26,10 +26,10 @@
   --font-sans: "Century Gothic";
 
   /* School gold (accent). */
-  --color-gold-300: #e3c778;
-  --color-gold-400: #d4af37;
-  --color-gold-500: #c29b2e;
-  --color-gold-600: #9a7b22;
+  --color-gold-300: #ffd966;
+  --color-gold-400: #ffba00;
+  --color-gold-500: #e6a700;
+  --color-gold-600: #b38300;
 
   /* School navy / royal blue (primary + dark surface). */
   --color-navy-300: #5b7cb8;

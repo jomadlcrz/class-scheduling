@@ -1,3 +1,5 @@
+import type { YearLevel } from "./subject";
+
 export const DAYS = ["M", "T", "W", "Th", "F", "S"] as const;
 export type Day = (typeof DAYS)[number];
 
@@ -38,7 +40,7 @@ export type Schedule = {
   setId: string;
   setCode: string;
   program: string;
-  yearLevel: number;
+  yearLevel: YearLevel;
   facultyId: string;
   facultyName: string;
   roomId: string;

@@ -61,7 +61,7 @@ export function LoginForm() {
         labelEnd={
           <a
             href="/forgot-password"
-            className="font-sans text-xs text-navy-600 transition-colors duration-150 hover:text-gold-600 focus-visible:outline-none focus-visible:text-gold-600 dark:text-navy-300 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
+            className="font-sans text-xs text-navy-600 hover:underline focus-visible:outline-none focus-visible:underline dark:text-navy-300"
           >
             Forgot password?
           </a>

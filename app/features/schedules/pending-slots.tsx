@@ -16,9 +16,19 @@ export function PendingSlots({ slots, onEdit, onDuplicate, onRemove }: PendingSl
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [duplicateDay, setDuplicateDay] = useState<Day>("M");
 
+  function getAvailableDays(tempId: string): Day[] {
+    const slot = slots.find((s) => s.tempId === tempId);
+    if (!slot) return [];
+    const occupiedDays = new Set(
+      slots.filter((s) => s.tempId !== tempId && s.subjectId === slot.subjectId).map((s) => s.day),
+    );
+    return DAYS.filter((d) => d !== slot.day && !occupiedDays.has(d));
+  }
+
   function openDuplicate(tempId: string) {
+    const available = getAvailableDays(tempId);
     setDuplicatingId(tempId);
-    setDuplicateDay("M");
+    setDuplicateDay(available[0] ?? "M");
   }
 
   function confirmDuplicate() {
@@ -50,29 +60,37 @@ export function PendingSlots({ slots, onEdit, onDuplicate, onRemove }: PendingSl
           key={slot.tempId}
           className="flex flex-col rounded-lg border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5"
         >
-          <div className="flex items-center gap-3 px-3 py-2.5">
+          <div className="flex items-center gap-2 px-3 py-2.5">
+            {/* Day chip */}
             <span className="w-8 shrink-0 text-center text-xs font-semibold uppercase tracking-wide text-navy-700 dark:text-white">
               {DAY_SHORT[slot.day]}
             </span>
 
-            <span className="w-36 shrink-0 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
-              {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
-            </span>
-
-            <span className="w-24 shrink-0 truncate text-xs font-medium text-navy-700 dark:text-sky-300">
-              {slot.subjectCode}
-            </span>
-
-            <span className="min-w-0 flex-1 truncate text-sm text-slate-700 dark:text-slate-200">
-              {slot.facultyName}
-            </span>
-
-            <div className="flex shrink-0 items-center gap-1.5">
-              <Badge tone={getBuildingTone(slot.buildingCode)}>{slot.buildingCode}</Badge>
-              <span className="text-sm text-slate-600 dark:text-slate-300">{slot.roomName}</span>
+            {/* Main content — two lines */}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span className="whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
+                  {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
+                </span>
+                <span className="text-xs font-medium text-navy-700 dark:text-sky-300">
+                  {slot.subjectCode}
+                </span>
+                <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                  {slot.subjectTitle}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-0.5">
+                <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                  {slot.facultyName}
+                </span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <Badge tone={getBuildingTone(slot.buildingCode)}>{slot.buildingCode}</Badge>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{slot.roomName}</span>
+              </div>
             </div>
 
-            <div className="ml-1 flex shrink-0 items-center gap-0.5">
+            {/* Actions */}
+            <div className="flex shrink-0 items-center gap-0.5">
               <button
                 type="button"
                 onClick={() => onEdit(slot.tempId)}
@@ -107,27 +125,37 @@ export function PendingSlots({ slots, onEdit, onDuplicate, onRemove }: PendingSl
             </div>
           </div>
 
-          {duplicatingId === slot.tempId && (
-            <div className="flex items-center gap-2 border-t border-slate-100 bg-slate-50 px-3 py-2 dark:border-white/5 dark:bg-white/5">
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                Copy to:
-              </span>
-              <select
-                value={duplicateDay}
-                onChange={(e) => setDuplicateDay(e.target.value as Day)}
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white"
-              >
-                {DAYS.map((d) => (
-                  <option key={d} value={d}>{DAY_LABELS[d]}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={confirmDuplicate}
-                className="rounded-md bg-navy-800 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:bg-white/10 dark:hover:bg-white/20"
-              >
-                Duplicate
-              </button>
+          {duplicatingId === slot.tempId && (() => {
+            const availableDays = getAvailableDays(slot.tempId);
+            return (
+            <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50 px-3 py-2 dark:border-white/5 dark:bg-white/5">
+              {availableDays.length === 0 ? (
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  Already scheduled on all other days.
+                </span>
+              ) : (
+                <>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Copy to:
+                  </span>
+                  <select
+                    value={duplicateDay}
+                    onChange={(e) => setDuplicateDay(e.target.value as Day)}
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white"
+                  >
+                    {availableDays.map((d) => (
+                      <option key={d} value={d}>{DAY_LABELS[d]}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={confirmDuplicate}
+                    className="rounded-md bg-navy-800 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:bg-white/10 dark:hover:bg-white/20"
+                  >
+                    Duplicate
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => setDuplicatingId(null)}
@@ -136,7 +164,8 @@ export function PendingSlots({ slots, onEdit, onDuplicate, onRemove }: PendingSl
                 Cancel
               </button>
             </div>
-          )}
+            );
+          })()}
         </div>
       ))}
     </div>
