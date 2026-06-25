@@ -205,7 +205,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         return (
           <div key={section.heading ?? "overview"}>
             {section.heading && (
-              <p className="mb-2 px-3 font-sans text-[0.65rem] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">
+              <p className="mb-2 px-3 font-sans text-[0.65rem] font-medium uppercase tracking-wider text-[#afc4ff]">
                 {section.heading}
               </p>
             )}
@@ -235,10 +235,10 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
 
   if (item.soon) {
     return (
-      <div aria-disabled="true" className={`${entryClassName} cursor-default text-slate-400 dark:text-slate-500`}>
+      <div aria-disabled="true" className={`${entryClassName} cursor-default text-white/50`}>
         <Icon />
         <span className="flex-1">{item.label}</span>
-        <span className="rounded-full border border-slate-200 px-1.5 py-0.5 font-sans text-[0.6rem] uppercase tracking-wide text-slate-400 dark:border-white/10 dark:text-slate-500">
+        <span className="rounded-full border border-white/20 px-1.5 py-0.5 font-sans text-[0.6rem] uppercase tracking-wide text-white/50">
           Soon
         </span>
       </div>
@@ -252,8 +252,8 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
       className={({ isActive }) =>
         `${entryClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
           isActive
-            ? "bg-navy-700 text-white dark:bg-white/10 dark:text-white"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
+            ? "bg-[#1e5bff] text-white"
+            : "text-white/85 hover:bg-white/10 hover:text-white"
         }`
       }
     >
@@ -266,8 +266,8 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
 const childLinkClassName = (isActive: boolean) =>
   `flex items-center rounded-lg py-2 pl-11 pr-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
     isActive
-      ? "bg-navy-700 text-white dark:bg-white/10 dark:text-white"
-      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
+      ? "bg-[#1e5bff] text-white"
+      : "text-white/80 hover:bg-white/10 hover:text-white"
   }`;
 
 /** Collapsible parent item that toggles a submenu instead of navigating. */
@@ -288,8 +288,8 @@ function NavGroup({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
         aria-expanded={open}
         className={`${entryClassName} w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
           hasActiveChild
-            ? "text-slate-900 dark:text-white"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
+            ? "text-white"
+            : "text-white/85 hover:bg-white/10 hover:text-white"
         }`}
       >
         <Icon />
@@ -333,10 +333,10 @@ export function SidebarBrand() {
         className="size-9 object-contain"
       />
       <span className="flex flex-col items-center text-center leading-none">
-        <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+        <span className="font-display text-2xl tracking-wide text-white">
           GWC
         </span>
-        <span className="-mt-1.5 font-sans text-[0.6rem] tracking-wide text-navy-500 dark:text-navy-300">
+        <span className="-mt-1.5 font-sans text-[0.6rem] tracking-wide text-[#afc4ff]">
           Class Scheduling
         </span>
       </span>
@@ -347,11 +347,11 @@ export function SidebarBrand() {
 /** Desktop-only sidebar; mobile uses the MobileNav drawer instead. */
 export function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex dark:border-white/8 dark:bg-navy-900">
-      <div className="flex h-16 shrink-0 items-center border-b border-slate-100 px-5 dark:border-white/8">
+    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-white/10 bg-linear-to-b from-[#0b3b9e] to-[#072b75] lg:flex">
+      <div className="flex h-16 shrink-0 items-center border-b border-white/10 px-5">
         <SidebarBrand />
       </div>
-      <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-5">
+      <div className="flex-1 overflow-y-auto px-3 py-5 text-white">
         <SidebarNav />
       </div>
     </aside>
