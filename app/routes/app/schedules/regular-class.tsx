@@ -1,25 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { RoleGuard } from "../../auth/role-guard";
-import { Button } from "../../components/ui/button";
-import { EmptyState } from "../../components/ui/empty-state";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { ScheduleForm } from "../../features/schedules/schedule-form";
-import { ScheduleTable } from "../../features/schedules/schedule-table";
-import { PageHeader } from "../../layouts/page-header";
-import { facultyService } from "../../services/faculty.service";
-import { programService } from "../../services/program.service";
-import { roomService } from "../../services/room.service";
-import { scheduleService } from "../../services/schedule.service";
-import { setService } from "../../services/set.service";
-import { subjectService } from "../../services/subject.service";
-import type { Faculty } from "../../types/faculty";
-import type { Program } from "../../types/program";
-import type { Room } from "../../types/room";
+import { RoleGuard } from "../../../auth/role-guard";
+import { Button } from "../../../components/ui/button";
+import { EmptyState } from "../../../components/ui/empty-state";
+import { PlusIcon } from "../../../components/ui/icons";
+import { Input } from "../../../components/ui/input";
+import { ConfirmDialog, Modal } from "../../../components/ui/modal";
+import { Select } from "../../../components/ui/select";
+import { Spinner } from "../../../components/ui/spinner";
+import { ScheduleForm } from "../../../features/schedules/schedule-form";
+import { ScheduleTable } from "../../../features/schedules/schedule-table";
+import { PageHeader } from "../../../layouts/page-header";
+import { facultyService } from "../../../services/faculty.service";
+import { programService } from "../../../services/program.service";
+import { roomService } from "../../../services/room.service";
+import { scheduleService } from "../../../services/schedule.service";
+import { setService } from "../../../services/set.service";
+import { subjectService } from "../../../services/subject.service";
+import type { Faculty } from "../../../types/faculty";
+import type { Program } from "../../../types/program";
+import type { Room } from "../../../types/room";
 import {
   DAYS,
   DAY_LABELS,
@@ -30,22 +30,22 @@ import {
   type CreateScheduleInput,
   type Schedule,
   type ScheduleSemester,
-} from "../../types/schedule";
-import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../types/subject";
-import type { ClassSet } from "../../types/set";
-import type { Subject } from "../../types/subject";
+} from "../../../types/schedule";
+import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../../types/subject";
+import type { ClassSet } from "../../../types/set";
+import type { Subject } from "../../../types/subject";
 
 export function meta() {
   return [
-    { title: "Schedules — GWC Class Scheduling" },
-    { name: "description", content: "Manage class schedules for the current academic term." },
+    { title: "Regular Class — GWC Class Scheduling" },
+    { name: "description", content: "Manage regular class schedules for the current academic term." },
   ];
 }
 
-export default function SchedulesRoute() {
+export default function RegularClassRoute() {
   return (
     <RoleGuard allow={["admin", "registrar", "dean", "faculty"]}>
-      <SchedulesPage />
+      <RegularClassPage />
     </RoleGuard>
   );
 }
@@ -59,7 +59,7 @@ type PageData = {
   programs: Program[];
 };
 
-function SchedulesPage() {
+function RegularClassPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<PageData | null>(null);
 
@@ -138,8 +138,8 @@ function SchedulesPage() {
   return (
     <>
       <PageHeader
-        title="Schedules"
-        description="Class schedules for the current academic term."
+        title="Regular Class"
+        description="Regular class schedules for the current academic term."
         actions={
           <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
             <PlusIcon />

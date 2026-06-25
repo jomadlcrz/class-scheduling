@@ -56,9 +56,23 @@
   --chart-6: hsl(270 60% 58%);
 }
 
+/* :hover only fires for devices with real pointer hover; touch taps use :active instead,
+   which clears the instant the finger lifts — no more "stuck" hover state on mobile. */
+@custom-variant hover {
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+  &:active {
+    @slot;
+  }
+}
+
 html,
 body {
   @apply bg-cream-50 text-slate-900 dark:bg-navy-950 dark:text-[#e6eaf2];
+  touch-action: manipulation;
 }
 
 ::selection {

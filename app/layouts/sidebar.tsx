@@ -1,5 +1,5 @@
-import type { ComponentType } from "react";
-import { NavLink } from "react-router";
+import { type ComponentType, useState } from "react";
+import { NavLink, useLocation } from "react-router";
 import {
   AlertTriangleIcon,
   BookIcon,
@@ -7,6 +7,7 @@ import {
   BuildingIcon,
   CalendarIcon,
   ChartIcon,
+  ChevronDownIcon,
   DashboardIcon,
   DoorIcon,
   FolderIcon,
@@ -23,12 +24,15 @@ import type { Role } from "../types/user";
 
 type NavItem = {
   label: string;
-  href: string;
+  /** Omit on parent items that only toggle a submenu. */
+  href?: string;
   icon: ComponentType;
   /** Restrict visibility to these roles; omitted = visible to everyone. */
   roles?: Role[];
   /** Route not built yet — rendered disabled with a "Soon" tag. */
   soon?: boolean;
+  /** Collapsible submenu entries; when present the item toggles instead of navigating. */
+  children?: { label: string; href: string }[];
 };
 
 type NavSection = {
@@ -43,7 +47,15 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: "Scheduling",
     items: [
-      { label: "Schedules", href: "/schedules", icon: CalendarIcon },
+      {
+        label: "Schedules",
+        icon: CalendarIcon,
+        children: [
+          { label: "Weekly Hours", href: "/schedules/weekly-hours" },
+          { label: "Regular Class", href: "/schedules/regular-class" },
+          { label: "Irregular Class", href: "/schedules/irregular-class" },
+        ],
+      },
       {
         label: "Conflicts",
         href: "/conflicts",
@@ -186,8 +198,12 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             )}
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => (
-                <li key={item.href}>
-                  <NavEntry item={item} onNavigate={onNavigate} />
+                <li key={item.href ?? item.label}>
+                  {item.children ? (
+                    <NavGroup item={item} onNavigate={onNavigate} />
+                  ) : (
+                    <NavEntry item={item} onNavigate={onNavigate} />
+                  )}
                 </li>
               ))}
             </ul>
@@ -218,7 +234,7 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
 
   return (
     <NavLink
-      to={item.href}
+      to={item.href!}
       onClick={onNavigate}
       className={({ isActive }) =>
         `${entryClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
@@ -231,6 +247,63 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
       <Icon />
       {item.label}
     </NavLink>
+  );
+}
+
+const childLinkClassName = (isActive: boolean) =>
+  `flex items-center rounded-lg py-2 pl-11 pr-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+    isActive
+      ? "bg-navy-700 text-white dark:bg-white/10 dark:text-white"
+      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
+  }`;
+
+/** Collapsible parent item that toggles a submenu instead of navigating. */
+function NavGroup({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
+  const Icon = item.icon;
+  const { pathname } = useLocation();
+  const children = item.children ?? [];
+  const hasActiveChild = children.some(
+    (child) => pathname === child.href || pathname.startsWith(`${child.href}/`),
+  );
+  const [open, setOpen] = useState(hasActiveChild);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`${entryClassName} w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+          hasActiveChild
+            ? "text-slate-900 dark:text-white"
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
+        }`}
+      >
+        <Icon />
+        <span className="flex-1 text-left">{item.label}</span>
+        <span
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        >
+          <ChevronDownIcon />
+        </span>
+      </button>
+      {open && (
+        <ul className="mt-0.5 flex flex-col gap-0.5">
+          {children.map((child) => (
+            <li key={child.href}>
+              <NavLink
+                to={child.href}
+                onClick={onNavigate}
+                className={({ isActive }) => childLinkClassName(isActive)}
+              >
+                {child.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
