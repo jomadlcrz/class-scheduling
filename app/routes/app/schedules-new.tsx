@@ -198,13 +198,14 @@ function SchedulesNewPage() {
           roomId: slot.roomId,
           roomName: slot.roomName,
           buildingCode: slot.buildingCode,
+          mode: slot.mode,
           day: slot.day,
           startTime: slot.startTime,
           endTime: slot.endTime,
         });
         remaining.shift();
       }
-      navigate("/schedules");
+      navigate("/schedules/regular-class");
     } catch (err) {
       setSlots(remaining);
       setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -225,7 +226,7 @@ function SchedulesNewPage() {
               type="button"
               variant="outline"
               block={false}
-              onClick={() => navigate("/schedules")}
+              onClick={() => navigate("/schedules/regular-class")}
             >
               Cancel
             </Button>

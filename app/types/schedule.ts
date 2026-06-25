@@ -30,6 +30,14 @@ export const SCHEDULE_SEMESTER_LABELS: Record<ScheduleSemester, string> = {
   3: "Summer",
 };
 
+export const SCHEDULE_MODES = ["F2F", "Online"] as const;
+export type ScheduleMode = (typeof SCHEDULE_MODES)[number];
+
+export const SCHEDULE_MODE_LABELS: Record<ScheduleMode, string> = {
+  F2F: "F2F",
+  Online: "Online",
+};
+
 export type Schedule = {
   id: string;
   schoolYear: string;
@@ -46,6 +54,7 @@ export type Schedule = {
   roomId: string;
   roomName: string;
   buildingCode: string;
+  mode: ScheduleMode;
   day: Day;
   startTime: string;
   endTime: string;

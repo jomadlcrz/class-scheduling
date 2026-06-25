@@ -11,7 +11,7 @@ export function meta() {
 
 export default function WeeklyHoursRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar", "dean", "faculty"]}>
+    <RoleGuard allow={["admin", "registrar", "dean"]}>
       <PageHeader
         title="Weekly Hours"
         description="Weekly teaching hours for the current academic term."

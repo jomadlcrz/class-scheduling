@@ -11,7 +11,7 @@ export function meta() {
 
 export default function IrregularClassRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar", "dean", "faculty"]}>
+    <RoleGuard allow={["admin", "registrar", "dean"]}>
       <PageHeader
         title="Irregular Class"
         description="Irregular class schedules for the current academic term."

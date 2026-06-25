@@ -8,9 +8,12 @@ import type { Room } from "../../types/room";
 import {
   DAYS,
   DAY_LABELS,
+  SCHEDULE_MODES,
+  SCHEDULE_MODE_LABELS,
   generateTimeSlots,
   formatTime,
   type Day,
+  type ScheduleMode,
 } from "../../types/schedule";
 import type { Subject } from "../../types/subject";
 
@@ -27,6 +30,7 @@ export type PendingSlot = {
   roomId: string;
   roomName: string;
   buildingCode: string;
+  mode: ScheduleMode;
 };
 
 type SlotEntryFormProps = {
@@ -64,6 +68,7 @@ export function SlotEntryForm({
     initialSlot?.facultyId ?? faculty.find((f) => f.status === "active")?.id ?? "",
   );
   const [roomId, setRoomId] = useState(initialSlot?.roomId ?? rooms[0]?.id ?? "");
+  const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "F2F");
 
   const isEditing = Boolean(initialSlot);
   const activeFaculty = faculty.filter((f) => f.status === "active");
@@ -109,6 +114,7 @@ export function SlotEntryForm({
         roomId,
         roomName: room.name,
         buildingCode: room.buildingCode,
+        mode,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't add the slot.");
@@ -193,18 +199,31 @@ export function SlotEntryForm({
         ))}
       </Select>
 
-      <Select
-        id="slot-room"
-        label="Room"
-        value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
-      >
-        {rooms.map((r) => (
-          <option key={r.id} value={r.id}>
-            {r.buildingCode} — {r.name} (cap. {r.capacity})
-          </option>
-        ))}
-      </Select>
+      <div className="grid grid-cols-2 gap-3">
+        <Select
+          id="slot-room"
+          label="Room"
+          value={roomId}
+          onChange={(e) => setRoomId(e.target.value)}
+        >
+          {rooms.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.buildingCode} — {r.name} (cap. {r.capacity})
+            </option>
+          ))}
+        </Select>
+
+        <Select
+          id="slot-mode"
+          label="Mode"
+          value={mode}
+          onChange={(e) => setMode(e.target.value as ScheduleMode)}
+        >
+          {SCHEDULE_MODES.map((m) => (
+            <option key={m} value={m}>{SCHEDULE_MODE_LABELS[m]}</option>
+          ))}
+        </Select>
+      </div>
 
       <div className="flex flex-col gap-2">
         <Button>

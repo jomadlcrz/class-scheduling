@@ -28,6 +28,8 @@ export default [
     route("schedules/regular-class", "routes/app/schedules/regular-class.tsx"),
     route("schedules/irregular-class", "routes/app/schedules/irregular-class.tsx"),
     route("schedules/new", "routes/app/schedules-new.tsx"),
+    route("faculty-schedule", "routes/app/faculty-schedule.tsx"),
+    route("student-schedule", "routes/app/student-schedule.tsx"),
     route("academic-years", "routes/app/academic-years.tsx"),
     route("subject-offerings", "routes/app/subject-offerings.tsx"),
     route("curriculum", "routes/app/curriculum.tsx"),

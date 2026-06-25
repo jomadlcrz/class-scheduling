@@ -3,13 +3,17 @@ import { useNavigate } from "react-router";
 import { RoleGuard } from "../../../auth/role-guard";
 import { Button } from "../../../components/ui/button";
 import { EmptyState } from "../../../components/ui/empty-state";
-import { PlusIcon } from "../../../components/ui/icons";
-import { Input } from "../../../components/ui/input";
+import { PlusIcon, PrinterIcon } from "../../../components/ui/icons";
 import { ConfirmDialog, Modal } from "../../../components/ui/modal";
 import { Select } from "../../../components/ui/select";
 import { Spinner } from "../../../components/ui/spinner";
 import { ScheduleForm } from "../../../features/schedules/schedule-form";
+import { ScheduleGrid } from "../../../features/schedules/schedule-grid";
 import { ScheduleTable } from "../../../features/schedules/schedule-table";
+import {
+  ScheduleViewToggle,
+  type ScheduleViewMode,
+} from "../../../features/schedules/schedule-view-toggle";
 import { PageHeader } from "../../../layouts/page-header";
 import { facultyService } from "../../../services/faculty.service";
 import { programService } from "../../../services/program.service";
@@ -38,13 +42,13 @@ import type { Subject } from "../../../types/subject";
 export function meta() {
   return [
     { title: "Regular Class — GWC Class Scheduling" },
-    { name: "description", content: "Manage regular class schedules for the current academic term." },
+    { name: "description", content: "Assign subjects to time slots and manage class schedules." },
   ];
 }
 
 export default function RegularClassRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar", "dean", "faculty"]}>
+    <RoleGuard allow={["admin", "registrar", "dean"]}>
       <RegularClassPage />
     </RoleGuard>
   );
@@ -63,15 +67,14 @@ function RegularClassPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<PageData | null>(null);
 
-  // Term context — acts as the primary filter.
+  // Filters — pin the view to a single section's weekly schedule.
   const [schoolYear, setSchoolYear] = useState(DEFAULT_SCHOOL_YEAR);
   const [semester, setSemester] = useState<ScheduleSemester>(1);
+  const [program, setProgram] = useState("");
+  const [yearLevel, setYearLevel] = useState<YearLevel | "">("");
+  const [setId, setSetId] = useState("");
 
-  // Secondary filters.
-  const [search, setSearch] = useState("");
-  const [programFilter, setProgramFilter] = useState("all");
-  const [yearLevelFilter, setYearLevelFilter] = useState<YearLevel | "all">("all");
-  const [setFilter, setSetFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
 
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
@@ -86,38 +89,59 @@ function RegularClassPage() {
       programService.list(),
     ]).then(([schedules, subjects, sets, faculty, rooms, programs]) => {
       setData({ schedules, subjects, sets, faculty, rooms, programs });
+
+      const firstProgram = programs[0]?.code ?? "";
+      const firstYl =
+        YEAR_LEVELS.find((yl) => sets.some((s) => s.program === firstProgram && s.yearLevel === yl)) ??
+        (1 as YearLevel);
+      const firstSet = sets.find((s) => s.program === firstProgram && s.yearLevel === firstYl);
+      setProgram(firstProgram);
+      setYearLevel(firstYl);
+      setSetId(firstSet?.id ?? "");
     });
   }, []);
 
+  const availableYearLevels = useMemo(
+    () =>
+      YEAR_LEVELS.filter((yl) =>
+        (data?.sets ?? []).some((s) => s.program === program && s.yearLevel === yl),
+      ),
+    [data, program],
+  );
+
+  const availableSets = useMemo(
+    () =>
+      (data?.sets ?? [])
+        .filter((s) => s.program === program && s.yearLevel === yearLevel)
+        .sort((a, b) => a.setCode.localeCompare(b.setCode)),
+    [data, program, yearLevel],
+  );
+
+  function handleProgramChange(next: string) {
+    setProgram(next);
+    const newYl =
+      YEAR_LEVELS.find((yl) => (data?.sets ?? []).some((s) => s.program === next && s.yearLevel === yl)) ??
+      (1 as YearLevel);
+    setYearLevel(newYl);
+    setSetId((data?.sets ?? []).find((s) => s.program === next && s.yearLevel === newYl)?.id ?? "");
+  }
+
+  function handleYearLevelChange(yl: YearLevel) {
+    setYearLevel(yl);
+    setSetId((data?.sets ?? []).find((s) => s.program === program && s.yearLevel === yl)?.id ?? "");
+  }
+
   const visibleSchedules = useMemo(() => {
     if (!data) return [];
-    const query = search.trim().toLowerCase();
     return data.schedules
-      .filter((s) => {
-        if (s.schoolYear !== schoolYear || s.semester !== semester) return false;
-        if (programFilter !== "all" && s.program !== programFilter) return false;
-        if (yearLevelFilter !== "all" && s.yearLevel !== yearLevelFilter) return false;
-        if (setFilter !== "all" && s.setCode !== setFilter) return false;
-        if (
-          query &&
-          !s.subjectCode.toLowerCase().includes(query) &&
-          !s.subjectTitle.toLowerCase().includes(query) &&
-          !s.facultyName.toLowerCase().includes(query) &&
-          !s.roomName.toLowerCase().includes(query) &&
-          !s.setCode.toLowerCase().includes(query)
-        ) {
-          return false;
-        }
-        return true;
-      })
+      .filter(
+        (s) => s.setId === setId && s.schoolYear === schoolYear && s.semester === semester,
+      )
       .sort(
         (a, b) =>
-          a.program.localeCompare(b.program) ||
-          a.yearLevel - b.yearLevel ||
-          DAYS.indexOf(a.day) - DAYS.indexOf(b.day) ||
-          a.startTime.localeCompare(b.startTime),
+          DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.startTime.localeCompare(b.startTime),
       );
-  }, [data, schoolYear, semester, search, programFilter, yearLevelFilter, setFilter]);
+  }, [data, setId, schoolYear, semester]);
 
   async function handleEdit(input: CreateScheduleInput) {
     if (!editTarget) return;
@@ -138,21 +162,21 @@ function RegularClassPage() {
   return (
     <>
       <PageHeader
-        title="Regular Class"
-        description="Regular class schedules for the current academic term."
+        title="Regular Schedule Builder"
+        description="Assign subjects to time slots and manage class schedules by program, year level, and section."
         actions={
           <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
             <PlusIcon />
-            New Schedule
+            Create Schedule
           </Button>
         }
       />
 
-      {/* Term context bar */}
+      {/* Filter bar */}
       <div className="mt-6 rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
-        <div className="grid grid-cols-2 gap-3 sm:max-w-sm">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <Select
-            id="sched-year-ctx"
+            id="rc-school-year"
             label="School Year"
             value={schoolYear}
             onChange={(e) => setSchoolYear(e.target.value)}
@@ -162,7 +186,21 @@ function RegularClassPage() {
             ))}
           </Select>
           <Select
-            id="sched-sem-ctx"
+            id="rc-year-level"
+            label="Year Level"
+            value={yearLevel}
+            onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
+          >
+            {availableYearLevels.length === 0 ? (
+              <option value="">No year levels</option>
+            ) : (
+              availableYearLevels.map((yl) => (
+                <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+              ))
+            )}
+          </Select>
+          <Select
+            id="rc-semester"
             label="Semester"
             value={semester}
             onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
@@ -171,57 +209,43 @@ function RegularClassPage() {
               <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
             ))}
           </Select>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-col gap-4">
-        {/* Secondary filters */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="col-span-2 sm:col-span-1">
-            <Input
-              id="sched-search"
-              label="Search"
-              type="search"
-              placeholder="Subject, faculty, room, set…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
           <Select
-            id="sched-program-filter"
+            id="rc-program"
             label="Program"
-            value={programFilter}
-            onChange={(e) => setProgramFilter(e.target.value)}
+            value={program}
+            onChange={(e) => handleProgramChange(e.target.value)}
           >
-            <option value="all">All programs</option>
             {(data?.programs ?? []).map((p) => (
               <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
             ))}
           </Select>
           <Select
-            id="sched-year-level-filter"
-            label="Year Level"
-            value={yearLevelFilter}
-            onChange={(e) => setYearLevelFilter(e.target.value === "all" ? "all" : Number(e.target.value) as YearLevel)}
-          >
-            <option value="all">All year levels</option>
-            {YEAR_LEVELS.map((yl) => (
-              <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
-            ))}
-          </Select>
-          <Select
-            id="sched-set-filter"
+            id="rc-set"
             label="Set"
-            value={setFilter}
-            onChange={(e) => setSetFilter(e.target.value)}
+            value={setId}
+            onChange={(e) => setSetId(e.target.value)}
           >
-            <option value="all">All sets</option>
-            {[...new Set((data?.sets ?? []).map((s) => s.setCode))].sort().map((code) => (
-              <option key={code} value={code}>{code}</option>
-            ))}
+            {availableSets.length === 0 ? (
+              <option value="">No sets</option>
+            ) : (
+              availableSets.map((s) => (
+                <option key={s.id} value={s.id}>{s.program}-{s.yearLevel}{s.setCode}</option>
+              ))
+            )}
           </Select>
         </div>
+      </div>
 
+      {/* View toggle + print */}
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+        <Button type="button" variant="outline" block={false} onClick={() => window.print()}>
+          <PrinterIcon />
+          Print
+        </Button>
+      </div>
+
+      <div className="mt-4">
         {isLoading ? (
           <div
             role="status"
@@ -231,13 +255,14 @@ function RegularClassPage() {
             <Spinner />
           </div>
         ) : visibleSchedules.length === 0 ? (
-          <EmptyState title="No schedules found">
-            No schedules match the current filters. Try adjusting the term or add a new schedule.
+          <EmptyState title="No classes scheduled">
+            No classes for this section yet. Use “Create Schedule” to build its weekly schedule.
           </EmptyState>
+        ) : viewMode === "grid" ? (
+          <ScheduleGrid schedules={visibleSchedules} />
         ) : (
           <ScheduleTable
             schedules={visibleSchedules}
-            programs={data!.programs}
             onEdit={setEditTarget}
             onDelete={setDeleteTarget}
           />

@@ -50,11 +50,24 @@ const NAV_SECTIONS: NavSection[] = [
       {
         label: "Schedules",
         icon: CalendarIcon,
+        roles: ["admin", "registrar", "dean"],
         children: [
           { label: "Weekly Hours", href: "/schedules/weekly-hours" },
           { label: "Regular Class", href: "/schedules/regular-class" },
           { label: "Irregular Class", href: "/schedules/irregular-class" },
         ],
+      },
+      {
+        label: "My Schedule",
+        href: "/faculty-schedule",
+        icon: CalendarIcon,
+        roles: ["faculty"],
+      },
+      {
+        label: "My Schedule",
+        href: "/student-schedule",
+        icon: CalendarIcon,
+        roles: ["student"],
       },
       {
         label: "Conflicts",

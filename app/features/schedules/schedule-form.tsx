@@ -9,6 +9,8 @@ import { scheduleSchema } from "../../schemas/schedule.schema";
 import {
   DAYS,
   DAY_LABELS,
+  SCHEDULE_MODES,
+  SCHEDULE_MODE_LABELS,
   SCHEDULE_SEMESTER_LABELS,
   SCHEDULE_SEMESTERS,
   SCHOOL_YEARS,
@@ -17,6 +19,7 @@ import {
   type CreateScheduleInput,
   type Day,
   type Schedule,
+  type ScheduleMode,
   type ScheduleSemester,
 } from "../../types/schedule";
 import type { ClassSet } from "../../types/set";
@@ -110,11 +113,12 @@ export function ScheduleForm({
     const setId = String(data.get("sched-set") ?? "");
     const facultyId = String(data.get("sched-faculty") ?? "");
     const roomId = String(data.get("sched-room") ?? "");
+    const mode = String(data.get("sched-mode") ?? "") as ScheduleMode;
     const day = String(data.get("sched-day") ?? "") as Day;
     const startTime = String(data.get("sched-start") ?? "");
     const endTime = String(data.get("sched-end") ?? "");
 
-    const result = scheduleSchema.safeParse({ subjectId, setId, facultyId, roomId, day, startTime, endTime });
+    const result = scheduleSchema.safeParse({ subjectId, setId, facultyId, roomId, mode, day, startTime, endTime });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -148,6 +152,7 @@ export function ScheduleForm({
         roomId: result.data.roomId,
         roomName: room.name,
         buildingCode: room.buildingCode,
+        mode: result.data.mode,
         day: result.data.day as Day,
         startTime: result.data.startTime,
         endTime: result.data.endTime,
@@ -258,17 +263,25 @@ export function ScheduleForm({
         ))}
       </Select>
 
-      <Select
-        id="sched-room"
-        label="Room"
-        defaultValue={schedule?.roomId ?? rooms[0]?.id}
-      >
-        {rooms.map((r) => (
-          <option key={r.id} value={r.id}>
-            {r.buildingCode} — {r.name} (cap. {r.capacity}, {r.type})
-          </option>
-        ))}
-      </Select>
+      <div className="grid grid-cols-2 gap-3">
+        <Select
+          id="sched-room"
+          label="Room"
+          defaultValue={schedule?.roomId ?? rooms[0]?.id}
+        >
+          {rooms.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.buildingCode} — {r.name} (cap. {r.capacity}, {r.type})
+            </option>
+          ))}
+        </Select>
+
+        <Select id="sched-mode" label="Mode" defaultValue={schedule?.mode ?? "F2F"}>
+          {SCHEDULE_MODES.map((m) => (
+            <option key={m} value={m}>{SCHEDULE_MODE_LABELS[m]}</option>
+          ))}
+        </Select>
+      </div>
 
       <div className="grid grid-cols-3 gap-3">
         <Select id="sched-day" label="Day" defaultValue={schedule?.day ?? "M"}>

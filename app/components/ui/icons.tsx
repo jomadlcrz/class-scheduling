@@ -423,6 +423,48 @@ export function PrinterIcon() {
   );
 }
 
+export function GridIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </IconBase>
+  );
+}
+
+export function ListIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </IconBase>
+  );
+}
+
+export function MapPinIcon({ size = 14 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </IconBase>
+  );
+}
+
+export function UserSmallIcon({ size = 14 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </IconBase>
+  );
+}
+
 export function SettingsIcon() {
   return (
     <IconBase>

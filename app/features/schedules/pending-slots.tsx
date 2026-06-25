@@ -3,6 +3,7 @@ import { Badge } from "../../components/ui/badge";
 import { CloseIcon, CopyIcon, EditIcon } from "../../components/ui/icons";
 import { getBuildingTone } from "../../types/building";
 import { DAY_LABELS, DAY_SHORT, DAYS, formatTime, type Day } from "../../types/schedule";
+import { ModeBadge } from "./mode-badge";
 import type { PendingSlot } from "./slot-entry-form";
 
 type PendingSlotsProps = {
@@ -75,6 +76,7 @@ export function PendingSlots({ slots, onEdit, onDuplicate, onRemove }: PendingSl
                 <span className="text-xs font-medium text-navy-700 dark:text-sky-300">
                   {slot.subjectCode}
                 </span>
+                <ModeBadge mode={slot.mode} />
                 <span className="truncate text-xs text-slate-500 dark:text-slate-400">
                   {slot.subjectTitle}
                 </span>
