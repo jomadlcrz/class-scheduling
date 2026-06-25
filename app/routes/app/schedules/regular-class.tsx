@@ -28,16 +28,16 @@ import {
   DAYS,
   DAY_LABELS,
   DEFAULT_SCHOOL_YEAR,
-  SCHEDULE_SEMESTER_LABELS,
   SCHEDULE_SEMESTERS,
+  SCHEDULE_SEMESTER_LABELS,
   SCHOOL_YEARS,
   type CreateScheduleInput,
   type Schedule,
   type ScheduleSemester,
 } from "../../../types/schedule";
-import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../../types/subject";
 import type { ClassSet } from "../../../types/set";
 import type { Subject } from "../../../types/subject";
+import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../../types/subject";
 
 export function meta() {
   return [
@@ -163,7 +163,7 @@ function RegularClassPage() {
     <>
       <PageHeader
         title="Regular Schedule Builder"
-        description="Assign subjects to time slots and manage class schedules by program, year level, and section."
+        description="Class schedules for the current academic term."
         actions={
           <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
             <PlusIcon />

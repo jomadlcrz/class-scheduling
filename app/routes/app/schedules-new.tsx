@@ -261,8 +261,8 @@ function SchedulesNewPage() {
   return (
     <>
       <PageHeader
-        title="Create Regular Class Schedule"
-        description="Assign subjects to time slots and manage class schedules by program, year level, and section."
+        title="New Schedule"
+        description="Select a set, add time slots for its subjects, then save the whole week at once."
         actions={
           <>
             <Button

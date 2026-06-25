@@ -30,8 +30,6 @@ export default [
     route("schedules/new", "routes/app/schedules-new.tsx"),
     route("faculty-schedule", "routes/app/faculty-schedule.tsx"),
     route("student-schedule", "routes/app/student-schedule.tsx"),
-    route("academic-years", "routes/app/academic-years.tsx"),
-    route("subject-offerings", "routes/app/subject-offerings.tsx"),
     route("curriculum", "routes/app/curriculum.tsx"),
     route("facilities", "routes/app/facilities.tsx"),
     route("students", "routes/app/students.tsx"),
