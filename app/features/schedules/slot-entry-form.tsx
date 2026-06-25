@@ -187,6 +187,17 @@ export function SlotEntryForm({
       </div>
 
       <Select
+        id="slot-mode"
+        label="Mode"
+        value={mode}
+        onChange={(e) => setMode(e.target.value as ScheduleMode)}
+      >
+        {SCHEDULE_MODES.map((m) => (
+          <option key={m} value={m}>{SCHEDULE_MODE_LABELS[m]}</option>
+        ))}
+      </Select>
+
+      <Select
         id="slot-faculty"
         label="Faculty"
         value={facultyId}
@@ -199,36 +210,23 @@ export function SlotEntryForm({
         ))}
       </Select>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Select
-          id="slot-room"
-          label="Room"
-          value={roomId}
-          onChange={(e) => setRoomId(e.target.value)}
-        >
-          {rooms.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.buildingCode} — {r.name} (cap. {r.capacity})
-            </option>
-          ))}
-        </Select>
-
-        <Select
-          id="slot-mode"
-          label="Mode"
-          value={mode}
-          onChange={(e) => setMode(e.target.value as ScheduleMode)}
-        >
-          {SCHEDULE_MODES.map((m) => (
-            <option key={m} value={m}>{SCHEDULE_MODE_LABELS[m]}</option>
-          ))}
-        </Select>
-      </div>
+      <Select
+        id="slot-room"
+        label="Room"
+        value={roomId}
+        onChange={(e) => setRoomId(e.target.value)}
+      >
+        {rooms.map((r) => (
+          <option key={r.id} value={r.id}>
+            {r.buildingCode} — {r.name} (cap. {r.capacity})
+          </option>
+        ))}
+      </Select>
 
       <div className="flex flex-col gap-2">
         <Button>
           <PlusIcon />
-          {isEditing ? "Update Slot" : "Add Slot"}
+          {isEditing ? "Update Slot" : "Add to Schedule"}
         </Button>
         {isEditing && onCancelEdit && (
           <Button type="button" variant="outline" onClick={onCancelEdit}>

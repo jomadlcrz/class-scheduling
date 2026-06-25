@@ -7,7 +7,7 @@ import {
   BuildingIcon,
   CalendarIcon,
   ChartIcon,
-  ChevronDownIcon,
+  ChevronRightIcon,
   DashboardIcon,
   DoorIcon,
   FolderIcon,
@@ -295,10 +295,10 @@ function NavGroup({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
         <Icon />
         <span className="flex-1 text-left">{item.label}</span>
         <span
-          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`transition-transform duration-200 ${open ? "rotate-90" : ""}`}
           aria-hidden="true"
         >
-          <ChevronDownIcon />
+          <ChevronRightIcon />
         </span>
       </button>
       {open && (

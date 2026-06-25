@@ -3,9 +3,17 @@ import { useNavigate } from "react-router";
 import { RoleGuard } from "../../auth/role-guard";
 import { FormError } from "../../components/forms/form-error";
 import { Button } from "../../components/ui/button";
+import { Drawer } from "../../components/ui/drawer";
+import { EmptyState } from "../../components/ui/empty-state";
+import { PlusIcon } from "../../components/ui/icons";
 import { Select } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
-import { PendingSlots } from "../../features/schedules/pending-slots";
+import { ScheduleGrid } from "../../features/schedules/schedule-grid";
+import { ScheduleTable } from "../../features/schedules/schedule-table";
+import {
+  ScheduleViewToggle,
+  type ScheduleViewMode,
+} from "../../features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "../../features/schedules/slot-entry-form";
 import { PageHeader } from "../../layouts/page-header";
 import { facultyService } from "../../services/faculty.service";
@@ -23,6 +31,7 @@ import {
   SCHEDULE_SEMESTERS,
   SCHOOL_YEARS,
   type Day,
+  type Schedule,
   type ScheduleSemester,
 } from "../../types/schedule";
 import type { ClassSet } from "../../types/set";
@@ -64,6 +73,8 @@ function SchedulesNewPage() {
 
   const [slots, setSlots] = useState<PendingSlot[]>([]);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const tempIdCounter = useRef(0);
@@ -116,6 +127,33 @@ function SchedulesNewPage() {
     [pageData, selectedProgram, selectedYearLevel],
   );
 
+  // Pending slots shown through the shared grid/table views.
+  const displaySchedules = useMemo<Schedule[]>(
+    () =>
+      slots.map((slot) => ({
+        id: slot.tempId,
+        schoolYear,
+        semester,
+        subjectId: slot.subjectId,
+        subjectCode: slot.subjectCode,
+        subjectTitle: slot.subjectTitle,
+        setId: selectedSet?.id ?? "",
+        setCode: selectedSet?.setCode ?? "",
+        program: selectedSet?.program ?? selectedProgram,
+        yearLevel: selectedSet?.yearLevel ?? ((selectedYearLevel || 1) as YearLevel),
+        facultyId: slot.facultyId,
+        facultyName: slot.facultyName,
+        roomId: slot.roomId,
+        roomName: slot.roomName,
+        buildingCode: slot.buildingCode,
+        mode: slot.mode,
+        day: slot.day,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      })),
+    [slots, schoolYear, semester, selectedSet, selectedProgram, selectedYearLevel],
+  );
+
   function handleProgramChange(program: string) {
     setSelectedProgram(program);
     const newYl =
@@ -135,44 +173,47 @@ function SchedulesNewPage() {
     );
   }
 
-  function handleAddSlot(slot: Omit<PendingSlot, "tempId">) {
+  function openAddDrawer() {
+    setEditing(null);
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+    setEditing(null);
+  }
+
+  function handleSubmitSlot(slot: Omit<PendingSlot, "tempId">) {
     if (editing) {
       setSlots((current) =>
         current.map((s) => (s.tempId === editing.tempId ? { ...slot, tempId: editing.tempId } : s)),
       );
-      setEditing(null);
     } else {
       tempIdCounter.current += 1;
       setSlots((current) => [...current, { ...slot, tempId: `tmp-${tempIdCounter.current}` }]);
     }
+    closeDrawer();
   }
 
-  function handleEditSlot(tempId: string) {
-    const slot = slots.find((s) => s.tempId === tempId);
+  function handleEditSlot(schedule: Schedule) {
+    const slot = slots.find((s) => s.tempId === schedule.id);
     if (!slot) return;
-    setSlots((current) => [
-      ...(editing ? [...current, editing] : current).filter((s) => s.tempId !== tempId),
-    ]);
     setEditing(slot);
+    setDrawerOpen(true);
   }
 
-  function handleDuplicateSlot(tempId: string, day: Day) {
-    const slot = slots.find((s) => s.tempId === tempId);
+  function handleRemoveSlot(schedule: Schedule) {
+    setSlots((current) => current.filter((s) => s.tempId !== schedule.id));
+  }
+
+  function handleDuplicateSlot(schedule: Schedule, day: Day) {
+    const slot = slots.find((s) => s.tempId === schedule.id);
     if (!slot) return;
     tempIdCounter.current += 1;
     setSlots((current) => [
       ...current,
       { ...slot, day, tempId: `tmp-${tempIdCounter.current}` },
     ]);
-  }
-
-  function handleCancelEdit() {
-    if (editing) setSlots((current) => [...current, editing]);
-    setEditing(null);
-  }
-
-  function handleRemoveSlot(tempId: string) {
-    setSlots((current) => current.filter((s) => s.tempId !== tempId));
   }
 
   async function handleSave() {
@@ -214,12 +255,14 @@ function SchedulesNewPage() {
   }
 
   const contextLocked = slots.length > 0;
+  const canAddSlot = Boolean(selectedSet) && availableSubjects.length > 0;
+  const lockHint = contextLocked ? "Remove all slots to change." : undefined;
 
   return (
     <>
       <PageHeader
-        title="New Schedule"
-        description="Select a set, add time slots for its subjects, then save the whole week at once."
+        title="Create Regular Class Schedule"
+        description="Assign subjects to time slots and manage class schedules by program, year level, and section."
         actions={
           <>
             <Button
@@ -254,130 +297,134 @@ function SchedulesNewPage() {
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">
-          {/* Context card — term + program + year level + set */}
+          {/* Context filter row */}
           <div className="rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
-            <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Select
-                  id="ctx-school-year"
-                  label="School Year"
-                  value={schoolYear}
-                  onChange={(e) => setSchoolYear(e.target.value)}
-                  disabled={contextLocked}
-                  hint={contextLocked ? "Remove all slots to change." : undefined}
-                >
-                  {SCHOOL_YEARS.map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </Select>
-
-                <Select
-                  id="ctx-semester"
-                  label="Semester"
-                  value={semester}
-                  onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-                  disabled={contextLocked}
-                  hint={contextLocked ? "Remove all slots to change." : undefined}
-                >
-                  {SCHEDULE_SEMESTERS.map((s) => (
-                    <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
-                  ))}
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <Select
-                  id="ctx-program"
-                  label="Program"
-                  value={selectedProgram}
-                  onChange={(e) => handleProgramChange(e.target.value)}
-                  disabled={contextLocked}
-                  hint={contextLocked ? "Remove all slots to change." : undefined}
-                >
-                  {pageData.programs.map((p) => (
-                    <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
-                  ))}
-                </Select>
-
-                <Select
-                  id="ctx-year-level"
-                  label="Year Level"
-                  value={selectedYearLevel}
-                  onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
-                  disabled={contextLocked}
-                  hint={contextLocked ? "Remove all slots to change." : undefined}
-                >
-                  {availableYearLevels.length === 0 ? (
-                    <option value="">No year levels</option>
-                  ) : (
-                    availableYearLevels.map((yl) => (
-                      <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              <Select
+                id="ctx-school-year"
+                label="School Year"
+                value={schoolYear}
+                onChange={(e) => setSchoolYear(e.target.value)}
+                disabled={contextLocked}
+                hint={lockHint}
+              >
+                {SCHOOL_YEARS.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </Select>
+              <Select
+                id="ctx-year-level"
+                label="Year Level"
+                value={selectedYearLevel}
+                onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
+                disabled={contextLocked}
+                hint={lockHint}
+              >
+                {availableYearLevels.length === 0 ? (
+                  <option value="">No year levels</option>
+                ) : (
+                  availableYearLevels.map((yl) => (
+                    <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+                  ))
+                )}
+              </Select>
+              <Select
+                id="ctx-semester"
+                label="Semester"
+                value={semester}
+                onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
+                disabled={contextLocked}
+                hint={lockHint}
+              >
+                {SCHEDULE_SEMESTERS.map((s) => (
+                  <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
+                ))}
+              </Select>
+              <Select
+                id="ctx-program"
+                label="Program"
+                value={selectedProgram}
+                onChange={(e) => handleProgramChange(e.target.value)}
+                disabled={contextLocked}
+                hint={lockHint}
+              >
+                {pageData.programs.map((p) => (
+                  <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
+                ))}
+              </Select>
+              <Select
+                id="ctx-set"
+                label="Set"
+                value={selectedSetId}
+                onChange={(e) => setSelectedSetId(e.target.value)}
+                disabled={contextLocked}
+                hint={lockHint}
+              >
+                {availableSets.length === 0 ? (
+                  <option value="">No sets</option>
+                ) : (
+                  [...availableSets]
+                    .sort((a, b) => a.setCode.localeCompare(b.setCode))
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>{s.program}-{s.yearLevel}{s.setCode}</option>
                     ))
-                  )}
-                </Select>
-
-                <Select
-                  id="ctx-set"
-                  label="Set"
-                  value={selectedSetId}
-                  onChange={(e) => setSelectedSetId(e.target.value)}
-                  disabled={contextLocked}
-                  hint={contextLocked ? "Remove all slots to change." : undefined}
-                >
-                  {availableSets.length === 0 ? (
-                    <option value="">No sets</option>
-                  ) : (
-                    availableSets
-                      .sort((a, b) => a.setCode.localeCompare(b.setCode))
-                      .map((s) => (
-                        <option key={s.id} value={s.id}>
-                          Set {s.setCode}
-                        </option>
-                      ))
-                  )}
-                </Select>
-              </div>
+                )}
+              </Select>
             </div>
           </div>
 
           <FormError message={saveError} />
 
-          {/* Two-panel: slot entry form + pending slots */}
-          <div className="grid gap-4 lg:grid-cols-[22rem_1fr]">
-            <section className="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
-              <h2 className="mb-4 font-display text-xl tracking-wide text-navy-700 dark:text-white">
-                {editing
-                  ? `Edit Slot — ${editing.subjectCode} ${editing.day}`
-                  : "Slot Details"}
-              </h2>
-              <SlotEntryForm
-                key={`${editing?.tempId ?? "new"}-${selectedSetId}`}
-                initialSlot={editing ?? undefined}
-                subjects={availableSubjects}
-                faculty={pageData.faculty}
-                rooms={pageData.rooms}
-                existingSlots={slots}
-                onAdd={handleAddSlot}
-                onCancelEdit={handleCancelEdit}
-              />
-            </section>
-
-            <section className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
-              <h2 className="mb-4 shrink-0 font-display text-xl tracking-wide text-navy-700 dark:text-white">
-                Week Schedule{slots.length > 0 ? ` — ${slots.length} slot${slots.length > 1 ? "s" : ""}` : ""}
-              </h2>
-              <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto pr-1">
-                <PendingSlots
-                  slots={slots}
-                  onEdit={handleEditSlot}
-                  onDuplicate={handleDuplicateSlot}
-                  onRemove={handleRemoveSlot}
-                />
-              </div>
-            </section>
+          {/* Toolbar: view toggle + add slot */}
+          <div className="flex items-center justify-between gap-3">
+            <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+            <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
+              <PlusIcon />
+              Add Slot
+            </Button>
           </div>
+
+          {/* Week schedule body */}
+          {slots.length === 0 ? (
+            <EmptyState title="No slots added yet">
+              Use “Add Slot” to start building this section’s weekly schedule.
+            </EmptyState>
+          ) : viewMode === "grid" ? (
+            <ScheduleGrid schedules={displaySchedules} />
+          ) : (
+            <ScheduleTable
+              schedules={displaySchedules}
+              onEdit={handleEditSlot}
+              onDelete={handleRemoveSlot}
+              onDuplicate={handleDuplicateSlot}
+            />
+          )}
         </div>
       )}
+
+      <Drawer
+        open={drawerOpen}
+        onClose={closeDrawer}
+        title={editing ? "Edit Slot" : "Add Slot"}
+        description={
+          selectedSet
+            ? `${selectedSet.program}-${selectedSet.yearLevel}${selectedSet.setCode} · ${SCHEDULE_SEMESTER_LABELS[semester]}`
+            : undefined
+        }
+      >
+        {pageData && (
+          <SlotEntryForm
+            key={editing?.tempId ?? "new"}
+            initialSlot={editing ?? undefined}
+            subjects={availableSubjects}
+            faculty={pageData.faculty}
+            rooms={pageData.rooms}
+            existingSlots={slots}
+            onAdd={handleSubmitSlot}
+            onCancelEdit={closeDrawer}
+          />
+        )}
+      </Drawer>
     </>
   );
 }

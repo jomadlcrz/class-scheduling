@@ -1,13 +1,16 @@
-import { EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "../../components/ui/icons";
+import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "../../components/ui/icons";
+import { Popover } from "../../components/ui/popover";
 import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "../../types/schedule";
 import { DAY_ACCENT } from "./day-accent";
 import { ModeBadge } from "./mode-badge";
 
 type ScheduleTableProps = {
   schedules: Schedule[];
-  /** Omit both handlers to render a read-only table (no actions column). */
+  /** Omit all handlers to render a read-only table (no actions column). */
   onEdit?: (schedule: Schedule) => void;
   onDelete?: (schedule: Schedule) => void;
+  /** Called with the chosen target day from the duplicate popover. */
+  onDuplicate?: (schedule: Schedule, day: Day) => void;
 };
 
 const actionBtn =
@@ -17,8 +20,17 @@ const th =
   "px-3 py-2.5 font-sans text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 
 /** Schedule table: stacked cards on mobile, a single grouped table on sm and up. */
-export function ScheduleTable({ schedules, onEdit, onDelete }: ScheduleTableProps) {
-  const showActions = Boolean(onEdit || onDelete);
+export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: ScheduleTableProps) {
+  const showActions = Boolean(onEdit || onDelete || onDuplicate);
+
+  // Days the same subject isn't already scheduled on (excluding its current day).
+  function availableDays(sched: Schedule): Day[] {
+    const occupied = new Set(
+      schedules.filter((s) => s.subjectId === sched.subjectId).map((s) => s.day),
+    );
+    return DAYS.filter((d) => d !== sched.day && !occupied.has(d));
+  }
+
   const groups = DAYS.map((day) => ({
     day,
     slots: schedules
@@ -37,6 +49,8 @@ export function ScheduleTable({ schedules, onEdit, onDelete }: ScheduleTableProp
             slots={slots}
             onEdit={onEdit}
             onDelete={onDelete}
+            onDuplicate={onDuplicate}
+            availableDays={availableDays}
           />
         ))}
       </div>
@@ -99,6 +113,12 @@ export function ScheduleTable({ schedules, onEdit, onDelete }: ScheduleTableProp
                   {showActions && (
                     <td className="px-3 py-2.5">
                       <div className="flex justify-end gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
+                        {onDuplicate && (
+                          <DuplicateButton
+                            days={availableDays(sched)}
+                            onPick={(d) => onDuplicate(sched, d)}
+                          />
+                        )}
                         {onEdit && (
                           <button
                             type="button"
@@ -139,11 +159,15 @@ function MobileDayCard({
   slots,
   onEdit,
   onDelete,
+  onDuplicate,
+  availableDays,
 }: {
   day: Day;
   slots: Schedule[];
   onEdit?: (schedule: Schedule) => void;
   onDelete?: (schedule: Schedule) => void;
+  onDuplicate?: (schedule: Schedule, day: Day) => void;
+  availableDays: (schedule: Schedule) => Day[];
 }) {
   const accent = DAY_ACCENT[day];
   return (
@@ -162,6 +186,12 @@ function MobileDayCard({
               </span>
               <div className="flex items-center gap-1.5">
                 <ModeBadge mode={sched.mode} />
+                {onDuplicate && (
+                  <DuplicateButton
+                    days={availableDays(sched)}
+                    onPick={(d) => onDuplicate(sched, d)}
+                  />
+                )}
                 {onEdit && (
                   <button
                     type="button"
@@ -208,5 +238,45 @@ function MobileDayCard({
         ))}
       </ul>
     </div>
+  );
+}
+
+/** Copy action that opens an anchored popover to pick the target day. */
+function DuplicateButton({ days, onPick }: { days: Day[]; onPick: (day: Day) => void }) {
+  return (
+    <Popover
+      label="Duplicate to another day"
+      triggerClassName={actionBtn}
+      trigger={<CopyIcon />}
+      className="w-44"
+    >
+      {(close) => (
+        <>
+          <p className="px-3 py-1 font-sans text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            Duplicate to
+          </p>
+          {days.length === 0 ? (
+            <p className="px-3 py-1.5 font-sans text-xs text-slate-400 dark:text-slate-500">
+              Already on every day
+            </p>
+          ) : (
+            days.map((d) => (
+              <button
+                key={d}
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  close();
+                  onPick(d);
+                }}
+                className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-sans text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+              >
+                {DAY_LABELS[d]}
+              </button>
+            ))
+          )}
+        </>
+      )}
+    </Popover>
   );
 }
