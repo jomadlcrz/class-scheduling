@@ -58,7 +58,7 @@ function DrawerContent({ onClose }: { onClose: () => void }) {
         transition={{ type: "tween", duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
         className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-linear-to-b from-[#0b3b9e] to-[#072b75] shadow-2xl lg:hidden"
       >
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-white/10 px-5">
           <SidebarBrand />
           <button
             type="button"
