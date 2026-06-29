@@ -3,7 +3,7 @@ import { EyeIcon, EyeOffIcon } from "./icons";
 import { Label } from "./label";
 
 export const inputClassName =
-  "w-full rounded-lg border border-slate-300 bg-white px-4 py-3 font-sans text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25";
+  "w-full rounded-lg border border-[#d9e3ef] bg-white px-4 py-3 font-sans text-base text-[#111827] placeholder-slate-400 outline-none transition-colors duration-150 focus:border-[#2a4f95] focus:ring-2 focus:ring-[#2a4f95]/15 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20";
 
 type FieldChromeProps = {
   id: string;

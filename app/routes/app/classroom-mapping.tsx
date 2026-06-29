@@ -50,18 +50,18 @@ const TIME_SLOTS = [
 ];
 
 const DAY_STYLES: Record<DayOfWeek, { color: string; bg: string; border: string }> = {
-  Monday:    { color: "text-red-600 dark:text-red-400",    bg: "bg-red-50 dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
-  Tuesday:   { color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/50", border: "border-amber-200 dark:border-amber-900" },
-  Wednesday: { color: "text-red-600 dark:text-red-400",    bg: "bg-red-50 dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
-  Thursday:  { color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/50", border: "border-amber-200 dark:border-amber-900" },
-  Friday:    { color: "text-red-600 dark:text-red-400",    bg: "bg-red-50 dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
-  Saturday:  { color: "text-pink-600 dark:text-pink-400",  bg: "bg-pink-50 dark:bg-pink-950/50",  border: "border-pink-200 dark:border-pink-900"  },
+  Monday:    { color: "text-[#dc2626] dark:text-red-400",    bg: "bg-[#fee2e2] dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
+  Tuesday:   { color: "text-[#b45309] dark:text-amber-400", bg: "bg-[#fef3c7] dark:bg-amber-950/50", border: "border-amber-200 dark:border-amber-900" },
+  Wednesday: { color: "text-[#dc2626] dark:text-red-400",    bg: "bg-[#fee2e2] dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
+  Thursday:  { color: "text-[#b45309] dark:text-amber-400", bg: "bg-[#fef3c7] dark:bg-amber-950/50", border: "border-amber-200 dark:border-amber-900" },
+  Friday:    { color: "text-[#dc2626] dark:text-red-400",    bg: "bg-[#fee2e2] dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
+  Saturday:  { color: "text-[#be185d] dark:text-pink-400",  bg: "bg-[#fce7f3] dark:bg-pink-950/50",  border: "border-pink-200 dark:border-pink-900"  },
 };
 
-const TYPE_STYLES: Record<SubjectType, { card: string; border: string; code: string; dot: string }> = {
-  major_lab:    { card: "bg-blue-50 dark:bg-blue-950/60",    border: "border-l-blue-500",    code: "text-blue-700 dark:text-blue-300",    dot: "bg-blue-500"    },
-  major_no_lab: { card: "bg-emerald-50 dark:bg-emerald-950/60", border: "border-l-emerald-500", code: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
-  gen_ed:       { card: "bg-violet-50 dark:bg-violet-950/60",  border: "border-l-violet-500",  code: "text-violet-700 dark:text-violet-300",  dot: "bg-violet-500"  },
+const TYPE_STYLES: Record<SubjectType, { card: string; border: string; code: string; tableCode: string; dot: string }> = {
+  major_lab:    { card: "bg-[#dbeafe] dark:bg-blue-950/60",    border: "border-l-[#3b82f6]",    code: "text-[#1e40af] dark:text-blue-300",    tableCode: "text-[#2563eb] dark:text-blue-400",    dot: "bg-[#3b82f6]"    },
+  major_no_lab: { card: "bg-[#dcfce7] dark:bg-green-950/60",  border: "border-l-[#22c55e]",    code: "text-[#166534] dark:text-green-300",   tableCode: "text-[#16a34a] dark:text-green-400",   dot: "bg-[#22c55e]"   },
+  gen_ed:       { card: "bg-[#ede9fe] dark:bg-violet-950/60", border: "border-l-[#7c3aed]",    code: "text-[#5b21b6] dark:text-violet-300",  tableCode: "text-[#7c3aed] dark:text-violet-400",  dot: "bg-[#7c3aed]"   },
 };
 
 const SCHOOL_YEARS = ["2024 – 2025", "2023 – 2024", "2022 – 2023"];
@@ -285,7 +285,7 @@ function ClassroomMappingPage() {
       />
 
       {/* Filter toolbar */}
-      <div className="mt-4 rounded-xl border border-slate-200 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
+      <div className="mt-4 rounded-xl border border-[#d9e3ef] bg-white p-4 dark:border-white/10 dark:bg-white/5">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-1 flex-wrap gap-3">
             <SelectField
@@ -329,7 +329,7 @@ function ClassroomMappingPage() {
             onChange={e => setRawSearch(e.target.value)}
             placeholder="Search classrooms…"
             aria-label="Search classrooms"
-            className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-4 font-sans text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="h-9 w-full rounded-lg border border-[#d9e3ef] bg-white pl-9 pr-4 font-sans text-sm text-[#111827] placeholder:text-slate-400 focus:border-[#2a4f95] focus:outline-none focus:ring-2 focus:ring-[#2a4f95]/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </div>
       </div>
@@ -340,7 +340,7 @@ function ClassroomMappingPage() {
         <button
           type="button"
           onClick={toggleAll}
-          className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+          className="cursor-pointer rounded-lg border border-[#d9e3ef] bg-white px-3 py-1.5 font-sans text-xs font-medium text-[#52637a] transition-colors hover:bg-[#f8fafc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2a4f95]/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
         >
           {allOpen ? "Collapse all" : "Expand all"}
         </button>
@@ -350,7 +350,7 @@ function ClassroomMappingPage() {
         </div>
 
         {/* View toggle */}
-        <div className="flex overflow-hidden rounded-lg border border-slate-200 dark:border-white/10">
+        <div className="flex overflow-hidden rounded-lg border border-[#d9e3ef] dark:border-white/10">
           <ViewBtn active={viewMode === "grid"} onClick={() => setViewMode("grid")} title="Grid view">
             <GridIcon size={15} />
           </ViewBtn>
@@ -404,7 +404,7 @@ function SelectField({
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="h-9 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 pr-8 font-sans text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/10 dark:bg-white/10 dark:text-slate-100"
+        className="h-9 cursor-pointer rounded-lg border border-[#d9e3ef] bg-white px-3 pr-8 font-sans text-sm text-[#111827] focus:border-[#2a4f95] focus:outline-none focus:ring-2 focus:ring-[#2a4f95]/15 dark:border-white/10 dark:bg-white/10 dark:text-slate-100"
       >
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
@@ -417,7 +417,7 @@ function ToolbarButton({ onClick, icon, label }: { onClick: () => void; icon: Re
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 font-sans text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-[#d9e3ef] bg-white px-3 font-sans text-sm font-medium text-[#374151] transition-colors hover:bg-[#f8fafc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2a4f95]/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
     >
       {icon}
       <span>{label}</span>
@@ -432,7 +432,7 @@ function TypeLegend() {
     { label: "GE / GenEd",         type: "gen_ed"       },
   ];
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl border border-slate-200 bg-white/70 px-5 py-2 dark:border-white/10 dark:bg-white/5">
+    <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl border border-[#d9e3ef] bg-white px-5 py-2 dark:border-white/10 dark:bg-white/5">
       {items.map(({ label, type }) => (
         <div key={type} className="flex items-center gap-1.5">
           <span className={`inline-block h-1 w-7 rounded-full ${TYPE_STYLES[type].dot}`} />
@@ -455,10 +455,10 @@ function ViewBtn({ active, onClick, title, children }: {
       onClick={onClick}
       title={title}
       aria-pressed={active}
-      className={`inline-flex h-8 w-9 cursor-pointer items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 [&+button]:border-l [&+button]:border-slate-200 dark:[&+button]:border-white/10 ${
+      className={`inline-flex h-8 w-9 cursor-pointer items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2a4f95]/30 [&+button]:border-l [&+button]:border-[#d9e3ef] dark:[&+button]:border-white/10 ${
         active
-          ? "bg-slate-100 text-slate-800 dark:bg-white/15 dark:text-white"
-          : "bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-slate-300"
+          ? "bg-[#f0f4ff] text-[#2a4f95] dark:bg-white/15 dark:text-white"
+          : "bg-white text-[#94a3b8] hover:bg-[#f8fafc] hover:text-[#52637a] dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-slate-300"
       }`}
     >
       {children}
@@ -468,11 +468,11 @@ function ViewBtn({ active, onClick, title, children }: {
 
 function StatusBadge({ status }: { status: ClassroomStatus }) {
   return status === "available" ? (
-    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 font-sans text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+    <span className="inline-flex items-center rounded-full bg-[#dcfce7] px-2.5 py-0.5 font-sans text-xs font-semibold text-[#136f3b] dark:bg-emerald-950/60 dark:text-emerald-300">
       Available
     </span>
   ) : (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 font-sans text-xs font-semibold text-red-700 dark:bg-red-950/60 dark:text-red-300">
+    <span className="inline-flex items-center rounded-full bg-[#fee2e2] px-2.5 py-0.5 font-sans text-xs font-semibold text-[#9b1c1c] dark:bg-red-950/60 dark:text-red-300">
       Full
     </span>
   );
@@ -492,7 +492,7 @@ function RoomAccordion({
   const classCount = room.entries.length;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900/60">
+    <div className="overflow-hidden rounded-xl border border-[#d9e3ef] bg-white dark:border-white/10 dark:bg-slate-900/60">
       {/* Header */}
       <button
         type="button"
@@ -521,7 +521,7 @@ function RoomAccordion({
 
       {/* Body */}
       {isOpen && (
-        <div className="border-t border-slate-100 dark:border-white/10">
+        <div className="border-t border-slate-300 dark:border-white/10">
           {viewMode === "grid"
             ? <TimetableGrid room={room} />
             : <TableView room={room} />
@@ -573,7 +573,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
                 return (
                   <div
                     key={slot.start}
-                    className={`min-h-25 border-t border-slate-200 p-1.5 dark:border-white/8 ${si > 0 ? "border-l border-slate-200 dark:border-white/8" : ""}`}
+                    className={`min-h-25 border-t border-slate-200 p-1.5 dark:border-white/8 ${si > 0 ? "border-l border-slate-200 dark:border-white/8" : "border-l-0"}`}
                   >
                     {entry ? <ClassCard entry={entry} /> : <FreeCell />}
                   </div>
@@ -593,19 +593,19 @@ function ClassCard({ entry }: { entry: ClassEntry }) {
     <div
       className={`flex h-full flex-col gap-1 rounded-md border-l-[3px] p-2 text-slate-700 transition-transform duration-150 hover:-translate-y-0.5 dark:text-slate-200 ${s.card} ${s.border}`}
     >
-      <span className="font-sans text-[0.62rem] font-semibold text-slate-400 dark:text-slate-500">
+      <span className="font-sans text-[0.62rem] font-semibold text-[#94a3b8] dark:text-slate-500">
         {entry.startTime} – {entry.endTime}
       </span>
       <span className={`font-sans text-sm font-bold leading-tight ${s.code}`}>
         {entry.subjectCode}
       </span>
-      <span className="line-clamp-2 font-sans text-[0.72rem] leading-snug text-slate-600 dark:text-slate-300">
+      <span className="line-clamp-2 font-sans text-[0.72rem] leading-snug text-[#475569] dark:text-slate-300">
         {entry.descriptiveTitle}
       </span>
-      <div className="mt-auto flex items-center gap-1 font-sans text-[0.62rem] text-slate-400 dark:text-slate-500">
+      <div className="mt-auto flex items-center gap-1 font-sans text-[0.62rem] text-[#64748b] dark:text-slate-500">
         <UserSmallIcon />
         <span>{entry.instructor}</span>
-        <span className="mx-0.5 text-slate-300 dark:text-slate-600">|</span>
+        <span className="mx-0.5 text-[#cbd5e1] dark:text-slate-600">|</span>
         <span>{entry.section}</span>
       </div>
     </div>
@@ -632,11 +632,9 @@ function TableView({ room }: { room: Classroom }) {
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
     const ds = DAY_STYLES[day];
-    const sep = di > 0 ? "border-t-2 border-slate-200 dark:border-white/10" : "";
-
     if (dayEntries.length === 0) {
       return [
-        <tr key={`${day}-empty`} className={sep}>
+        <tr key={`${day}-empty`}>
           <td className={`whitespace-nowrap px-4 py-3 font-sans text-xs font-bold uppercase tracking-widest ${ds.color}`}>
             {day}
           </td>
@@ -652,27 +650,27 @@ function TableView({ room }: { room: Classroom }) {
       return (
         <tr
           key={`${day}-${entry.subjectCode}-${i}`}
-          className={`transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${i === 0 ? sep : ""}`}
+          className="transition-colors hover:bg-[#f8fafc] dark:hover:bg-white/5"
         >
               <td className={`whitespace-nowrap px-4 py-3 font-sans text-xs font-bold uppercase tracking-widest ${ds.color}`}>
             {day}
           </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
+          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-[#52637a] dark:text-slate-400">
             {entry.startTime}
           </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
+          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-[#52637a] dark:text-slate-400">
             {entry.endTime}
           </td>
-          <td className={`whitespace-nowrap px-4 py-3 font-sans text-sm font-bold ${s.code}`}>
+          <td className={`whitespace-nowrap px-4 py-3 font-sans text-sm font-bold ${s.tableCode}`}>
             {entry.subjectCode}
           </td>
-          <td className="px-4 py-3 font-sans text-sm text-slate-700 dark:text-slate-300">
+          <td className="px-4 py-3 font-sans text-sm text-[#111827] dark:text-slate-200">
             {entry.descriptiveTitle}
           </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
+          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-[#52637a] dark:text-slate-400">
             {entry.instructor}
           </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
+          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-[#52637a] dark:text-slate-400">
             {entry.section}
           </td>
         </tr>
@@ -688,15 +686,15 @@ function TableView({ room }: { room: Classroom }) {
     >
       <table className="w-full min-w-190 border-collapse font-sans text-sm">
         <thead>
-          <tr className="border-b-2 border-slate-100 bg-slate-50 dark:border-white/10 dark:bg-white/5">
-            {["Day", "Start", "End", "Code", "Descriptive Title", "Instructor", "Section"].map(h => (
-              <th key={h} className="px-4 py-2.5 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          <tr className="border-b-2 border-slate-200 bg-[#f8fafc] dark:border-white/10 dark:bg-white/5">
+            {["Day", "Start", "End", "Code", "Descriptive Title", "Instructor", "Set"].map(h => (
+              <th key={h} className="px-4 py-2.5 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-[#52637a] dark:text-slate-400">
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-white/10">
+        <tbody className="divide-y divide-slate-200 dark:divide-white/10">
           {rows}
         </tbody>
       </table>
@@ -706,13 +704,13 @@ function TableView({ room }: { room: Classroom }) {
 
 function NoResults({ query }: { query: string }) {
   return (
-    <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 py-16 text-center dark:border-white/10">
-      <span className="text-slate-300 dark:text-slate-600">
+    <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#d9e3ef] py-16 text-center dark:border-white/10">
+      <span className="text-[#94a3b8] dark:text-slate-600">
         <SearchIcon size={32} />
       </span>
-      <p className="font-sans font-semibold text-slate-500 dark:text-slate-400">No classrooms found</p>
-      <p className="font-sans text-sm text-slate-400 dark:text-slate-500">
-        No classrooms match "<span className="font-medium">{query}</span>". Try a different name.
+      <p className="font-sans font-semibold text-[#374151] dark:text-slate-400">No classrooms found</p>
+      <p className="font-sans text-sm text-[#52637a] dark:text-slate-500">
+        No classrooms match "<span className="font-medium text-[#374151] dark:text-slate-300">{query}</span>". Try a different name.
       </p>
     </div>
   );

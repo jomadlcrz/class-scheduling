@@ -16,7 +16,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-navy-950/90">
+    <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b border-[#d9e3ef] bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-navy-950/90">
       <button
         type="button"
         onClick={onOpenMobileNav}

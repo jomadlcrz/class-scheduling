@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 
 const tones = {
-  navy: "border-blue-200 bg-blue-100 text-blue-800 dark:border-navy-300/30 dark:bg-navy-300/10 dark:text-navy-300",
-  gold: "border-gold-400/60 bg-gold-400/20 text-gold-600 dark:border-gold-400/30 dark:bg-gold-400/10 dark:text-gold-300",
+  navy: "border-blue-200 bg-[#dbeafe] text-[#1e40af] dark:border-navy-300/30 dark:bg-navy-300/10 dark:text-navy-300",
+  gold: "border-amber-200 bg-[#fef3c7] text-[#92400e] dark:border-gold-400/30 dark:bg-gold-400/10 dark:text-gold-300",
   emerald:
-    "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300",
-  red: "border-red-200 bg-red-50 text-red-600 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-300",
-  sky: "border-sky-200 bg-sky-50 text-sky-600 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-300",
+    "border-green-200 bg-[#dcfce7] text-[#136f3b] dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300",
+  red: "border-red-200 bg-[#fee2e2] text-[#9b1c1c] dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-300",
+  sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-300",
   slate:
-    "border-slate-200 bg-slate-100 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300",
+    "border-[#d9e3ef] bg-[#f8fafc] text-[#52637a] dark:border-white/10 dark:bg-white/5 dark:text-slate-300",
 } as const;
 
 export type BadgeTone = keyof typeof tones;
