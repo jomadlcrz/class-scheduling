@@ -57,7 +57,7 @@ function CurriculumPage() {
         }
       />
 
-      <div className="mt-6 flex flex-col gap-6">
+      <div className="mt-4 flex flex-col gap-4">
         <CurriculumPrograms
           programs={programs ?? []}
           selected={selectedCode}

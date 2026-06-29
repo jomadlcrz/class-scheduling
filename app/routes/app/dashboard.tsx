@@ -200,7 +200,7 @@ function KpiCard({
         <div className={`grid size-8 place-items-center rounded-lg ${s.icon}`}>{icon}</div>
       </div>
       <div>
-        <p className={`font-display text-3xl tracking-wide ${s.value}`}>{value}</p>
+        <p className={`font-display text-2xl tracking-wide ${s.value}`}>{value}</p>
         <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{sub}</p>
       </div>
     </div>

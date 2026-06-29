@@ -47,7 +47,7 @@ function ConflictsPage() {
         description="Scheduling conflicts detected across faculty, rooms, and sections."
       />
 
-      <div className="mt-6 flex flex-col gap-6">
+      <div className="mt-4 flex flex-col gap-4">
         {conflicts === null ? (
           <div
             role="status"

@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { RoleGuard } from "../../auth/role-guard";
+import { Card } from "../../components/ui/card";
 import {
   ChevronRightIcon,
   GridIcon,
@@ -285,7 +286,7 @@ function ClassroomMappingPage() {
       />
 
       {/* Filter toolbar */}
-      <div className="mt-4 rounded-xl border border-slate-300 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+      <Card className="mt-4 p-4">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-1 flex-wrap gap-3">
             <SelectField
@@ -332,7 +333,7 @@ function ClassroomMappingPage() {
             className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 font-sans text-sm text-gray-900 placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </div>
-      </div>
+      </Card>
 
       {/* Controls row: legend + view toggle */}
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -432,14 +433,14 @@ function TypeLegend() {
     { label: "GE / GenEd",         type: "gen_ed"       },
   ];
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl border border-slate-300 bg-white px-5 py-2 dark:border-white/10 dark:bg-white/5">
+    <Card className="flex flex-wrap items-center justify-center gap-4 px-5 py-2">
       {items.map(({ label, type }) => (
         <div key={type} className="flex items-center gap-1.5">
           <span className={`inline-block h-1 w-7 rounded-full ${TYPE_STYLES[type].dot}`} />
           <span className="font-sans text-xs text-slate-500 dark:text-slate-400">{label}</span>
         </div>
       ))}
-    </div>
+    </Card>
   );
 }
 
@@ -492,7 +493,7 @@ function RoomAccordion({
   const classCount = room.entries.length;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-slate-900/60">
+    <Card className="overflow-hidden dark:bg-slate-900/60">
       {/* Header */}
       <button
         type="button"
@@ -528,7 +529,7 @@ function RoomAccordion({
           }
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
