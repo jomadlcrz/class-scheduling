@@ -6,10 +6,10 @@ const baseClassName =
 
 const variants = {
   primary:
-    "bg-[#1a3f8f] text-white hover:bg-[#2a4f95] dark:bg-[#2a4f95] dark:hover:bg-[#1a3f8f]",
+    "bg-blue-900 text-white hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-900",
   danger: "bg-red-600 text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400",
   outline:
-    "border border-[#d9e3ef] text-[#374151] hover:bg-[#f8fafc] dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10",
+    "border border-slate-300 text-gray-700 hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10",
 } as const;
 
 type ButtonProps = {
