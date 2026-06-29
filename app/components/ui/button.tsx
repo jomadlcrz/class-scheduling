@@ -35,7 +35,7 @@ export function Button({
   onClick,
   children,
 }: ButtonProps) {
-  const size = block ? "mt-1 w-full py-3 text-base" : "px-4 py-2 text-sm";
+  const size = block ? "mt-1 w-full py-2.5 text-sm" : "px-3 py-1.5 text-sm";
 
   return (
     <button
@@ -64,7 +64,7 @@ type ButtonLinkProps = {
 
 /** Anchor styled like the primary block button (e.g. success-state CTAs). */
 export function ButtonLink({ href, children, className }: ButtonLinkProps) {
-  const classes = `${baseClassName} ${variants.primary} w-full py-3 text-base`;
+  const classes = `${baseClassName} ${variants.primary} w-full py-2.5 text-sm`;
   return (
     <a href={href} className={className ? `${classes} ${className}` : classes}>
       {children}

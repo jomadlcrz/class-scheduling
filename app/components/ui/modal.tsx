@@ -143,10 +143,10 @@ function ModalContent({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
-          className="pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col rounded-xl border border-slate-300 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-navy-900"
+          className="pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-navy-900"
         >
           <div className="flex shrink-0 items-start justify-between gap-4">
-            <h2 className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+            <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
               {title}
             </h2>
             <button

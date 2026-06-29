@@ -27,7 +27,7 @@ export function TableHeader({
 }) {
   return (
     <th
-      className={`px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${className ?? ""}`}
+      className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${className ?? ""}`}
     >
       {children}
     </th>
@@ -65,7 +65,7 @@ export function TableCell({
   className?: string;
 }) {
   return (
-    <td className={`px-4 py-3 text-gray-700 dark:text-slate-300 ${className ?? ""}`}>
+    <td className={`px-4 py-2.5 text-gray-700 dark:text-slate-300 ${className ?? ""}`}>
       {children}
     </td>
   );
