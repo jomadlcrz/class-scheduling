@@ -1,9 +1,18 @@
-import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useState } from "react";
 import { useTheme } from "./theme-provider";
 
+type ThemeToggleProps = {
+  className?: string;
+  iconSize?: number;
+};
+
 /** Accessible sun/moon switch that flips the global theme with a cross-fading icon. */
-export function ThemeToggle() {
+export function ThemeToggle({
+  className =
+    "relative grid size-11 cursor-pointer place-items-center rounded-full border border-slate-300/70 bg-white/60 text-navy-600 transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-gold-300 dark:hover:bg-white/10",
+  iconSize = 20,
+}: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
@@ -18,7 +27,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={!mounted ? "Toggle theme" : isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={!mounted ? "Toggle theme" : isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="relative grid size-11 cursor-pointer place-items-center rounded-full border border-slate-300/70 bg-white/60 text-navy-600 transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-gold-300 dark:hover:bg-white/10"
+      className={className}
     >
       <AnimatePresence mode="wait" initial={false}>
         {!mounted ? null : isDark ? (
@@ -30,7 +39,7 @@ export function ThemeToggle() {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute"
           >
-            <MoonIcon />
+            <MoonIcon size={iconSize} />
           </motion.span>
         ) : (
           <motion.span
@@ -41,7 +50,7 @@ export function ThemeToggle() {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute"
           >
-            <SunIcon />
+            <SunIcon size={iconSize} />
           </motion.span>
         )}
       </AnimatePresence>
@@ -49,11 +58,11 @@ export function ThemeToggle() {
   );
 }
 
-function SunIcon() {
+function SunIcon({ size = 20 }: { size?: number }) {
   return (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -68,11 +77,11 @@ function SunIcon() {
   );
 }
 
-function MoonIcon() {
+function MoonIcon({ size = 20 }: { size?: number }) {
   return (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

@@ -6,9 +6,9 @@ import {
   GridIcon,
   LayoutIcon,
   ListIcon,
-  PrinterIcon,
   UserSmallIcon,
 } from "../../components/ui/icons";
+import { ScheduleViewToggle } from "../../features/schedules/schedule-view-toggle";
 import { PageHeader } from "../../layouts/page-header";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -210,10 +210,15 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
     const down = (e: MouseEvent) => {
       isDown = true;
       el.style.cursor = "grabbing";
+      el.style.userSelect = "none";
       startX = e.pageX - el.offsetLeft;
       savedLeft = el.scrollLeft;
     };
-    const end = () => { isDown = false; el.style.cursor = "grab"; };
+    const end = () => {
+      isDown = false;
+      el.style.cursor = "grab";
+      el.style.userSelect = "";
+    };
     const move = (e: MouseEvent) => {
       if (!isDown) return;
       e.preventDefault();
@@ -286,9 +291,9 @@ function ClassroomMappingPage() {
       />
 
       {/* Filter toolbar */}
-      <Card className="mt-4 p-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-1 flex-wrap gap-3">
+      <div className="mt-4 flex flex-col gap-4">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem] md:items-end">
+          <div className="grid grid-cols-3 gap-3">
             <SelectField
               label="School Year"
               id="cm-year"
@@ -311,53 +316,71 @@ function ClassroomMappingPage() {
               options={BUILDINGS}
             />
           </div>
-          <div className="flex shrink-0 gap-2">
-            <ToolbarButton
-              onClick={() => window.print()}
-              icon={<PrinterIcon />}
-              label="Print"
+
+          <div className="relative w-full md:self-end">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
+              type="search"
+              value={rawSearch}
+              onChange={e => setRawSearch(e.target.value)}
+              placeholder="Search classrooms…"
+              aria-label="Search classrooms"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 font-sans text-sm text-gray-900 placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
           </div>
         </div>
-        {/* Search */}
-        <div className="relative mt-3">
-          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-            <SearchIcon />
-          </span>
-          <input
-            type="search"
-            value={rawSearch}
-            onChange={e => setRawSearch(e.target.value)}
-            placeholder="Search classrooms…"
-            aria-label="Search classrooms"
-            className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 font-sans text-sm text-gray-900 placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
-          />
-        </div>
-      </Card>
+      </div>
 
-      {/* Controls row: legend + view toggle */}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        {/* Expand / collapse all */}
-        <button
-          type="button"
-          onClick={toggleAll}
-          className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-sans text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-        >
-          {allOpen ? "Collapse all" : "Expand all"}
-        </button>
-
-        <div className="flex flex-1 items-center justify-center">
+      {/* Controls row: responsive legend with expand / toggle around it */}
+      <div className="mt-4 flex flex-col gap-3">
+        <div className="flex justify-center md:hidden">
           <TypeLegend />
         </div>
 
-        {/* View toggle */}
-        <div className="flex overflow-hidden rounded-lg border border-slate-300 dark:border-white/10">
-          <ViewBtn active={viewMode === "grid"} onClick={() => setViewMode("grid")} title="Grid view">
-            <GridIcon size={15} />
-          </ViewBtn>
-          <ViewBtn active={viewMode === "list"} onClick={() => setViewMode("list")} title="List view">
-            <ListIcon size={15} />
-          </ViewBtn>
+        <div className="flex items-center justify-between gap-3 md:hidden">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-sans text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+          >
+            {allOpen ? "Collapse all" : "Expand all"}
+          </button>
+
+          <ScheduleViewToggle
+            value={viewMode}
+            onChange={setViewMode}
+            ariaLabel="Classroom view"
+            options={[
+              { mode: "grid", title: "Grid view", Icon: GridIcon },
+              { mode: "list", title: "List view", Icon: ListIcon },
+            ]}
+          />
+        </div>
+
+        <div className="hidden items-center gap-3 md:flex">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-sans text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+          >
+            {allOpen ? "Collapse all" : "Expand all"}
+          </button>
+
+          <div className="flex flex-1 justify-center">
+            <TypeLegend />
+          </div>
+
+          <ScheduleViewToggle
+            value={viewMode}
+            onChange={setViewMode}
+            ariaLabel="Classroom view"
+            options={[
+              { mode: "grid", title: "Grid view", Icon: GridIcon },
+              { mode: "list", title: "List view", Icon: ListIcon },
+            ]}
+          />
         </div>
       </div>
 
@@ -428,42 +451,19 @@ function ToolbarButton({ onClick, icon, label }: { onClick: () => void; icon: Re
 
 function TypeLegend() {
   const items: { label: string; type: SubjectType }[] = [
-    { label: "Major (with Lab)",    type: "major_lab"    },
+    { label: "Major (Lab)",    type: "major_lab"    },
     { label: "Major (w/o Lab)",     type: "major_no_lab" },
-    { label: "GE / GenEd",         type: "gen_ed"       },
+    { label: "GenEd",         type: "gen_ed"       },
   ];
   return (
-    <Card className="flex flex-wrap items-center justify-center gap-4 px-5 py-2">
+    <Card className="flex flex-nowrap items-center justify-center gap-4 overflow-x-auto px-5 py-2">
       {items.map(({ label, type }) => (
-        <div key={type} className="flex items-center gap-1.5">
+        <div key={type} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           <span className={`inline-block h-1 w-7 rounded-full ${TYPE_STYLES[type].dot}`} />
           <span className="font-sans text-xs text-slate-500 dark:text-slate-400">{label}</span>
         </div>
       ))}
     </Card>
-  );
-}
-
-function ViewBtn({ active, onClick, title, children }: {
-  active: boolean;
-  onClick: () => void;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      aria-pressed={active}
-      className={`inline-flex h-8 w-9 cursor-pointer items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 [&+button]:border-l [&+button]:border-slate-300 dark:[&+button]:border-white/10 ${
-        active
-          ? "bg-blue-50 text-blue-700 dark:bg-white/15 dark:text-white"
-          : "bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-500 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-slate-300"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
 

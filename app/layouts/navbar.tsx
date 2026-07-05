@@ -28,7 +28,10 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
 
       <div className="flex-1" />
 
-      <ThemeToggle />
+      <ThemeToggle
+        className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full border border-slate-300/70 bg-white/60 text-navy-600 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-gold-300 dark:hover:bg-white/10"
+        iconSize={16}
+      />
 
       {user && (
         <Link

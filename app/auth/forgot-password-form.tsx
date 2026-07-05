@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FormError } from "../components/forms/form-error";
-import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { Spinner } from "../components/ui/spinner";
 import { forgotPasswordSchema } from "../schemas/auth.schema";
 import { authService } from "../services/auth.service";
 
@@ -46,9 +46,20 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
         placeholder="you@gwc.edu.ph"
       />
 
-      <Button isLoading={isLoading} loadingLabel="Sending…">
-        Send Reset Link
-      </Button>
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-800 px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-navy-800/20 transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-navy-950"
+      >
+        {isLoading ? (
+          <>
+            <Spinner />
+            Sending…
+          </>
+        ) : (
+          "Send Reset Link"
+        )}
+      </button>
     </form>
   );
 }

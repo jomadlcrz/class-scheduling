@@ -11,8 +11,8 @@ import { Spinner } from "../../components/ui/spinner";
 import { ScheduleGrid } from "../../features/schedules/schedule-grid";
 import { ScheduleTable } from "../../features/schedules/schedule-table";
 import {
-  ScheduleViewToggle,
-  type ScheduleViewMode,
+    ScheduleViewToggle,
+    type ScheduleViewMode,
 } from "../../features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "../../features/schedules/slot-entry-form";
 import { PageHeader } from "../../layouts/page-header";
@@ -26,13 +26,13 @@ import type { Faculty } from "../../types/faculty";
 import type { Program } from "../../types/program";
 import type { Room } from "../../types/room";
 import {
-  DEFAULT_SCHOOL_YEAR,
-  SCHEDULE_SEMESTER_LABELS,
-  SCHEDULE_SEMESTERS,
-  SCHOOL_YEARS,
-  type Day,
-  type Schedule,
-  type ScheduleSemester,
+    DEFAULT_SCHOOL_YEAR,
+    SCHEDULE_SEMESTER_LABELS,
+    SCHEDULE_SEMESTERS,
+    SCHOOL_YEARS,
+    type Day,
+    type Schedule,
+    type ScheduleSemester,
 } from "../../types/schedule";
 import type { ClassSet } from "../../types/set";
 import type { Subject } from "../../types/subject";
@@ -376,12 +376,17 @@ function SchedulesNewPage() {
           <FormError message={saveError} />
 
           {/* Toolbar: view toggle + add slot */}
-          <div className="flex items-center justify-between gap-3">
-            <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
-            <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
-              <PlusIcon />
-              Add Slot
-            </Button>
+          <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+            <div className="hidden sm:block" />
+            <div className="flex justify-center">
+              <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+            </div>
+            <div className="flex justify-end">
+              <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
+                <PlusIcon />
+                Add Slot
+              </Button>
+            </div>
           </div>
 
           {/* Week schedule body */}

@@ -2,25 +2,40 @@ import { GridIcon, ListIcon } from "../../components/ui/icons";
 
 export type ScheduleViewMode = "grid" | "table";
 
-const OPTIONS: { mode: ScheduleViewMode; label: string; Icon: typeof GridIcon }[] = [
-  { mode: "grid", label: "Grid View", Icon: GridIcon },
-  { mode: "table", label: "Table View", Icon: ListIcon },
-];
+export type ScheduleViewToggleOption<T extends string = ScheduleViewMode> = {
+  mode: T;
+  title: string;
+  Icon: typeof GridIcon;
+};
 
-type Props = {
-  value: ScheduleViewMode;
-  onChange: (mode: ScheduleViewMode) => void;
+const DEFAULT_OPTIONS = [
+  { mode: "grid", title: "Grid view", Icon: GridIcon },
+  { mode: "table", title: "List view", Icon: ListIcon },
+  ] as const satisfies readonly ScheduleViewToggleOption[];
+
+type Props<T extends string = ScheduleViewMode> = {
+  value: T;
+  onChange: (mode: T) => void;
+  options?: readonly ScheduleViewToggleOption<T>[];
+  ariaLabel?: string;
 };
 
 /** Segmented control to switch between the grid and list schedule views. */
-export function ScheduleViewToggle({ value, onChange }: Props) {
+export function ScheduleViewToggle<T extends string = ScheduleViewMode>({
+  value,
+  onChange,
+  options,
+  ariaLabel = "Schedule view",
+}: Props<T>) {
+  const resolvedOptions = (options ?? DEFAULT_OPTIONS) as readonly ScheduleViewToggleOption<T>[];
+
   return (
     <div
       role="group"
-      aria-label="Schedule view"
-      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white/60 p-1 dark:border-white/10 dark:bg-white/5"
+      aria-label={ariaLabel}
+      className="inline-flex overflow-hidden rounded-lg border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5"
     >
-      {OPTIONS.map(({ mode, label, Icon }) => {
+      {resolvedOptions.map(({ mode, title, Icon }) => {
         const isActive = value === mode;
         return (
           <button
@@ -28,14 +43,15 @@ export function ScheduleViewToggle({ value, onChange }: Props) {
             type="button"
             onClick={() => onChange(mode)}
             aria-pressed={isActive}
-            className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-sans text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+            title={title}
+            aria-label={title}
+            className={`inline-flex h-8 w-9 cursor-pointer items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 [&+button]:border-l [&+button]:border-slate-300 dark:[&+button]:border-white/10 ${
               isActive
-                ? "bg-navy-700 text-white shadow-sm dark:bg-white/10 dark:text-white"
-                : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                ? "bg-slate-100 text-slate-800 dark:bg-white/10 dark:text-white"
+                : "bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-500 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-slate-300"
             }`}
           >
-            <Icon />
-            {label}
+            <Icon size={15} />
           </button>
         );
       })}

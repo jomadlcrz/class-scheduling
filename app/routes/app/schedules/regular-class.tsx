@@ -237,12 +237,17 @@ function RegularClassPage() {
       </div>
 
       {/* View toggle + print */}
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
-        <Button type="button" variant="outline" block={false} onClick={() => window.print()}>
-          <PrinterIcon />
-          Print
-        </Button>
+      <div className="mt-4 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+        <div className="hidden sm:block" />
+        <div className="flex justify-center">
+          <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+        </div>
+        <div className="flex justify-end">
+          <Button type="button" variant="outline" block={false} onClick={() => window.print()}>
+            <PrinterIcon />
+            Print
+          </Button>
+        </div>
       </div>
 
       <div className="mt-4">
