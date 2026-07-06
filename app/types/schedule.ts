@@ -12,7 +12,7 @@ export const DAY_LABELS: Record<Day, string> = {
   S: "Saturday",
 };
 
-export const DAY_SHORT: Record<Day, string> = {
+const DAY_SHORT: Record<Day, string> = {
   M: "Mon",
   T: "Tue",
   W: "Wed",

@@ -2,7 +2,7 @@ import { GridIcon, ListIcon } from "../../components/ui/icons";
 
 export type ScheduleViewMode = "grid" | "table";
 
-export type ScheduleViewToggleOption<T extends string = ScheduleViewMode> = {
+type ScheduleViewToggleOption<T extends string = ScheduleViewMode> = {
   mode: T;
   title: string;
   Icon: typeof GridIcon;

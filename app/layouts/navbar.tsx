@@ -16,7 +16,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-navy-950/90">
+    <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-navy-950/90">
       <button
         type="button"
         onClick={onToggleSidebar}

@@ -445,7 +445,7 @@ export function newStudentId(): string {
 
 // ─── Academic Semesters ───────────────────────────────────────────────────────
 
-export const academicSemesters: AcademicSemester[] = [
+const academicSemesters: AcademicSemester[] = [
   { id: "sem-1", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 1, status: "active" },
   { id: "sem-2", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 2, status: "upcoming" },
   { id: "sem-3", academicYearId: "ay-3", academicYearLabel: "2025-2026", semester: 3, status: "upcoming" },
@@ -455,7 +455,7 @@ export const academicSemesters: AcademicSemester[] = [
 
 let semesterIdCounter = academicSemesters.length;
 
-export function newSemesterId(): string {
+function newSemesterId(): string {
   semesterIdCounter += 1;
   return `sem-${semesterIdCounter}`;
 }

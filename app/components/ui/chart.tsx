@@ -22,7 +22,7 @@ type ChartContainerProps = React.HTMLAttributes<HTMLDivElement> & {
   children: React.ReactElement;
 };
 
-export function ChartContainer({ config, children, className, ...props }: ChartContainerProps) {
+function ChartContainer({ config, children, className, ...props }: ChartContainerProps) {
   // Build CSS variables from config so recharts colors can reference them.
   const style = React.useMemo(() => {
     const vars: Record<string, string> = {};
@@ -65,7 +65,7 @@ type ChartTooltipContentProps = {
   indicator?: "line" | "dot" | "dashed";
 };
 
-export function ChartTooltipContent({
+function ChartTooltipContent({
   active,
   payload,
   label,
@@ -148,5 +148,5 @@ function ChartLegendContent({ payload, nameKey }: ChartLegendContentProps) {
 }
 
 // Re-export recharts Tooltip / Legend with our content as default.
-export const ChartTooltip = Tooltip;
+const ChartTooltip = Tooltip;
 const ChartLegend = Legend;

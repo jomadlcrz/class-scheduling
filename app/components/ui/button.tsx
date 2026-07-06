@@ -2,14 +2,15 @@ import type { ReactNode } from "react";
 import { Spinner } from "./spinner";
 
 const baseClassName =
-  "flex cursor-pointer items-center justify-center gap-2 rounded-lg font-sans font-medium transition-all duration-150 active:scale-[0.97] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60";
+  "flex cursor-pointer items-center justify-center gap-2 rounded-lg font-body font-medium transition-all duration-150 active:scale-[0.97] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60";
 
 const variants = {
   primary:
-    "bg-blue-900 text-white hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-900",
-  danger: "bg-red-600 text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400",
+    "bg-navy-800 text-white hover:bg-navy-700 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-200",
+  danger:
+    "bg-red-600 text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400",
   outline:
-    "border border-slate-300 text-gray-700 hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10",
+    "border border-slate-300 text-navy-700 hover:bg-slate-100 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10",
 } as const;
 
 type ButtonProps = {

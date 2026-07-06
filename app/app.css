@@ -41,6 +41,12 @@
   --color-navy-900: #081226;
   --color-navy-950: #050b1a;
 
+  /* GWC brand palette */
+  --color-gwc-blue: #0b3b9e;
+  --color-gwc-blue-bright: #1e5bff;
+  --color-gwc-blue-soft: #afc4ff;
+  --color-gwc-blue-deep: #072b75;
+
   /* Light surface (warm white). */
   --color-cream-50: #f7f7f2;
   --color-cream-100: #eeeee6;
