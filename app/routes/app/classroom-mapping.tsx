@@ -8,6 +8,7 @@ import {
   ListIcon,
   UserSmallIcon,
 } from "../../components/ui/icons";
+import { Select } from "../../components/ui/select";
 import { ScheduleViewToggle } from "../../features/schedules/schedule-view-toggle";
 import { PageHeader } from "../../layouts/page-header";
 
@@ -290,27 +291,33 @@ function ClassroomMappingPage() {
       <div className="mt-4 flex flex-col gap-4">
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem] md:items-end">
           <div className="grid grid-cols-3 gap-3">
-            <SelectField
+            <Select
               label="School Year"
               id="cm-year"
+              hideLabel
               value={schoolYear}
-              onChange={setSchoolYear}
-              options={SCHOOL_YEARS}
-            />
-            <SelectField
+              onChange={e => setSchoolYear(e.target.value)}
+            >
+              {SCHOOL_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            </Select>
+            <Select
               label="Semester"
               id="cm-sem"
+              hideLabel
               value={semester}
-              onChange={setSemester}
-              options={SEMESTERS}
-            />
-            <SelectField
+              onChange={e => setSemester(e.target.value)}
+            >
+              {SEMESTERS.map(s => <option key={s} value={s}>{s}</option>)}
+            </Select>
+            <Select
               label="Building"
               id="cm-building"
+              hideLabel
               value={building}
-              onChange={setBuilding}
-              options={BUILDINGS}
-            />
+              onChange={e => setBuilding(e.target.value)}
+            >
+              {BUILDINGS.map(b => <option key={b} value={b}>{b}</option>)}
+            </Select>
           </div>
 
           <div className="relative w-full md:self-end">
@@ -390,36 +397,6 @@ function ClassroomMappingPage() {
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
-
-function SelectField({
-  label,
-  id,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  id: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="font-sans text-xs font-medium text-slate-500 dark:text-slate-400">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="h-9 cursor-pointer rounded-lg border border-slate-300 bg-white px-3 pr-8 font-sans text-sm text-gray-900 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/10 dark:bg-white/10 dark:text-slate-100"
-      >
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-    </div>
-  );
-}
 
 function ToolbarButton({ onClick, icon, label }: { onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
@@ -642,12 +619,12 @@ function MappingTableView({ classrooms }: { classrooms: Classroom[] }) {
         <thead>
           <tr>
             <th
-              className="sticky top-0 left-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
+              className="sticky top-0 left-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
             >
               Room
             </th>
             <th
-              className="sticky top-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
+              className="sticky top-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
               style={{ left: ROOM_COL_W }}
             >
               Day
@@ -655,7 +632,7 @@ function MappingTableView({ classrooms }: { classrooms: Classroom[] }) {
             {TIME_SLOTS.map((slot, idx) => (
               <th
                 key={idx}
-                className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
+                className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
               >
                 {slot.start}
                 <span className="mx-0.5 text-slate-300 dark:text-slate-600">–</span>

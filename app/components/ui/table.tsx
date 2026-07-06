@@ -12,7 +12,7 @@ export function Table({ children }: { children: ReactNode }) {
 
 export function TableHead({ children }: { children: ReactNode }) {
   return (
-    <thead className="border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+    <thead className="border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-navy-900">
       <tr>{children}</tr>
     </thead>
   );
