@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
-import { CloseIcon } from "../components/ui/icons";
+import { LayoutSidebarIcon } from "../components/ui/icons";
 import { SidebarBrand, SidebarNav } from "./sidebar";
 
 export function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -66,7 +66,7 @@ function DrawerContent({ onClose }: { onClose: () => void }) {
             aria-label="Close navigation"
             className="grid size-9 cursor-pointer place-items-center rounded-full text-white transition-colors duration-150 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
           >
-            <CloseIcon />
+            <LayoutSidebarIcon />
           </button>
         </div>
         <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-5 text-white">

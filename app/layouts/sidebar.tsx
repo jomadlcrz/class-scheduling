@@ -1,7 +1,6 @@
 import { motion } from "motion/react";
 import { type ComponentType, useState } from "react";
 import { NavLink, useLocation } from "react-router";
-import { Tooltip } from "../components/ui/tooltip";
 import {
   AlertTriangleIcon,
   BookIcon,
@@ -21,6 +20,7 @@ import {
   UserIcon,
   UsersIcon,
 } from "../components/ui/icons";
+import { Tooltip } from "../components/ui/tooltip";
 import { useAuth } from "../hooks/use-auth";
 import type { Role } from "../types/user";
 
@@ -44,6 +44,7 @@ type NavSection = {
 
 const NAV_SECTIONS: NavSection[] = [
   {
+    heading: "Overview",
     items: [{ label: "Dashboard", href: "/dashboard", icon: DashboardIcon }],
   },
   {
@@ -268,9 +269,9 @@ function NavEntry({ item, ctx }: { item: NavItem; ctx: NavContext }) {
         to={item.href!}
         onClick={onNavigate}
         className={({ isActive }) =>
-          `relative ${entryClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${collapsed ? "justify-center px-0" : ""} ${
+          `relative ${entryClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${collapsed ? "justify-center px-0" : ""} ${
             isActive
-              ? `bg-[#1e5bff] text-white ${!collapsed ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-gold-400" : ""}`
+              ? `bg-[#1e5bff] text-white ${!collapsed ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-white" : ""}`
               : "text-white/85 hover:bg-white/10 hover:text-white"
           }`
         }
@@ -283,7 +284,7 @@ function NavEntry({ item, ctx }: { item: NavItem; ctx: NavContext }) {
 }
 
 const childLinkClassName = (isActive: boolean) =>
-  `block truncate rounded-lg px-3 py-1.5 font-sans text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+  `block truncate rounded-lg px-3 py-1.5 font-sans text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
     isActive
       ? "bg-[#1e5bff] text-white"
       : "text-white/80 hover:bg-white/10 hover:text-white"
@@ -317,7 +318,7 @@ function NavGroup({ item, ctx }: { item: NavItem; ctx: NavContext }) {
           type="button"
           onClick={handleToggle}
           aria-expanded={showSubmenu}
-          className={`${entryClassName} w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${collapsed ? "justify-center px-0" : ""} ${
+          className={`${entryClassName} w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${collapsed ? "justify-center px-0" : ""} ${
             hasActiveChild
               ? "text-white"
               : "text-white/85 hover:bg-white/10 hover:text-white"
