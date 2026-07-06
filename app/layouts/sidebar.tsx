@@ -1,5 +1,7 @@
+import { motion } from "motion/react";
 import { type ComponentType, useState } from "react";
 import { NavLink, useLocation } from "react-router";
+import { Tooltip } from "../components/ui/tooltip";
 import {
   AlertTriangleIcon,
   BookIcon,
@@ -139,12 +141,6 @@ const NAV_SECTIONS: NavSection[] = [
         icon: LayoutIcon,
         roles: ["admin", "registrar", "dean"],
       },
-      {
-        label: "Overview",
-        href: "/facilities",
-        icon: ChartIcon,
-        roles: ["admin", "registrar"],
-      },
     ],
   },
   {
@@ -183,10 +179,27 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+type NavContext = {
+  onNavigate?: () => void;
+  /** Icon-only rail; only ever true for the desktop sidebar, never the mobile drawer. */
+  collapsed: boolean;
+  /** Expand the sidebar first, then reveal the clicked submenu (icon-only rail). */
+  onExpand?: () => void;
+};
+
 /** Nav list shared by the desktop sidebar and the mobile drawer. */
-export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+export function SidebarNav({
+  onNavigate,
+  collapsed = false,
+  onExpand,
+}: {
+  onNavigate?: () => void;
+  collapsed?: boolean;
+  onExpand?: () => void;
+}) {
   const { user } = useAuth();
   const role = user?.role;
+  const ctx: NavContext = { onNavigate, collapsed, onExpand };
 
   return (
     <nav className="flex flex-col gap-6" aria-label="Main navigation">
@@ -198,8 +211,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
         return (
           <div key={section.heading ?? "overview"}>
-            {section.heading && (
-              <p className="mb-2 px-3 font-sans text-[0.65rem] font-medium uppercase tracking-wider text-[#afc4ff]">
+            {section.heading && !collapsed && (
+              <p className="mb-2 px-3 font-sans text-[0.65rem] font-semibold uppercase tracking-wider text-[#afc4ff]">
                 {section.heading}
               </p>
             )}
@@ -207,9 +220,9 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               {items.map((item) => (
                 <li key={item.href ?? item.label}>
                   {item.children ? (
-                    <NavGroup item={item} onNavigate={onNavigate} />
+                    <NavGroup item={item} ctx={ctx} />
                   ) : (
-                    <NavEntry item={item} onNavigate={onNavigate} />
+                    <NavEntry item={item} ctx={ctx} />
                   )}
                 </li>
               ))}
@@ -222,81 +235,110 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 const entryClassName =
-  "flex items-center gap-3 rounded-lg px-3 py-2 font-sans text-sm transition-colors duration-150";
+  "flex items-center gap-3 rounded-lg px-3 py-2 font-sans text-[0.82rem] transition-colors duration-150";
 
-function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
+function NavEntry({ item, ctx }: { item: NavItem; ctx: NavContext }) {
   const Icon = item.icon;
+  const { collapsed, onNavigate } = ctx;
 
   if (item.soon) {
     return (
-      <div aria-disabled="true" className={`${entryClassName} cursor-default text-white/50`}>
-        <Icon />
-        <span className="flex-1">{item.label}</span>
-        <span className="rounded-full border border-white/20 px-1.5 py-0.5 font-sans text-[0.6rem] uppercase tracking-wide text-white/50">
-          Soon
-        </span>
-      </div>
+      <Tooltip label={`${item.label} (Soon)`} direction="right" gap={10} disabled={!collapsed}>
+        <div
+          aria-disabled="true"
+          className={`${entryClassName} cursor-default text-white/50 ${collapsed ? "justify-center px-0" : ""}`}
+        >
+          <Icon />
+          {!collapsed && (
+            <>
+              <span className="flex-1">{item.label}</span>
+              <span className="rounded-full border border-white/20 px-1.5 py-0.5 font-sans text-[0.6rem] uppercase tracking-wide text-white/50">
+                Soon
+              </span>
+            </>
+          )}
+        </div>
+      </Tooltip>
     );
   }
 
   return (
-    <NavLink
-      to={item.href!}
-      onClick={onNavigate}
-      className={({ isActive }) =>
-        `${entryClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-          isActive
-            ? "bg-[#1e5bff] text-white"
-            : "text-white/85 hover:bg-white/10 hover:text-white"
-        }`
-      }
-    >
-      <Icon />
-      {item.label}
-    </NavLink>
+    <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
+      <NavLink
+        to={item.href!}
+        onClick={onNavigate}
+        className={({ isActive }) =>
+          `relative ${entryClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${collapsed ? "justify-center px-0" : ""} ${
+            isActive
+              ? `bg-[#1e5bff] text-white ${!collapsed ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-gold-400" : ""}`
+              : "text-white/85 hover:bg-white/10 hover:text-white"
+          }`
+        }
+      >
+        <Icon />
+        {!collapsed && item.label}
+      </NavLink>
+    </Tooltip>
   );
 }
 
 const childLinkClassName = (isActive: boolean) =>
-  `flex items-center rounded-lg py-2 pl-11 pr-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+  `block truncate rounded-lg px-3 py-1.5 font-sans text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
     isActive
       ? "bg-[#1e5bff] text-white"
       : "text-white/80 hover:bg-white/10 hover:text-white"
   }`;
 
 /** Collapsible parent item that toggles a submenu instead of navigating. */
-function NavGroup({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
+function NavGroup({ item, ctx }: { item: NavItem; ctx: NavContext }) {
   const Icon = item.icon;
   const { pathname } = useLocation();
+  const { collapsed, onExpand, onNavigate } = ctx;
   const children = item.children ?? [];
   const hasActiveChild = children.some(
     (child) => pathname === child.href || pathname.startsWith(`${child.href}/`),
   );
   const [open, setOpen] = useState(hasActiveChild);
+  const showSubmenu = open && !collapsed;
+
+  function handleToggle() {
+    if (collapsed) {
+      onExpand?.();
+      setOpen(true);
+      return;
+    }
+    setOpen((v) => !v);
+  }
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className={`${entryClassName} w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-          hasActiveChild
-            ? "text-white"
-            : "text-white/85 hover:bg-white/10 hover:text-white"
-        }`}
-      >
-        <Icon />
-        <span className="flex-1 text-left">{item.label}</span>
-        <span
-          className={`transition-transform duration-200 ${open ? "rotate-90" : ""}`}
-          aria-hidden="true"
+      <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
+        <button
+          type="button"
+          onClick={handleToggle}
+          aria-expanded={showSubmenu}
+          className={`${entryClassName} w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${collapsed ? "justify-center px-0" : ""} ${
+            hasActiveChild
+              ? "text-white"
+              : "text-white/85 hover:bg-white/10 hover:text-white"
+          }`}
         >
-          <ChevronRightIcon />
-        </span>
-      </button>
-      {open && (
-        <ul className="mt-0.5 flex flex-col gap-0.5">
+          <Icon />
+          {!collapsed && (
+            <>
+              <span className="flex-1 text-left">{item.label}</span>
+              <span
+                className={`transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+                aria-hidden="true"
+              >
+                <ChevronRightIcon />
+              </span>
+            </>
+          )}
+        </button>
+      </Tooltip>
+      {showSubmenu && (
+        <ul className="ml-[1.35rem] mt-0.5 flex flex-col gap-0.5 border-l border-white/15 pl-2.5">
           {children.map((child) => (
             <li key={child.href}>
               <NavLink
@@ -315,7 +357,7 @@ function NavGroup({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
 }
 
 /** Brand block at the top of the sidebar and mobile drawer. */
-export function SidebarBrand() {
+export function SidebarBrand({ collapsed = false }: { collapsed?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
       <img
@@ -324,30 +366,43 @@ export function SidebarBrand() {
         width={36}
         height={36}
         loading="eager"
-        className="size-9 object-contain"
+        className="size-9 shrink-0 object-contain"
       />
-      <span className="flex flex-col items-center text-center leading-none">
-        <span className="font-display text-2xl tracking-wide text-white">
-          GWC
+      {!collapsed && (
+        <span className="flex flex-col items-center text-center leading-none">
+          <span className="font-display text-2xl tracking-wide text-white">
+            GWC
+          </span>
+          <span className="-mt-1.5 font-sans text-[0.6rem] tracking-wide text-[#afc4ff]">
+            Class Scheduling
+          </span>
         </span>
-        <span className="-mt-1.5 font-sans text-[0.6rem] tracking-wide text-[#afc4ff]">
-          Class Scheduling
-        </span>
-      </span>
+      )}
     </div>
   );
 }
 
+type SidebarProps = {
+  collapsed: boolean;
+  onExpand: () => void;
+};
+
 /** Desktop-only sidebar; mobile uses the MobileNav drawer instead. */
-export function Sidebar() {
+export function Sidebar({ collapsed, onExpand }: SidebarProps) {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-white/10 bg-linear-to-b from-[#0b3b9e] to-[#072b75] lg:flex">
-      <div className="flex h-12 shrink-0 items-center border-b border-white/10 px-5">
-        <SidebarBrand />
+    <motion.aside
+      animate={{ width: collapsed ? 68 : 256 }}
+      transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+      className="sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-white/10 bg-linear-to-b from-[#0b3b9e] to-[#072b75] lg:flex"
+    >
+      <div
+        className={`flex h-12 shrink-0 items-center border-b border-white/10 ${collapsed ? "justify-center px-0" : "px-5"}`}
+      >
+        <SidebarBrand collapsed={collapsed} />
       </div>
-      <div className="flex-1 overflow-y-auto scrollbar-none px-3 py-5 text-white">
-        <SidebarNav />
+      <div className={`flex-1 overflow-y-auto scrollbar-none py-5 text-white ${collapsed ? "px-1.5" : "px-3"}`}>
+        <SidebarNav collapsed={collapsed} onExpand={onExpand} />
       </div>
-    </aside>
+    </motion.aside>
   );
 }

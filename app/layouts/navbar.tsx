@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/use-auth";
 const iconButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10";
 
-export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
+export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -19,9 +19,9 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
     <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-navy-950/90">
       <button
         type="button"
-        onClick={onOpenMobileNav}
-        aria-label="Open navigation"
-        className={`${iconButtonClassName} lg:hidden`}
+        onClick={onToggleSidebar}
+        aria-label="Toggle navigation menu"
+        className={iconButtonClassName}
       >
         <MenuIcon />
       </button>
