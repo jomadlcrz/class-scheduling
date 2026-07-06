@@ -19,7 +19,7 @@ export function SlotsByDayChart({ data, subtitle }: SlotsByDayChartProps) {
   return (
     <div className="flex flex-col rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5">
       <div className="p-5 pb-0">
-        <h2 className="font-display text-base font-semibold tracking-wide text-navy-700 dark:text-white">
+        <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-white">
           Slots by Day
         </h2>
         <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{subtitle}</p>

@@ -279,10 +279,6 @@ function ClassroomMappingPage() {
       return next;
     });
 
-  const allOpen  = filtered.length > 0 && filtered.every(c => openRooms.has(c.id));
-  const toggleAll = () =>
-    setOpenRooms(allOpen ? new Set() : new Set(filtered.map(c => c.id)));
-
   return (
     <>
       <PageHeader
@@ -339,15 +335,7 @@ function ClassroomMappingPage() {
           <TypeLegend />
         </div>
 
-        <div className="flex items-center justify-between gap-3 md:hidden">
-          <button
-            type="button"
-            onClick={toggleAll}
-            className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-sans text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-          >
-            {allOpen ? "Collapse all" : "Expand all"}
-          </button>
-
+        <div className="flex items-center justify-end gap-3 md:hidden">
           <ScheduleViewToggle
             value={viewMode}
             onChange={setViewMode}
@@ -359,41 +347,38 @@ function ClassroomMappingPage() {
           />
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <button
-            type="button"
-            onClick={toggleAll}
-            className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-sans text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-          >
-            {allOpen ? "Collapse all" : "Expand all"}
-          </button>
+        <div className="hidden grid-cols-[1fr_auto_1fr] items-center gap-3 md:grid">
+          <div />
 
-          <div className="flex flex-1 justify-center">
-            <TypeLegend />
+          <TypeLegend />
+
+          <div className="flex justify-end">
+            <ScheduleViewToggle
+              value={viewMode}
+              onChange={setViewMode}
+              ariaLabel="Classroom view"
+              options={[
+                { mode: "grid", title: "Grid view", Icon: GridIcon },
+                { mode: "list", title: "List view", Icon: ListIcon },
+              ]}
+            />
           </div>
-
-          <ScheduleViewToggle
-            value={viewMode}
-            onChange={setViewMode}
-            ariaLabel="Classroom view"
-            options={[
-              { mode: "grid", title: "Grid view", Icon: GridIcon },
-              { mode: "list", title: "List view", Icon: ListIcon },
-            ]}
-          />
         </div>
       </div>
 
       {/* Room list */}
       {filtered.length === 0 ? (
         <NoResults query={rawSearch} />
+      ) : viewMode === "list" ? (
+        <div className="mt-3">
+          <MappingTableView classrooms={filtered} />
+        </div>
       ) : (
         <div className="mt-3 flex flex-col gap-3">
           {filtered.map(room => (
             <RoomAccordion
               key={room.id}
               room={room}
-              viewMode={viewMode}
               isOpen={openRooms.has(room.id)}
               onToggle={() => toggleRoom(room.id)}
             />
@@ -481,12 +466,10 @@ function StatusBadge({ status }: { status: ClassroomStatus }) {
 
 function RoomAccordion({
   room,
-  viewMode,
   isOpen,
   onToggle,
 }: {
   room: Classroom;
-  viewMode: "grid" | "list";
   isOpen: boolean;
   onToggle: () => void;
 }) {
@@ -523,10 +506,7 @@ function RoomAccordion({
       {/* Body */}
       {isOpen && (
         <div className="border-t border-slate-300 dark:border-white/10">
-          {viewMode === "grid"
-            ? <TimetableGrid room={room} />
-            : <TableView room={room} />
-          }
+          <TimetableGrid room={room} />
         </div>
       )}
     </Card>
@@ -576,7 +556,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
                     key={slot.start}
                     className={`min-h-25 border-t border-slate-200 p-1.5 dark:border-white/8 ${si > 0 ? "border-l border-slate-200 dark:border-white/8" : "border-l-0"}`}
                   >
-                    {entry ? <ClassCard entry={entry} /> : <FreeCell />}
+                    {entry ? <ClassCard entry={entry} /> : <FreeCell slot={slot} />}
                   </div>
                 );
               })}
@@ -613,9 +593,12 @@ function ClassCard({ entry }: { entry: ClassEntry }) {
   );
 }
 
-function FreeCell() {
+function FreeCell({ slot }: { slot: { start: string; end: string } }) {
   return (
-    <div className="flex h-full min-h-20 items-center justify-center">
+    <div className="flex h-full min-h-20 flex-col items-center justify-center gap-1">
+      <span className="font-sans text-[0.62rem] font-semibold text-slate-400 dark:text-slate-500">
+        {slot.start} – {slot.end}
+      </span>
       <span className="font-sans text-[0.72rem] italic text-slate-300 dark:text-slate-600">
         Free
       </span>
@@ -623,83 +606,152 @@ function FreeCell() {
   );
 }
 
-function TableView({ room }: { room: Classroom }) {
+// Fixed column widths — kept in sync via <colgroup> + table-layout: fixed so
+// the sticky Room/Day columns can never drift out of alignment with the slot columns.
+const ROOM_COL_W = 110;
+const DAY_COL_W = 100;
+const SLOT_COL_W = 150;
+
+/** List view: every room's week in one sticky-header timetable, spanning Room across its day rows. */
+function MappingTableView({ classrooms }: { classrooms: Classroom[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   useDragScroll(scrollRef);
-
-  const rows = DAYS.flatMap((day) => {
-    const dayEntries = room.entries
-      .filter(e => e.day === day)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-    const ds = DAY_STYLES[day];
-    if (dayEntries.length === 0) {
-      return [
-        <tr key={`${day}-empty`}>
-          <td className={`whitespace-nowrap px-4 py-3 font-sans text-xs font-bold uppercase tracking-widest ${ds.color}`}>
-            {day}
-          </td>
-          <td colSpan={6} className="px-4 py-3 font-sans text-sm italic text-slate-300 dark:text-slate-600">
-            No classes
-          </td>
-        </tr>,
-      ];
-    }
-
-    return dayEntries.map((entry, i) => {
-      const s = TYPE_STYLES[entry.type];
-      return (
-        <tr
-          key={`${day}-${entry.subjectCode}-${i}`}
-          className="transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
-        >
-              <td className={`whitespace-nowrap px-4 py-3 font-sans text-xs font-bold uppercase tracking-widest ${ds.color}`}>
-            {day}
-          </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
-            {entry.startTime}
-          </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
-            {entry.endTime}
-          </td>
-          <td className={`whitespace-nowrap px-4 py-3 font-sans text-sm font-bold ${s.tableCode}`}>
-            {entry.subjectCode}
-          </td>
-          <td className="px-4 py-3 font-sans text-sm text-gray-900 dark:text-slate-200">
-            {entry.descriptiveTitle}
-          </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
-            {entry.instructor}
-          </td>
-          <td className="whitespace-nowrap px-4 py-3 font-sans text-sm text-slate-500 dark:text-slate-400">
-            {entry.section}
-          </td>
-        </tr>
-      );
-    });
-  });
 
   return (
     <div
       ref={scrollRef}
-      className="overflow-x-auto"
-      style={{ cursor: "grab", scrollbarWidth: "thin" }}
+      className="overflow-auto rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5"
+      style={{ maxHeight: "70vh", cursor: "grab", scrollbarWidth: "none" }}
     >
-      <table className="w-full min-w-190 border-collapse font-sans text-sm">
+      <table
+        className="text-sm"
+        style={{
+          borderSpacing: 0,
+          borderCollapse: "separate",
+          tableLayout: "fixed",
+          width: ROOM_COL_W + DAY_COL_W + TIME_SLOTS.length * SLOT_COL_W,
+        }}
+      >
+        <colgroup>
+          <col style={{ width: ROOM_COL_W }} />
+          <col style={{ width: DAY_COL_W }} />
+          {TIME_SLOTS.map((_, idx) => (
+            <col key={idx} style={{ width: SLOT_COL_W }} />
+          ))}
+        </colgroup>
         <thead>
-          <tr className="border-b-2 border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
-            {["Day", "Start", "End", "Code", "Descriptive Title", "Instructor", "Set"].map(h => (
-              <th key={h} className="px-4 py-2.5 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                {h}
+          <tr>
+            <th
+              className="sticky top-0 left-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
+            >
+              Room
+            </th>
+            <th
+              className="sticky top-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
+              style={{ left: ROOM_COL_W }}
+            >
+              Day
+            </th>
+            {TIME_SLOTS.map((slot, idx) => (
+              <th
+                key={idx}
+                className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
+              >
+                {slot.start}
+                <span className="mx-0.5 text-slate-300 dark:text-slate-600">–</span>
+                {slot.end}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-white/10">
-          {rows}
-        </tbody>
+        {classrooms.map((room, roomIdx) => (
+          <tbody key={room.id}>
+            {roomIdx > 0 && (
+              <tr>
+                <td
+                  colSpan={TIME_SLOTS.length + 2}
+                  className="border-t-2 border-slate-200 dark:border-white/10"
+                  aria-hidden="true"
+                />
+              </tr>
+            )}
+            {DAYS.map((day, dayIdx) => (
+              <RoomDayRow
+                key={`${room.id}-${day}`}
+                room={room}
+                day={day}
+                showRoomCell={dayIdx === 0}
+              />
+            ))}
+          </tbody>
+        ))}
       </table>
     </div>
+  );
+}
+
+function RoomDayRow({
+  room,
+  day,
+  showRoomCell,
+}: {
+  room: Classroom;
+  day: DayOfWeek;
+  showRoomCell: boolean;
+}) {
+  const ds = DAY_STYLES[day];
+
+  return (
+    <tr className="transition-colors hover:bg-slate-50 dark:hover:bg-white/5">
+      {showRoomCell && (
+        <td
+          rowSpan={DAYS.length}
+          className="sticky left-0 z-10 border-r-2 border-b border-slate-200 bg-white px-3 py-2 align-middle text-center dark:border-white/10 dark:bg-slate-900"
+        >
+          <span className="block font-display text-base tracking-tight text-slate-800 dark:text-white">
+            {room.name}
+          </span>
+          <span className="mt-1 inline-block">
+            <StatusBadge status={room.status} />
+          </span>
+        </td>
+      )}
+      <td
+        className={`sticky z-10 border-r-2 border-b border-slate-200 bg-white px-3 py-2 align-middle font-sans text-xs font-bold uppercase tracking-widest dark:border-white/10 dark:bg-slate-900 ${ds.color}`}
+        style={{ left: ROOM_COL_W }}
+      >
+        {day}
+      </td>
+      {TIME_SLOTS.map((slot, idx) => {
+        const entry = room.entries.find(
+          e => e.day === day && e.startTime === slot.start && e.endTime === slot.end,
+        );
+        if (!entry) {
+          return (
+            <td
+              key={idx}
+              className="border-r border-b border-slate-200 p-2 text-center font-sans text-[0.72rem] italic text-slate-300 dark:border-white/10 dark:text-slate-600"
+            >
+              Free
+            </td>
+          );
+        }
+        const s = TYPE_STYLES[entry.type];
+        return (
+          <td
+            key={idx}
+            className={`border-r border-b border-l-[3px] border-slate-200 p-2 align-top dark:border-white/10 ${s.card} ${s.border}`}
+          >
+            <span className={`block font-sans text-xs font-bold leading-tight ${s.code}`}>
+              {entry.subjectCode}
+            </span>
+            <span className="mt-0.5 block font-sans text-[0.7rem] leading-tight text-slate-500 dark:text-slate-400">
+              {entry.instructor}
+            </span>
+          </td>
+        );
+      })}
+    </tr>
   );
 }
 

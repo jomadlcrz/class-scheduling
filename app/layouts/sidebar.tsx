@@ -345,7 +345,7 @@ export function Sidebar() {
       <div className="flex h-12 shrink-0 items-center border-b border-white/10 px-5">
         <SidebarBrand />
       </div>
-      <div className="flex-1 overflow-y-auto px-3 py-5 text-white">
+      <div className="flex-1 overflow-y-auto scrollbar-none px-3 py-5 text-white">
         <SidebarNav />
       </div>
     </aside>
