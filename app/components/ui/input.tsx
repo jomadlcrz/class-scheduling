@@ -3,7 +3,7 @@ import { EyeIcon, EyeOffIcon } from "./icons";
 import { Label } from "./label";
 
 export const inputClassName =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-sans text-sm text-gray-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-blue-700 focus:ring-2 focus:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20";
+  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-body text-sm text-gray-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-blue-700 focus:ring-2 focus:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20";
 
 type FieldChromeProps = {
   id: string;
@@ -31,7 +31,7 @@ export function FieldChrome({ id, label, labelEnd, hint, children }: FieldChrome
       )}
       {children}
       {hint && (
-        <p id={`${id}-hint`} className="font-sans text-xs text-slate-400 dark:text-slate-500">
+        <p id={`${id}-hint`} className="font-body text-xs text-slate-400 dark:text-slate-500">
           {hint}
         </p>
       )}

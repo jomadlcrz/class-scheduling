@@ -16,7 +16,7 @@ export function StudentSchedule({ student, schedules }: StudentScheduleProps) {
 
   if (studentSchedules.length === 0) {
     return (
-      <p className="py-6 text-center font-sans text-sm text-slate-400 dark:text-slate-500">
+      <p className="py-6 text-center font-body text-sm text-slate-400 dark:text-slate-500">
         No schedule entries for this student's section.
       </p>
     );
@@ -24,7 +24,7 @@ export function StudentSchedule({ student, schedules }: StudentScheduleProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full font-sans text-sm">
+      <table className="w-full font-body text-sm">
         <thead>
           <tr className="border-b border-slate-100 dark:border-white/8">
             <th className="py-2.5 pr-4 text-left font-medium text-slate-400 dark:text-slate-500">Subject</th>

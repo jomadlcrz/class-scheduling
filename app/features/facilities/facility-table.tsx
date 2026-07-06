@@ -27,14 +27,14 @@ export function FacilityTable({ rooms, buildings }: FacilityTableProps) {
             className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/3"
           >
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 dark:border-white/8">
-              <span className="font-sans text-sm font-semibold text-navy-700 dark:text-white">
+              <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
                 {building.name}
               </span>
-              <span className="font-sans text-xs text-slate-400 dark:text-slate-500">
+              <span className="font-body text-xs text-slate-400 dark:text-slate-500">
                 {building.code} · {buildingRooms.length} room{buildingRooms.length !== 1 ? "s" : ""}
               </span>
             </div>
-            <table className="w-full font-sans text-sm">
+            <table className="w-full font-body text-sm">
               <thead>
                 <tr className="border-b border-slate-50 dark:border-white/5">
                   <th className="px-5 py-2.5 text-left font-medium text-slate-400 dark:text-slate-500">Room</th>

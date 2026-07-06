@@ -18,7 +18,7 @@ export function RoleTable({ roles }: { roles: RoleSummary[] }) {
               {role.memberCount} {role.memberCount === 1 ? "member" : "members"}
             </Badge>
           </div>
-          <p className="mt-2 font-sans text-sm leading-relaxed text-slate-500 dark:text-navy-300">
+          <p className="mt-2 font-body text-sm leading-relaxed text-slate-500 dark:text-navy-300">
             {role.description}
           </p>
         </div>

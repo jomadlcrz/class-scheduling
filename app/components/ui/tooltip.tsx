@@ -107,7 +107,7 @@ export function Tooltip({
             ref={bubbleRef}
             role="tooltip"
             style={{ top: position?.top ?? 0, left: position?.left ?? 0 }}
-            className={`pointer-events-none fixed z-50 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 font-sans text-xs font-semibold text-slate-100 shadow-lg transition-[opacity,transform] duration-150 dark:bg-white dark:text-navy-900 ${
+            className={`pointer-events-none fixed z-50 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 font-body text-xs font-semibold text-slate-100 shadow-lg transition-[opacity,transform] duration-150 dark:bg-white dark:text-navy-900 ${
               position ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${ENTER_OFFSET[direction]}`
             }`}
           >

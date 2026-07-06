@@ -41,7 +41,7 @@ export default function SettingsLayout() {
               key={item.href}
               to={item.href}
               className={({ isActive }) =>
-                `flex shrink-0 items-center gap-2 border-b-2 px-3 pb-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                `flex shrink-0 items-center gap-2 border-b-2 px-3 pb-3 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   isActive
                     ? "border-navy-700 text-navy-700 dark:border-gold-400 dark:text-gold-400"
                     : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"

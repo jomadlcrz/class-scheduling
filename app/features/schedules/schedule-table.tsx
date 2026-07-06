@@ -17,7 +17,7 @@ const actionBtn =
   "grid size-7 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 const th =
-  "px-3 py-2.5 font-sans text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400";
+  "px-3 py-2.5 font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 
 /** Schedule table: stacked cards on mobile, a single grouped table on sm and up. */
 export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: ScheduleTableProps) {
@@ -57,7 +57,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
 
       {/* sm+: single grouped table (scrolls horizontally if cramped) */}
       <div className="scrollbar-thin hidden overflow-x-auto rounded-xl border border-slate-200 bg-white/60 sm:block dark:border-white/10 dark:bg-white/5">
-        <table className="w-full min-w-176 border-collapse text-left font-sans text-sm">
+        <table className="w-full min-w-176 border-collapse text-left font-body text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
             <tr>
               <th className={`${th} text-center`}>Day</th>
@@ -87,7 +87,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
                   {i === 0 && (
                     <td
                       rowSpan={slots.length}
-                      className={`whitespace-nowrap px-3 py-2.5 text-center align-middle font-sans text-xs font-semibold ${accent.cellBg} ${accent.text}`}
+                      className={`whitespace-nowrap px-3 py-2.5 text-center align-middle font-body text-xs font-semibold ${accent.cellBg} ${accent.text}`}
                     >
                       {DAY_LABELS[day]}
                     </td>
@@ -173,7 +173,7 @@ function MobileDayCard({
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5">
       <div
-        className={`border-l-4 px-4 py-2 font-sans text-sm font-semibold ${accent.borderL} ${accent.cellBg} ${accent.text}`}
+        className={`border-l-4 px-4 py-2 font-body text-sm font-semibold ${accent.borderL} ${accent.cellBg} ${accent.text}`}
       >
         {DAY_LABELS[day]}
       </div>
@@ -181,7 +181,7 @@ function MobileDayCard({
         {slots.map((sched) => (
           <li key={sched.id} className="flex flex-col gap-1.5 p-3">
             <div className="flex items-center justify-between gap-2">
-              <span className="whitespace-nowrap font-sans text-xs text-slate-600 dark:text-slate-300">
+              <span className="whitespace-nowrap font-body text-xs text-slate-600 dark:text-slate-300">
                 {formatTime(sched.startTime)} – {formatTime(sched.endTime)}
               </span>
               <div className="flex items-center gap-1.5">
@@ -217,14 +217,14 @@ function MobileDayCard({
               </div>
             </div>
             <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-sans text-sm font-semibold text-navy-700 dark:text-white">
+              <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
                 {sched.subjectCode}
               </span>
-              <span className="font-sans text-xs text-slate-600 dark:text-slate-300">
+              <span className="font-body text-xs text-slate-600 dark:text-slate-300">
                 {sched.subjectTitle}
               </span>
             </div>
-            <div className="flex flex-col gap-1 font-sans text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex flex-col gap-1 font-body text-xs text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
                 <UserSmallIcon />
                 {sched.facultyName}
@@ -252,11 +252,11 @@ function DuplicateButton({ days, onPick }: { days: Day[]; onPick: (day: Day) => 
     >
       {(close) => (
         <>
-          <p className="px-3 py-1 font-sans text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          <p className="px-3 py-1 font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Duplicate to
           </p>
           {days.length === 0 ? (
-            <p className="px-3 py-1.5 font-sans text-xs text-slate-400 dark:text-slate-500">
+            <p className="px-3 py-1.5 font-body text-xs text-slate-400 dark:text-slate-500">
               Already on every day
             </p>
           ) : (
@@ -269,7 +269,7 @@ function DuplicateButton({ days, onPick }: { days: Day[]; onPick: (day: Day) => 
                   close();
                   onPick(d);
                 }}
-                className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-sans text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
               >
                 {DAY_LABELS[d]}
               </button>

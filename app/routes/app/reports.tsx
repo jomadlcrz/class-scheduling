@@ -89,13 +89,13 @@ function ReportsPage() {
         {needsFilter && (
           <div className="flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2">
-              <span className="font-sans text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <span className="font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 School Year
               </span>
               <select
                 value={schoolYear}
                 onChange={(e) => setSchoolYear(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-navy-800 dark:[&>option]:text-white"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-body text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-navy-800 dark:[&>option]:text-white"
               >
                 {SCHOOL_YEARS.map((y) => (
                   <option key={y} value={y}>
@@ -106,13 +106,13 @@ function ReportsPage() {
             </label>
 
             <label className="flex items-center gap-2">
-              <span className="font-sans text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <span className="font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Semester
               </span>
               <select
                 value={semester}
                 onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-navy-800 dark:[&>option]:text-white"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-body text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-navy-800 dark:[&>option]:text-white"
               >
                 {SCHEDULE_SEMESTERS.map((s) => (
                   <option key={s} value={s}>
@@ -138,7 +138,7 @@ function ReportsPage() {
                 aria-selected={activeTab === tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`shrink-0 border-b-2 px-3 pb-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                className={`shrink-0 border-b-2 px-3 pb-3 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   activeTab === tab.id
                     ? "border-navy-700 text-navy-700 dark:border-gold-400 dark:text-gold-400"
                     : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"

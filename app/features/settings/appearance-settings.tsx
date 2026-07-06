@@ -33,10 +33,10 @@ export function AppearanceSettings() {
   return (
     <div className="max-w-lg">
       <div className="flex flex-col gap-1">
-        <h2 className="font-sans text-base font-semibold text-navy-700 dark:text-white">
+        <h2 className="font-body text-base font-semibold text-navy-700 dark:text-white">
           Theme
         </h2>
-        <p className="font-sans text-sm text-slate-500 dark:text-slate-400">
+        <p className="font-body text-sm text-slate-500 dark:text-slate-400">
           Choose how the interface looks to you.
         </p>
       </div>
@@ -58,15 +58,15 @@ export function AppearanceSettings() {
             >
               <ThemePreview variant={option.value} />
               <div>
-                <p className="font-sans text-sm font-semibold text-navy-700 dark:text-white">
+                <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
                   {option.label}
                 </p>
-                <p className="mt-0.5 font-sans text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
                   {option.description}
                 </p>
               </div>
               {isSelected && (
-                <span className="self-start rounded-full bg-navy-700 px-2 py-0.5 font-sans text-[0.6rem] font-medium uppercase tracking-wider text-white dark:bg-gold-400 dark:text-navy-900">
+                <span className="self-start rounded-full bg-navy-700 px-2 py-0.5 font-body text-[0.6rem] font-medium uppercase tracking-wider text-white dark:bg-gold-400 dark:text-navy-900">
                   Active
                 </span>
               )}

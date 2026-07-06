@@ -71,7 +71,7 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
               <div className="rounded-sm border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-800/60">
                 {/* Intro */}
                 <div className="border-b border-slate-200 px-8 py-8 dark:border-white/10 sm:px-12">
-                  <p className="font-sans text-sm leading-7 text-slate-600 dark:text-slate-300">
+                  <p className="font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
                     {intro}
                   </p>
                 </div>
@@ -98,7 +98,7 @@ export function LegalSection({ id, heading, body }: { id: string; heading: strin
       <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
         {heading}
       </h2>
-      <p className="mt-3 font-sans text-sm leading-7 text-slate-600 dark:text-slate-300">
+      <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
         {body}
       </p>
     </section>
@@ -118,7 +118,7 @@ function SidebarLink({
     <a
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`relative block cursor-pointer px-4 py-3 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-gold-400 ${
+      className={`relative block cursor-pointer px-4 py-3 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-gold-400 ${
         active
           ? "bg-white/90 font-semibold text-navy-700 dark:bg-navy-800/80 dark:text-white"
           : "text-slate-500 hover:bg-slate-50 hover:text-navy-600 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
@@ -148,7 +148,7 @@ function MobileTab({
     <a
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex-1 cursor-pointer rounded-md px-4 py-2 text-center font-sans text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+      className={`flex-1 cursor-pointer rounded-md px-4 py-2 text-center font-body text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
         active
           ? "bg-navy-800 text-white dark:bg-white dark:text-navy-900"
           : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"

@@ -10,7 +10,7 @@ const BUILT_IN_TYPES = [
 export function FacilityTypeTable() {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/3">
-      <table className="w-full font-sans text-sm">
+      <table className="w-full font-body text-sm">
         <thead>
           <tr className="border-b border-slate-100 dark:border-white/8">
             <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">

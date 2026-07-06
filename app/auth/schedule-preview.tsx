@@ -17,7 +17,7 @@ export function SchedulePreview() {
     <div className="select-none text-left">
       <div className="mb-2 grid grid-cols-5 gap-1.5">
         {days.map((d) => (
-          <div key={d} className="text-center font-sans text-[10px] font-medium text-white/40">
+          <div key={d} className="text-center font-body text-[10px] font-medium text-white/40">
             {d}
           </div>
         ))}
@@ -29,7 +29,7 @@ export function SchedulePreview() {
             return (
               <div
                 key={col}
-                className={`flex h-10 items-center justify-center rounded-md border text-center font-sans text-[9px] font-medium leading-tight ${
+                className={`flex h-10 items-center justify-center rounded-md border text-center font-body text-[9px] font-medium leading-tight ${
                   block
                     ? block.gold
                       ? "border-gold-400/40 bg-gold-400/15 text-gold-300"

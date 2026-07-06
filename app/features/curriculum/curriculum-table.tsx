@@ -48,11 +48,11 @@ function YearBlock({
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400"
       >
-        <span className="font-sans font-semibold text-navy-700 dark:text-white">
+        <span className="font-body font-semibold text-navy-700 dark:text-white">
           {YEAR_LEVEL_LABELS[yearLevel]}
         </span>
         <span className="flex items-center gap-2">
-          <span className="font-sans text-sm text-slate-400 dark:text-slate-500">
+          <span className="font-body text-sm text-slate-400 dark:text-slate-500">
             {yearUnits} units
           </span>
           <span className="text-slate-400 dark:text-slate-500">
@@ -69,10 +69,10 @@ function YearBlock({
               className="border-b border-slate-100 last:border-0 dark:border-white/8"
             >
               <div className="flex items-center justify-between px-5 py-3">
-                <span className="font-sans text-sm font-medium text-slate-600 dark:text-slate-300">
+                <span className="font-body text-sm font-medium text-slate-600 dark:text-slate-300">
                   {SEMESTER_LABELS[group.semester]}
                 </span>
-                <span className="font-sans text-xs text-slate-400 dark:text-slate-500">
+                <span className="font-body text-xs text-slate-400 dark:text-slate-500">
                   {group.subjects.length} subject{group.subjects.length !== 1 ? "s" : ""} · {group.totalUnits} units
                 </span>
               </div>

@@ -20,7 +20,7 @@ export function Checkbox({ id, label, name, value, defaultChecked }: CheckboxPro
         aria-label={label}
         className="size-4 cursor-pointer accent-navy-800 dark:accent-gold-400"
       />
-      <span className="font-sans text-sm text-slate-600 dark:text-slate-300">{label}</span>
+      <span className="font-body text-sm text-slate-600 dark:text-slate-300">{label}</span>
     </div>
   );
 }

@@ -330,7 +330,7 @@ function ClassroomMappingPage() {
               onChange={e => setRawSearch(e.target.value)}
               placeholder="Search classrooms…"
               aria-label="Search classrooms"
-              className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 font-sans text-sm text-gray-900 placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 font-body text-sm text-gray-900 placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
           </div>
         </div>
@@ -403,7 +403,7 @@ function ToolbarButton({ onClick, icon, label }: { onClick: () => void; icon: Re
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 font-sans text-sm font-medium text-gray-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 font-body text-sm font-medium text-gray-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/30 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
     >
       {icon}
       <span>{label}</span>
@@ -422,7 +422,7 @@ function TypeLegend() {
       {items.map(({ label, type }) => (
         <div key={type} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           <span className={`inline-block h-1 w-7 rounded-full ${TYPE_STYLES[type].dot}`} />
-          <span className="font-sans text-xs text-slate-500 dark:text-slate-400">{label}</span>
+          <span className="font-body text-xs text-slate-500 dark:text-slate-400">{label}</span>
         </div>
       ))}
     </Card>
@@ -431,11 +431,11 @@ function TypeLegend() {
 
 function StatusBadge({ status }: { status: ClassroomStatus }) {
   return status === "available" ? (
-    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 font-sans text-xs font-semibold text-green-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800 dark:bg-emerald-950/60 dark:text-emerald-300">
       Available
     </span>
   ) : (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 font-sans text-xs font-semibold text-red-800 dark:bg-red-950/60 dark:text-red-300">
+    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 font-body text-xs font-semibold text-red-800 dark:bg-red-950/60 dark:text-red-300">
       Full
     </span>
   );
@@ -468,7 +468,7 @@ function RoomAccordion({
           {room.name}
         </span>
         <StatusBadge status={room.status} />
-        <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 font-sans text-xs text-slate-500 dark:bg-white/10 dark:text-slate-400">
+        <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 font-body text-xs text-slate-500 dark:bg-white/10 dark:text-slate-400">
           <UserSmallIcon />
           {classCount} class{classCount !== 1 ? "es" : ""}
         </span>
@@ -516,7 +516,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
                 style={{ gridColumn: `1 / ${TIME_SLOTS.length + 1}` }}
               >
                 <span
-                  className={`inline-block rounded px-2.5 py-0.5 font-sans text-[0.68rem] font-bold uppercase tracking-widest ${ds.color} ${ds.bg}`}
+                  className={`inline-block rounded px-2.5 py-0.5 font-body text-[0.68rem] font-bold uppercase tracking-widest ${ds.color} ${ds.bg}`}
                   style={{ position: "sticky", left: "1rem" }}
                 >
                   {day}
@@ -551,16 +551,16 @@ function ClassCard({ entry }: { entry: ClassEntry }) {
     <div
       className={`flex h-full flex-col gap-1 rounded-md border-l-[3px] p-2 text-slate-700 transition-transform duration-150 hover:-translate-y-0.5 dark:text-slate-200 ${s.card} ${s.border}`}
     >
-      <span className="font-sans text-[0.62rem] font-semibold text-slate-400 dark:text-slate-500">
+      <span className="font-body text-[0.62rem] font-semibold text-slate-400 dark:text-slate-500">
         {entry.startTime} – {entry.endTime}
       </span>
-      <span className={`font-sans text-sm font-bold leading-tight ${s.code}`}>
+      <span className={`font-body text-sm font-bold leading-tight ${s.code}`}>
         {entry.subjectCode}
       </span>
-      <span className="line-clamp-2 font-sans text-[0.72rem] leading-snug text-slate-600 dark:text-slate-300">
+      <span className="line-clamp-2 font-body text-[0.72rem] leading-snug text-slate-600 dark:text-slate-300">
         {entry.descriptiveTitle}
       </span>
-      <div className="mt-auto flex items-center gap-1 font-sans text-[0.62rem] text-slate-500 dark:text-slate-500">
+      <div className="mt-auto flex items-center gap-1 font-body text-[0.62rem] text-slate-500 dark:text-slate-500">
         <UserSmallIcon />
         <span>{entry.instructor}</span>
         <span className="mx-0.5 text-slate-300 dark:text-slate-600">|</span>
@@ -573,10 +573,10 @@ function ClassCard({ entry }: { entry: ClassEntry }) {
 function FreeCell({ slot }: { slot: { start: string; end: string } }) {
   return (
     <div className="flex h-full min-h-20 flex-col items-center justify-center gap-1">
-      <span className="font-sans text-[0.62rem] font-semibold text-slate-400 dark:text-slate-500">
+      <span className="font-body text-[0.62rem] font-semibold text-slate-400 dark:text-slate-500">
         {slot.start} – {slot.end}
       </span>
-      <span className="font-sans text-[0.72rem] italic text-slate-300 dark:text-slate-600">
+      <span className="font-body text-[0.72rem] italic text-slate-300 dark:text-slate-600">
         Free
       </span>
     </div>
@@ -619,12 +619,12 @@ function MappingTableView({ classrooms }: { classrooms: Classroom[] }) {
         <thead>
           <tr>
             <th
-              className="sticky top-0 left-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
+              className="sticky top-0 left-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
             >
               Room
             </th>
             <th
-              className="sticky top-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
+              className="sticky top-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
               style={{ left: ROOM_COL_W }}
             >
               Day
@@ -632,7 +632,7 @@ function MappingTableView({ classrooms }: { classrooms: Classroom[] }) {
             {TIME_SLOTS.map((slot, idx) => (
               <th
                 key={idx}
-                className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-sans text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
+                className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
               >
                 {slot.start}
                 <span className="mx-0.5 text-slate-300 dark:text-slate-600">–</span>
@@ -694,7 +694,7 @@ function RoomDayRow({
         </td>
       )}
       <td
-        className={`sticky z-10 border-r-2 border-b border-slate-200 bg-white px-3 py-2 align-middle font-sans text-xs font-bold uppercase tracking-widest dark:border-white/10 dark:bg-slate-900 ${ds.color}`}
+        className={`sticky z-10 border-r-2 border-b border-slate-200 bg-white px-3 py-2 align-middle font-body text-xs font-bold uppercase tracking-widest dark:border-white/10 dark:bg-slate-900 ${ds.color}`}
         style={{ left: ROOM_COL_W }}
       >
         {day}
@@ -707,7 +707,7 @@ function RoomDayRow({
           return (
             <td
               key={idx}
-              className="border-r border-b border-slate-200 p-2 text-center font-sans text-[0.72rem] italic text-slate-300 dark:border-white/10 dark:text-slate-600"
+              className="border-r border-b border-slate-200 p-2 text-center font-body text-[0.72rem] italic text-slate-300 dark:border-white/10 dark:text-slate-600"
             >
               Free
             </td>
@@ -719,10 +719,10 @@ function RoomDayRow({
             key={idx}
             className={`border-r border-b border-l-[3px] border-slate-200 p-2 align-top dark:border-white/10 ${s.card} ${s.border}`}
           >
-            <span className={`block font-sans text-xs font-bold leading-tight ${s.code}`}>
+            <span className={`block font-body text-xs font-bold leading-tight ${s.code}`}>
               {entry.subjectCode}
             </span>
-            <span className="mt-0.5 block font-sans text-[0.7rem] leading-tight text-slate-500 dark:text-slate-400">
+            <span className="mt-0.5 block font-body text-[0.7rem] leading-tight text-slate-500 dark:text-slate-400">
               {entry.instructor}
             </span>
           </td>
@@ -738,8 +738,8 @@ function NoResults({ query }: { query: string }) {
       <span className="text-slate-400 dark:text-slate-600">
         <SearchIcon size={32} />
       </span>
-      <p className="font-sans font-semibold text-gray-700 dark:text-slate-400">No classrooms found</p>
-      <p className="font-sans text-sm text-slate-500 dark:text-slate-500">
+      <p className="font-body font-semibold text-gray-700 dark:text-slate-400">No classrooms found</p>
+      <p className="font-body text-sm text-slate-500 dark:text-slate-500">
         No classrooms match "<span className="font-medium text-gray-700 dark:text-slate-300">{query}</span>". Try a different name.
       </p>
     </div>

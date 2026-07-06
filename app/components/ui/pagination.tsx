@@ -20,7 +20,7 @@ function pageWindow(page: number, total: number): (number | "…")[] {
 }
 
 const btnBase =
-  "grid min-w-8 h-8 place-items-center rounded-lg px-1 font-sans text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400";
+  "grid min-w-8 h-8 place-items-center rounded-lg px-1 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400";
 const btnActive = "bg-navy-700 text-white dark:bg-white/15 dark:text-white";
 const btnIdle =
   "text-slate-600 hover:bg-slate-200/60 hover:text-navy-700 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white";
@@ -41,7 +41,7 @@ export function Pagination({
   const pages = pageWindow(page, totalPages);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 pt-1 font-sans text-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 pt-1 font-body text-sm">
       {/* Result count */}
       <p className="text-slate-500 dark:text-slate-400">
         Showing{" "}

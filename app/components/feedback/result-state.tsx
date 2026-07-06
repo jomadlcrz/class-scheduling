@@ -39,7 +39,7 @@ export function ResultState({ tone, title, children, action }: ResultStateProps)
       <h2 className="font-display text-2xl tracking-wide text-gray-900 dark:text-white">
         {title}
       </h2>
-      <p className="mt-2 font-sans text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+      <p className="mt-2 font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         {children}
       </p>
       {action && (

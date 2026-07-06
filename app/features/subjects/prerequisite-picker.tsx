@@ -43,7 +43,7 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={inputId}
-        className="font-sans text-sm font-medium text-slate-700 dark:text-slate-300"
+        className="font-body text-sm font-medium text-slate-700 dark:text-slate-300"
       >
         Prerequisites{" "}
         <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
@@ -58,7 +58,7 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
         {selected.map((option) => (
           <span
             key={option.id}
-            className="inline-flex items-center gap-1.5 rounded-md bg-navy-500/10 px-2 py-1 font-sans text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200"
+            className="inline-flex items-center gap-1.5 rounded-md bg-navy-500/10 px-2 py-1 font-body text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200"
           >
             {option.code}
             <button
@@ -101,7 +101,7 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
             }
           }}
           // Hide Chromium's built-in datalist dropdown arrow.
-          className="min-w-24 flex-1 bg-transparent font-sans text-base text-slate-900 placeholder-slate-400 outline-none disabled:cursor-not-allowed dark:text-white dark:placeholder-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
+          className="min-w-24 flex-1 bg-transparent font-body text-base text-slate-900 placeholder-slate-400 outline-none disabled:cursor-not-allowed dark:text-white dark:placeholder-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
         />
       </div>
 

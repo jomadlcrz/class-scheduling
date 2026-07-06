@@ -3,7 +3,7 @@ import type { RoomUtilizationRow } from "../../services/report.service";
 export function RoomUtilization({ rows }: { rows: RoomUtilizationRow[] }) {
   if (rows.length === 0) {
     return (
-      <p className="py-10 text-center font-sans text-sm text-slate-400">
+      <p className="py-10 text-center font-body text-sm text-slate-400">
         No room schedule data for this period.
       </p>
     );
@@ -16,16 +16,16 @@ export function RoomUtilization({ rows }: { rows: RoomUtilizationRow[] }) {
       <table className="w-full min-w-140">
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50 dark:border-white/8 dark:bg-white/3">
-            <th className="px-4 py-3 text-left font-sans text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Room
             </th>
-            <th className="px-4 py-3 text-right font-sans text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <th className="px-4 py-3 text-right font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Sessions
             </th>
-            <th className="px-4 py-3 text-right font-sans text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <th className="px-4 py-3 text-right font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Total Hours
             </th>
-            <th className="px-4 py-3 text-left font-sans text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Usage
             </th>
           </tr>
@@ -37,17 +37,17 @@ export function RoomUtilization({ rows }: { rows: RoomUtilizationRow[] }) {
               className="hover:bg-slate-50 dark:hover:bg-white/3"
             >
               <td className="px-4 py-3">
-                <p className="font-sans text-sm font-medium text-slate-800 dark:text-slate-100">
+                <p className="font-body text-sm font-medium text-slate-800 dark:text-slate-100">
                   {row.roomName}
                 </p>
-                <p className="font-sans text-xs text-slate-400 dark:text-slate-500">
+                <p className="font-body text-xs text-slate-400 dark:text-slate-500">
                   {row.buildingCode}
                 </p>
               </td>
-              <td className="px-4 py-3 text-right font-sans text-sm text-slate-700 dark:text-slate-300">
+              <td className="px-4 py-3 text-right font-body text-sm text-slate-700 dark:text-slate-300">
                 {row.scheduledCount}
               </td>
-              <td className="px-4 py-3 text-right font-sans text-sm font-medium text-navy-700 dark:text-white">
+              <td className="px-4 py-3 text-right font-body text-sm font-medium text-navy-700 dark:text-white">
                 {row.totalHours.toFixed(1)} hrs
               </td>
               <td className="px-4 py-3">

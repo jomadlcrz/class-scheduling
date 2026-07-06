@@ -37,7 +37,7 @@ export function ScheduleGrid({ schedules }: ScheduleGridProps) {
             className="grid border-b border-slate-100 last:border-b-0 dark:border-white/5"
             style={{ gridTemplateColumns: GRID_TEMPLATE }}
           >
-            <div className="flex flex-col items-center justify-center gap-0.5 border-r border-slate-100 px-2 py-3 text-center font-sans text-xs font-semibold text-slate-600 dark:border-white/5 dark:text-slate-300">
+            <div className="flex flex-col items-center justify-center gap-0.5 border-r border-slate-100 px-2 py-3 text-center font-body text-xs font-semibold text-slate-600 dark:border-white/5 dark:text-slate-300">
               <span>{formatTime(row.startTime)}</span>
               <span className="text-slate-400 dark:text-slate-500">{formatTime(row.endTime)}</span>
             </div>
@@ -66,7 +66,7 @@ export function ScheduleGrid({ schedules }: ScheduleGridProps) {
 
 function HeaderCell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border-r border-slate-200 px-2 py-2.5 text-center font-sans text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 last:border-r-0 dark:border-white/10 dark:text-slate-400">
+    <div className="border-r border-slate-200 px-2 py-2.5 text-center font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 last:border-r-0 dark:border-white/10 dark:text-slate-400">
       {children}
     </div>
   );
@@ -79,19 +79,19 @@ function GridClassCard({ entry }: { entry: Schedule }) {
       className={`flex flex-col gap-1 rounded-lg border border-l-4 border-slate-200 p-2 dark:border-white/10 ${accent.borderL} ${accent.cardBg}`}
     >
       <div className="flex items-start justify-between gap-1.5">
-        <strong className="font-sans text-xs font-semibold text-navy-700 dark:text-white">
+        <strong className="font-body text-xs font-semibold text-navy-700 dark:text-white">
           {entry.subjectCode}
         </strong>
         <ModeBadge mode={entry.mode} />
       </div>
-      <p className="font-sans text-[0.7rem] leading-snug text-slate-600 dark:text-slate-300">
+      <p className="font-body text-[0.7rem] leading-snug text-slate-600 dark:text-slate-300">
         {entry.subjectTitle}
       </p>
-      <small className="flex items-center gap-1 font-sans text-[0.68rem] text-slate-500 dark:text-slate-400">
+      <small className="flex items-center gap-1 font-body text-[0.68rem] text-slate-500 dark:text-slate-400">
         <UserSmallIcon />
         {entry.facultyName}
       </small>
-      <small className="flex items-center gap-1 font-sans text-[0.68rem] text-slate-500 dark:text-slate-400">
+      <small className="flex items-center gap-1 font-body text-[0.68rem] text-slate-500 dark:text-slate-400">
         <MapPinIcon />
         {entry.roomName}
       </small>

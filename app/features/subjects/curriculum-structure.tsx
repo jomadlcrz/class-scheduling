@@ -95,7 +95,7 @@ export function CurriculumStructure({
                     className="rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5"
                   >
                     <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-2.5 dark:border-white/10">
-                      <p className="font-sans text-sm font-medium text-navy-700 dark:text-white">
+                      <p className="font-body text-sm font-medium text-navy-700 dark:text-white">
                         {SEMESTER_LABELS[semester]}
                       </p>
                       <Badge tone="slate">{semesterUnits} units</Badge>
@@ -104,7 +104,7 @@ export function CurriculumStructure({
                       {semesterRows.map((row) => (
                         <li
                           key={row.key}
-                          className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 font-sans text-sm ${
+                          className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 font-body text-sm ${
                             row.tempId ? "bg-gold-400/10" : ""
                           }`}
                         >

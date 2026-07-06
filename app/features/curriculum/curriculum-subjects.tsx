@@ -9,7 +9,7 @@ type CurriculumSubjectsProps = {
 export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
   if (group.subjects.length === 0) {
     return (
-      <p className="py-4 text-center font-sans text-sm text-slate-400 dark:text-slate-500">
+      <p className="py-4 text-center font-body text-sm text-slate-400 dark:text-slate-500">
         No subjects assigned.
       </p>
     );
@@ -17,7 +17,7 @@ export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full font-sans text-sm">
+      <table className="w-full font-body text-sm">
         <thead>
           <tr className="border-b border-slate-100 text-left dark:border-white/8">
             <th className="pb-2 pr-4 font-medium text-slate-500 dark:text-slate-400">Code</th>
@@ -40,7 +40,7 @@ export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
               key={subject.id}
               className="border-b border-slate-50 last:border-0 dark:border-white/5"
             >
-              <td className="py-2.5 pr-4 font-mono text-xs font-medium text-navy-700 dark:text-slate-200">
+              <td className="py-2.5 pr-4 font-body text-xs font-medium text-navy-700 dark:text-slate-200">
                 {subject.code}
               </td>
               <td className="py-2.5 pr-4 text-slate-700 dark:text-slate-300">{subject.title}</td>

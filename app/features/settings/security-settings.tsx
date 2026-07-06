@@ -14,10 +14,10 @@ export function SecuritySettings() {
   return (
     <div className="max-w-sm">
       <div className="flex flex-col gap-1">
-        <h2 className="font-sans text-base font-semibold text-navy-700 dark:text-white">
+        <h2 className="font-body text-base font-semibold text-navy-700 dark:text-white">
           Change Password
         </h2>
-        <p className="font-sans text-sm text-slate-500 dark:text-slate-400">
+        <p className="font-body text-sm text-slate-500 dark:text-slate-400">
           Keep your account secure by using a strong, unique password.
         </p>
       </div>
@@ -28,16 +28,16 @@ export function SecuritySettings() {
             <CheckIcon />
           </span>
           <div>
-            <p className="font-sans text-sm font-semibold text-green-800 dark:text-green-300">
+            <p className="font-body text-sm font-semibold text-green-800 dark:text-green-300">
               Password updated
             </p>
-            <p className="mt-0.5 font-sans text-sm text-green-700 dark:text-green-400">
+            <p className="mt-0.5 font-body text-sm text-green-700 dark:text-green-400">
               Your new password is active. Use it the next time you log in.
             </p>
             <button
               type="button"
               onClick={() => setDone(false)}
-              className="mt-2 font-sans text-sm font-medium text-green-700 underline underline-offset-2 hover:text-green-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-green-400 dark:hover:text-green-300"
+              className="mt-2 font-body text-sm font-medium text-green-700 underline underline-offset-2 hover:text-green-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-green-400 dark:hover:text-green-300"
             >
               Change again
             </button>

@@ -118,7 +118,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
               <h2 className="mt-4 font-display text-2xl tracking-wide text-navy-700 dark:text-white">
                 How can I help?
               </h2>
-              <p className="mt-1.5 max-w-xs font-sans text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="mt-1.5 max-w-xs font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                 Ask anything about GWC Class Scheduling — conflicts, rooms, sections, or publishing.
               </p>
               <div className="mt-6 flex w-full max-w-xs flex-col gap-2">
@@ -127,7 +127,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
                     key={s}
                     type="button"
                     onClick={() => send(s)}
-                    className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-left font-sans text-sm text-slate-600 transition-colors duration-150 hover:border-gold-400/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:border-gold-400/40 dark:hover:text-white"
+                    className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:border-gold-400/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:border-gold-400/40 dark:hover:text-white"
                   >
                     {s}
                   </button>
@@ -140,14 +140,14 @@ function PanelContent({ onClose }: { onClose: () => void }) {
                 m.role === "user" ? (
                   <div
                     key={i}
-                    className="ml-10 self-end rounded-2xl rounded-br-md bg-navy-800 px-4 py-2.5 font-sans text-sm leading-relaxed text-white dark:bg-white dark:text-navy-900"
+                    className="ml-10 self-end rounded-2xl rounded-br-md bg-navy-800 px-4 py-2.5 font-body text-sm leading-relaxed text-white dark:bg-white dark:text-navy-900"
                   >
                     {m.content}
                   </div>
                 ) : (
                   <div
                     key={i}
-                    className="mr-10 self-start rounded-2xl rounded-bl-md bg-slate-100 px-4 py-2.5 font-sans text-sm leading-relaxed text-slate-700 dark:bg-white/10 dark:text-slate-200"
+                    className="mr-10 self-start rounded-2xl rounded-bl-md bg-slate-100 px-4 py-2.5 font-body text-sm leading-relaxed text-slate-700 dark:bg-white/10 dark:text-slate-200"
                   >
                     {m.content}
                   </div>
@@ -185,7 +185,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a question…"
               aria-label="Ask a question"
-              className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-4 pr-12 font-sans text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25"
+              className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-4 pr-12 font-body text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25"
             />
             <button
               type="submit"
@@ -196,7 +196,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
               <ArrowUpIcon />
             </button>
           </div>
-          <p className="mt-2 text-center font-sans text-xs text-slate-400 dark:text-slate-500">
+          <p className="mt-2 text-center font-body text-xs text-slate-400 dark:text-slate-500">
             AI responses are a preview.
           </p>
         </form>

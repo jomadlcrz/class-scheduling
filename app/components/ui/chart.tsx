@@ -104,7 +104,7 @@ function ChartTooltipContent({
               <span className="flex-1 text-slate-500 dark:text-slate-400">
                 {configEntry?.label ?? key}
               </span>
-              <span className="font-mono font-medium tabular-nums text-slate-700 dark:text-white">
+              <span className="font-body font-medium tabular-nums text-slate-700 dark:text-white">
                 {item.value}
               </span>
             </div>

@@ -20,7 +20,7 @@ const STATUS_TONES: Record<Student["status"], BadgeTone> = {
 export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/3">
-      <table className="w-full font-sans text-sm">
+      <table className="w-full font-body text-sm">
         <thead>
           <tr className="border-b border-slate-100 dark:border-white/8">
             <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">Student No.</th>
@@ -35,7 +35,7 @@ export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) 
         <tbody>
           {students.map((s) => (
             <tr key={s.id} className="border-b border-slate-50 last:border-0 dark:border-white/5">
-              <td className="px-5 py-3 font-mono text-xs font-medium text-navy-700 dark:text-slate-200">
+              <td className="px-5 py-3 font-body text-xs font-medium text-navy-700 dark:text-slate-200">
                 {s.studentNumber}
               </td>
               <td className="px-5 py-3 font-medium text-navy-700 dark:text-slate-200">

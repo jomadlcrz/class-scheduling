@@ -55,7 +55,7 @@ function LoginPage() {
             <LoginForm />
 
             {/* Legal consent */}
-            <p className="mt-5 text-center font-sans text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+            <p className="mt-5 text-center font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
               By logging in, you agree to our{" "}
               <a
                 href="/terms-of-use"

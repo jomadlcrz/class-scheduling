@@ -41,15 +41,15 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         >
           <span
             aria-hidden="true"
-            className="grid size-7 shrink-0 place-items-center rounded-full bg-navy-800 font-sans text-xs font-medium text-white dark:bg-white dark:text-navy-900"
+            className="grid size-7 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xs font-medium text-white dark:bg-white dark:text-navy-900"
           >
             {initials(user.name)}
           </span>
           <span className="hidden flex-col leading-tight sm:flex">
-            <span className="font-sans text-sm font-medium text-navy-700 dark:text-white">
+            <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
               {user.name}
             </span>
-            <span className="font-sans text-xs capitalize text-slate-500 dark:text-slate-400">
+            <span className="font-body text-xs capitalize text-slate-500 dark:text-slate-400">
               {user.role}
             </span>
           </span>

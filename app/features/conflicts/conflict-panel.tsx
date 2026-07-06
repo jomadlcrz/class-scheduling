@@ -18,10 +18,10 @@ export function ConflictPanel({ conflicts }: ConflictPanelProps) {
           <CheckIcon />
         </span>
         <div>
-          <p className="font-sans text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+          <p className="font-body text-sm font-semibold text-emerald-800 dark:text-emerald-300">
             No conflicts detected
           </p>
-          <p className="mt-0.5 font-sans text-sm text-emerald-700 dark:text-emerald-400">
+          <p className="mt-0.5 font-body text-sm text-emerald-700 dark:text-emerald-400">
             All schedules are clear with no overlapping time slots.
           </p>
         </div>
@@ -86,7 +86,7 @@ function SummaryCard({
       <span className={colorMap.icon}>{icon}</span>
       <div>
         <p className={`font-display text-2xl tracking-wide ${colorMap.count}`}>{count}</p>
-        <p className={`font-sans text-xs font-medium ${colorMap.label}`}>{label}</p>
+        <p className={`font-body text-xs font-medium ${colorMap.label}`}>{label}</p>
       </div>
     </div>
   );

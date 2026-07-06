@@ -24,7 +24,7 @@ export function EnrollmentSummary({ students }: EnrollmentSummaryProps) {
 
       {Object.entries(byProgram).length > 0 && (
         <div className="col-span-full rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/3">
-          <p className="font-sans text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
             By Program
           </p>
           <div className="mt-3 flex flex-wrap gap-3">
@@ -32,10 +32,10 @@ export function EnrollmentSummary({ students }: EnrollmentSummaryProps) {
               .sort(([, a], [, b]) => b - a)
               .map(([code, count]) => (
                 <div key={code} className="flex items-baseline gap-1.5">
-                  <span className="font-sans text-sm font-semibold text-navy-700 dark:text-white">
+                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
                     {count}
                   </span>
-                  <span className="font-sans text-xs text-slate-400 dark:text-slate-500">
+                  <span className="font-body text-xs text-slate-400 dark:text-slate-500">
                     {code}
                   </span>
                 </div>
@@ -50,7 +50,7 @@ export function EnrollmentSummary({ students }: EnrollmentSummaryProps) {
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/3">
-      <p className="font-sans text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
         {label}
       </p>
       <p className={`mt-1 font-display text-3xl tracking-wide ${color}`}>{value}</p>

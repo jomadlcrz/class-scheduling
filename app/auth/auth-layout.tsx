@@ -51,7 +51,7 @@ export function AuthHeading({ title, children }: { title: string; children?: Rea
         {title}
       </h1>
       {children && (
-        <p className="mt-1.5 font-sans text-sm text-slate-500 dark:text-navy-300">{children}</p>
+        <p className="mt-1.5 font-body text-sm text-slate-500 dark:text-navy-300">{children}</p>
       )}
     </div>
   );

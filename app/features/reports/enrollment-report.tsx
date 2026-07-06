@@ -28,20 +28,20 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
       <div className="grid gap-6 md:grid-cols-2">
         {/* By Program */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
-          <h3 className="mb-4 font-sans text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <h3 className="mb-4 font-body text-sm font-semibold text-slate-700 dark:text-slate-200">
             By Program
           </h3>
           {programEntries.length === 0 ? (
-            <p className="font-sans text-sm text-slate-400">No data.</p>
+            <p className="font-body text-sm text-slate-400">No data.</p>
           ) : (
             <ul className="flex flex-col gap-3">
               {programEntries.map(([program, count]) => (
                 <li key={program}>
                   <div className="mb-1 flex items-center justify-between">
-                    <span className="font-sans text-sm text-slate-700 dark:text-slate-300">
+                    <span className="font-body text-sm text-slate-700 dark:text-slate-300">
                       {program}
                     </span>
-                    <span className="font-sans text-sm font-medium text-navy-700 dark:text-white">
+                    <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
                       {count}
                     </span>
                   </div>
@@ -59,11 +59,11 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
 
         {/* By Year Level */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
-          <h3 className="mb-4 font-sans text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <h3 className="mb-4 font-body text-sm font-semibold text-slate-700 dark:text-slate-200">
             By Year Level
           </h3>
           {yearEntries.length === 0 ? (
-            <p className="font-sans text-sm text-slate-400">No data.</p>
+            <p className="font-body text-sm text-slate-400">No data.</p>
           ) : (
             <ul className="flex flex-col gap-3">
               {yearEntries.map(([year, count]) => {
@@ -71,10 +71,10 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
                 return (
                   <li key={year}>
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="font-sans text-sm text-slate-700 dark:text-slate-300">
+                      <span className="font-body text-sm text-slate-700 dark:text-slate-300">
                         {YEAR_LABELS[Number(year)] ?? `Year ${year}`}
                       </span>
-                      <span className="font-sans text-sm font-medium text-navy-700 dark:text-white">
+                      <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
                         {count}
                       </span>
                     </div>
@@ -106,7 +106,7 @@ function StatCard({
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/3">
-      <p className="font-sans text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <p className="font-body text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
         {label}
       </p>
       <p

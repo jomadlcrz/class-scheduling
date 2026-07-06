@@ -178,7 +178,7 @@ function MobileMenu({
 
           {/* Theme row */}
           <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6 dark:border-white/10">
-            <span className="text-base font-sans font-medium text-slate-500 dark:text-slate-400">Theme</span>
+            <span className="text-base font-body font-medium text-slate-500 dark:text-slate-400">Theme</span>
             <ThemeToggle />
           </div>
           </div>
@@ -220,7 +220,7 @@ function BrandLockup({ whiteOnDark = false }: { whiteOnDark?: boolean }) {
         <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-white sm:text-[1.7rem]">
           GWC
         </span>
-        <span className="-mt-2 font-sans text-[0.65rem] tracking-wide text-navy-500 dark:text-navy-300 sm:text-xs">
+        <span className="-mt-2 font-body text-[0.65rem] tracking-wide text-navy-500 dark:text-navy-300 sm:text-xs">
           Class Scheduling
         </span>
       </span>

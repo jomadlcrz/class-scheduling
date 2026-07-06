@@ -18,10 +18,10 @@ export function FacilityUtilization({ rooms }: FacilityUtilizationProps) {
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
-      <h2 className="font-sans text-sm font-semibold text-navy-700 dark:text-white">
+      <h2 className="font-body text-sm font-semibold text-navy-700 dark:text-white">
         Room Status Overview
       </h2>
-      <p className="mt-0.5 font-sans text-xs text-slate-400 dark:text-slate-500">
+      <p className="mt-0.5 font-body text-xs text-slate-400 dark:text-slate-500">
         {total} room{total !== 1 ? "s" : ""} across all buildings
       </p>
 
@@ -43,10 +43,10 @@ export function FacilityUtilization({ rooms }: FacilityUtilizationProps) {
         {counts.map((c) => (
           <div key={c.status} className="flex items-center gap-1.5">
             <span className={`inline-block size-2.5 rounded-full ${c.color}`} aria-hidden="true" />
-            <span className="font-sans text-xs text-slate-600 dark:text-slate-300">
+            <span className="font-body text-xs text-slate-600 dark:text-slate-300">
               {c.status}
             </span>
-            <span className="font-sans text-xs font-semibold text-navy-700 dark:text-white">
+            <span className="font-body text-xs font-semibold text-navy-700 dark:text-white">
               {c.count}
             </span>
           </div>

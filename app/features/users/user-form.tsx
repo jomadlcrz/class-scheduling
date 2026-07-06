@@ -74,7 +74,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       </Select>
 
       {!isEditing && (
-        <p className="font-sans text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+        <p className="font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
           New users start with a temporary password and must set their own at first login.
         </p>
       )}

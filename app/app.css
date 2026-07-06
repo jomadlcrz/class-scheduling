@@ -23,7 +23,7 @@
 @theme {
   /* Two families only — display for the wordmark/headlines, body for everything else. */
   --font-display: "Bebas Neue";
-  --font-sans: "Century Gothic";
+  --font-body: "Century Gothic";
 
   /* School gold (accent). */
   --color-gold-300: #ffd966;
@@ -77,7 +77,7 @@
 
 html,
 body {
-  @apply bg-cream-50 text-slate-900 dark:bg-navy-950 dark:text-[#e6eaf2];
+  @apply bg-cream-50 font-body text-slate-900 dark:bg-navy-950 dark:text-[#e6eaf2];
   touch-action: manipulation;
 }
 

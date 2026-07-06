@@ -20,7 +20,7 @@ export function Switch({ id, label, description, checked, onChange, disabled = f
           {label}
         </Label>
         {description && (
-          <p className="font-sans text-xs text-slate-400 dark:text-slate-500">{description}</p>
+          <p className="font-body text-xs text-slate-400 dark:text-slate-500">{description}</p>
         )}
       </div>
       <button

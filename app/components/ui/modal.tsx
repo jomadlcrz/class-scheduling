@@ -72,7 +72,7 @@ export function ConfirmDialog({
     <Modal open={open} onClose={handleClose} title={title}>
       <div className="flex flex-col gap-4">
         <FormError message={error} />
-        <div className="font-sans text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        <div className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           {children}
         </div>
         <div className="flex justify-end gap-2">
