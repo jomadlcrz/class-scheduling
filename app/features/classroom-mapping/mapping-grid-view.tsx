@@ -1,6 +1,6 @@
 import { useRef } from "react";
-import { Card } from "~/components/ui/card";
-import { ChevronRightIcon, LayoutIcon, UserSmallIcon } from "~/components/ui/icons";
+import { Accordion, AccordionItem } from "~/components/ui/accordion";
+import { UserSmallIcon } from "~/components/ui/icons";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
 import { ClassCard, FreeCell, StatusBadge } from "./class-card";
 import {
@@ -10,68 +10,34 @@ import {
 
 type MappingGridViewProps = {
   classrooms: Classroom[];
-  openRooms: Set<string>;
-  onToggle: (id: string) => void;
 };
 
-export function MappingGridView({ classrooms, openRooms, onToggle }: MappingGridViewProps) {
+export function MappingGridView({ classrooms }: MappingGridViewProps) {
   return (
-    <div className="mt-3 flex flex-col gap-3">
-      {classrooms.map((room) => (
-        <RoomAccordion
+    <Accordion>
+      {classrooms.map((room, roomIdx) => (
+        <AccordionItem
           key={room.id}
-          room={room}
-          isOpen={openRooms.has(room.id)}
-          onToggle={() => onToggle(room.id)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function RoomAccordion({
-  room,
-  isOpen,
-  onToggle,
-}: {
-  room: Classroom;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
-  const classCount = room.entries.length;
-
-  return (
-    <Card className="overflow-hidden dark:bg-slate-900/60">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 dark:hover:bg-white/5"
-      >
-        <span className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
-          <LayoutIcon />
-        </span>
-        <span className="font-display text-lg tracking-tight text-slate-800 dark:text-white">
-          {room.name}
-        </span>
-        <StatusBadge status={room.status} />
-        <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 font-body text-xs text-slate-500 dark:bg-white/10 dark:text-slate-400">
-          <UserSmallIcon />
-          {classCount} class{classCount !== 1 ? "es" : ""}
-        </span>
-        <span
-          aria-hidden="true"
-          className={`ml-auto text-slate-400 transition-transform duration-200 dark:text-slate-500 ${isOpen ? "rotate-90" : ""}`}
+          defaultOpen={roomIdx === 0}
+          title={
+            <span className="flex items-center gap-3">
+              <span className="font-display text-lg tracking-tight text-slate-800 dark:text-white">
+                {room.name}
+              </span>
+              <StatusBadge status={room.status} />
+            </span>
+          }
+          adornment={
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 font-body text-xs text-slate-500 dark:bg-white/10 dark:text-slate-400">
+              <UserSmallIcon />
+              {room.entries.length} class{room.entries.length !== 1 ? "es" : ""}
+            </span>
+          }
         >
-          <ChevronRightIcon />
-        </span>
-      </button>
-      {isOpen && (
-        <div className="border-t border-slate-300 dark:border-white/10">
           <TimetableGrid room={room} />
-        </div>
-      )}
-    </Card>
+        </AccordionItem>
+      ))}
+    </Accordion>
   );
 }
 
@@ -84,7 +50,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
   return (
     <div
       ref={scrollRef}
-      className="overflow-x-auto pb-2"
+      className="overflow-x-auto px-5 pb-3 pt-3 [&::-webkit-scrollbar]:hidden"
       style={{ cursor: "grab", scrollbarWidth: "none" }}
     >
       <div className="grid min-w-max" style={{ gridTemplateColumns: gridCols }}>
@@ -94,8 +60,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
           return (
             <div key={day} style={{ display: "contents" }}>
               <div
-                className={`border-t-2 border-slate-200 px-2 py-1 first:border-t-0 dark:border-white/10`}
-                style={{ gridColumn: `1 / ${TIME_SLOTS.length + 1}` }}
+                className="col-span-full border-t-2 border-b border-slate-200 px-2 py-1 first:border-t-0 dark:border-white/10"
               >
                 <span
                   className={`inline-block rounded px-2.5 py-0.5 font-body text-[0.68rem] font-bold uppercase tracking-widest ${ds.color} ${ds.bg}`}
@@ -108,7 +73,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
                 <div
                   key={`${day}-cell-${idx}`}
                   style={{ gridColumn: `span ${cell.kind === "class" ? cell.colspan : 1}` }}
-                  className="border border-slate-200 p-2 dark:border-white/8"
+                  className="border-b border-r border-l border-slate-200 p-2 last:border-r-0 dark:border-white/8"
                 >
                   {cell.kind === "class" ? (
                     <ClassCard entry={cell.entry} />

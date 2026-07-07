@@ -42,7 +42,6 @@ function ClassroomMappingPage() {
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [rawSearch, setRawSearch] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [openRooms, setOpenRooms] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -84,13 +83,6 @@ function ClassroomMappingPage() {
     },
     [classrooms, search, buildingFilter],
   );
-
-  const toggleRoom = (id: string) =>
-    setOpenRooms(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -194,7 +186,9 @@ function ClassroomMappingPage() {
           <MappingTableView classrooms={filtered} />
         </div>
       ) : (
-        <MappingGridView classrooms={filtered} openRooms={openRooms} onToggle={toggleRoom} />
+          <div className="mt-3">
+            <MappingGridView classrooms={filtered} />
+          </div>
       )}
     </div>
   );
