@@ -271,7 +271,7 @@ export function ChevronDownIcon() {
   );
 }
 
-export function ChevronLeftIcon() {
+function ChevronLeftIcon() {
   return (
     <IconBase size={16}>
       <polyline points="15 18 9 12 15 6" />

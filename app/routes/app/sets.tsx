@@ -96,7 +96,7 @@ function SetsPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Sets"
         description="Class sets grouped by program and year level."
@@ -170,13 +170,9 @@ function SetsPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -213,6 +209,6 @@ function SetsPage() {
         ({deleteTarget?.program}, {deleteTarget ? YEAR_LEVEL_LABELS[deleteTarget.yearLevel] : ""}){" "}
         will be permanently removed.
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

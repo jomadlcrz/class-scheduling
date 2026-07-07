@@ -93,7 +93,7 @@ function RoomsPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Rooms"
         description="Campus rooms and their current status."
@@ -179,13 +179,9 @@ function RoomsPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -219,6 +215,6 @@ function RoomsPage() {
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.name}</span>{" "}
         will be permanently removed.
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

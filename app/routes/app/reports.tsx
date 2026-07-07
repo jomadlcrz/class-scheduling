@@ -78,7 +78,7 @@ function ReportsPage() {
   const needsFilter = activeTab !== "enrollment" && activeTab !== "export";
 
   return (
-    <>
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Reports"
         description="Aggregate views of schedules, faculty workload, room usage, and enrollment."
@@ -176,6 +176,6 @@ function ReportsPage() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -82,7 +82,7 @@ function UsersPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Users"
         description="Manage accounts, roles, and access."
@@ -122,13 +122,9 @@ function UsersPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -161,6 +157,6 @@ function UsersPage() {
         onClose={() => setResetTarget(null)}
         onConfirm={(user) => userService.resetPassword(user.id)}
       />
-    </>
+    </div>
   );
 }

@@ -28,7 +28,7 @@ export default function SettingsLayout() {
   );
 
   return (
-    <>
+    <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader title="Settings" description="Manage your account and preferences." />
 
       <div className="mt-6 flex flex-col gap-6">
@@ -58,6 +58,6 @@ export default function SettingsLayout() {
           <Outlet />
         </div>
       </div>
-    </>
+    </div>
   );
 }

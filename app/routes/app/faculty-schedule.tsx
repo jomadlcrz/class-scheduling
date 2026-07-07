@@ -57,7 +57,7 @@ function FacultySchedulePage() {
   }, [schedules, facultyId, schoolYear, semester]);
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="My Teaching Schedule"
         description="The classes you teach this academic term."
@@ -97,6 +97,6 @@ function FacultySchedulePage() {
         emptyTitle="No classes assigned"
         emptyMessage="You have no classes scheduled for the selected term."
       />
-    </>
+    </div>
   );
 }

@@ -102,7 +102,7 @@ function SubjectsPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Subjects"
         description="Program curriculum subjects: codes, units, hours, and prerequisites."
@@ -177,13 +177,9 @@ function SubjectsPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -216,6 +212,6 @@ function SubjectsPage() {
         will be removed from {deleteTarget?.program}. Deletion is blocked while other subjects
         list it as a prerequisite.
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

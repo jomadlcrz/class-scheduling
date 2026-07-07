@@ -90,7 +90,7 @@ function ProgramsPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Programs"
         description="Academic programs offered by each department."
@@ -163,13 +163,9 @@ function ProgramsPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -207,6 +203,6 @@ function ProgramsPage() {
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.code}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

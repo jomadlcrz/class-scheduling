@@ -259,7 +259,7 @@ function SchedulesNewPage() {
   const lockHint = contextLocked ? "Remove all slots to change." : undefined;
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="New Schedule"
         description="Select a set, add time slots for its subjects, then save the whole week at once."
@@ -430,6 +430,6 @@ function SchedulesNewPage() {
           />
         )}
       </Drawer>
-    </>
+    </div>
   );
 }

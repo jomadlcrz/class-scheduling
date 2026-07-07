@@ -74,7 +74,7 @@ function StudentSchedulePage() {
     : "—";
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="My Class Schedule"
         description={`Your weekly class schedule this academic term (Section ${sectionLabel}).`}
@@ -114,6 +114,6 @@ function StudentSchedulePage() {
         emptyTitle="No classes scheduled"
         emptyMessage="There are no classes for your section in the selected term."
       />
-    </>
+    </div>
   );
 }

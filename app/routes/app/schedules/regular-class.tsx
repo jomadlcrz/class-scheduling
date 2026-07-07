@@ -160,7 +160,7 @@ function RegularClassPage() {
   const isLoading = data === null;
 
   return (
-    <>
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Regular Schedule Builder"
         description="Class schedules for the current academic term."
@@ -307,6 +307,6 @@ function RegularClassPage() {
         (Set {deleteTarget?.setCode}, {DAY_LABELS[deleteTarget?.day ?? "M"]}{" "}
         {deleteTarget?.startTime}–{deleteTarget?.endTime}) from the schedule?
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

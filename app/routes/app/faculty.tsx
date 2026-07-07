@@ -95,7 +95,7 @@ function FacultyPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Faculty"
         description="Faculty members and their department assignments."
@@ -165,13 +165,9 @@ function FacultyPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -210,6 +206,6 @@ function FacultyPage() {
         </span>{" "}
         will be permanently removed.
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

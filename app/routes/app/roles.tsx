@@ -33,7 +33,7 @@ function RolesPage() {
   }, []);
 
   return (
-    <>
+    <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Roles"
         description="System roles and what each one can do."
@@ -58,6 +58,6 @@ function RolesPage() {
           </section>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -69,7 +69,7 @@ function BuildingsPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Buildings"
         description="Campus buildings and their floor information."
@@ -112,13 +112,9 @@ function BuildingsPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -151,6 +147,6 @@ function BuildingsPage() {
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.name}</span>{" "}
         ({deleteTarget?.code}) will be permanently removed.
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

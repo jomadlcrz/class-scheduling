@@ -104,7 +104,7 @@ function StudentsPage() {
   }
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Students"
         description="Enrolled students and their section assignments."
@@ -177,13 +177,9 @@ function StudentsPage() {
             />
             <Pagination
               page={pagination.page}
-              totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
-              rangeStart={pagination.rangeStart}
-              rangeEnd={pagination.rangeEnd}
               pageSize={pagination.pageSize}
               onPageChange={pagination.setPage}
-              onPageSizeChange={pagination.setPageSize}
             />
           </>
         )}
@@ -222,6 +218,6 @@ function StudentsPage() {
         </span>{" "}
         will be permanently removed.
       </ConfirmDialog>
-    </>
+    </div>
   );
 }

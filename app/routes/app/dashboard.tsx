@@ -10,11 +10,11 @@ export function meta() {
 export default function Dashboard() {
   const { user } = useAuth();
   return (
-    <>
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Dashboard"
         description={user ? `Welcome back, ${user.name}.` : "Overview of the current academic term."}
       />
-    </>
+    </div>
   );
 }
