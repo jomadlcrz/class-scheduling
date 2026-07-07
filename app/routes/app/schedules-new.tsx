@@ -11,8 +11,8 @@ import { Spinner } from "~/components/ui/spinner";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
-    ScheduleViewToggle,
-    type ScheduleViewMode,
+  ScheduleViewToggle,
+  type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
 import { PageHeader } from "~/layouts/page-header";
@@ -26,17 +26,26 @@ import type { Faculty } from "~/types/faculty";
 import type { Program } from "~/types/program";
 import type { Room } from "~/types/room";
 import {
-    DEFAULT_SCHOOL_YEAR,
-    SCHEDULE_SEMESTER_LABELS,
-    SCHEDULE_SEMESTERS,
-    SCHOOL_YEARS,
-    type Day,
-    type Schedule,
-    type ScheduleSemester,
+  DEFAULT_SCHOOL_YEAR,
+  SCHEDULE_SEMESTER_LABELS,
+  SCHEDULE_SEMESTERS,
+  SCHOOL_YEARS,
+  getSlotDurationHours,
+  type Day,
+  type Schedule,
+  type ScheduleSemester,
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { Subject } from "~/types/subject";
 import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "~/types/subject";
+
+function ZapIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
 
 export function meta() {
   return [
@@ -61,6 +70,14 @@ type PageData = {
   programs: Program[];
 };
 
+const DAY_ORDER: Day[] = ["M", "T", "W", "Th", "F"];
+const TIME_BLOCKS = [
+  { start: "07:00", end: "10:00" },
+  { start: "10:00", end: "13:00" },
+  { start: "13:00", end: "16:00" },
+  { start: "16:00", end: "19:00" },
+];
+
 function SchedulesNewPage() {
   const navigate = useNavigate();
   const [pageData, setPageData] = useState<PageData | null>(null);
@@ -77,6 +94,7 @@ function SchedulesNewPage() {
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [autoGenerating, setAutoGenerating] = useState(false);
   const tempIdCounter = useRef(0);
 
   useEffect(() => {
@@ -122,12 +140,11 @@ function SchedulesNewPage() {
   const availableSubjects = useMemo(
     () =>
       (pageData?.subjects ?? []).filter(
-        (s) => s.program === selectedProgram && s.yearLevel === selectedYearLevel,
+        (s) => s.program === selectedProgram && s.yearLevel === selectedYearLevel && s.semester === semester,
       ),
-    [pageData, selectedProgram, selectedYearLevel],
+    [pageData, selectedProgram, selectedYearLevel, semester],
   );
 
-  // Pending slots shown through the shared grid/table views.
   const displaySchedules = useMemo<Schedule[]>(
     () =>
       slots.map((slot) => ({
@@ -164,6 +181,7 @@ function SchedulesNewPage() {
     setSelectedSetId(
       (pageData?.sets ?? []).find((s) => s.program === program && s.yearLevel === newYl)?.id ?? "",
     );
+    setSlots([]);
   }
 
   function handleYearLevelChange(yl: YearLevel) {
@@ -171,6 +189,72 @@ function SchedulesNewPage() {
     setSelectedSetId(
       (pageData?.sets ?? []).find((s) => s.program === selectedProgram && s.yearLevel === yl)?.id ?? "",
     );
+    setSlots([]);
+  }
+
+  function handleAutoGenerate() {
+    if (!pageData || !selectedSet) return;
+
+    const programSubjects = availableSubjects;
+    const activeFaculty = pageData.faculty.filter((f) => f.status === "active");
+    if (programSubjects.length === 0 || activeFaculty.length === 0 || pageData.rooms.length === 0) return;
+
+    setAutoGenerating(true);
+
+    // Small delay so the spinner renders
+    setTimeout(() => {
+      const sortedSubjects = [...programSubjects].sort(
+        (a, b) => a.code.localeCompare(b.code),
+      );
+
+      // Grid of available slots: iterate day x timeBlock
+      const gridSlots: Array<{ day: Day; startTime: string; endTime: string }> = [];
+      for (const day of DAY_ORDER) {
+        for (const block of TIME_BLOCKS) {
+          gridSlots.push({ day, startTime: block.start, endTime: block.end });
+        }
+      }
+
+      const newSlots: Omit<PendingSlot, "tempId">[] = [];
+      let cursor = 0;
+
+      for (const subject of sortedSubjects) {
+        const totalHours = subject.lectureHours + subject.labHours;
+        const numSlots = Math.max(1, Math.ceil(totalHours / 3));
+
+        for (let i = 0; i < numSlots && cursor < gridSlots.length; i++) {
+          const slot = gridSlots[cursor];
+          cursor++;
+
+          const facultyMember = activeFaculty[newSlots.length % activeFaculty.length];
+          const room = pageData.rooms[newSlots.length % pageData.rooms.length];
+
+          newSlots.push({
+            subjectId: subject.id,
+            subjectCode: subject.code,
+            subjectTitle: subject.title,
+            day: slot.day,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            facultyId: facultyMember.id,
+            facultyName: `${facultyMember.firstName} ${facultyMember.lastName}`,
+            roomId: room.id,
+            roomName: room.name,
+            buildingCode: room.buildingCode,
+            mode: "F2F" as const,
+          });
+        }
+      }
+
+      tempIdCounter.current = 0;
+      const slotsWithIds: PendingSlot[] = newSlots.map((slot) => {
+        tempIdCounter.current += 1;
+        return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
+      });
+
+      setSlots(slotsWithIds);
+      setAutoGenerating(false);
+    }, 200);
   }
 
   function openAddDrawer() {
@@ -256,13 +340,14 @@ function SchedulesNewPage() {
 
   const contextLocked = slots.length > 0;
   const canAddSlot = Boolean(selectedSet) && availableSubjects.length > 0;
+  const canAutoGenerate = Boolean(selectedSet) && availableSubjects.length > 0;
   const lockHint = contextLocked ? "Remove all slots to change." : undefined;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="New Schedule"
-        description="Select a set, add time slots for its subjects, then save the whole week at once."
+        description="Select a set, auto-generate or add time slots for its subjects, then save the whole week at once."
         actions={
           <>
             <Button
@@ -375,27 +460,93 @@ function SchedulesNewPage() {
 
           <FormError message={saveError} />
 
-          {/* Toolbar: view toggle + add slot */}
+          {/* Toolbar: view toggle + action buttons */}
           <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
             <div className="hidden sm:block" />
             <div className="flex justify-center">
               <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
             </div>
-            <div className="flex justify-end">
-              <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
-                <PlusIcon />
-                Add Slot
+            <div className="flex justify-end gap-2">
+              {slots.length > 0 && (
+                <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
+                  <PlusIcon />
+                  Add Slot
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant={slots.length === 0 ? "primary" : "outline"}
+                block={false}
+                disabled={!canAutoGenerate || autoGenerating}
+                isLoading={autoGenerating}
+                loadingLabel="Generating…"
+                onClick={handleAutoGenerate}
+              >
+                <ZapIcon />
+                {slots.length === 0 ? "Auto Generate" : "Regenerate"}
               </Button>
             </div>
           </div>
 
+          {/* Faculty load summary */}
+          {slots.length > 0 && (
+            <section aria-labelledby="faculty-load-heading">
+              <h3
+                id="faculty-load-heading"
+                className="mb-3 font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Faculty Load
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {(() => {
+                  const loadMap = new Map<string, { name: string; hours: number }>();
+                  for (const slot of slots) {
+                    const key = slot.facultyId;
+                    const existing = loadMap.get(key) ?? { name: slot.facultyName, hours: 0 };
+                    existing.hours += getSlotDurationHours(slot.startTime, slot.endTime);
+                    loadMap.set(key, existing);
+                  }
+                  const maxHours = Math.max(...[...loadMap.values()].map((l) => l.hours), 1);
+                  return [...loadMap.entries()].map(([id, load]) => (
+                    <div
+                      key={id}
+                      className="min-w-44 flex-1 rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/5"
+                    >
+                      <p className="truncate font-body text-sm font-medium text-navy-700 dark:text-white">
+                        {load.name}
+                      </p>
+                      <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                        {load.hours.toFixed(1)} hrs/week
+                      </p>
+                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+                        <div
+                          className="h-1.5 rounded-full bg-navy-700 dark:bg-gold-400"
+                          style={{ width: `${(load.hours / maxHours) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </section>
+          )}
+
           {/* Week schedule body */}
           {slots.length === 0 ? (
-            <EmptyState title="No slots added yet">
-              Use “Add Slot” to start building this section’s weekly schedule.
+            <EmptyState title={autoGenerating ? "Generating schedule…" : "No slots yet"}>
+              {autoGenerating
+                ? "Please wait while slots are created."
+                : availableSubjects.length === 0
+                  ? "No subjects available for this program, year level, and semester."
+                  : "Use “Auto Generate” to create slots for all subjects, or switch to the grid view and add slots manually."}
             </EmptyState>
           ) : viewMode === "grid" ? (
-            <ScheduleGrid schedules={displaySchedules} />
+            <ScheduleGrid
+              schedules={displaySchedules}
+              onEdit={handleEditSlot}
+              onDelete={handleRemoveSlot}
+              onDuplicate={handleDuplicateSlot}
+            />
           ) : (
             <ScheduleTable
               schedules={displaySchedules}

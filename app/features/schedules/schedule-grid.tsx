@@ -1,20 +1,34 @@
-import { MapPinIcon, UserSmallIcon } from "~/components/ui/icons";
+import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+import { Popover } from "~/components/ui/popover";
 import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
 import { ModeBadge } from "~/features/schedules/mode-badge";
 
 type ScheduleGridProps = {
   schedules: Schedule[];
+  onEdit?: (schedule: Schedule) => void;
+  onDelete?: (schedule: Schedule) => void;
+  onDuplicate?: (schedule: Schedule, day: Day) => void;
 };
 
 const GRID_TEMPLATE = "5.75rem repeat(6, minmax(8.25rem, 1fr))";
+const actionBtn =
+  "grid size-6 cursor-pointer place-items-center rounded-md text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-/** Weekly timetable: a Time column plus one column per day, rows = unique time slots. */
-export function ScheduleGrid({ schedules }: ScheduleGridProps) {
-  // Unique {start,end} pairs, sorted chronologically, become the grid rows.
+export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: ScheduleGridProps) {
   const timeRows = [...new Map(schedules.map((s) => [`${s.startTime}|${s.endTime}`, s])).values()]
     .map((s) => ({ startTime: s.startTime, endTime: s.endTime }))
     .sort((a, b) => a.startTime.localeCompare(b.startTime) || a.endTime.localeCompare(b.endTime));
+
+  // Days the same subject isn't already scheduled on (excluding its current day).
+  function availableDays(sched: Schedule): Day[] {
+    const occupied = new Set(
+      schedules.filter((s) => s.subjectId === sched.subjectId).map((s) => s.day),
+    );
+    return DAYS.filter((d) => d !== sched.day && !occupied.has(d));
+  }
+
+  const showActions = Boolean(onEdit || onDelete || onDuplicate);
 
   return (
     <div className="scrollbar-thin overflow-x-auto rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5">
@@ -52,7 +66,15 @@ export function ScheduleGrid({ schedules }: ScheduleGridProps) {
                   className="flex min-h-26 flex-col gap-1.5 border-r border-slate-100 p-1.5 last:border-r-0 dark:border-white/5"
                 >
                   {cellEntries.map((entry) => (
-                    <GridClassCard key={entry.id} entry={entry} />
+                    <GridClassCard
+                      key={entry.id}
+                      entry={entry}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      onDuplicate={onDuplicate}
+                      availableDays={availableDays(entry)}
+                      showActions={showActions}
+                    />
                   ))}
                 </div>
               );
@@ -72,7 +94,21 @@ function HeaderCell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function GridClassCard({ entry }: { entry: Schedule }) {
+function GridClassCard({
+  entry,
+  onEdit,
+  onDelete,
+  onDuplicate,
+  availableDays,
+  showActions,
+}: {
+  entry: Schedule;
+  onEdit?: (schedule: Schedule) => void;
+  onDelete?: (schedule: Schedule) => void;
+  onDuplicate?: (schedule: Schedule, day: Day) => void;
+  availableDays: Day[];
+  showActions: boolean;
+}) {
   const accent = DAY_ACCENT[entry.day as Day];
   return (
     <article
@@ -95,6 +131,68 @@ function GridClassCard({ entry }: { entry: Schedule }) {
         <MapPinIcon />
         {entry.roomName}
       </small>
+      {showActions && (
+        <div className="mt-0.5 flex items-center justify-end gap-0.5 border-t border-slate-100 pt-1 dark:border-white/5">
+          {onDuplicate && (
+            <Popover
+              label="Duplicate to another day"
+              triggerClassName={actionBtn}
+              trigger={<CopyIcon />}
+              className="w-44"
+            >
+              {(close) => (
+                <>
+                  <p className="px-3 py-1 font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Duplicate to
+                  </p>
+                  {availableDays.length === 0 ? (
+                    <p className="px-3 py-1.5 font-body text-xs text-slate-400 dark:text-slate-500">
+                      Already on every day
+                    </p>
+                  ) : (
+                    availableDays.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          close();
+                          onDuplicate(entry, d);
+                        }}
+                        className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                      >
+                        {DAY_LABELS[d]}
+                      </button>
+                    ))
+                  )}
+                </>
+              )}
+            </Popover>
+          )}
+          {onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(entry)}
+              aria-label={`Edit ${entry.subjectCode} ${entry.setCode}`}
+              title="Edit"
+              className={actionBtn}
+            >
+              <EditIcon />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(entry)}
+              aria-label={`Delete ${entry.subjectCode} ${entry.setCode}`}
+              title="Delete"
+              className={actionBtn}
+            >
+              <TrashIcon />
+            </button>
+          )}
+        </div>
+      )}
     </article>
   );
 }

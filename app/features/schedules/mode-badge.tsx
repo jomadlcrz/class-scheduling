@@ -4,6 +4,7 @@ import { SCHEDULE_MODE_LABELS, type ScheduleMode } from "~/types/schedule";
 const MODE_TONE: Record<ScheduleMode, BadgeTone> = {
   F2F: "sky",
   Online: "emerald",
+  Modular: "violet",
 };
 
 /** Colored pill for a class delivery mode (F2F / Online / Hybrid). */

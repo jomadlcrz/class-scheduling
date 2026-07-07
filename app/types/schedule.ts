@@ -30,12 +30,13 @@ export const SCHEDULE_SEMESTER_LABELS: Record<ScheduleSemester, string> = {
   3: "Summer",
 };
 
-export const SCHEDULE_MODES = ["F2F", "Online"] as const;
+export const SCHEDULE_MODES = ["F2F", "Online", "Modular"] as const;
 export type ScheduleMode = (typeof SCHEDULE_MODES)[number];
 
 export const SCHEDULE_MODE_LABELS: Record<ScheduleMode, string> = {
   F2F: "F2F",
   Online: "Online",
+  Modular: "Modular",
 };
 
 export type Schedule = {
@@ -81,6 +82,13 @@ export function formatTime(time: string): string {
   const period = hour < 12 ? "AM" : "PM";
   const display = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
   return `${display}:${min} ${period}`;
+}
+
+/** Returns the duration in hours between two "HH:MM" times. */
+export function getSlotDurationHours(startTime: string, endTime: string): number {
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  return (eh + em / 60) - (sh + sm / 60);
 }
 
 export const SCHOOL_YEARS = ["2023-2024", "2024-2025", "2025-2026", "2026-2027"] as const;
