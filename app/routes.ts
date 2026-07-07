@@ -25,7 +25,7 @@ export default [
     route("deans", "routes/app/deans.tsx"),
     route("faculty", "routes/app/faculty.tsx"),
     route("schedules", "routes/app/schedules/index.tsx"),
-    route("schedules/weekly-hours", "routes/app/schedules/weekly-hours.tsx"),
+    route("schedules/weekly-hour-allocations", "routes/app/schedules/weekly-hour-allocations.tsx"),
     route("schedules/regular-class", "routes/app/schedules/regular-class.tsx"),
     route("schedules/irregular-class", "routes/app/schedules/irregular-class.tsx"),
     route("schedules/new", "routes/app/schedules-new.tsx"),

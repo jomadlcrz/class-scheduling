@@ -23,8 +23,8 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
   return (
     <Table>
       <TableHead>
-        <TableHeader>Name</TableHeader>
-        <TableHeader>Code</TableHeader>
+        <TableHeader>Building Name</TableHeader>
+        <TableHeader>Building Code</TableHeader>
         <TableHeader className="hidden sm:table-cell text-center">Floors</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>

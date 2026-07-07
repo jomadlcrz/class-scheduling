@@ -2,6 +2,7 @@ import type { Building } from "~/types/building";
 import type { Department } from "~/types/department";
 import type { Dean } from "~/types/dean";
 import type { Faculty } from "~/types/faculty";
+import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 import type { Student } from "~/types/student";
 import type { Program } from "~/types/program";
 import type { Room } from "~/types/room";
@@ -228,6 +229,22 @@ export function newDeanId(): string {
   deanIdCounter += 1;
   return `dean-${deanIdCounter}`;
 }
+
+// ─── Weekly Hour Allocations ────────────────────────────────────────────────
+
+export const subjectTypeOptions: string[] = [
+  "gened",
+  "major-lab",
+  "major",
+  "minor",
+];
+
+export const weeklyHourAllocations: WeeklyHourAllocation[] = [
+  { subjectType: "gened", subjectTypeLabel: "GenEd", lectureHours: 3, labHours: 0, meetings: 2, labTimeSlots: [] },
+  { subjectType: "major-lab", subjectTypeLabel: "Major with Lab", lectureHours: 2, labHours: 3, meetings: 2, labTimeSlots: [{ start: "7:00 AM", end: "10:00 AM" }, { start: "10:00 AM", end: "1:00 PM" }] },
+  { subjectType: "major", subjectTypeLabel: "Major w/out Lab", lectureHours: 3, labHours: 0, meetings: 2, labTimeSlots: [] },
+  { subjectType: "minor", subjectTypeLabel: "Minors", lectureHours: 2, labHours: 0, meetings: 1, labTimeSlots: [] },
+];
 
 // ─── Subjects ────────────────────────────────────────────────────────────────
 

@@ -52,7 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
             roles: ["admin", "registrar", "dean"],
             subItems: [
               { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["admin", "registrar", "dean"] },
-              { label: "Weekly Hours", to: "/schedules/weekly-hours", roles: ["admin", "registrar", "dean"] },
+              { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", roles: ["admin", "registrar", "dean"] },
               { label: "Regular Class", to: "/schedules/regular-class", roles: ["admin", "registrar", "dean"] },
               { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["admin", "registrar", "dean"] },
             ],
