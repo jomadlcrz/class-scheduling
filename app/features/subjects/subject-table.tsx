@@ -9,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { getProgramTone, type Program } from "~/types/program";
-import { SEMESTER_LABELS, YEAR_LEVEL_LABELS, type Subject } from "~/types/subject";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
+import { type Program } from "~/types/program";
+import { SEMESTER_LABELS, YEAR_LEVEL_LABELS, type Subject } from "~/types/subject";
 
 type SubjectTableProps = {
   /** Rows to display (already filtered and sorted). */
@@ -32,12 +32,17 @@ export function SubjectTable({ subjects, allSubjects, programs, onEdit, onDelete
     [allSubjects],
   );
 
+  const programDeptMap = useMemo(
+    () => new Map(programs.map((p) => [p.code, p.departmentCode])),
+    [programs],
+  );
+
   return (
     <Table>
       <TableHead>
         <TableHeader>Subject Code</TableHeader>
         <TableHeader>Descriptive Title</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Program</TableHeader>
+        <TableHeader>Program</TableHeader>
         <TableHeader className="hidden sm:table-cell">Year & Semester</TableHeader>
         <TableHeader className="hidden md:table-cell text-center">Units</TableHeader>
         <TableHeader className="hidden sm:table-cell">Type</TableHeader>
@@ -53,8 +58,19 @@ export function SubjectTable({ subjects, allSubjects, programs, onEdit, onDelete
               <span className="font-medium text-navy-700 dark:text-white">{subject.code}</span>
             </TableCell>
             <TableCell>{subject.title}</TableCell>
-            <TableCell className="hidden sm:table-cell">
-              <Badge tone={getProgramTone(subject.program, programs)}>{subject.program}</Badge>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                {programDeptMap.has(subject.program) && (
+                  <img
+                    src={`/images/departments/${programDeptMap.get(subject.program)!.toLowerCase()}.avif`}
+                    alt={`${programDeptMap.get(subject.program)!} logo`}
+                    className="size-10 rounded-lg object-contain"
+                  />
+                )}
+                <div>
+                  <span className="font-medium text-navy-700 dark:text-white">{subject.program}</span>
+                </div>
+              </div>
             </TableCell>
             <TableCell className="hidden sm:table-cell">
               {YEAR_LEVEL_LABELS[subject.yearLevel]} · {SEMESTER_LABELS[subject.semester]}
@@ -104,3 +120,4 @@ export function SubjectTable({ subjects, allSubjects, programs, onEdit, onDelete
     </Table>
   );
 }
+
