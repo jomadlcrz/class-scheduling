@@ -25,7 +25,10 @@ export function CurriculumSubjects({ group, codeById }: CurriculumSubjectsProps)
             <th className="px-3 py-1.5 font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Descriptive Title
             </th>
-            <th className="px-3 py-1.5 font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <th className="px-3 py-1.5 text-center font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Units
+            </th>
+            <th className="px-3 py-1.5 text-center font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Pre-Requisite
             </th>
           </tr>
@@ -42,7 +45,10 @@ export function CurriculumSubjects({ group, codeById }: CurriculumSubjectsProps)
               <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300">
                 {subject.title}
               </td>
-              <td className="px-3 py-1.5 text-slate-400 dark:text-slate-500">
+              <td className="px-3 py-1.5 text-center tabular-nums text-slate-700 dark:text-slate-300">
+                {subject.units}
+              </td>
+              <td className="px-3 py-1.5 text-center text-slate-400 dark:text-slate-500">
                 {subject.prerequisiteIds.length > 0
                   ? subject.prerequisiteIds.map((id) => codeById.get(id)).filter(Boolean).join(", ")
                   : "—"}
@@ -50,6 +56,17 @@ export function CurriculumSubjects({ group, codeById }: CurriculumSubjectsProps)
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr className="border-t border-slate-200 dark:border-white/10">
+            <td colSpan={2} className="px-3 py-1.5 font-semibold text-slate-500 dark:text-slate-400">
+              Total Units
+            </td>
+            <td className="px-3 py-1.5 text-center font-semibold tabular-nums text-navy-700 dark:text-white">
+              {group.totalUnits}
+            </td>
+            <td />
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

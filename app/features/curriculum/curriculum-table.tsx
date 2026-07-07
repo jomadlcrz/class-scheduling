@@ -89,7 +89,7 @@ function YearBlock({
 function SemesterCard({ group, codeById }: { group: CurriculumGroup; codeById: Map<string, string> }) {
   return (
     <div className="flex flex-col rounded-lg border border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-navy-800/60">
-      <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-3 py-2 dark:border-white/10">
+      <div className="border-b border-slate-200 px-3 py-2 text-center dark:border-white/10">
         <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
           {SEMESTER_LABELS[group.semester]}
         </span>
