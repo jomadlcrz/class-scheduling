@@ -92,10 +92,10 @@ export function CurriculumStructure({
                 return (
                   <div
                     key={semester}
-                    className="rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5"
+                    className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80"
                   >
-                    <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-2.5 dark:border-white/10">
-                      <p className="font-body text-sm font-medium text-navy-700 dark:text-white">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-white/10 dark:bg-navy-800/60 rounded-t-xl">
+                      <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
                         {SEMESTER_LABELS[semester]}
                       </p>
                       <Badge tone="slate">{semesterUnits} units</Badge>

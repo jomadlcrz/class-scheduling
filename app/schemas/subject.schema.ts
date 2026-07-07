@@ -9,6 +9,6 @@ export const subjectSchema = z.object({
   program: z.string(),
   yearLevel: z.number().int().min(1).max(4),
   semester: z.number().int().min(1).max(3),
-  subjectType: z.enum(["gened", "major-lab", "major", "minor", "research"]),
+  subjectType: z.enum(["gened", "major-lab", "major", "minor"]),
   prerequisiteIds: z.array(z.string()),
 });

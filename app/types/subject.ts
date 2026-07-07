@@ -17,7 +17,7 @@ export const SEMESTER_LABELS: Record<Semester, string> = {
   3: "Summer",
 };
 
-export const SUBJECT_TYPES = ["gened", "major-lab", "major", "minor", "research"] as const;
+export const SUBJECT_TYPES = ["gened", "major-lab", "major", "minor"] as const;
 export type SubjectType = (typeof SUBJECT_TYPES)[number];
 
 export const SUBJECT_TYPE_LABELS: Record<SubjectType, string> = {
@@ -25,7 +25,6 @@ export const SUBJECT_TYPE_LABELS: Record<SubjectType, string> = {
   "major-lab": "Major with Lab",
   major: "Major w/out Lab",
   minor: "Minors",
-  research: "Research/Thesis",
 };
 
 /** A curriculum entry: a subject offered by one program at a year/semester slot. */

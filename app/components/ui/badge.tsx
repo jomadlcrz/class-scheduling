@@ -9,6 +9,8 @@ const tones = {
   sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-300",
   slate:
     "border-slate-300 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300",
+  violet:
+    "border-violet-200 bg-violet-100 text-violet-800 dark:border-violet-400/20 dark:bg-violet-400/10 dark:text-violet-300",
 } as const;
 
 export type BadgeTone = keyof typeof tones;

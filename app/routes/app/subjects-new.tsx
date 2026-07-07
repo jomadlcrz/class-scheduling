@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { BookIcon, GraduationCapIcon, LayersIcon } from "~/components/ui/icons";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumEntryForm } from "~/features/subjects/curriculum-entry-form";
@@ -146,7 +147,7 @@ function SubjectsNewPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="New Subjects"
         description="Add subjects one at a time and review the curriculum structure before saving."
@@ -183,52 +184,80 @@ function SubjectsNewPage() {
           <Spinner />
         </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-4">
-          <div className="rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
-            <div className="max-w-xl">
-              <Select
-                id="curriculum-program"
-                label="Program"
-                value={program}
-                onChange={(e) => setProgram(e.target.value)}
-                disabled={pending.length > 0 || editing !== null}
-                hint={
-                  pending.length > 0 || editing !== null
-                    ? "Save or remove the unsaved entries to switch program."
-                    : undefined
-                }
-              >
-                {programs.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.code} — {p.name}
-                  </option>
-                ))}
-              </Select>
+        <div className="mt-6 flex flex-col gap-5">
+          <div className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/8">
+              <span className="grid size-8 place-items-center rounded-lg bg-navy-100 text-navy-600 dark:bg-navy-800 dark:text-gold-400">
+                <GraduationCapIcon />
+              </span>
+              <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+                Target Program
+              </span>
+            </div>
+            <div className="px-5 py-4">
+              <div className="max-w-xl">
+                <Select
+                  id="curriculum-program"
+                  label="Program"
+                  value={program}
+                  onChange={(e) => setProgram(e.target.value)}
+                  disabled={pending.length > 0 || editing !== null}
+                  hint={
+                    pending.length > 0 || editing !== null
+                      ? "Save or remove the unsaved entries to switch program."
+                      : undefined
+                  }
+                >
+                  {programs.map((p) => (
+                    <option key={p.code} value={p.code}>
+                      {p.code} — {p.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
             </div>
           </div>
 
           <FormError message={saveError} />
 
-          <div className="grid gap-4 lg:grid-cols-[24rem_1fr]">
-            <section className="rounded-xl border border-slate-200 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
-              <h2 className="mb-4 font-display text-xl tracking-wide text-navy-700 dark:text-white">
-                {editing ? `Edit Entry — ${editing.code}` : "Add New Curriculum Entry"}
-              </h2>
-              <CurriculumEntryForm
-                key={editing?.tempId ?? "new"}
-                initialEntry={editing ?? undefined}
-                prerequisiteOptions={prerequisiteOptions}
-                onAdd={handleAdd}
-                onCancelEdit={handleCancelEdit}
-              />
+          <div className="grid gap-5 lg:grid-cols-[26rem_1fr]">
+            <section className="flex flex-col rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
+              <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/8">
+                <span className="grid size-8 place-items-center rounded-lg bg-navy-100 text-navy-600 dark:bg-navy-800 dark:text-gold-400">
+                  <BookIcon />
+                </span>
+                <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+                  {editing ? `Edit Entry — ${editing.code}` : "New Curriculum Entry"}
+                </span>
+              </div>
+              <div className="p-5">
+                <CurriculumEntryForm
+                  key={editing?.tempId ?? "new"}
+                  initialEntry={editing ?? undefined}
+                  prerequisiteOptions={prerequisiteOptions}
+                  onAdd={handleAdd}
+                  onCancelEdit={handleCancelEdit}
+                />
+              </div>
             </section>
 
-            <section className="flex flex-col rounded-xl border border-slate-200 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
-              <h2 className="mb-4 shrink-0 font-display text-xl tracking-wide text-navy-700 dark:text-white">
-                Curriculum Structure
-              </h2>
-              {/* Fills the remaining card height; long curricula scroll inside, not the page. */}
-              <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto pr-1">
+            <section className="flex flex-col rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/8">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-8 place-items-center rounded-lg bg-navy-100 text-navy-600 dark:bg-navy-800 dark:text-gold-400">
+                    <LayersIcon />
+                  </span>
+                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+                    Curriculum Structure
+                  </span>
+                </div>
+                {pending.length > 0 && (
+                  <span className="rounded-full bg-gold-400/20 px-2.5 py-0.5 font-body text-xs font-medium text-gold-600 dark:text-gold-400">
+                    {pending.length} pending
+                  </span>
+                )}
+              </div>
+              <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
                 <CurriculumStructure
                   program={program}
                   saved={savedForProgram}

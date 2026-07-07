@@ -1,4 +1,5 @@
 import { useId, useRef, useState } from "react";
+import { FieldChrome } from "~/components/ui/input";
 
 export type PrerequisiteOption = {
   /** Real id for saved subjects, temp id for pending entries. */
@@ -40,25 +41,21 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label
-        htmlFor={inputId}
-        className="font-body text-sm font-medium text-slate-700 dark:text-slate-300"
-      >
-        Prerequisites{" "}
-        <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
-      </label>
-
+    <FieldChrome
+      id={inputId}
+      label="Prerequisites"
+      labelEnd={<span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>}
+    >
       <div
         onClick={() => inputRef.current?.focus()}
-        className={`flex min-h-13 w-full cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 ${
+        className={`flex min-h-10.5 cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-white dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
           disabled ? "cursor-not-allowed opacity-60" : ""
         }`}
       >
         {selected.map((option) => (
           <span
             key={option.id}
-            className="inline-flex items-center gap-1.5 rounded-md bg-navy-500/10 px-2 py-1 font-body text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200"
+            className="inline-flex items-center gap-1.5 rounded-md bg-navy-500/10 px-2 py-1 text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200"
           >
             {option.code}
             <button
@@ -89,7 +86,6 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
           autoComplete="off"
           onChange={(e) => {
             const next = e.target.value;
-            // Picking a datalist suggestion fires change with the full code.
             if (!tryAdd(next)) setQuery(next);
           }}
           onKeyDown={(e) => {
@@ -100,8 +96,7 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
               onChange(value.slice(0, -1));
             }
           }}
-          // Hide Chromium's built-in datalist dropdown arrow.
-          className="min-w-24 flex-1 bg-transparent font-body text-base text-slate-900 placeholder-slate-400 outline-none disabled:cursor-not-allowed dark:text-white dark:placeholder-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
+          className="min-w-24 flex-1 bg-transparent text-sm text-inherit placeholder-slate-400 outline-none disabled:cursor-not-allowed dark:placeholder-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
         />
       </div>
 
@@ -112,6 +107,6 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
           </option>
         ))}
       </datalist>
-    </div>
+    </FieldChrome>
   );
 }
