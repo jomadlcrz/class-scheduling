@@ -54,8 +54,6 @@ export function CurriculumEntryForm({
     const title = String(data.get("entry-title") ?? "").trim();
     const units = Number(data.get("entry-units"));
     const subjectType = String(data.get("entry-subject-type")) as SubjectType;
-    const lectureHours = Number(data.get("entry-lecture-hours"));
-    const labHours = Number(data.get("entry-lab-hours"));
 
     if (!code) {
       setError("Enter the subject code.");
@@ -69,10 +67,6 @@ export function CurriculumEntryForm({
       setError("Units must be at least 1.");
       return;
     }
-    if (!Number.isFinite(lectureHours) || lectureHours < 0 || !Number.isFinite(labHours) || labHours < 0) {
-      setError("Hours can't be negative.");
-      return;
-    }
 
     try {
       onAdd({
@@ -82,8 +76,6 @@ export function CurriculumEntryForm({
         title,
         units,
         subjectType,
-        lectureHours,
-        labHours,
         prerequisiteIds,
       });
     } catch (err) {
@@ -145,7 +137,7 @@ export function CurriculumEntryForm({
         defaultValue={initialEntry?.title}
       />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Input
           id="entry-units"
           label="Units"
@@ -155,37 +147,18 @@ export function CurriculumEntryForm({
           required
           defaultValue={initialEntry?.units ?? 3}
         />
-        <Input
-          id="entry-lecture-hours"
-          label="Lec Hours"
-          type="number"
-          min={0}
-          max={12}
-          required
-          defaultValue={initialEntry?.lectureHours ?? 3}
-        />
-        <Input
-          id="entry-lab-hours"
-          label="Lab Hours"
-          type="number"
-          min={0}
-          max={12}
-          required
-          defaultValue={initialEntry?.labHours ?? 0}
-        />
+        <Select
+          id="entry-subject-type"
+          label="Subject Type"
+          defaultValue={initialEntry?.subjectType ?? "gened"}
+        >
+          {SUBJECT_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {SUBJECT_TYPE_LABELS[type]}
+            </option>
+          ))}
+        </Select>
       </div>
-
-      <Select
-        id="entry-subject-type"
-        label="Subject Type"
-        defaultValue={initialEntry?.subjectType ?? "gened"}
-      >
-        {SUBJECT_TYPES.map((type) => (
-          <option key={type} value={type}>
-            {SUBJECT_TYPE_LABELS[type]}
-          </option>
-        ))}
-      </Select>
 
       <PrerequisitePicker
         options={prerequisiteOptions}

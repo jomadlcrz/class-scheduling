@@ -58,15 +58,11 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
     const title = String(data.get("subject-title") ?? "").trim();
     const units = Number(data.get("subject-units"));
     const subjectType = String(data.get("subject-type")) as SubjectType;
-    const lectureHours = Number(data.get("subject-lecture-hours"));
-    const labHours = Number(data.get("subject-lab-hours"));
 
     const result = subjectSchema.safeParse({
       code,
       title,
       units,
-      lectureHours,
-      labHours,
       program,
       yearLevel,
       semester,
@@ -144,7 +140,7 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
         defaultValue={subject.title}
       />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Input
           id="subject-units"
           label="Units"
@@ -153,24 +149,6 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
           max={6}
           required
           defaultValue={subject.units}
-        />
-        <Input
-          id="subject-lecture-hours"
-          label="Lec Hours"
-          type="number"
-          min={0}
-          max={12}
-          required
-          defaultValue={subject.lectureHours}
-        />
-        <Input
-          id="subject-lab-hours"
-          label="Lab Hours"
-          type="number"
-          min={0}
-          max={12}
-          required
-          defaultValue={subject.labHours}
         />
       </div>
 

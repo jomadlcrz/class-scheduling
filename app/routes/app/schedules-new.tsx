@@ -15,6 +15,7 @@ import {
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
+import { getHoursForSubjectType } from "~/lib/weekly-hours";
 import { PageHeader } from "~/layouts/page-header";
 import { facultyService } from "~/services/faculty.service";
 import { programService } from "~/services/program.service";
@@ -219,7 +220,8 @@ function SchedulesNewPage() {
       let cursor = 0;
 
       for (const subject of sortedSubjects) {
-        const totalHours = subject.lectureHours + subject.labHours;
+        const h = getHoursForSubjectType(subject.subjectType);
+        const totalHours = h.lectureHours + h.labHours;
         const numSlots = Math.max(1, Math.ceil(totalHours / 3));
 
         for (let i = 0; i < numSlots && cursor < gridSlots.length; i++) {

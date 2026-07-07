@@ -3,6 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { DropdownMenu } from "~/components/ui/dropdown";
 import { EmptyState } from "~/components/ui/empty-state";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { getHoursForSubjectType } from "~/lib/weekly-hours";
 import {
   SEMESTER_LABELS,
   SEMESTERS,
@@ -21,8 +22,6 @@ type StructureRow = {
   code: string;
   title: string;
   units: number;
-  lectureHours: number;
-  labHours: number;
   subjectType: SubjectType;
   prerequisiteIds: string[];
   /** Set only for unsaved entries — they're highlighted and editable. */
@@ -117,8 +116,7 @@ export function CurriculumStructure({
                             {row.title}
                           </span>
                           <span className="shrink-0 text-slate-500 dark:text-slate-400">
-                            {row.units} units · {row.lectureHours} lec
-                            {row.labHours > 0 && ` / ${row.labHours} lab`}
+                            {(() => { const h = getHoursForSubjectType(row.subjectType); return `${row.units} units · ${h.lectureHours} lec${h.labHours > 0 ? ` / ${h.labHours} lab` : ""}`; })()}
                           </span>
                           <span className="shrink-0">
                             <SubjectTypeBadge type={row.subjectType} />

@@ -39,8 +39,7 @@ export function SubjectTable({ subjects, allSubjects, programs, onEdit, onDelete
         <TableHeader>Descriptive Title</TableHeader>
         <TableHeader className="hidden sm:table-cell">Program</TableHeader>
         <TableHeader className="hidden sm:table-cell">Year & Semester</TableHeader>
-        <TableHeader className="hidden md:table-cell">Units</TableHeader>
-        <TableHeader className="hidden md:table-cell">Hours</TableHeader>
+        <TableHeader className="hidden md:table-cell text-center">Units</TableHeader>
         <TableHeader className="hidden sm:table-cell">Type</TableHeader>
         <TableHeader className="hidden lg:table-cell">Prerequisites</TableHeader>
         <TableHeader>
@@ -60,11 +59,7 @@ export function SubjectTable({ subjects, allSubjects, programs, onEdit, onDelete
             <TableCell className="hidden sm:table-cell">
               {YEAR_LEVEL_LABELS[subject.yearLevel]} · {SEMESTER_LABELS[subject.semester]}
             </TableCell>
-            <TableCell className="hidden md:table-cell">{subject.units}</TableCell>
-            <TableCell className="hidden md:table-cell">
-              {subject.lectureHours} lec
-              {subject.labHours > 0 && ` / ${subject.labHours} lab`}
-            </TableCell>
+            <TableCell className="hidden md:table-cell text-center">{subject.units}</TableCell>
             <TableCell className="hidden sm:table-cell">
               <SubjectTypeBadge type={subject.subjectType} />
             </TableCell>

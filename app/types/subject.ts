@@ -39,8 +39,6 @@ export type Subject = {
   /** Descriptive title, e.g. "Introduction to Computing". */
   title: string;
   units: number;
-  lectureHours: number;
-  labHours: number;
   subjectType: SubjectType;
   /** Ids of same-program subjects that must be completed first. */
   prerequisiteIds: string[];
