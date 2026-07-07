@@ -1,5 +1,6 @@
 import type { Building } from "~/types/building";
 import type { Department } from "~/types/department";
+import type { Dean } from "~/types/dean";
 import type { Faculty } from "~/types/faculty";
 import type { Student } from "~/types/student";
 import type { Program } from "~/types/program";
@@ -210,6 +211,22 @@ let facultyIdCounter = faculty.length;
 export function newFacultyId(): string {
   facultyIdCounter += 1;
   return `fac-${facultyIdCounter}`;
+}
+
+// ─── Deans ───────────────────────────────────────────────────────────────────
+
+export const deans: Dean[] = [
+  { id: "dean-1", name: "Diego Ramos", email: "dean@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", status: "active" },
+  { id: "dean-2", name: "Cecilia Villanueva", email: "c.villanueva@gwc.edu.ph", departmentId: "dept-2", departmentCode: "CBA", status: "active" },
+  { id: "dean-3", name: "Rafael Mendoza", email: "r.mendoza@gwc.edu.ph", departmentId: "dept-3", departmentCode: "COEd", status: "active" },
+  { id: "dean-4", name: "Sofia Lopez", email: "s.lopez@gwc.edu.ph", departmentId: "dept-4", departmentCode: "COC", status: "inactive" },
+];
+
+let deanIdCounter = deans.length;
+
+export function newDeanId(): string {
+  deanIdCounter += 1;
+  return `dean-${deanIdCounter}`;
 }
 
 // ─── Subjects ────────────────────────────────────────────────────────────────

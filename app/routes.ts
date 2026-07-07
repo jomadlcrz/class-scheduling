@@ -22,6 +22,7 @@ export default [
     route("subjects", "routes/app/subjects.tsx"),
     route("subjects/new", "routes/app/subjects-new.tsx"),
     route("sets", "routes/app/sets.tsx"),
+    route("deans", "routes/app/deans.tsx"),
     route("faculty", "routes/app/faculty.tsx"),
     route("schedules", "routes/app/schedules/index.tsx"),
     route("schedules/weekly-hours", "routes/app/schedules/weekly-hours.tsx"),

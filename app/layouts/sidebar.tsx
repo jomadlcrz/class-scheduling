@@ -75,6 +75,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "People",
     items: [
+      { label: "Deans", to: "/deans", icon: <UserIcon />, roles: ["admin", "registrar"] },
       { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin", "registrar", "dean"] },
       { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin", "registrar", "dean"] },
     ],

@@ -1,0 +1,209 @@
+import { useEffect, useMemo, useState } from "react";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Pagination } from "~/components/ui/pagination";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { DeanForm } from "~/features/deans/dean-form";
+import { DeanTable } from "~/features/deans/dean-table";
+import { usePagination } from "~/hooks/use-pagination";
+import { PageHeader } from "~/layouts/page-header";
+import { deanService } from "~/services/dean.service";
+import { departmentService } from "~/services/department.service";
+import type { Dean, CreateDeanInput } from "~/types/dean";
+import type { Department } from "~/types/department";
+
+export function meta() {
+  return [
+    { title: "Deans — GWC Class Scheduling" },
+    { name: "description", content: "Manage dean assignments and department oversight." },
+  ];
+}
+
+export default function DeansRoute() {
+  return (
+    <RoleGuard allow={["admin", "registrar"]}>
+      <DeansPage />
+    </RoleGuard>
+  );
+}
+
+function DeansPage() {
+  const [deanList, setDeanList] = useState<Dean[] | null>(null);
+  const [departments, setDepartments] = useState<Department[] | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [department, setDepartment] = useState("all");
+  const [status, setStatus] = useState("all");
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Dean | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Dean | null>(null);
+
+  useEffect(() => {
+    Promise.all([deanService.list(), departmentService.list()]).then(([d, dept]) => {
+      setDeanList(d);
+      setDepartments(dept);
+    });
+  }, []);
+
+  const resetKey = `${search}|${department}|${status}`;
+
+  const visibleDeans = useMemo(() => {
+    if (!deanList) return [];
+    const query = search.trim().toLowerCase();
+    return deanList
+      .filter((member) => {
+        if (department !== "all" && member.departmentCode !== department) return false;
+        if (status !== "all" && member.status !== status) return false;
+        if (
+          query &&
+          !member.name.toLowerCase().includes(query) &&
+          !member.email.toLowerCase().includes(query)
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [deanList, search, department, status]);
+
+  const pagination = usePagination(visibleDeans, resetKey);
+
+  async function handleCreate(input: CreateDeanInput) {
+    const created = await deanService.create(input);
+    setDeanList((current) => [...(current ?? []), created]);
+    setCreateOpen(false);
+  }
+
+  async function handleEdit(input: CreateDeanInput) {
+    if (!editTarget) return;
+    const updated = await deanService.update(editTarget.id, input);
+    setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
+    setEditTarget(null);
+  }
+
+  async function handleDelete(target: Dean) {
+    await deanService.remove(target.id);
+    setDeanList((current) => current!.filter((d) => d.id !== target.id));
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <PageHeader
+        title="Deans"
+        description="Dean assignments and department oversight."
+        actions={
+          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
+            <PlusIcon />
+            New Dean
+          </Button>
+        }
+      />
+
+      <div className="mt-6 flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="col-span-2 sm:col-span-1">
+            <Input
+              id="dean-search"
+              label="Search"
+              type="search"
+              placeholder="Name or email…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Select
+            id="dean-dept-filter"
+            label="Department"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+          >
+            <option value="all">All departments</option>
+            {(departments ?? []).map((d) => (
+              <option key={d.id} value={d.code}>
+                {d.code} — {d.name}
+              </option>
+            ))}
+          </Select>
+          <Select
+            id="dean-status-filter"
+            label="Status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="all">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </Select>
+        </div>
+
+        {deanList === null || departments === null ? (
+          <div
+            role="status"
+            aria-label="Loading deans"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : visibleDeans.length === 0 ? (
+          <EmptyState title="No deans found">
+            No deans match the current filters. Adjust the search or add a new dean.
+          </EmptyState>
+        ) : (
+          <>
+            <DeanTable
+              deans={pagination.pageItems}
+              onEdit={(member) => setEditTarget(member)}
+              onDelete={(member) => setDeleteTarget(member)}
+            />
+            <Pagination
+              page={pagination.page}
+              totalItems={pagination.totalItems}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setPage}
+            />
+          </>
+        )}
+      </div>
+
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Dean">
+        <DeanForm
+          departments={departments ?? []}
+          onSubmit={handleCreate}
+          onCancel={() => setCreateOpen(false)}
+        />
+      </Modal>
+
+      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Dean">
+        {editTarget && (
+          <DeanForm
+            member={editTarget}
+            departments={departments ?? []}
+            onSubmit={handleEdit}
+            onCancel={() => setEditTarget(null)}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete dean"
+        confirmLabel="Delete"
+        loadingLabel="Deleting…"
+        confirmVariant="danger"
+        onConfirm={() => handleDelete(deleteTarget!)}
+      >
+        <span className="font-medium text-navy-700 dark:text-white">
+          {deleteTarget?.name}
+        </span>{" "}
+        will be permanently removed.
+      </ConfirmDialog>
+    </div>
+  );
+}
