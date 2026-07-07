@@ -8,7 +8,6 @@ import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { EnrollmentSummary } from "~/features/students/enrollment-summary";
 import { StudentForm } from "~/features/students/student-form";
 import { StudentTable } from "~/features/students/student-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -117,8 +116,6 @@ function StudentsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-6">
-        {studentList && <EnrollmentSummary students={studentList} />}
-
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <div className="col-span-2 sm:col-span-1">
             <Input
