@@ -12,11 +12,9 @@ import { StudentForm } from "~/features/students/student-form";
 import { StudentTable } from "~/features/students/student-table";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
-import { scheduleService } from "~/services/schedule.service";
 import { studentService } from "~/services/student.service";
 import { usePagination } from "~/hooks/use-pagination";
 import type { Program } from "~/types/program";
-import type { Schedule } from "~/types/schedule";
 import type { CreateStudentInput, Student } from "~/types/student";
 
 export function meta() {
@@ -37,7 +35,6 @@ export default function StudentsRoute() {
 function StudentsPage() {
   const [studentList, setStudentList] = useState<Student[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
-  const [schedules, setSchedules] = useState<Schedule[] | null>(null);
 
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("all");
@@ -48,14 +45,9 @@ function StudentsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      studentService.list(),
-      programService.list(),
-      scheduleService.list(),
-    ]).then(([s, p, sch]) => {
+    Promise.all([studentService.list(), programService.list()]).then(([s, p]) => {
       setStudentList(s);
       setPrograms(p);
-      setSchedules(sch);
     });
   }, []);
 
@@ -169,6 +161,7 @@ function StudentsPage() {
           <>
             <StudentTable
               students={pagination.pageItems}
+              programs={programs ?? []}
               onEdit={setEditTarget}
               onDelete={setDeleteTarget}
             />

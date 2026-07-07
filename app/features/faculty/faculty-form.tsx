@@ -36,8 +36,9 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
     const departmentId = String(data.get("faculty-department") ?? "");
     const specialization = String(data.get("faculty-specialization") ?? "").trim();
     const status = String(data.get("faculty-status") ?? "") as FacultyStatus;
+    const maxWeeklyHours = String(data.get("faculty-max-weekly-hours") ?? "25");
 
-    const result = facultySchema.safeParse({ firstName, lastName, email, departmentId, specialization, status });
+    const result = facultySchema.safeParse({ firstName, lastName, email, departmentId, specialization, status, maxWeeklyHours });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -119,6 +120,15 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
           </option>
         ))}
       </Select>
+
+      <Input
+        id="faculty-max-weekly-hours"
+        label="Max Weekly Hours"
+        type="number"
+        min={1}
+        max={60}
+        defaultValue={member?.maxWeeklyHours ?? 25}
+      />
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>

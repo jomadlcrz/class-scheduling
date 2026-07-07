@@ -1,12 +1,23 @@
 import { Badge } from "~/components/ui/badge";
 import type { BadgeTone } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import type { Program, ProgramType } from "~/types/program";
+import { PROGRAM_TYPE_LABELS } from "~/types/program";
 import type { Student } from "~/types/student";
 import { STUDENT_STATUS_LABELS } from "~/types/student";
 import { YEAR_LEVEL_LABELS } from "~/types/subject";
 
 type StudentTableProps = {
   students: Student[];
+  programs: Program[];
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
 };
@@ -17,45 +28,78 @@ const STATUS_TONES: Record<Student["status"], BadgeTone> = {
   graduated: "navy",
 };
 
-export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) {
+const actionButtonClassName =
+  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+
+export function StudentTable({ students, programs, onEdit, onDelete }: StudentTableProps) {
+  function getProgram(code: string) {
+    return programs.find((p) => p.code === code);
+  }
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/3">
-      <table className="w-full font-body text-sm">
-        <thead>
-          <tr className="border-b border-slate-100 dark:border-white/8">
-            <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">Student No.</th>
-            <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">Name</th>
-            <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">Email</th>
-            <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">Program</th>
-            <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">Year / Section</th>
-            <th className="px-5 py-3 text-left font-medium text-slate-400 dark:text-slate-500">Status</th>
-            <th className="px-5 py-3" />
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((s) => (
-            <tr key={s.id} className="border-b border-slate-50 last:border-0 dark:border-white/5">
-              <td className="px-5 py-3 font-body text-xs font-medium text-navy-700 dark:text-slate-200">
-                {s.studentNumber}
-              </td>
-              <td className="px-5 py-3 font-medium text-navy-700 dark:text-slate-200">
-                {s.lastName}, {s.firstName}
-              </td>
-              <td className="px-5 py-3 text-slate-500 dark:text-slate-400">{s.email}</td>
-              <td className="px-5 py-3 text-slate-600 dark:text-slate-300">{s.program}</td>
-              <td className="px-5 py-3 text-slate-500 dark:text-slate-400">
+    <Table>
+      <TableHead>
+        <TableHeader>Student No.</TableHeader>
+        <TableHeader>Name</TableHeader>
+        <TableHeader>Email</TableHeader>
+        <TableHeader>Program</TableHeader>
+        <TableHeader>Year / Section</TableHeader>
+        <TableHeader>Status</TableHeader>
+        <TableHeader>
+          <span className="sr-only">Actions</span>
+        </TableHeader>
+      </TableHead>
+      <TableBody>
+        {students.map((s) => {
+          const program = getProgram(s.program);
+          return (
+            <TableRow key={s.id}>
+              <TableCell>
+                <span className="font-medium text-navy-700 dark:text-white">
+                  {s.studentNumber}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className="font-medium text-navy-700 dark:text-white">
+                  {s.lastName}, {s.firstName}
+                </span>
+              </TableCell>
+              <TableCell className="text-slate-500 dark:text-slate-400">{s.email}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  {program && (
+                    <img
+                      src={`/images/departments/${program.departmentCode.toLowerCase()}.avif`}
+                      alt={`${program.departmentCode} logo`}
+                      className="size-8 rounded-lg object-contain"
+                    />
+                  )}
+                  <div>
+                    <span className="font-medium text-navy-700 dark:text-white">
+                      {s.program}
+                    </span>
+                    {program && (
+                      <span className="ml-1.5 text-slate-500 dark:text-slate-400">
+                        {PROGRAM_TYPE_LABELS[program.type]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="text-slate-500 dark:text-slate-400">
                 {YEAR_LEVEL_LABELS[s.yearLevel]} — {s.setCode}
-              </td>
-              <td className="px-5 py-3">
+              </TableCell>
+              <TableCell>
                 <Badge tone={STATUS_TONES[s.status]}>{STUDENT_STATUS_LABELS[s.status]}</Badge>
-              </td>
-              <td className="px-5 py-3">
-                <div className="flex items-center justify-end gap-1">
+              </TableCell>
+              <TableCell>
+                <div className="flex justify-end gap-1">
                   <button
                     type="button"
                     onClick={() => onEdit(s)}
                     aria-label={`Edit ${s.firstName} ${s.lastName}`}
-                    className="grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10 dark:hover:text-white"
+                    title="Edit"
+                    className={actionButtonClassName}
                   >
                     <EditIcon />
                   </button>
@@ -63,16 +107,17 @@ export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) 
                     type="button"
                     onClick={() => onDelete(s)}
                     aria-label={`Delete ${s.firstName} ${s.lastName}`}
-                    className="grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                    title="Delete"
+                    className={actionButtonClassName}
                   >
                     <TrashIcon />
                   </button>
                 </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 }

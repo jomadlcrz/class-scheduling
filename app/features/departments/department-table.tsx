@@ -24,7 +24,7 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
   return (
     <Table>
       <TableHead>
-        <TableHeader>Logo</TableHeader>
+        <TableHeader>Logo &amp; Code</TableHeader>
         <TableHeader>Department Name</TableHeader>
         <TableHeader className="hidden sm:table-cell">Building</TableHeader>
         <TableHeader>
@@ -35,15 +35,18 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
         {departments.map((dept) => (
           <TableRow key={dept.id}>
             <TableCell>
-              <img
-                src={`/images/departments/${dept.code.toLowerCase()}.avif`}
-                alt={`${dept.code} logo`}
-                className="size-10 rounded-lg object-contain"
-              />
+              <div className="flex items-center gap-3">
+                <img
+                  src={`/images/departments/${dept.code.toLowerCase()}.avif`}
+                  alt={`${dept.code} logo`}
+                  className="size-10 rounded-lg object-contain"
+                />
+                <div>
+                  <span className="font-medium text-navy-700 dark:text-white">{dept.code}</span>
+                </div>
+              </div>
             </TableCell>
-            <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">{dept.name}</span>
-            </TableCell>
+            <TableCell>{dept.name}</TableCell>
             <TableCell className="hidden sm:table-cell">
               <Badge tone={getBuildingTone(dept.buildingCode)}>{dept.buildingCode}</Badge>
             </TableCell>

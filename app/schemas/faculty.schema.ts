@@ -7,4 +7,5 @@ export const facultySchema = z.object({
   departmentId: z.string().min(1, "Select a department."),
   specialization: z.string(),
   status: z.enum(["active", "inactive"]),
+  maxWeeklyHours: z.coerce.number().min(1, "Enter max weekly hours."),
 });

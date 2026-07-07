@@ -12,6 +12,7 @@ import {
   SCHEDULE_MODE_LABELS,
   generateTimeSlots,
   formatTime,
+  getSlotDurationHours,
   type Day,
   type ScheduleMode,
 } from "~/types/schedule";
@@ -210,6 +211,16 @@ export function SlotEntryForm({
         ))}
       </Select>
 
+      {facultyId && (
+        <InstructorLoad
+          facultyId={facultyId}
+          existingSlots={existingSlots}
+          startTime={startTime}
+          endTime={endTime}
+          facultyList={faculty}
+        />
+      )}
+
       <Select
         id="slot-room"
         label="Room"
@@ -235,5 +246,69 @@ export function SlotEntryForm({
         )}
       </div>
     </form>
+  );
+}
+
+function InstructorLoad({
+  facultyId,
+  existingSlots,
+  startTime,
+  endTime,
+  facultyList,
+}: {
+  facultyId: string;
+  existingSlots: PendingSlot[];
+  startTime: string;
+  endTime: string;
+  facultyList: Faculty[];
+}) {
+  const faculty = facultyList.find((f) => f.id === facultyId);
+  if (!faculty || faculty.maxWeeklyHours <= 0) return null;
+
+  const currentHours = existingSlots
+    .filter((s) => s.facultyId === facultyId)
+    .reduce((sum, s) => sum + getSlotDurationHours(s.startTime, s.endTime), 0);
+
+  const proposedHours =
+    startTime && endTime ? getSlotDurationHours(startTime, endTime) : 0;
+
+  const newTotal = currentHours + proposedHours;
+  const percent = Math.min(
+    Math.round((newTotal / faculty.maxWeeklyHours) * 100),
+    100,
+  );
+  const isOver = newTotal > faculty.maxWeeklyHours;
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+      <div className="flex items-center justify-between gap-2 font-body text-xs">
+        <span className="font-semibold text-slate-500 dark:text-slate-400">
+          Weekly teaching load
+        </span>
+        <span
+          className={
+            isOver
+              ? "font-semibold text-red-600 dark:text-red-400"
+              : "text-slate-500 dark:text-slate-400"
+          }
+        >
+          {currentHours}
+          {proposedHours > 0 ? ` + ${proposedHours}` : ""} /{" "}
+          {faculty.maxWeeklyHours} hrs
+        </span>
+      </div>
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+        <div
+          className={`h-full rounded-full transition-all duration-200 ${
+            isOver
+              ? "bg-red-500"
+              : percent >= 80
+                ? "bg-amber-500"
+                : "bg-emerald-500"
+          }`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+    </div>
   );
 }

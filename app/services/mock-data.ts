@@ -197,12 +197,12 @@ export function newProgramId(): string {
 // ─── Faculty ─────────────────────────────────────────────────────────────────
 
 export const faculty: Faculty[] = [
-  { id: "fac-1", firstName: "Ana", lastName: "Reyes", email: "a.reyes@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Web Development", status: "active" },
-  { id: "fac-2", firstName: "Ben", lastName: "Santos", email: "b.santos@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Data Science", status: "active" },
-  { id: "fac-3", firstName: "Clara", lastName: "Dizon", email: "c.dizon@gwc.edu.ph", departmentId: "dept-2", departmentCode: "CBA", specialization: "Business Management", status: "active" },
-  { id: "fac-4", firstName: "David", lastName: "Ramos", email: "d.ramos@gwc.edu.ph", departmentId: "dept-3", departmentCode: "COEd", specialization: "Elementary Education", status: "inactive" },
-  { id: "fac-5", firstName: "Eva", lastName: "Cruz", email: "ev.cruz@gwc.edu.ph", departmentId: "dept-4", departmentCode: "COC", specialization: "Criminal Law", status: "active" },
-  { id: "fac-6", firstName: "Felix", lastName: "Lim", email: "f.lim@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Computer Networks", status: "active" },
+  { id: "fac-1", firstName: "Ana", lastName: "Reyes", email: "a.reyes@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Web Development", status: "active", maxWeeklyHours: 25 },
+  { id: "fac-2", firstName: "Ben", lastName: "Santos", email: "b.santos@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Data Science", status: "active", maxWeeklyHours: 25 },
+  { id: "fac-3", firstName: "Clara", lastName: "Dizon", email: "c.dizon@gwc.edu.ph", departmentId: "dept-2", departmentCode: "CBA", specialization: "Business Management", status: "active", maxWeeklyHours: 25 },
+  { id: "fac-4", firstName: "David", lastName: "Ramos", email: "d.ramos@gwc.edu.ph", departmentId: "dept-3", departmentCode: "COEd", specialization: "Elementary Education", status: "inactive", maxWeeklyHours: 25 },
+  { id: "fac-5", firstName: "Eva", lastName: "Cruz", email: "ev.cruz@gwc.edu.ph", departmentId: "dept-4", departmentCode: "COC", specialization: "Criminal Law", status: "active", maxWeeklyHours: 20 },
+  { id: "fac-6", firstName: "Felix", lastName: "Lim", email: "f.lim@gwc.edu.ph", departmentId: "dept-1", departmentCode: "CITE", specialization: "Computer Networks", status: "active", maxWeeklyHours: 25 },
 ];
 
 let facultyIdCounter = faculty.length;

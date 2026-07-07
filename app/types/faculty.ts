@@ -22,6 +22,7 @@ export type Faculty = {
   departmentCode: string;
   specialization: string;
   status: FacultyStatus;
+  maxWeeklyHours: number;
 };
 
 export type CreateFacultyInput = Omit<Faculty, "id">;
