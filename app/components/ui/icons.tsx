@@ -489,6 +489,15 @@ export function UserSmallIcon({ size = 14 }: { size?: number }) {
   );
 }
 
+export function SearchIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </IconBase>
+  );
+}
+
 export function SettingsIcon() {
   return (
     <IconBase>

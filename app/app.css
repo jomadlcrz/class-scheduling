@@ -81,6 +81,11 @@ body {
   touch-action: manipulation;
 }
 
+/* Global density: everything is rem-based, so a smaller root scales the whole UI down. */
+html {
+  font-size: 14px;
+}
+
 ::selection {
   background-color: var(--color-gold-400);
   color: var(--color-navy-700);
