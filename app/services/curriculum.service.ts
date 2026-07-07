@@ -38,6 +38,7 @@ async function getByProgram(programCode: string): Promise<ProgramCurriculum | nu
   return {
     programCode,
     programName: program.name,
+    departmentCode: program.departmentCode,
     groups,
     totalUnits: groups.reduce((sum, g) => sum + g.totalUnits, 0),
   };

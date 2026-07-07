@@ -10,6 +10,7 @@ export type CurriculumGroup = {
 export type ProgramCurriculum = {
   programCode: string;
   programName: string;
+  departmentCode: string;
   groups: CurriculumGroup[];
   totalUnits: number;
 };
