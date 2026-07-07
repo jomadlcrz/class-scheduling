@@ -489,6 +489,24 @@ export function UserSmallIcon({ size = 14 }: { size?: number }) {
   );
 }
 
+export function ClockIcon({ size = 14 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15.5 14" />
+    </IconBase>
+  );
+}
+
+export function BriefcaseIcon({ size = 14 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <rect x="2" y="7" width="20" height="13" rx="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </IconBase>
+  );
+}
+
 export function SearchIcon({ size = 16 }: { size?: number }) {
   return (
     <IconBase size={size}>

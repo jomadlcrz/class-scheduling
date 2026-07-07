@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { EmptyState } from "~/components/ui/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import type { Schedule } from "~/types/schedule";
@@ -12,6 +13,10 @@ type ScheduleViewerProps = {
   onViewModeChange: (mode: ScheduleViewMode) => void;
   emptyTitle?: string;
   emptyMessage?: string;
+  /** Optional heading left of the view toggle, e.g. "Class Schedule — 1st Semester". */
+  title?: ReactNode;
+  /** Optional controls (e.g. a print button) rendered left of the view toggle. */
+  actions?: ReactNode;
 };
 
 /** Read-only grid/list schedule view with a toggle — used by the faculty and student pages. */
@@ -22,11 +27,22 @@ export function ScheduleViewer({
   onViewModeChange,
   emptyTitle = "No classes scheduled",
   emptyMessage = "There are no classes for the selected term.",
+  title,
+  actions,
 }: ScheduleViewerProps) {
   return (
     <>
-      <div className="mt-4 flex justify-end">
-        <ScheduleViewToggle value={viewMode} onChange={onViewModeChange} />
+      <div className={`mt-4 flex flex-wrap items-center gap-3 ${title ? "justify-between" : "justify-end"}`}>
+        {title && (
+          <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-white">{title}</h2>
+        )}
+        <div className="flex items-center gap-2">
+          {actions}
+          {/* Grid view doesn't fit small screens — mobile always uses ScheduleTable's stacked card list below. */}
+          <div className="hidden sm:block">
+            <ScheduleViewToggle value={viewMode} onChange={onViewModeChange} />
+          </div>
+        </div>
       </div>
 
       <div className="mt-4">
@@ -40,10 +56,19 @@ export function ScheduleViewer({
           </div>
         ) : schedules.length === 0 ? (
           <EmptyState title={emptyTitle}>{emptyMessage}</EmptyState>
-        ) : viewMode === "grid" ? (
-          <ScheduleGrid schedules={schedules} />
         ) : (
-          <ScheduleTable schedules={schedules} />
+          <>
+            <div className="sm:hidden">
+              <ScheduleTable schedules={schedules} />
+            </div>
+            <div className="hidden sm:block">
+              {viewMode === "grid" ? (
+                <ScheduleGrid schedules={schedules} />
+              ) : (
+                <ScheduleTable schedules={schedules} />
+              )}
+            </div>
+          </>
         )}
       </div>
     </>

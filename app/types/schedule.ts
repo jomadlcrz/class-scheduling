@@ -91,5 +91,11 @@ export function getSlotDurationHours(startTime: string, endTime: string): number
   return (eh + em / 60) - (sh + sm / 60);
 }
 
+/** Converts "HH:MM" to minutes since midnight. */
+export function timeToMinutes(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
 export const SCHOOL_YEARS = ["2023-2024", "2024-2025", "2025-2026", "2026-2027"] as const;
 export const DEFAULT_SCHOOL_YEAR = "2025-2026";
