@@ -3,7 +3,6 @@ import { NavLink, Outlet } from "react-router";
 import { KeyIcon, PaletteIcon, TrashIcon, UserIcon } from "~/components/ui/icons";
 import { useAuth } from "~/hooks/use-auth";
 import type { Role } from "~/types/user";
-import { PageHeader } from "~/layouts/page-header";
 
 type SettingsNavItem = {
   label: string;
@@ -19,6 +18,13 @@ const SETTINGS_NAV: SettingsNavItem[] = [
   { label: "Recently Deleted", href: "/settings/recently-deleted", icon: TrashIcon, roles: ["admin"] },
 ];
 
+const linkClassName = ({ isActive }: { isActive: boolean }) =>
+  `flex items-center gap-2 rounded-lg px-3 py-2 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+    isActive
+      ? "bg-navy-50 font-semibold text-navy-700 dark:bg-white/10 dark:text-white"
+      : "text-slate-600 hover:bg-slate-100 hover:text-navy-700 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+  }`;
+
 export default function SettingsLayout() {
   const { user } = useAuth();
   const role = user?.role;
@@ -28,35 +34,17 @@ export default function SettingsLayout() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <PageHeader title="Settings" description="Manage your account and preferences." />
-
-      <div className="mt-6 flex flex-col gap-6">
-        <nav
-          aria-label="Settings navigation"
-          className="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-white/8"
-        >
-          {visibleNav.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) =>
-                `flex shrink-0 items-center gap-2 border-b-2 px-3 pb-3 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                  isActive
-                    ? "border-navy-700 text-navy-700 dark:border-gold-400 dark:text-gold-400"
-                    : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                }`
-              }
-            >
-              <item.icon />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div>
-          <Outlet />
-        </div>
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:flex-row">
+      <nav aria-label="Settings" className="flex shrink-0 flex-row flex-wrap gap-1 sm:w-48 sm:flex-col">
+        {visibleNav.map((item) => (
+          <NavLink key={item.href} to={item.href} className={linkClassName} end>
+            <item.icon />
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="min-w-0 flex-1">
+        <Outlet />
       </div>
     </div>
   );
