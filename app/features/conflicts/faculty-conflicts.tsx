@@ -1,7 +1,7 @@
 import { Link } from "react-router";
-import { Badge } from "../../components/ui/badge";
-import { EmptyState } from "../../components/ui/empty-state";
-import type { Conflict } from "../../services/conflict.service";
+import { Badge } from "~/components/ui/badge";
+import { EmptyState } from "~/components/ui/empty-state";
+import type { Conflict } from "~/services/conflict.service";
 
 type FacultyConflictsProps = {
   conflicts: Conflict[];

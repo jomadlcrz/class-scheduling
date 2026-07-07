@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
-import { departmentSchema } from "../../schemas/department.schema";
-import type { Building } from "../../types/building";
-import type { CreateDepartmentInput, Department } from "../../types/department";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import { departmentSchema } from "~/schemas/department.schema";
+import type { Building } from "~/types/building";
+import type { CreateDepartmentInput, Department } from "~/types/department";
 
 type DepartmentFormProps = {
   department?: Department;

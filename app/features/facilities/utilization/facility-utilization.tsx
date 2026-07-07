@@ -1,5 +1,5 @@
-import type { Room } from "../../../types/room";
-import { ROOM_STATUS_LABELS } from "../../../types/room";
+import type { Room } from "~/types/room";
+import { ROOM_STATUS_LABELS } from "~/types/room";
 
 type FacilityUtilizationProps = {
   rooms: Room[];

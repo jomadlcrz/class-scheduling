@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { PlusIcon } from "../../components/ui/icons";
-import { Select } from "../../components/ui/select";
-import type { Faculty } from "../../types/faculty";
-import type { Room } from "../../types/room";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { PlusIcon } from "~/components/ui/icons";
+import { Select } from "~/components/ui/select";
+import type { Faculty } from "~/types/faculty";
+import type { Room } from "~/types/room";
 import {
   DAYS,
   DAY_LABELS,
@@ -14,8 +14,8 @@ import {
   formatTime,
   type Day,
   type ScheduleMode,
-} from "../../types/schedule";
-import type { Subject } from "../../types/subject";
+} from "~/types/schedule";
+import type { Subject } from "~/types/subject";
 
 export type PendingSlot = {
   tempId: string;

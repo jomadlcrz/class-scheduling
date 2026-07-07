@@ -1,5 +1,5 @@
-import type { Schedule, CreateScheduleInput, UpdateScheduleInput } from "../types/schedule";
-import { schedules, delay, newScheduleId } from "./mock-data";
+import type { Schedule, CreateScheduleInput, UpdateScheduleInput } from "~/types/schedule";
+import { schedules, delay, newScheduleId } from "~/services/mock-data";
 
 function findSchedule(id: string): Schedule {
   const s = schedules.find((s) => s.id === id);

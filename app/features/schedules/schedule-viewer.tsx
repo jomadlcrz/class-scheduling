@@ -1,9 +1,9 @@
-import { EmptyState } from "../../components/ui/empty-state";
-import { Spinner } from "../../components/ui/spinner";
-import type { Schedule } from "../../types/schedule";
-import { ScheduleGrid } from "./schedule-grid";
-import { ScheduleTable } from "./schedule-table";
-import { ScheduleViewToggle, type ScheduleViewMode } from "./schedule-view-toggle";
+import { EmptyState } from "~/components/ui/empty-state";
+import { Spinner } from "~/components/ui/spinner";
+import type { Schedule } from "~/types/schedule";
+import { ScheduleGrid } from "~/features/schedules/schedule-grid";
+import { ScheduleTable } from "~/features/schedules/schedule-table";
+import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 
 type ScheduleViewerProps = {
   schedules: Schedule[];

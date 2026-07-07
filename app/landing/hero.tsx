@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
-import { fadeUp, staggerContainer } from "./motion";
-import { ScheduleCard } from "./schedule-card";
+import { fadeUp, staggerContainer } from "~/landing/motion";
+import { ScheduleCard } from "~/landing/schedule-card";
 
 /** Hero: the brand promise on the left, the live schedule card on the right. */
 export function Hero() {

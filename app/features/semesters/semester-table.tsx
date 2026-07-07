@@ -1,5 +1,5 @@
-import { Badge } from "../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,13 +7,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
+} from "~/components/ui/table";
 import {
   ACADEMIC_SEMESTER_STATUS_LABELS,
   ACADEMIC_SEMESTER_STATUS_TONES,
   type AcademicSemester,
-} from "../../types/semester";
-import { SEMESTER_LABELS } from "../../types/subject";
+} from "~/types/semester";
+import { SEMESTER_LABELS } from "~/types/subject";
 
 type SemesterTableProps = {
   semesters: AcademicSemester[];

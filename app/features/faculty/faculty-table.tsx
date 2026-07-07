@@ -1,5 +1,5 @@
-import { Badge } from "../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,13 +7,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import { getDeptTone } from "../../types/department";
+} from "~/components/ui/table";
+import { getDeptTone } from "~/types/department";
 import {
   FACULTY_STATUS_LABELS,
   FACULTY_STATUS_TONES,
   type Faculty,
-} from "../../types/faculty";
+} from "~/types/faculty";
 
 type FacultyTableProps = {
   faculty: Faculty[];

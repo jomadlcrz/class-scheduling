@@ -1,4 +1,4 @@
-import { ProfileSettings } from "../../../features/settings/profile-settings";
+import { ProfileSettings } from "~/features/settings/profile-settings";
 
 export function meta() {
   return [

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FormError } from "../../../components/forms/form-error";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { buildingSchema } from "../../../schemas/building.schema";
-import type { Building, CreateBuildingInput } from "../../../types/building";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { buildingSchema } from "~/schemas/building.schema";
+import type { Building, CreateBuildingInput } from "~/types/building";
 
 type BuildingFormProps = {
   building?: Building;

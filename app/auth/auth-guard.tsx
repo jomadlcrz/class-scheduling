@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router";
-import { LoadingState } from "../components/feedback/loading-state";
-import { useAuth } from "./auth-provider";
+import { LoadingState } from "~/components/feedback/loading-state";
+import { useAuth } from "~/auth/auth-provider";
 
 /**
  * Protects authenticated routes: waits for the session to resolve,

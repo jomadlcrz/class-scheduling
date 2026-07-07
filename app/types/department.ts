@@ -1,4 +1,4 @@
-import type { BadgeTone } from "../components/ui/badge";
+import type { BadgeTone } from "~/components/ui/badge";
 
 /** Badge color per department code — defaults to slate for unknown codes. */
 const DEPARTMENT_BADGE_TONES: Record<string, BadgeTone> = {

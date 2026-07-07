@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Button } from "../../components/ui/button";
-import { EmptyState } from "../../components/ui/empty-state";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Pagination } from "../../components/ui/pagination";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { RoomForm } from "../../features/facilities/rooms/room-form";
-import { RoomTable } from "../../features/facilities/rooms/room-table";
-import { usePagination } from "../../hooks/use-pagination";
-import { PageHeader } from "../../layouts/page-header";
-import { buildingService } from "../../services/building.service";
-import { roomService } from "../../services/room.service";
-import type { Building } from "../../types/building";
-import type { CreateRoomInput, Room } from "../../types/room";
-import { ROOM_STATUSES, ROOM_STATUS_LABELS, ROOM_TYPES, ROOM_TYPE_LABELS } from "../../types/room";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Pagination } from "~/components/ui/pagination";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { RoomForm } from "~/features/facilities/rooms/room-form";
+import { RoomTable } from "~/features/facilities/rooms/room-table";
+import { usePagination } from "~/hooks/use-pagination";
+import { PageHeader } from "~/layouts/page-header";
+import { buildingService } from "~/services/building.service";
+import { roomService } from "~/services/room.service";
+import type { Building } from "~/types/building";
+import type { CreateRoomInput, Room } from "~/types/room";
+import { ROOM_STATUSES, ROOM_STATUS_LABELS, ROOM_TYPES, ROOM_TYPE_LABELS } from "~/types/room";
 
 export function meta() {
   return [

@@ -1,5 +1,5 @@
-import { Badge, type BadgeTone } from "../../components/ui/badge";
-import type { Role } from "../../types/user";
+import { Badge, type BadgeTone } from "~/components/ui/badge";
+import type { Role } from "~/types/user";
 
 export const ROLE_LABELS: Record<Role, string> = {
   admin: "Admin",

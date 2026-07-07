@@ -1,7 +1,7 @@
-import { Badge } from "../../components/ui/badge";
-import type { Building } from "../../types/building";
-import type { Room } from "../../types/room";
-import { ROOM_STATUS_LABELS, ROOM_TYPE_LABELS } from "../../types/room";
+import { Badge } from "~/components/ui/badge";
+import type { Building } from "~/types/building";
+import type { Room } from "~/types/room";
+import { ROOM_STATUS_LABELS, ROOM_TYPE_LABELS } from "~/types/room";
 
 type FacilityTableProps = {
   rooms: Room[];

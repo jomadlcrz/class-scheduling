@@ -1,5 +1,5 @@
-import type { Permission, RoleDefinition, RoleSummary } from "../types/role";
-import { accounts, delay } from "./mock-data";
+import type { Permission, RoleDefinition, RoleSummary } from "~/types/role";
+import { accounts, delay } from "~/services/mock-data";
 
 /**
  * MOCK role service. Roles are fixed system roles for now — the page is

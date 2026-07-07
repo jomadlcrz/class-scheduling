@@ -1,5 +1,5 @@
-import { Badge } from "../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,9 +7,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import { getBuildingTone } from "../../types/building";
-import { getDeptTone, type Department } from "../../types/department";
+} from "~/components/ui/table";
+import { getBuildingTone } from "~/types/building";
+import { getDeptTone, type Department } from "~/types/department";
 
 type DepartmentTableProps = {
   departments: Department[];

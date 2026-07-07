@@ -1,5 +1,5 @@
-import { Badge } from "../../components/ui/badge";
-import { EditIcon, KeyIcon, UserCheckIcon, UserOffIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, KeyIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,9 +7,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import type { User } from "../../types/user";
-import { RoleBadge } from "./role-badge";
+} from "~/components/ui/table";
+import type { User } from "~/types/user";
+import { RoleBadge } from "~/features/users/role-badge";
 
 type UserTableProps = {
   users: User[];

@@ -1,4 +1,4 @@
-import type { Subject, Semester, YearLevel } from "./subject";
+import type { Subject, Semester, YearLevel } from "~/types/subject";
 
 export type CurriculumGroup = {
   yearLevel: YearLevel;

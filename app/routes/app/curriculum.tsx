@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { EmptyState } from "../../components/ui/empty-state";
-import { Spinner } from "../../components/ui/spinner";
-import { CurriculumForm } from "../../features/curriculum/curriculum-form";
-import { CurriculumPrograms } from "../../features/curriculum/curriculum-programs";
-import { CurriculumTable } from "../../features/curriculum/curriculum-table";
-import { CurriculumVersion } from "../../features/curriculum/curriculum-version";
-import { PageHeader } from "../../layouts/page-header";
-import { curriculumService } from "../../services/curriculum.service";
-import type { ProgramCurriculum } from "../../types/curriculum";
-import type { Program } from "../../types/program";
+import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/ui/empty-state";
+import { Spinner } from "~/components/ui/spinner";
+import { CurriculumForm } from "~/features/curriculum/curriculum-form";
+import { CurriculumPrograms } from "~/features/curriculum/curriculum-programs";
+import { CurriculumTable } from "~/features/curriculum/curriculum-table";
+import { CurriculumVersion } from "~/features/curriculum/curriculum-version";
+import { PageHeader } from "~/layouts/page-header";
+import { curriculumService } from "~/services/curriculum.service";
+import type { ProgramCurriculum } from "~/types/curriculum";
+import type { Program } from "~/types/program";
 
 export function meta() {
   return [

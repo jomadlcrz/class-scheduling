@@ -1,4 +1,4 @@
-import { Label } from "./label";
+import { Label } from "~/components/ui/label";
 
 type SwitchProps = {
   id: string;

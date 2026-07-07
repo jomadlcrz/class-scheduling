@@ -1,6 +1,6 @@
-import { loadJson, removeJson, saveJson } from "../lib/storage";
-import type { AuthSession, LoginCredentials } from "../types/auth";
-import { accounts, delay, toUser } from "./mock-data";
+import { loadJson, removeJson, saveJson } from "~/lib/storage";
+import type { AuthSession, LoginCredentials } from "~/types/auth";
+import { accounts, delay, toUser } from "~/services/mock-data";
 
 /**
  * MOCK auth service — no backend yet. Accounts live in the shared

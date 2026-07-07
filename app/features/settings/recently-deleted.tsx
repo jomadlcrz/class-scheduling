@@ -1,4 +1,4 @@
-import { TrashIcon } from "../../components/ui/icons";
+import { TrashIcon } from "~/components/ui/icons";
 
 export function RecentlyDeleted() {
   return (

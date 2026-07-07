@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Outlet } from "react-router";
-import { AuthGuard } from "../auth/auth-guard";
-import { ThemeProvider } from "../components/theme/theme-provider";
-import { LayoutSidebarIcon } from "../components/ui/icons";
-import { Navbar } from "./navbar";
-import { Sidebar } from "./sidebar";
+import { AuthGuard } from "~/auth/auth-guard";
+import { ThemeProvider } from "~/components/theme/theme-provider";
+import { LayoutSidebarIcon } from "~/components/ui/icons";
+import { Navbar } from "~/layouts/navbar";
+import { Sidebar } from "~/layouts/sidebar";
 
 const COLLAPSED_KEY = "cs-sidebar-collapsed";
 const MOBILE_QUERY = "(max-width: 1023px)";

@@ -1,7 +1,7 @@
-import { MapPinIcon, UserSmallIcon } from "../../components/ui/icons";
-import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "../../types/schedule";
-import { DAY_ACCENT } from "./day-accent";
-import { ModeBadge } from "./mode-badge";
+import { MapPinIcon, UserSmallIcon } from "~/components/ui/icons";
+import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "~/types/schedule";
+import { DAY_ACCENT } from "~/features/schedules/day-accent";
+import { ModeBadge } from "~/features/schedules/mode-badge";
 
 type ScheduleGridProps = {
   schedules: Schedule[];

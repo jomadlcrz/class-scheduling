@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Button } from "../../components/ui/button";
-import { EmptyState } from "../../components/ui/empty-state";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Pagination } from "../../components/ui/pagination";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { SetForm } from "../../features/sets/set-form";
-import { SetTable } from "../../features/sets/set-table";
-import { PageHeader } from "../../layouts/page-header";
-import { programService } from "../../services/program.service";
-import { setService } from "../../services/set.service";
-import { usePagination } from "../../hooks/use-pagination";
-import type { Program } from "../../types/program";
-import type { ClassSet, CreateSetInput } from "../../types/set";
-import { YEAR_LEVEL_LABELS, YEAR_LEVELS } from "../../types/subject";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Pagination } from "~/components/ui/pagination";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { SetForm } from "~/features/sets/set-form";
+import { SetTable } from "~/features/sets/set-table";
+import { PageHeader } from "~/layouts/page-header";
+import { programService } from "~/services/program.service";
+import { setService } from "~/services/set.service";
+import { usePagination } from "~/hooks/use-pagination";
+import type { Program } from "~/types/program";
+import type { ClassSet, CreateSetInput } from "~/types/set";
+import { YEAR_LEVEL_LABELS, YEAR_LEVELS } from "~/types/subject";
 
 export function meta() {
   return [

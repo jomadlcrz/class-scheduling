@@ -1,11 +1,11 @@
-import { Colleges } from "./colleges";
-import { Cta } from "./cta";
-import { Features } from "./features";
-import { Hero } from "./hero";
-import { SiteFooter } from "./site-footer";
-import { SiteHeader } from "./site-header";
-import { Stats } from "./stats";
-import { ThemeProvider } from "../components/theme/theme-provider";
+import { Colleges } from "~/landing/colleges";
+import { Cta } from "~/landing/cta";
+import { Features } from "~/landing/features";
+import { Hero } from "~/landing/hero";
+import { SiteFooter } from "~/landing/site-footer";
+import { SiteHeader } from "~/landing/site-header";
+import { Stats } from "~/landing/stats";
+import { ThemeProvider } from "~/components/theme/theme-provider";
 
 /** The GWC Class Scheduling landing page. */
 export function Landing() {

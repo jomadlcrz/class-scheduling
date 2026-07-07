@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Select } from "../../components/ui/select";
-import { ScheduleViewer } from "../../features/schedules/schedule-viewer";
-import type { ScheduleViewMode } from "../../features/schedules/schedule-view-toggle";
-import { useAuth } from "../../hooks/use-auth";
-import { PageHeader } from "../../layouts/page-header";
-import { scheduleService } from "../../services/schedule.service";
+import { RoleGuard } from "~/auth/role-guard";
+import { Select } from "~/components/ui/select";
+import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
+import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
+import { useAuth } from "~/hooks/use-auth";
+import { PageHeader } from "~/layouts/page-header";
+import { scheduleService } from "~/services/schedule.service";
 import {
   DAYS,
   DEFAULT_SCHOOL_YEAR,
@@ -14,7 +14,7 @@ import {
   SCHOOL_YEARS,
   type Schedule,
   type ScheduleSemester,
-} from "../../types/schedule";
+} from "~/types/schedule";
 
 export function meta() {
   return [

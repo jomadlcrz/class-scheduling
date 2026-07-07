@@ -1,7 +1,7 @@
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
-import type { Role, UserStatus } from "../../types/user";
-import { ROLE_LABELS } from "./role-badge";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import type { Role, UserStatus } from "~/types/user";
+import { ROLE_LABELS } from "~/features/users/role-badge";
 
 export type UserFiltersValue = {
   search: string;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Switch } from "../../components/ui/switch";
+import { Switch } from "~/components/ui/switch";
 
 type NotificationPrefs = {
   scheduleReminders: boolean;

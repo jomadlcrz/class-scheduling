@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Spinner } from "./spinner";
+import { Spinner } from "~/components/ui/spinner";
 
 const baseClassName =
   "flex cursor-pointer items-center justify-center gap-2 rounded-lg font-body font-medium transition-all duration-150 active:scale-[0.97] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60";

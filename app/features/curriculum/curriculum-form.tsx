@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { PlusIcon } from "../../components/ui/icons";
+import { PlusIcon } from "~/components/ui/icons";
 
 type CurriculumFormProps = {
   programCode: string;

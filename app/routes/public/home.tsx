@@ -1,5 +1,5 @@
 ﻿import type { Route } from "./+types/home";
-import { Landing } from "../../landing/landing";
+import { Landing } from "~/landing/landing";
 
 export function meta({}: Route.MetaArgs) {
   return [

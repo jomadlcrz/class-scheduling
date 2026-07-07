@@ -1,4 +1,4 @@
-import { PrinterIcon } from "../../components/ui/icons";
+import { PrinterIcon } from "~/components/ui/icons";
 
 export function ExportReport() {
   function handlePrint() {

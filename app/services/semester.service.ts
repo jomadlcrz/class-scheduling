@@ -1,5 +1,5 @@
-import type { AcademicSemester, CreateAcademicSemesterInput, UpdateAcademicSemesterInput } from "../types/semester";
-import { academicSemesters, delay, newSemesterId } from "./mock-data";
+import type { AcademicSemester, CreateAcademicSemesterInput, UpdateAcademicSemesterInput } from "~/types/semester";
+import { academicSemesters, delay, newSemesterId } from "~/services/mock-data";
 
 function find(id: string): AcademicSemester {
   const sem = academicSemesters.find((s) => s.id === id);

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { Badge } from "../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -8,10 +8,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import { getProgramTone, type Program } from "../../types/program";
-import { SEMESTER_LABELS, YEAR_LEVEL_LABELS, type Subject } from "../../types/subject";
-import { SubjectTypeBadge } from "./subject-type-badge";
+} from "~/components/ui/table";
+import { getProgramTone, type Program } from "~/types/program";
+import { SEMESTER_LABELS, YEAR_LEVEL_LABELS, type Subject } from "~/types/subject";
+import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 
 type SubjectTableProps = {
   /** Rows to display (already filtered and sorted). */

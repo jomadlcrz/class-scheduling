@@ -1,5 +1,5 @@
-﻿import { useAuth } from "../../hooks/use-auth";
-import { PageHeader } from "../../layouts/page-header";
+﻿import { useAuth } from "~/hooks/use-auth";
+import { PageHeader } from "~/layouts/page-header";
 
 export function meta() {
   return [

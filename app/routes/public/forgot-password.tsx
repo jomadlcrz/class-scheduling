@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { AuthHeading, AuthLayout } from "../../auth/auth-layout";
-import { ForgotPasswordForm } from "../../auth/forgot-password-form";
-import { ResultState } from "../../components/feedback/result-state";
+import { AuthHeading, AuthLayout } from "~/auth/auth-layout";
+import { ForgotPasswordForm } from "~/auth/forgot-password-form";
+import { ResultState } from "~/components/feedback/result-state";
 
 export function meta() {
   return [

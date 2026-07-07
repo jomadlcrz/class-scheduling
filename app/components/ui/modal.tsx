@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
-import { FormError } from "../forms/form-error";
-import { Button } from "./button";
-import { CloseIcon } from "./icons";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { CloseIcon } from "~/components/ui/icons";
 
 type ModalProps = {
   open: boolean;

@@ -1,27 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { Pagination } from "../../components/ui/pagination";
-import { usePagination } from "../../hooks/use-pagination";
-import { RoleGuard } from "../../auth/role-guard";
-import { Button } from "../../components/ui/button";
-import { EmptyState } from "../../components/ui/empty-state";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { SubjectForm } from "../../features/subjects/subject-form";
-import { SubjectTable } from "../../features/subjects/subject-table";
-import { PageHeader } from "../../layouts/page-header";
-import { programService } from "../../services/program.service";
-import { subjectService } from "../../services/subject.service";
-import type { Program } from "../../types/program";
+import { Pagination } from "~/components/ui/pagination";
+import { usePagination } from "~/hooks/use-pagination";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { SubjectForm } from "~/features/subjects/subject-form";
+import { SubjectTable } from "~/features/subjects/subject-table";
+import { PageHeader } from "~/layouts/page-header";
+import { programService } from "~/services/program.service";
+import { subjectService } from "~/services/subject.service";
+import type { Program } from "~/types/program";
 import {
   YEAR_LEVEL_LABELS,
   YEAR_LEVELS,
   type CreateSubjectInput,
   type Subject,
-} from "../../types/subject";
+} from "~/types/subject";
 
 export function meta() {
   return [

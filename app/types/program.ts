@@ -1,5 +1,5 @@
-import type { BadgeTone } from "../components/ui/badge";
-import { getDeptTone } from "./department";
+import type { BadgeTone } from "~/components/ui/badge";
+import { getDeptTone } from "~/types/department";
 
 export function getProgramTone(programCode: string, programs: Pick<Program, "code" | "departmentCode">[]): BadgeTone {
   const prog = programs.find((p) => p.code === programCode);

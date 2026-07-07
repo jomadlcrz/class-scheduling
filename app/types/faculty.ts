@@ -1,4 +1,4 @@
-import type { BadgeTone } from "../components/ui/badge";
+import type { BadgeTone } from "~/components/ui/badge";
 
 export const FACULTY_STATUSES = ["active", "inactive"] as const;
 export type FacultyStatus = (typeof FACULTY_STATUSES)[number];

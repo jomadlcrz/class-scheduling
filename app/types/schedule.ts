@@ -1,4 +1,4 @@
-import type { YearLevel } from "./subject";
+import type { YearLevel } from "~/types/subject";
 
 export const DAYS = ["M", "T", "W", "Th", "F", "S"] as const;
 export type Day = (typeof DAYS)[number];

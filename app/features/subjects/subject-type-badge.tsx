@@ -1,5 +1,5 @@
-import { Badge, type BadgeTone } from "../../components/ui/badge";
-import { SUBJECT_TYPE_LABELS, type SubjectType } from "../../types/subject";
+import { Badge, type BadgeTone } from "~/components/ui/badge";
+import { SUBJECT_TYPE_LABELS, type SubjectType } from "~/types/subject";
 
 const typeTones: Record<SubjectType, BadgeTone> = {
   gened: "emerald",

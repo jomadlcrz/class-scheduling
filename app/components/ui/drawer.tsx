@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
-import { CloseIcon } from "./icons";
+import { CloseIcon } from "~/components/ui/icons";
 
 type DrawerProps = {
   open: boolean;

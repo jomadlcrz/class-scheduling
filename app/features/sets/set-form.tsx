@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Select } from "../../components/ui/select";
-import { Textarea } from "../../components/ui/textarea";
-import type { Program } from "../../types/program";
-import { setSchema } from "../../schemas/set.schema";
-import { type ClassSet, type CreateSetInput } from "../../types/set";
-import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "../../types/subject";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Select } from "~/components/ui/select";
+import { Textarea } from "~/components/ui/textarea";
+import type { Program } from "~/types/program";
+import { setSchema } from "~/schemas/set.schema";
+import { type ClassSet, type CreateSetInput } from "~/types/set";
+import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "~/types/subject";
 
 type SetFormProps = {
   /** Provided when editing an existing set. */

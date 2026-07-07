@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
-import { programSchema } from "../../schemas/program.schema";
-import type { Department } from "../../types/department";
-import type { CreateProgramInput, Program, ProgramType } from "../../types/program";
-import { PROGRAM_TYPE_LABELS, PROGRAM_TYPE_YEARS, PROGRAM_TYPES } from "../../types/program";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import { programSchema } from "~/schemas/program.schema";
+import type { Department } from "~/types/department";
+import type { CreateProgramInput, Program, ProgramType } from "~/types/program";
+import { PROGRAM_TYPE_LABELS, PROGRAM_TYPE_YEARS, PROGRAM_TYPES } from "~/types/program";
 
 type ProgramFormProps = {
   program?: Program;

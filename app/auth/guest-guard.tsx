@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router";
-import { LoadingState } from "../components/feedback/loading-state";
-import { useAuth } from "./auth-provider";
+import { LoadingState } from "~/components/feedback/loading-state";
+import { useAuth } from "~/auth/auth-provider";
 
 /** Keeps logged-in users out of guest-only pages (e.g. /login). */
 export function GuestGuard({ children }: { children: ReactNode }) {

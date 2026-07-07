@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router";
-import { ThemeToggle } from "../components/theme/theme-toggle";
-import { LogoutIcon, MenuIcon } from "../components/ui/icons";
-import { useAuth } from "../hooks/use-auth";
+import { ThemeToggle } from "~/components/theme/theme-toggle";
+import { LogoutIcon, MenuIcon } from "~/components/ui/icons";
+import { useAuth } from "~/hooks/use-auth";
 
 const iconButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10";

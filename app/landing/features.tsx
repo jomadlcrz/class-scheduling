@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { fadeUp, inViewSection } from "./motion";
+import { fadeUp, inViewSection } from "~/landing/motion";
 import type { ReactNode } from "react";
 
 interface Feature {

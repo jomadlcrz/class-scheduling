@@ -1,5 +1,5 @@
-import { Badge } from "../../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,8 +7,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../../components/ui/table";
-import { getBuildingTone, type Building } from "../../../types/building";
+} from "~/components/ui/table";
+import { getBuildingTone, type Building } from "~/types/building";
 
 type BuildingTableProps = {
   buildings: Building[];

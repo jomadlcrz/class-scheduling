@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { ChevronDownIcon } from "./icons";
-import { FieldChrome, inputClassName } from "./input";
+import { ChevronDownIcon } from "~/components/ui/icons";
+import { FieldChrome, inputClassName } from "~/components/ui/input";
 
 type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "id" | "className"> & {
   id: string;

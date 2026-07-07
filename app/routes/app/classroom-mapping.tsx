@@ -1,16 +1,16 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Card } from "../../components/ui/card";
+import { RoleGuard } from "~/auth/role-guard";
+import { Card } from "~/components/ui/card";
 import {
   ChevronRightIcon,
   GridIcon,
   LayoutIcon,
   ListIcon,
   UserSmallIcon,
-} from "../../components/ui/icons";
-import { Select } from "../../components/ui/select";
-import { ScheduleViewToggle } from "../../features/schedules/schedule-view-toggle";
-import { PageHeader } from "../../layouts/page-header";
+} from "~/components/ui/icons";
+import { Select } from "~/components/ui/select";
+import { ScheduleViewToggle } from "~/features/schedules/schedule-view-toggle";
+import { PageHeader } from "~/layouts/page-header";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

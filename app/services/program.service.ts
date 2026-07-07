@@ -1,5 +1,5 @@
-import type { Program, CreateProgramInput, UpdateProgramInput } from "../types/program";
-import { programs, delay, newProgramId } from "./mock-data";
+import type { Program, CreateProgramInput, UpdateProgramInput } from "~/types/program";
+import { programs, delay, newProgramId } from "~/services/mock-data";
 
 function findProgram(id: string): Program {
   const p = programs.find((p) => p.id === id);

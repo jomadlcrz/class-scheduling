@@ -1,5 +1,5 @@
-import { Badge } from "../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,10 +7,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import { getProgramTone, type Program } from "../../types/program";
-import { type ClassSet } from "../../types/set";
-import { YEAR_LEVEL_LABELS } from "../../types/subject";
+} from "~/components/ui/table";
+import { getProgramTone, type Program } from "~/types/program";
+import { type ClassSet } from "~/types/set";
+import { YEAR_LEVEL_LABELS } from "~/types/subject";
 
 type SetTableProps = {
   sets: ClassSet[];

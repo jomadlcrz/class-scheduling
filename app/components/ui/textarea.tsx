@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FieldChrome, inputClassName } from "./input";
+import { FieldChrome, inputClassName } from "~/components/ui/input";
 
 type TextareaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "id" | "className"> & {
   id: string;

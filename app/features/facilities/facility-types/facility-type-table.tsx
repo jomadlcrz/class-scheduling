@@ -1,5 +1,5 @@
-import { Badge } from "../../../components/ui/badge";
-import { ROOM_TYPE_LABELS } from "../../../types/room";
+import { Badge } from "~/components/ui/badge";
+import { ROOM_TYPE_LABELS } from "~/types/room";
 
 const BUILT_IN_TYPES = [
   { type: "lecture", description: "Standard lecture classroom." },

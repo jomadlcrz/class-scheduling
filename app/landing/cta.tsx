@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { fadeUp, inViewSection } from "./motion";
+import { fadeUp, inViewSection } from "~/landing/motion";
 
 /** Closing call-to-action band. */
 export function Cta() {

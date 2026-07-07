@@ -1,6 +1,6 @@
-import { Badge } from "../../components/ui/badge";
-import type { CurriculumGroup } from "../../types/curriculum";
-import { SUBJECT_TYPE_LABELS } from "../../types/subject";
+import { Badge } from "~/components/ui/badge";
+import type { CurriculumGroup } from "~/types/curriculum";
+import { SUBJECT_TYPE_LABELS } from "~/types/subject";
 
 type CurriculumSubjectsProps = {
   group: CurriculumGroup;

@@ -1,5 +1,5 @@
-import { Select } from "../../components/ui/select";
-import type { Program } from "../../types/program";
+import { Select } from "~/components/ui/select";
+import type { Program } from "~/types/program";
 
 type CurriculumProgramsProps = {
   programs: Program[];

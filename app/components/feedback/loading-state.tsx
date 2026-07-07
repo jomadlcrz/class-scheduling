@@ -1,4 +1,4 @@
-import { Spinner } from "../ui/spinner";
+import { Spinner } from "~/components/ui/spinner";
 
 /** Full-viewport centered spinner, shown while auth/session state resolves. */
 export function LoadingState({ label = "Loading…" }: { label?: string }) {

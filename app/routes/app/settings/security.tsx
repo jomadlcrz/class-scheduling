@@ -1,4 +1,4 @@
-import { SecuritySettings } from "../../../features/settings/security-settings";
+import { SecuritySettings } from "~/features/settings/security-settings";
 
 export function meta() {
   return [

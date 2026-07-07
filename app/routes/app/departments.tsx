@@ -1,21 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Button } from "../../components/ui/button";
-import { EmptyState } from "../../components/ui/empty-state";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Pagination } from "../../components/ui/pagination";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { DepartmentForm } from "../../features/departments/department-form";
-import { DepartmentTable } from "../../features/departments/department-table";
-import { usePagination } from "../../hooks/use-pagination";
-import { PageHeader } from "../../layouts/page-header";
-import { buildingService } from "../../services/building.service";
-import { departmentService } from "../../services/department.service";
-import type { Building } from "../../types/building";
-import type { CreateDepartmentInput, Department } from "../../types/department";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Pagination } from "~/components/ui/pagination";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { DepartmentForm } from "~/features/departments/department-form";
+import { DepartmentTable } from "~/features/departments/department-table";
+import { usePagination } from "~/hooks/use-pagination";
+import { PageHeader } from "~/layouts/page-header";
+import { buildingService } from "~/services/building.service";
+import { departmentService } from "~/services/department.service";
+import type { Building } from "~/types/building";
+import type { CreateDepartmentInput, Department } from "~/types/department";
 
 export function meta() {
   return [

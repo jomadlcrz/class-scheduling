@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Spinner } from "../../components/ui/spinner";
-import { ConflictPanel } from "../../features/conflicts/conflict-panel";
-import { ConflictResolution } from "../../features/conflicts/conflict-resolution";
-import { FacultyConflicts } from "../../features/conflicts/faculty-conflicts";
-import { RoomConflicts } from "../../features/conflicts/room-conflicts";
-import { SectionConflicts } from "../../features/conflicts/section-conflicts";
-import { PageHeader } from "../../layouts/page-header";
-import { conflictService, type Conflict } from "../../services/conflict.service";
+import { RoleGuard } from "~/auth/role-guard";
+import { Spinner } from "~/components/ui/spinner";
+import { ConflictPanel } from "~/features/conflicts/conflict-panel";
+import { ConflictResolution } from "~/features/conflicts/conflict-resolution";
+import { FacultyConflicts } from "~/features/conflicts/faculty-conflicts";
+import { RoomConflicts } from "~/features/conflicts/room-conflicts";
+import { SectionConflicts } from "~/features/conflicts/section-conflicts";
+import { PageHeader } from "~/layouts/page-header";
+import { conflictService, type Conflict } from "~/services/conflict.service";
 
 export function meta() {
   return [

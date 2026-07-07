@@ -1,4 +1,4 @@
-import type { Role } from "./user";
+import type { Role } from "~/types/user";
 
 export type Permission = {
   key: string;

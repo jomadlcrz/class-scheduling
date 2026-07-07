@@ -1,4 +1,4 @@
-﻿import { LegalLayout, LegalSection } from "../../landing/legal-layout";
+﻿import { LegalLayout, LegalSection } from "~/landing/legal-layout";
 
 export function meta() {
   return [

@@ -1,6 +1,6 @@
-import { RoleGuard } from "../../../auth/role-guard";
-import { EmptyState } from "../../../components/ui/empty-state";
-import { PageHeader } from "../../../layouts/page-header";
+import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PageHeader } from "~/layouts/page-header";
 
 export function meta() {
   return [

@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from "motion/react";
-import { popIn, staggerContainer } from "./motion";
+import { popIn, staggerContainer } from "~/landing/motion";
 
 interface ClassBlock {
   id: string;

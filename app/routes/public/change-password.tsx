@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import { AuthHeading, AuthLayout } from "../../auth/auth-layout";
-import { PasswordForm, type PasswordFormValues } from "../../auth/password-form";
-import { ResultState } from "../../components/feedback/result-state";
-import { authService } from "../../services/auth.service";
+import { AuthHeading, AuthLayout } from "~/auth/auth-layout";
+import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
+import { ResultState } from "~/components/feedback/result-state";
+import { authService } from "~/services/auth.service";
 
 export function meta() {
   return [

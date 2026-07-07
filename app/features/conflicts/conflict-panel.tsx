@@ -1,5 +1,5 @@
-import { AlertTriangleIcon, CheckIcon, UsersIcon } from "../../components/ui/icons";
-import type { Conflict } from "../../services/conflict.service";
+import { AlertTriangleIcon, CheckIcon, UsersIcon } from "~/components/ui/icons";
+import type { Conflict } from "~/services/conflict.service";
 
 type ConflictPanelProps = {
   conflicts: Conflict[];

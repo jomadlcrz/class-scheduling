@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { ButtonLink } from "../ui/button";
-import { AlertIcon, CheckIcon } from "../ui/icons";
+import { ButtonLink } from "~/components/ui/button";
+import { AlertIcon, CheckIcon } from "~/components/ui/icons";
 
 const tones = {
   success: {

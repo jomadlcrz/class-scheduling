@@ -1,4 +1,4 @@
-import type { RoomUtilizationRow } from "../../services/report.service";
+import type { RoomUtilizationRow } from "~/services/report.service";
 
 export function RoomUtilization({ rows }: { rows: RoomUtilizationRow[] }) {
   if (rows.length === 0) {

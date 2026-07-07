@@ -1,1 +1,1 @@
-export { useTheme, type Theme } from "../components/theme/theme-provider";
+export { useTheme, type Theme } from "~/components/theme/theme-provider";

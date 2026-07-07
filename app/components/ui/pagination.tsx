@@ -1,5 +1,5 @@
-import { PAGE_SIZE_OPTIONS, type PageSizeOption } from "../../hooks/use-pagination";
-import { ChevronLeftIcon, ChevronRightIcon } from "./icons";
+import { PAGE_SIZE_OPTIONS, type PageSizeOption } from "~/hooks/use-pagination";
+import { ChevronLeftIcon, ChevronRightIcon } from "~/components/ui/icons";
 
 type PaginationProps = {
   page: number;

@@ -1,4 +1,4 @@
-import type { EnrollmentStats } from "../../services/report.service";
+import type { EnrollmentStats } from "~/services/report.service";
 
 const YEAR_LABELS: Record<number, string> = {
   1: "1st Year",

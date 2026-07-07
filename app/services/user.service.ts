@@ -1,5 +1,5 @@
-import type { CreateUserInput, UpdateUserInput, User, UserStatus } from "../types/user";
-import { accounts, DEFAULT_PASSWORD, delay, newId, toUser } from "./mock-data";
+import type { CreateUserInput, UpdateUserInput, User, UserStatus } from "~/types/user";
+import { accounts, DEFAULT_PASSWORD, delay, newId, toUser } from "~/services/mock-data";
 
 /** MOCK user management service backed by the shared in-memory store. */
 

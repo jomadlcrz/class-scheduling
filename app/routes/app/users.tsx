@@ -1,27 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pagination } from "../../components/ui/pagination";
-import { usePagination } from "../../hooks/use-pagination";
-import { RoleGuard } from "../../auth/role-guard";
-import { EmptyState } from "../../components/ui/empty-state";
-import { Button } from "../../components/ui/button";
-import { PlusIcon } from "../../components/ui/icons";
-import { Modal } from "../../components/ui/modal";
-import { Spinner } from "../../components/ui/spinner";
-import { ActivateUserDialog } from "../../features/users/activate-user-dialog";
-import { DeactivateUserDialog } from "../../features/users/deactivate-user-dialog";
-import { ResetPasswordDialog } from "../../features/users/reset-password-dialog";
+import { Pagination } from "~/components/ui/pagination";
+import { usePagination } from "~/hooks/use-pagination";
+import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/ui/empty-state";
+import { Button } from "~/components/ui/button";
+import { PlusIcon } from "~/components/ui/icons";
+import { Modal } from "~/components/ui/modal";
+import { Spinner } from "~/components/ui/spinner";
+import { ActivateUserDialog } from "~/features/users/activate-user-dialog";
+import { DeactivateUserDialog } from "~/features/users/deactivate-user-dialog";
+import { ResetPasswordDialog } from "~/features/users/reset-password-dialog";
 import {
   applyUserFilters,
   EMPTY_FILTERS,
   UserFilters,
   type UserFiltersValue,
-} from "../../features/users/user-filters";
-import { UserForm } from "../../features/users/user-form";
-import { UserTable } from "../../features/users/user-table";
-import { useAuth } from "../../hooks/use-auth";
-import { PageHeader } from "../../layouts/page-header";
-import { userService } from "../../services/user.service";
-import type { CreateUserInput, User } from "../../types/user";
+} from "~/features/users/user-filters";
+import { UserForm } from "~/features/users/user-form";
+import { UserTable } from "~/features/users/user-table";
+import { useAuth } from "~/hooks/use-auth";
+import { PageHeader } from "~/layouts/page-header";
+import { userService } from "~/services/user.service";
+import type { CreateUserInput, User } from "~/types/user";
 
 export function meta() {
   return [

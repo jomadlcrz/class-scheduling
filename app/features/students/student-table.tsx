@@ -1,9 +1,9 @@
-import { Badge } from "../../components/ui/badge";
-import type { BadgeTone } from "../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
-import type { Student } from "../../types/student";
-import { STUDENT_STATUS_LABELS } from "../../types/student";
-import { YEAR_LEVEL_LABELS } from "../../types/subject";
+import { Badge } from "~/components/ui/badge";
+import type { BadgeTone } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import type { Student } from "~/types/student";
+import { STUDENT_STATUS_LABELS } from "~/types/student";
+import { YEAR_LEVEL_LABELS } from "~/types/subject";
 
 type StudentTableProps = {
   students: Student[];

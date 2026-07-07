@@ -1,14 +1,14 @@
-import type { Building } from "../types/building";
-import type { Department } from "../types/department";
-import type { Faculty } from "../types/faculty";
-import type { Student } from "../types/student";
-import type { Program } from "../types/program";
-import type { Room } from "../types/room";
-import type { Schedule } from "../types/schedule";
-import type { AcademicSemester } from "../types/semester";
-import type { ClassSet } from "../types/set";
-import type { Subject } from "../types/subject";
-import type { User } from "../types/user";
+import type { Building } from "~/types/building";
+import type { Department } from "~/types/department";
+import type { Faculty } from "~/types/faculty";
+import type { Student } from "~/types/student";
+import type { Program } from "~/types/program";
+import type { Room } from "~/types/room";
+import type { Schedule } from "~/types/schedule";
+import type { AcademicSemester } from "~/types/semester";
+import type { ClassSet } from "~/types/set";
+import type { Subject } from "~/types/subject";
+import type { User } from "~/types/user";
 
 /**
  * Shared in-memory store for all mock services — resets on reload.

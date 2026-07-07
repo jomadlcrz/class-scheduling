@@ -1,4 +1,4 @@
-import { AppearanceSettings } from "../../../features/settings/appearance-settings";
+import { AppearanceSettings } from "~/features/settings/appearance-settings";
 
 export function meta() {
   return [

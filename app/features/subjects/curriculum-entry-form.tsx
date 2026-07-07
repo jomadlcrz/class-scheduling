@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
 import {
   SEMESTER_LABELS,
   SEMESTERS,
@@ -15,9 +15,9 @@ import {
   type Semester,
   type SubjectType,
   type YearLevel,
-} from "../../types/subject";
-import type { PendingEntry } from "./curriculum-structure";
-import { PrerequisitePicker, type PrerequisiteOption } from "./prerequisite-picker";
+} from "~/types/subject";
+import type { PendingEntry } from "~/features/subjects/curriculum-structure";
+import { PrerequisitePicker, type PrerequisiteOption } from "~/features/subjects/prerequisite-picker";
 
 type CurriculumEntryFormProps = {
   /** Set when re-editing a pending entry; prefills the form. */

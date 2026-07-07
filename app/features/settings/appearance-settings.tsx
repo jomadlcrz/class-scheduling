@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useTheme, type Theme } from "../../hooks/use-theme";
+import { useTheme, type Theme } from "~/hooks/use-theme";
 
 type ThemeCard = {
   value: Theme;

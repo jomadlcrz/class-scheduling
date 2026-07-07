@@ -1,9 +1,9 @@
 import type { ComponentType } from "react";
 import { NavLink, Outlet } from "react-router";
-import { KeyIcon, PaletteIcon, TrashIcon, UserIcon } from "../components/ui/icons";
-import { useAuth } from "../hooks/use-auth";
-import type { Role } from "../types/user";
-import { PageHeader } from "./page-header";
+import { KeyIcon, PaletteIcon, TrashIcon, UserIcon } from "~/components/ui/icons";
+import { useAuth } from "~/hooks/use-auth";
+import type { Role } from "~/types/user";
+import { PageHeader } from "~/layouts/page-header";
 
 type SettingsNavItem = {
   label: string;

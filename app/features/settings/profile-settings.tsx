@@ -1,7 +1,7 @@
-import { BellIcon } from "../../components/ui/icons";
-import { useAuth } from "../../hooks/use-auth";
-import type { Role } from "../../types/user";
-import { NotificationSettings } from "./notification-settings";
+import { BellIcon } from "~/components/ui/icons";
+import { useAuth } from "~/hooks/use-auth";
+import type { Role } from "~/types/user";
+import { NotificationSettings } from "~/features/settings/notification-settings";
 
 const ROLE_LABELS: Record<Role, string> = {
   admin: "Administrator",

@@ -1,4 +1,4 @@
-import type { YearLevel } from "./subject";
+import type { YearLevel } from "~/types/subject";
 
 /** A class set: a named group of students within a program and year level. */
 export type ClassSet = {

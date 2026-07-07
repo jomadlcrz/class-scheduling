@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router";
-import { LoadingState } from "../components/feedback/loading-state";
-import type { Role } from "../types/user";
-import { useAuth } from "./auth-provider";
+import { LoadingState } from "~/components/feedback/loading-state";
+import type { Role } from "~/types/user";
+import { useAuth } from "~/auth/auth-provider";
 
 /**
  * Restricts a page to specific roles. Must render inside AuthGuard

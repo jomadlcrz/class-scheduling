@@ -1,5 +1,5 @@
-import { DAY_LABELS, type Schedule } from "../../types/schedule";
-import type { Student } from "../../types/student";
+import { DAY_LABELS, type Schedule } from "~/types/schedule";
+import type { Student } from "~/types/student";
 
 type StudentScheduleProps = {
   student: Student;

@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { FormError } from "../../../components/forms/form-error";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Select } from "../../../components/ui/select";
-import { roomSchema } from "../../../schemas/room.schema";
-import type { Building } from "../../../types/building";
-import type { CreateRoomInput, Room, RoomStatus, RoomType } from "../../../types/room";
-import { ROOM_STATUSES, ROOM_STATUS_LABELS, ROOM_TYPES, ROOM_TYPE_LABELS } from "../../../types/room";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import { roomSchema } from "~/schemas/room.schema";
+import type { Building } from "~/types/building";
+import type { CreateRoomInput, Room, RoomStatus, RoomType } from "~/types/room";
+import { ROOM_STATUSES, ROOM_STATUS_LABELS, ROOM_TYPES, ROOM_TYPE_LABELS } from "~/types/room";
 
 type RoomFormProps = {
   room?: Room;

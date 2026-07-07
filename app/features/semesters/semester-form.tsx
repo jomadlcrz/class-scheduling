@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Select } from "../../components/ui/select";
-import { semesterSchema } from "../../schemas/semester.schema";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Select } from "~/components/ui/select";
+import { semesterSchema } from "~/schemas/semester.schema";
 import {
   ACADEMIC_SEMESTER_STATUSES,
   ACADEMIC_SEMESTER_STATUS_LABELS,
   type AcademicSemester,
   type CreateAcademicSemesterInput,
-} from "../../types/semester";
-import { SEMESTER_LABELS, SEMESTERS } from "../../types/subject";
+} from "~/types/semester";
+import { SEMESTER_LABELS, SEMESTERS } from "~/types/subject";
 
 type SemesterFormProps = {
   academicYearId: string;

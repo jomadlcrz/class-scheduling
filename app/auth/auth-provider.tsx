@@ -7,9 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { authService } from "../services/auth.service";
-import type { LoginCredentials } from "../types/auth";
-import type { User } from "../types/user";
+import { authService } from "~/services/auth.service";
+import type { LoginCredentials } from "~/types/auth";
+import type { User } from "~/types/user";
 
 type AuthContextValue = {
   user: User | null;

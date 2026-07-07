@@ -7,7 +7,7 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
-import { fadeUp, inViewSection } from "./motion";
+import { fadeUp, inViewSection } from "~/landing/motion";
 
 interface Stat {
   value: number;

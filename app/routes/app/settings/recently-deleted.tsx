@@ -1,5 +1,5 @@
-import { RoleGuard } from "../../../auth/role-guard";
-import { RecentlyDeleted } from "../../../features/settings/recently-deleted";
+import { RoleGuard } from "~/auth/role-guard";
+import { RecentlyDeleted } from "~/features/settings/recently-deleted";
 
 export function meta() {
   return [

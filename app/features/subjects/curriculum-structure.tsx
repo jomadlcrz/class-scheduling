@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { Badge } from "../../components/ui/badge";
-import { DropdownMenu } from "../../components/ui/dropdown";
-import { EmptyState } from "../../components/ui/empty-state";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { DropdownMenu } from "~/components/ui/dropdown";
+import { EmptyState } from "~/components/ui/empty-state";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   SEMESTER_LABELS,
   SEMESTERS,
@@ -11,8 +11,8 @@ import {
   type CreateSubjectInput,
   type Subject,
   type SubjectType,
-} from "../../types/subject";
-import { SubjectTypeBadge } from "./subject-type-badge";
+} from "~/types/subject";
+import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 
 export type PendingEntry = CreateSubjectInput & { tempId: string };
 

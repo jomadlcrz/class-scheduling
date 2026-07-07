@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FormError } from "../components/forms/form-error";
-import { Input } from "../components/ui/input";
-import { Spinner } from "../components/ui/spinner";
-import { forgotPasswordSchema } from "../schemas/auth.schema";
-import { authService } from "../services/auth.service";
+import { FormError } from "~/components/forms/form-error";
+import { Input } from "~/components/ui/input";
+import { Spinner } from "~/components/ui/spinner";
+import { forgotPasswordSchema } from "~/schemas/auth.schema";
+import { authService } from "~/services/auth.service";
 
 export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
   const [isLoading, setIsLoading] = useState(false);

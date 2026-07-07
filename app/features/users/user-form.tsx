@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
-import { userSchema } from "../../schemas/user.schema";
-import type { CreateUserInput, Role, User } from "../../types/user";
-import { ROLE_LABELS } from "./role-badge";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import { userSchema } from "~/schemas/user.schema";
+import type { CreateUserInput, Role, User } from "~/types/user";
+import { ROLE_LABELS } from "~/features/users/role-badge";
 
 type UserFormProps = {
   /** Existing user when editing; omitted when creating. */

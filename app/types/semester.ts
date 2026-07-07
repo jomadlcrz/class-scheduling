@@ -1,5 +1,5 @@
-import type { BadgeTone } from "../components/ui/badge";
-import type { Semester } from "./subject";
+import type { BadgeTone } from "~/components/ui/badge";
+import type { Semester } from "~/types/subject";
 
 const ACADEMIC_SEMESTER_STATUSES = ["upcoming", "active", "completed", "archived"] as const;
 type AcademicSemesterStatus = (typeof ACADEMIC_SEMESTER_STATUSES)[number];

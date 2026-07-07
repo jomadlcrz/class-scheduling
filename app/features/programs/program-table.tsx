@@ -1,5 +1,5 @@
-import { Badge } from "../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../components/ui/icons";
+import { Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,10 +7,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import { getDeptTone } from "../../types/department";
-import type { Program } from "../../types/program";
-import { PROGRAM_TYPE_LABELS } from "../../types/program";
+} from "~/components/ui/table";
+import { getDeptTone } from "~/types/department";
+import type { Program } from "~/types/program";
+import { PROGRAM_TYPE_LABELS } from "~/types/program";
 
 type ProgramTableProps = {
   programs: Program[];

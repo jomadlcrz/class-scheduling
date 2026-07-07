@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { CalendarIcon } from "../../components/ui/icons";
+import { CalendarIcon } from "~/components/ui/icons";
 
 export function ConflictResolution() {
   return (

@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { RoleGuard } from "../../auth/role-guard";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { CurriculumEntryForm } from "../../features/subjects/curriculum-entry-form";
+import { RoleGuard } from "~/auth/role-guard";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { CurriculumEntryForm } from "~/features/subjects/curriculum-entry-form";
 import {
   CurriculumStructure,
   type PendingEntry,
-} from "../../features/subjects/curriculum-structure";
-import { PageHeader } from "../../layouts/page-header";
-import { programService } from "../../services/program.service";
-import { subjectService } from "../../services/subject.service";
-import type { Program } from "../../types/program";
-import type { CreateSubjectInput, Subject } from "../../types/subject";
+} from "~/features/subjects/curriculum-structure";
+import { PageHeader } from "~/layouts/page-header";
+import { programService } from "~/services/program.service";
+import { subjectService } from "~/services/subject.service";
+import type { Program } from "~/types/program";
+import type { CreateSubjectInput, Subject } from "~/types/subject";
 
 export function meta() {
   return [

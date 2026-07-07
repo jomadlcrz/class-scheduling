@@ -1,5 +1,5 @@
-import { type BadgeTone, Badge } from "../../../components/ui/badge";
-import { EditIcon, TrashIcon } from "../../../components/ui/icons";
+import { type BadgeTone, Badge } from "~/components/ui/badge";
+import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -7,10 +7,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../../components/ui/table";
-import { getBuildingTone } from "../../../types/building";
-import type { Room } from "../../../types/room";
-import { ROOM_STATUS_LABELS, ROOM_TYPE_LABELS } from "../../../types/room";
+} from "~/components/ui/table";
+import { getBuildingTone } from "~/types/building";
+import type { Room } from "~/types/room";
+import { ROOM_STATUS_LABELS, ROOM_TYPE_LABELS } from "~/types/room";
 
 const statusTone: Record<string, BadgeTone> = {
   vacant: "emerald",

@@ -1,5 +1,5 @@
-import type { Building, CreateBuildingInput, UpdateBuildingInput } from "../types/building";
-import { buildings, delay, newBuildingId } from "./mock-data";
+import type { Building, CreateBuildingInput, UpdateBuildingInput } from "~/types/building";
+import { buildings, delay, newBuildingId } from "~/services/mock-data";
 
 function findBuilding(id: string): Building {
   const b = buildings.find((b) => b.id === id);

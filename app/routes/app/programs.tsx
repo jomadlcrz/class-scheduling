@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Button } from "../../components/ui/button";
-import { EmptyState } from "../../components/ui/empty-state";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Pagination } from "../../components/ui/pagination";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { ProgramForm } from "../../features/programs/program-form";
-import { ProgramTable } from "../../features/programs/program-table";
-import { usePagination } from "../../hooks/use-pagination";
-import { PageHeader } from "../../layouts/page-header";
-import { departmentService } from "../../services/department.service";
-import { programService } from "../../services/program.service";
-import type { Department } from "../../types/department";
-import type { CreateProgramInput, Program } from "../../types/program";
-import { PROGRAM_TYPE_LABELS, PROGRAM_TYPES } from "../../types/program";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Pagination } from "~/components/ui/pagination";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { ProgramForm } from "~/features/programs/program-form";
+import { ProgramTable } from "~/features/programs/program-table";
+import { usePagination } from "~/hooks/use-pagination";
+import { PageHeader } from "~/layouts/page-header";
+import { departmentService } from "~/services/department.service";
+import { programService } from "~/services/program.service";
+import type { Department } from "~/types/department";
+import type { CreateProgramInput, Program } from "~/types/program";
+import { PROGRAM_TYPE_LABELS, PROGRAM_TYPES } from "~/types/program";
 
 export function meta() {
   return [

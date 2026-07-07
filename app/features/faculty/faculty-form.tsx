@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
-import { facultySchema } from "../../schemas/faculty.schema";
-import type { Department } from "../../types/department";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import { facultySchema } from "~/schemas/faculty.schema";
+import type { Department } from "~/types/department";
 import {
   FACULTY_STATUS_LABELS,
   FACULTY_STATUSES,
   type CreateFacultyInput,
   type Faculty,
   type FacultyStatus,
-} from "../../types/faculty";
+} from "~/types/faculty";
 
 type FacultyFormProps = {
   member?: Faculty;

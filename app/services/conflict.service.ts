@@ -1,5 +1,5 @@
-import type { Schedule } from "../types/schedule";
-import { delay, schedules } from "./mock-data";
+import type { Schedule } from "~/types/schedule";
+import { delay, schedules } from "~/services/mock-data";
 
 type ConflictType = "faculty" | "room" | "section";
 

@@ -1,7 +1,7 @@
-import { AmbientBackground, BrandLogo } from "../../auth/auth-layout";
-import { GuestGuard } from "../../auth/guest-guard";
-import { LoginForm } from "../../auth/login-form";
-import { ThemeProvider } from "../../components/theme/theme-provider";
+import { AmbientBackground, BrandLogo } from "~/auth/auth-layout";
+import { GuestGuard } from "~/auth/guest-guard";
+import { LoginForm } from "~/auth/login-form";
+import { ThemeProvider } from "~/components/theme/theme-provider";
 
 export function meta() {
   return [

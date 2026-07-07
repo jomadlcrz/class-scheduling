@@ -1,5 +1,5 @@
-import type { Faculty, CreateFacultyInput, UpdateFacultyInput } from "../types/faculty";
-import { faculty, delay, newFacultyId } from "./mock-data";
+import type { Faculty, CreateFacultyInput, UpdateFacultyInput } from "~/types/faculty";
+import { faculty, delay, newFacultyId } from "~/services/mock-data";
 
 function findFaculty(id: string): Faculty {
   const f = faculty.find((f) => f.id === id);

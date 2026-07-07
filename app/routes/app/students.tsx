@@ -1,24 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Button } from "../../components/ui/button";
-import { EmptyState } from "../../components/ui/empty-state";
-import { PlusIcon } from "../../components/ui/icons";
-import { Input } from "../../components/ui/input";
-import { ConfirmDialog, Modal } from "../../components/ui/modal";
-import { Pagination } from "../../components/ui/pagination";
-import { Select } from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { EnrollmentSummary } from "../../features/students/enrollment-summary";
-import { StudentForm } from "../../features/students/student-form";
-import { StudentTable } from "../../features/students/student-table";
-import { PageHeader } from "../../layouts/page-header";
-import { programService } from "../../services/program.service";
-import { scheduleService } from "../../services/schedule.service";
-import { studentService } from "../../services/student.service";
-import { usePagination } from "../../hooks/use-pagination";
-import type { Program } from "../../types/program";
-import type { Schedule } from "../../types/schedule";
-import type { CreateStudentInput, Student } from "../../types/student";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Pagination } from "~/components/ui/pagination";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { EnrollmentSummary } from "~/features/students/enrollment-summary";
+import { StudentForm } from "~/features/students/student-form";
+import { StudentTable } from "~/features/students/student-table";
+import { PageHeader } from "~/layouts/page-header";
+import { programService } from "~/services/program.service";
+import { scheduleService } from "~/services/schedule.service";
+import { studentService } from "~/services/student.service";
+import { usePagination } from "~/hooks/use-pagination";
+import type { Program } from "~/types/program";
+import type { Schedule } from "~/types/schedule";
+import type { CreateStudentInput, Student } from "~/types/student";
 
 export function meta() {
   return [

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
-import { studentSchema } from "../../schemas/student.schema";
-import type { CreateStudentInput, Student } from "../../types/student";
-import { STUDENT_STATUSES, STUDENT_STATUS_LABELS } from "../../types/student";
-import type { Program } from "../../types/program";
-import { YEAR_LEVELS, YEAR_LEVEL_LABELS } from "../../types/subject";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import { studentSchema } from "~/schemas/student.schema";
+import type { CreateStudentInput, Student } from "~/types/student";
+import { STUDENT_STATUSES, STUDENT_STATUS_LABELS } from "~/types/student";
+import type { Program } from "~/types/program";
+import { YEAR_LEVELS, YEAR_LEVEL_LABELS } from "~/types/subject";
 
 type StudentFormProps = {
   student?: Student;

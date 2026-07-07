@@ -1,5 +1,5 @@
-import { Badge } from "../../components/ui/badge";
-import type { RoleSummary } from "../../types/role";
+import { Badge } from "~/components/ui/badge";
+import type { RoleSummary } from "~/types/role";
 
 /** Card per system role: name, member count, and description. */
 export function RoleTable({ roles }: { roles: RoleSummary[] }) {

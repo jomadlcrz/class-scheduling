@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MIN_PASSWORD_LENGTH } from "../lib/validators";
+import { MIN_PASSWORD_LENGTH } from "~/lib/validators";
 
 export const loginSchema = z.object({
   email: z.email("Enter a valid email address."),

@@ -19,10 +19,10 @@ import {
   ShieldIcon,
   UserIcon,
   UsersIcon,
-} from "../components/ui/icons";
-import { Tooltip } from "../components/ui/tooltip";
-import { useAuth } from "../hooks/use-auth";
-import type { Role } from "../types/user";
+} from "~/components/ui/icons";
+import { Tooltip } from "~/components/ui/tooltip";
+import { useAuth } from "~/hooks/use-auth";
+import type { Role } from "~/types/user";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { ThemeProvider } from "../components/theme/theme-provider";
-import { ArrowLeftIcon } from "../components/ui/icons";
+import { ThemeProvider } from "~/components/theme/theme-provider";
+import { ArrowLeftIcon } from "~/components/ui/icons";
 
 /** Fixed radial-gradient backdrop shared by every auth page. */
 export function AmbientBackground() {

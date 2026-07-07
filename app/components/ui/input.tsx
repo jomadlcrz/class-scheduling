@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
-import { EyeIcon, EyeOffIcon } from "./icons";
-import { Label } from "./label";
+import { EyeIcon, EyeOffIcon } from "~/components/ui/icons";
+import { Label } from "~/components/ui/label";
 
 export const inputClassName =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-body text-sm text-gray-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-blue-700 focus:ring-2 focus:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20";

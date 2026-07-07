@@ -1,6 +1,6 @@
-import { EmptyState } from "../../components/ui/empty-state";
-import type { Conflict } from "../../services/conflict.service";
-import { ConflictCard } from "./faculty-conflicts";
+import { EmptyState } from "~/components/ui/empty-state";
+import type { Conflict } from "~/services/conflict.service";
+import { ConflictCard } from "~/features/conflicts/faculty-conflicts";
 
 type RoomConflictsProps = {
   conflicts: Conflict[];

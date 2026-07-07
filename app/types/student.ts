@@ -1,4 +1,4 @@
-import type { YearLevel } from "./subject";
+import type { YearLevel } from "~/types/subject";
 
 export const STUDENT_STATUSES = ["enrolled", "inactive", "graduated"] as const;
 export type StudentStatus = (typeof STUDENT_STATUSES)[number];

@@ -1,4 +1,4 @@
-import { CheckIcon } from "../../components/ui/icons";
+import { CheckIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -6,9 +6,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import { PERMISSIONS } from "../../services/role.service";
-import type { RoleSummary } from "../../types/role";
+} from "~/components/ui/table";
+import { PERMISSIONS } from "~/services/role.service";
+import type { RoleSummary } from "~/types/role";
 
 /** Permissions × roles grid showing what each system role can do. */
 export function PermissionMatrix({ roles }: { roles: RoleSummary[] }) {

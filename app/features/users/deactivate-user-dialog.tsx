@@ -1,5 +1,5 @@
-import { ConfirmDialog } from "../../components/ui/modal";
-import type { User } from "../../types/user";
+import { ConfirmDialog } from "~/components/ui/modal";
+import type { User } from "~/types/user";
 
 type DeactivateUserDialogProps = {
   user: User | null;

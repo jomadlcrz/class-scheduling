@@ -1,8 +1,8 @@
-import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "../../components/ui/icons";
-import { Popover } from "../../components/ui/popover";
-import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "../../types/schedule";
-import { DAY_ACCENT } from "./day-accent";
-import { ModeBadge } from "./mode-badge";
+import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+import { Popover } from "~/components/ui/popover";
+import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "~/types/schedule";
+import { DAY_ACCENT } from "~/features/schedules/day-accent";
+import { ModeBadge } from "~/features/schedules/mode-badge";
 
 type ScheduleTableProps = {
   schedules: Schedule[];

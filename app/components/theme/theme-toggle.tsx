@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { useTheme } from "./theme-provider";
+import { useTheme } from "~/components/theme/theme-provider";
 
 type ThemeToggleProps = {
   className?: string;

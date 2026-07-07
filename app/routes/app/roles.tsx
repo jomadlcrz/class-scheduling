@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Spinner } from "../../components/ui/spinner";
-import { PermissionMatrix } from "../../features/roles/permission-matrix";
-import { RoleTable } from "../../features/roles/role-table";
-import { PageHeader } from "../../layouts/page-header";
-import { roleService } from "../../services/role.service";
-import type { RoleSummary } from "../../types/role";
+import { RoleGuard } from "~/auth/role-guard";
+import { Spinner } from "~/components/ui/spinner";
+import { PermissionMatrix } from "~/features/roles/permission-matrix";
+import { RoleTable } from "~/features/roles/role-table";
+import { PageHeader } from "~/layouts/page-header";
+import { roleService } from "~/services/role.service";
+import type { RoleSummary } from "~/types/role";
 
 export function meta() {
   return [

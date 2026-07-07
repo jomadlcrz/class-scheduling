@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { PasswordForm, type PasswordFormValues } from "../../auth/password-form";
-import { CheckIcon } from "../../components/ui/icons";
-import { authService } from "../../services/auth.service";
+import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
+import { CheckIcon } from "~/components/ui/icons";
+import { authService } from "~/services/auth.service";
 
 export function SecuritySettings() {
   const [done, setDone] = useState(false);

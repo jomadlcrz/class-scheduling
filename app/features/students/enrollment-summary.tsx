@@ -1,4 +1,4 @@
-import type { Student } from "../../types/student";
+import type { Student } from "~/types/student";
 
 type EnrollmentSummaryProps = {
   students: Student[];

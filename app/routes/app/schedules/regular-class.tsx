@@ -1,29 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { RoleGuard } from "../../../auth/role-guard";
-import { Button } from "../../../components/ui/button";
-import { EmptyState } from "../../../components/ui/empty-state";
-import { PlusIcon, PrinterIcon } from "../../../components/ui/icons";
-import { ConfirmDialog, Modal } from "../../../components/ui/modal";
-import { Select } from "../../../components/ui/select";
-import { Spinner } from "../../../components/ui/spinner";
-import { ScheduleForm } from "../../../features/schedules/schedule-form";
-import { ScheduleGrid } from "../../../features/schedules/schedule-grid";
-import { ScheduleTable } from "../../../features/schedules/schedule-table";
+import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/ui/empty-state";
+import { PlusIcon, PrinterIcon } from "~/components/ui/icons";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Select } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
+import { ScheduleForm } from "~/features/schedules/schedule-form";
+import { ScheduleGrid } from "~/features/schedules/schedule-grid";
+import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
   ScheduleViewToggle,
   type ScheduleViewMode,
-} from "../../../features/schedules/schedule-view-toggle";
-import { PageHeader } from "../../../layouts/page-header";
-import { facultyService } from "../../../services/faculty.service";
-import { programService } from "../../../services/program.service";
-import { roomService } from "../../../services/room.service";
-import { scheduleService } from "../../../services/schedule.service";
-import { setService } from "../../../services/set.service";
-import { subjectService } from "../../../services/subject.service";
-import type { Faculty } from "../../../types/faculty";
-import type { Program } from "../../../types/program";
-import type { Room } from "../../../types/room";
+} from "~/features/schedules/schedule-view-toggle";
+import { PageHeader } from "~/layouts/page-header";
+import { facultyService } from "~/services/faculty.service";
+import { programService } from "~/services/program.service";
+import { roomService } from "~/services/room.service";
+import { scheduleService } from "~/services/schedule.service";
+import { setService } from "~/services/set.service";
+import { subjectService } from "~/services/subject.service";
+import type { Faculty } from "~/types/faculty";
+import type { Program } from "~/types/program";
+import type { Room } from "~/types/room";
 import {
   DAYS,
   DAY_LABELS,
@@ -34,10 +34,10 @@ import {
   type CreateScheduleInput,
   type Schedule,
   type ScheduleSemester,
-} from "../../../types/schedule";
-import type { ClassSet } from "../../../types/set";
-import type { Subject } from "../../../types/subject";
-import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../../types/subject";
+} from "~/types/schedule";
+import type { ClassSet } from "~/types/set";
+import type { Subject } from "~/types/subject";
+import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "~/types/subject";
 
 export function meta() {
   return [

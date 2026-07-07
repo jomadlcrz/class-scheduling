@@ -1,5 +1,5 @@
-import { AuthLayout } from "../auth/auth-layout";
-import { ResultState } from "../components/feedback/result-state";
+import { AuthLayout } from "~/auth/auth-layout";
+import { ResultState } from "~/components/feedback/result-state";
 
 export function meta() {
   return [

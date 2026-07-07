@@ -1,5 +1,5 @@
-import type { ScheduleSummary } from "../../services/report.service";
-import { DAY_LABELS } from "../../types/schedule";
+import type { ScheduleSummary } from "~/services/report.service";
+import { DAY_LABELS } from "~/types/schedule";
 
 const DAY_ORDER = ["M", "T", "W", "Th", "F", "S"] as const;
 

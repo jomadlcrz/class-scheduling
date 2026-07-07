@@ -1,4 +1,4 @@
-import type { Day } from "../../types/schedule";
+import type { Day } from "~/types/schedule";
 
 /**
  * Per-day accent classes shared by the grid and list schedule views.

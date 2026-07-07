@@ -1,5 +1,5 @@
-import { Badge, type BadgeTone } from "../../components/ui/badge";
-import { SCHEDULE_MODE_LABELS, type ScheduleMode } from "../../types/schedule";
+import { Badge, type BadgeTone } from "~/components/ui/badge";
+import { SCHEDULE_MODE_LABELS, type ScheduleMode } from "~/types/schedule";
 
 const MODE_TONE: Record<ScheduleMode, BadgeTone> = {
   F2F: "sky",

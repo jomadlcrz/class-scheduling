@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
-import { RoleGuard } from "../../auth/role-guard";
-import { Spinner } from "../../components/ui/spinner";
-import { EnrollmentReport } from "../../features/reports/enrollment-report";
-import { ExportReport } from "../../features/reports/export-report";
-import { FacultyLoad } from "../../features/reports/faculty-load";
-import { RoomUtilization } from "../../features/reports/room-utilization";
-import { ScheduleReport } from "../../features/reports/schedule-report";
-import { PageHeader } from "../../layouts/page-header";
+import { RoleGuard } from "~/auth/role-guard";
+import { Spinner } from "~/components/ui/spinner";
+import { EnrollmentReport } from "~/features/reports/enrollment-report";
+import { ExportReport } from "~/features/reports/export-report";
+import { FacultyLoad } from "~/features/reports/faculty-load";
+import { RoomUtilization } from "~/features/reports/room-utilization";
+import { ScheduleReport } from "~/features/reports/schedule-report";
+import { PageHeader } from "~/layouts/page-header";
 import {
   type EnrollmentStats,
   type FacultyLoadRow,
   type RoomUtilizationRow,
   type ScheduleSummary,
   reportService,
-} from "../../services/report.service";
+} from "~/services/report.service";
 import {
   DEFAULT_SCHOOL_YEAR,
   SCHEDULE_SEMESTER_LABELS,
   SCHEDULE_SEMESTERS,
   SCHOOL_YEARS,
   type ScheduleSemester,
-} from "../../types/schedule";
+} from "~/types/schedule";
 
 export function meta() {
   return [

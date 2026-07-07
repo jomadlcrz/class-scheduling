@@ -1,4 +1,4 @@
-import type { FacultyLoadRow } from "../../services/report.service";
+import type { FacultyLoadRow } from "~/services/report.service";
 
 export function FacultyLoad({ rows }: { rows: FacultyLoadRow[] }) {
   if (rows.length === 0) {

@@ -1,4 +1,4 @@
-import { GridIcon, ListIcon } from "../../components/ui/icons";
+import { GridIcon, ListIcon } from "~/components/ui/icons";
 
 export type ScheduleViewMode = "grid" | "table";
 

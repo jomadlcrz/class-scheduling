@@ -1,4 +1,4 @@
-import type { BadgeTone } from "../components/ui/badge";
+import type { BadgeTone } from "~/components/ui/badge";
 
 const BUILDING_BADGE_TONES: Record<string, BadgeTone> = {
   SHS: "navy",

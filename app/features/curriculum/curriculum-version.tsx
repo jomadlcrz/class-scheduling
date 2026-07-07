@@ -1,4 +1,4 @@
-import type { ProgramCurriculum } from "../../types/curriculum";
+import type { ProgramCurriculum } from "~/types/curriculum";
 
 type CurriculumVersionProps = {
   curriculum: ProgramCurriculum;

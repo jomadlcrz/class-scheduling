@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Select } from "../../components/ui/select";
-import type { Faculty } from "../../types/faculty";
-import type { Program } from "../../types/program";
-import type { Room } from "../../types/room";
-import { scheduleSchema } from "../../schemas/schedule.schema";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Select } from "~/components/ui/select";
+import type { Faculty } from "~/types/faculty";
+import type { Program } from "~/types/program";
+import type { Room } from "~/types/room";
+import { scheduleSchema } from "~/schemas/schedule.schema";
 import {
   DAYS,
   DAY_LABELS,
@@ -21,10 +21,10 @@ import {
   type Schedule,
   type ScheduleMode,
   type ScheduleSemester,
-} from "../../types/schedule";
-import type { ClassSet } from "../../types/set";
-import type { Subject } from "../../types/subject";
-import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "../../types/subject";
+} from "~/types/schedule";
+import type { ClassSet } from "~/types/set";
+import type { Subject } from "~/types/subject";
+import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "~/types/subject";
 
 type ScheduleFormProps = {
   schedule?: Schedule;

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { FormError } from "../components/forms/form-error";
-import { Checkbox } from "../components/ui/checkbox";
-import { Input, PasswordInput } from "../components/ui/input";
-import { Spinner } from "../components/ui/spinner";
-import { loginSchema } from "../schemas/auth.schema";
-import { useAuth } from "./auth-provider";
+import { FormError } from "~/components/forms/form-error";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Input, PasswordInput } from "~/components/ui/input";
+import { Spinner } from "~/components/ui/spinner";
+import { loginSchema } from "~/schemas/auth.schema";
+import { useAuth } from "~/auth/auth-provider";
 
 export function LoginForm() {
   const { login } = useAuth();

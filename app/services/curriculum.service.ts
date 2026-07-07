@@ -1,7 +1,7 @@
-import type { CurriculumGroup, ProgramCurriculum } from "../types/curriculum";
-import type { Semester, YearLevel } from "../types/subject";
-import { programService } from "./program.service";
-import { subjectService } from "./subject.service";
+import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
+import type { Semester, YearLevel } from "~/types/subject";
+import { programService } from "~/services/program.service";
+import { subjectService } from "~/services/subject.service";
 
 async function getByProgram(programCode: string): Promise<ProgramCurriculum | null> {
   const [allSubjects, allPrograms] = await Promise.all([

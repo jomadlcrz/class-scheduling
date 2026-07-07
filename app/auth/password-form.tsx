@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FormError } from "../components/forms/form-error";
-import { PasswordInput } from "../components/ui/input";
-import { Spinner } from "../components/ui/spinner";
-import { MIN_PASSWORD_LENGTH } from "../lib/validators";
-import { makeChangePasswordSchema } from "../schemas/auth.schema";
+import { FormError } from "~/components/forms/form-error";
+import { PasswordInput } from "~/components/ui/input";
+import { Spinner } from "~/components/ui/spinner";
+import { MIN_PASSWORD_LENGTH } from "~/lib/validators";
+import { makeChangePasswordSchema } from "~/schemas/auth.schema";
 
 export type PasswordFormValues = {
   currentPassword?: string;

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FormError } from "../../components/forms/form-error";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
-import type { Program } from "../../types/program";
+import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
+import type { Program } from "~/types/program";
 import {
   SEMESTER_LABELS,
   SEMESTERS,
@@ -16,9 +16,9 @@ import {
   type Subject,
   type SubjectType,
   type YearLevel,
-} from "../../types/subject";
-import { subjectSchema } from "../../schemas/subject.schema";
-import { PrerequisitePicker } from "./prerequisite-picker";
+} from "~/types/subject";
+import { subjectSchema } from "~/schemas/subject.schema";
+import { PrerequisitePicker } from "~/features/subjects/prerequisite-picker";
 
 type SubjectFormProps = {
   /** The subject being edited. */

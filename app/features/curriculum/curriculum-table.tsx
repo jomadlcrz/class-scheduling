@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ChevronDownIcon, ChevronRightIcon } from "../../components/ui/icons";
-import type { CurriculumGroup, ProgramCurriculum } from "../../types/curriculum";
-import { SEMESTER_LABELS, YEAR_LEVEL_LABELS } from "../../types/subject";
-import type { YearLevel } from "../../types/subject";
-import { CurriculumSubjects } from "./curriculum-subjects";
+import { ChevronDownIcon, ChevronRightIcon } from "~/components/ui/icons";
+import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
+import { SEMESTER_LABELS, YEAR_LEVEL_LABELS } from "~/types/subject";
+import type { YearLevel } from "~/types/subject";
+import { CurriculumSubjects } from "~/features/curriculum/curriculum-subjects";
 
 type CurriculumTableProps = {
   curriculum: ProgramCurriculum;

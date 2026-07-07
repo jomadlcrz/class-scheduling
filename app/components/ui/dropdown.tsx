@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { MoreVerticalIcon } from "./icons";
+import { MoreVerticalIcon } from "~/components/ui/icons";
 
 type DropdownItem = {
   label: string;
