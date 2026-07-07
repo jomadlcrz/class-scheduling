@@ -381,81 +381,79 @@ function SchedulesNewPage() {
           <Spinner />
         </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-4">
+        <div className="mt-4 flex flex-col gap-4">
           {/* Context filter row */}
-          <div className="rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              <Select
-                id="ctx-school-year"
-                label="School Year"
-                value={schoolYear}
-                onChange={(e) => setSchoolYear(e.target.value)}
-                disabled={contextLocked}
-                hint={lockHint}
-              >
-                {SCHOOL_YEARS.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </Select>
-              <Select
-                id="ctx-year-level"
-                label="Year Level"
-                value={selectedYearLevel}
-                onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
-                disabled={contextLocked}
-                hint={lockHint}
-              >
-                {availableYearLevels.length === 0 ? (
-                  <option value="">No year levels</option>
-                ) : (
-                  availableYearLevels.map((yl) => (
-                    <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <Select
+              id="ctx-school-year"
+              label="School Year"
+              value={schoolYear}
+              onChange={(e) => setSchoolYear(e.target.value)}
+              disabled={contextLocked}
+              hint={lockHint}
+            >
+              {SCHOOL_YEARS.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </Select>
+            <Select
+              id="ctx-year-level"
+              label="Year Level"
+              value={selectedYearLevel}
+              onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
+              disabled={contextLocked}
+              hint={lockHint}
+            >
+              {availableYearLevels.length === 0 ? (
+                <option value="">No year levels</option>
+              ) : (
+                availableYearLevels.map((yl) => (
+                  <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+                ))
+              )}
+            </Select>
+            <Select
+              id="ctx-semester"
+              label="Semester"
+              value={semester}
+              onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
+              disabled={contextLocked}
+              hint={lockHint}
+            >
+              {SCHEDULE_SEMESTERS.map((s) => (
+                <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
+              ))}
+            </Select>
+            <Select
+              id="ctx-program"
+              label="Program"
+              value={selectedProgram}
+              onChange={(e) => handleProgramChange(e.target.value)}
+              disabled={contextLocked}
+              hint={lockHint}
+            >
+              {pageData.programs.map((p) => (
+                <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
+              ))}
+            </Select>
+            <Select
+              id="ctx-set"
+              label="Set"
+              value={selectedSetId}
+              onChange={(e) => setSelectedSetId(e.target.value)}
+              disabled={contextLocked}
+              hint={lockHint}
+            >
+              {availableSets.length === 0 ? (
+                <option value="">No sets</option>
+              ) : (
+                [...availableSets]
+                  .sort((a, b) => a.setCode.localeCompare(b.setCode))
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>{s.program}-{s.yearLevel}{s.setCode}</option>
                   ))
-                )}
-              </Select>
-              <Select
-                id="ctx-semester"
-                label="Semester"
-                value={semester}
-                onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-                disabled={contextLocked}
-                hint={lockHint}
-              >
-                {SCHEDULE_SEMESTERS.map((s) => (
-                  <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
-                ))}
-              </Select>
-              <Select
-                id="ctx-program"
-                label="Program"
-                value={selectedProgram}
-                onChange={(e) => handleProgramChange(e.target.value)}
-                disabled={contextLocked}
-                hint={lockHint}
-              >
-                {pageData.programs.map((p) => (
-                  <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
-                ))}
-              </Select>
-              <Select
-                id="ctx-set"
-                label="Set"
-                value={selectedSetId}
-                onChange={(e) => setSelectedSetId(e.target.value)}
-                disabled={contextLocked}
-                hint={lockHint}
-              >
-                {availableSets.length === 0 ? (
-                  <option value="">No sets</option>
-                ) : (
-                  [...availableSets]
-                    .sort((a, b) => a.setCode.localeCompare(b.setCode))
-                    .map((s) => (
-                      <option key={s.id} value={s.id}>{s.program}-{s.yearLevel}{s.setCode}</option>
-                    ))
-                )}
-              </Select>
-            </div>
+              )}
+            </Select>
           </div>
 
           <FormError message={saveError} />

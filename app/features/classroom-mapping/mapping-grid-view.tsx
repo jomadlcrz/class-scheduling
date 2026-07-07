@@ -94,7 +94,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
           return (
             <div key={day} style={{ display: "contents" }}>
               <div
-                className={`py-1.5 ${di > 0 ? "border-t border-slate-100 dark:border-white/10" : ""}`}
+                className={`border-t-2 border-slate-200 px-2 py-1 first:border-t-0 dark:border-white/10`}
                 style={{ gridColumn: `1 / ${TIME_SLOTS.length + 1}` }}
               >
                 <span
@@ -108,7 +108,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
                 <div
                   key={`${day}-cell-${idx}`}
                   style={{ gridColumn: `span ${cell.kind === "class" ? cell.colspan : 1}` }}
-                  className={`border-t border-slate-200 p-1.5 dark:border-white/8 ${idx > 0 ? "border-l border-slate-200 dark:border-white/8" : "border-l-0"}`}
+                  className="border border-slate-200 p-2 dark:border-white/8"
                 >
                   {cell.kind === "class" ? (
                     <ClassCard entry={cell.entry} />

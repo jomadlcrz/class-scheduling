@@ -172,8 +172,8 @@ function RegularClassPage() {
         }
       />
 
-      {/* Filter bar */}
-      <div className="mt-6 rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
+      {/* Filters */}
+      <div className="mt-4 flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <Select
             id="rc-school-year"
