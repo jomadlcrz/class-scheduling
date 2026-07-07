@@ -17,7 +17,7 @@ const actionBtn =
   "grid size-7 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 const th =
-  "px-3 py-2.5 font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400";
+  "px-3 py-2 font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 
 /** Schedule table: stacked cards on mobile, a single grouped table on sm and up. */
 export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: ScheduleTableProps) {
@@ -56,9 +56,9 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
       </div>
 
       {/* sm+: single grouped table (scrolls horizontally if cramped) */}
-      <div className="scrollbar-thin hidden overflow-x-auto rounded-xl border border-slate-200 bg-white/60 sm:block dark:border-white/10 dark:bg-white/5">
+      <div className="scrollbar-thin hidden overflow-x-auto rounded-xl border border-slate-300 bg-white sm:block dark:border-white/10 dark:bg-white/5">
         <table className="w-full min-w-176 border-collapse text-left font-body text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+          <thead className="border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-navy-900">
             <tr>
               <th className={`${th} text-center`}>Day</th>
               <th className={`${th} whitespace-nowrap`}>Time</th>
@@ -81,7 +81,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
                 <tr
                   key={sched.id}
                   className={`group transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/5 ${
-                    i === 0 ? `border-t-2 ${accent.topBorder}` : "border-t border-slate-100 dark:border-white/5"
+                    i === 0 ? `border-t-2 ${accent.topBorder}` : "border-t border-slate-200 dark:border-white/10"
                   }`}
                 >
                   {i === 0 && (
@@ -171,13 +171,13 @@ function MobileDayCard({
 }) {
   const accent = DAY_ACCENT[day];
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5">
+    <div className="overflow-hidden rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
       <div
         className={`border-l-4 px-4 py-2 font-body text-sm font-semibold ${accent.borderL} ${accent.cellBg} ${accent.text}`}
       >
         {DAY_LABELS[day]}
       </div>
-      <ul className="divide-y divide-slate-100 dark:divide-white/5">
+      <ul className="divide-y divide-slate-200 dark:divide-white/10">
         {slots.map((sched) => (
           <li key={sched.id} className="flex flex-col gap-1.5 p-3">
             <div className="flex items-center justify-between gap-2">

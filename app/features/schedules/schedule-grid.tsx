@@ -31,11 +31,11 @@ export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: Sched
   const showActions = Boolean(onEdit || onDelete || onDuplicate);
 
   return (
-    <div className="scrollbar-thin overflow-x-auto rounded-xl border border-slate-200 bg-white/60 dark:border-white/10 dark:bg-white/5">
+    <div className="scrollbar-thin overflow-x-auto rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
       <div className="min-w-4xl">
         {/* Header row */}
         <div
-          className="grid border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5"
+          className="grid border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-navy-900"
           style={{ gridTemplateColumns: GRID_TEMPLATE }}
         >
           <HeaderCell>Time</HeaderCell>
@@ -48,22 +48,22 @@ export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: Sched
         {timeRows.map((row) => (
           <div
             key={`${row.startTime}-${row.endTime}`}
-            className="grid border-b border-slate-100 last:border-b-0 dark:border-white/5"
+            className="grid"
             style={{ gridTemplateColumns: GRID_TEMPLATE }}
           >
-            <div className="flex flex-col items-center justify-center gap-0.5 border-r border-slate-100 px-2 py-3 text-center font-body text-xs font-semibold text-slate-600 dark:border-white/5 dark:text-slate-300">
+            <div className="flex flex-col items-center justify-center gap-0.5 border-t border-r border-slate-200 px-2 py-2.5 text-center font-body text-xs font-semibold text-slate-600 dark:border-white/8 dark:text-slate-300">
               <span>{formatTime(row.startTime)}</span>
               <span className="text-slate-400 dark:text-slate-500">{formatTime(row.endTime)}</span>
             </div>
 
-            {DAYS.map((day) => {
+            {DAYS.map((day, di) => {
               const cellEntries = schedules.filter(
                 (s) => s.day === day && s.startTime === row.startTime && s.endTime === row.endTime,
               );
               return (
                 <div
                   key={day}
-                  className="flex min-h-26 flex-col gap-1.5 border-r border-slate-100 p-1.5 last:border-r-0 dark:border-white/5"
+                  className={`flex min-h-26 flex-col gap-1.5 border-t border-slate-200 p-1.5 dark:border-white/8 ${di > 0 ? "border-l border-slate-200 dark:border-white/8" : ""}`}
                 >
                   {cellEntries.map((entry) => (
                     <GridClassCard
@@ -88,7 +88,7 @@ export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: Sched
 
 function HeaderCell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border-r border-slate-200 px-2 py-2.5 text-center font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 last:border-r-0 dark:border-white/10 dark:text-slate-400">
+    <div className="border-r border-slate-300 px-2 py-2 text-center font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 last:border-r-0 dark:border-white/10 dark:text-slate-400">
       {children}
     </div>
   );
@@ -112,7 +112,7 @@ function GridClassCard({
   const accent = DAY_ACCENT[entry.day as Day];
   return (
     <article
-      className={`flex flex-col gap-1 rounded-lg border border-l-4 border-slate-200 p-2 dark:border-white/10 ${accent.borderL} ${accent.cardBg}`}
+      className={`flex flex-col gap-1 rounded-lg border border-l-4 border-slate-300 p-2 dark:border-white/10 ${accent.borderL} ${accent.cardBg}`}
     >
       <div className="flex items-start justify-between gap-1.5">
         <strong className="font-body text-xs font-semibold text-navy-700 dark:text-white">
@@ -132,7 +132,7 @@ function GridClassCard({
         {entry.roomName}
       </small>
       {showActions && (
-        <div className="mt-0.5 flex items-center justify-end gap-0.5 border-t border-slate-100 pt-1 dark:border-white/5">
+        <div className="mt-0.5 flex items-center justify-end gap-0.5 border-t border-slate-200 pt-1 dark:border-white/8">
           {onDuplicate && (
             <Popover
               label="Duplicate to another day"
