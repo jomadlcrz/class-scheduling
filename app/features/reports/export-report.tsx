@@ -1,3 +1,5 @@
+import { Card } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { PrinterIcon } from "~/components/ui/icons";
 
 export function ExportReport() {
@@ -7,12 +9,12 @@ export function ExportReport() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
+      <Card className="p-5">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500">
             <PrinterIcon />
           </span>
-          <div>
+          <div className="flex-1">
             <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
               Print Report
             </p>
@@ -20,19 +22,22 @@ export function ExportReport() {
               Use your browser's print dialog to save or print the current report view.
               Switch to the report tab you want to export before printing.
             </p>
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-navy-700 px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-gold-500 dark:text-navy-900 dark:hover:bg-gold-400"
-            >
-              <PrinterIcon />
-              Print / Save as PDF
-            </button>
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="primary"
+                block={false}
+                onClick={handlePrint}
+              >
+                <PrinterIcon />
+                Print / Save as PDF
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="rounded-xl border border-slate-100 bg-slate-50 p-5 dark:border-white/8 dark:bg-white/3">
+      <Card className="border-dashed bg-transparent p-5 dark:bg-transparent">
         <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
           Export Note
         </p>
@@ -40,7 +45,7 @@ export function ExportReport() {
           CSV and Excel export will be available in a future release. For now, use Print and
           select "Save as PDF" in your browser's print dialog to create a document.
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

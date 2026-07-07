@@ -12,7 +12,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 const roleTones: Record<Role, BadgeTone> = {
   admin: "gold",
   registrar: "navy",
-  dean: "emerald",
+  dean: "violet",
   faculty: "slate",
   student: "sky",
 };

@@ -25,7 +25,7 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
       <TableHead>
         <TableHeader>Name</TableHeader>
         <TableHeader>Code</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Floors</TableHeader>
+        <TableHeader className="hidden sm:table-cell text-center">Floors</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -39,7 +39,7 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
             <TableCell>
               <Badge tone={getBuildingTone(building.code)}>{building.code}</Badge>
             </TableCell>
-            <TableCell className="hidden sm:table-cell">{building.floorCount}</TableCell>
+            <TableCell className="hidden sm:table-cell text-center">{building.floorCount}</TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">
                 <button

@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { getBuildingTone } from "~/types/building";
-import { getDeptTone, type Department } from "~/types/department";
+import type { Department } from "~/types/department";
 
 type DepartmentTableProps = {
   departments: Department[];
@@ -24,8 +24,8 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
   return (
     <Table>
       <TableHead>
-        <TableHeader>Code</TableHeader>
-        <TableHeader>Name</TableHeader>
+        <TableHeader>Logo</TableHeader>
+        <TableHeader>Department Name</TableHeader>
         <TableHeader className="hidden sm:table-cell">Building</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -35,7 +35,11 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
         {departments.map((dept) => (
           <TableRow key={dept.id}>
             <TableCell>
-              <Badge tone={getDeptTone(dept.code)}>{dept.code}</Badge>
+              <img
+                src={`/images/departments/${dept.code.toLowerCase()}.avif`}
+                alt={`${dept.code} logo`}
+                className="size-10 rounded-lg object-contain"
+              />
             </TableCell>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-white">{dept.name}</span>

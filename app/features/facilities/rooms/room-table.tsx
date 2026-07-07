@@ -33,8 +33,8 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
       <TableHead>
         <TableHeader>Room</TableHeader>
         <TableHeader>Building</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Floor</TableHeader>
-        <TableHeader className="hidden md:table-cell">Capacity</TableHeader>
+        <TableHeader className="hidden sm:table-cell text-center">Floor</TableHeader>
+        <TableHeader className="hidden md:table-cell text-center">Capacity</TableHeader>
         <TableHeader className="hidden sm:table-cell">Type</TableHeader>
         <TableHeader>Status</TableHeader>
         <TableHeader>
@@ -50,8 +50,8 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
             <TableCell>
               <Badge tone={getBuildingTone(room.buildingCode)}>{room.buildingCode}</Badge>
             </TableCell>
-            <TableCell className="hidden sm:table-cell">{room.floor}</TableCell>
-            <TableCell className="hidden md:table-cell">{room.capacity}</TableCell>
+            <TableCell className="hidden sm:table-cell text-center">{room.floor}</TableCell>
+            <TableCell className="hidden md:table-cell text-center">{room.capacity}</TableCell>
             <TableCell className="hidden sm:table-cell">{ROOM_TYPE_LABELS[room.type]}</TableCell>
             <TableCell>
               <Badge tone={statusTone[room.status] ?? "slate"}>

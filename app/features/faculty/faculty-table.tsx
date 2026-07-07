@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { getDeptTone } from "~/types/department";
 import {
   FACULTY_STATUS_LABELS,
   FACULTY_STATUS_TONES,
@@ -49,7 +48,14 @@ export function FacultyTable({ faculty, onEdit, onDelete }: FacultyTableProps) {
               {member.email}
             </TableCell>
             <TableCell>
-              <Badge tone={getDeptTone(member.departmentCode)}>{member.departmentCode}</Badge>
+              <div className="flex items-center gap-2">
+                <img
+                  src={`/images/departments/${member.departmentCode.toLowerCase()}.avif`}
+                  alt={`${member.departmentCode} logo`}
+                  className="size-8 rounded-lg object-contain"
+                />
+                <span className="text-slate-600 dark:text-slate-300">{member.departmentCode}</span>
+              </div>
             </TableCell>
             <TableCell className="hidden md:table-cell">{member.specialization}</TableCell>
             <TableCell>

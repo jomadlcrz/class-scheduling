@@ -35,7 +35,7 @@ export function SubjectTable({ subjects, allSubjects, programs, onEdit, onDelete
   return (
     <Table>
       <TableHead>
-        <TableHeader>Code</TableHeader>
+        <TableHeader>Subject Code</TableHeader>
         <TableHeader>Descriptive Title</TableHeader>
         <TableHeader className="hidden sm:table-cell">Program</TableHeader>
         <TableHeader className="hidden sm:table-cell">Year & Semester</TableHeader>

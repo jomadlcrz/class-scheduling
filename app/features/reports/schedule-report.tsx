@@ -1,3 +1,4 @@
+import { Card } from "~/components/ui/card";
 import type { ScheduleSummary } from "~/services/report.service";
 import { DAY_LABELS } from "~/types/schedule";
 
@@ -9,18 +10,17 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
+      <Card className="p-5">
         <p className="font-body text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
           Total Schedules
         </p>
         <p className="mt-1 font-display text-4xl font-bold text-navy-700 dark:text-white">
           {data.totalSchedules}
         </p>
-      </div>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* By Program */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
+        <Card className="p-5">
           <h3 className="mb-4 font-body text-sm font-semibold text-slate-700 dark:text-slate-200">
             By Program
           </h3>
@@ -48,10 +48,9 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
               ))}
             </ul>
           )}
-        </div>
+        </Card>
 
-        {/* By Day */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
+        <Card className="p-5">
           <h3 className="mb-4 font-body text-sm font-semibold text-slate-700 dark:text-slate-200">
             By Day
           </h3>
@@ -83,7 +82,7 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
               })}
             </ul>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

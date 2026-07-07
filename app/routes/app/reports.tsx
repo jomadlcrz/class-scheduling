@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
+import { Card } from "~/components/ui/card";
+import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { EnrollmentReport } from "~/features/reports/enrollment-report";
 import { ExportReport } from "~/features/reports/export-report";
@@ -85,46 +87,37 @@ function ReportsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-6">
-        {/* Filters */}
         {needsFilter && (
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2">
-              <span className="font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                School Year
-              </span>
-              <select
-                value={schoolYear}
-                onChange={(e) => setSchoolYear(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-body text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-navy-800 dark:[&>option]:text-white"
-              >
-                {SCHOOL_YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="flex items-center gap-2">
-              <span className="font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Semester
-              </span>
-              <select
-                value={semester}
-                onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-body text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-gold-400 dark:border-white/10 dark:bg-navy-800 dark:text-white [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-navy-800 dark:[&>option]:text-white"
-              >
-                {SCHEDULE_SEMESTERS.map((s) => (
-                  <option key={s} value={s}>
-                    {SCHEDULE_SEMESTER_LABELS[s]}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          <Card className="flex flex-wrap items-end gap-4 p-4">
+            <Select
+              id="school-year"
+              label="School Year"
+              hideLabel
+              value={schoolYear}
+              onChange={(e) => setSchoolYear(e.target.value)}
+            >
+              {SCHOOL_YEARS.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </Select>
+            <Select
+              id="semester"
+              label="Semester"
+              hideLabel
+              value={semester}
+              onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
+            >
+              {SCHEDULE_SEMESTERS.map((s) => (
+                <option key={s} value={s}>
+                  {SCHEDULE_SEMESTER_LABELS[s]}
+                </option>
+              ))}
+            </Select>
+          </Card>
         )}
 
-        {/* Tabs */}
         <div>
           <div
             role="tablist"

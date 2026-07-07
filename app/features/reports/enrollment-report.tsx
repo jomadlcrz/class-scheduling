@@ -1,3 +1,4 @@
+import { Card } from "~/components/ui/card";
 import type { EnrollmentStats } from "~/services/report.service";
 
 const YEAR_LABELS: Record<number, string> = {
@@ -26,8 +27,7 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* By Program */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
+        <Card className="p-5">
           <h3 className="mb-4 font-body text-sm font-semibold text-slate-700 dark:text-slate-200">
             By Program
           </h3>
@@ -55,10 +55,9 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
               ))}
             </ul>
           )}
-        </div>
+        </Card>
 
-        {/* By Year Level */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
+        <Card className="p-5">
           <h3 className="mb-4 font-body text-sm font-semibold text-slate-700 dark:text-slate-200">
             By Year Level
           </h3>
@@ -89,7 +88,7 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
               })}
             </ul>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );
@@ -105,7 +104,7 @@ function StatCard({
   accent?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/3">
+    <Card className="p-4">
       <p className="font-body text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
         {label}
       </p>
@@ -116,6 +115,6 @@ function StatCard({
       >
         {value}
       </p>
-    </div>
+    </Card>
   );
 }

@@ -27,7 +27,7 @@ import type { Role } from "~/types/user";
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 
 type NavLeaf = { label: string; to: string; roles: Role[] };
-type NavItem = NavLeaf & { icon: ReactNode; subItems?: undefined };
+type NavItem = NavLeaf & { icon: ReactNode; subItems?: undefined; matchPrefix?: boolean };
 type NavSubmenu = {
   label: string;
   icon: ReactNode;
@@ -43,31 +43,32 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Overview",
     items: [{ label: "Dashboard", to: "/dashboard", icon: <DashboardIcon />, roles: ALL_ROLES }],
   },
-  {
-    label: "Scheduling",
-    items: [
       {
-        label: "Schedules",
-        icon: <CalendarIcon />,
-        roles: ["admin", "registrar", "dean"],
-        subItems: [
-          { label: "Weekly Hours", to: "/schedules/weekly-hours", roles: ["admin", "registrar", "dean"] },
-          { label: "Regular Class", to: "/schedules/regular-class", roles: ["admin", "registrar", "dean"] },
-          { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["admin", "registrar", "dean"] },
+        label: "Scheduling",
+        items: [
+          {
+            label: "Schedules",
+            icon: <CalendarIcon />,
+            roles: ["admin", "registrar", "dean"],
+            subItems: [
+              { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["admin", "registrar", "dean"] },
+              { label: "Weekly Hours", to: "/schedules/weekly-hours", roles: ["admin", "registrar", "dean"] },
+              { label: "Regular Class", to: "/schedules/regular-class", roles: ["admin", "registrar", "dean"] },
+              { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["admin", "registrar", "dean"] },
+            ],
+          },
+          { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
+          { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
+          { label: "Conflicts", to: "/conflicts", icon: <AlertTriangleIcon />, roles: ["admin", "registrar", "dean", "faculty"] },
         ],
       },
-      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
-      { label: "Conflicts", to: "/conflicts", icon: <AlertTriangleIcon />, roles: ["admin", "registrar", "dean", "faculty"] },
-    ],
-  },
   {
     label: "Academics",
     items: [
       { label: "Curriculum", to: "/curriculum", icon: <BookOpenIcon />, roles: ["admin", "registrar", "dean"] },
       { label: "Departments", to: "/departments", icon: <FolderIcon />, roles: ["admin", "registrar", "dean"] },
       { label: "Programs", to: "/programs", icon: <GraduationCapIcon />, roles: ["admin", "registrar", "dean"] },
-      { label: "Subjects", to: "/subjects", icon: <BookIcon />, roles: ["admin", "registrar", "dean"] },
+      { label: "Subjects", to: "/subjects", icon: <BookIcon />, roles: ["admin", "registrar", "dean"], matchPrefix: true },
       { label: "Sets", to: "/sets", icon: <LayersIcon />, roles: ["admin", "registrar", "dean"] },
       { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin", "registrar", "dean"] },
     ],
@@ -77,7 +78,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Buildings", to: "/buildings", icon: <BuildingIcon />, roles: ["admin", "registrar"] },
       { label: "Rooms", to: "/rooms", icon: <DoorIcon />, roles: ["admin", "registrar"] },
-      { label: "Classroom Mapping", to: "/classroom-mapping", icon: <LayoutIcon />, roles: ["admin", "registrar", "dean"] },
     ],
   },
   {
@@ -209,12 +209,10 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
       <header
         className={`flex items-center gap-2.5 px-4 pb-3 pt-4 ${collapsed ? "justify-center px-0" : ""}`}
       >
-        <motion.img
+        <img
           src="/images/logos/gwc-logo.avif"
           alt="GWC logo"
           className="size-9 shrink-0 object-contain"
-          layout
-          transition={{ duration: 0.2 }}
         />
         <AnimatePresence mode="wait">
           {!collapsed && (
@@ -336,7 +334,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                     <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
                       <NavLink
                         to={item.to}
-                        end
+                        end={!item.matchPrefix}
                         onClick={onNavigate}
                         className={({ isActive }) =>
                           `${itemClassName(isActive)} ${collapsed ? "justify-center px-0" : ""} ${

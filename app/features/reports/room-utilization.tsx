@@ -1,4 +1,12 @@
 import type { RoomUtilizationRow } from "~/services/report.service";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 
 export function RoomUtilization({ rows }: { rows: RoomUtilizationRow[] }) {
   if (rows.length === 0) {
@@ -12,56 +20,35 @@ export function RoomUtilization({ rows }: { rows: RoomUtilizationRow[] }) {
   const maxHours = Math.max(...rows.map((r) => r.totalHours), 1);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10">
-      <table className="w-full min-w-140">
-        <thead>
-          <tr className="border-b border-slate-100 bg-slate-50 dark:border-white/8 dark:bg-white/3">
-            <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Room
-            </th>
-            <th className="px-4 py-3 text-right font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Sessions
-            </th>
-            <th className="px-4 py-3 text-right font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Total Hours
-            </th>
-            <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Usage
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 bg-white dark:divide-white/8 dark:bg-transparent">
-          {rows.map((row) => (
-            <tr
-              key={row.roomId}
-              className="hover:bg-slate-50 dark:hover:bg-white/3"
-            >
-              <td className="px-4 py-3">
-                <p className="font-body text-sm font-medium text-slate-800 dark:text-slate-100">
-                  {row.roomName}
-                </p>
-                <p className="font-body text-xs text-slate-400 dark:text-slate-500">
-                  {row.buildingCode}
-                </p>
-              </td>
-              <td className="px-4 py-3 text-right font-body text-sm text-slate-700 dark:text-slate-300">
-                {row.scheduledCount}
-              </td>
-              <td className="px-4 py-3 text-right font-body text-sm font-medium text-navy-700 dark:text-white">
-                {row.totalHours.toFixed(1)} hrs
-              </td>
-              <td className="px-4 py-3">
-                <div className="h-2 w-full max-w-30 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
-                  <div
-                    className="h-2 rounded-full bg-gold-500 dark:bg-gold-400"
-                    style={{ width: `${(row.totalHours / maxHours) * 100}%` }}
-                  />
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table>
+      <TableHead>
+        <TableHeader>Room</TableHeader>
+        <TableHeader className="text-center">Sessions</TableHeader>
+        <TableHeader className="text-right">Total Hours</TableHeader>
+        <TableHeader>Usage</TableHeader>
+      </TableHead>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.roomId}>
+            <TableCell>
+              <p className="font-medium text-slate-800 dark:text-slate-100">{row.roomName}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">{row.buildingCode}</p>
+            </TableCell>
+            <TableCell className="text-center">{row.scheduledCount}</TableCell>
+            <TableCell className="text-right font-medium text-navy-700 dark:text-white">
+              {row.totalHours.toFixed(1)} hrs
+            </TableCell>
+            <TableCell>
+              <div className="h-2 w-30 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+                <div
+                  className="h-2 rounded-full bg-gold-500 dark:bg-gold-400"
+                  style={{ width: `${(row.totalHours / maxHours) * 100}%` }}
+                />
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

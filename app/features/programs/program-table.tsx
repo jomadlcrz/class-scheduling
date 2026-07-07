@@ -1,4 +1,3 @@
-import { Badge } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
@@ -8,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { getDeptTone } from "~/types/department";
 import type { Program } from "~/types/program";
 import { PROGRAM_TYPE_LABELS } from "~/types/program";
 
@@ -25,11 +23,10 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
   return (
     <Table>
       <TableHead>
-        <TableHeader>Code</TableHeader>
-        <TableHeader>Name</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Department</TableHeader>
+        <TableHeader>Logo &amp; Code</TableHeader>
+        <TableHeader>Program Name</TableHeader>
         <TableHeader className="hidden md:table-cell">Type</TableHeader>
-        <TableHeader className="hidden md:table-cell">Years</TableHeader>
+        <TableHeader className="hidden md:table-cell text-center">Years</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -38,16 +35,22 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
         {programs.map((prog) => (
           <TableRow key={prog.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">{prog.code}</span>
+              <div className="flex items-center gap-3">
+                <img
+                  src={`/images/departments/${prog.departmentCode.toLowerCase()}.avif`}
+                  alt={`${prog.departmentCode} logo`}
+                  className="size-10 rounded-lg object-contain"
+                />
+                <div>
+                  <span className="font-medium text-navy-700 dark:text-white">{prog.code}</span>
+                </div>
+              </div>
             </TableCell>
             <TableCell>{prog.name}</TableCell>
-            <TableCell className="hidden sm:table-cell">
-              <Badge tone={getDeptTone(prog.departmentCode)}>{prog.departmentCode}</Badge>
-            </TableCell>
             <TableCell className="hidden md:table-cell">
               {PROGRAM_TYPE_LABELS[prog.type]}
             </TableCell>
-            <TableCell className="hidden md:table-cell">{prog.lengthYears}</TableCell>
+            <TableCell className="hidden md:table-cell text-center">{prog.lengthYears}</TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">
                 <button
