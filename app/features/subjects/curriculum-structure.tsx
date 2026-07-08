@@ -3,7 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { DropdownMenu } from "~/components/ui/dropdown";
 import { EmptyState } from "~/components/ui/empty-state";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
-import { getHoursForSubjectType } from "~/lib/weekly-hours";
+import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import {
   SEMESTER_LABELS,
   SEMESTERS,
@@ -13,7 +13,6 @@ import {
   type Subject,
   type SubjectType,
 } from "~/types/subject";
-import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 
 export type PendingEntry = CreateSubjectInput & { tempId: string };
 
@@ -116,7 +115,7 @@ export function CurriculumStructure({
                             {row.title}
                           </span>
                           <span className="shrink-0 text-slate-500 dark:text-slate-400">
-                            {(() => { const h = getHoursForSubjectType(row.subjectType); return `${row.units} units · ${h.lectureHours} lec${h.labHours > 0 ? ` / ${h.labHours} lab` : ""}`; })()}
+                            {row.units} units
                           </span>
                           <span className="shrink-0">
                             <SubjectTypeBadge type={row.subjectType} />
