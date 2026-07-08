@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/ui/empty-state";
+import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumForm } from "~/features/curriculum/curriculum-form";
 import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
@@ -29,6 +30,7 @@ function CurriculumPage() {
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [selectedCode, setSelectedCode] = useState("");
   const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     curriculumService.listPrograms().then((list) => {
@@ -81,7 +83,19 @@ function CurriculumPage() {
             {curriculum.programName} has no subjects in the curriculum yet. Add subjects to get started.
           </EmptyState>
         ) : (
-          <CurriculumTable curriculum={curriculum} />
+          <>
+            <div className="max-w-xs">
+              <Input
+                id="curriculum-search"
+                label="Search"
+                type="search"
+                placeholder="Code or title…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <CurriculumTable curriculum={curriculum} search={search} />
+          </>
         )}
       </div>
     </div>
