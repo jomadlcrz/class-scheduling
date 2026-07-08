@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/ui/empty-state";
+import { PrinterIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
+import { Tooltip } from "~/components/ui/tooltip";
 import { CurriculumForm } from "~/features/curriculum/curriculum-form";
 import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
+import { openCurriculumPrint } from "~/features/curriculum/print-curriculum";
 import { PageHeader } from "~/layouts/page-header";
 import { curriculumService } from "~/services/curriculum.service";
 import type { ProgramCurriculum } from "~/types/curriculum";
@@ -84,15 +87,27 @@ function CurriculumPage() {
           </EmptyState>
         ) : (
           <>
-            <div className="max-w-xs">
-              <Input
-                id="curriculum-search"
-                label="Search"
-                type="search"
-                placeholder="Code or title…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex items-end justify-between gap-3">
+              <div className="max-w-xs flex-1">
+                <Input
+                  id="curriculum-search"
+                  label="Search"
+                  type="search"
+                  placeholder="Code or title…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Tooltip label="Print curriculum">
+                <button
+                  type="button"
+                  aria-label="Print curriculum"
+                  onClick={() => openCurriculumPrint(curriculum)}
+                  className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <PrinterIcon />
+                </button>
+              </Tooltip>
             </div>
             <CurriculumTable curriculum={curriculum} search={search} />
           </>

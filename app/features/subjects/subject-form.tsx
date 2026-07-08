@@ -150,15 +150,14 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
           required
           defaultValue={subject.units}
         />
+        <Select id="subject-type" label="Subject Type" defaultValue={subject.subjectType}>
+          {SUBJECT_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {SUBJECT_TYPE_LABELS[type]}
+            </option>
+          ))}
+        </Select>
       </div>
-
-      <Select id="subject-type" label="Subject Type" defaultValue={subject.subjectType}>
-        {SUBJECT_TYPES.map((type) => (
-          <option key={type} value={type}>
-            {SUBJECT_TYPE_LABELS[type]}
-          </option>
-        ))}
-      </Select>
 
       <PrerequisitePicker
         options={prerequisiteOptions}
