@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { programSchema } from "~/schemas/program.schema";
 import type { Department } from "~/types/department";
@@ -18,7 +18,9 @@ type ProgramFormProps = {
 export function ProgramForm({ program, departments, onSubmit, onCancel }: ProgramFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<ProgramType>(program?.type ?? PROGRAM_TYPES[0]);
   const isEdit = Boolean(program);
+  const computedYears = PROGRAM_TYPE_YEARS[selectedType];
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,7 +29,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
     const code = String(data.get("prog-code") ?? "").trim().toUpperCase();
     const name = String(data.get("prog-name") ?? "").trim();
     const type = String(data.get("prog-type")) as ProgramType;
-    const lengthYears = Number(data.get("prog-years"));
+    const lengthYears = PROGRAM_TYPE_YEARS[type];
 
     const result = programSchema.safeParse({ departmentId, code, name, type, lengthYears });
     if (!result.success) {
@@ -68,7 +70,12 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           placeholder="BSIS"
           defaultValue={program?.code ?? ""}
         />
-        <Select id="prog-type" label="Type" defaultValue={program?.type ?? PROGRAM_TYPES[0]}>
+        <Select
+          id="prog-type"
+          label="Type"
+          defaultValue={program?.type ?? PROGRAM_TYPES[0]}
+          onChange={(e) => setSelectedType(e.target.value as ProgramType)}
+        >
           {PROGRAM_TYPES.map((t) => (
             <option key={t} value={t}>
               {PROGRAM_TYPE_LABELS[t]}
@@ -83,15 +90,16 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
         placeholder="Bachelor of Science in Information Systems"
         defaultValue={program?.name ?? ""}
       />
-      <Input
-        id="prog-years"
-        label="Length (Years)"
-        type="number"
-        required
-        min={1}
-        max={6}
-        defaultValue={program?.lengthYears ?? PROGRAM_TYPE_YEARS["bachelor"]}
-      />
+      <FieldChrome id="prog-years" label="Length (Years)">
+        <input
+          id="prog-years"
+          name="prog-years"
+          type="number"
+          value={computedYears}
+          readOnly
+          className={`${inputClassName} read-only:cursor-default read-only:bg-slate-100 read-only:dark:bg-white/10`}
+        />
+      </FieldChrome>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
