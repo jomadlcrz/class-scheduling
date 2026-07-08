@@ -3,9 +3,8 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/ui/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumForm } from "~/features/curriculum/curriculum-form";
-import { CurriculumPrograms } from "~/features/curriculum/curriculum-programs";
+import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
-import { CurriculumVersion } from "~/features/curriculum/curriculum-version";
 import { PageHeader } from "~/layouts/page-header";
 import { curriculumService } from "~/services/curriculum.service";
 import type { ProgramCurriculum } from "~/types/curriculum";
@@ -58,10 +57,11 @@ function CurriculumPage() {
       />
 
       <div className="mt-6 flex flex-col gap-5">
-        <CurriculumPrograms
+        <CurriculumHeader
           programs={programs ?? []}
           selected={selectedCode}
           onChange={setSelectedCode}
+          curriculum={curriculum}
         />
 
         {curriculum === "loading" ? (
@@ -81,10 +81,7 @@ function CurriculumPage() {
             {curriculum.programName} has no subjects in the curriculum yet. Add subjects to get started.
           </EmptyState>
         ) : (
-          <>
-            <CurriculumVersion curriculum={curriculum} />
-            <CurriculumTable curriculum={curriculum} />
-          </>
+          <CurriculumTable curriculum={curriculum} />
         )}
       </div>
     </div>
