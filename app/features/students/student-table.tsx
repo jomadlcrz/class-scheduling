@@ -41,9 +41,9 @@ export function StudentTable({ students, programs, onEdit, onDelete }: StudentTa
       <TableHead>
         <TableHeader>Student No.</TableHeader>
         <TableHeader>Name</TableHeader>
-        <TableHeader>Email</TableHeader>
+        <TableHeader className="hidden sm:table-cell">Email</TableHeader>
         <TableHeader>Program</TableHeader>
-        <TableHeader>Year / Section</TableHeader>
+        <TableHeader className="hidden md:table-cell">Year / Section</TableHeader>
         <TableHeader>Status</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -64,7 +64,9 @@ export function StudentTable({ students, programs, onEdit, onDelete }: StudentTa
                   {s.lastName}, {s.firstName}
                 </span>
               </TableCell>
-              <TableCell className="text-slate-500 dark:text-slate-400">{s.email}</TableCell>
+              <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
+                {s.email}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   {program && (
@@ -86,7 +88,7 @@ export function StudentTable({ students, programs, onEdit, onDelete }: StudentTa
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="text-slate-500 dark:text-slate-400">
+              <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
                 {YEAR_LEVEL_LABELS[s.yearLevel]} — {s.setCode}
               </TableCell>
               <TableCell>
