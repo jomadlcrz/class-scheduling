@@ -1,4 +1,9 @@
-import type { Faculty, CreateFacultyInput, UpdateFacultyInput } from "~/types/faculty";
+import type {
+  Faculty,
+  CreateFacultyInput,
+  FacultyStatus,
+  UpdateFacultyInput,
+} from "~/types/faculty";
 import { faculty, delay, newFacultyId } from "~/services/mock-data";
 
 function findFaculty(id: string): Faculty {
@@ -36,10 +41,11 @@ async function update(id: string, input: UpdateFacultyInput): Promise<Faculty> {
   return member;
 }
 
-async function remove(id: string): Promise<void> {
+async function setStatus(id: string, status: FacultyStatus): Promise<Faculty> {
   await delay();
   const member = findFaculty(id);
-  faculty.splice(faculty.indexOf(member), 1);
+  member.status = status;
+  return member;
 }
 
-export const facultyService = { list, create, update, remove };
+export const facultyService = { list, create, update, setStatus };

@@ -1,5 +1,5 @@
 import { Badge } from "~/components/ui/badge";
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -17,13 +17,13 @@ import {
 type DeanTableProps = {
   deans: Dean[];
   onEdit: (member: Dean) => void;
-  onDelete: (member: Dean) => void;
+  onToggleStatus: (member: Dean) => void;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function DeanTable({ deans, onEdit, onDelete }: DeanTableProps) {
+export function DeanTable({ deans, onEdit, onToggleStatus }: DeanTableProps) {
   return (
     <Table>
       <TableHead>
@@ -74,12 +74,16 @@ export function DeanTable({ deans, onEdit, onDelete }: DeanTableProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => onDelete(member)}
-                  aria-label={`Delete ${member.name}`}
-                  title="Delete"
+                  onClick={() => onToggleStatus(member)}
+                  aria-label={
+                    member.status === "active"
+                      ? `Deactivate ${member.name}`
+                      : `Activate ${member.name}`
+                  }
+                  title={member.status === "active" ? "Deactivate" : "Activate"}
                   className={actionButtonClassName}
                 >
-                  <TrashIcon />
+                  {member.status === "active" ? <UserOffIcon /> : <UserCheckIcon />}
                 </button>
               </div>
             </TableCell>

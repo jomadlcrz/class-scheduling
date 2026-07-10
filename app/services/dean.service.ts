@@ -1,4 +1,4 @@
-import type { Dean, CreateDeanInput, UpdateDeanInput } from "~/types/dean";
+import type { Dean, CreateDeanInput, DeanStatus, UpdateDeanInput } from "~/types/dean";
 import { deans, delay, newDeanId } from "~/services/mock-data";
 
 function findDean(id: string): Dean {
@@ -36,10 +36,11 @@ async function update(id: string, input: UpdateDeanInput): Promise<Dean> {
   return member;
 }
 
-async function remove(id: string): Promise<void> {
+async function setStatus(id: string, status: DeanStatus): Promise<Dean> {
   await delay();
   const member = findDean(id);
-  deans.splice(deans.indexOf(member), 1);
+  member.status = status;
+  return member;
 }
 
-export const deanService = { list, create, update, remove };
+export const deanService = { list, create, update, setStatus };

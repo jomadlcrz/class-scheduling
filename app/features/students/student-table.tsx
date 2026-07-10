@@ -1,6 +1,6 @@
 import { Badge } from "~/components/ui/badge";
 import type { BadgeTone } from "~/components/ui/badge";
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -19,7 +19,7 @@ type StudentTableProps = {
   students: Student[];
   programs: Program[];
   onEdit: (student: Student) => void;
-  onDelete: (student: Student) => void;
+  onToggleStatus: (student: Student) => void;
 };
 
 const STATUS_TONES: Record<Student["status"], BadgeTone> = {
@@ -31,7 +31,7 @@ const STATUS_TONES: Record<Student["status"], BadgeTone> = {
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function StudentTable({ students, programs, onEdit, onDelete }: StudentTableProps) {
+export function StudentTable({ students, programs, onEdit, onToggleStatus }: StudentTableProps) {
   function getProgram(code: string) {
     return programs.find((p) => p.code === code);
   }
@@ -107,12 +107,16 @@ export function StudentTable({ students, programs, onEdit, onDelete }: StudentTa
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete(s)}
-                    aria-label={`Delete ${s.firstName} ${s.lastName}`}
-                    title="Delete"
+                    onClick={() => onToggleStatus(s)}
+                    aria-label={
+                      s.status === "enrolled"
+                        ? `Deactivate ${s.firstName} ${s.lastName}`
+                        : `Activate ${s.firstName} ${s.lastName}`
+                    }
+                    title={s.status === "enrolled" ? "Deactivate" : "Activate"}
                     className={actionButtonClassName}
                   >
-                    <TrashIcon />
+                    {s.status === "enrolled" ? <UserOffIcon /> : <UserCheckIcon />}
                   </button>
                 </div>
               </TableCell>

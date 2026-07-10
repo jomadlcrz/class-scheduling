@@ -4,10 +4,12 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ActivateStudentDialog } from "~/features/students/activate-student-dialog";
+import { DeactivateStudentDialog } from "~/features/students/deactivate-student-dialog";
 import { StudentForm } from "~/features/students/student-form";
 import { StudentTable } from "~/features/students/student-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -15,7 +17,7 @@ import { programService } from "~/services/program.service";
 import { studentService } from "~/services/student.service";
 import { usePagination } from "~/hooks/use-pagination";
 import type { Program } from "~/types/program";
-import type { CreateStudentInput, Student } from "~/types/student";
+import type { CreateStudentInput, Student, StudentStatus } from "~/types/student";
 
 export function meta() {
   return [
@@ -42,7 +44,8 @@ function StudentsPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Student | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
+  const [activateTarget, setActivateTarget] = useState<Student | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<Student | null>(null);
 
   useEffect(() => {
     Promise.all([studentService.list(), programService.list()]).then(([s, p]) => {
@@ -89,9 +92,9 @@ function StudentsPage() {
     setEditTarget(null);
   }
 
-  async function handleDelete(target: Student) {
-    await studentService.remove(target.id);
-    setStudentList((cur) => cur!.filter((s) => s.id !== target.id));
+  async function handleSetStatus(target: Student, status: StudentStatus) {
+    const updated = await studentService.setStatus(target.id, status);
+    setStudentList((cur) => cur!.map((s) => (s.id === updated.id ? updated : s)));
   }
 
   return (
@@ -163,7 +166,11 @@ function StudentsPage() {
               students={pagination.pageItems}
               programs={programs ?? []}
               onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
+              onToggleStatus={(student) =>
+                student.status === "enrolled"
+                  ? setDeactivateTarget(student)
+                  : setActivateTarget(student)
+              }
             />
             <Pagination
               page={pagination.page}
@@ -194,20 +201,16 @@ function StudentsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
-        title="Remove student"
-        confirmLabel="Remove"
-        loadingLabel="Removing…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        <span className="font-medium text-navy-700 dark:text-white">
-          {deleteTarget?.firstName} {deleteTarget?.lastName} ({deleteTarget?.studentNumber})
-        </span>{" "}
-        will be permanently removed.
-      </ConfirmDialog>
+      <DeactivateStudentDialog
+        student={deactivateTarget}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={(student) => handleSetStatus(student, "inactive")}
+      />
+      <ActivateStudentDialog
+        student={activateTarget}
+        onClose={() => setActivateTarget(null)}
+        onConfirm={(student) => handleSetStatus(student, "enrolled")}
+      />
     </div>
   );
 }

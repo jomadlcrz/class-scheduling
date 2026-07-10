@@ -4,10 +4,12 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ActivateFacultyDialog } from "~/features/faculty/activate-faculty-dialog";
+import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-dialog";
 import { FacultyForm } from "~/features/faculty/faculty-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -15,7 +17,7 @@ import { departmentService } from "~/services/department.service";
 import { facultyService } from "~/services/faculty.service";
 import { usePagination } from "~/hooks/use-pagination";
 import type { Department } from "~/types/department";
-import type { CreateFacultyInput, Faculty } from "~/types/faculty";
+import type { CreateFacultyInput, Faculty, FacultyStatus } from "~/types/faculty";
 
 export function meta() {
   return [
@@ -42,7 +44,8 @@ function FacultyPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Faculty | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Faculty | null>(null);
+  const [activateTarget, setActivateTarget] = useState<Faculty | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<Faculty | null>(null);
 
   useEffect(() => {
     Promise.all([facultyService.list(), departmentService.list()]).then(([f, d]) => {
@@ -89,9 +92,9 @@ function FacultyPage() {
     setEditTarget(null);
   }
 
-  async function handleDelete(target: Faculty) {
-    await facultyService.remove(target.id);
-    setFacultyList((current) => current!.filter((f) => f.id !== target.id));
+  async function handleSetStatus(target: Faculty, status: FacultyStatus) {
+    const updated = await facultyService.setStatus(target.id, status);
+    setFacultyList((current) => current!.map((f) => (f.id === updated.id ? updated : f)));
   }
 
   return (
@@ -161,7 +164,11 @@ function FacultyPage() {
             <FacultyTable
               faculty={pagination.pageItems}
               onEdit={(member) => setEditTarget(member)}
-              onDelete={(member) => setDeleteTarget(member)}
+              onToggleStatus={(member) =>
+                member.status === "active"
+                  ? setDeactivateTarget(member)
+                  : setActivateTarget(member)
+              }
             />
             <Pagination
               page={pagination.page}
@@ -192,20 +199,16 @@ function FacultyPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
-        title="Delete faculty member"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        <span className="font-medium text-navy-700 dark:text-white">
-          {deleteTarget?.firstName} {deleteTarget?.lastName}
-        </span>{" "}
-        will be permanently removed.
-      </ConfirmDialog>
+      <DeactivateFacultyDialog
+        member={deactivateTarget}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={(member) => handleSetStatus(member, "inactive")}
+      />
+      <ActivateFacultyDialog
+        member={activateTarget}
+        onClose={() => setActivateTarget(null)}
+        onConfirm={(member) => handleSetStatus(member, "active")}
+      />
     </div>
   );
 }

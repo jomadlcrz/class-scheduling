@@ -1,4 +1,9 @@
-import type { CreateStudentInput, Student, UpdateStudentInput } from "~/types/student";
+import type {
+  CreateStudentInput,
+  Student,
+  StudentStatus,
+  UpdateStudentInput,
+} from "~/types/student";
 import { delay, newStudentId, students } from "~/services/mock-data";
 
 function findStudent(id: string): Student {
@@ -38,10 +43,11 @@ async function update(id: string, input: UpdateStudentInput): Promise<Student> {
   return student;
 }
 
-async function remove(id: string): Promise<void> {
+async function setStatus(id: string, status: StudentStatus): Promise<Student> {
   await delay();
   const student = findStudent(id);
-  students.splice(students.indexOf(student), 1);
+  student.status = status;
+  return student;
 }
 
-export const studentService = { list, create, update, remove };
+export const studentService = { list, create, update, setStatus };

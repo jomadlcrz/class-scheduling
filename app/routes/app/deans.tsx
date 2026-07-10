@@ -4,17 +4,19 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ActivateDeanDialog } from "~/features/deans/activate-dean-dialog";
+import { DeactivateDeanDialog } from "~/features/deans/deactivate-dean-dialog";
 import { DeanForm } from "~/features/deans/dean-form";
 import { DeanTable } from "~/features/deans/dean-table";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
 import { departmentService } from "~/services/department.service";
-import type { Dean, CreateDeanInput } from "~/types/dean";
+import type { CreateDeanInput, Dean, DeanStatus } from "~/types/dean";
 import type { Department } from "~/types/department";
 
 export function meta() {
@@ -42,7 +44,8 @@ function DeansPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Dean | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Dean | null>(null);
+  const [activateTarget, setActivateTarget] = useState<Dean | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<Dean | null>(null);
 
   useEffect(() => {
     Promise.all([deanService.list(), departmentService.list()]).then(([d, dept]) => {
@@ -87,9 +90,9 @@ function DeansPage() {
     setEditTarget(null);
   }
 
-  async function handleDelete(target: Dean) {
-    await deanService.remove(target.id);
-    setDeanList((current) => current!.filter((d) => d.id !== target.id));
+  async function handleSetStatus(target: Dean, status: DeanStatus) {
+    const updated = await deanService.setStatus(target.id, status);
+    setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
   }
 
   return (
@@ -159,7 +162,11 @@ function DeansPage() {
             <DeanTable
               deans={pagination.pageItems}
               onEdit={(member) => setEditTarget(member)}
-              onDelete={(member) => setDeleteTarget(member)}
+              onToggleStatus={(member) =>
+                member.status === "active"
+                  ? setDeactivateTarget(member)
+                  : setActivateTarget(member)
+              }
             />
             <Pagination
               page={pagination.page}
@@ -190,20 +197,16 @@ function DeansPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
-        title="Delete dean"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        <span className="font-medium text-navy-700 dark:text-white">
-          {deleteTarget?.name}
-        </span>{" "}
-        will be permanently removed.
-      </ConfirmDialog>
+      <DeactivateDeanDialog
+        dean={deactivateTarget}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={(dean) => handleSetStatus(dean, "inactive")}
+      />
+      <ActivateDeanDialog
+        dean={activateTarget}
+        onClose={() => setActivateTarget(null)}
+        onConfirm={(dean) => handleSetStatus(dean, "active")}
+      />
     </div>
   );
 }
