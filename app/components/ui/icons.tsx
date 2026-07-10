@@ -204,7 +204,7 @@ export function BookIcon() {
   );
 }
 
-export function BookOpenIcon() {
+function BookOpenIcon() {
   return (
     <IconBase>
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -243,7 +243,7 @@ export function UserIcon() {
   );
 }
 
-export function BuildingIcon() {
+function BuildingIcon() {
   return (
     <IconBase>
       <rect x="4" y="2" width="16" height="20" rx="2" />
@@ -362,7 +362,7 @@ export function ShieldIcon() {
   );
 }
 
-export function DoorIcon() {
+function DoorIcon() {
   return (
     <IconBase>
       <path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14" />
@@ -372,7 +372,7 @@ export function DoorIcon() {
   );
 }
 
-export function FolderIcon() {
+function FolderIcon() {
   return (
     <IconBase>
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
@@ -419,7 +419,7 @@ export function BellIcon() {
   );
 }
 
-export function LayoutIcon() {
+function LayoutIcon() {
   return (
     <IconBase>
       <rect x="3" y="3" width="18" height="18" rx="2" />

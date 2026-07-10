@@ -8,6 +8,7 @@ import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumEntryForm } from "~/features/subjects/curriculum-entry-form";
 import {
+  collectSectionKeys,
   CurriculumStructure,
   type PendingEntry,
 } from "~/features/subjects/curriculum-structure";
@@ -45,14 +46,18 @@ function SubjectsNewPage() {
   const [editing, setEditing] = useState<PendingEntry | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  /** Collapsed year/semester sections of the curriculum structure tree. */
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const tempIdCounter = useRef(0);
 
   useEffect(() => {
-    Promise.all([subjectService.list(), programService.list()]).then(([s, p]) => {
-      setAllSubjects(s);
-      setPrograms(p);
-      setProgram(p[0]?.code ?? "");
-    });
+    Promise.all([subjectService.list(), programService.list()]).then(
+      ([s, p]) => {
+        setAllSubjects(s);
+        setPrograms(p);
+        setProgram(p[0]?.code ?? "");
+      },
+    );
   }, []);
 
   const savedForProgram = useMemo(
@@ -62,7 +67,11 @@ function SubjectsNewPage() {
 
   const prerequisiteOptions = useMemo(
     () => [
-      ...savedForProgram.map((s) => ({ id: s.id, code: s.code, title: s.title })),
+      ...savedForProgram.map((s) => ({
+        id: s.id,
+        code: s.code,
+        title: s.title,
+      })),
       ...pending.map((p) => ({ id: p.tempId, code: p.code, title: p.title })),
     ],
     [savedForProgram, pending],
@@ -73,7 +82,9 @@ function SubjectsNewPage() {
       (s) => s.code.toLowerCase() === input.code.toLowerCase(),
     );
     if (taken) {
-      throw new Error(`A subject with the code ${input.code} already exists in ${program}.`);
+      throw new Error(
+        `A subject with the code ${input.code} already exists in ${program}.`,
+      );
     }
 
     // Re-adding an edited entry keeps its temp id so prerequisite
@@ -92,7 +103,9 @@ function SubjectsNewPage() {
     if (!entry) return;
     // Restore the current edit target first so it isn't lost.
     setPending((current) => [
-      ...(editing ? [...current, editing] : current).filter((p) => p.tempId !== tempId),
+      ...(editing ? [...current, editing] : current).filter(
+        (p) => p.tempId !== tempId,
+      ),
     ]);
     setEditing(entry);
   }
@@ -100,6 +113,15 @@ function SubjectsNewPage() {
   function handleCancelEdit() {
     if (editing) setPending((current) => [...current, editing]);
     setEditing(null);
+  }
+
+  function handleToggleSection(key: string) {
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   }
 
   function handleRemovePending(tempId: string) {
@@ -140,7 +162,9 @@ function SubjectsNewPage() {
     } catch (err) {
       setPending(remaining);
       setSaveError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.",
       );
       setIsSaving(false);
     }
@@ -200,7 +224,11 @@ function SubjectsNewPage() {
                   id="curriculum-program"
                   label="Program"
                   value={program}
-                  onChange={(e) => setProgram(e.target.value)}
+                  onChange={(e) => {
+                    setProgram(e.target.value);
+                    // A different program shows a different tree; start it expanded.
+                    setCollapsed(new Set());
+                  }}
                   disabled={pending.length > 0 || editing !== null}
                   hint={
                     pending.length > 0 || editing !== null
@@ -227,7 +255,9 @@ function SubjectsNewPage() {
                   <BookIcon />
                 </span>
                 <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-                  {editing ? `Edit Entry — ${editing.code}` : "New Curriculum Entry"}
+                  {editing
+                    ? `Edit Entry — ${editing.code}`
+                    : "New Curriculum Entry"}
                 </span>
               </div>
               <div className="p-5">
@@ -251,17 +281,45 @@ function SubjectsNewPage() {
                     Curriculum Structure
                   </span>
                 </div>
-                {pending.length > 0 && (
-                  <span className="rounded-full bg-gold-400/20 px-2.5 py-0.5 font-body text-xs font-medium text-gold-600 dark:text-gold-400">
-                    {pending.length} pending
+                <div className="flex items-center gap-2.5">
+                  {pending.length > 0 && (
+                    <span className="rounded-full bg-gold-400/20 px-2.5 py-0.5 font-body text-xs font-medium text-gold-600 dark:text-gold-400">
+                      {pending.length} pending
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setCollapsed(new Set())}
+                    className="cursor-pointer font-body text-xs font-medium text-navy-600 transition-colors duration-150 hover:text-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:text-white"
+                  >
+                    Expand All
+                  </button>
+                  <span
+                    aria-hidden="true"
+                    className="text-slate-300 dark:text-slate-600"
+                  >
+                    ·
                   </span>
-                )}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCollapsed(
+                        new Set(collectSectionKeys(savedForProgram, pending)),
+                      )
+                    }
+                    className="cursor-pointer font-body text-xs font-medium text-navy-600 transition-colors duration-150 hover:text-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:text-white"
+                  >
+                    Collapse All
+                  </button>
+                </div>
               </div>
               <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
                 <CurriculumStructure
                   program={program}
                   saved={savedForProgram}
                   pending={pending}
+                  collapsed={collapsed}
+                  onToggleSection={handleToggleSection}
                   onEditPending={handleEditPending}
                   onRemovePending={handleRemovePending}
                 />

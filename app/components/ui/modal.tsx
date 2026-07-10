@@ -158,8 +158,10 @@ function ModalContent({
               <CloseIcon />
             </button>
           </div>
-          {/* -mx-6 px-6 keeps focus rings visible at the scroll pane edges. */}
-          <div className="scrollbar-thin -mx-6 mt-4 overflow-y-auto px-6">{children}</div>
+          {/* -mx-5 px-5 (matching the panel's p-5) keeps focus rings visible
+              at the scroll pane edges without pushing the scrollbar past the
+              panel border. */}
+          <div className="scrollbar-thin -mx-5 mt-4 overflow-y-auto px-5">{children}</div>
         </motion.div>
       </div>
     </>
