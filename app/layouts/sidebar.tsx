@@ -4,17 +4,11 @@ import { NavLink, useLocation } from "react-router";
 import {
   AlertTriangleIcon,
   BookIcon,
-  BookOpenIcon,
-  BuildingIcon,
   CalendarIcon,
   ChartIcon,
   ChevronRightIcon,
   DashboardIcon,
-  DoorIcon,
-  FolderIcon,
   GraduationCapIcon,
-  LayersIcon,
-  LayoutIcon,
   SettingsIcon,
   ShieldIcon,
   UserIcon,
@@ -26,8 +20,8 @@ import type { Role } from "~/types/user";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 
-type NavLeaf = { label: string; to: string; roles: Role[] };
-type NavItem = NavLeaf & { icon: ReactNode; subItems?: undefined; matchPrefix?: boolean };
+type NavLeaf = { label: string; to: string; roles: Role[]; matchPrefix?: boolean };
+type NavItem = NavLeaf & { icon: ReactNode; subItems?: undefined };
 type NavSubmenu = {
   label: string;
   icon: ReactNode;
@@ -49,27 +43,36 @@ const NAV_GROUPS: NavGroup[] = [
           {
             label: "Schedules",
             icon: <CalendarIcon />,
-            roles: ["admin", "registrar", "dean"],
+            roles: ["registrar", "dean"],
             subItems: [
-              { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["admin", "registrar", "dean"] },
-              { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", roles: ["admin", "registrar", "dean"] },
-              { label: "Regular Class", to: "/schedules/regular-class", roles: ["admin", "registrar", "dean"] },
-              { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["admin", "registrar", "dean"] },
+              { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["registrar", "dean"] },
+              { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", roles: ["registrar", "dean"] },
+              { label: "Regular Class", to: "/schedules/regular-class", roles: ["registrar", "dean"] },
+              { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["registrar", "dean"] },
             ],
           },
           { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
           { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
-          { label: "Conflicts", to: "/conflicts", icon: <AlertTriangleIcon />, roles: ["admin", "registrar", "dean", "faculty"] },
+          { label: "Conflicts", to: "/conflicts", icon: <AlertTriangleIcon />, roles: ["registrar", "dean", "faculty"] },
         ],
       },
   {
     label: "Academics",
     items: [
-      { label: "Curriculum", to: "/curriculum", icon: <BookOpenIcon />, roles: ["admin", "registrar", "dean"] },
-      { label: "Departments", to: "/departments", icon: <FolderIcon />, roles: ["admin", "registrar", "dean"] },
-      { label: "Programs", to: "/programs", icon: <GraduationCapIcon />, roles: ["admin", "registrar", "dean"] },
-      { label: "Subjects", to: "/subjects", icon: <BookIcon />, roles: ["admin", "registrar", "dean"], matchPrefix: true },
-      { label: "Sets", to: "/sets", icon: <LayersIcon />, roles: ["admin", "registrar", "dean"] },
+      {
+        label: "Curriculum & Facilities",
+        icon: <BookIcon />,
+        roles: ["registrar", "dean"],
+        subItems: [
+          { label: "Buildings", to: "/buildings", roles: ["registrar"] },
+          { label: "Rooms", to: "/rooms", roles: ["registrar"] },
+          { label: "Departments", to: "/departments", roles: ["registrar", "dean"] },
+          { label: "Programs", to: "/programs", roles: ["registrar", "dean"] },
+          { label: "Curriculum", to: "/curriculum", roles: ["registrar", "dean"] },
+          { label: "Subjects", to: "/subjects", roles: ["registrar", "dean"], matchPrefix: true },
+          { label: "Sets", to: "/sets", roles: ["registrar", "dean"] },
+        ],
+      },
     ],
   },
   {
@@ -78,13 +81,6 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Deans", to: "/deans", icon: <UserIcon />, roles: ["admin", "registrar"] },
       { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin", "registrar", "dean"] },
       { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin", "registrar", "dean"] },
-    ],
-  },
-  {
-    label: "Facilities",
-    items: [
-      { label: "Buildings", to: "/buildings", icon: <BuildingIcon />, roles: ["admin", "registrar"] },
-      { label: "Rooms", to: "/rooms", icon: <DoorIcon />, roles: ["admin", "registrar"] },
     ],
   },
   {
@@ -166,7 +162,11 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
   useEffect(() => {
     for (const group of NAV_GROUPS) {
       for (const item of group.items) {
-        if (item.subItems?.some((sub) => sub.to === location.pathname)) {
+        if (
+          item.subItems?.some((sub) =>
+            sub.matchPrefix ? location.pathname.startsWith(sub.to) : sub.to === location.pathname,
+          )
+        ) {
           setOpenSubmenus((current) =>
             current.includes(item.label) ? current : [...current, item.label],
           );
@@ -308,7 +308,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                             >
                               <NavLink
                                 to={sub.to}
-                                end
+                                end={!sub.matchPrefix}
                                 onClick={onNavigate}
                                 className={({ isActive }) =>
                                   `block truncate rounded-md px-2.5 py-1.5 font-body text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${

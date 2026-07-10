@@ -5,8 +5,11 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
+  useNavigationType,
 } from "react-router";
 
+import { useEffect } from "react";
 import type { Route } from "./+types/root";
 import "~/app.css";
 import { AuthProvider } from "~/auth/auth-provider";
@@ -25,6 +28,19 @@ const themeInitScript = `(() => {
   }
 })();`;
 
+function ScrollToTopOnNav() {
+  const navigation = useNavigation();
+  const navigationType = useNavigationType();
+
+  useEffect(() => {
+    if (navigation.state === "idle" && navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+  }, [navigation.state, navigationType]);
+
+  return null;
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -39,7 +55,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <ScrollRestoration />
+        <ScrollToTopOnNav />
+        <ScrollRestoration getKey={(location) => location.pathname} />
         <Scripts />
       </body>
     </html>
