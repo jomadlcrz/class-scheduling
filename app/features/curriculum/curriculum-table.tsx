@@ -1,8 +1,7 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { AccordionItem } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
 import { EmptyState } from "~/components/ui/empty-state";
-import { ChevronDownIcon, ChevronRightIcon } from "~/components/ui/icons";
 import { CurriculumSubjects } from "~/features/curriculum/curriculum-subjects";
 import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
 import type { YearLevel } from "~/types/subject";
@@ -82,49 +81,25 @@ function YearBlock({
   codeById: Map<string, string>;
   forceOpen: boolean;
 }) {
-  const [open, setOpen] = useState(true);
-  const reduceMotion = useReducedMotion();
-  const isOpen = open || forceOpen;
-
   return (
-    <section className="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400"
-      >
+    <AccordionItem
+      open={forceOpen || undefined}
+      defaultOpen
+      title={
         <span className="font-body text-base font-semibold text-navy-700 dark:text-white">
           {YEAR_LEVEL_LABELS[yearLevel]}
         </span>
-        <span className="flex items-center gap-2">
-          <Badge tone="gold">{yearUnits} units</Badge>
-          <span className="text-slate-400 dark:text-slate-500">
-            {isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-          </span>
-        </span>
-      </button>
-
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            key="content"
-            initial={reduceMotion ? false : { height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.32, 0.72, 0, 1] }}
-            className="overflow-hidden"
-          >
-            <div className="border-t border-slate-200 p-5 dark:border-white/8">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {groups.map((group) => (
-                  <SemesterCard key={group.semester} group={group} codeById={codeById} />
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </section>
+      }
+      adornment={<Badge tone="gold">{yearUnits} units</Badge>}
+    >
+      <div className="p-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {groups.map((group) => (
+            <SemesterCard key={group.semester} group={group} codeById={codeById} />
+          ))}
+        </div>
+      </div>
+    </AccordionItem>
   );
 }
 

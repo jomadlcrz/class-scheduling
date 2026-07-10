@@ -124,12 +124,12 @@ export function StudentForm({ student, programs, onSubmit, onCancel }: StudentFo
         ))}
       </Select>
 
-      <div className="flex gap-2 pt-1">
-        <Button type="submit" block={false} isLoading={isLoading} loadingLabel="Saving…">
-          {student ? "Save Changes" : "Add Student"}
-        </Button>
-        <Button type="button" block={false} variant="outline" onClick={onCancel}>
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
+        </Button>
+        <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
+          {student ? "Save Changes" : "Add Student"}
         </Button>
       </div>
     </form>
