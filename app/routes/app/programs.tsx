@@ -8,7 +8,6 @@ import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { ResultState } from "~/components/feedback/result-state";
 import { ProgramForm } from "~/features/programs/program-form";
 import { ProgramTable } from "~/features/programs/program-table";
 import { usePagination } from "~/hooks/use-pagination";
@@ -17,7 +16,7 @@ import { departmentService } from "~/services/department.service";
 import { programService } from "~/services/program.service";
 import type { Department } from "~/types/department";
 import type { CreateProgramInput, Program } from "~/types/program";
-import { PROGRAM_TYPE_LABELS, PROGRAM_TYPES } from "~/types/program";
+import { PROGRAM_TYPES } from "~/types/program";
 
 export function meta() {
   return [
@@ -44,12 +43,10 @@ function ProgramsPage() {
   const [editTarget, setEditTarget] = useState<Program | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Program | null>(null);
 
-  // useEffect(() => {
-  //   Promise.all([programService.list(), departmentService.list()]).then(([p, d]) => {
-  //     setProgramsList(p);
-  //     setDepartments(d);
-  //   });
-  // }, []);
+  useEffect(() => {
+    programService.list().then(setProgramsList).catch(() => setProgramsList([]));
+    departmentService.list().then(setDepartments).catch(() => setDepartments([]));
+  }, []);
 
   const resetKey = `${search}|${deptFilter}|${typeFilter}`;
 
@@ -58,7 +55,7 @@ function ProgramsPage() {
     const q = search.trim().toLowerCase();
     return programsList
       .filter((p) => {
-        if (deptFilter !== "all" && p.departmentId !== deptFilter) return false;
+        if (deptFilter !== "all" && p.departmentCode !== deptFilter) return false;
         if (typeFilter !== "all" && p.type !== typeFilter) return false;
         if (q && !p.code.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q))
           return false;
@@ -72,23 +69,33 @@ function ProgramsPage() {
 
   const pagination = usePagination(visiblePrograms, resetKey);
 
-  // async function handleCreate(input: CreateProgramInput) {
-  //   const created = await programService.create(input);
-  //   setProgramsList((curr) => [...(curr ?? []), created]);
-  //   setCreateOpen(false);
-  // }
+  // Mutations return only a message, so the list is refetched afterwards.
+  async function refresh() {
+    setProgramsList(await programService.list());
+  }
 
-  // async function handleEdit(input: CreateProgramInput) {
-  //   if (!editTarget) return;
-  //   const updated = await programService.update(editTarget.id, input);
-  //   setProgramsList((curr) => curr!.map((p) => (p.id === updated.id ? updated : p)));
-  //   setEditTarget(null);
-  // }
+  async function handleCreate(input: CreateProgramInput) {
+    await programService.create(input);
+    await refresh();
+    setCreateOpen(false);
+  }
 
-  // async function handleDelete(target: Program) {
-  //   await programService.remove(target.id);
-  //   setProgramsList((curr) => curr!.filter((p) => p.id !== target.id));
-  // }
+  async function handleEdit(input: CreateProgramInput) {
+    if (!editTarget) return;
+    await programService.update(editTarget.id, {
+      code: input.code,
+      name: input.name,
+      type: input.type,
+      lengthYears: input.lengthYears,
+    });
+    await refresh();
+    setEditTarget(null);
+  }
+
+  async function handleDelete(target: Program) {
+    await programService.remove(target.id);
+    await refresh();
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -123,7 +130,7 @@ function ProgramsPage() {
           >
             <option value="all">All departments</option>
             {departments.map((d) => (
-              <option key={d.id} value={d.id}>
+              <option key={d.id} value={d.code}>
                 {d.code}
               </option>
             ))}
@@ -137,16 +144,42 @@ function ProgramsPage() {
             <option value="all">All types</option>
             {PROGRAM_TYPES.map((t) => (
               <option key={t} value={t}>
-                {PROGRAM_TYPE_LABELS[t]}
+                {t}
               </option>
             ))}
           </Select>
         </div>
 
-        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
+        {programsList === null ? (
+          <div
+            role="status"
+            aria-label="Loading programs"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : visiblePrograms.length === 0 ? (
+          <EmptyState title="No programs found">
+            No programs match the current filters. Adjust the search or add a new program.
+          </EmptyState>
+        ) : (
+          <>
+            <ProgramTable
+              programs={pagination.pageItems}
+              onEdit={setEditTarget}
+              onDelete={setDeleteTarget}
+            />
+            <Pagination
+              page={pagination.page}
+              totalItems={pagination.totalItems}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setPage}
+            />
+          </>
+        )}
       </div>
 
-      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Program">
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Program">
         <ProgramForm
           departments={departments}
           onSubmit={handleCreate}
@@ -177,7 +210,7 @@ function ProgramsPage() {
         Program{" "}
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.code}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
-      </ConfirmDialog> */}
+      </ConfirmDialog>
     </div>
   );
 }

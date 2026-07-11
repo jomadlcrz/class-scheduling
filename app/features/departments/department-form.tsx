@@ -24,28 +24,27 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
     const data = new FormData(e.currentTarget);
     const code = String(data.get("dept-code") ?? "").trim();
     const name = String(data.get("dept-name") ?? "").trim();
-    const buildingId = String(data.get("dept-building") ?? "");
+    const buildingName = isEdit
+      ? department!.buildingName
+      : String(data.get("dept-building") ?? "");
 
-    const result = departmentSchema.safeParse({ code, name, buildingId });
+    const result = departmentSchema.safeParse({ code, name, buildingName });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
     }
 
-    const building = buildings.find((b) => b.id === buildingId);
-    if (!building) { setError("Select a building."); return; }
-
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({ ...result.data, buildingCode: building.code });
+      await onSubmit(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setIsLoading(false);
     }
   }
 
-  const defaultBuildingId = department?.buildingId ?? buildings[0]?.id ?? "";
+  const defaultBuildingName = department?.buildingName ?? buildings[0]?.name ?? "";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
@@ -65,10 +64,16 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
         placeholder="College of Information Technology Education"
         defaultValue={department?.name ?? ""}
       />
-      <Select id="dept-building" label="Building" defaultValue={defaultBuildingId}>
+      <Select
+        id="dept-building"
+        label="Building"
+        defaultValue={defaultBuildingName}
+        disabled={isEdit}
+        hint={isEdit ? "The building can't be changed after creation." : undefined}
+      >
         {buildings.map((b) => (
-          <option key={b.id} value={b.id}>
-            {b.code} — {b.name}
+          <option key={b.id} value={b.name}>
+            {b.name}
           </option>
         ))}
       </Select>

@@ -11,7 +11,7 @@ function safe(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function renderSemesterTable(codeById: Map<string, string>, group: CurriculumGroup): string {
+function renderSemesterTable(group: CurriculumGroup): string {
   const rows = group.subjects
     .map(
       (subject) => `
@@ -20,9 +20,7 @@ function renderSemesterTable(codeById: Map<string, string>, group: CurriculumGro
           <td>${safe(subject.title)}</td>
           <td>${subject.units}</td>
           <td>${
-            subject.prerequisiteIds.length > 0
-              ? safe(subject.prerequisiteIds.map((id) => codeById.get(id)).filter(Boolean).join(", "))
-              : "-"
+            subject.prerequisites.length > 0 ? safe(subject.prerequisites.join(", ")) : "-"
           }</td>
         </tr>
       `,
@@ -43,12 +41,12 @@ function renderSemesterTable(codeById: Map<string, string>, group: CurriculumGro
   `;
 }
 
-function renderYearBlock(codeById: Map<string, string>, yearLevel: YearLevel, groups: CurriculumGroup[]): string {
+function renderYearBlock(yearLevel: YearLevel, groups: CurriculumGroup[]): string {
   return `
     <section class="cp-year">
       <h3>${safe(YEAR_LEVEL_LABELS[yearLevel]).toUpperCase()}</h3>
       <div class="cp-semester-grid">
-        ${groups.map((group) => renderSemesterTable(codeById, group)).join("")}
+        ${groups.map((group) => renderSemesterTable(group)).join("")}
       </div>
     </section>
   `;
@@ -68,15 +66,8 @@ export function openCurriculumPrint(curriculum: ProgramCurriculum): boolean {
   const origin = window.location.origin;
   const yearLevels = [...new Set(curriculum.groups.map((g) => g.yearLevel))].sort() as YearLevel[];
 
-  const codeById = new Map<string, string>();
-  for (const group of curriculum.groups) {
-    for (const subject of group.subjects) {
-      codeById.set(subject.id, subject.code);
-    }
-  }
-
   const yearBlocks = yearLevels
-    .map((year) => renderYearBlock(codeById, year, curriculum.groups.filter((g) => g.yearLevel === year)))
+    .map((year) => renderYearBlock(year, curriculum.groups.filter((g) => g.yearLevel === year)))
     .join("");
 
   win.document.open();

@@ -1,4 +1,3 @@
-import { Badge } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
@@ -8,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { getBuildingTone, type Building } from "~/types/building";
+import type { Building } from "~/types/building";
 
 type BuildingTableProps = {
   buildings: Building[];
@@ -24,7 +23,6 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
     <Table>
       <TableHead>
         <TableHeader>Building Name</TableHeader>
-        <TableHeader>Building Code</TableHeader>
         <TableHeader className="hidden sm:table-cell text-center">Floors</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -35,9 +33,6 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
           <TableRow key={building.id}>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-white">{building.name}</span>
-            </TableCell>
-            <TableCell>
-              <Badge tone={getBuildingTone(building.code)}>{building.code}</Badge>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-center">{building.floorCount}</TableCell>
             <TableCell>

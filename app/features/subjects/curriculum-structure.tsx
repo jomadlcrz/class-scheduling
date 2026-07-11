@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { DropdownMenu } from "~/components/ui/dropdown";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -12,7 +11,6 @@ import {
   YEAR_LEVELS,
   type CreateSubjectInput,
   type Subject,
-  type SubjectType,
 } from "~/types/subject";
 
 export type PendingEntry = CreateSubjectInput & { tempId: string };
@@ -22,8 +20,9 @@ type StructureRow = {
   code: string;
   title: string;
   units: number;
-  subjectType: SubjectType;
-  prerequisiteIds: string[];
+  subjectType: string;
+  /** Prerequisite subject codes. */
+  prerequisites: string[];
   /** Set only for unsaved entries — they're highlighted and editable. */
   tempId?: string;
 };
@@ -78,15 +77,8 @@ export function CurriculumStructure({
   onEditPending,
   onRemovePending,
 }: CurriculumStructureProps) {
-  const codeById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const s of saved) map.set(s.id, s.code);
-    for (const p of pending) map.set(p.tempId, p.code);
-    return map;
-  }, [saved, pending]);
-
   const rows: (StructureRow & { yearLevel: number; semester: number })[] = [
-    ...saved.map((s) => ({ ...s, key: s.id })),
+    ...saved.map((s) => ({ ...s, key: `saved-${s.id}` })),
     ...pending.map((p) => ({ ...p, key: p.tempId, tempId: p.tempId })),
   ];
 
@@ -216,9 +208,9 @@ export function CurriculumStructure({
                                         />
                                       </span>
                                       <span className="flex shrink-0 flex-wrap gap-1">
-                                        {row.prerequisiteIds.map((id) => (
-                                          <Badge key={id} tone="slate">
-                                            {codeById.get(id) ?? id}
+                                        {row.prerequisites.map((code) => (
+                                          <Badge key={code} tone="slate">
+                                            {code}
                                           </Badge>
                                         ))}
                                       </span>

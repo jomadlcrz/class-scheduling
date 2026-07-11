@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import type { Program } from "~/types/program";
-import { PROGRAM_TYPE_LABELS } from "~/types/program";
 
 type ProgramTableProps = {
   programs: Program[];
@@ -47,9 +46,7 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
               </div>
             </TableCell>
             <TableCell>{prog.name}</TableCell>
-            <TableCell className="hidden md:table-cell">
-              {PROGRAM_TYPE_LABELS[prog.type]}
-            </TableCell>
+            <TableCell className="hidden md:table-cell">{prog.type}</TableCell>
             <TableCell className="hidden md:table-cell text-center">{prog.lengthYears}</TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">

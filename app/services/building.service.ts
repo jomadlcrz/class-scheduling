@@ -1,44 +1,50 @@
+import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
 import type { Building, CreateBuildingInput, UpdateBuildingInput } from "~/types/building";
 
-function findBuilding(id: string): Building {
-  const b = buildings.find((b) => b.id === id);
-  if (!b) throw new Error("Building not found.");
-  return b;
-}
+/** Buildings CRUD against the facilities module (registrar_admin). */
 
-function codeTaken(code: string, excludeId?: string): boolean {
-  return buildings.some(
-    (b) => b.id !== excludeId && b.code.toLowerCase() === code.trim().toLowerCase(),
-  );
-}
+type BuildingsResponse = {
+  buildings: {
+    building_id: number;
+    building_name: string;
+    floor_count: number;
+  }[];
+};
 
+/** GET /buildings — the backend answers an empty table with 404. */
 async function list(): Promise<Building[]> {
-  await delay();
-  return [...buildings];
+  let data: BuildingsResponse;
+  try {
+    data = await apiGet<BuildingsResponse>("/buildings");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.buildings.map((b) => ({
+    id: b.building_id,
+    name: b.building_name,
+    floorCount: b.floor_count,
+  }));
 }
 
-async function create(input: CreateBuildingInput): Promise<Building> {
-  await delay(300);
-  if (codeTaken(input.code))
-    throw new Error(`Building code "${input.code}" is already in use.`);
-  const building: Building = { id: newBuildingId(), ...input };
-  buildings.push(building);
-  return building;
+/** POST /buildings — bulk endpoint; a single create sends a one-item list. */
+async function create(input: CreateBuildingInput): Promise<void> {
+  await apiPost("/buildings", {
+    buildings: [{ buildingName: input.name, floorCount: input.floorCount }],
+  });
 }
 
-async function update(id: string, input: UpdateBuildingInput): Promise<Building> {
-  await delay();
-  const building = findBuilding(id);
-  if (input.code && codeTaken(input.code, id))
-    throw new Error(`Building code "${input.code}" is already in use.`);
-  Object.assign(building, input);
-  return building;
+/** PUT /buildings/:id */
+async function update(id: number, input: UpdateBuildingInput): Promise<void> {
+  await apiPut(`/buildings/${id}`, {
+    ...(input.name !== undefined && { buildingName: input.name }),
+    ...(input.floorCount !== undefined && { floorCount: input.floorCount }),
+  });
 }
 
-async function remove(id: string): Promise<void> {
-  await delay();
-  const building = findBuilding(id);
-  buildings.splice(buildings.indexOf(building), 1);
+/** DELETE /buildings/:id */
+async function remove(id: number): Promise<void> {
+  await apiDelete(`/buildings/${id}`);
 }
 
 export const buildingService = { list, create, update, remove };

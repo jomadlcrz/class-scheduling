@@ -1,44 +1,66 @@
-import type { Program, CreateProgramInput, UpdateProgramInput } from "~/types/program";
+import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import type { CreateProgramInput, Program, UpdateProgramInput } from "~/types/program";
 
-function findProgram(id: string): Program {
-  const p = programs.find((p) => p.id === id);
-  if (!p) throw new Error("Program not found.");
-  return p;
-}
+/** Programs CRUD against the curriculums module (registrar_admin). */
 
-function codeTaken(code: string, excludeId?: string): boolean {
-  return programs.some(
-    (p) => p.id !== excludeId && p.code.toLowerCase() === code.trim().toLowerCase(),
-  );
-}
+type ProgramsResponse = {
+  programs: {
+    program_id: number;
+    program_abbrev: string;
+    program_name: string;
+    program_type: string;
+    program_length: number;
+    department: { department_abbrev: string | null };
+  }[];
+};
 
+/** GET /programs — the backend answers an empty table with 404. */
 async function list(): Promise<Program[]> {
-  await delay();
-  return [...programs];
+  let data: ProgramsResponse;
+  try {
+    data = await apiGet<ProgramsResponse>("/programs");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.programs.map((p) => ({
+    id: p.program_id,
+    departmentCode: p.department?.department_abbrev ?? "",
+    code: p.program_abbrev,
+    name: p.program_name,
+    type: p.program_type,
+    lengthYears: p.program_length,
+  }));
 }
 
-async function create(input: CreateProgramInput): Promise<Program> {
-  await delay(300);
-  if (codeTaken(input.code))
-    throw new Error(`Program code "${input.code}" is already in use.`);
-  const program: Program = { id: newProgramId(), ...input };
-  programs.push(program);
-  return program;
+/** POST /programs — bulk endpoint; a single create sends a one-item list. */
+async function create(input: CreateProgramInput): Promise<void> {
+  await apiPost("/programs", {
+    programs: [
+      {
+        departmentName: input.departmentName,
+        programAbbrev: input.code,
+        programName: input.name,
+        programType: input.type,
+        programLength: input.lengthYears,
+      },
+    ],
+  });
 }
 
-async function update(id: string, input: UpdateProgramInput): Promise<Program> {
-  await delay();
-  const program = findProgram(id);
-  if (input.code && codeTaken(input.code, id))
-    throw new Error(`Program code "${input.code}" is already in use.`);
-  Object.assign(program, input);
-  return program;
+/** PUT /programs/:id — the department link is not updatable. */
+async function update(id: number, input: UpdateProgramInput): Promise<void> {
+  await apiPut(`/programs/${id}`, {
+    ...(input.code !== undefined && { programAbbrev: input.code }),
+    ...(input.name !== undefined && { programName: input.name }),
+    ...(input.type !== undefined && { programType: input.type }),
+    ...(input.lengthYears !== undefined && { programLength: input.lengthYears }),
+  });
 }
 
-async function remove(id: string): Promise<void> {
-  await delay();
-  const program = findProgram(id);
-  programs.splice(programs.indexOf(program), 1);
+/** DELETE /programs/:id */
+async function remove(id: number): Promise<void> {
+  await apiDelete(`/programs/${id}`);
 }
 
 export const programService = { list, create, update, remove };

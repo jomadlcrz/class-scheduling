@@ -1,18 +1,18 @@
 import type { BadgeTone } from "~/components/ui/badge";
 
 const BUILDING_BADGE_TONES: Record<string, BadgeTone> = {
-  SHS: "navy",
-  MB: "gold",
+  "SHS Building": "navy",
+  "Main Building": "gold",
 };
 
-export function getBuildingTone(code: string): BadgeTone {
-  return BUILDING_BADGE_TONES[code] ?? "slate";
+export function getBuildingTone(name: string): BadgeTone {
+  return BUILDING_BADGE_TONES[name] ?? "slate";
 }
 
+/** Backend building (app/modules/registrar_admin/facilities) — no code field exists there. */
 export type Building = {
-  id: string;
+  id: number;
   name: string;
-  code: string;
   floorCount: number;
 };
 

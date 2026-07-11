@@ -1,4 +1,4 @@
-import { type BadgeTone, Badge } from "~/components/ui/badge";
+import { Badge } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
@@ -10,13 +10,7 @@ import {
 } from "~/components/ui/table";
 import { getBuildingTone } from "~/types/building";
 import type { Room } from "~/types/room";
-import { ROOM_STATUS_LABELS, ROOM_TYPE_LABELS } from "~/types/room";
-
-const statusTone: Record<string, BadgeTone> = {
-  vacant: "emerald",
-  occupied: "red",
-  maintenance: "gold",
-};
+import { ROOM_STATUS_TONES } from "~/types/room";
 
 type RoomTableProps = {
   rooms: Room[];
@@ -48,15 +42,13 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
               <span className="font-medium text-navy-700 dark:text-white">{room.name}</span>
             </TableCell>
             <TableCell>
-              <Badge tone={getBuildingTone(room.buildingCode)}>{room.buildingCode}</Badge>
+              <Badge tone={getBuildingTone(room.buildingName)}>{room.buildingName}</Badge>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-center">{room.floor}</TableCell>
             <TableCell className="hidden md:table-cell text-center">{room.capacity}</TableCell>
-            <TableCell className="hidden sm:table-cell">{ROOM_TYPE_LABELS[room.type]}</TableCell>
+            <TableCell className="hidden sm:table-cell">{room.type}</TableCell>
             <TableCell>
-              <Badge tone={statusTone[room.status] ?? "slate"}>
-                {ROOM_STATUS_LABELS[room.status]}
-              </Badge>
+              <Badge tone={ROOM_STATUS_TONES[room.status] ?? "slate"}>{room.status}</Badge>
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">

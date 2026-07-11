@@ -3,19 +3,11 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
-import type { Program } from "~/types/program";
 import {
   SEMESTER_LABELS,
-  SEMESTERS,
-  SUBJECT_TYPE_LABELS,
-  SUBJECT_TYPES,
   YEAR_LEVEL_LABELS,
-  YEAR_LEVELS,
-  type CreateSubjectInput,
-  type Semester,
   type Subject,
-  type SubjectType,
-  type YearLevel,
+  type UpdateSubjectInput,
 } from "~/types/subject";
 import { subjectSchema } from "~/schemas/subject.schema";
 import { PrerequisitePicker } from "~/features/subjects/prerequisite-picker";
@@ -23,52 +15,37 @@ import { PrerequisitePicker } from "~/features/subjects/prerequisite-picker";
 type SubjectFormProps = {
   /** The subject being edited. */
   subject: Subject;
-  /** Full catalog — prerequisite candidates come from the selected program. */
+  /** Full catalog — prerequisite candidates come from the subject's program. */
   allSubjects: Subject[];
-  programs: Program[];
-  onSubmit: (input: CreateSubjectInput) => Promise<void>;
+  /** Backend SubjectTypeName values (enumService). */
+  subjectTypes: string[];
+  onSubmit: (input: UpdateSubjectInput) => Promise<void>;
   onCancel: () => void;
 };
 
-/** Edit form for an existing subject (creation happens on /subjects/new). */
-export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel }: SubjectFormProps) {
+/**
+ * Edit form for an existing subject (creation happens on /subjects/new).
+ * The curriculum slot (program/year/semester) is fixed by the backend.
+ */
+export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCancel }: SubjectFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [prerequisites, setPrerequisites] = useState<string[]>(subject.prerequisites);
 
-  // Controlled so the prerequisite options follow the selected program.
-  const [program, setProgram] = useState(subject.program);
-  const [prerequisiteIds, setPrerequisiteIds] = useState<string[]>(subject.prerequisiteIds);
-
+  // Prerequisites are referenced by subject code on the backend.
   const prerequisiteOptions = allSubjects
-    .filter((s) => s.program === program && s.id !== subject.id)
-    .map((s) => ({ id: s.id, code: s.code, title: s.title }));
-
-  function handleProgramChange(next: string) {
-    setProgram(next);
-    // Prerequisites belong to a program; switching invalidates them.
-    setPrerequisiteIds([]);
-  }
+    .filter((s) => s.program === subject.program && s.id !== subject.id)
+    .map((s) => ({ id: s.code, code: s.code, title: s.title }));
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const yearLevel = Number(data.get("subject-year-level")) as YearLevel;
-    const semester = Number(data.get("subject-semester")) as Semester;
     const code = String(data.get("subject-code") ?? "").trim();
     const title = String(data.get("subject-title") ?? "").trim();
     const units = Number(data.get("subject-units"));
-    const subjectType = String(data.get("subject-type")) as SubjectType;
+    const subjectType = String(data.get("subject-type") ?? "");
 
-    const result = subjectSchema.safeParse({
-      code,
-      title,
-      units,
-      program,
-      yearLevel,
-      semester,
-      subjectType,
-      prerequisiteIds,
-    });
+    const result = subjectSchema.safeParse({ code, title, units, subjectType, prerequisites });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -77,11 +54,7 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({
-        ...result.data,
-        yearLevel: result.data.yearLevel as YearLevel,
-        semester: result.data.semester as Semester,
-      });
+      await onSubmit(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setIsLoading(false);
@@ -92,35 +65,10 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
 
-      <Select
-        id="subject-program"
-        label="Program"
-        value={program}
-        onChange={(e) => handleProgramChange(e.target.value)}
-      >
-        {programs.map((p) => (
-          <option key={p.code} value={p.code}>
-            {p.code} — {p.name}
-          </option>
-        ))}
-      </Select>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Select id="subject-year-level" label="Year Level" defaultValue={subject.yearLevel}>
-          {YEAR_LEVELS.map((year) => (
-            <option key={year} value={year}>
-              {YEAR_LEVEL_LABELS[year]}
-            </option>
-          ))}
-        </Select>
-        <Select id="subject-semester" label="Semester" defaultValue={subject.semester}>
-          {SEMESTERS.map((semester) => (
-            <option key={semester} value={semester}>
-              {SEMESTER_LABELS[semester]}
-            </option>
-          ))}
-        </Select>
-      </div>
+      <p className="rounded-lg bg-slate-100 px-3 py-2 font-body text-sm text-slate-600 dark:bg-white/5 dark:text-slate-300">
+        {subject.program} · {YEAR_LEVEL_LABELS[subject.yearLevel]} ·{" "}
+        {SEMESTER_LABELS[subject.semester]}
+      </p>
 
       <Input
         id="subject-code"
@@ -151,9 +99,9 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
           defaultValue={subject.units}
         />
         <Select id="subject-type" label="Subject Type" defaultValue={subject.subjectType}>
-          {SUBJECT_TYPES.map((type) => (
+          {subjectTypes.map((type) => (
             <option key={type} value={type}>
-              {SUBJECT_TYPE_LABELS[type]}
+              {type}
             </option>
           ))}
         </Select>
@@ -161,8 +109,8 @@ export function SubjectForm({ subject, allSubjects, programs, onSubmit, onCancel
 
       <PrerequisitePicker
         options={prerequisiteOptions}
-        value={prerequisiteIds}
-        onChange={setPrerequisiteIds}
+        value={prerequisites}
+        onChange={setPrerequisites}
       />
 
       <div className="flex justify-end gap-2">

@@ -1,44 +1,60 @@
-import type { Department, CreateDepartmentInput, UpdateDepartmentInput } from "~/types/department";
+import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import type { CreateDepartmentInput, Department, UpdateDepartmentInput } from "~/types/department";
 
-function findDepartment(id: string): Department {
-  const d = departments.find((d) => d.id === id);
-  if (!d) throw new Error("Department not found.");
-  return d;
-}
+/** Departments CRUD against the facilities module (registrar_admin). */
 
-function codeTaken(code: string, excludeId?: string): boolean {
-  return departments.some(
-    (d) => d.id !== excludeId && d.code.toLowerCase() === code.trim().toLowerCase(),
-  );
-}
+type DepartmentsResponse = {
+  departments: {
+    department_id: number;
+    department_abbrev: string;
+    department_name: string;
+    building_name: string;
+    programs: { program_abbrev: string; program_name: string }[];
+  }[];
+};
 
+/** GET /departments — the backend answers an empty table with 404. */
 async function list(): Promise<Department[]> {
-  await delay();
-  return [...departments];
+  let data: DepartmentsResponse;
+  try {
+    data = await apiGet<DepartmentsResponse>("/departments");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.departments.map((d) => ({
+    id: d.department_id,
+    code: d.department_abbrev,
+    name: d.department_name,
+    buildingName: d.building_name,
+    programs: (d.programs ?? []).map((p) => ({ abbrev: p.program_abbrev, name: p.program_name })),
+  }));
 }
 
-async function create(input: CreateDepartmentInput): Promise<Department> {
-  await delay(300);
-  if (codeTaken(input.code))
-    throw new Error(`Department code "${input.code}" is already in use.`);
-  const department: Department = { id: newDepartmentId(), ...input };
-  departments.push(department);
-  return department;
+/** POST /departments — bulk endpoint; a single create sends a one-item list. */
+async function create(input: CreateDepartmentInput): Promise<void> {
+  await apiPost("/departments", {
+    departments: [
+      {
+        buildingName: input.buildingName,
+        departmentAbbrev: input.code,
+        departmentName: input.name,
+      },
+    ],
+  });
 }
 
-async function update(id: string, input: UpdateDepartmentInput): Promise<Department> {
-  await delay();
-  const department = findDepartment(id);
-  if (input.code && codeTaken(input.code, id))
-    throw new Error(`Department code "${input.code}" is already in use.`);
-  Object.assign(department, input);
-  return department;
+/** PUT /departments/:id — only the code and name are updatable. */
+async function update(id: number, input: UpdateDepartmentInput): Promise<void> {
+  await apiPut(`/departments/${id}`, {
+    ...(input.code !== undefined && { departmentAbbrev: input.code }),
+    ...(input.name !== undefined && { departmentName: input.name }),
+  });
 }
 
-async function remove(id: string): Promise<void> {
-  await delay();
-  const department = findDepartment(id);
-  departments.splice(departments.indexOf(department), 1);
+/** DELETE /departments/:id */
+async function remove(id: number): Promise<void> {
+  await apiDelete(`/departments/${id}`);
 }
 
 export const departmentService = { list, create, update, remove };

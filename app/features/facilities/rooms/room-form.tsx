@@ -5,17 +5,18 @@ import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { roomSchema } from "~/schemas/room.schema";
 import type { Building } from "~/types/building";
-import type { CreateRoomInput, Room, RoomStatus, RoomType } from "~/types/room";
-import { ROOM_STATUSES, ROOM_STATUS_LABELS, ROOM_TYPES, ROOM_TYPE_LABELS } from "~/types/room";
+import type { CreateRoomInput, Room } from "~/types/room";
 
 type RoomFormProps = {
   room?: Room;
   buildings: Building[];
+  /** Backend RoomType values (enumService). */
+  roomTypes: string[];
   onSubmit: (input: CreateRoomInput) => Promise<void>;
   onCancel: () => void;
 };
 
-export function RoomForm({ room, buildings, onSubmit, onCancel }: RoomFormProps) {
+export function RoomForm({ room, buildings, roomTypes, onSubmit, onCancel }: RoomFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isEdit = Boolean(room);
@@ -23,41 +24,43 @@ export function RoomForm({ room, buildings, onSubmit, onCancel }: RoomFormProps)
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const buildingId = String(data.get("room-building") ?? "");
+    const buildingName = isEdit ? room!.buildingName : String(data.get("room-building") ?? "");
     const floor = Number(data.get("room-floor"));
     const name = String(data.get("room-name") ?? "").trim();
     const capacity = Number(data.get("room-capacity"));
-    const type = String(data.get("room-type")) as RoomType;
-    const status = String(data.get("room-status")) as RoomStatus;
+    const type = isEdit ? room!.type : String(data.get("room-type") ?? "");
 
-    const result = roomSchema.safeParse({ buildingId, name, floor, capacity, type, status });
+    const result = roomSchema.safeParse({ buildingName, name, floor, capacity, type });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
     }
 
-    const building = buildings.find((b) => b.id === buildingId);
-    if (!building) { setError("Select a building."); return; }
-
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({ ...result.data, buildingCode: building.code });
+      await onSubmit(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setIsLoading(false);
     }
   }
 
-  const defaultBuildingId = room?.buildingId ?? buildings[0]?.id ?? "";
+  const defaultBuildingName = room?.buildingName ?? buildings[0]?.name ?? "";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
-      <Select id="room-building" label="Building" defaultValue={defaultBuildingId}>
+      <Select
+        id="room-building"
+        label="Building"
+        defaultValue={defaultBuildingName}
+        disabled={isEdit}
+        hint={isEdit ? "The building can't be changed after creation." : undefined}
+      >
         {buildings.map((b) => (
-          <option key={b.id} value={b.id}>
-            {b.code} — {b.name}
+          <option key={b.id} value={b.name}>
+            {b.name}
           </option>
         ))}
       </Select>
@@ -88,17 +91,16 @@ export function RoomForm({ room, buildings, onSubmit, onCancel }: RoomFormProps)
         placeholder="Room 101"
         defaultValue={room?.name ?? ""}
       />
-      <Select id="room-type" label="Type" defaultValue={room?.type ?? ROOM_TYPES[0]}>
-        {ROOM_TYPES.map((t) => (
+      <Select
+        id="room-type"
+        label="Type"
+        defaultValue={room?.type ?? roomTypes[0] ?? ""}
+        disabled={isEdit}
+        hint={isEdit ? "The room type can't be changed after creation." : undefined}
+      >
+        {roomTypes.map((t) => (
           <option key={t} value={t}>
-            {ROOM_TYPE_LABELS[t]}
-          </option>
-        ))}
-      </Select>
-      <Select id="room-status" label="Status" defaultValue={room?.status ?? "vacant"}>
-        {ROOM_STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {ROOM_STATUS_LABELS[s]}
+            {t}
           </option>
         ))}
       </Select>

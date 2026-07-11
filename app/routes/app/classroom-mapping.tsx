@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useDeferredValue } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/ui/empty-state";
-import { GridIcon, ListIcon, SearchIcon } from "~/components/ui/icons";
+import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
@@ -10,7 +10,7 @@ import { MappingGridView } from "~/features/classroom-mapping/mapping-grid-view"
 import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
 import { filterClassrooms } from "~/features/classroom-mapping/mapping-model";
 import { MappingTableView } from "~/features/classroom-mapping/mapping-table-view";
-import { ScheduleViewToggle } from "~/features/schedules/schedule-view-toggle";
+import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { classroomMappingService } from "~/services/classroom-mapping.service";
@@ -24,7 +24,7 @@ export function meta() {
   ];
 }
 
-const SEMESTER_OPTIONS = ["1st Semester", "2nd Semester", "Summer"];
+const SEMESTER_OPTIONS = ["1st Semester", "2nd Semester"];
 
 export default function ClassroomMappingRoute() {
   return (
@@ -42,34 +42,34 @@ function ClassroomMappingPage() {
   const [semester, setSemester] = useState(SEMESTER_OPTIONS[0]);
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [rawSearch, setRawSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // const load = useCallback(async () => {
-  //   setLoadError(null);
-  //   setClassrooms(null);
-  //   try {
-  //     const [result, buildingList] = await Promise.all([
-  //       classroomMappingService.list({
-  //         schoolYear: schoolYear || undefined,
-  //         semester: semester || undefined,
-  //       }),
-  //       buildingService.list(),
-  //     ]);
-  //     setClassrooms(result.classrooms);
-  //     setSchoolYears(result.schoolYears);
-  //     if (!schoolYear && result.schoolYears.length > 0) {
-  //       setSchoolYear(result.schoolYears[0]);
-  //     }
-  //     setBuildings(buildingList);
-  //   } catch (err) {
-  //     setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
-  //   }
-  // }, [schoolYear, semester]);
+  const load = useCallback(async () => {
+    setLoadError(null);
+    setClassrooms(null);
+    try {
+      const [result, buildingList] = await Promise.all([
+        classroomMappingService.list({
+          schoolYear: schoolYear || undefined,
+          semester: semester || undefined,
+        }),
+        buildingService.list(),
+      ]);
+      setClassrooms(result.classrooms);
+      setSchoolYears(result.schoolYears);
+      if (!schoolYear && result.schoolYears.length > 0) {
+        setSchoolYear(result.schoolYears[0]);
+      }
+      setBuildings(buildingList);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
+    }
+  }, [schoolYear, semester]);
 
-  // useEffect(() => {
-  //   void load();
-  // }, [load]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const search = useDeferredValue(rawSearch);
 
@@ -90,6 +90,9 @@ function ClassroomMappingPage() {
       <PageHeader
         title="Classroom Mapping"
         description="Weekly schedule and availability for all classrooms by room."
+        actions={
+          <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+        }
       />
 
       <div className="mt-4 flex flex-col gap-4">
@@ -104,7 +107,7 @@ function ClassroomMappingPage() {
             </Select>
             <Select label="Building" id="cm-building" hideLabel value={buildingFilter} onChange={e => setBuildingFilter(e.target.value)}>
               <option value="all">All buildings</option>
-              {buildings.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              {buildings.map(b => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
             </Select>
           </div>
 
@@ -122,13 +125,31 @@ function ClassroomMappingPage() {
             />
           </div>
         </div>
-      </div>
 
-      <ResultState tone="error" title="Not available">
-        This feature is not connected to the backend yet.
-      </ResultState>
+        <MappingLegend />
+
+        {loadError ? (
+          <ResultState tone="error" title="Unable to load">
+            {loadError}
+          </ResultState>
+        ) : classrooms === null ? (
+          <div
+            role="status"
+            aria-label="Loading classroom mapping"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState title="No classrooms found">
+            No classrooms match the current filters.
+          </EmptyState>
+        ) : viewMode === "grid" ? (
+          <MappingGridView classrooms={filtered} />
+        ) : (
+          <MappingTableView classrooms={filtered} />
+        )}
+      </div>
     </div>
   );
 }
-
-

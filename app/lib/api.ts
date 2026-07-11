@@ -104,11 +104,11 @@ export function apiPatch<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "PATCH", body);
 }
 
-function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
+export function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "PUT", body);
 }
 
-function apiDelete<T>(endpoint: string, body?: unknown): Promise<T> {
+export function apiDelete<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "DELETE", body);
 }
 

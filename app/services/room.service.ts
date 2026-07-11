@@ -1,53 +1,78 @@
-import type { Room, CreateRoomInput, UpdateRoomInput } from "~/types/room";
+import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import type { CreateRoomInput, Room, UpdateRoomInput } from "~/types/room";
 
-function findRoom(id: string): Room {
-  const r = rooms.find((r) => r.id === id);
-  if (!r) throw new Error("Room not found.");
-  return r;
-}
+/** Rooms CRUD against the facilities module (registrar_admin). */
 
-function nameTaken(buildingId: string, floor: number, name: string, excludeId?: string): boolean {
-  return rooms.some(
-    (r) =>
-      r.id !== excludeId &&
-      r.buildingId === buildingId &&
-      r.floor === floor &&
-      r.name.toLowerCase() === name.trim().toLowerCase(),
+type RoomsResponse = {
+  buildings: {
+    building_id: number;
+    building_name: string;
+    floor_count: number;
+    rooms: {
+      room_id: number;
+      floor_level: number;
+      room_name: string;
+      room_type: string;
+      room_capacity: number;
+      room_status: string;
+    }[];
+  }[];
+};
+
+/** GET /rooms — rooms come nested per building; flattened here. 404 → empty. */
+async function list(): Promise<Room[]> {
+  let data: RoomsResponse;
+  try {
+    data = await apiGet<RoomsResponse>("/rooms");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.buildings.flatMap((b) =>
+    b.rooms.map((r) => ({
+      id: r.room_id,
+      buildingId: b.building_id,
+      buildingName: b.building_name,
+      floor: r.floor_level,
+      name: r.room_name,
+      capacity: r.room_capacity,
+      type: r.room_type,
+      status: r.room_status,
+    })),
   );
 }
 
-async function list(): Promise<Room[]> {
-  await delay();
-  return [...rooms];
+/** POST /rooms — bulk floors-per-building endpoint; a single create sends one floor with one room. */
+async function create(input: CreateRoomInput): Promise<void> {
+  await apiPost("/rooms", {
+    buildingName: input.buildingName,
+    floors: [
+      {
+        floorLevel: input.floor,
+        rooms: [
+          {
+            roomName: input.name,
+            roomType: input.type,
+            roomCapacity: input.capacity,
+          },
+        ],
+      },
+    ],
+  });
 }
 
-async function create(input: CreateRoomInput): Promise<Room> {
-  await delay(300);
-  if (nameTaken(input.buildingId, input.floor, input.name))
-    throw new Error(
-      `Room "${input.name}" already exists on floor ${input.floor} of this building.`,
-    );
-  const room: Room = { id: newRoomId(), ...input };
-  rooms.push(room);
-  return room;
+/** PUT /rooms/:id — only floor, name, and capacity are updatable. */
+async function update(id: number, input: UpdateRoomInput): Promise<void> {
+  await apiPut(`/rooms/${id}`, {
+    ...(input.floor !== undefined && { floorLevel: input.floor }),
+    ...(input.name !== undefined && { roomName: input.name }),
+    ...(input.capacity !== undefined && { roomCapacity: input.capacity }),
+  });
 }
 
-async function update(id: string, input: UpdateRoomInput): Promise<Room> {
-  await delay();
-  const room = findRoom(id);
-  const buildingId = input.buildingId ?? room.buildingId;
-  const floor = input.floor ?? room.floor;
-  const name = input.name ?? room.name;
-  if (nameTaken(buildingId, floor, name, id))
-    throw new Error(`Room "${name}" already exists on floor ${floor} of this building.`);
-  Object.assign(room, input);
-  return room;
-}
-
-async function remove(id: string): Promise<void> {
-  await delay();
-  const room = findRoom(id);
-  rooms.splice(rooms.indexOf(room), 1);
+/** DELETE /rooms/:id */
+async function remove(id: number): Promise<void> {
+  await apiDelete(`/rooms/${id}`);
 }
 
 export const roomService = { list, create, update, remove };

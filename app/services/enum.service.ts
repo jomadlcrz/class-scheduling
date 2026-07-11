@@ -5,20 +5,35 @@ import { apiGet } from "~/lib/api";
  * frontend — a pure pass-through of the options endpoint.
  */
 
+export type DayOfWeekOption = {
+  id: number;
+  name: string;
+};
+
 export type EnumOptions = {
   gender: string[];
   civilStatus: string[];
+  classroomStatus: string[];
   roleName: string[];
   studentType: string[];
   academicStatus: string[];
+  personnelType: string[];
+  roomType: string[];
+  subjectType: string[];
+  dayOfWeek: DayOfWeekOption[];
 };
 
 type EnumOptionsResponse = {
   gender: string[];
   civil_status: string[];
+  classroom_status: string[];
   role_name: string[];
   student_type: string[];
   academic_status: string[];
+  personnel_type: string[];
+  room_type: string[];
+  subject_type: string[];
+  day_of_week: DayOfWeekOption[];
 };
 
 // Static per deploy, so one fetch serves the whole session.
@@ -29,9 +44,14 @@ function getOptions(): Promise<EnumOptions> {
     .then((data) => ({
       gender: data.gender,
       civilStatus: data.civil_status,
+      classroomStatus: data.classroom_status,
       roleName: data.role_name,
       studentType: data.student_type,
       academicStatus: data.academic_status,
+      personnelType: data.personnel_type,
+      roomType: data.room_type,
+      subjectType: data.subject_type,
+      dayOfWeek: data.day_of_week,
     }))
     .catch((err) => {
       cached = null; // allow a retry on the next call

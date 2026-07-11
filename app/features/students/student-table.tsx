@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import type { Program, ProgramType } from "~/types/program";
-import { PROGRAM_TYPE_LABELS } from "~/types/program";
 import type { Student } from "~/types/student";
 import { STUDENT_STATUS_LABELS } from "~/types/student";
 import { YEAR_LEVEL_LABELS } from "~/types/subject";
@@ -82,7 +81,7 @@ export function StudentTable({ students, programs, onEdit, onToggleStatus }: Stu
                     </span>
                     {program && (
                       <span className="ml-1.5 text-slate-500 dark:text-slate-400">
-                        {PROGRAM_TYPE_LABELS[program.type]}
+                        {program.type}
                       </span>
                     )}
                   </div>

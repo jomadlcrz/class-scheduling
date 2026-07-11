@@ -1,13 +1,7 @@
-import { Badge, type BadgeTone } from "~/components/ui/badge";
-import { SUBJECT_TYPE_LABELS, type SubjectType } from "~/types/subject";
+import { Badge } from "~/components/ui/badge";
+import { SUBJECT_TYPE_TONES } from "~/types/subject";
 
-const typeTones: Record<SubjectType, BadgeTone> = {
-  gened: "violet",
-  "major-lab": "navy",
-  major: "emerald",
-  minor: "slate",
-};
-
-export function SubjectTypeBadge({ type }: { type: SubjectType }) {
-  return <Badge tone={typeTones[type]}>{SUBJECT_TYPE_LABELS[type]}</Badge>;
+/** Renders a backend SubjectTypeName value, e.g. "GenEd" or "Major with Lab". */
+export function SubjectTypeBadge({ type }: { type: string }) {
+  return <Badge tone={SUBJECT_TYPE_TONES[type] ?? "slate"}>{type}</Badge>;
 }

@@ -16,16 +16,6 @@ type CurriculumTableProps = {
 export function CurriculumTable({ curriculum, search = "" }: CurriculumTableProps) {
   const query = search.trim().toLowerCase();
 
-  const codeById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const group of curriculum.groups) {
-      for (const subject of group.subjects) {
-        map.set(subject.id, subject.code);
-      }
-    }
-    return map;
-  }, [curriculum]);
-
   const filteredGroups = useMemo(() => {
     if (!query) return curriculum.groups;
     return curriculum.groups
@@ -59,7 +49,6 @@ export function CurriculumTable({ curriculum, search = "" }: CurriculumTableProp
             yearLevel={year}
             yearUnits={yearUnits}
             groups={yearGroups}
-            codeById={codeById}
             forceOpen={query.length > 0}
           />
         );
@@ -72,13 +61,11 @@ function YearBlock({
   yearLevel,
   yearUnits,
   groups,
-  codeById,
   forceOpen,
 }: {
   yearLevel: YearLevel;
   yearUnits: number;
   groups: CurriculumGroup[];
-  codeById: Map<string, string>;
   forceOpen: boolean;
 }) {
   return (
@@ -95,7 +82,7 @@ function YearBlock({
       <div className="p-5">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {groups.map((group) => (
-            <SemesterCard key={group.semester} group={group} codeById={codeById} />
+            <SemesterCard key={group.semester} group={group} />
           ))}
         </div>
       </div>
@@ -103,7 +90,7 @@ function YearBlock({
   );
 }
 
-function SemesterCard({ group, codeById }: { group: CurriculumGroup; codeById: Map<string, string> }) {
+function SemesterCard({ group }: { group: CurriculumGroup }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-navy-800/60">
       <div className="px-3 py-2 text-center">
@@ -112,7 +99,7 @@ function SemesterCard({ group, codeById }: { group: CurriculumGroup; codeById: M
         </span>
       </div>
       <div className="flex-1">
-        <CurriculumSubjects group={group} codeById={codeById} />
+        <CurriculumSubjects group={group} />
       </div>
     </div>
   );

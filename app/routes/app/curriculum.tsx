@@ -4,7 +4,6 @@ import { EmptyState } from "~/components/ui/empty-state";
 import { PrinterIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { ResultState } from "~/components/feedback/result-state";
 import { Tooltip } from "~/components/ui/tooltip";
 import { CurriculumForm } from "~/features/curriculum/curriculum-form";
 import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
@@ -36,21 +35,30 @@ function CurriculumPage() {
   const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
   const [search, setSearch] = useState("");
 
-  // useEffect(() => {
-  //   curriculumService.listPrograms().then((list) => {
-  //     setPrograms(list);
-  //     if (list.length > 0) setSelectedCode(list[0].code);
-  //   });
-  // }, []);
+  useEffect(() => {
+    curriculumService
+      .listPrograms()
+      .then((list) => {
+        setPrograms(list);
+        if (list.length > 0) setSelectedCode(list[0].code);
+      })
+      .catch(() => setPrograms([]));
+  }, []);
 
-  // useEffect(() => {
-  //   if (!selectedCode) {
-  //     setCurriculum(null);
-  //     return;
-  //   }
-  //   setCurriculum("loading");
-  //   curriculumService.getByProgram(selectedCode).then(setCurriculum);
-  // }, [selectedCode]);
+  useEffect(() => {
+    if (!selectedCode) {
+      setCurriculum(null);
+      return;
+    }
+    setCurriculum("loading");
+    curriculumService
+      .getByProgram(selectedCode)
+      .then(setCurriculum)
+      .catch(() => setCurriculum(null));
+  }, [selectedCode]);
+
+  const isLoaded = curriculum !== null && curriculum !== "loading";
+  const hasSubjects = isLoaded && curriculum.groups.length > 0;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -70,9 +78,50 @@ function CurriculumPage() {
           curriculum={curriculum}
         />
 
-        <ResultState tone="error" title="Not available">
-          This feature is not connected to the backend yet.
-        </ResultState>
+        {curriculum === "loading" || programs === null ? (
+          <div
+            role="status"
+            aria-label="Loading curriculum"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : !isLoaded ? (
+          <EmptyState title="No program selected">
+            Select a program to view its curriculum.
+          </EmptyState>
+        ) : !hasSubjects ? (
+          <EmptyState title="No subjects yet">
+            {curriculum.programCode} has no curriculum entries. Add subjects to get started.
+          </EmptyState>
+        ) : (
+          <>
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <Input
+                  id="curriculum-search"
+                  label="Search"
+                  type="search"
+                  placeholder="Code or title…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Tooltip label="Print curriculum">
+                <button
+                  type="button"
+                  aria-label="Print curriculum"
+                  onClick={() => openCurriculumPrint(curriculum)}
+                  className="grid size-10 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <PrinterIcon />
+                </button>
+              </Tooltip>
+            </div>
+
+            <CurriculumTable curriculum={curriculum} search={search} />
+          </>
+        )}
       </div>
     </div>
   );

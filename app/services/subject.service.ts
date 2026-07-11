@@ -1,90 +1,115 @@
-import type { CreateSubjectInput, Subject, UpdateSubjectInput } from "~/types/subject";
+import { apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import type { Semester, Subject, UpdateSubjectInput, YearLevel } from "~/types/subject";
 
-/** MOCK curriculum subject service backed by the shared in-memory store. */
+/** Curriculum subjects against the curriculums module (registrar_admin). */
 
-function findSubject(id: string): Subject {
-  const subject = subjects.find((s) => s.id === id);
-  if (!subject) throw new Error("Subject not found.");
-  return subject;
-}
+type SubjectsResponse = {
+  program_name: string;
+  program_abbrev: string;
+  program_total_units: number;
+  curriculum_details: {
+    year_level: number;
+    year_total_units: number;
+    semester_details: {
+      semester: number;
+      semester_total_units: number;
+      subjects: {
+        subject_id: number;
+        subject_code: string;
+        descriptive_title: string;
+        units: number;
+        subject_type: string;
+        prerequisites: { subject_code: string }[];
+      }[];
+    }[];
+  }[];
+}[];
 
-/** Codes are unique within a program; other programs may reuse them. */
-function codeTaken(code: string, program: string, excludeId?: string): boolean {
-  return subjects.some(
-    (s) =>
-      s.id !== excludeId &&
-      s.program === program &&
-      s.code.toLowerCase() === code.toLowerCase(),
+/** GET /subjects — grouped per program/year/semester; flattened here. */
+async function list(): Promise<Subject[]> {
+  const data = await apiGet<SubjectsResponse>("/subjects");
+  return data.flatMap((program) =>
+    program.curriculum_details.flatMap((year) =>
+      year.semester_details.flatMap((sem) =>
+        sem.subjects.map((s) => ({
+          id: s.subject_id,
+          program: program.program_abbrev,
+          yearLevel: year.year_level as YearLevel,
+          semester: sem.semester as Semester,
+          code: s.subject_code,
+          title: s.descriptive_title,
+          units: s.units,
+          subjectType: s.subject_type,
+          prerequisites: s.prerequisites.map((p) => p.subject_code),
+        })),
+      ),
+    ),
   );
 }
 
-function assertValidPrerequisites(
-  prerequisiteIds: string[],
-  program: string,
-  selfId?: string,
-) {
-  for (const id of prerequisiteIds) {
-    if (id === selfId) {
-      throw new Error("A subject cannot be its own prerequisite.");
-    }
-    const prerequisite = subjects.find((s) => s.id === id);
-    if (!prerequisite || prerequisite.program !== program) {
-      throw new Error("Prerequisites must be subjects from the same program.");
-    }
-  }
-}
+export type CurriculumSubjectEntry = {
+  yearLevel: number;
+  semester: number;
+  code: string;
+  title: string;
+  units: number;
+  subjectType: string;
+  prerequisites: string[];
+};
 
-async function list(): Promise<Subject[]> {
-  await delay();
-  return [...subjects];
-}
-
-async function create(input: CreateSubjectInput): Promise<Subject> {
-  await delay();
-  if (codeTaken(input.code, input.program)) {
-    throw new Error(`A subject with the code ${input.code} already exists in ${input.program}.`);
-  }
-  assertValidPrerequisites(input.prerequisiteIds, input.program);
-
-  const subject: Subject = { id: newSubjectId(), ...input };
-  subjects.push(subject);
-  return subject;
-}
-
-async function update(id: string, input: UpdateSubjectInput): Promise<Subject> {
-  await delay();
-  const subject = findSubject(id);
-  const program = input.program ?? subject.program;
-  const code = input.code ?? subject.code;
-
-  if (codeTaken(code, program, id)) {
-    throw new Error(`A subject with the code ${code} already exists in ${program}.`);
-  }
-  assertValidPrerequisites(input.prerequisiteIds ?? subject.prerequisiteIds, program, id);
-
-  Object.assign(subject, input);
-  return subject;
-}
-
-async function remove(id: string): Promise<void> {
-  await delay();
-  const subject = findSubject(id);
-
-  const dependents = subjects.filter((s) => s.prerequisiteIds.includes(id));
-  if (dependents.length > 0) {
-    throw new Error(
-      `Cannot delete ${subject.code} — it is a prerequisite of ${dependents
-        .map((s) => s.code)
-        .join(", ")}.`,
-    );
+/** POST /subjects — one nested payload creates a whole batch of curriculum entries. */
+async function createCurriculum(
+  programAbbrev: string,
+  programName: string,
+  entries: CurriculumSubjectEntry[],
+): Promise<void> {
+  const yearLevels = new Map<number, Map<number, CurriculumSubjectEntry[]>>();
+  for (const entry of entries) {
+    const semesters = yearLevels.get(entry.yearLevel) ?? new Map();
+    yearLevels.set(entry.yearLevel, semesters);
+    const subjects = semesters.get(entry.semester) ?? [];
+    semesters.set(entry.semester, subjects);
+    subjects.push(entry);
   }
 
-  subjects.splice(subjects.indexOf(subject), 1);
+  await apiPost("/subjects", {
+    programAbbrev,
+    programName,
+    yearLevels: [...yearLevels.entries()].map(([yearName, semesters]) => ({
+      yearName,
+      semesters: [...semesters.entries()].map(([semesterName, subjects]) => ({
+        semesterName,
+        subjects: subjects.map((s) => ({
+          subjectCode: s.code,
+          descriptiveTitle: s.title,
+          units: s.units,
+          subjectType: s.subjectType,
+          prerequisites: s.prerequisites.map((code) => ({ subjectCode: code })),
+        })),
+      })),
+    })),
+  });
+}
+
+/** PUT /subjects/:id — the curriculum slot (program/year/semester) is fixed. */
+async function update(id: number, input: UpdateSubjectInput): Promise<void> {
+  await apiPut(`/subjects/${id}`, {
+    subjectCode: input.code,
+    descriptiveTitle: input.title,
+    units: input.units,
+    subjectType: input.subjectType,
+    prerequisites: input.prerequisites.map((code) => ({ subjectCode: code })),
+  });
+}
+
+/** DELETE /subjects/:id — soft delete; the backend requires the code as confirmation. */
+async function remove(id: number, confirmCode: string): Promise<void> {
+  await apiDelete(`/subjects/${id}`, { confirm: confirmCode });
 }
 
 export const subjectService = {
   list,
-  create,
+  createCurriculum,
   update,
   remove,
 };

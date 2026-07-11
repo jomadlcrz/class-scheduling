@@ -4,7 +4,6 @@ import { FormError } from "~/components/forms/form-error";
 import { Input, inputClassName } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { PlusIcon, TrashIcon } from "~/components/ui/icons";
-import { SUBJECT_TYPE_LABELS, type SubjectType } from "~/types/subject";
 import type { CreateWeeklyHourAllocationInput, LabSlot } from "~/types/weekly-hour-allocation";
 
 type Props = {
@@ -19,7 +18,7 @@ const TIME_OPTIONS = [
   "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM",
 ];
 
-const HAS_LAB_TYPES = new Set(["major-lab"]);
+const HAS_LAB_TYPES = new Set(["Major with Lab"]);
 
 export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
   const [subjectType, setSubjectType] = useState("");
@@ -30,7 +29,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasLab = HAS_LAB_TYPES.has(subjectType as SubjectType);
+  const hasLab = HAS_LAB_TYPES.has(subjectType);
 
   function addLabSlot() {
     const last = labSlots[labSlots.length - 1];
@@ -131,7 +130,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
         onChange={(e) => {
           setSubjectType(e.target.value);
           setError(null);
-          if (!HAS_LAB_TYPES.has(e.target.value as SubjectType)) {
+          if (!HAS_LAB_TYPES.has(e.target.value)) {
             setLabHours("");
             setLabSlots([{ start: "", end: "" }]);
           }
@@ -139,7 +138,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
       >
         <option value="">— Select subject type —</option>
         {types.map((t) => (
-          <option key={t} value={t}>{SUBJECT_TYPE_LABELS[t as SubjectType] ?? t}</option>
+          <option key={t} value={t}>{t}</option>
         ))}
       </Select>
 

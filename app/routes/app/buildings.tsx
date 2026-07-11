@@ -6,7 +6,6 @@ import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { ResultState } from "~/components/feedback/result-state";
 import { Spinner } from "~/components/ui/spinner";
 import { BuildingForm } from "~/features/facilities/buildings/building-form";
 import { BuildingTable } from "~/features/facilities/buildings/building-table";
@@ -37,37 +36,42 @@ function BuildingsPage() {
   const [editTarget, setEditTarget] = useState<Building | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Building | null>(null);
 
-  // useEffect(() => {
-  //   buildingService.list().then(setBuildings);
-  // }, []);
+  useEffect(() => {
+    buildingService.list().then(setBuildings).catch(() => setBuildings([]));
+  }, []);
 
   const visibleBuildings = useMemo(() => {
     if (!buildings) return [];
     const q = search.trim().toLowerCase();
     return buildings
-      .filter((b) => !q || b.name.toLowerCase().includes(q) || b.code.toLowerCase().includes(q))
+      .filter((b) => !q || b.name.toLowerCase().includes(q))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [buildings, search]);
 
   const pagination = usePagination(visibleBuildings, search);
 
-  // async function handleCreate(input: CreateBuildingInput) {
-  //   const created = await buildingService.create(input);
-  //   setBuildings((curr) => [...(curr ?? []), created]);
-  //   setCreateOpen(false);
-  // }
+  // Mutations return only a message, so the list is refetched afterwards.
+  async function refresh() {
+    setBuildings(await buildingService.list());
+  }
 
-  // async function handleEdit(input: CreateBuildingInput) {
-  //   if (!editTarget) return;
-  //   const updated = await buildingService.update(editTarget.id, input);
-  //   setBuildings((curr) => curr!.map((b) => (b.id === updated.id ? updated : b)));
-  //   setEditTarget(null);
-  // }
+  async function handleCreate(input: CreateBuildingInput) {
+    await buildingService.create(input);
+    await refresh();
+    setCreateOpen(false);
+  }
 
-  // async function handleDelete(target: Building) {
-  //   await buildingService.remove(target.id);
-  //   setBuildings((curr) => curr!.filter((b) => b.id !== target.id));
-  // }
+  async function handleEdit(input: CreateBuildingInput) {
+    if (!editTarget) return;
+    await buildingService.update(editTarget.id, input);
+    await refresh();
+    setEditTarget(null);
+  }
+
+  async function handleDelete(target: Building) {
+    await buildingService.remove(target.id);
+    await refresh();
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -87,15 +91,41 @@ function BuildingsPage() {
           id="building-search"
           label="Search"
           type="search"
-          placeholder="Name or code…"
+          placeholder="Building name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
+        {buildings === null ? (
+          <div
+            role="status"
+            aria-label="Loading buildings"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : visibleBuildings.length === 0 ? (
+          <EmptyState title="No buildings found">
+            No buildings match the current search. Adjust the search or add a new building.
+          </EmptyState>
+        ) : (
+          <>
+            <BuildingTable
+              buildings={pagination.pageItems}
+              onEdit={setEditTarget}
+              onDelete={setDeleteTarget}
+            />
+            <Pagination
+              page={pagination.page}
+              totalItems={pagination.totalItems}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setPage}
+            />
+          </>
+        )}
       </div>
 
-      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Building">
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Building">
         <BuildingForm onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
       </Modal>
 
@@ -120,8 +150,8 @@ function BuildingsPage() {
       >
         Building{" "}
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.name}</span>{" "}
-        ({deleteTarget?.code}) will be permanently removed.
-      </ConfirmDialog> */}
+        will be permanently removed.
+      </ConfirmDialog>
     </div>
   );
 }

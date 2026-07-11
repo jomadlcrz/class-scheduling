@@ -1,12 +1,11 @@
-import type { SubjectType } from "~/types/subject";
-
 export type LabSlot = {
   start: string;
   end: string;
 };
 
 export type WeeklyHourAllocation = {
-  subjectType: SubjectType;
+  /** Backend SubjectTypeName value, e.g. "GenEd". */
+  subjectType: string;
   subjectTypeLabel: string;
   lectureHours: number;
   labHours: number;
@@ -15,7 +14,7 @@ export type WeeklyHourAllocation = {
 };
 
 export type CreateWeeklyHourAllocationInput = {
-  subjectType: SubjectType;
+  subjectType: string;
   lectureHours: number;
   labHours: number;
   meetings: number;

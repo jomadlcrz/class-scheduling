@@ -7,10 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  type Program,
-  PROGRAM_TYPE_LABELS,
-} from "~/types/program";
+import { type Program } from "~/types/program";
 import { type ClassSet } from "~/types/set";
 import { YEAR_LEVEL_LABELS } from "~/types/subject";
 
@@ -62,7 +59,7 @@ export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
                     </span>
                     {program && (
                       <span className="ml-1.5 text-slate-500 dark:text-slate-400">
-                        {PROGRAM_TYPE_LABELS[program.type]}
+                        {program.type}
                       </span>
                     )}
                   </div>

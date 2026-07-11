@@ -1,31 +1,40 @@
-export const ROOM_TYPES = ["lecture", "laboratory", "office"] as const;
-export type RoomType = (typeof ROOM_TYPES)[number];
+import type { BadgeTone } from "~/components/ui/badge";
 
-export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
-  lecture: "Lecture",
-  laboratory: "Laboratory",
-  office: "Office",
-};
-
-export const ROOM_STATUSES = ["vacant", "occupied", "maintenance"] as const;
-export type RoomStatus = (typeof ROOM_STATUSES)[number];
-
-export const ROOM_STATUS_LABELS: Record<RoomStatus, string> = {
-  vacant: "Vacant",
-  occupied: "Occupied",
-  maintenance: "Maintenance",
+/**
+ * Room type and status vocabularies live in the backend (app/enums.py) and are
+ * fetched via enumService — only display tones are mapped here, by value.
+ */
+export const ROOM_STATUS_TONES: Record<string, BadgeTone> = {
+  Vacant: "emerald",
+  Occupied: "red",
+  Maintenance: "gold",
+  Archived: "slate",
 };
 
 export type Room = {
-  id: string;
-  buildingId: string;
-  buildingCode: string;
+  id: number;
+  buildingId: number;
+  buildingName: string;
   floor: number;
   name: string;
   capacity: number;
-  type: RoomType;
-  status: RoomStatus;
+  /** Backend RoomType value, e.g. "Lecture Room". */
+  type: string;
+  /** Backend ClassroomStatus value, e.g. "Vacant" — managed by the scheduler. */
+  status: string;
 };
 
-export type CreateRoomInput = Omit<Room, "id">;
-export type UpdateRoomInput = Partial<CreateRoomInput>;
+/** Status is backend-managed and buildings are referenced by name on create. */
+export type CreateRoomInput = {
+  buildingName: string;
+  floor: number;
+  name: string;
+  capacity: number;
+  type: string;
+};
+
+export type UpdateRoomInput = {
+  floor?: number;
+  name?: string;
+  capacity?: number;
+};

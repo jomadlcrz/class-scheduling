@@ -20,10 +20,9 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const name = String(data.get("building-name") ?? "").trim();
-    const code = String(data.get("building-code") ?? "").trim().toUpperCase();
     const floorCount = Number(data.get("building-floors"));
 
-    const result = buildingSchema.safeParse({ name, code, floorCount });
+    const result = buildingSchema.safeParse({ name, floorCount });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -48,14 +47,6 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
         required
         placeholder="Main Building"
         defaultValue={building?.name ?? ""}
-      />
-      <Input
-        id="building-code"
-        label="Building Code"
-        required
-        placeholder="MB"
-        defaultValue={building?.code ?? ""}
-        hint="Short code used for room references, e.g. MB, STB, BAB."
       />
       <Input
         id="building-floors"

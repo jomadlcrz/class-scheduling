@@ -10,18 +10,18 @@ import { Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { ResultState } from "~/components/feedback/result-state";
 import { SubjectForm } from "~/features/subjects/subject-form";
 import { SubjectTable } from "~/features/subjects/subject-table";
 import { PageHeader } from "~/layouts/page-header";
+import { enumService } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
 import { subjectService } from "~/services/subject.service";
 import type { Program } from "~/types/program";
 import {
   YEAR_LEVEL_LABELS,
   YEAR_LEVELS,
-  type CreateSubjectInput,
   type Subject,
+  type UpdateSubjectInput,
 } from "~/types/subject";
 
 export function meta() {
@@ -46,6 +46,7 @@ function SubjectsPage() {
   const navigate = useNavigate();
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
+  const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [program, setProgram] = useState("all");
   const [yearLevel, setYearLevel] = useState("all");
@@ -54,12 +55,14 @@ function SubjectsPage() {
   const [editTarget, setEditTarget] = useState<Subject | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Subject | null>(null);
 
-  // useEffect(() => {
-  //   Promise.all([subjectService.list(), programService.list()]).then(([s, p]) => {
-  //     setSubjects(s);
-  //     setPrograms(p);
-  //   });
-  // }, []);
+  useEffect(() => {
+    subjectService.list().then(setSubjects).catch(() => setSubjects([]));
+    programService.list().then(setPrograms).catch(() => setPrograms([]));
+    enumService
+      .getOptions()
+      .then((options) => setSubjectTypes(options.subjectType))
+      .catch(() => {});
+  }, []);
 
   const resetKey = `${search}|${program}|${yearLevel}`;
 
@@ -90,17 +93,23 @@ function SubjectsPage() {
 
   const pagination = usePagination(visibleSubjects, resetKey);
 
-  // async function handleFormSubmit(input: CreateSubjectInput) {
-  //   if (!editTarget) return;
-  //   const updated = await subjectService.update(editTarget.id, input);
-  //   setSubjects((current) => current!.map((s) => (s.id === updated.id ? updated : s)));
-  //   setEditTarget(null);
-  // }
+  // Mutations return only a message, so the list is refetched afterwards.
+  async function refresh() {
+    setSubjects(await subjectService.list());
+  }
 
-  // async function handleDelete(target: Subject) {
-  //   await subjectService.remove(target.id);
-  //   setSubjects((current) => current!.filter((s) => s.id !== target.id));
-  // }
+  async function handleFormSubmit(input: UpdateSubjectInput) {
+    if (!editTarget) return;
+    await subjectService.update(editTarget.id, input);
+    await refresh();
+    setEditTarget(null);
+  }
+
+  async function handleDelete(target: Subject) {
+    // The backend asks for the subject code as the deletion confirmation.
+    await subjectService.remove(target.id, target.code);
+    await refresh();
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -155,17 +164,42 @@ function SubjectsPage() {
           </Select>
         </div>
 
-        <ResultState tone="error" title="Not available">
-          This feature is not connected to the backend yet.
-        </ResultState>
+        {subjects === null ? (
+          <div
+            role="status"
+            aria-label="Loading subjects"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : visibleSubjects.length === 0 ? (
+          <EmptyState title="No subjects found">
+            No subjects match the current filters. Adjust the search or add a new subject.
+          </EmptyState>
+        ) : (
+          <>
+            <SubjectTable
+              subjects={pagination.pageItems}
+              programs={programs ?? []}
+              onEdit={setEditTarget}
+              onDelete={setDeleteTarget}
+            />
+            <Pagination
+              page={pagination.page}
+              totalItems={pagination.totalItems}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setPage}
+            />
+          </>
+        )}
       </div>
 
-      {/* <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Subject">
+      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Subject">
         {editTarget && (
           <SubjectForm
             subject={editTarget}
             allSubjects={subjects ?? []}
-            programs={programs!}
+            subjectTypes={subjectTypes}
             onSubmit={handleFormSubmit}
             onCancel={() => setEditTarget(null)}
           />
@@ -184,9 +218,8 @@ function SubjectsPage() {
         <span className="font-medium text-navy-700 dark:text-white">
           {deleteTarget?.code} — {deleteTarget?.title}
         </span>{" "}
-        will be removed from {deleteTarget?.program}. Deletion is blocked while other subjects
-        list it as a prerequisite.
-      </ConfirmDialog> */}
+        will be removed from {deleteTarget?.program}. It can be restored from the recycle bin.
+      </ConfirmDialog>
     </div>
   );
 }

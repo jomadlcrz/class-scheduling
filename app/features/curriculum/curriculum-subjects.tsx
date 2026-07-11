@@ -3,10 +3,9 @@ import type { CurriculumGroup } from "~/types/curriculum";
 
 type CurriculumSubjectsProps = {
   group: CurriculumGroup;
-  codeById: Map<string, string>;
 };
 
-export function CurriculumSubjects({ group, codeById }: CurriculumSubjectsProps) {
+export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
   if (group.subjects.length === 0) {
     return (
       <p className="py-4 text-center font-body text-sm text-slate-400 dark:text-slate-500">
@@ -32,9 +31,7 @@ export function CurriculumSubjects({ group, codeById }: CurriculumSubjectsProps)
             <TableCell>{subject.title}</TableCell>
             <TableCell className="text-center tabular-nums">{subject.units}</TableCell>
             <TableCell className="text-center text-slate-400 dark:text-slate-500">
-              {subject.prerequisiteIds.length > 0
-                ? subject.prerequisiteIds.map((id) => codeById.get(id)).filter(Boolean).join(", ")
-                : "—"}
+              {subject.prerequisites.length > 0 ? subject.prerequisites.join(", ") : "—"}
             </TableCell>
           </TableRow>
         ))}

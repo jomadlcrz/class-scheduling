@@ -1,5 +1,4 @@
 import type { WeeklyHourAllocation, CreateWeeklyHourAllocationInput } from "~/types/weekly-hour-allocation";
-import { SUBJECT_TYPE_LABELS } from "~/types/subject";
 
 async function getSubjectTypeOptions(): Promise<string[]> {
   await delay(300);
@@ -20,7 +19,7 @@ async function create(input: CreateWeeklyHourAllocationInput): Promise<WeeklyHou
   const existing = findIndex(input.subjectType);
   const allocation: WeeklyHourAllocation = {
     subjectType: input.subjectType,
-    subjectTypeLabel: SUBJECT_TYPE_LABELS[input.subjectType] ?? input.subjectType,
+    subjectTypeLabel: input.subjectType,
     lectureHours: input.lectureHours,
     labHours: input.labHours,
     meetings: input.meetings,

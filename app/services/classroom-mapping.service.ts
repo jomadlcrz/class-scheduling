@@ -1,21 +1,65 @@
-import { DAY_LABELS, formatTime, SCHEDULE_SEMESTER_LABELS } from "~/types/schedule";
-import type { Classroom, ClassEntry, ClassroomStatus, DayOfWeek, SubjectType } from "~/features/classroom-mapping/mapping-model";
+import { ApiError, apiGet } from "~/lib/api";
+import type {
+  Classroom,
+  ClassEntry,
+  ClassroomStatus,
+  DayOfWeek,
+  SubjectType,
+} from "~/features/classroom-mapping/mapping-model";
+import { DAYS } from "~/features/classroom-mapping/mapping-model";
+
+/**
+ * Classroom mapping: rooms from the facilities module joined with the
+ * global schedule view (GET /schedule/view) by room name.
+ */
+
+type RoomsResponse = {
+  buildings: {
+    building_id: number;
+    building_name: string;
+    rooms: {
+      room_id: number;
+      room_name: string;
+      room_status: string;
+    }[];
+  }[];
+};
+
+type ScheduleEntry = {
+  school_year: string;
+  semester: string;
+  subject_type: string;
+  subject_code: string;
+  desc_title: string;
+  set_name: string;
+  day_of_week: string;
+  /** "07:00 AM - 08:30 AM" */
+  class_time: string;
+  faculty_name: string;
+  room_name: string | null;
+};
+
+/** The backend answers an empty schedule table with a bare []. */
+type ScheduleViewResponse = { schedules: ScheduleEntry[] } | unknown[];
 
 function toSubjectType(raw: string | null | undefined): SubjectType {
   switch ((raw ?? "").trim().toLowerCase()) {
-    case "major-lab": return "major_lab";
-    case "gened": return "gen_ed";
-    default: return "major_no_lab";
+    case "major with lab":
+      return "major_lab";
+    case "gened":
+      return "gen_ed";
+    default:
+      return "major_no_lab";
   }
 }
 
 function toStatus(roomStatus: string): ClassroomStatus {
-  return roomStatus === "vacant" ? "available" : "full";
+  return roomStatus === "Vacant" ? "available" : "full";
 }
 
-function toDayOfWeek(dayCode: string): DayOfWeek | null {
-  const full = DAY_LABELS[dayCode as keyof typeof DAY_LABELS];
-  return full ? (full as DayOfWeek) : null;
+/** "07:00 AM" → "7:00 AM" so it matches the TIME_SLOTS format. */
+function normalizeTime(time: string): string {
+  return time.trim().replace(/^0/, "");
 }
 
 type MappingFilters = {
@@ -29,53 +73,60 @@ type MappingResult = {
 };
 
 async function list(filters?: MappingFilters): Promise<MappingResult> {
-  await delay(400);
-
-  const filtered = schedules.filter((s) => {
-    if (filters?.schoolYear && s.schoolYear !== filters.schoolYear) return false;
-    if (filters?.semester) {
-      const semesterLabel = SCHEDULE_SEMESTER_LABELS[s.semester];
-      if (semesterLabel !== filters.semester) return false;
+  const roomsPromise = apiGet<RoomsResponse>("/rooms").catch((err) => {
+    if (err instanceof ApiError && err.status === 404) {
+      return { buildings: [] } satisfies RoomsResponse;
     }
-    return true;
+    throw err;
   });
+  const [roomsData, scheduleData] = await Promise.all([
+    roomsPromise,
+    apiGet<ScheduleViewResponse>("/schedule/view"),
+  ]);
 
-  const subjectMap = new Map(subjects.map((s) => [s.id, s.subjectType]));
+  const schedules = Array.isArray(scheduleData) ? [] : scheduleData.schedules ?? [];
+
+  // School year options come from the full schedule list, before filtering.
+  const schoolYears = [...new Set(schedules.map((s) => s.school_year))].sort((a, b) =>
+    b.localeCompare(a),
+  );
 
   const roomScheduleMap = new Map<string, ClassEntry[]>();
+  for (const schedule of schedules) {
+    if (filters?.schoolYear && schedule.school_year !== filters.schoolYear) continue;
+    if (filters?.semester && schedule.semester !== filters.semester) continue;
+    if (!schedule.room_name) continue;
 
-  for (const schedule of filtered) {
-    const day = toDayOfWeek(schedule.day);
+    const day = DAYS.find((d) => d === schedule.day_of_week) as DayOfWeek | undefined;
     if (!day) continue;
 
-    const subjectType = toSubjectType(subjectMap.get(schedule.subjectId) ?? null);
-
+    const [startTime = "", endTime = ""] = schedule.class_time.split(" - ");
     const entry: ClassEntry = {
       day,
-      startTime: formatTime(schedule.startTime),
-      endTime: formatTime(schedule.endTime),
-      subjectCode: schedule.subjectCode,
-      descriptiveTitle: schedule.subjectTitle,
-      instructor: schedule.facultyName,
-      section: schedule.setCode,
-      type: subjectType,
+      startTime: normalizeTime(startTime),
+      endTime: normalizeTime(endTime),
+      subjectCode: schedule.subject_code,
+      descriptiveTitle: schedule.desc_title,
+      instructor: schedule.faculty_name,
+      section: schedule.set_name,
+      type: toSubjectType(schedule.subject_type),
     };
 
-    const existing = roomScheduleMap.get(schedule.roomId) ?? [];
+    const existing = roomScheduleMap.get(schedule.room_name) ?? [];
     existing.push(entry);
-    roomScheduleMap.set(schedule.roomId, existing);
+    roomScheduleMap.set(schedule.room_name, existing);
   }
 
-  const schoolYears = [...new Set(schedules.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
-
   return {
-    classrooms: rooms.map((room) => ({
-      id: room.id,
-      name: room.name,
-      buildingId: room.buildingId,
-      status: toStatus(room.status),
-      entries: roomScheduleMap.get(room.id) ?? [],
-    })),
+    classrooms: roomsData.buildings.flatMap((building) =>
+      building.rooms.map((room) => ({
+        id: String(room.room_id),
+        name: room.room_name,
+        buildingId: String(building.building_id),
+        status: toStatus(room.room_status),
+        entries: roomScheduleMap.get(room.room_name) ?? [],
+      })),
+    ),
     schoolYears,
   };
 }

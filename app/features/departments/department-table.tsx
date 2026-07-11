@@ -48,7 +48,7 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
             </TableCell>
             <TableCell>{dept.name}</TableCell>
             <TableCell className="hidden sm:table-cell">
-              <Badge tone={getBuildingTone(dept.buildingCode)}>{dept.buildingCode}</Badge>
+              <Badge tone={getBuildingTone(dept.buildingName)}>{dept.buildingName}</Badge>
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">

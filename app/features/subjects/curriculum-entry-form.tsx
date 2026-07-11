@@ -7,13 +7,10 @@ import { Select } from "~/components/ui/select";
 import {
   SEMESTER_LABELS,
   SEMESTERS,
-  SUBJECT_TYPE_LABELS,
-  SUBJECT_TYPES,
   YEAR_LEVEL_LABELS,
   YEAR_LEVELS,
   type CreateSubjectInput,
   type Semester,
-  type SubjectType,
   type YearLevel,
 } from "~/types/subject";
 import type { PendingEntry } from "~/features/subjects/curriculum-structure";
@@ -24,6 +21,8 @@ type CurriculumEntryFormProps = {
   initialEntry?: PendingEntry;
   /** Saved + pending subjects of the selected program. */
   prerequisiteOptions: PrerequisiteOption[];
+  /** Backend SubjectTypeName values (enumService). */
+  subjectTypes: string[];
   /** Appends the entry to the pending list; throws to reject (e.g. duplicate code). */
   onAdd: (input: Omit<CreateSubjectInput, "program">) => void;
   /** Restores the entry being edited without changes. */
@@ -34,6 +33,7 @@ type CurriculumEntryFormProps = {
 export function CurriculumEntryForm({
   initialEntry,
   prerequisiteOptions,
+  subjectTypes,
   onAdd,
   onCancelEdit,
 }: CurriculumEntryFormProps) {
@@ -41,8 +41,8 @@ export function CurriculumEntryForm({
   // Controlled so they survive form.reset() between consecutive adds.
   const [yearLevel, setYearLevel] = useState<YearLevel>(initialEntry?.yearLevel ?? 1);
   const [semester, setSemester] = useState<Semester>(initialEntry?.semester ?? 1);
-  const [prerequisiteIds, setPrerequisiteIds] = useState<string[]>(
-    initialEntry?.prerequisiteIds ?? [],
+  const [prerequisites, setPrerequisites] = useState<string[]>(
+    initialEntry?.prerequisites ?? [],
   );
   const isEditing = Boolean(initialEntry);
 
@@ -53,7 +53,7 @@ export function CurriculumEntryForm({
     const code = String(data.get("entry-code") ?? "").trim();
     const title = String(data.get("entry-title") ?? "").trim();
     const units = Number(data.get("entry-units"));
-    const subjectType = String(data.get("entry-subject-type")) as SubjectType;
+    const subjectType = String(data.get("entry-subject-type") ?? "");
 
     if (!code) {
       setError("Enter the subject code.");
@@ -76,7 +76,7 @@ export function CurriculumEntryForm({
         title,
         units,
         subjectType,
-        prerequisiteIds,
+        prerequisites,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't add the subject.");
@@ -84,7 +84,7 @@ export function CurriculumEntryForm({
     }
 
     setError(null);
-    setPrerequisiteIds([]);
+    setPrerequisites([]);
     form.reset();
   }
 
@@ -150,11 +150,11 @@ export function CurriculumEntryForm({
         <Select
           id="entry-subject-type"
           label="Subject Type"
-          defaultValue={initialEntry?.subjectType ?? "gened"}
+          defaultValue={initialEntry?.subjectType ?? subjectTypes[0] ?? ""}
         >
-          {SUBJECT_TYPES.map((type) => (
+          {subjectTypes.map((type) => (
             <option key={type} value={type}>
-              {SUBJECT_TYPE_LABELS[type]}
+              {type}
             </option>
           ))}
         </Select>
@@ -162,8 +162,8 @@ export function CurriculumEntryForm({
 
       <PrerequisitePicker
         options={prerequisiteOptions}
-        value={prerequisiteIds}
-        onChange={setPrerequisiteIds}
+        value={prerequisites}
+        onChange={setPrerequisites}
       />
 
       <div className="flex flex-col gap-2">
