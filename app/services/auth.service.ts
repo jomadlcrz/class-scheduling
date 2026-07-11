@@ -1,93 +1,124 @@
-import { loadJson, removeJson, saveJson } from "~/lib/storage";
+import { ApiError, apiPatch, apiPost } from "~/lib/api";
+import {
+  clearPending,
+  clearSession,
+  getPending,
+  isRemembered,
+  loadSession,
+  savePending,
+  saveSession,
+  userFromToken,
+} from "~/lib/session";
 import type { AuthSession, LoginCredentials } from "~/types/auth";
-import { accounts, delay, toUser } from "~/services/mock-data";
 
 /**
- * MOCK auth service — no backend yet. Accounts live in the shared
- * in-memory store (see mock-data.ts for demo credentials) and the
- * session persists to browser storage, so the full login/logout and
- * password flows work end-to-end in the UI. Swap the internals for real
- * API calls later; the exported surface must stay the same.
+ * Auth service backed by the real API. Login is per-role on the backend
+ * (five portal endpoints); the frontend keeps a single form by retrying
+ * the endpoint named in the 403 wrong-portal response. Other services
+ * are still mocked — only auth talks to the backend.
  */
 
-const SESSION_KEY = "gwc-session";
+/** Backend RoleName enum names → their login endpoints. */
+const LOGIN_ENDPOINTS: Record<string, string> = {
+  SUPER_ADMIN: "/super-admin/login",
+  REGISTRAR_ADMIN: "/registrar-admin/login",
+  DEAN: "/deans/login",
+  FACULTY: "/faculty/login",
+  STUDENT: "/students/login",
+};
 
-async function login(credentials: LoginCredentials): Promise<AuthSession> {
-  await delay();
-  const account = accounts.find(
-    (a) => a.email.toLowerCase() === credentials.email.toLowerCase(),
-  );
-  if (!account || account.password !== credentials.password) {
-    throw new Error("Invalid email or password.");
+type LoginResponse = {
+  access_token?: string;
+  user_id?: number;
+  temp_password?: boolean;
+};
+
+export type LoginResult = AuthSession | { requiresPasswordChange: true };
+
+/** The endpoint for the user's actual role, from a 403 wrong-portal response. */
+function endpointFromWrongPortal(err: unknown): string | null {
+  if (!(err instanceof ApiError) || err.status !== 403) return null;
+  const roles = err.details?.role;
+  if (!Array.isArray(roles)) return null;
+  for (const role of roles) {
+    const endpoint = LOGIN_ENDPOINTS[role as string];
+    if (endpoint) return endpoint;
   }
-  if (account.status === "inactive") {
-    throw new Error("Your account has been deactivated. Contact your administrator.");
+  return null;
+}
+
+async function login(credentials: LoginCredentials): Promise<LoginResult> {
+  const body = { email: credentials.email, password: credentials.password };
+
+  let data: LoginResponse;
+  try {
+    data = await apiPost<LoginResponse>(LOGIN_ENDPOINTS.STUDENT, body);
+  } catch (err) {
+    const endpoint = endpointFromWrongPortal(err);
+    if (!endpoint) throw err;
+    data = await apiPost<LoginResponse>(endpoint, body);
   }
 
-  const session: AuthSession = {
-    token: `mock-token-${account.id}-${Date.now()}`,
-    user: toUser(account),
-  };
-  saveJson(SESSION_KEY, session, { session: !credentials.remember });
+  // First login with a temp password: no token is issued — the user must
+  // set a new password before a session exists (see changePassword).
+  if (data.temp_password && data.user_id != null) {
+    savePending({ userId: data.user_id, remember: Boolean(credentials.remember) });
+    return { requiresPasswordChange: true };
+  }
+
+  const user = data.access_token ? userFromToken(data.access_token) : null;
+  if (!data.access_token || !user) {
+    throw new Error("Login failed: unexpected response from the server.");
+  }
+
+  const session: AuthSession = { token: data.access_token, user };
+  saveSession(session, Boolean(credentials.remember));
   return session;
 }
 
 function logout() {
-  removeJson(SESSION_KEY);
+  // Best-effort server-side revocation; the token must still be in storage
+  // when the request is built, so fire it before clearing.
+  if (loadSession()) {
+    void apiPost("/user/logout").catch(() => {});
+  }
+  clearSession();
+  clearPending();
 }
 
-/** Synchronous read of the persisted session; null during SSR or when logged out. */
+/** Synchronous read of the persisted session; null during SSR, logged out, or expired. */
 function getStoredSession(): AuthSession | null {
-  return loadJson<AuthSession>(SESSION_KEY);
+  return loadSession();
 }
 
-/** Always resolves — a real backend must not reveal whether the email is registered. */
-async function requestPasswordReset(_email: string): Promise<void> {
-  await delay();
+// TODO: endpoint not implemented on the backend yet — confirm the path once
+// it lands. Follows the gwc-portal convention (POST /auth/forgot-password).
+async function requestPasswordReset(email: string): Promise<void> {
+  await apiPost("/auth/forgot-password", { email });
 }
 
-/** Mock accepts any non-empty token; the route already rejects missing tokens. */
-async function resetPassword(_token: string, _newPassword: string): Promise<void> {
-  await delay();
-}
-
-async function changePassword(newPassword: string, currentPassword?: string): Promise<void> {
-  await delay();
-  const session = getStoredSession();
-  if (!session) {
+async function changePassword(newPassword: string, _currentPassword?: string): Promise<void> {
+  const session = loadSession();
+  const pending = getPending();
+  const userId = session ? Number(session.user.id) : pending?.userId;
+  if (userId == null || Number.isNaN(userId)) {
     throw new Error("You must be logged in to change your password.");
   }
 
-  const account = accounts.find((a) => a.id === session.user.id);
-  if (!account) {
-    throw new Error("You must be logged in to change your password.");
-  }
+  // The backend validates the password policy and issues a fresh token;
+  // it does not check the current password, so it is not sent.
+  const data = await apiPatch<{ access_token: string }>(`/user/password/${userId}`, {
+    newPassword,
+  });
 
-  // Forced first-login flow: the user just authenticated, so the fresh
-  // session authorizes the change — no current password re-entry.
-  if (!account.mustChangePassword) {
-    if (!currentPassword || account.password !== currentPassword) {
-      throw new Error("Current password is incorrect.");
-    }
+  const user = userFromToken(data.access_token);
+  if (user) {
+    saveSession(
+      { token: data.access_token, user },
+      session ? isRemembered() : (pending?.remember ?? false),
+    );
   }
-  if (newPassword === account.password) {
-    throw new Error("New password must be different from your current password.");
-  }
-
-  // In-memory only — resets on reload, which is fine for a mock.
-  account.password = newPassword;
-  account.mustChangePassword = false;
-  saveJson(SESSION_KEY, { ...session, user: toUser(account) }, { session: !isRemembered() });
-}
-
-/** Whether the session lives in localStorage ("remember me") vs sessionStorage. */
-function isRemembered(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.localStorage.getItem(SESSION_KEY) !== null;
-  } catch {
-    return false;
-  }
+  clearPending();
 }
 
 export const authService = {
@@ -95,6 +126,5 @@ export const authService = {
   logout,
   getStoredSession,
   requestPasswordReset,
-  resetPassword,
   changePassword,
 };

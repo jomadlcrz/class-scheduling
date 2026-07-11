@@ -13,7 +13,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   if (isLoading) return <LoadingState />;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.mustChangePassword) return <Navigate to="/change-password?force=true" replace />;
+  if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
 
   return <>{children}</>;
 }

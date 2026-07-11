@@ -11,7 +11,7 @@ export function GuestGuard({ children }: { children: ReactNode }) {
   if (user) {
     return (
       <Navigate
-        to={user.mustChangePassword ? "/change-password?force=true" : "/dashboard"}
+        to={user.mustChangePassword ? "/change-password" : "/dashboard"}
         replace
       />
     );

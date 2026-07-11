@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { authService } from "~/services/auth.service";
+import { authService, type LoginResult } from "~/services/auth.service";
 import type { LoginCredentials } from "~/types/auth";
 import type { User } from "~/types/user";
 
@@ -15,7 +15,7 @@ type AuthContextValue = {
   user: User | null;
   /** True until the persisted session has been read on the client (always true during SSR). */
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<User>;
+  login: (credentials: LoginCredentials) => Promise<LoginResult>;
   logout: () => void;
 };
 
@@ -32,9 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
-    const session = await authService.login(credentials);
-    setUser(session.user);
-    return session.user;
+    const result = await authService.login(credentials);
+    // Temp-password logins produce no session yet — the user isn't
+    // authenticated until they set a new password.
+    if ("user" in result) setUser(result.user);
+    return result;
   }, []);
 
   const logout = useCallback(() => {

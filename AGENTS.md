@@ -4,11 +4,20 @@ Guidance for AI agents and contributors working in this repo. Follow these conve
 
 ## Project overview
 
-A class-scheduling web app for GWC (builds conflict-free academic timetables). Frontend only — there is **no backend yet**. Data access goes through `app/services/*.service.ts` with **mock implementations** (in-memory data + fake latency + browser-storage persistence). Components must never know data is mocked: always call the service, never inline mock data in components. When a real backend lands, only service internals change.
+A class-scheduling web app for GWC (builds conflict-free academic timetables). **Auth is connected to the real backend** (Flask, separate repo; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`). Everything else still runs on **mock services** (in-memory data + fake latency). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline mock data in components. To connect another domain to the backend, swap only that service's internals — `auth.service.ts` is the reference pattern.
 
-The auth slice is live end-to-end on mocks: login/logout, session persistence ("remember me" → localStorage, otherwise sessionStorage under `gwc-session`), guards, and the forced change-password flow. All mock services share one in-memory store — `app/services/mock-data.ts` — where the demo accounts and credentials are documented; deactivating a user there really blocks their login.
+The auth slice is live against the backend end-to-end:
 
-**Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Users + Roles admin pages are live (`/users`, `/roles`).
+- **Login** — single form, but the backend has five per-role endpoints (`/super-admin/login`, `/registrar-admin/login`, `/deans/login`, `/faculty/login`, `/students/login`). The service tries `/students/login` first and silently retries the endpoint named in a 403 wrong-portal response (`{ error, role: ["FACULTY", …] }`). Success returns **only a JWT** — the `User` is decoded from token claims in `lib/session.ts`.
+- **Session** — `{ token, user }` persisted under `gwc-session` ("remember me" → localStorage, otherwise sessionStorage); expired tokens are dropped on read. The Bearer token is attached to requests by `lib/api.ts`.
+- **Forced first-login password change** — a temp-password login returns no token, only `{ user_id, temp_password: true }`; the service stores a pending state and the login form routes to `/change-password`, which is **only reachable while that pending state exists** (otherwise it redirects to `/login`). Logged-in users change passwords in Settings → Security instead.
+- **Logout** — fire-and-forget `POST /user/logout` (server-side token revocation), then clears storage.
+- **Error messages come verbatim from backend responses** (`{ error }` or `{ message }`) via `ApiError` — never write frontend copy for API failures; a generic fallback exists only for network failures/bodyless responses.
+- `requestPasswordReset` targets `POST /auth/forgot-password`, which the backend does **not implement yet** — confirm the path when it lands.
+
+Non-auth mock services still share the in-memory store `app/services/mock-data.ts` (demo accounts there no longer control login — real credentials live in the backend DB).
+
+**Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `FACULTY`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Users + Roles admin pages are live (`/users`, `/roles`).
 
 **Stack:** React Router 7 (framework mode, SSR), React 19, TypeScript (strict), Tailwind CSS v4 (CSS-first config in `app/app.css`), `motion` for animation. No state-management or data-fetching library.
 
@@ -21,6 +30,8 @@ npm run typecheck    # react-router typegen && tsc — must pass before finishin
 npm run start        # serve the production build
 npm run test:perf    # Playwright perf tests
 ```
+
+Auth flows need the backend running at `VITE_API_URL` (`.env`), and the frontend origin must be listed in the backend's `CORS_ORIGIN`.
 
 ## Project structure
 
@@ -42,9 +53,9 @@ app/
 ├── landing/               # Marketing/landing page components (header, hero, footer, legal-layout)
 ├── layouts/               # App-shell layouts (EMPTY STUBS)
 ├── hooks/                 # Shared hooks (use-theme, use-auth are live; rest are stubs)
-├── lib/                   # Pure utilities (validators, storage are live; api/etc. are stubs)
-├── services/              # Data layer — MOCK implementations over mock-data.ts shared store
-│                          #   (auth, user, role, subject are live; rest are stubs)
+├── lib/                   # Pure utilities (validators, storage, api, session are live)
+├── services/              # Data layer — auth talks to the REAL backend; the rest are
+│                          #   MOCKS over mock-data.ts (user, role, subject live; rest stubs)
 └── types/                 # Domain types (user, auth, role, subject are live; rest are stubs)
 ```
 
@@ -84,7 +95,9 @@ app/
 | Modals & confirmations | `Modal`, `ConfirmDialog` — `components/ui/modal.tsx` |
 | Select dropdown | `Select` — `components/ui/select.tsx` (shares `FieldChrome`/`inputClassName` from input.tsx) |
 | Empty list placeholder | `EmptyState` — `components/ui/empty-state.tsx` |
-| Auth/session API (mocked) | `authService` — `services/auth.service.ts` |
+| Auth API (real backend) | `authService` — `services/auth.service.ts` |
+| Backend fetch wrapper (Bearer token, verbatim backend errors) | `apiPost`/`apiPatch`, `ApiError` — `lib/api.ts` |
+| JWT/session helpers (claims → `User`, pending first-login state) | `loadSession`/`saveSession`/`userFromToken`/… — `lib/session.ts` |
 | Safe browser storage (SSR-proof) | `loadJson`/`saveJson`/`removeJson` — `lib/storage.ts` |
 | Full-screen loading spinner | `LoadingState` — `components/feedback/loading-state.tsx` |
 

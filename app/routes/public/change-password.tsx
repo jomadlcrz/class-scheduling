@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router";
 import { AuthHeading, AuthLayout } from "~/auth/auth-layout";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
+import { LoadingState } from "~/components/feedback/loading-state";
 import { ResultState } from "~/components/feedback/result-state";
+import { getPending } from "~/lib/session";
 import { authService } from "~/services/auth.service";
 
 export function meta() {
@@ -15,24 +17,36 @@ export function meta() {
   ];
 }
 
+/**
+ * Forced first-login flow only: reachable while a temp-password login is
+ * pending, otherwise redirects to /login. Logged-in users change their
+ * password in Settings → Security.
+ */
 export default function ChangePassword() {
-  const [searchParams] = useSearchParams();
-  // Forced first-login / admin-reset flow: user must set a new password
-  // before continuing, so the back link is hidden.
-  const isForced = searchParams.get("force") === "true";
+  // Pending state lives in browser storage, so it resolves after hydration.
+  // Checked once: changing the password clears the pending state, and the
+  // success screen must survive that.
+  const [status, setStatus] = useState<"checking" | "allowed" | "denied">("checking");
+
+  useEffect(() => {
+    setStatus(getPending() ? "allowed" : "denied");
+  }, []);
+
+  if (status === "checking") return <LoadingState />;
+  if (status === "denied") return <Navigate to="/login" replace />;
 
   return (
-    <AuthLayout backHref={isForced ? undefined : "/"}>
-      <ChangePasswordContent isForced={isForced} />
+    <AuthLayout>
+      <ChangePasswordContent />
     </AuthLayout>
   );
 }
 
-function ChangePasswordContent({ isForced }: { isForced: boolean }) {
+function ChangePasswordContent() {
   const [done, setDone] = useState(false);
 
-  async function handleSubmit({ currentPassword, newPassword }: PasswordFormValues) {
-    await authService.changePassword(newPassword, currentPassword);
+  async function handleSubmit({ newPassword }: PasswordFormValues) {
+    await authService.changePassword(newPassword);
     setDone(true);
   }
 
@@ -51,13 +65,10 @@ function ChangePasswordContent({ isForced }: { isForced: boolean }) {
   return (
     <>
       <AuthHeading title="Change your password">
-        {isForced
-          ? "For security reasons, you must create a new password before continuing."
-          : "Enter your current password and choose a new one."}
+        For security reasons, you must create a new password before continuing.
       </AuthHeading>
-      {/* Forced flow: the fresh login already proved the current password. */}
+      {/* The fresh temp-password login already proved the current password. */}
       <PasswordForm
-        requireCurrentPassword={!isForced}
         submitLabel="Update Password"
         loadingLabel="Updating…"
         onSubmit={handleSubmit}

@@ -29,8 +29,8 @@ export function LoginForm() {
     setError(null);
     setIsLoading(true);
     try {
-      const user = await login({ ...result.data, remember });
-      navigate(user.mustChangePassword ? "/change-password?force=true" : "/dashboard", {
+      const outcome = await login({ ...result.data, remember });
+      navigate("requiresPasswordChange" in outcome ? "/change-password" : "/dashboard", {
         replace: true,
       });
     } catch (err) {
