@@ -3,6 +3,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { Card } from "~/components/ui/card";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { EnrollmentReport } from "~/features/reports/enrollment-report";
 import { ExportReport } from "~/features/reports/export-report";
 import { FacultyLoad } from "~/features/reports/faculty-load";
@@ -63,19 +64,19 @@ function ReportsPage() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    setData(null);
-    Promise.all([
-      reportService.getScheduleSummary(schoolYear, semester),
-      reportService.getFacultyLoad(schoolYear, semester),
-      reportService.getRoomUtilization(schoolYear, semester),
-      reportService.getEnrollmentStats(),
-    ]).then(([summary, facultyLoad, roomUtilization, enrollment]) => {
-      setData({ summary, facultyLoad, roomUtilization, enrollment });
-      setLoading(false);
-    });
-  }, [schoolYear, semester]);
+  // useEffect(() => {
+  //   setLoading(true);
+  //   setData(null);
+  //   Promise.all([
+  //     reportService.getScheduleSummary(schoolYear, semester),
+  //     reportService.getFacultyLoad(schoolYear, semester),
+  //     reportService.getRoomUtilization(schoolYear, semester),
+  //     reportService.getEnrollmentStats(),
+  //   ]).then(([summary, facultyLoad, roomUtilization, enrollment]) => {
+  //     setData({ summary, facultyLoad, roomUtilization, enrollment });
+  //     setLoading(false);
+  //   });
+  // }, [schoolYear, semester]);
 
   const needsFilter = activeTab !== "enrollment" && activeTab !== "export";
 
@@ -143,29 +144,9 @@ function ReportsPage() {
           </div>
 
           <div role="tabpanel" className="mt-6">
-            {activeTab === "export" ? (
-              <ExportReport />
-            ) : activeTab === "enrollment" ? (
-              loading || !data ? (
-                <Spinner />
-              ) : (
-                <EnrollmentReport data={data.enrollment} />
-              )
-            ) : loading || !data ? (
-              <div
-                role="status"
-                aria-label="Loading report"
-                className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-              >
-                <Spinner />
-              </div>
-            ) : (
-              <>
-                {activeTab === "schedule" && <ScheduleReport data={data.summary} />}
-                {activeTab === "faculty" && <FacultyLoad rows={data.facultyLoad} />}
-                {activeTab === "rooms" && <RoomUtilization rows={data.roomUtilization} />}
-              </>
-            )}
+            <ResultState tone="error" title="Not available">
+              This feature is not connected to the backend yet.
+            </ResultState>
           </div>
         </div>
       </div>

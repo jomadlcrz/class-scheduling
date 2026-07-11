@@ -8,6 +8,7 @@ import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { ProgramForm } from "~/features/programs/program-form";
 import { ProgramTable } from "~/features/programs/program-table";
 import { usePagination } from "~/hooks/use-pagination";
@@ -43,12 +44,12 @@ function ProgramsPage() {
   const [editTarget, setEditTarget] = useState<Program | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Program | null>(null);
 
-  useEffect(() => {
-    Promise.all([programService.list(), departmentService.list()]).then(([p, d]) => {
-      setProgramsList(p);
-      setDepartments(d);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([programService.list(), departmentService.list()]).then(([p, d]) => {
+  //     setProgramsList(p);
+  //     setDepartments(d);
+  //   });
+  // }, []);
 
   const resetKey = `${search}|${deptFilter}|${typeFilter}`;
 
@@ -71,23 +72,23 @@ function ProgramsPage() {
 
   const pagination = usePagination(visiblePrograms, resetKey);
 
-  async function handleCreate(input: CreateProgramInput) {
-    const created = await programService.create(input);
-    setProgramsList((curr) => [...(curr ?? []), created]);
-    setCreateOpen(false);
-  }
+  // async function handleCreate(input: CreateProgramInput) {
+  //   const created = await programService.create(input);
+  //   setProgramsList((curr) => [...(curr ?? []), created]);
+  //   setCreateOpen(false);
+  // }
 
-  async function handleEdit(input: CreateProgramInput) {
-    if (!editTarget) return;
-    const updated = await programService.update(editTarget.id, input);
-    setProgramsList((curr) => curr!.map((p) => (p.id === updated.id ? updated : p)));
-    setEditTarget(null);
-  }
+  // async function handleEdit(input: CreateProgramInput) {
+  //   if (!editTarget) return;
+  //   const updated = await programService.update(editTarget.id, input);
+  //   setProgramsList((curr) => curr!.map((p) => (p.id === updated.id ? updated : p)));
+  //   setEditTarget(null);
+  // }
 
-  async function handleDelete(target: Program) {
-    await programService.remove(target.id);
-    setProgramsList((curr) => curr!.filter((p) => p.id !== target.id));
-  }
+  // async function handleDelete(target: Program) {
+  //   await programService.remove(target.id);
+  //   setProgramsList((curr) => curr!.filter((p) => p.id !== target.id));
+  // }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -142,36 +143,10 @@ function ProgramsPage() {
           </Select>
         </div>
 
-        {programsList === null ? (
-          <div
-            role="status"
-            aria-label="Loading programs"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visiblePrograms.length === 0 ? (
-          <EmptyState title="No programs found">
-            No programs match the current filters. Adjust the search or add a new program.
-          </EmptyState>
-        ) : (
-          <>
-            <ProgramTable
-              programs={pagination.pageItems}
-              onEdit={(p) => setEditTarget(p)}
-              onDelete={(p) => setDeleteTarget(p)}
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Program">
+      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Program">
         <ProgramForm
           departments={departments}
           onSubmit={handleCreate}
@@ -202,7 +177,7 @@ function ProgramsPage() {
         Program{" "}
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.code}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
-      </ConfirmDialog>
+      </ConfirmDialog> */}
     </div>
   );
 }

@@ -45,12 +45,12 @@ function RoomsPage() {
   const [editTarget, setEditTarget] = useState<Room | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Room | null>(null);
 
-  useEffect(() => {
-    Promise.all([roomService.list(), buildingService.list()]).then(([r, b]) => {
-      setRooms(r);
-      setBuildings(b);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([roomService.list(), buildingService.list()]).then(([r, b]) => {
+  //     setRooms(r);
+  //     setBuildings(b);
+  //   });
+  // }, []);
 
   const resetKey = `${search}|${buildingFilter}|${typeFilter}|${statusFilter}`;
 
@@ -75,23 +75,23 @@ function RoomsPage() {
 
   const pagination = usePagination(visibleRooms, resetKey);
 
-  async function handleCreate(input: CreateRoomInput) {
-    const created = await roomService.create(input);
-    setRooms((curr) => [...(curr ?? []), created]);
-    setCreateOpen(false);
-  }
+  // async function handleCreate(input: CreateRoomInput) {
+  //   const created = await roomService.create(input);
+  //   setRooms((curr) => [...(curr ?? []), created]);
+  //   setCreateOpen(false);
+  // }
 
-  async function handleEdit(input: CreateRoomInput) {
-    if (!editTarget) return;
-    const updated = await roomService.update(editTarget.id, input);
-    setRooms((curr) => curr!.map((r) => (r.id === updated.id ? updated : r)));
-    setEditTarget(null);
-  }
+  // async function handleEdit(input: CreateRoomInput) {
+  //   if (!editTarget) return;
+  //   const updated = await roomService.update(editTarget.id, input);
+  //   setRooms((curr) => curr!.map((r) => (r.id === updated.id ? updated : r)));
+  //   setEditTarget(null);
+  // }
 
-  async function handleDelete(target: Room) {
-    await roomService.remove(target.id);
-    setRooms((curr) => curr!.filter((r) => r.id !== target.id));
-  }
+  // async function handleDelete(target: Room) {
+  //   await roomService.remove(target.id);
+  //   setRooms((curr) => curr!.filter((r) => r.id !== target.id));
+  // }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -159,36 +159,10 @@ function RoomsPage() {
           </Select>
         </div>
 
-        {rooms === null ? (
-          <div
-            role="status"
-            aria-label="Loading rooms"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleRooms.length === 0 ? (
-          <EmptyState title="No rooms found">
-            No rooms match the current filters. Adjust the search or add a new room.
-          </EmptyState>
-        ) : (
-          <>
-            <RoomTable
-              rooms={pagination.pageItems}
-              onEdit={(r) => setEditTarget(r)}
-              onDelete={(r) => setDeleteTarget(r)}
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Room">
+      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Room">
         <RoomForm buildings={buildings} onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
       </Modal>
 
@@ -215,7 +189,7 @@ function RoomsPage() {
         Room{" "}
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.name}</span>{" "}
         will be permanently removed.
-      </ConfirmDialog>
+      </ConfirmDialog> */}
     </div>
   );
 }

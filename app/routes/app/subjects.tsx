@@ -10,6 +10,7 @@ import { Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { SubjectForm } from "~/features/subjects/subject-form";
 import { SubjectTable } from "~/features/subjects/subject-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -53,12 +54,12 @@ function SubjectsPage() {
   const [editTarget, setEditTarget] = useState<Subject | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Subject | null>(null);
 
-  useEffect(() => {
-    Promise.all([subjectService.list(), programService.list()]).then(([s, p]) => {
-      setSubjects(s);
-      setPrograms(p);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([subjectService.list(), programService.list()]).then(([s, p]) => {
+  //     setSubjects(s);
+  //     setPrograms(p);
+  //   });
+  // }, []);
 
   const resetKey = `${search}|${program}|${yearLevel}`;
 
@@ -89,17 +90,17 @@ function SubjectsPage() {
 
   const pagination = usePagination(visibleSubjects, resetKey);
 
-  async function handleFormSubmit(input: CreateSubjectInput) {
-    if (!editTarget) return;
-    const updated = await subjectService.update(editTarget.id, input);
-    setSubjects((current) => current!.map((s) => (s.id === updated.id ? updated : s)));
-    setEditTarget(null);
-  }
+  // async function handleFormSubmit(input: CreateSubjectInput) {
+  //   if (!editTarget) return;
+  //   const updated = await subjectService.update(editTarget.id, input);
+  //   setSubjects((current) => current!.map((s) => (s.id === updated.id ? updated : s)));
+  //   setEditTarget(null);
+  // }
 
-  async function handleDelete(target: Subject) {
-    await subjectService.remove(target.id);
-    setSubjects((current) => current!.filter((s) => s.id !== target.id));
-  }
+  // async function handleDelete(target: Subject) {
+  //   await subjectService.remove(target.id);
+  //   setSubjects((current) => current!.filter((s) => s.id !== target.id));
+  // }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -154,38 +155,12 @@ function SubjectsPage() {
           </Select>
         </div>
 
-        {subjects === null || programs === null ? (
-          <div
-            role="status"
-            aria-label="Loading subjects"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleSubjects.length === 0 ? (
-          <EmptyState title="No subjects found">
-            No subjects match the current filters. Adjust the search or add a new subject.
-          </EmptyState>
-        ) : (
-          <>
-            <SubjectTable
-              subjects={pagination.pageItems}
-              allSubjects={subjects}
-              programs={programs!}
-              onEdit={(subject) => setEditTarget(subject)}
-              onDelete={(subject) => setDeleteTarget(subject)}
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">
+          This feature is not connected to the backend yet.
+        </ResultState>
       </div>
 
-      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Subject">
+      {/* <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Subject">
         {editTarget && (
           <SubjectForm
             subject={editTarget}
@@ -211,7 +186,7 @@ function SubjectsPage() {
         </span>{" "}
         will be removed from {deleteTarget?.program}. Deletion is blocked while other subjects
         list it as a prerequisite.
-      </ConfirmDialog>
+      </ConfirmDialog> */}
     </div>
   );
 }

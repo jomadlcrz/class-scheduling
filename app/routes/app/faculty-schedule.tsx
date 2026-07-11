@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
+import { ResultState } from "~/components/feedback/result-state";
 import { Select } from "~/components/ui/select";
 import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
 import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
@@ -40,9 +41,9 @@ function FacultySchedulePage() {
   const [semester, setSemester] = useState<ScheduleSemester>(1);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
 
-  useEffect(() => {
-    scheduleService.list().then(setSchedules);
-  }, []);
+  // useEffect(() => {
+  //   scheduleService.list().then(setSchedules);
+  // }, []);
 
   const visibleSchedules = useMemo(() => {
     if (!schedules || !facultyId) return [];
@@ -63,40 +64,9 @@ function FacultySchedulePage() {
         description="The classes you teach this academic term."
       />
 
-      {/* Term selectors */}
-      <div className="mt-6 rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
-        <div className="grid grid-cols-2 gap-3 sm:max-w-sm">
-          <Select
-            id="fac-sched-year"
-            label="School Year"
-            value={schoolYear}
-            onChange={(e) => setSchoolYear(e.target.value)}
-          >
-            {SCHOOL_YEARS.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </Select>
-          <Select
-            id="fac-sched-sem"
-            label="Semester"
-            value={semester}
-            onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-          >
-            {SCHEDULE_SEMESTERS.map((s) => (
-              <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
-            ))}
-          </Select>
-        </div>
-      </div>
-
-      <ScheduleViewer
-        schedules={visibleSchedules}
-        isLoading={schedules === null}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        emptyTitle="No classes assigned"
-        emptyMessage="You have no classes scheduled for the selected term."
-      />
+      <ResultState tone="error" title="Not available">
+        This feature is not connected to the backend yet.
+      </ResultState>
     </div>
   );
 }

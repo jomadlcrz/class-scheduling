@@ -8,6 +8,7 @@ import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { DepartmentForm } from "~/features/departments/department-form";
 import { DepartmentTable } from "~/features/departments/department-table";
 import { usePagination } from "~/hooks/use-pagination";
@@ -41,12 +42,12 @@ function DepartmentsPage() {
   const [editTarget, setEditTarget] = useState<Department | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
 
-  useEffect(() => {
-    Promise.all([departmentService.list(), buildingService.list()]).then(([d, b]) => {
-      setDepts(d);
-      setBuildings(b);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([departmentService.list(), buildingService.list()]).then(([d, b]) => {
+  //     setDepts(d);
+  //     setBuildings(b);
+  //   });
+  // }, []);
 
   const resetKey = `${search}|${buildingFilter}`;
 
@@ -65,23 +66,23 @@ function DepartmentsPage() {
 
   const pagination = usePagination(visibleDepts, resetKey);
 
-  async function handleCreate(input: CreateDepartmentInput) {
-    const created = await departmentService.create(input);
-    setDepts((curr) => [...(curr ?? []), created]);
-    setCreateOpen(false);
-  }
+  // async function handleCreate(input: CreateDepartmentInput) {
+  //   const created = await departmentService.create(input);
+  //   setDepts((curr) => [...(curr ?? []), created]);
+  //   setCreateOpen(false);
+  // }
 
-  async function handleEdit(input: CreateDepartmentInput) {
-    if (!editTarget) return;
-    const updated = await departmentService.update(editTarget.id, input);
-    setDepts((curr) => curr!.map((d) => (d.id === updated.id ? updated : d)));
-    setEditTarget(null);
-  }
+  // async function handleEdit(input: CreateDepartmentInput) {
+  //   if (!editTarget) return;
+  //   const updated = await departmentService.update(editTarget.id, input);
+  //   setDepts((curr) => curr!.map((d) => (d.id === updated.id ? updated : d)));
+  //   setEditTarget(null);
+  // }
 
-  async function handleDelete(target: Department) {
-    await departmentService.remove(target.id);
-    setDepts((curr) => curr!.filter((d) => d.id !== target.id));
-  }
+  // async function handleDelete(target: Department) {
+  //   await departmentService.remove(target.id);
+  //   setDepts((curr) => curr!.filter((d) => d.id !== target.id));
+  // }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -123,36 +124,10 @@ function DepartmentsPage() {
           </Select>
         </div>
 
-        {depts === null ? (
-          <div
-            role="status"
-            aria-label="Loading departments"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleDepts.length === 0 ? (
-          <EmptyState title="No departments found">
-            No departments match the current filters. Adjust the search or add a new department.
-          </EmptyState>
-        ) : (
-          <>
-            <DepartmentTable
-              departments={pagination.pageItems}
-              onEdit={(d) => setEditTarget(d)}
-              onDelete={(d) => setDeleteTarget(d)}
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Department">
+      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Department">
         <DepartmentForm
           buildings={buildings}
           onSubmit={handleCreate}
@@ -183,7 +158,7 @@ function DepartmentsPage() {
         Department{" "}
         <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.code}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
-      </ConfirmDialog>
+      </ConfirmDialog> */}
     </div>
   );
 }

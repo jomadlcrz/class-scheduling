@@ -8,6 +8,7 @@ import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { ActivateStudentDialog } from "~/features/students/activate-student-dialog";
 import { DeactivateStudentDialog } from "~/features/students/deactivate-student-dialog";
 import { StudentForm } from "~/features/students/student-form";
@@ -47,12 +48,12 @@ function StudentsPage() {
   const [activateTarget, setActivateTarget] = useState<Student | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Student | null>(null);
 
-  useEffect(() => {
-    Promise.all([studentService.list(), programService.list()]).then(([s, p]) => {
-      setStudentList(s);
-      setPrograms(p);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([studentService.list(), programService.list()]).then(([s, p]) => {
+  //     setStudentList(s);
+  //     setPrograms(p);
+  //   });
+  // }, []);
 
   const resetKey = `${search}|${programFilter}|${statusFilter}`;
 
@@ -79,23 +80,23 @@ function StudentsPage() {
 
   const pagination = usePagination(visibleStudents, resetKey);
 
-  async function handleCreate(input: CreateStudentInput) {
-    const created = await studentService.create(input);
-    setStudentList((cur) => [...(cur ?? []), created]);
-    setCreateOpen(false);
-  }
+  // async function handleCreate(input: CreateStudentInput) {
+  //   const created = await studentService.create(input);
+  //   setStudentList((cur) => [...(cur ?? []), created]);
+  //   setCreateOpen(false);
+  // }
 
-  async function handleEdit(input: CreateStudentInput) {
-    if (!editTarget) return;
-    const updated = await studentService.update(editTarget.id, input);
-    setStudentList((cur) => cur!.map((s) => (s.id === updated.id ? updated : s)));
-    setEditTarget(null);
-  }
+  // async function handleEdit(input: CreateStudentInput) {
+  //   if (!editTarget) return;
+  //   const updated = await studentService.update(editTarget.id, input);
+  //   setStudentList((cur) => cur!.map((s) => (s.id === updated.id ? updated : s)));
+  //   setEditTarget(null);
+  // }
 
-  async function handleSetStatus(target: Student, status: StudentStatus) {
-    const updated = await studentService.setStatus(target.id, status);
-    setStudentList((cur) => cur!.map((s) => (s.id === updated.id ? updated : s)));
-  }
+  // async function handleSetStatus(target: Student, status: StudentStatus) {
+  //   const updated = await studentService.setStatus(target.id, status);
+  //   setStudentList((cur) => cur!.map((s) => (s.id === updated.id ? updated : s)));
+  // }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -148,41 +149,12 @@ function StudentsPage() {
           </Select>
         </div>
 
-        {studentList === null ? (
-          <div
-            role="status"
-            aria-label="Loading students"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleStudents.length === 0 ? (
-          <EmptyState title="No students found">
-            No students match the current filters. Adjust the search or add a new student.
-          </EmptyState>
-        ) : (
-          <>
-            <StudentTable
-              students={pagination.pageItems}
-              programs={programs ?? []}
-              onEdit={setEditTarget}
-              onToggleStatus={(student) =>
-                student.status === "enrolled"
-                  ? setDeactivateTarget(student)
-                  : setActivateTarget(student)
-              }
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">
+          This feature is not connected to the backend yet.
+        </ResultState>
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Student">
+      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Student">
         <StudentForm
           programs={programs ?? []}
           onSubmit={handleCreate}
@@ -210,7 +182,7 @@ function StudentsPage() {
         student={activateTarget}
         onClose={() => setActivateTarget(null)}
         onConfirm={(student) => handleSetStatus(student, "enrolled")}
-      />
+      /> */}
     </div>
   );
 }

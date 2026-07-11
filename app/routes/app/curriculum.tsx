@@ -4,6 +4,7 @@ import { EmptyState } from "~/components/ui/empty-state";
 import { PrinterIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { Tooltip } from "~/components/ui/tooltip";
 import { CurriculumForm } from "~/features/curriculum/curriculum-form";
 import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
@@ -35,21 +36,21 @@ function CurriculumPage() {
   const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    curriculumService.listPrograms().then((list) => {
-      setPrograms(list);
-      if (list.length > 0) setSelectedCode(list[0].code);
-    });
-  }, []);
+  // useEffect(() => {
+  //   curriculumService.listPrograms().then((list) => {
+  //     setPrograms(list);
+  //     if (list.length > 0) setSelectedCode(list[0].code);
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    if (!selectedCode) {
-      setCurriculum(null);
-      return;
-    }
-    setCurriculum("loading");
-    curriculumService.getByProgram(selectedCode).then(setCurriculum);
-  }, [selectedCode]);
+  // useEffect(() => {
+  //   if (!selectedCode) {
+  //     setCurriculum(null);
+  //     return;
+  //   }
+  //   setCurriculum("loading");
+  //   curriculumService.getByProgram(selectedCode).then(setCurriculum);
+  // }, [selectedCode]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -69,49 +70,9 @@ function CurriculumPage() {
           curriculum={curriculum}
         />
 
-        {curriculum === "loading" ? (
-          <div
-            role="status"
-            aria-label="Loading curriculum"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : curriculum === null ? (
-          <EmptyState title="No program selected">
-            Select a program above to view its curriculum.
-          </EmptyState>
-        ) : curriculum.groups.length === 0 ? (
-          <EmptyState title="No subjects yet">
-            {curriculum.programName} has no subjects in the curriculum yet. Add subjects to get started.
-          </EmptyState>
-        ) : (
-          <>
-            <div className="flex items-end justify-between gap-3">
-              <div className="max-w-xs flex-1">
-                <Input
-                  id="curriculum-search"
-                  label="Search"
-                  type="search"
-                  placeholder="Code or title…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <Tooltip label="Print curriculum">
-                <button
-                  type="button"
-                  aria-label="Print curriculum"
-                  onClick={() => openCurriculumPrint(curriculum)}
-                  className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
-                >
-                  <PrinterIcon />
-                </button>
-              </Tooltip>
-            </div>
-            <CurriculumTable curriculum={curriculum} search={search} />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">
+          This feature is not connected to the backend yet.
+        </ResultState>
       </div>
     </div>
   );

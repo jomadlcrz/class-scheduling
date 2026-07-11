@@ -5,6 +5,7 @@ import { GridIcon, ListIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { MappingGridView } from "~/features/classroom-mapping/mapping-grid-view";
 import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
 import { filterClassrooms } from "~/features/classroom-mapping/mapping-model";
@@ -44,31 +45,31 @@ function ClassroomMappingPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoadError(null);
-    setClassrooms(null);
-    try {
-      const [result, buildingList] = await Promise.all([
-        classroomMappingService.list({
-          schoolYear: schoolYear || undefined,
-          semester: semester || undefined,
-        }),
-        buildingService.list(),
-      ]);
-      setClassrooms(result.classrooms);
-      setSchoolYears(result.schoolYears);
-      if (!schoolYear && result.schoolYears.length > 0) {
-        setSchoolYear(result.schoolYears[0]);
-      }
-      setBuildings(buildingList);
-    } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
-    }
-  }, [schoolYear, semester]);
+  // const load = useCallback(async () => {
+  //   setLoadError(null);
+  //   setClassrooms(null);
+  //   try {
+  //     const [result, buildingList] = await Promise.all([
+  //       classroomMappingService.list({
+  //         schoolYear: schoolYear || undefined,
+  //         semester: semester || undefined,
+  //       }),
+  //       buildingService.list(),
+  //     ]);
+  //     setClassrooms(result.classrooms);
+  //     setSchoolYears(result.schoolYears);
+  //     if (!schoolYear && result.schoolYears.length > 0) {
+  //       setSchoolYear(result.schoolYears[0]);
+  //     }
+  //     setBuildings(buildingList);
+  //   } catch (err) {
+  //     setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
+  //   }
+  // }, [schoolYear, semester]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  // useEffect(() => {
+  //   void load();
+  // }, [load]);
 
   const search = useDeferredValue(rawSearch);
 
@@ -123,73 +124,9 @@ function ClassroomMappingPage() {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3">
-        <div className="flex justify-center md:hidden">
-          <MappingLegend />
-        </div>
-
-        <div className="flex items-center justify-end gap-3 md:hidden">
-          <ScheduleViewToggle
-            value={viewMode}
-            onChange={setViewMode}
-            ariaLabel="Classroom view"
-            options={[
-              { mode: "grid", title: "Grid view", Icon: GridIcon },
-              { mode: "list", title: "List view", Icon: ListIcon },
-            ]}
-          />
-        </div>
-
-        <div className="hidden grid-cols-[1fr_auto_1fr] items-center gap-3 md:grid">
-          <div />
-          <MappingLegend />
-          <div className="flex justify-end">
-            <ScheduleViewToggle
-              value={viewMode}
-              onChange={setViewMode}
-              ariaLabel="Classroom view"
-              options={[
-                { mode: "grid", title: "Grid view", Icon: GridIcon },
-                { mode: "list", title: "List view", Icon: ListIcon },
-              ]}
-            />
-          </div>
-        </div>
-      </div>
-
-      {loadError ? (
-        <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-dashed border-red-300 py-16 text-center dark:border-red-800">
-          <p className="font-body text-sm text-red-600 dark:text-red-400">{loadError}</p>
-          <button type="button" onClick={load} className="cursor-pointer font-body text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
-            Try again
-          </button>
-        </div>
-      ) : classrooms === null ? (
-        <div role="status" aria-label="Loading classroom mapping" className="grid place-items-center py-12 text-navy-700 dark:text-slate-200">
-          <Spinner />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 py-16 text-center dark:border-white/10">
-          <span className="text-slate-400 dark:text-slate-600">
-            <SearchIcon size={32} />
-          </span>
-          <EmptyState title={rawSearch ? "No classrooms found" : "No classrooms available"}>
-            {rawSearch ? (
-              <>No classrooms match "<span className="font-medium text-gray-700 dark:text-slate-300">{rawSearch}</span>". Try a different name.</>
-            ) : (
-              "No classroom mapping data is available for the current filters."
-            )}
-          </EmptyState>
-        </div>
-      ) : viewMode === "list" ? (
-        <div className="mt-3">
-          <MappingTableView classrooms={filtered} />
-        </div>
-      ) : (
-          <div className="mt-3">
-            <MappingGridView classrooms={filtered} />
-          </div>
-      )}
+      <ResultState tone="error" title="Not available">
+        This feature is not connected to the backend yet.
+      </ResultState>
     </div>
   );
 }

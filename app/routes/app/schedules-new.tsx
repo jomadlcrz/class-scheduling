@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
+import { ResultState } from "~/components/feedback/result-state";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
@@ -97,27 +98,27 @@ function SchedulesNewPage() {
   const [autoGenerating, setAutoGenerating] = useState(false);
   const tempIdCounter = useRef(0);
 
-  useEffect(() => {
-    Promise.all([
-      subjectService.list(),
-      setService.list(),
-      Promise.resolve([] as Faculty[]),
-      roomService.list(),
-      programService.list(),
-    ]).then(([subjects, sets, faculty, rooms, programs]) => {
-      setPageData({ subjects, sets, faculty, rooms, programs });
-
-      const firstProgram = programs[0]?.code ?? "";
-      const firstYl =
-        YEAR_LEVELS.find((yl) => sets.some((s) => s.program === firstProgram && s.yearLevel === yl)) ??
-        (1 as YearLevel);
-      const firstSet = sets.find((s) => s.program === firstProgram && s.yearLevel === firstYl);
-
-      setSelectedProgram(firstProgram);
-      setSelectedYearLevel(firstYl);
-      setSelectedSetId(firstSet?.id ?? "");
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([
+  //     subjectService.list(),
+  //     setService.list(),
+  //     Promise.resolve([] as Faculty[]),
+  //     roomService.list(),
+  //     programService.list(),
+  //   ]).then(([subjects, sets, faculty, rooms, programs]) => {
+  //     setPageData({ subjects, sets, faculty, rooms, programs });
+  //
+  //     const firstProgram = programs[0]?.code ?? "";
+  //     const firstYl =
+  //       YEAR_LEVELS.find((yl) => sets.some((s) => s.program === firstProgram && s.yearLevel === yl)) ??
+  //       (1 as YearLevel);
+  //     const firstSet = sets.find((s) => s.program === firstProgram && s.yearLevel === firstYl);
+  //
+  //     setSelectedProgram(firstProgram);
+  //     setSelectedYearLevel(firstYl);
+  //     setSelectedSetId(firstSet?.id ?? "");
+  //   });
+  // }, []);
 
   const selectedSet = pageData?.sets.find((s) => s.id === selectedSetId);
 
@@ -192,71 +193,71 @@ function SchedulesNewPage() {
     setSlots([]);
   }
 
-  function handleAutoGenerate() {
-    if (!pageData || !selectedSet) return;
-
-    const programSubjects = availableSubjects;
-    const activeFaculty = pageData.faculty.filter((f) => f.status === "active");
-    if (programSubjects.length === 0 || activeFaculty.length === 0 || pageData.rooms.length === 0) return;
-
-    setAutoGenerating(true);
-
-    // Small delay so the spinner renders
-    setTimeout(() => {
-      const sortedSubjects = [...programSubjects].sort(
-        (a, b) => a.code.localeCompare(b.code),
-      );
-
-      // Grid of available slots: iterate day x timeBlock
-      const gridSlots: Array<{ day: Day; startTime: string; endTime: string }> = [];
-      for (const day of DAY_ORDER) {
-        for (const block of TIME_BLOCKS) {
-          gridSlots.push({ day, startTime: block.start, endTime: block.end });
-        }
-      }
-
-      const newSlots: Omit<PendingSlot, "tempId">[] = [];
-      let cursor = 0;
-
-      for (const subject of sortedSubjects) {
-        const h = getHoursForSubjectType(subject.subjectType);
-        const totalHours = h.lectureHours + h.labHours;
-        const numSlots = Math.max(1, Math.ceil(totalHours / 3));
-
-        for (let i = 0; i < numSlots && cursor < gridSlots.length; i++) {
-          const slot = gridSlots[cursor];
-          cursor++;
-
-          const facultyMember = activeFaculty[newSlots.length % activeFaculty.length];
-          const room = pageData.rooms[newSlots.length % pageData.rooms.length];
-
-          newSlots.push({
-            subjectId: subject.id,
-            subjectCode: subject.code,
-            subjectTitle: subject.title,
-            day: slot.day,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            facultyId: facultyMember.id,
-            facultyName: `${facultyMember.firstName} ${facultyMember.lastName}`,
-            roomId: room.id,
-            roomName: room.name,
-            buildingCode: room.buildingCode,
-            mode: "F2F" as const,
-          });
-        }
-      }
-
-      tempIdCounter.current = 0;
-      const slotsWithIds: PendingSlot[] = newSlots.map((slot) => {
-        tempIdCounter.current += 1;
-        return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
-      });
-
-      setSlots(slotsWithIds);
-      setAutoGenerating(false);
-    }, 200);
-  }
+  // function handleAutoGenerate() {
+  //   if (!pageData || !selectedSet) return;
+  //
+  //   const programSubjects = availableSubjects;
+  //   const activeFaculty = pageData.faculty.filter((f) => f.status === "active");
+  //   if (programSubjects.length === 0 || activeFaculty.length === 0 || pageData.rooms.length === 0) return;
+  //
+  //   setAutoGenerating(true);
+  //
+  //   // Small delay so the spinner renders
+  //   setTimeout(() => {
+  //     const sortedSubjects = [...programSubjects].sort(
+  //       (a, b) => a.code.localeCompare(b.code),
+  //     );
+  //
+  //     // Grid of available slots: iterate day x timeBlock
+  //     const gridSlots: Array<{ day: Day; startTime: string; endTime: string }> = [];
+  //     for (const day of DAY_ORDER) {
+  //       for (const block of TIME_BLOCKS) {
+  //         gridSlots.push({ day, startTime: block.start, endTime: block.end });
+  //       }
+  //     }
+  //
+  //     const newSlots: Omit<PendingSlot, "tempId">[] = [];
+  //     let cursor = 0;
+  //
+  //     for (const subject of sortedSubjects) {
+  //       const h = getHoursForSubjectType(subject.subjectType);
+  //       const totalHours = h.lectureHours + h.labHours;
+  //       const numSlots = Math.max(1, Math.ceil(totalHours / 3));
+  //
+  //       for (let i = 0; i < numSlots && cursor < gridSlots.length; i++) {
+  //         const slot = gridSlots[cursor];
+  //         cursor++;
+  //
+  //         const facultyMember = activeFaculty[newSlots.length % activeFaculty.length];
+  //         const room = pageData.rooms[newSlots.length % pageData.rooms.length];
+  //
+  //         newSlots.push({
+  //           subjectId: subject.id,
+  //           subjectCode: subject.code,
+  //           subjectTitle: subject.title,
+  //           day: slot.day,
+  //           startTime: slot.startTime,
+  //           endTime: slot.endTime,
+  //           facultyId: facultyMember.id,
+  //           facultyName: `${facultyMember.firstName} ${facultyMember.lastName}`,
+  //           roomId: room.id,
+  //           roomName: room.name,
+  //           buildingCode: room.buildingCode,
+  //           mode: "F2F" as const,
+  //         });
+  //       }
+  //     }
+  //
+  //     tempIdCounter.current = 0;
+  //     const slotsWithIds: PendingSlot[] = newSlots.map((slot) => {
+  //       tempIdCounter.current += 1;
+  //       return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
+  //     });
+  //
+  //     setSlots(slotsWithIds);
+  //     setAutoGenerating(false);
+  //   }, 200);
+  // }
 
   function openAddDrawer() {
     setEditing(null);
@@ -301,43 +302,43 @@ function SchedulesNewPage() {
     ]);
   }
 
-  async function handleSave() {
-    if (!selectedSet) return;
-
-    setSaveError(null);
-    setIsSaving(true);
-    const remaining = [...slots];
-    try {
-      for (const slot of slots) {
-        await scheduleService.create({
-          schoolYear,
-          semester,
-          subjectId: slot.subjectId,
-          subjectCode: slot.subjectCode,
-          subjectTitle: slot.subjectTitle,
-          setId: selectedSet.id,
-          setCode: selectedSet.setCode,
-          program: selectedSet.program,
-          yearLevel: selectedSet.yearLevel,
-          facultyId: slot.facultyId,
-          facultyName: slot.facultyName,
-          roomId: slot.roomId,
-          roomName: slot.roomName,
-          buildingCode: slot.buildingCode,
-          mode: slot.mode,
-          day: slot.day,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        });
-        remaining.shift();
-      }
-      navigate("/schedules/regular-class");
-    } catch (err) {
-      setSlots(remaining);
-      setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-      setIsSaving(false);
-    }
-  }
+  // async function handleSave() {
+  //   if (!selectedSet) return;
+  //
+  //   setSaveError(null);
+  //   setIsSaving(true);
+  //   const remaining = [...slots];
+  //   try {
+  //     for (const slot of slots) {
+  //       await scheduleService.create({
+  //         schoolYear,
+  //         semester,
+  //         subjectId: slot.subjectId,
+  //         subjectCode: slot.subjectCode,
+  //         subjectTitle: slot.subjectTitle,
+  //         setId: selectedSet.id,
+  //         setCode: selectedSet.setCode,
+  //         program: selectedSet.program,
+  //         yearLevel: selectedSet.yearLevel,
+  //         facultyId: slot.facultyId,
+  //         facultyName: slot.facultyName,
+  //         roomId: slot.roomId,
+  //         roomName: slot.roomName,
+  //         buildingCode: slot.buildingCode,
+  //         mode: slot.mode,
+  //         day: slot.day,
+  //         startTime: slot.startTime,
+  //         endTime: slot.endTime,
+  //       });
+  //       remaining.shift();
+  //     }
+  //     navigate("/schedules/regular-class");
+  //   } catch (err) {
+  //     setSlots(remaining);
+  //     setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+  //     setIsSaving(false);
+  //   }
+  // }
 
   const contextLocked = slots.length > 0;
   const canAddSlot = Boolean(selectedSet) && availableSubjects.length > 0;
@@ -359,7 +360,7 @@ function SchedulesNewPage() {
             >
               Cancel
             </Button>
-            <Button
+            {/* <Button
               type="button"
               block={false}
               disabled={slots.length === 0 || !selectedSet}
@@ -368,218 +369,14 @@ function SchedulesNewPage() {
               onClick={handleSave}
             >
               Save Schedule{slots.length > 0 ? ` (${slots.length})` : ""}
-            </Button>
+            </Button> */}
           </>
         }
       />
 
-      {pageData === null ? (
-        <div
-          role="status"
-          aria-label="Loading"
-          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
-        </div>
-      ) : (
-        <div className="mt-4 flex flex-col gap-4">
-          {/* Context filter row */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Select
-              id="ctx-school-year"
-              label="School Year"
-              value={schoolYear}
-              onChange={(e) => setSchoolYear(e.target.value)}
-              disabled={contextLocked}
-              hint={lockHint}
-            >
-              {SCHOOL_YEARS.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </Select>
-            <Select
-              id="ctx-year-level"
-              label="Year Level"
-              value={selectedYearLevel}
-              onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
-              disabled={contextLocked}
-              hint={lockHint}
-            >
-              {availableYearLevels.length === 0 ? (
-                <option value="">No year levels</option>
-              ) : (
-                availableYearLevels.map((yl) => (
-                  <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
-                ))
-              )}
-            </Select>
-            <Select
-              id="ctx-semester"
-              label="Semester"
-              value={semester}
-              onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-              disabled={contextLocked}
-              hint={lockHint}
-            >
-              {SCHEDULE_SEMESTERS.map((s) => (
-                <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
-              ))}
-            </Select>
-            <Select
-              id="ctx-program"
-              label="Program"
-              value={selectedProgram}
-              onChange={(e) => handleProgramChange(e.target.value)}
-              disabled={contextLocked}
-              hint={lockHint}
-            >
-              {pageData.programs.map((p) => (
-                <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
-              ))}
-            </Select>
-            <Select
-              id="ctx-set"
-              label="Set"
-              value={selectedSetId}
-              onChange={(e) => setSelectedSetId(e.target.value)}
-              disabled={contextLocked}
-              hint={lockHint}
-            >
-              {availableSets.length === 0 ? (
-                <option value="">No sets</option>
-              ) : (
-                [...availableSets]
-                  .sort((a, b) => a.setCode.localeCompare(b.setCode))
-                  .map((s) => (
-                    <option key={s.id} value={s.id}>{s.program}-{s.yearLevel}{s.setCode}</option>
-                  ))
-              )}
-            </Select>
-          </div>
-
-          <FormError message={saveError} />
-
-          {/* Toolbar: view toggle + action buttons */}
-          <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
-            <div className="hidden sm:block" />
-            <div className="flex justify-center">
-              <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
-            </div>
-            <div className="flex justify-end gap-2">
-              {slots.length > 0 && (
-                <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
-                  <PlusIcon />
-                  Add Slot
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant={slots.length === 0 ? "primary" : "outline"}
-                block={false}
-                disabled={!canAutoGenerate || autoGenerating}
-                isLoading={autoGenerating}
-                loadingLabel="Generating…"
-                onClick={handleAutoGenerate}
-              >
-                <ZapIcon />
-                {slots.length === 0 ? "Auto Generate" : "Regenerate"}
-              </Button>
-            </div>
-          </div>
-
-          {/* Faculty load summary */}
-          {slots.length > 0 && (
-            <section aria-labelledby="faculty-load-heading">
-              <h3
-                id="faculty-load-heading"
-                className="mb-3 font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                Faculty Load
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {(() => {
-                  const loadMap = new Map<string, { name: string; hours: number }>();
-                  for (const slot of slots) {
-                    const key = slot.facultyId;
-                    const existing = loadMap.get(key) ?? { name: slot.facultyName, hours: 0 };
-                    existing.hours += getSlotDurationHours(slot.startTime, slot.endTime);
-                    loadMap.set(key, existing);
-                  }
-                  const maxHours = Math.max(...[...loadMap.values()].map((l) => l.hours), 1);
-                  return [...loadMap.entries()].map(([id, load]) => (
-                    <div
-                      key={id}
-                      className="min-w-44 flex-1 rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/5"
-                    >
-                      <p className="truncate font-body text-sm font-medium text-navy-700 dark:text-white">
-                        {load.name}
-                      </p>
-                      <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                        {load.hours.toFixed(1)} hrs/week
-                      </p>
-                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
-                        <div
-                          className="h-1.5 rounded-full bg-navy-700 dark:bg-gold-400"
-                          style={{ width: `${(load.hours / maxHours) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  ));
-                })()}
-              </div>
-            </section>
-          )}
-
-          {/* Week schedule body */}
-          {slots.length === 0 ? (
-            <EmptyState title={autoGenerating ? "Generating schedule…" : "No slots yet"}>
-              {autoGenerating
-                ? "Please wait while slots are created."
-                : availableSubjects.length === 0
-                  ? "No subjects available for this program, year level, and semester."
-                  : "Use “Auto Generate” to create slots for all subjects, or switch to the grid view and add slots manually."}
-            </EmptyState>
-          ) : viewMode === "grid" ? (
-            <ScheduleGrid
-              schedules={displaySchedules}
-              onEdit={handleEditSlot}
-              onDelete={handleRemoveSlot}
-              onDuplicate={handleDuplicateSlot}
-            />
-          ) : (
-            <ScheduleTable
-              schedules={displaySchedules}
-              onEdit={handleEditSlot}
-              onDelete={handleRemoveSlot}
-              onDuplicate={handleDuplicateSlot}
-            />
-          )}
-        </div>
-      )}
-
-      <Drawer
-        open={drawerOpen}
-        onClose={closeDrawer}
-        title={editing ? "Edit Slot" : "Add Slot"}
-        description={
-          selectedSet
-            ? `${selectedSet.program}-${selectedSet.yearLevel}${selectedSet.setCode} · ${SCHEDULE_SEMESTER_LABELS[semester]}`
-            : undefined
-        }
-      >
-        {pageData && (
-          <SlotEntryForm
-            key={editing?.tempId ?? "new"}
-            initialSlot={editing ?? undefined}
-            subjects={availableSubjects}
-            faculty={pageData.faculty}
-            rooms={pageData.rooms}
-            existingSlots={slots}
-            onAdd={handleSubmitSlot}
-            onCancelEdit={closeDrawer}
-          />
-        )}
-      </Drawer>
+      <ResultState tone="error" title="Not available">
+        This feature is not connected to the backend yet.
+      </ResultState>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { SetForm } from "~/features/sets/set-form";
 import { SetTable } from "~/features/sets/set-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -45,12 +46,12 @@ function SetsPage() {
   const [editTarget, setEditTarget] = useState<ClassSet | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ClassSet | null>(null);
 
-  useEffect(() => {
-    Promise.all([setService.list(), programService.list()]).then(([s, p]) => {
-      setSets(s);
-      setPrograms(p);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([setService.list(), programService.list()]).then(([s, p]) => {
+  //     setSets(s);
+  //     setPrograms(p);
+  //   });
+  // }, []);
 
   const resetKey = `${search}|${program}|${yearLevel}`;
 
@@ -74,26 +75,26 @@ function SetsPage() {
 
   const pagination = usePagination(visibleSets, resetKey);
 
-  async function handleCreate(inputs: CreateSetInput[]) {
-    const created: ClassSet[] = [];
-    for (const input of inputs) {
-      created.push(await setService.create(input));
-    }
-    setSets((current) => [...(current ?? []), ...created]);
-    setCreateOpen(false);
-  }
+  // async function handleCreate(inputs: CreateSetInput[]) {
+  //   const created: ClassSet[] = [];
+  //   for (const input of inputs) {
+  //     created.push(await setService.create(input));
+  //   }
+  //   setSets((current) => [...(current ?? []), ...created]);
+  //   setCreateOpen(false);
+  // }
 
-  async function handleEdit(inputs: CreateSetInput[]) {
-    if (!editTarget || inputs.length === 0) return;
-    const updated = await setService.update(editTarget.id, inputs[0]);
-    setSets((current) => current!.map((s) => (s.id === updated.id ? updated : s)));
-    setEditTarget(null);
-  }
+  // async function handleEdit(inputs: CreateSetInput[]) {
+  //   if (!editTarget || inputs.length === 0) return;
+  //   const updated = await setService.update(editTarget.id, inputs[0]);
+  //   setSets((current) => current!.map((s) => (s.id === updated.id ? updated : s)));
+  //   setEditTarget(null);
+  // }
 
-  async function handleDelete(target: ClassSet) {
-    await setService.remove(target.id);
-    setSets((current) => current!.filter((s) => s.id !== target.id));
-  }
+  // async function handleDelete(target: ClassSet) {
+  //   await setService.remove(target.id);
+  //   setSets((current) => current!.filter((s) => s.id !== target.id));
+  // }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -148,37 +149,10 @@ function SetsPage() {
           </Select>
         </div>
 
-        {sets === null || programs === null ? (
-          <div
-            role="status"
-            aria-label="Loading sets"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleSets.length === 0 ? (
-          <EmptyState title="No sets found">
-            No sets match the current filters. Adjust the search or add a new set.
-          </EmptyState>
-        ) : (
-          <>
-            <SetTable
-              sets={pagination.pageItems}
-              programs={programs!}
-              onEdit={(set) => setEditTarget(set)}
-              onDelete={(set) => setDeleteTarget(set)}
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Set">
+      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Set">
         <SetForm programs={programs ?? []} onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
       </Modal>
 
@@ -208,7 +182,7 @@ function SetsPage() {
         </span>{" "}
         ({deleteTarget?.program}, {deleteTarget ? YEAR_LEVEL_LABELS[deleteTarget.yearLevel] : ""}){" "}
         will be permanently removed.
-      </ConfirmDialog>
+      </ConfirmDialog> */}
     </div>
   );
 }

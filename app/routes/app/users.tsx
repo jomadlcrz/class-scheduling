@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { ActivateUserDialog } from "~/features/users/activate-user-dialog";
 import { DeactivateUserDialog } from "~/features/users/deactivate-user-dialog";
 import { ResetPasswordDialog } from "~/features/users/reset-password-dialog";
@@ -52,9 +53,9 @@ function UsersPage() {
   const [activateTarget, setActivateTarget] = useState<User | null>(null);
   const [resetTarget, setResetTarget] = useState<User | null>(null);
 
-  useEffect(() => {
-    userService.list().then(setUsers);
-  }, []);
+  // useEffect(() => {
+  //   userService.list().then(setUsers);
+  // }, []);
 
   const visibleUsers = useMemo(
     () => (users ? applyUserFilters(users, filters) : []),
@@ -67,19 +68,19 @@ function UsersPage() {
     setUsers((current) => current!.map((u) => (u.id === updated.id ? updated : u)));
   }
 
-  async function handleFormSubmit(input: CreateUserInput) {
-    if (formTarget === "new") {
-      const created = await userService.create(input);
-      setUsers((current) => [...current!, created]);
-    } else if (formTarget) {
-      replaceUser(await userService.update(formTarget.id, input));
-    }
-    setFormTarget(null);
-  }
+  // async function handleFormSubmit(input: CreateUserInput) {
+  //   if (formTarget === "new") {
+  //     const created = await userService.create(input);
+  //     setUsers((current) => [...current!, created]);
+  //   } else if (formTarget) {
+  //     replaceUser(await userService.update(formTarget.id, input));
+  //   }
+  //   setFormTarget(null);
+  // }
 
-  async function handleSetStatus(target: User, status: User["status"]) {
-    replaceUser(await userService.setStatus(target.id, status));
-  }
+  // async function handleSetStatus(target: User, status: User["status"]) {
+  //   replaceUser(await userService.setStatus(target.id, status));
+  // }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -97,40 +98,10 @@ function UsersPage() {
       <div className="mt-6 flex flex-col gap-4">
         <UserFilters value={filters} onChange={setFilters} />
 
-        {users === null ? (
-          <div
-            role="status"
-            aria-label="Loading users"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleUsers.length === 0 ? (
-          <EmptyState title="No users found">
-            No users match the current filters. Adjust the search or filters and try again.
-          </EmptyState>
-        ) : (
-          <>
-            <UserTable
-              users={pagination.pageItems}
-              currentUserId={currentUser?.id}
-              onEdit={(user) => setFormTarget(user)}
-              onToggleStatus={(user) =>
-                user.status === "active" ? setDeactivateTarget(user) : setActivateTarget(user)
-              }
-              onResetPassword={(user) => setResetTarget(user)}
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
       </div>
 
-      <Modal
+      {/* <Modal
         open={formTarget !== null}
         onClose={() => setFormTarget(null)}
         title={formTarget === "new" ? "New User" : "Edit User"}
@@ -156,7 +127,7 @@ function UsersPage() {
         user={resetTarget}
         onClose={() => setResetTarget(null)}
         onConfirm={(user) => userService.resetPassword(user.id)}
-      />
+      /> */}
     </div>
   );
 }

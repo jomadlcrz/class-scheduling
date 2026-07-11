@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
+import { ResultState } from "~/components/feedback/result-state";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
@@ -51,15 +52,15 @@ function SubjectsNewPage() {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const tempIdCounter = useRef(0);
 
-  useEffect(() => {
-    Promise.all([subjectService.list(), programService.list()]).then(
-      ([s, p]) => {
-        setAllSubjects(s);
-        setPrograms(p);
-        setProgram(p[0]?.code ?? "");
-      },
-    );
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([subjectService.list(), programService.list()]).then(
+  //     ([s, p]) => {
+  //       setAllSubjects(s);
+  //       setPrograms(p);
+  //       setProgram(p[0]?.code ?? "");
+  //     },
+  //   );
+  // }, []);
 
   /** Unsaved work: staged entries or one being edited in the form. */
   const isDirty = pending.length > 0 || editing !== null;
@@ -181,39 +182,39 @@ function SubjectsNewPage() {
     );
   }
 
-  async function handleSave() {
-    setSaveError(null);
-    setIsSaving(true);
-    // Created in insertion order so temp prerequisite ids always resolve
-    // to subjects created earlier in the same batch.
-    const realIdByTempId = new Map<string, string>();
-    const remaining = [...pending];
-
-    try {
-      for (const entry of pending) {
-        const { tempId, ...input } = entry;
-        const created = await subjectService.create({
-          ...input,
-          // Resolve temp ids to the just-created real ids; drop any that
-          // can't resolve (e.g. their entry is sitting in the edit form).
-          prerequisiteIds: input.prerequisiteIds
-            .map((id) => realIdByTempId.get(id) ?? id)
-            .filter((id) => !id.startsWith("tmp-")),
-        });
-        realIdByTempId.set(tempId, created.id);
-        remaining.shift();
-      }
-      navigate("/subjects");
-    } catch (err) {
-      setPending(remaining);
-      setSaveError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.",
-      );
-      setIsSaving(false);
-    }
-  }
+  // async function handleSave() {
+  //   setSaveError(null);
+  //   setIsSaving(true);
+  //   // Created in insertion order so temp prerequisite ids always resolve
+  //   // to subjects created earlier in the same batch.
+  //   const realIdByTempId = new Map<string, string>();
+  //   const remaining = [...pending];
+  //
+  //   try {
+  //     for (const entry of pending) {
+  //       const { tempId, ...input } = entry;
+  //       const created = await subjectService.create({
+  //         ...input,
+  //         // Resolve temp ids to the just-created real ids; drop any that
+  //         // can't resolve (e.g. their entry is sitting in the edit form).
+  //         prerequisiteIds: input.prerequisiteIds
+  //           .map((id) => realIdByTempId.get(id) ?? id)
+  //           .filter((id) => !id.startsWith("tmp-")),
+  //       });
+  //       realIdByTempId.set(tempId, created.id);
+  //       remaining.shift();
+  //     }
+  //     navigate("/subjects");
+  //   } catch (err) {
+  //     setPending(remaining);
+  //     setSaveError(
+  //       err instanceof Error
+  //         ? err.message
+  //         : "Something went wrong. Please try again.",
+  //     );
+  //     setIsSaving(false);
+  //   }
+  // }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -230,7 +231,7 @@ function SubjectsNewPage() {
             >
               Cancel
             </Button>
-            <Button
+            {/* <Button
               type="button"
               block={false}
               disabled={pending.length === 0}
@@ -239,164 +240,14 @@ function SubjectsNewPage() {
               onClick={handleSave}
             >
               Save Curriculum{pending.length > 0 ? ` (${pending.length})` : ""}
-            </Button>
+            </Button> */}
           </>
         }
       />
 
-      {allSubjects === null || programs === null ? (
-        <div
-          role="status"
-          aria-label="Loading subjects"
-          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
-        </div>
-      ) : (
-        <div className="mt-6 flex flex-col gap-5">
-          <div className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
-            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/8">
-              <span className="grid size-8 place-items-center rounded-lg bg-navy-100 text-navy-600 dark:bg-navy-800 dark:text-gold-400">
-                <GraduationCapIcon />
-              </span>
-              <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-                Target Program
-              </span>
-            </div>
-            <div className="px-5 py-4">
-              <div className="max-w-xl">
-                <Select
-                  id="curriculum-program"
-                  label="Program"
-                  value={program}
-                  onChange={(e) => {
-                    setProgram(e.target.value);
-                    // A different program shows a different tree; start it expanded.
-                    setCollapsed(new Set());
-                  }}
-                  disabled={pending.length > 0 || editing !== null}
-                  hint={
-                    pending.length > 0 || editing !== null
-                      ? "Save or remove the unsaved entries to switch program."
-                      : undefined
-                  }
-                >
-                  {programs.map((p) => (
-                    <option key={p.code} value={p.code}>
-                      {p.code} — {p.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          <FormError message={saveError} />
-
-          <div className="grid gap-5 lg:grid-cols-[26rem_1fr]">
-            <section className="flex flex-col rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
-              <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/8">
-                <span className="grid size-8 place-items-center rounded-lg bg-navy-100 text-navy-600 dark:bg-navy-800 dark:text-gold-400">
-                  <BookIcon />
-                </span>
-                <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-                  {editing
-                    ? `Edit Entry — ${editing.code}`
-                    : "New Curriculum Entry"}
-                </span>
-              </div>
-              <div className="p-5">
-                <CurriculumEntryForm
-                  key={editing?.tempId ?? "new"}
-                  initialEntry={editing ?? undefined}
-                  prerequisiteOptions={prerequisiteOptions}
-                  onAdd={handleAdd}
-                  onCancelEdit={handleCancelEdit}
-                />
-              </div>
-            </section>
-
-            <section className="flex flex-col rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/8">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-8 place-items-center rounded-lg bg-navy-100 text-navy-600 dark:bg-navy-800 dark:text-gold-400">
-                    <LayersIcon />
-                  </span>
-                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-                    Curriculum Structure
-                  </span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  {pending.length > 0 && (
-                    <span className="rounded-full bg-gold-400/20 px-2.5 py-0.5 font-body text-xs font-medium text-gold-600 dark:text-gold-400">
-                      {pending.length} pending
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setCollapsed(new Set())}
-                    className="cursor-pointer font-body text-xs font-medium text-navy-600 transition-colors duration-150 hover:text-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:text-white"
-                  >
-                    Expand All
-                  </button>
-                  <span
-                    aria-hidden="true"
-                    className="text-slate-300 dark:text-slate-600"
-                  >
-                    ·
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCollapsed(
-                        new Set(collectSectionKeys(savedForProgram, pending)),
-                      )
-                    }
-                    className="cursor-pointer font-body text-xs font-medium text-navy-600 transition-colors duration-150 hover:text-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:text-white"
-                  >
-                    Collapse All
-                  </button>
-                </div>
-              </div>
-              <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
-                <CurriculumStructure
-                  program={program}
-                  saved={savedForProgram}
-                  pending={pending}
-                  collapsed={collapsed}
-                  onToggleSection={handleToggleSection}
-                  onEditPending={handleEditPending}
-                  onRemovePending={handleRemovePending}
-                />
-              </div>
-            </section>
-          </div>
-        </div>
-      )}
-
-      <ConfirmDialog
-        open={reloadPromptOpen || blocker.state === "blocked"}
-        onClose={() => {
-          setReloadPromptOpen(false);
-          blocker.reset?.();
-        }}
-        title="Discard unsaved subjects?"
-        confirmLabel={reloadPromptOpen ? "Reload Page" : "Leave Page"}
-        loadingLabel={reloadPromptOpen ? "Reloading…" : "Leaving…"}
-        confirmVariant="danger"
-        onConfirm={async () => {
-          if (reloadPromptOpen) {
-            reloadConfirmed.current = true;
-            window.location.reload();
-          } else {
-            blocker.proceed?.();
-          }
-        }}
-      >
-        Your added subjects haven't been saved yet. If you{" "}
-        {reloadPromptOpen ? "reload" : "leave"} this page now, they will be
-        lost.
-      </ConfirmDialog>
+      <ResultState tone="error" title="Not available">
+        This feature is not connected to the backend yet.
+      </ResultState>
     </div>
   );
 }

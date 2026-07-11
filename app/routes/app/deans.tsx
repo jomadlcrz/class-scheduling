@@ -8,6 +8,7 @@ import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { ActivateDeanDialog } from "~/features/deans/activate-dean-dialog";
 import { DeactivateDeanDialog } from "~/features/deans/deactivate-dean-dialog";
 import { DeanForm } from "~/features/deans/dean-form";
@@ -47,12 +48,12 @@ function DeansPage() {
   const [activateTarget, setActivateTarget] = useState<Dean | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Dean | null>(null);
 
-  useEffect(() => {
-    Promise.all([deanService.list(), departmentService.list()]).then(([d, dept]) => {
-      setDeanList(d);
-      setDepartments(dept);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([deanService.list(), departmentService.list()]).then(([d, dept]) => {
+  //     setDeanList(d);
+  //     setDepartments(dept);
+  //   });
+  // }, []);
 
   const resetKey = `${search}|${department}|${status}`;
 
@@ -77,23 +78,23 @@ function DeansPage() {
 
   const pagination = usePagination(visibleDeans, resetKey);
 
-  async function handleCreate(input: CreateDeanInput) {
-    const created = await deanService.create(input);
-    setDeanList((current) => [...(current ?? []), created]);
-    setCreateOpen(false);
-  }
+  // async function handleCreate(input: CreateDeanInput) {
+  //   const created = await deanService.create(input);
+  //   setDeanList((current) => [...(current ?? []), created]);
+  //   setCreateOpen(false);
+  // }
 
-  async function handleEdit(input: CreateDeanInput) {
-    if (!editTarget) return;
-    const updated = await deanService.update(editTarget.id, input);
-    setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
-    setEditTarget(null);
-  }
+  // async function handleEdit(input: CreateDeanInput) {
+  //   if (!editTarget) return;
+  //   const updated = await deanService.update(editTarget.id, input);
+  //   setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
+  //   setEditTarget(null);
+  // }
 
-  async function handleSetStatus(target: Dean, status: DeanStatus) {
-    const updated = await deanService.setStatus(target.id, status);
-    setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
-  }
+  // async function handleSetStatus(target: Dean, status: DeanStatus) {
+  //   const updated = await deanService.setStatus(target.id, status);
+  //   setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
+  // }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -145,40 +146,10 @@ function DeansPage() {
           </Select>
         </div>
 
-        {deanList === null || departments === null ? (
-          <div
-            role="status"
-            aria-label="Loading deans"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleDeans.length === 0 ? (
-          <EmptyState title="No deans found">
-            No deans match the current filters. Adjust the search or add a new dean.
-          </EmptyState>
-        ) : (
-          <>
-            <DeanTable
-              deans={pagination.pageItems}
-              onEdit={(member) => setEditTarget(member)}
-              onToggleStatus={(member) =>
-                member.status === "active"
-                  ? setDeactivateTarget(member)
-                  : setActivateTarget(member)
-              }
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Dean">
+      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Dean">
         <DeanForm
           departments={departments ?? []}
           onSubmit={handleCreate}
@@ -206,7 +177,7 @@ function DeansPage() {
         dean={activateTarget}
         onClose={() => setActivateTarget(null)}
         onConfirm={(dean) => handleSetStatus(dean, "active")}
-      />
+      /> */}
     </div>
   );
 }

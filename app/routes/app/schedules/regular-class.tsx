@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
+import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
 import { PlusIcon, PrinterIcon } from "~/components/ui/icons";
@@ -78,27 +79,27 @@ function RegularClassPage() {
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      scheduleService.list(),
-      subjectService.list(),
-      setService.list(),
-      Promise.resolve([] as Faculty[]),
-      roomService.list(),
-      programService.list(),
-    ]).then(([schedules, subjects, sets, faculty, rooms, programs]) => {
-      setData({ schedules, subjects, sets, faculty, rooms, programs });
-
-      const firstProgram = programs[0]?.code ?? "";
-      const firstYl =
-        YEAR_LEVELS.find((yl) => sets.some((s) => s.program === firstProgram && s.yearLevel === yl)) ??
-        (1 as YearLevel);
-      const firstSet = sets.find((s) => s.program === firstProgram && s.yearLevel === firstYl);
-      setProgram(firstProgram);
-      setYearLevel(firstYl);
-      setSetId(firstSet?.id ?? "");
-    });
-  }, []);
+  // useEffect(() => {
+  //   Promise.all([
+  //     scheduleService.list(),
+  //     subjectService.list(),
+  //     setService.list(),
+  //     Promise.resolve([] as Faculty[]),
+  //     roomService.list(),
+  //     programService.list(),
+  //   ]).then(([schedules, subjects, sets, faculty, rooms, programs]) => {
+  //     setData({ schedules, subjects, sets, faculty, rooms, programs });
+  //
+  //     const firstProgram = programs[0]?.code ?? "";
+  //     const firstYl =
+  //       YEAR_LEVELS.find((yl) => sets.some((s) => s.program === firstProgram && s.yearLevel === yl)) ??
+  //       (1 as YearLevel);
+  //     const firstSet = sets.find((s) => s.program === firstProgram && s.yearLevel === firstYl);
+  //     setProgram(firstProgram);
+  //     setYearLevel(firstYl);
+  //     setSetId(firstSet?.id ?? "");
+  //   });
+  // }, []);
 
   const availableYearLevels = useMemo(
     () =>
@@ -142,19 +143,19 @@ function RegularClassPage() {
       );
   }, [data, setId, schoolYear, semester]);
 
-  async function handleEdit(input: CreateScheduleInput) {
-    if (!editTarget) return;
-    const updated = await scheduleService.update(editTarget.id, input);
-    setData((d) =>
-      d && { ...d, schedules: d.schedules.map((s) => (s.id === updated.id ? updated : s)) },
-    );
-    setEditTarget(null);
-  }
+  // async function handleEdit(input: CreateScheduleInput) {
+  //   if (!editTarget) return;
+  //   const updated = await scheduleService.update(editTarget.id, input);
+  //   setData((d) =>
+  //     d && { ...d, schedules: d.schedules.map((s) => (s.id === updated.id ? updated : s)) },
+  //   );
+  //   setEditTarget(null);
+  // }
 
-  async function handleDelete(target: Schedule) {
-    await scheduleService.remove(target.id);
-    setData((d) => d && { ...d, schedules: d.schedules.filter((s) => s.id !== target.id) });
-  }
+  // async function handleDelete(target: Schedule) {
+  //   await scheduleService.remove(target.id);
+  //   setData((d) => d && { ...d, schedules: d.schedules.filter((s) => s.id !== target.id) });
+  // }
 
   const isLoading = data === null;
 
@@ -249,63 +250,9 @@ function RegularClassPage() {
         </div>
       </div>
 
-      <div className="mt-4">
-        {isLoading ? (
-          <div
-            role="status"
-            aria-label="Loading schedules"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : visibleSchedules.length === 0 ? (
-          <EmptyState title="No classes scheduled">
-            No classes for this section yet. Use “Create Schedule” to build its weekly schedule.
-          </EmptyState>
-        ) : viewMode === "grid" ? (
-          <ScheduleGrid schedules={visibleSchedules} />
-        ) : (
-          <ScheduleTable
-            schedules={visibleSchedules}
-            onEdit={setEditTarget}
-            onDelete={setDeleteTarget}
-          />
-        )}
-      </div>
-
-      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Schedule">
-        {editTarget && data && (
-          <ScheduleForm
-            schedule={editTarget}
-            programs={data.programs}
-            subjects={data.subjects}
-            sets={data.sets}
-            faculty={data.faculty}
-            rooms={data.rooms}
-            defaultSchoolYear={schoolYear}
-            defaultSemester={semester}
-            onSubmit={handleEdit}
-            onCancel={() => setEditTarget(null)}
-          />
-        )}
-      </Modal>
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
-        title="Delete schedule"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        Remove{" "}
-        <span className="font-medium text-navy-700 dark:text-white">
-          {deleteTarget?.subjectCode}
-        </span>{" "}
-        (Set {deleteTarget?.setCode}, {DAY_LABELS[deleteTarget?.day ?? "M"]}{" "}
-        {deleteTarget?.startTime}–{deleteTarget?.endTime}) from the schedule?
-      </ConfirmDialog>
+      <ResultState tone="error" title="Not available">
+        This feature is not connected to the backend yet.
+      </ResultState>
     </div>
   );
 }
