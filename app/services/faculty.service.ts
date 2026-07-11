@@ -1,11 +1,6 @@
 import { ApiError, apiGet, apiPost } from "~/lib/api";
 import type { DepartmentOption } from "~/types/department";
-import {
-  type RawFaculty,
-  type CreateFacultyAccountInput,
-  type Faculty,
-  mapFaculty,
-} from "~/types/faculty";
+import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 
 /**
  * Faculty service. `create`, `list`, and `listDepartmentOptions` talk to the
@@ -29,14 +24,41 @@ async function create(input: CreateFacultyAccountInput): Promise<void> {
 
 /** GET /super-admin/create-faculty-accounts — returns all faculty profiles. 404 → empty. */
 async function list(): Promise<Faculty[]> {
-  let data: RawFaculty[];
+  type FacultyResponse = {
+    faculty_id: number;
+    first_name: string;
+    mid_name: string | null;
+    last_name: string;
+    gender: string;
+    civil_status: string;
+    department: string;
+    mobile: string | null;
+    email: string | null;
+  };
+
+  let data: FacultyResponse[];
   try {
-    data = await apiGet<RawFaculty[]>("/super-admin/create-faculty-accounts");
+    data = await apiGet<FacultyResponse[]>("/super-admin/create-faculty-accounts");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map(mapFaculty);
+
+  return data.map((f) => {
+    const deptParts = f.department.split(" - ");
+    return {
+      id: f.faculty_id,
+      firstName: f.first_name,
+      midName: f.mid_name,
+      lastName: f.last_name,
+      gender: f.gender,
+      civilStatus: f.civil_status,
+      department: f.department,
+      departmentCode: deptParts[0] ?? f.department,
+      mobile: f.mobile,
+      email: f.email,
+    };
+  });
 }
 
 type DepartmentsResponse = {

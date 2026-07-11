@@ -1,21 +1,3 @@
-import type { BadgeTone } from "~/components/ui/badge";
-
-/**
- * Shape returned by GET /super-admin/create-faculty-accounts.
- * Keys are snake_case to match the backend verbatim.
- */
-export type RawFaculty = {
-  faculty_id: number;
-  first_name: string;
-  mid_name: string | null;
-  last_name: string;
-  gender: string;
-  civil_status: string;
-  department: string;
-  mobile: string | null;
-  email: string | null;
-};
-
 /** Frontend-mapped faculty row. */
 export type Faculty = {
   id: number;
@@ -48,19 +30,3 @@ export type CreateFacultyAccountInput = {
   gender?: string;
   civilStatus?: string;
 };
-
-export function mapFaculty(raw: RawFaculty): Faculty {
-  const deptParts = raw.department.split(" - ");
-  return {
-    id: raw.faculty_id,
-    firstName: raw.first_name,
-    midName: raw.mid_name,
-    lastName: raw.last_name,
-    gender: raw.gender,
-    civilStatus: raw.civil_status,
-    department: raw.department,
-    departmentCode: deptParts[0] ?? raw.department,
-    mobile: raw.mobile,
-    email: raw.email,
-  };
-}
