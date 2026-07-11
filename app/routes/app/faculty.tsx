@@ -14,9 +14,11 @@ import { FacultyTable } from "~/features/faculty/faculty-table";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
 import { facultyService } from "~/services/faculty.service";
+import { permissionService } from "~/services/permission.service";
 import { usePagination } from "~/hooks/use-pagination";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
+import type { PermissionSummary } from "~/types/permission";
 
 export function meta() {
   return [
@@ -37,6 +39,7 @@ function FacultyPage() {
   const [facultyList, setFacultyList] = useState<Faculty[] | null>(null);
   const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
   const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
+  const [rolePermissions, setRolePermissions] = useState<PermissionSummary[]>([]);
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
@@ -56,6 +59,12 @@ function FacultyPage() {
       .getOptions()
       .then(setEnumOptions)
       .catch(() => setEnumOptions(null));
+    // Role permissions for the account form's side panel; viewers without
+    // access (403) simply don't get the panel.
+    permissionService
+      .list()
+      .then(setRolePermissions)
+      .catch(() => setRolePermissions([]));
   }, []);
 
   /** Unique department codes derived from the faculty list. */
@@ -165,7 +174,12 @@ function FacultyPage() {
         )}
       </div>
 
-      <Modal open={createOpen} onClose={closeCreate} title="New Faculty">
+      <Modal
+        open={createOpen}
+        onClose={closeCreate}
+        title="New Faculty"
+        wide={!createdEmail && rolePermissions.length > 0}
+      >
         {createdEmail ? (
           <div className="flex flex-col items-center gap-4">
             <ResultState tone="success" title="Faculty registered">
@@ -180,6 +194,7 @@ function FacultyPage() {
             departments={departmentOptions}
             genders={enumOptions?.gender ?? []}
             civilStatuses={enumOptions?.civilStatus ?? []}
+            rolePermissions={rolePermissions}
             onSubmit={handleCreate}
             onCancel={closeCreate}
           />

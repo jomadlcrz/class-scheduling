@@ -37,14 +37,13 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
     <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5" noValidate>
       <FormError message={error} />
 
-      <Input
-        id="email"
-        label="Email"
-        type="email"
-        autoComplete="email"
-        required
-        placeholder="you@gwc.edu.ph"
-      />
+  <Input
+    id="email"
+    label="Email"
+    type="email"
+    autoComplete="email"
+    placeholder="you@gwc.edu.ph"
+  />
 
       <button
         type="submit"

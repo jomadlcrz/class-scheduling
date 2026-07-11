@@ -8,14 +8,16 @@ type ModalProps = {
   open: boolean;
   onClose: () => void;
   title: string;
+  /** Wider panel for content that needs room (e.g. side-by-side layouts). */
+  wide?: boolean;
   children: ReactNode;
 };
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+export function Modal({ open, onClose, title, wide, children }: ModalProps) {
   return (
     <AnimatePresence>
       {open && (
-        <ModalContent key="modal" onClose={onClose} title={title}>
+        <ModalContent key="modal" onClose={onClose} title={title} wide={wide}>
           {children}
         </ModalContent>
       )}
@@ -98,10 +100,12 @@ export function ConfirmDialog({
 function ModalContent({
   onClose,
   title,
+  wide,
   children,
 }: {
   onClose: () => void;
   title: string;
+  wide?: boolean;
   children: ReactNode;
 }) {
   // Freeze body scroll while the modal is open; tall content scrolls
@@ -143,7 +147,7 @@ function ModalContent({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
-          className="pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-navy-900"
+          className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-navy-900 ${wide ? "max-w-3xl" : "max-w-md"}`}
         >
           <div className="flex shrink-0 items-start justify-between gap-4">
             <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
