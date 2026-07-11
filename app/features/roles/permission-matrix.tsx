@@ -7,26 +7,41 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { PERMISSIONS } from "~/services/role.service";
-import type { RoleSummary } from "~/types/role";
+import type { RolePermission, RoleSummary } from "~/types/role";
 
 /** Permissions × roles grid showing what each system role can do. */
 export function PermissionMatrix({ roles }: { roles: RoleSummary[] }) {
+  // The catalog is the union of every permission the roles hold.
+  const catalog = new Map<string, RolePermission>();
+  for (const role of roles) {
+    for (const permission of role.permissions) {
+      if (!catalog.has(permission.slug)) catalog.set(permission.slug, permission);
+    }
+  }
+  const permissions = [...catalog.values()].sort((a, b) => a.slug.localeCompare(b.slug));
+
   return (
     <Table>
       <TableHead>
         <TableHeader>Permission</TableHeader>
         {roles.map((role) => (
-          <TableHeader key={role.role}>{role.label}</TableHeader>
+          <TableHeader key={role.id}>{role.name}</TableHeader>
         ))}
       </TableHead>
       <TableBody>
-        {PERMISSIONS.map((permission) => (
-          <TableRow key={permission.key}>
-            <TableCell>{permission.label}</TableCell>
+        {permissions.map((permission) => (
+          <TableRow key={permission.slug}>
+            <TableCell>
+              <span className="font-medium text-navy-700 dark:text-white">
+                {permission.description || permission.slug}
+              </span>
+              <span className="mt-0.5 block text-xs text-slate-400 dark:text-slate-500">
+                {permission.slug}
+              </span>
+            </TableCell>
             {roles.map((role) => (
-              <TableCell key={role.role}>
-                {role.permissions.includes(permission.key) ? (
+              <TableCell key={role.id}>
+                {role.permissions.some((p) => p.slug === permission.slug) ? (
                   <span className="text-emerald-500" aria-label="Allowed">
                     <CheckIcon />
                   </span>

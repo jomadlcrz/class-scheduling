@@ -1,16 +1,13 @@
-import type { Role } from "~/types/user";
-
-export type Permission = {
-  key: string;
-  label: string;
-};
-
-export type RoleDefinition = {
-  role: Role;
-  label: string;
+export type RolePermission = {
+  id: number;
+  /** e.g. "system:manage_roles" */
+  slug: string;
   description: string;
-  /** Keys from the PERMISSIONS catalog this role holds. */
-  permissions: string[];
 };
 
-export type RoleSummary = RoleDefinition & { memberCount: number };
+export type RoleSummary = {
+  id: number;
+  /** Backend display value, e.g. "Super Admin". */
+  name: string;
+  permissions: RolePermission[];
+};

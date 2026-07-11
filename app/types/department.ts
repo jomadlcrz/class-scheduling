@@ -8,3 +8,10 @@ export type Department = {
 
 export type CreateDepartmentInput = Omit<Department, "id">;
 export type UpdateDepartmentInput = Partial<CreateDepartmentInput>;
+
+/** Real backend department (integer id) — used where the API needs one. */
+export type DepartmentOption = {
+  id: number;
+  code: string;
+  name: string;
+};

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import { PermissionMatrix } from "~/features/roles/permission-matrix";
 import { RoleTable } from "~/features/roles/role-table";
@@ -27,9 +28,15 @@ export default function Roles() {
 
 function RolesPage() {
   const [roles, setRoles] = useState<RoleSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    roleService.list().then(setRoles);
+    roleService
+      .list()
+      .then(setRoles)
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
+      );
   }, []);
 
   return (
@@ -39,7 +46,9 @@ function RolesPage() {
         description="System roles and what each one can do."
       />
 
-      {roles === null ? (
+      {error ? (
+        <EmptyState title="Couldn't load roles">{error}</EmptyState>
+      ) : roles === null ? (
         <div
           role="status"
           aria-label="Loading roles"
@@ -47,6 +56,10 @@ function RolesPage() {
         >
           <Spinner />
         </div>
+      ) : roles.length === 0 ? (
+        <EmptyState title="No roles yet">
+          No roles exist in the system yet.
+        </EmptyState>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
           <RoleTable roles={roles} />

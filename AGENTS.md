@@ -4,7 +4,7 @@ Guidance for AI agents and contributors working in this repo. Follow these conve
 
 ## Project overview
 
-A class-scheduling web app for GWC (builds conflict-free academic timetables). **Auth is connected to the real backend** (Flask, separate repo; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`). Everything else still runs on **mock services** (in-memory data + fake latency). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline mock data in components. To connect another domain to the backend, swap only that service's internals — `auth.service.ts` is the reference pattern.
+A class-scheduling web app for GWC (builds conflict-free academic timetables). **Connected to the real backend** (Flask, separate repo; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`): auth, roles (read-only), faculty-account creation, and the department options for it. Everything else still runs on **mock services** (in-memory data + fake latency). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline mock data in components. To connect another domain to the backend, swap only that service's internals — `auth.service.ts` is the reference pattern.
 
 The auth slice is live against the backend end-to-end:
 
@@ -15,7 +15,12 @@ The auth slice is live against the backend end-to-end:
 - **Error messages come verbatim from backend responses** (`{ error }` or `{ message }`) via `ApiError` — never write frontend copy for API failures; a generic fallback exists only for network failures/bodyless responses.
 - `requestPasswordReset` targets `POST /auth/forgot-password`, which the backend does **not implement yet** — confirm the path when it lands.
 
-Non-auth mock services still share the in-memory store `app/services/mock-data.ts` (demo accounts there no longer control login — real credentials live in the backend DB).
+**Super-admin slice (also live):**
+
+- **Roles page** (`/roles`) — `roleService.list()` calls `GET /super-admin/permission-slugs` (requires a Super Admin token + `system:manage_roles`): real role names and permission slugs; the permission matrix is derived from the union of the roles' permissions. An empty roles table comes back as 404 + `[]` — the service maps that to an empty list.
+- **Faculty account creation** (`/faculty` → New Faculty) — `facultyService.create()` calls `POST /super-admin/create-faculty-accounts` (`{ departmentId, firstName, midName?, lastName, gender, civilStatus, contact: { mobile, email }, roleName: "Faculty" }`); the backend creates the login account + faculty profile and emails a temp password. The form (`faculty-account-form.tsx`) mirrors that contract; the department dropdown loads real integer-id departments via `facultyService.listDepartmentOptions()` (`GET /departments`, 404 = empty). **The faculty table/edit/status flows are still mocked**, so newly created accounts don't appear in the list yet. `faculty-form.tsx` remains the mock edit form — don't merge the two while the list is mocked.
+
+Remaining mock services share the in-memory store `app/services/mock-data.ts` (demo accounts there no longer control login — real credentials live in the backend DB).
 
 **Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `FACULTY`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Users + Roles admin pages are live (`/users`, `/roles`).
 
@@ -54,8 +59,8 @@ app/
 ├── layouts/               # App-shell layouts (EMPTY STUBS)
 ├── hooks/                 # Shared hooks (use-theme, use-auth are live; rest are stubs)
 ├── lib/                   # Pure utilities (validators, storage, api, session are live)
-├── services/              # Data layer — auth talks to the REAL backend; the rest are
-│                          #   MOCKS over mock-data.ts (user, role, subject live; rest stubs)
+├── services/              # Data layer — auth + role + faculty.create talk to the REAL
+│                          #   backend; the rest are MOCKS over mock-data.ts
 └── types/                 # Domain types (user, auth, role, subject are live; rest are stubs)
 ```
 

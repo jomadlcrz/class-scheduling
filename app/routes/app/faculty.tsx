@@ -8,16 +8,23 @@ import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { ResultState } from "~/components/feedback/result-state";
 import { ActivateFacultyDialog } from "~/features/faculty/activate-faculty-dialog";
 import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-dialog";
+import { FacultyAccountForm } from "~/features/faculty/faculty-account-form";
 import { FacultyForm } from "~/features/faculty/faculty-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
 import { PageHeader } from "~/layouts/page-header";
 import { departmentService } from "~/services/department.service";
 import { facultyService } from "~/services/faculty.service";
 import { usePagination } from "~/hooks/use-pagination";
-import type { Department } from "~/types/department";
-import type { CreateFacultyInput, Faculty, FacultyStatus } from "~/types/faculty";
+import type { Department, DepartmentOption } from "~/types/department";
+import type {
+  CreateFacultyAccountInput,
+  CreateFacultyInput,
+  Faculty,
+  FacultyStatus,
+} from "~/types/faculty";
 
 export function meta() {
   return [
@@ -37,12 +44,14 @@ export default function FacultyRoute() {
 function FacultyPage() {
   const [facultyList, setFacultyList] = useState<Faculty[] | null>(null);
   const [departments, setDepartments] = useState<Department[] | null>(null);
+  const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
   const [status, setStatus] = useState("all");
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<Faculty | null>(null);
   const [activateTarget, setActivateTarget] = useState<Faculty | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Faculty | null>(null);
@@ -52,6 +61,12 @@ function FacultyPage() {
       setFacultyList(f);
       setDepartments(d);
     });
+    // Real backend departments for the account form; failure just leaves the
+    // dropdown empty (the form's validation reports it).
+    facultyService
+      .listDepartmentOptions()
+      .then(setDepartmentOptions)
+      .catch(() => setDepartmentOptions([]));
   }, []);
 
   const resetKey = `${search}|${department}|${status}`;
@@ -79,10 +94,16 @@ function FacultyPage() {
 
   const pagination = usePagination(visibleFaculty, resetKey);
 
-  async function handleCreate(input: CreateFacultyInput) {
-    const created = await facultyService.create(input);
-    setFacultyList((current) => [...(current ?? []), created]);
+  async function handleCreate(input: CreateFacultyAccountInput) {
+    // The account lands in the backend DB (list is still mocked, so no table
+    // row yet); the success view tells the admin credentials were emailed.
+    await facultyService.create(input);
+    setCreatedEmail(input.email);
+  }
+
+  function closeCreate() {
     setCreateOpen(false);
+    setCreatedEmail(null);
   }
 
   async function handleEdit(input: CreateFacultyInput) {
@@ -180,12 +201,23 @@ function FacultyPage() {
         )}
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Faculty">
-        <FacultyForm
-          departments={departments ?? []}
-          onSubmit={handleCreate}
-          onCancel={() => setCreateOpen(false)}
-        />
+      <Modal open={createOpen} onClose={closeCreate} title="New Faculty">
+        {createdEmail ? (
+          <div className="flex flex-col items-center gap-4">
+            <ResultState tone="success" title="Faculty registered">
+              Login credentials with a temporary password were emailed to {createdEmail}.
+            </ResultState>
+            <Button type="button" block={false} onClick={closeCreate}>
+              <span className="px-4">Done</span>
+            </Button>
+          </div>
+        ) : (
+          <FacultyAccountForm
+            departments={departmentOptions}
+            onSubmit={handleCreate}
+            onCancel={closeCreate}
+          />
+        )}
       </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Faculty">
