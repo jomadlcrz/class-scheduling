@@ -105,8 +105,8 @@ function FacultyPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
-        title="Faculty"
-        description="Faculty members and their department assignments."
+        title="Faculty & Deans"
+        description="Faculty members and deans with their department assignments."
         actions={
           <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
             <PlusIcon />
