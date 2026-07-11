@@ -7,10 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import type { RolePermission, RoleSummary } from "~/types/role";
+import type { RolePermission, PermissionSummary } from "~/types/permission";
 
 /** Permissions × roles grid showing what each system role can do. */
-export function PermissionMatrix({ roles }: { roles: RoleSummary[] }) {
+export function PermissionMatrix({ roles }: { roles: PermissionSummary[] }) {
   // The catalog is the union of every permission the roles hold.
   const catalog = new Map<string, RolePermission>();
   for (const role of roles) {

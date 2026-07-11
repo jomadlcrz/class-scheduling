@@ -5,7 +5,7 @@ export type RolePermission = {
   description: string;
 };
 
-export type RoleSummary = {
+export type PermissionSummary = {
   id: number;
   /** Backend display value, e.g. "Super Admin". */
   name: string;

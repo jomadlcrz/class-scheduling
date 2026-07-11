@@ -1,5 +1,5 @@
 import { ApiError, apiGet } from "~/lib/api";
-import type { RoleSummary } from "~/types/role";
+import type { PermissionSummary } from "~/types/permission";
 
 /** Roles + permissions from the backend (super_admin module). Read-only. */
 
@@ -13,7 +13,7 @@ type PermissionSlugsResponse = {
   }[];
 }[];
 
-async function list(): Promise<RoleSummary[]> {
+async function list(): Promise<PermissionSummary[]> {
   let data: PermissionSlugsResponse;
   try {
     data = await apiGet<PermissionSlugsResponse>("/super-admin/permission-slugs");
@@ -34,6 +34,6 @@ async function list(): Promise<RoleSummary[]> {
   }));
 }
 
-export const roleService = {
+export const permissionService = {
   list,
 };

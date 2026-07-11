@@ -1,8 +1,8 @@
 import { Badge } from "~/components/ui/badge";
-import type { RoleSummary } from "~/types/role";
+import type { PermissionSummary } from "~/types/permission";
 
 /** Card per system role: name and how many permissions it holds. */
-export function RoleTable({ roles }: { roles: RoleSummary[] }) {
+export function PermissionTable({ roles }: { roles: PermissionSummary[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {roles.map((role) => (

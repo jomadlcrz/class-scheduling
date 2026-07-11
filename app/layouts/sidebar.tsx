@@ -92,7 +92,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Administration",
     items: [
       { label: "Users", to: "/users", icon: <UserIcon />, roles: ["admin"] },
-      { label: "Roles", to: "/roles", icon: <ShieldIcon />, roles: ["admin"] },
+      { label: "Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
     ],
   },
   {

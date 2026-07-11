@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/ui/empty-state";
 import { Spinner } from "~/components/ui/spinner";
-import { PermissionMatrix } from "~/features/roles/permission-matrix";
-import { RoleTable } from "~/features/roles/role-table";
+import { PermissionMatrix } from "~/features/permissions/permission-matrix";
+import { PermissionTable } from "~/features/permissions/permission-table";
 import { PageHeader } from "~/layouts/page-header";
-import { roleService } from "~/services/role.service";
-import type { RoleSummary } from "~/types/role";
+import { permissionService } from "~/services/permission.service";
+import type { PermissionSummary } from "~/types/permission";
 
 export function meta() {
   return [
-    { title: "Roles — GWC Class Scheduling" },
+    { title: "Permissions — GWC Class Scheduling" },
     {
       name: "description",
       content: "System roles and permissions for GWC Class Scheduling.",
@@ -18,20 +18,20 @@ export function meta() {
   ];
 }
 
-export default function Roles() {
+export default function Permissions() {
   return (
     <RoleGuard allow={["admin"]}>
-      <RolesPage />
+      <PermissionsPage />
     </RoleGuard>
   );
 }
 
-function RolesPage() {
-  const [roles, setRoles] = useState<RoleSummary[] | null>(null);
+function PermissionsPage() {
+  const [roles, setRoles] = useState<PermissionSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    roleService
+    permissionService
       .list()
       .then(setRoles)
       .catch((err) =>
@@ -42,16 +42,16 @@ function RolesPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
-        title="Roles"
+        title="Permissions"
         description="System roles and what each one can do."
       />
 
       {error ? (
-        <EmptyState title="Couldn't load roles">{error}</EmptyState>
+        <EmptyState title="Couldn't load permissions">{error}</EmptyState>
       ) : roles === null ? (
         <div
           role="status"
-          aria-label="Loading roles"
+          aria-label="Loading permissions"
           className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
@@ -62,7 +62,7 @@ function RolesPage() {
         </EmptyState>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
-          <RoleTable roles={roles} />
+          <PermissionTable roles={roles} />
           <section>
             <h2 className="mb-3 font-display text-2xl tracking-wide text-navy-700 dark:text-white">
               Permission Matrix
