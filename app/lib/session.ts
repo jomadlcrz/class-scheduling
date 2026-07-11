@@ -8,7 +8,7 @@ import type { Role, User } from "~/types/user";
  * own the token → User mapping and the persisted-session lifecycle.
  */
 
-export const SESSION_KEY = "gwc-session";
+const SESSION_KEY = "gwc-session";
 const PENDING_KEY = "gwc-pending-password-change";
 
 /** Claims embedded in the backend's access token. */

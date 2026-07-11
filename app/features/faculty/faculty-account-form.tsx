@@ -49,12 +49,7 @@ export function FacultyAccountForm({
     setError(null);
     setIsLoading(true);
     try {
-      // Empty enum selections are omitted — the backend defaults them to "N/A".
-      await onSubmit({
-        ...result.data,
-        gender: result.data.gender || undefined,
-        civilStatus: result.data.civilStatus || undefined,
-      });
+      await onSubmit(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setIsLoading(false);
@@ -66,29 +61,36 @@ export function FacultyAccountForm({
       <FormError message={error} />
 
       <div className="grid grid-cols-2 gap-3">
-        <Input id="faculty-first-name" label="First Name" type="text" required placeholder="Ana" />
-        <Input id="faculty-mid-name" label="Middle Name" type="text" placeholder="Optional" />
+        <Input id="faculty-first-name" label="First Name" type="text" required placeholder="Enter first name" />
+        <Input id="faculty-mid-name" label="Middle Name" type="text" placeholder="Enter middle name" />
       </div>
 
-      <Input id="faculty-last-name" label="Last Name" type="text" required placeholder="Reyes" />
+      <Input id="faculty-last-name" label="Last Name" type="text" required placeholder="Enter last name" />
 
       <Input
         id="faculty-email"
         label="Email"
         type="email"
         required
-        placeholder="a.reyes@gwc.edu.ph"
+        placeholder="Enter email address"
       />
 
       <Input
         id="faculty-mobile"
         label="Mobile Number"
-        type="tel"
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        maxLength={11}
         required
-        placeholder="09171234567"
+        placeholder="Enter mobile number"
+        onInput={(e) => {
+          e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 11);
+        }}
       />
 
-      <Select id="faculty-department" label="Department" defaultValue={departments[0]?.id}>
+      <Select id="faculty-department" label="Department" defaultValue="" required>
+        <option value="">Select a department</option>
         {departments.map((d) => (
           <option key={d.id} value={d.id}>
             {d.code} — {d.name}
@@ -97,14 +99,16 @@ export function FacultyAccountForm({
       </Select>
 
       <div className="grid grid-cols-2 gap-3">
-        <Select id="faculty-gender" label="Gender" defaultValue="">
+        <Select id="faculty-gender" label="Gender" defaultValue="" required>
+          <option value="">Select a gender</option>
           {genders.map((g) => (
             <option key={g} value={g}>
               {g}
             </option>
           ))}
         </Select>
-        <Select id="faculty-civil-status" label="Civil Status" defaultValue="">
+        <Select id="faculty-civil-status" label="Civil Status" defaultValue="" required>
+          <option value="">Select a status</option>
           {civilStatuses.map((s) => (
             <option key={s} value={s}>
               {s}

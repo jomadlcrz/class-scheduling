@@ -209,7 +209,7 @@ export const faculty: Faculty[] = [
 
 let facultyIdCounter = faculty.length;
 
-export function newFacultyId(): string {
+function newFacultyId(): string {
   facultyIdCounter += 1;
   return `fac-${facultyIdCounter}`;
 }

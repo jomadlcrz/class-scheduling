@@ -23,7 +23,7 @@ export class ApiError extends Error {
   }
 }
 
-export function resolveApiUrl(endpoint: string): string {
+function resolveApiUrl(endpoint: string): string {
   if (/^https?:\/\//i.test(endpoint)) return endpoint;
   return `${API_BASE}${endpoint}`;
 }
@@ -104,11 +104,11 @@ export function apiPatch<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "PATCH", body);
 }
 
-export function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
+function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "PUT", body);
 }
 
-export function apiDelete<T>(endpoint: string, body?: unknown): Promise<T> {
+function apiDelete<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "DELETE", body);
 }
 
@@ -116,7 +116,7 @@ const toSnakeKey = (value: string): string =>
   value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 
 /** Recursively snake_case object keys — the backend mixes camelCase and snake_case responses. */
-export function normalizeResponseKeys<T>(value: T): T {
+function normalizeResponseKeys<T>(value: T): T {
   if (Array.isArray(value)) {
     return value.map((item) => normalizeResponseKeys(item)) as T;
   }

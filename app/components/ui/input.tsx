@@ -11,21 +11,22 @@ type FieldChromeProps = {
   /** Rendered on the right side of the label row (e.g. a "Forgot password?" link). */
   labelEnd?: ReactNode;
   hint?: string;
+  required?: boolean;
   children: ReactNode;
 };
 
-export function FieldChrome({ id, label, labelEnd, hint, children }: FieldChromeProps) {
+export function FieldChrome({ id, label, labelEnd, hint, required, children }: FieldChromeProps) {
   return (
     <div className="flex flex-col gap-1.5">
       {labelEnd ? (
         <div className="flex items-center justify-between">
-          <Label htmlFor={id}>
+          <Label htmlFor={id} required={required}>
             {label}
           </Label>
           {labelEnd}
         </div>
       ) : (
-        <Label htmlFor={id}>
+        <Label htmlFor={id} required={required}>
           {label}
         </Label>
       )}
@@ -46,9 +47,9 @@ type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "clas
   hint?: string;
 };
 
-export function Input({ id, label, labelEnd, hint, ...inputProps }: InputProps) {
+export function Input({ id, label, labelEnd, hint, required, ...inputProps }: InputProps) {
   return (
-    <FieldChrome id={id} label={label} labelEnd={labelEnd} hint={hint}>
+    <FieldChrome id={id} label={label} labelEnd={labelEnd} hint={hint} required={required}>
       <input
         id={id}
         name={id}

@@ -65,7 +65,7 @@ export function Select({
   children,
   ...selectProps
 }: SelectProps) {
-  const { value, defaultValue, onChange, disabled } = selectProps;
+  const { value, defaultValue, onChange, disabled, required } = selectProps;
   const isControlled = value !== undefined;
   const options = useMemo(() => collectOptions(children), [children]);
 
@@ -346,7 +346,7 @@ export function Select({
   if (hideLabel) return control;
 
   return (
-    <FieldChrome id={id} label={label} hint={hint}>
+    <FieldChrome id={id} label={label} hint={hint} required={required}>
       {control}
     </FieldChrome>
   );
