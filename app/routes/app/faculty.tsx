@@ -82,7 +82,7 @@ function FacultyPage() {
     return facultyList
       .filter((member) => {
         if (department !== "all" && member.departmentCode !== department) return false;
-        const hasMatchingRole = member.roles.some((r) => r.name === "Dean" || r.name === "Faculty");
+        const hasMatchingRole = member.roles.some((r) => r.name === "Dean" || r.name === "Instructor");
         if (!hasMatchingRole) return false;
         if (
           query &&

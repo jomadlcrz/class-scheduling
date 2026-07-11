@@ -1,52 +1,53 @@
-import type {
-  CreateStudentInput,
-  Student,
-  StudentStatus,
-  UpdateStudentInput,
-} from "~/types/student";
+import { ApiError, apiGet, apiPost } from "~/lib/api";
+import type { CreateStudentAccountInput, StudentAccountRow } from "~/types/student";
 
-function findStudent(id: string): Student {
-  const s = students.find((s) => s.id === id);
-  if (!s) throw new Error("Student not found.");
-  return s;
-}
+/**
+ * Student account service (super_admin module). The wider student CRUD is not
+ * connected to the backend yet.
+ */
 
-function numberTaken(studentNumber: string, excludeId?: string): boolean {
-  return students.some(
-    (s) => s.id !== excludeId && s.studentNumber === studentNumber.trim(),
+/** POST /super-admin/create-student-accounts — emails temp password. */
+async function createAccount(
+  studentProfileId: number,
+  input: CreateStudentAccountInput,
+): Promise<void> {
+  await apiPost(
+    `/super-admin/create-student-accounts?student_profile_id=${studentProfileId}`,
+    { email: input.email, roleName: input.roleName },
   );
 }
 
-async function list(): Promise<Student[]> {
-  await delay();
-  return [...students];
-}
+/** GET /super-admin/create-student-accounts — all student profiles. 404 → empty. */
+async function listAccounts(): Promise<StudentAccountRow[]> {
+  type StudentAccountResponse = {
+    student_profile_id: number;
+    student_id: string;
+    first_name: string;
+    mid_name: string | null;
+    last_name: string;
+    mobile: string | null;
+    email: string | null;
+    has_account: boolean;
+  };
 
-async function create(input: CreateStudentInput): Promise<Student> {
-  await delay(300);
-  if (numberTaken(input.studentNumber)) {
-    throw new Error(`Student number "${input.studentNumber}" is already in use.`);
+  let data: StudentAccountResponse[];
+  try {
+    data = await apiGet<StudentAccountResponse[]>("/super-admin/create-student-accounts");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
   }
-  const student: Student = { id: newStudentId(), ...input };
-  students.push(student);
-  return student;
+
+  return data.map((s) => ({
+    studentProfileId: s.student_profile_id,
+    studentId: s.student_id,
+    firstName: s.first_name,
+    midName: s.mid_name,
+    lastName: s.last_name,
+    mobile: s.mobile,
+    email: s.email,
+    hasAccount: s.has_account,
+  }));
 }
 
-async function update(id: string, input: UpdateStudentInput): Promise<Student> {
-  await delay();
-  const student = findStudent(id);
-  if (input.studentNumber && numberTaken(input.studentNumber, id)) {
-    throw new Error(`Student number "${input.studentNumber}" is already in use.`);
-  }
-  Object.assign(student, input);
-  return student;
-}
-
-async function setStatus(id: string, status: StudentStatus): Promise<Student> {
-  await delay();
-  const student = findStudent(id);
-  student.status = status;
-  return student;
-}
-
-export const studentService = { list, create, update, setStatus };
+export const studentService = { createAccount, listAccounts };

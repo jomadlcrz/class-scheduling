@@ -1,30 +1,10 @@
-import type { BadgeTone } from "~/components/ui/badge";
-import type { Semester } from "~/types/subject";
-
-const ACADEMIC_SEMESTER_STATUSES = ["upcoming", "active", "completed", "archived"] as const;
-type AcademicSemesterStatus = (typeof ACADEMIC_SEMESTER_STATUSES)[number];
-
-const ACADEMIC_SEMESTER_STATUS_LABELS: Record<AcademicSemesterStatus, string> = {
-  upcoming: "Upcoming",
-  active: "Active",
-  completed: "Completed",
-  archived: "Archived",
+export type Semester = {
+  id: number;
+  semester: string;
+  semesterNumber: number;
 };
 
-const ACADEMIC_SEMESTER_STATUS_TONES: Record<AcademicSemesterStatus, BadgeTone> = {
-  upcoming: "gold",
-  active: "emerald",
-  completed: "navy",
-  archived: "slate",
+export type CreateSemesterInput = {
+  semester: string;
+  semesterNumber: number;
 };
-
-export type AcademicSemester = {
-  id: string;
-  academicYearId: string;
-  academicYearLabel: string;
-  semester: Semester;
-  status: AcademicSemesterStatus;
-};
-
-type CreateAcademicSemesterInput = Omit<AcademicSemester, "id">;
-type UpdateAcademicSemesterInput = Partial<CreateAcademicSemesterInput>;

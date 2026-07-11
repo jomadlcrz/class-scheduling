@@ -23,3 +23,20 @@ export type Student = {
 
 export type CreateStudentInput = Omit<Student, "id">;
 export type UpdateStudentInput = Partial<CreateStudentInput>;
+
+/** The backend only accepts the Student role on this endpoint. */
+export type CreateStudentAccountInput = {
+  email: string;
+  roleName: "Student";
+};
+
+export type StudentAccountRow = {
+  studentProfileId: number;
+  studentId: string;
+  firstName: string;
+  midName: string | null;
+  lastName: string;
+  mobile: string | null;
+  email: string | null;
+  hasAccount: boolean;
+};

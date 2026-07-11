@@ -59,9 +59,9 @@ function ClassroomMappingPage() {
         schoolYearService.list(),
       ]);
       setClassrooms(result.classrooms);
-      setSchoolYears(syOptions);
+      setSchoolYears(syOptions.map((o) => o.schoolYear));
       if (!schoolYear && syOptions.length > 0) {
-        setSchoolYear(syOptions[0]);
+        setSchoolYear(syOptions[0].schoolYear);
       }
       setBuildings(buildingList);
     } catch (err) {

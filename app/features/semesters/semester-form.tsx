@@ -1,45 +1,29 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { semesterSchema } from "~/schemas/semester.schema";
-import {
-  ACADEMIC_SEMESTER_STATUSES,
-  ACADEMIC_SEMESTER_STATUS_LABELS,
-  type AcademicSemester,
-  type CreateAcademicSemesterInput,
-} from "~/types/semester";
-import { SEMESTER_LABELS, SEMESTERS } from "~/types/subject";
+import type { CreateSemesterInput } from "~/types/semester";
+
+const SEMESTER_NUMBERS = [1, 2, 3] as const;
 
 type SemesterFormProps = {
-  academicYearId: string;
-  academicYearLabel: string;
-  semester?: AcademicSemester;
-  onSubmit: (input: CreateAcademicSemesterInput) => Promise<void>;
+  onSubmit: (input: CreateSemesterInput) => Promise<void>;
   onCancel: () => void;
 };
 
-export function SemesterForm({
-  academicYearId,
-  academicYearLabel,
-  semester,
-  onSubmit,
-  onCancel,
-}: SemesterFormProps) {
+export function SemesterForm({ onSubmit, onCancel }: SemesterFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isEdit = Boolean(semester);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const semNum = Number(data.get("sem-number"));
-    const status = String(data.get("sem-status") ?? "");
 
     const result = semesterSchema.safeParse({
-      academicYearId,
-      semester: semNum,
-      status,
+      semester: String(data.get("sem-name") ?? "").trim(),
+      semesterNumber: Number(data.get("sem-number")),
     });
     if (!result.success) {
       setError(result.error.issues[0].message);
@@ -49,12 +33,7 @@ export function SemesterForm({
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({
-        academicYearId,
-        academicYearLabel,
-        semester: result.data.semester as 1 | 2 | 3,
-        status: result.data.status,
-      });
+      await onSubmit(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setIsLoading(false);
@@ -64,25 +43,17 @@ export function SemesterForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
-      <Select
-        id="sem-number"
-        label="Semester"
-        defaultValue={semester?.semester ?? 1}
-      >
-        {SEMESTERS.map((s) => (
-          <option key={s} value={s}>
-            {SEMESTER_LABELS[s]}
-          </option>
-        ))}
-      </Select>
-      <Select
-        id="sem-status"
-        label="Status"
-        defaultValue={semester?.status ?? "upcoming"}
-      >
-        {ACADEMIC_SEMESTER_STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {ACADEMIC_SEMESTER_STATUS_LABELS[s]}
+      <Input
+        id="sem-name"
+        label="Semester Name"
+        placeholder="e.g. 1st Semester"
+        maxLength={20}
+        required
+      />
+      <Select id="sem-number" label="Semester Number" defaultValue={1}>
+        {SEMESTER_NUMBERS.map((n) => (
+          <option key={n} value={n}>
+            {n}
           </option>
         ))}
       </Select>
@@ -91,7 +62,7 @@ export function SemesterForm({
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-          {isEdit ? "Save Changes" : "Add Semester"}
+          Add Semester
         </Button>
       </div>
     </form>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const FACULTY_ROLES = ["Dean", "Faculty"] as const;
+export const FACULTY_ROLES = ["Dean", "Instructor"] as const;
 
 export const facultySchema = z.object({
   firstName: z.string().min(1, "Enter the first name."),

@@ -1,47 +1,34 @@
-import type { AcademicSemester, CreateAcademicSemesterInput, UpdateAcademicSemesterInput } from "~/types/semester";
+import { ApiError, apiGet, apiPost } from "~/lib/api";
+import type { CreateSemesterInput, Semester } from "~/types/semester";
 
-function find(id: string): AcademicSemester {
-  const sem = academicSemesters.find((s) => s.id === id);
-  if (!sem) throw new Error("Semester not found.");
-  return sem;
+type SemesterResponse = {
+  id: number;
+  semester: string;
+  semester_number: number;
+};
+
+/** GET /semesters — 404 → empty. */
+async function list(): Promise<Semester[]> {
+  let data: SemesterResponse[];
+  try {
+    data = await apiGet<SemesterResponse[]>("/semesters");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((s) => ({
+    id: s.id,
+    semester: s.semester,
+    semesterNumber: s.semester_number,
+  }));
 }
 
-function duplicate(academicYearId: string, semester: number, excludeId?: string): boolean {
-  return academicSemesters.some(
-    (s) => s.id !== excludeId && s.academicYearId === academicYearId && s.semester === semester,
-  );
+/** POST /semesters — 409 when the semester already exists. */
+async function create(input: CreateSemesterInput): Promise<void> {
+  await apiPost("/semesters", {
+    semester: input.semester,
+    semesterNumber: input.semesterNumber,
+  });
 }
 
-async function list(academicYearId?: string): Promise<AcademicSemester[]> {
-  await delay();
-  const all = [...academicSemesters];
-  return academicYearId ? all.filter((s) => s.academicYearId === academicYearId) : all;
-}
-
-async function create(input: CreateAcademicSemesterInput): Promise<AcademicSemester> {
-  await delay(300);
-  if (duplicate(input.academicYearId, input.semester))
-    throw new Error(`Semester ${input.semester} already exists for this academic year.`);
-  const sem: AcademicSemester = { id: newSemesterId(), ...input };
-  academicSemesters.push(sem);
-  return sem;
-}
-
-async function update(id: string, input: UpdateAcademicSemesterInput): Promise<AcademicSemester> {
-  await delay();
-  const sem = find(id);
-  const yearId = input.academicYearId ?? sem.academicYearId;
-  const semNum = input.semester ?? sem.semester;
-  if ((input.academicYearId || input.semester) && duplicate(yearId, semNum, id))
-    throw new Error(`Semester ${semNum} already exists for this academic year.`);
-  Object.assign(sem, input);
-  return sem;
-}
-
-async function remove(id: string): Promise<void> {
-  await delay();
-  const sem = find(id);
-  academicSemesters.splice(academicSemesters.indexOf(sem), 1);
-}
-
-export const semesterService = { list, create, update, remove };
+export const semesterService = { list, create };

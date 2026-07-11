@@ -11,6 +11,7 @@ export type DayOfWeekOption = {
 };
 
 export type EnumOptions = {
+  classMode: string[];
   gender: string[];
   civilStatus: string[];
   classroomStatus: string[];
@@ -24,6 +25,7 @@ export type EnumOptions = {
 };
 
 type EnumOptionsResponse = {
+  class_mode: string[];
   gender: string[];
   civil_status: string[];
   classroom_status: string[];
@@ -42,6 +44,7 @@ let cached: Promise<EnumOptions> | null = null;
 function getOptions(): Promise<EnumOptions> {
   cached ??= apiGet<EnumOptionsResponse>("/enums")
     .then((data) => ({
+      classMode: data.class_mode,
       gender: data.gender,
       civilStatus: data.civil_status,
       classroomStatus: data.classroom_status,
