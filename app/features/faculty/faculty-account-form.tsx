@@ -3,7 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
-import { facultyAccountSchema } from "~/schemas/faculty.schema";
+import { facultySchema } from "~/schemas/faculty.schema";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput } from "~/types/faculty";
 
@@ -31,7 +31,7 @@ export function FacultyAccountForm({
     e.preventDefault();
     const data = new FormData(e.currentTarget);
 
-    const result = facultyAccountSchema.safeParse({
+    const result = facultySchema.safeParse({
       firstName: String(data.get("faculty-first-name") ?? "").trim(),
       midName: String(data.get("faculty-mid-name") ?? "").trim(),
       lastName: String(data.get("faculty-last-name") ?? "").trim(),

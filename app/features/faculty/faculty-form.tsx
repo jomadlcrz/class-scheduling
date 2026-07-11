@@ -3,7 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
-import { facultySchema } from "~/schemas/faculty.schema";
+import { facultyFormSchema } from "~/schemas/faculty.schema";
 import type { Department } from "~/types/department";
 import {
   FACULTY_STATUS_LABELS,
@@ -38,7 +38,7 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
     const status = String(data.get("faculty-status") ?? "") as FacultyStatus;
     const maxWeeklyHours = String(data.get("faculty-max-weekly-hours") ?? "25");
 
-    const result = facultySchema.safeParse({ firstName, lastName, email, departmentId, specialization, status, maxWeeklyHours });
+    const result = facultyFormSchema.safeParse({ firstName, lastName, email, departmentId, specialization, status, maxWeeklyHours });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;

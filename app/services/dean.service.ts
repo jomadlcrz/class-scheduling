@@ -1,5 +1,4 @@
 import type { Dean, CreateDeanInput, DeanStatus, UpdateDeanInput } from "~/types/dean";
-import { deans, delay, newDeanId } from "~/services/mock-data";
 
 function findDean(id: string): Dean {
   const d = deans.find((d) => d.id === id);

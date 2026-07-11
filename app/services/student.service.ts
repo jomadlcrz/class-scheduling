@@ -4,7 +4,6 @@ import type {
   StudentStatus,
   UpdateStudentInput,
 } from "~/types/student";
-import { delay, newStudentId, students } from "~/services/mock-data";
 
 function findStudent(id: string): Student {
   const s = students.find((s) => s.id === id);

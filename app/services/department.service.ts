@@ -1,5 +1,4 @@
 import type { Department, CreateDepartmentInput, UpdateDepartmentInput } from "~/types/department";
-import { departments, delay, newDepartmentId } from "~/services/mock-data";
 
 function findDepartment(id: string): Department {
   const d = departments.find((d) => d.id === id);

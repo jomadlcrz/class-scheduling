@@ -1,5 +1,4 @@
 import type { SubjectType } from "~/types/subject";
-import { weeklyHourAllocations } from "~/services/mock-data";
 
 export function getHoursForSubjectType(subjectType: SubjectType): { lectureHours: number; labHours: number } {
   const allocation = weeklyHourAllocations.find((a) => a.subjectType === subjectType);

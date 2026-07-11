@@ -15,7 +15,6 @@ import {
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { PageHeader } from "~/layouts/page-header";
-import { facultyService } from "~/services/faculty.service";
 import { programService } from "~/services/program.service";
 import { roomService } from "~/services/room.service";
 import { scheduleService } from "~/services/schedule.service";
@@ -84,7 +83,7 @@ function RegularClassPage() {
       scheduleService.list(),
       subjectService.list(),
       setService.list(),
-      facultyService.list(),
+      Promise.resolve([] as Faculty[]),
       roomService.list(),
       programService.list(),
     ]).then(([schedules, subjects, sets, faculty, rooms, programs]) => {

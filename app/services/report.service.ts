@@ -1,5 +1,4 @@
 import type { ScheduleSemester } from "~/types/schedule";
-import { delay, schedules, students } from "~/services/mock-data";
 
 export type FacultyLoadRow = {
   facultyId: string;

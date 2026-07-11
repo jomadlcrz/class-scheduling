@@ -1,4 +1,3 @@
-import { rooms, schedules, subjects, delay } from "~/services/mock-data";
 import { DAY_LABELS, formatTime, SCHEDULE_SEMESTER_LABELS } from "~/types/schedule";
 import type { Classroom, ClassEntry, ClassroomStatus, DayOfWeek, SubjectType } from "~/features/classroom-mapping/mapping-model";
 

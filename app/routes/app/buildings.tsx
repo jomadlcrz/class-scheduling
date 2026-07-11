@@ -6,6 +6,7 @@ import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
+import { ResultState } from "~/components/feedback/result-state";
 import { Spinner } from "~/components/ui/spinner";
 import { BuildingForm } from "~/features/facilities/buildings/building-form";
 import { BuildingTable } from "~/features/facilities/buildings/building-table";

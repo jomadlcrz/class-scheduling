@@ -1,35 +1,11 @@
 import { ApiError, apiGet, apiPost } from "~/lib/api";
 import type { DepartmentOption } from "~/types/department";
-import type {
-  CreateFacultyAccountInput,
-  Faculty,
-  FacultyStatus,
-  UpdateFacultyInput,
-} from "~/types/faculty";
-import { faculty, delay } from "~/services/mock-data";
+import type { CreateFacultyAccountInput } from "~/types/faculty";
 
 /**
  * Faculty service. `create` and `listDepartmentOptions` talk to the real
- * backend (super_admin + registrar modules); list/update/setStatus are still
- * mocked, so newly created accounts won't appear in the table yet.
+ * backend (super_admin + registrar modules).
  */
-
-function findFaculty(id: string): Faculty {
-  const f = faculty.find((f) => f.id === id);
-  if (!f) throw new Error("Faculty not found.");
-  return f;
-}
-
-function emailTaken(email: string, excludeId?: string): boolean {
-  return faculty.some(
-    (f) => f.id !== excludeId && f.email.toLowerCase() === email.trim().toLowerCase(),
-  );
-}
-
-async function list(): Promise<Faculty[]> {
-  await delay();
-  return [...faculty];
-}
 
 /** The backend creates the account, emails a temp password, and returns only a message. */
 async function create(input: CreateFacultyAccountInput): Promise<void> {
@@ -71,20 +47,4 @@ async function listDepartmentOptions(): Promise<DepartmentOption[]> {
   }));
 }
 
-async function update(id: string, input: UpdateFacultyInput): Promise<Faculty> {
-  await delay();
-  const member = findFaculty(id);
-  if (input.email && emailTaken(input.email, id))
-    throw new Error(`Email "${input.email}" is already in use.`);
-  Object.assign(member, input);
-  return member;
-}
-
-async function setStatus(id: string, status: FacultyStatus): Promise<Faculty> {
-  await delay();
-  const member = findFaculty(id);
-  member.status = status;
-  return member;
-}
-
-export const facultyService = { list, create, update, setStatus, listDepartmentOptions };
+export const facultyService = { create, listDepartmentOptions };

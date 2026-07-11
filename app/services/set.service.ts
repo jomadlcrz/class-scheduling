@@ -1,5 +1,4 @@
 import type { ClassSet, CreateSetInput, UpdateSetInput } from "~/types/set";
-import { delay, newSetId, sets } from "~/services/mock-data";
 
 function findSet(id: string): ClassSet {
   const set = sets.find((s) => s.id === id);

@@ -1,5 +1,4 @@
 import type { CreateSubjectInput, Subject, UpdateSubjectInput } from "~/types/subject";
-import { delay, newSubjectId, subjects } from "~/services/mock-data";
 
 /** MOCK curriculum subject service backed by the shared in-memory store. */
 

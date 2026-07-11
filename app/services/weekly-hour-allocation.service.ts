@@ -1,5 +1,4 @@
 import type { WeeklyHourAllocation, CreateWeeklyHourAllocationInput } from "~/types/weekly-hour-allocation";
-import { weeklyHourAllocations, delay, subjectTypeOptions } from "~/services/mock-data";
 import { SUBJECT_TYPE_LABELS } from "~/types/subject";
 
 async function getSubjectTypeOptions(): Promise<string[]> {

@@ -17,7 +17,6 @@ import {
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
 import { getHoursForSubjectType } from "~/lib/weekly-hours";
 import { PageHeader } from "~/layouts/page-header";
-import { facultyService } from "~/services/faculty.service";
 import { programService } from "~/services/program.service";
 import { roomService } from "~/services/room.service";
 import { scheduleService } from "~/services/schedule.service";
@@ -102,7 +101,7 @@ function SchedulesNewPage() {
     Promise.all([
       subjectService.list(),
       setService.list(),
-      facultyService.list(),
+      Promise.resolve([] as Faculty[]),
       roomService.list(),
       programService.list(),
     ]).then(([subjects, sets, faculty, rooms, programs]) => {
