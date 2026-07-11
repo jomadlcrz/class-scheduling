@@ -263,7 +263,8 @@ function InstructorLoad({
   facultyList: Faculty[];
 }) {
   const faculty = facultyList.find((f) => f.id === facultyId);
-  if (!faculty || faculty.maxWeeklyHours <= 0) return null;
+  const maxHours = faculty?.maxWeeklyHours;
+  if (!faculty || !maxHours || maxHours <= 0) return null;
 
   const currentHours = existingSlots
     .filter((s) => s.facultyId === facultyId)
@@ -274,10 +275,10 @@ function InstructorLoad({
 
   const newTotal = currentHours + proposedHours;
   const percent = Math.min(
-    Math.round((newTotal / faculty.maxWeeklyHours) * 100),
+    Math.round((newTotal / maxHours) * 100),
     100,
   );
-  const isOver = newTotal > faculty.maxWeeklyHours;
+  const isOver = newTotal > maxHours;
 
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">

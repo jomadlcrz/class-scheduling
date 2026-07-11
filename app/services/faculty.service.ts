@@ -1,13 +1,18 @@
 import { ApiError, apiGet, apiPost } from "~/lib/api";
 import type { DepartmentOption } from "~/types/department";
-import type { CreateFacultyAccountInput } from "~/types/faculty";
+import {
+  type RawFaculty,
+  type CreateFacultyAccountInput,
+  type Faculty,
+  mapFaculty,
+} from "~/types/faculty";
 
 /**
- * Faculty service. `create` and `listDepartmentOptions` talk to the real
- * backend (super_admin + registrar modules).
+ * Faculty service. `create`, `list`, and `listDepartmentOptions` talk to the
+ * real API (super_admin + registrar modules).
  */
 
-/** The backend creates the account, emails a temp password, and returns only a message. */
+/** POST /super-admin/create-faculty-accounts — emails temp password. */
 async function create(input: CreateFacultyAccountInput): Promise<void> {
   await apiPost("/super-admin/create-faculty-accounts", {
     departmentId: input.departmentId,
@@ -22,6 +27,18 @@ async function create(input: CreateFacultyAccountInput): Promise<void> {
   });
 }
 
+/** GET /super-admin/create-faculty-accounts — returns all faculty profiles. 404 → empty. */
+async function list(): Promise<Faculty[]> {
+  let data: RawFaculty[];
+  try {
+    data = await apiGet<RawFaculty[]>("/super-admin/create-faculty-accounts");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map(mapFaculty);
+}
+
 type DepartmentsResponse = {
   departments: {
     department_id: number;
@@ -30,7 +47,7 @@ type DepartmentsResponse = {
   }[];
 };
 
-/** Real backend departments for the account form's dropdown (integer ids). */
+/** GET /departments — real departments for the account form dropdown. */
 async function listDepartmentOptions(): Promise<DepartmentOption[]> {
   let data: DepartmentsResponse;
   try {
@@ -47,4 +64,4 @@ async function listDepartmentOptions(): Promise<DepartmentOption[]> {
   }));
 }
 
-export const facultyService = { create, listDepartmentOptions };
+export const facultyService = { create, list, listDepartmentOptions };

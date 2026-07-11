@@ -3,28 +3,19 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
-import { facultyFormSchema } from "~/schemas/faculty.schema";
 import type { Department } from "~/types/department";
-import {
-  FACULTY_STATUS_LABELS,
-  FACULTY_STATUSES,
-  type CreateFacultyInput,
-  type Faculty,
-  type FacultyStatus,
-} from "~/types/faculty";
+import type { Faculty } from "~/types/faculty";
 
 type FacultyFormProps = {
   member?: Faculty;
   departments: Department[];
-  onSubmit: (input: CreateFacultyInput) => Promise<void>;
+  onSubmit: (input: { firstName: string; lastName: string; email: string; departmentId: string }) => Promise<void>;
   onCancel: () => void;
 };
 
 export function FacultyForm({ member, departments, onSubmit, onCancel }: FacultyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const isEdit = Boolean(member);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,23 +25,16 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
     const lastName = String(data.get("faculty-last-name") ?? "").trim();
     const email = String(data.get("faculty-email") ?? "").trim();
     const departmentId = String(data.get("faculty-department") ?? "");
-    const specialization = String(data.get("faculty-specialization") ?? "").trim();
-    const status = String(data.get("faculty-status") ?? "") as FacultyStatus;
-    const maxWeeklyHours = String(data.get("faculty-max-weekly-hours") ?? "25");
 
-    const result = facultyFormSchema.safeParse({ firstName, lastName, email, departmentId, specialization, status, maxWeeklyHours });
-    if (!result.success) {
-      setError(result.error.issues[0].message);
-      return;
-    }
-
-    const dept = departments.find((d) => d.id === departmentId);
-    if (!dept) { setError("Select a department."); return; }
+    if (!firstName) { setError("Enter the first name."); return; }
+    if (!lastName) { setError("Enter the last name."); return; }
+    if (!email) { setError("Enter the email."); return; }
+    if (!departmentId) { setError("Select a department."); return; }
 
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit({ ...result.data, departmentCode: dept.code });
+      await onSubmit({ firstName, lastName, email, departmentId });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setIsLoading(false);
@@ -86,13 +70,13 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
         type="email"
         required
         placeholder="a.reyes@gwc.edu.ph"
-        defaultValue={member?.email}
+        defaultValue={member?.email ?? ""}
       />
 
       <Select
         id="faculty-department"
         label="Department"
-        defaultValue={member?.departmentId ?? departments[0]?.id}
+        defaultValue={member?.departmentCode ?? departments[0]?.id}
       >
         {departments.map((d) => (
           <option key={d.id} value={d.id}>
@@ -101,41 +85,12 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
         ))}
       </Select>
 
-      <Input
-        id="faculty-specialization"
-        label="Specialization"
-        type="text"
-        placeholder="e.g. Web Development"
-        defaultValue={member?.specialization}
-      />
-
-      <Select
-        id="faculty-status"
-        label="Status"
-        defaultValue={member?.status ?? "active"}
-      >
-        {FACULTY_STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {FACULTY_STATUS_LABELS[s]}
-          </option>
-        ))}
-      </Select>
-
-      <Input
-        id="faculty-max-weekly-hours"
-        label="Max Weekly Hours"
-        type="number"
-        min={1}
-        max={60}
-        defaultValue={member?.maxWeeklyHours ?? 25}
-      />
-
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-          {isEdit ? "Save Changes" : "Add Faculty"}
+          Save Changes
         </Button>
       </div>
     </form>
