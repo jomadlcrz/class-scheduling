@@ -84,10 +84,10 @@ function SubjectsPage() {
       })
       .sort(
         (a, b) =>
-          a.program.localeCompare(b.program) ||
+          (a.program ?? "").localeCompare(b.program ?? "") ||
           a.yearLevel - b.yearLevel ||
           a.semester - b.semester ||
-          a.code.localeCompare(b.code),
+          (a.code ?? "").localeCompare(b.code ?? ""),
       );
   }, [subjects, search, program, yearLevel]);
 

@@ -64,9 +64,9 @@ function SetsPage() {
       })
       .sort(
         (a, b) =>
-          a.program.localeCompare(b.program) ||
+          (a.program ?? "").localeCompare(b.program ?? "") ||
           a.yearLevel - b.yearLevel ||
-          a.setCode.localeCompare(b.setCode),
+          (a.setCode ?? "").localeCompare(b.setCode ?? ""),
       );
   }, [sets, search, program, yearLevel]);
 
