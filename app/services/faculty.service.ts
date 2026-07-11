@@ -38,8 +38,9 @@ async function create(input: CreateFacultyAccountInput): Promise<void> {
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
     lastName: input.lastName,
-    gender: input.gender,
-    civilStatus: input.civilStatus,
+    // Omitted enum fields default to "N/A" (NOT_SPECIFIED) on the backend.
+    ...(input.gender && { gender: input.gender }),
+    ...(input.civilStatus && { civilStatus: input.civilStatus }),
     contact: { mobile: input.mobile, email: input.email },
     roleName: "Faculty",
   });

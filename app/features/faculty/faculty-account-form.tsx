@@ -5,16 +5,25 @@ import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { facultyAccountSchema } from "~/schemas/faculty.schema";
 import type { DepartmentOption } from "~/types/department";
-import { CIVIL_STATUSES, GENDERS, type CreateFacultyAccountInput } from "~/types/faculty";
+import type { CreateFacultyAccountInput } from "~/types/faculty";
 
 type FacultyAccountFormProps = {
   departments: DepartmentOption[];
+  /** Backend enum values (enumService); empty selection = not specified. */
+  genders: string[];
+  civilStatuses: string[];
   onSubmit: (input: CreateFacultyAccountInput) => Promise<void>;
   onCancel: () => void;
 };
 
 /** Creates the faculty login account + profile on the backend (temp password emailed). */
-export function FacultyAccountForm({ departments, onSubmit, onCancel }: FacultyAccountFormProps) {
+export function FacultyAccountForm({
+  departments,
+  genders,
+  civilStatuses,
+  onSubmit,
+  onCancel,
+}: FacultyAccountFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,8 +38,8 @@ export function FacultyAccountForm({ departments, onSubmit, onCancel }: FacultyA
       email: String(data.get("faculty-email") ?? "").trim(),
       mobile: String(data.get("faculty-mobile") ?? "").trim(),
       departmentId: String(data.get("faculty-department") ?? ""),
-      gender: String(data.get("faculty-gender") ?? "N/A"),
-      civilStatus: String(data.get("faculty-civil-status") ?? "N/A"),
+      gender: String(data.get("faculty-gender") ?? ""),
+      civilStatus: String(data.get("faculty-civil-status") ?? ""),
     });
     if (!result.success) {
       setError(result.error.issues[0].message);
@@ -40,7 +49,12 @@ export function FacultyAccountForm({ departments, onSubmit, onCancel }: FacultyA
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit(result.data);
+      // Empty enum selections are omitted — the backend defaults them to "N/A".
+      await onSubmit({
+        ...result.data,
+        gender: result.data.gender || undefined,
+        civilStatus: result.data.civilStatus || undefined,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setIsLoading(false);
@@ -83,15 +97,15 @@ export function FacultyAccountForm({ departments, onSubmit, onCancel }: FacultyA
       </Select>
 
       <div className="grid grid-cols-2 gap-3">
-        <Select id="faculty-gender" label="Gender" defaultValue="N/A">
-          {GENDERS.map((g) => (
+        <Select id="faculty-gender" label="Gender" defaultValue="">
+          {genders.map((g) => (
             <option key={g} value={g}>
               {g}
             </option>
           ))}
         </Select>
-        <Select id="faculty-civil-status" label="Civil Status" defaultValue="N/A">
-          {CIVIL_STATUSES.map((s) => (
+        <Select id="faculty-civil-status" label="Civil Status" defaultValue="">
+          {civilStatuses.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>

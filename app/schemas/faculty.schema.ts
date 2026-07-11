@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { CIVIL_STATUSES, GENDERS } from "~/types/faculty";
 
-/** Mirrors the backend create-faculty-accounts contract. */
+/** Mirrors the backend create-faculty-accounts contract. Gender and civil
+ * status come from the backend enum options and are validated server-side. */
 export const facultyAccountSchema = z.object({
   firstName: z.string().min(1, "Enter the first name."),
   midName: z.string(),
@@ -11,8 +11,8 @@ export const facultyAccountSchema = z.object({
     .string()
     .regex(/^\+?[0-9]{7,15}$/, "Enter a valid mobile number (7–15 digits, optional leading +)."),
   departmentId: z.coerce.number().int().positive("Select a department."),
-  gender: z.enum(GENDERS),
-  civilStatus: z.enum(CIVIL_STATUSES),
+  gender: z.string(),
+  civilStatus: z.string(),
 });
 
 export const facultySchema = z.object({

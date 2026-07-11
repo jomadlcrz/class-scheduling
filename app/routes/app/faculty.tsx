@@ -16,6 +16,7 @@ import { FacultyForm } from "~/features/faculty/faculty-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
 import { PageHeader } from "~/layouts/page-header";
 import { departmentService } from "~/services/department.service";
+import { enumService, type EnumOptions } from "~/services/enum.service";
 import { facultyService } from "~/services/faculty.service";
 import { usePagination } from "~/hooks/use-pagination";
 import type { Department, DepartmentOption } from "~/types/department";
@@ -45,6 +46,7 @@ function FacultyPage() {
   const [facultyList, setFacultyList] = useState<Faculty[] | null>(null);
   const [departments, setDepartments] = useState<Department[] | null>(null);
   const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
+  const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
@@ -61,12 +63,16 @@ function FacultyPage() {
       setFacultyList(f);
       setDepartments(d);
     });
-    // Real backend departments for the account form; failure just leaves the
-    // dropdown empty (the form's validation reports it).
+    // Real backend departments + enum values for the account form; failures
+    // just leave the dropdowns empty (validation reports the department).
     facultyService
       .listDepartmentOptions()
       .then(setDepartmentOptions)
       .catch(() => setDepartmentOptions([]));
+    enumService
+      .getOptions()
+      .then(setEnumOptions)
+      .catch(() => setEnumOptions(null));
   }, []);
 
   const resetKey = `${search}|${department}|${status}`;
@@ -214,6 +220,8 @@ function FacultyPage() {
         ) : (
           <FacultyAccountForm
             departments={departmentOptions}
+            genders={enumOptions?.gender ?? []}
+            civilStatuses={enumOptions?.civilStatus ?? []}
             onSubmit={handleCreate}
             onCancel={closeCreate}
           />

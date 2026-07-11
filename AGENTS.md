@@ -20,6 +20,12 @@ The auth slice is live against the backend end-to-end:
 - **Roles page** (`/roles`) — `roleService.list()` calls `GET /super-admin/permission-slugs` (requires a Super Admin token + `system:manage_roles`): real role names and permission slugs; the permission matrix is derived from the union of the roles' permissions. An empty roles table comes back as 404 + `[]` — the service maps that to an empty list.
 - **Faculty account creation** (`/faculty` → New Faculty) — `facultyService.create()` calls `POST /super-admin/create-faculty-accounts` (`{ departmentId, firstName, midName?, lastName, gender, civilStatus, contact: { mobile, email }, roleName: "Faculty" }`); the backend creates the login account + faculty profile and emails a temp password. The form (`faculty-account-form.tsx`) mirrors that contract; the department dropdown loads real integer-id departments via `facultyService.listDepartmentOptions()` (`GET /departments`, 404 = empty). **The faculty table/edit/status flows are still mocked**, so newly created accounts don't appear in the list yet. `faculty-form.tsx` remains the mock edit form — don't merge the two while the list is mocked.
 
+**Backend is the single source of truth — never hardcode its vocabulary in the frontend:**
+
+- **Enums** (gender, civil status, roles, student type, academic status) are fetched from `GET /student-registration/register-students` via `enumService.getOptions()` (`services/enum.service.ts`, cached per session) and passed through unmodified. Do NOT re-declare enum value lists as frontend constants or add invented options (e.g. a "Not specified" entry) — selects render exactly what the endpoint returns; an unselected optional field is omitted from the payload and the backend applies its own default.
+- **Error messages** shown in the UI come verbatim from backend responses via `ApiError` (see auth slice above) — no frontend-authored copy for API failures.
+- If the backend response is missing something (a filtered value, an absent endpoint), fix or request it backend-side rather than patching values into the frontend.
+
 Remaining mock services share the in-memory store `app/services/mock-data.ts` (demo accounts there no longer control login — real credentials live in the backend DB).
 
 **Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `FACULTY`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Users + Roles admin pages are live (`/users`, `/roles`).
@@ -101,7 +107,8 @@ app/
 | Select dropdown | `Select` — `components/ui/select.tsx` (shares `FieldChrome`/`inputClassName` from input.tsx) |
 | Empty list placeholder | `EmptyState` — `components/ui/empty-state.tsx` |
 | Auth API (real backend) | `authService` — `services/auth.service.ts` |
-| Backend fetch wrapper (Bearer token, verbatim backend errors) | `apiPost`/`apiPatch`, `ApiError` — `lib/api.ts` |
+| Backend fetch wrapper (Bearer token, verbatim backend errors) | `apiGet`/`apiPost`/`apiPatch`/`apiPut`/`apiDelete`, `ApiError` — `lib/api.ts` |
+| Backend enum options (gender, civil status, roles, …) | `enumService.getOptions()` — `services/enum.service.ts` |
 | JWT/session helpers (claims → `User`, pending first-login state) | `loadSession`/`saveSession`/`userFromToken`/… — `lib/session.ts` |
 | Safe browser storage (SSR-proof) | `loadJson`/`saveJson`/`removeJson` — `lib/storage.ts` |
 | Full-screen loading spinner | `LoadingState` — `components/feedback/loading-state.tsx` |
