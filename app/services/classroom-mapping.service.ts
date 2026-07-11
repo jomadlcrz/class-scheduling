@@ -69,7 +69,6 @@ type MappingFilters = {
 
 type MappingResult = {
   classrooms: Classroom[];
-  schoolYears: string[];
 };
 
 async function list(filters?: MappingFilters): Promise<MappingResult> {
@@ -85,11 +84,6 @@ async function list(filters?: MappingFilters): Promise<MappingResult> {
   ]);
 
   const schedules = Array.isArray(scheduleData) ? [] : scheduleData.schedules ?? [];
-
-  // School year options come from the full schedule list, before filtering.
-  const schoolYears = [...new Set(schedules.map((s) => s.school_year))].sort((a, b) =>
-    b.localeCompare(a),
-  );
 
   const roomScheduleMap = new Map<string, ClassEntry[]>();
   for (const schedule of schedules) {
@@ -127,7 +121,6 @@ async function list(filters?: MappingFilters): Promise<MappingResult> {
         entries: roomScheduleMap.get(room.room_name) ?? [],
       })),
     ),
-    schoolYears,
   };
 }
 

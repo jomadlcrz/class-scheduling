@@ -14,6 +14,7 @@ import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { classroomMappingService } from "~/services/classroom-mapping.service";
+import { schoolYearService } from "~/services/school-year.service";
 import type { Building } from "~/types/building";
 import type { Classroom } from "~/features/classroom-mapping/mapping-model";
 
@@ -49,17 +50,18 @@ function ClassroomMappingPage() {
     setLoadError(null);
     setClassrooms(null);
     try {
-      const [result, buildingList] = await Promise.all([
+      const [result, buildingList, syOptions] = await Promise.all([
         classroomMappingService.list({
           schoolYear: schoolYear || undefined,
           semester: semester || undefined,
         }),
         buildingService.list(),
+        schoolYearService.list(),
       ]);
       setClassrooms(result.classrooms);
-      setSchoolYears(result.schoolYears);
-      if (!schoolYear && result.schoolYears.length > 0) {
-        setSchoolYear(result.schoolYears[0]);
+      setSchoolYears(syOptions);
+      if (!schoolYear && syOptions.length > 0) {
+        setSchoolYear(syOptions[0]);
       }
       setBuildings(buildingList);
     } catch (err) {
@@ -90,16 +92,13 @@ function ClassroomMappingPage() {
       <PageHeader
         title="Classroom Mapping"
         description="Weekly schedule and availability for all classrooms by room."
-        actions={
-          <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
-        }
       />
 
       <div className="mt-4 flex flex-col gap-4">
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem] md:items-end">
           <div className="grid grid-cols-3 gap-3">
             <Select label="School Year" id="cm-year" hideLabel value={schoolYear} onChange={e => setSchoolYear(e.target.value)}>
-              {schoolYears.length === 0 && <option value="">School year</option>}
+              {schoolYears.length === 0 && <option value="">No school years</option>}
               {schoolYears.map(y => <option key={y} value={y}>{y}</option>)}
             </Select>
             <Select label="Semester" id="cm-sem" hideLabel value={semester} onChange={e => setSemester(e.target.value)}>
@@ -127,6 +126,10 @@ function ClassroomMappingPage() {
         </div>
 
         <MappingLegend />
+
+        <div className="flex justify-end">
+          <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+        </div>
 
         {loadError ? (
           <ResultState tone="error" title="Unable to load">
