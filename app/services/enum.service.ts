@@ -25,7 +25,7 @@ type EnumOptionsResponse = {
 let cached: Promise<EnumOptions> | null = null;
 
 function getOptions(): Promise<EnumOptions> {
-  cached ??= apiGet<EnumOptionsResponse>("/student-registration/register-students")
+  cached ??= apiGet<EnumOptionsResponse>("/enums")
     .then((data) => ({
       gender: data.gender,
       civilStatus: data.civil_status,
