@@ -19,8 +19,7 @@ export function FacultyTable({ faculty }: FacultyTableProps) {
         <TableHeader>Name</TableHeader>
         <TableHeader className="hidden sm:table-cell">Email</TableHeader>
         <TableHeader>Department</TableHeader>
-        <TableHeader className="hidden md:table-cell">Gender</TableHeader>
-        <TableHeader className="hidden md:table-cell">Civil Status</TableHeader>
+        <TableHeader>Role</TableHeader>
         <TableHeader className="hidden lg:table-cell">Mobile</TableHeader>
       </TableHead>
       <TableBody>
@@ -37,11 +36,10 @@ export function FacultyTable({ faculty }: FacultyTableProps) {
             <TableCell>
               <span className="text-slate-600 dark:text-slate-300">{member.departmentCode}</span>
             </TableCell>
-            <TableCell className="hidden md:table-cell text-slate-600 dark:text-slate-300">
-              {member.gender}
-            </TableCell>
-            <TableCell className="hidden md:table-cell text-slate-600 dark:text-slate-300">
-              {member.civilStatus}
+            <TableCell>
+              <span className="text-slate-600 dark:text-slate-300">
+                {member.roles.map((r) => r.name).join(", ") || "—"}
+              </span>
             </TableCell>
             <TableCell className="hidden lg:table-cell text-slate-500 dark:text-slate-400">
               {member.mobile ?? "—"}

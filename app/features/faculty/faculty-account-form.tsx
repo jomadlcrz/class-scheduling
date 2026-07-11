@@ -3,7 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
-import { facultySchema } from "~/schemas/faculty.schema";
+import { facultySchema, FACULTY_ROLES } from "~/schemas/faculty.schema";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput } from "~/types/faculty";
 
@@ -38,6 +38,7 @@ export function FacultyAccountForm({
       email: String(data.get("faculty-email") ?? "").trim(),
       mobile: String(data.get("faculty-mobile") ?? "").trim(),
       departmentId: String(data.get("faculty-department") ?? ""),
+      roleName: String(data.get("faculty-role") ?? ""),
       gender: String(data.get("faculty-gender") ?? ""),
       civilStatus: String(data.get("faculty-civil-status") ?? ""),
     });
@@ -94,6 +95,15 @@ export function FacultyAccountForm({
         {departments.map((d) => (
           <option key={d.id} value={d.id}>
             {d.code} — {d.name}
+          </option>
+        ))}
+      </Select>
+
+      <Select id="faculty-role" label="Role" defaultValue="" required>
+        <option value="">Select a role</option>
+        {FACULTY_ROLES.map((r) => (
+          <option key={r} value={r}>
+            {r}
           </option>
         ))}
       </Select>

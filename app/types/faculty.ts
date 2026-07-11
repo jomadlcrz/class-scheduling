@@ -12,6 +12,7 @@ export type Faculty = {
   departmentCode: string;
   mobile: string | null;
   email: string | null;
+  roles: { id: number; name: string }[];
   /** Present when sourced from mock data; absent for real data. */
   status?: "active" | "inactive";
   /** Present when sourced from mock data; absent for real data. */
@@ -26,6 +27,7 @@ export type CreateFacultyAccountInput = {
   lastName: string;
   email: string;
   mobile: string;
+  roleName: string;
   /** Enum values fetched via enumService; omitted = "N/A" on the server. */
   gender?: string;
   civilStatus?: string;

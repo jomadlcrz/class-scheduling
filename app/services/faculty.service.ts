@@ -18,7 +18,7 @@ async function create(input: CreateFacultyAccountInput): Promise<void> {
     ...(input.gender && { gender: input.gender }),
     ...(input.civilStatus && { civilStatus: input.civilStatus }),
     contact: { mobile: input.mobile, email: input.email },
-    roleName: "Faculty",
+    roleName: input.roleName,
   });
 }
 
@@ -34,6 +34,7 @@ async function list(): Promise<Faculty[]> {
     department: string;
     mobile: string | null;
     email: string | null;
+    roles: { role_id: number; role_name: string; permissions: unknown[] }[];
   };
 
   let data: FacultyResponse[];
@@ -57,6 +58,7 @@ async function list(): Promise<Faculty[]> {
       departmentCode: deptParts[0] ?? f.department,
       mobile: f.mobile,
       email: f.email,
+      roles: (f.roles ?? []).map((r) => ({ id: r.role_id, name: r.role_name })),
     };
   });
 }
