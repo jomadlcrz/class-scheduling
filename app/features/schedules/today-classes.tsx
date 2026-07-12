@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
-import { formatTime, timeToMinutes, type Day, type Schedule } from "~/types/schedule";
+import { formatTime12h, timeToMinutes } from "~/lib/time";
+import { getScheduleDayKey } from "~/lib/schedule-days";
+import type { Day, Schedule } from "~/types/schedule";
 
 type TodayClassesProps = {
   /** Schedules already filtered to the selected school year + semester. */
@@ -14,18 +16,29 @@ type Occurrence = {
   end: number;
 };
 
-const JS_DAY_TO_DAY: Record<number, Day | null> = {
+const JS_DAY_TO_ScheduleDay: Record<number, string | null> = {
   0: null,
-  1: "M",
-  2: "T",
-  3: "W",
-  4: "Th",
-  5: "F",
-  6: "S",
+  1: "Monday",
+  2: "Tuesday",
+  3: "Wednesday",
+  4: "Thursday",
+  5: "Friday",
+  6: "Saturday",
 };
 
+const SCHEDULE_DAY_TO_DAY: Record<string, Day> = {
+  MON: "M", TUE: "T", WED: "W", THU: "Th", FRI: "F", SAT: "S",
+};
+
+function getTodayDay(): Day | null {
+  const name = JS_DAY_TO_ScheduleDay[new Date().getDay()];
+  if (!name) return null;
+  const key = getScheduleDayKey(name);
+  return key ? SCHEDULE_DAY_TO_DAY[key] : null;
+}
+
 function buildTodayOccurrences(schedules: Schedule[]): Occurrence[] {
-  const day = JS_DAY_TO_DAY[new Date().getDay()];
+  const day = getTodayDay();
   if (!day) return [];
   return schedules
     .filter((s) => s.day === day)
@@ -92,8 +105,8 @@ export function TodayClasses({ schedules }: TodayClassesProps) {
               {occurrences.map((o) => (
                 <li key={o.schedule.id} className="flex items-center gap-3 p-3">
                   <span className="w-16 shrink-0 font-body text-xs font-semibold text-orange-500 dark:text-orange-400">
-                    <span className="block">{formatTime(o.schedule.startTime)}</span>
-                    <span className="block">{formatTime(o.schedule.endTime)}</span>
+                    <span className="block">{formatTime12h(o.schedule.startTime)}</span>
+                    <span className="block">{formatTime12h(o.schedule.endTime)}</span>
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-display text-sm text-navy-700 dark:text-white">
@@ -157,7 +170,7 @@ function TodayCard({
         {schedule.subjectCode} — {schedule.subjectTitle}
       </p>
       <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-        {formatTime(schedule.startTime)}–{formatTime(schedule.endTime)} · {schedule.roomName}
+        {formatTime12h(schedule.startTime)}–{formatTime12h(schedule.endTime)} · {schedule.roomName}
       </p>
       {kind === "current" && (
         <p className="mt-0.5 font-body text-sm text-slate-500 dark:text-slate-400">

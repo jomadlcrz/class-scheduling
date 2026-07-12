@@ -4,6 +4,8 @@ import { FormError } from "~/components/forms/form-error";
 import { Input, inputClassName } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { PlusIcon, TrashIcon } from "~/components/ui/icons";
+import { generateTimeSlots } from "~/types/schedule";
+import { formatTime12h, timeToMinutes } from "~/lib/time";
 import type { CreateWeeklyHourAllocationInput, LabSlot } from "~/types/weekly-hour-allocation";
 
 type Props = {
@@ -11,12 +13,7 @@ type Props = {
   onSubmit: (input: CreateWeeklyHourAllocationInput) => Promise<void>;
 };
 
-const TIME_OPTIONS = [
-  "7:00 AM", "7:30 AM", "8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM",
-  "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
-  "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM",
-  "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM",
-];
+const TIME_OPTIONS = generateTimeSlots().map(formatTime12h);
 
 const HAS_LAB_TYPES = new Set(["Major with Lab"]);
 
@@ -49,14 +46,6 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
 
   function removeLabSlot(index: number) {
     setLabSlots(labSlots.filter((_, i) => i !== index));
-  }
-
-  function timeToMinutes(t: string): number {
-    const [h, m] = t.replace(/( AM| PM)/, "").split(":");
-    let hour = parseInt(h);
-    if (t.includes("PM") && hour !== 12) hour += 12;
-    if (t.includes("AM") && hour === 12) hour = 0;
-    return hour * 60 + parseInt(m ?? "0");
   }
 
   function validateSlots(): LabSlot[] | null {

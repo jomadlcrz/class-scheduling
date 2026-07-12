@@ -1,4 +1,5 @@
 import { ApiError, apiGet } from "~/lib/api";
+import { normalizeTime } from "~/lib/time";
 import type {
   Classroom,
   ClassEntry,
@@ -58,8 +59,8 @@ function toStatus(roomStatus: string): ClassroomStatus {
 }
 
 /** "07:00 AM" → "7:00 AM" so it matches the TIME_SLOTS format. */
-function normalizeTime(time: string): string {
-  return time.trim().replace(/^0/, "");
+function formatTimeShort(time: string): string {
+  return normalizeTime(time.trim());
 }
 
 type MappingFilters = {
@@ -97,8 +98,8 @@ async function list(filters?: MappingFilters): Promise<MappingResult> {
     const [startTime = "", endTime = ""] = schedule.class_time.split(" - ");
     const entry: ClassEntry = {
       day,
-      startTime: normalizeTime(startTime),
-      endTime: normalizeTime(endTime),
+      startTime: formatTimeShort(startTime),
+      endTime: formatTimeShort(endTime),
       subjectCode: schedule.subject_code,
       descriptiveTitle: schedule.desc_title,
       instructor: schedule.faculty_name,

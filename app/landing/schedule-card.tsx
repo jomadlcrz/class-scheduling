@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "motion/react";
+import { SCHEDULE_DAYS } from "~/lib/schedule-days";
 import { popIn, staggerContainer } from "~/landing/motion";
 
 interface ClassBlock {
@@ -13,7 +14,7 @@ interface ClassBlock {
   tone: "gold" | "navy" | "blue";
 }
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
+const DAYS = SCHEDULE_DAYS.slice(0, 5).map((d) => d.label);
 
 const BLOCKS: readonly ClassBlock[] = [
   { id: "cs", title: "Data Structures", room: "CITE 204", day: 1, start: 1, span: 2, tone: "navy" },

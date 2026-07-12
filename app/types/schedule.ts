@@ -68,35 +68,21 @@ export function generateTimeSlots(): string[] {
   return slots;
 }
 
-/** Formats "07:00" → "7:00 AM", "13:30" → "1:30 PM". */
-export function formatTime(time: string): string {
-  const [hourStr, min] = time.split(":");
-  const hour = parseInt(hourStr, 10);
-  const period = hour < 12 ? "AM" : "PM";
-  const display = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${display}:${min} ${period}`;
-}
+// Re-export time helpers from lib/time.ts as the single source of truth.
+export { formatTime12h as formatTime, normalizeTime as parseTime12h, timeToMinutes } from "~/lib/time";
 
-/** Returns the duration in hours between two "HH:MM" times. */
+import { getSlotDuration } from "~/lib/time";
+/** Two-arg wrapper around lib/time's getSlotDuration for backward compat. */
 export function getSlotDurationHours(startTime: string, endTime: string): number {
-  const [sh, sm] = startTime.split(":").map(Number);
-  const [eh, em] = endTime.split(":").map(Number);
-  return (eh + em / 60) - (sh + sm / 60);
+  return getSlotDuration(`${startTime}-${endTime}`);
 }
 
-/** Parses "7:00 AM" / "07:00 PM" → "HH:MM" (24h). */
-export function parseTime12h(time: string): string {
-  const [hhmm, period] = time.trim().split(" ");
-  let [h, m] = hhmm.split(":").map(Number);
-  if (period === "PM" && h !== 12) h += 12;
-  if (period === "AM" && h === 12) h = 0;
-  return `${String(h).padStart(2, "0")}:${String(m ?? 0).padStart(2, "0")}`;
-}
-
-/** Converts "HH:MM" to minutes since midnight. */
-export function timeToMinutes(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-}
-
-
+// Re-export schedule-day constants from lib/schedule-days.ts.
+export {
+  SCHEDULE_DAY_ORDER,
+  SCHEDULE_DAYS,
+  SCHEDULE_DAY_NAMES,
+  getScheduleDayKey,
+  SCHEDULE_DAY_COLORS,
+  type ScheduleDay,
+} from "~/lib/schedule-days";

@@ -1,8 +1,6 @@
 import { Card } from "~/components/ui/card";
 import type { ScheduleSummary } from "~/services/report.service";
-import { DAY_LABELS } from "~/types/schedule";
-
-const DAY_ORDER = ["M", "T", "W", "Th", "F", "S"] as const;
+import { DAYS, DAY_LABELS } from "~/types/schedule";
 
 export function ScheduleReport({ data }: { data: ScheduleSummary }) {
   const programEntries = Object.entries(data.byProgram).sort((a, b) => b[1] - a[1]);
@@ -58,7 +56,7 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
             <p className="font-body text-sm text-slate-400">No data.</p>
           ) : (
             <ul className="flex flex-col gap-3">
-              {DAY_ORDER.filter((d) => data.byDay[d]).map((day) => {
+              {DAYS.filter((d) => data.byDay[d]).map((day) => {
                 const count = data.byDay[day] ?? 0;
                 const maxDay = Math.max(...Object.values(data.byDay), 1);
                 return (

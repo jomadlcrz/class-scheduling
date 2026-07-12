@@ -1,6 +1,9 @@
+import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, type ScheduleDay } from "~/lib/schedule-days";
+import { timeToMinutes } from "~/lib/time";
+
 export type SubjectType = "major_lab" | "major_no_lab" | "gen_ed";
 export type ClassroomStatus = "available" | "full";
-export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
+export type DayOfWeek = (typeof SCHEDULE_DAY_NAMES)[number];
 
 export interface ClassEntry {
   day: DayOfWeek;
@@ -30,7 +33,7 @@ export type DayCell =
   | { kind: "class"; entry: ClassEntry; colspan: number }
   | { kind: "empty"; slot: TimeSlot };
 
-export const DAYS: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export const DAYS: DayOfWeek[] = [...SCHEDULE_DAY_NAMES];
 
 export const TIME_SLOTS: TimeSlot[] = [
   { start: "7:00 AM",  end: "8:30 AM"  },
@@ -43,14 +46,21 @@ export const TIME_SLOTS: TimeSlot[] = [
   { start: "4:30 PM",  end: "6:00 PM"  },
 ];
 
-export const DAY_STYLES: Record<DayOfWeek, { color: string; bg: string; border: string }> = {
-  Monday:    { color: "text-red-600 dark:text-red-400",    bg: "bg-red-100 dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
-  Tuesday:   { color: "text-amber-700 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950/50", border: "border-amber-200 dark:border-amber-900" },
-  Wednesday: { color: "text-red-600 dark:text-red-400",    bg: "bg-red-100 dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
-  Thursday:  { color: "text-amber-700 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950/50", border: "border-amber-200 dark:border-amber-900" },
-  Friday:    { color: "text-red-600 dark:text-red-400",    bg: "bg-red-100 dark:bg-red-950/50",    border: "border-red-200 dark:border-red-900"    },
-  Saturday:  { color: "text-pink-700 dark:text-pink-400",  bg: "bg-pink-100 dark:bg-pink-950/50",  border: "border-pink-200 dark:border-pink-900"  },
+const DAY_NAME_TO_SCHEDULE_DAY: Record<DayOfWeek, ScheduleDay> = {
+  Monday: "MON", Tuesday: "TUE", Wednesday: "WED",
+  Thursday: "THU", Friday: "FRI", Saturday: "SAT",
 };
+
+export const DAY_STYLES: Record<DayOfWeek, { color: string; bg: string; border: string }> = Object.fromEntries(
+  SCHEDULE_DAY_NAMES.map((name) => {
+    const colors = SCHEDULE_DAY_COLORS[DAY_NAME_TO_SCHEDULE_DAY[name]];
+    return [name, {
+      color: colors.text + " dark:" + colors.text.replace("text-", "text-").replace("-600", "-400"),
+      bg: colors.bg + " dark:" + colors.bg.replace("bg-", "bg-").replace("-100", "-950/50"),
+      border: colors.border.replace("border-l-", "border-") + " dark:" + colors.border.replace("border-l-", "border-").replace("-500", "-900"),
+    }];
+  }),
+) as Record<DayOfWeek, { color: string; bg: string; border: string }>;
 
 export const TYPE_STYLES: Record<SubjectType, { card: string; border: string; code: string; tableCode: string; dot: string }> = {
   major_lab:    { card: "bg-blue-100 dark:bg-blue-950/60",    border: "border-l-blue-500",    code: "text-blue-800 dark:text-blue-300",    tableCode: "text-blue-600 dark:text-blue-400",    dot: "bg-blue-500"    },
@@ -67,29 +77,6 @@ export const TYPE_LABELS: Record<SubjectType, string> = {
 export const ROOM_COL_W = 110;
 export const DAY_COL_W = 100;
 export const SLOT_COL_W = 150;
-
-// ── Time helpers ──────────────────────────────────────────────────────────────
-
-const TIME_CACHE = new Map<string, number>();
-
-function timeToMinutes(time: string): number {
-  const cached = TIME_CACHE.get(time);
-  if (cached !== undefined) return cached;
-
-  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return 0;
-
-  let hours = Number.parseInt(match[1], 10);
-  const minutes = Number.parseInt(match[2], 10);
-  const meridiem = match[3].toUpperCase();
-
-  if (meridiem === "PM" && hours !== 12) hours += 12;
-  if (meridiem === "AM" && hours === 12) hours = 0;
-
-  const result = hours * 60 + minutes;
-  TIME_CACHE.set(time, result);
-  return result;
-}
 
 // ── Day cell builder ─────────────────────────────────────────────────────────
 
