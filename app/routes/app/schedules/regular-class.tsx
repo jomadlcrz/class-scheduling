@@ -5,10 +5,8 @@ import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
 import { PlusIcon, PrinterIcon } from "~/components/ui/icons";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { ScheduleForm } from "~/features/schedules/schedule-form";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -16,28 +14,14 @@ import {
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { PageHeader } from "~/layouts/page-header";
-import { programService } from "~/services/program.service";
-import { roomService } from "~/services/room.service";
 import { scheduleService } from "~/services/schedule.service";
-import { setService } from "~/services/set.service";
-import { subjectService } from "~/services/subject.service";
-import type { Faculty } from "~/types/faculty";
-import type { Program } from "~/types/program";
-import type { Room } from "~/types/room";
 import {
   DAYS,
-  DAY_LABELS,
-  DEFAULT_SCHOOL_YEAR,
   SCHEDULE_SEMESTERS,
   SCHEDULE_SEMESTER_LABELS,
-  SCHOOL_YEARS,
-  type CreateScheduleInput,
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
-import type { ClassSet } from "~/types/set";
-import type { Subject } from "~/types/subject";
-import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "~/types/subject";
 
 export function meta() {
   return [
@@ -54,110 +38,73 @@ export default function RegularClassRoute() {
   );
 }
 
-type PageData = {
-  schedules: Schedule[];
-  subjects: Subject[];
-  sets: ClassSet[];
-  faculty: Faculty[];
-  rooms: Room[];
-  programs: Program[];
-};
-
 function RegularClassPage() {
   const navigate = useNavigate();
-  const [data, setData] = useState<PageData | null>(null);
+  const [schedules, setSchedules] = useState<Schedule[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Filters — pin the view to a single section's weekly schedule.
-  const [schoolYear, setSchoolYear] = useState(DEFAULT_SCHOOL_YEAR);
+  const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
-  const [program, setProgram] = useState("");
-  const [yearLevel, setYearLevel] = useState<YearLevel | "">("");
-  const [setId, setSetId] = useState("");
+  const [setName, setSetName] = useState("");
 
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
 
-  const [editTarget, setEditTarget] = useState<Schedule | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
+  useEffect(() => {
+    scheduleService
+      .view()
+      .then((result) => {
+        setSchedules(result);
+        // Default to the newest school year and its first set.
+        const years = [...new Set(result.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
+        const firstYear = years[0] ?? "";
+        setSchoolYear(firstYear);
+        const firstSet = result.find((s) => s.schoolYear === firstYear && s.semester === 1);
+        setSetName(firstSet?.setCode ?? "");
+      })
+      .catch((err) => {
+        setLoadError(err instanceof Error ? err.message : "Unable to load schedules.");
+        setSchedules([]);
+      });
+  }, []);
 
-  // useEffect(() => {
-  //   Promise.all([
-  //     scheduleService.list(),
-  //     subjectService.list(),
-  //     setService.list(),
-  //     Promise.resolve([] as Faculty[]),
-  //     roomService.list(),
-  //     programService.list(),
-  //   ]).then(([schedules, subjects, sets, faculty, rooms, programs]) => {
-  //     setData({ schedules, subjects, sets, faculty, rooms, programs });
-  //
-  //     const firstProgram = programs[0]?.code ?? "";
-  //     const firstYl =
-  //       YEAR_LEVELS.find((yl) => sets.some((s) => s.program === firstProgram && s.yearLevel === yl)) ??
-  //       (1 as YearLevel);
-  //     const firstSet = sets.find((s) => s.program === firstProgram && s.yearLevel === firstYl);
-  //     setProgram(firstProgram);
-  //     setYearLevel(firstYl);
-  //     setSetId(firstSet?.id ?? "");
-  //   });
-  // }, []);
-
-  const availableYearLevels = useMemo(
-    () =>
-      YEAR_LEVELS.filter((yl) =>
-        (data?.sets ?? []).some((s) => s.program === program && s.yearLevel === yl),
-      ),
-    [data, program],
+  const schoolYears = useMemo(
+    () => [...new Set((schedules ?? []).map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a)),
+    [schedules],
   );
 
   const availableSets = useMemo(
     () =>
-      (data?.sets ?? [])
-        .filter((s) => s.program === program && s.yearLevel === yearLevel)
-        .sort((a, b) => a.setCode.localeCompare(b.setCode)),
-    [data, program, yearLevel],
+      [
+        ...new Set(
+          (schedules ?? [])
+            .filter((s) => s.schoolYear === schoolYear && s.semester === semester)
+            .map((s) => s.setCode),
+        ),
+      ].sort(),
+    [schedules, schoolYear, semester],
   );
 
-  function handleProgramChange(next: string) {
-    setProgram(next);
-    const newYl =
-      YEAR_LEVELS.find((yl) => (data?.sets ?? []).some((s) => s.program === next && s.yearLevel === yl)) ??
-      (1 as YearLevel);
-    setYearLevel(newYl);
-    setSetId((data?.sets ?? []).find((s) => s.program === next && s.yearLevel === newYl)?.id ?? "");
-  }
-
-  function handleYearLevelChange(yl: YearLevel) {
-    setYearLevel(yl);
-    setSetId((data?.sets ?? []).find((s) => s.program === program && s.yearLevel === yl)?.id ?? "");
-  }
-
   const visibleSchedules = useMemo(() => {
-    if (!data) return [];
-    return data.schedules
+    if (!schedules) return [];
+    return schedules
       .filter(
-        (s) => s.setId === setId && s.schoolYear === schoolYear && s.semester === semester,
+        (s) => s.setCode === setName && s.schoolYear === schoolYear && s.semester === semester,
       )
       .sort(
         (a, b) =>
           DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.startTime.localeCompare(b.startTime),
       );
-  }, [data, setId, schoolYear, semester]);
+  }, [schedules, setName, schoolYear, semester]);
 
-  // async function handleEdit(input: CreateScheduleInput) {
-  //   if (!editTarget) return;
-  //   const updated = await scheduleService.update(editTarget.id, input);
-  //   setData((d) =>
-  //     d && { ...d, schedules: d.schedules.map((s) => (s.id === updated.id ? updated : s)) },
-  //   );
-  //   setEditTarget(null);
-  // }
+  // Keep the set selection valid when the year/semester filters change.
+  useEffect(() => {
+    if (setName && !availableSets.includes(setName)) {
+      setSetName(availableSets[0] ?? "");
+    }
+  }, [availableSets, setName]);
 
-  // async function handleDelete(target: Schedule) {
-  //   await scheduleService.remove(target.id);
-  //   setData((d) => d && { ...d, schedules: d.schedules.filter((s) => s.id !== target.id) });
-  // }
-
-  const isLoading = data === null;
+  const isLoading = schedules === null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -174,28 +121,18 @@ function RegularClassPage() {
 
       {/* Filters */}
       <div className="mt-4 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Select
             id="rc-school-year"
             label="School Year"
             value={schoolYear}
             onChange={(e) => setSchoolYear(e.target.value)}
           >
-            {SCHOOL_YEARS.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </Select>
-          <Select
-            id="rc-year-level"
-            label="Year Level"
-            value={yearLevel}
-            onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
-          >
-            {availableYearLevels.length === 0 ? (
-              <option value="">No year levels</option>
+            {schoolYears.length === 0 ? (
+              <option value="">No school years</option>
             ) : (
-              availableYearLevels.map((yl) => (
-                <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+              schoolYears.map((y) => (
+                <option key={y} value={y}>{y}</option>
               ))
             )}
           </Select>
@@ -205,31 +142,21 @@ function RegularClassPage() {
             value={semester}
             onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
           >
-            {SCHEDULE_SEMESTERS.map((s) => (
+            {SCHEDULE_SEMESTERS.filter((s) => s !== 3).map((s) => (
               <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
-            ))}
-          </Select>
-          <Select
-            id="rc-program"
-            label="Program"
-            value={program}
-            onChange={(e) => handleProgramChange(e.target.value)}
-          >
-            {(data?.programs ?? []).map((p) => (
-              <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
             ))}
           </Select>
           <Select
             id="rc-set"
             label="Set"
-            value={setId}
-            onChange={(e) => setSetId(e.target.value)}
+            value={setName}
+            onChange={(e) => setSetName(e.target.value)}
           >
             {availableSets.length === 0 ? (
               <option value="">No sets</option>
             ) : (
               availableSets.map((s) => (
-                <option key={s.id} value={s.id}>{s.program}-{s.yearLevel}{s.setCode}</option>
+                <option key={s} value={s}>{s}</option>
               ))
             )}
           </Select>
@@ -250,9 +177,29 @@ function RegularClassPage() {
         </div>
       </div>
 
-      <ResultState tone="error" title="Not available">
-        This feature is not connected to the backend yet.
-      </ResultState>
+      <div className="mt-4">
+        {loadError ? (
+          <ResultState tone="error" title="Unable to load">
+            {loadError}
+          </ResultState>
+        ) : isLoading ? (
+          <div
+            role="status"
+            aria-label="Loading schedules"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : visibleSchedules.length === 0 ? (
+          <EmptyState title="No schedules found">
+            No schedules match the current filters. Create a schedule to get started.
+          </EmptyState>
+        ) : viewMode === "grid" ? (
+          <ScheduleGrid schedules={visibleSchedules} />
+        ) : (
+          <ScheduleTable schedules={visibleSchedules} />
+        )}
+      </div>
     </div>
   );
 }

@@ -102,7 +102,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
     setIsLoading(true);
     try {
       await onSubmit({
-        subjectType: subjectType as SubjectType,
+        subjectType,
         lectureHours: lec,
         labHours: lab,
         meetings: m,

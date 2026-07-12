@@ -91,6 +91,15 @@ export function getSlotDurationHours(startTime: string, endTime: string): number
   return (eh + em / 60) - (sh + sm / 60);
 }
 
+/** Parses "7:00 AM" / "07:00 PM" → "HH:MM" (24h). */
+export function parseTime12h(time: string): string {
+  const [hhmm, period] = time.trim().split(" ");
+  let [h, m] = hhmm.split(":").map(Number);
+  if (period === "PM" && h !== 12) h += 12;
+  if (period === "AM" && h === 12) h = 0;
+  return `${String(h).padStart(2, "0")}:${String(m ?? 0).padStart(2, "0")}`;
+}
+
 /** Converts "HH:MM" to minutes since midnight. */
 export function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);

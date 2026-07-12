@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { EmptyState } from "~/components/ui/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
@@ -16,28 +17,24 @@ import {
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
-import { getHoursForSubjectType } from "~/lib/weekly-hours";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
-import { roomService } from "~/services/room.service";
-import { scheduleService } from "~/services/schedule.service";
-import { setService } from "~/services/set.service";
-import { subjectService } from "~/services/subject.service";
-import type { Faculty } from "~/types/faculty";
-import type { Program } from "~/types/program";
-import type { Room } from "~/types/room";
 import {
-  DEFAULT_SCHOOL_YEAR,
+  scheduleService,
+  type ScheduleRoomOption,
+  type ScheduleSubjectOption,
+} from "~/services/schedule.service";
+import { setService } from "~/services/set.service";
+import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
+import type { Program } from "~/types/program";
+import type { LabSlot } from "~/types/weekly-hour-allocation";
+import {
   SCHEDULE_SEMESTER_LABELS,
-  SCHEDULE_SEMESTERS,
-  SCHOOL_YEARS,
-  getSlotDurationHours,
   type Day,
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
-import type { Subject } from "~/types/subject";
 import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "~/types/subject";
 
 function ZapIcon() {
@@ -63,87 +60,98 @@ export default function SchedulesNew() {
   );
 }
 
-type PageData = {
-  subjects: Subject[];
-  sets: ClassSet[];
-  faculty: Faculty[];
-  rooms: Room[];
-  programs: Program[];
-};
+// Regular class schedules only cover the two main semesters.
+const REGULAR_SEMESTERS: ScheduleSemester[] = [1, 2];
 
-const DAY_ORDER: Day[] = ["M", "T", "W", "Th", "F"];
-const TIME_BLOCKS = [
-  { start: "07:00", end: "10:00" },
-  { start: "10:00", end: "13:00" },
-  { start: "13:00", end: "16:00" },
-  { start: "16:00", end: "19:00" },
-];
+function defaultSchoolYear(): string {
+  const year = new Date().getFullYear();
+  return `${year}-${year + 1}`;
+}
 
 function SchedulesNewPage() {
   const navigate = useNavigate();
-  const [pageData, setPageData] = useState<PageData | null>(null);
 
-  const [schoolYear, setSchoolYear] = useState(DEFAULT_SCHOOL_YEAR);
+  const [programs, setPrograms] = useState<Program[] | null>(null);
+  const [sets, setSets] = useState<ClassSet[]>([]);
+  const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
+  const [subjects, setSubjects] = useState<ScheduleSubjectOption[]>([]);
+
+  // The backend requires the opening year to be the current year — typed, not picked.
+  const [schoolYear, setSchoolYear] = useState(defaultSchoolYear());
   const [semester, setSemester] = useState<ScheduleSemester>(1);
-  const [selectedProgram, setSelectedProgram] = useState("");
+  const [selectedProgramId, setSelectedProgramId] = useState("");
   const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">("");
   const [selectedSetId, setSelectedSetId] = useState("");
 
   const [slots, setSlots] = useState<PendingSlot[]>([]);
+  const [hasGenerated, setHasGenerated] = useState(false);
+  const [labTimeSlots, setLabTimeSlots] = useState<LabSlot[]>([]);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [autoGenerating, setAutoGenerating] = useState(false);
   const tempIdCounter = useRef(0);
 
-  // useEffect(() => {
-  //   Promise.all([
-  //     subjectService.list(),
-  //     setService.list(),
-  //     Promise.resolve([] as Faculty[]),
-  //     roomService.list(),
-  //     programService.list(),
-  //   ]).then(([subjects, sets, faculty, rooms, programs]) => {
-  //     setPageData({ subjects, sets, faculty, rooms, programs });
-  //
-  //     const firstProgram = programs[0]?.code ?? "";
-  //     const firstYl =
-  //       YEAR_LEVELS.find((yl) => sets.some((s) => s.program === firstProgram && s.yearLevel === yl)) ??
-  //       (1 as YearLevel);
-  //     const firstSet = sets.find((s) => s.program === firstProgram && s.yearLevel === firstYl);
-  //
-  //     setSelectedProgram(firstProgram);
-  //     setSelectedYearLevel(firstYl);
-  //     setSelectedSetId(firstSet?.id ?? "");
-  //   });
-  // }, []);
+  useEffect(() => {
+    programService.list().then(setPrograms).catch(() => setPrograms([]));
+    setService.list().then(setSets).catch(() => setSets([]));
+    scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
+    // Lab sessions are pinned to the slots configured in Weekly Hour Allocations.
+    weeklyHourService
+      .list()
+      .then((allocations) =>
+        setLabTimeSlots(
+          allocations.find((a) => a.subjectType === "Major with Lab")?.labTimeSlots ?? [],
+        ),
+      )
+      .catch(() => setLabTimeSlots([]));
+  }, []);
 
-  const selectedSet = pageData?.sets.find((s) => s.id === selectedSetId);
+  const selectedProgram = programs?.find((p) => String(p.id) === selectedProgramId);
+  const selectedSet = sets.find((s) => String(s.id) === selectedSetId);
+  const schoolYearValid = /^\d{4}-\d{4}$/.test(schoolYear);
+
+  // Subjects (with their term-assigned faculties) depend on the whole context.
+  useEffect(() => {
+    if (!selectedProgram || !selectedYearLevel || !schoolYearValid) {
+      setSubjects([]);
+      return;
+    }
+    let stale = false;
+    scheduleService
+      .listScheduleSubjects({
+        schoolYear,
+        programId: selectedProgram.id,
+        yearLevel: selectedYearLevel,
+        semester,
+      })
+      .then((result) => {
+        if (!stale) setSubjects(result);
+      })
+      .catch(() => {
+        if (!stale) setSubjects([]);
+      });
+    return () => {
+      stale = true;
+    };
+  }, [selectedProgram, selectedYearLevel, semester, schoolYear, schoolYearValid]);
 
   const availableYearLevels = useMemo(
     () =>
       YEAR_LEVELS.filter((yl) =>
-        (pageData?.sets ?? []).some((s) => s.program === selectedProgram && s.yearLevel === yl),
+        sets.some((s) => s.program === selectedProgram?.code && s.yearLevel === yl),
       ),
-    [pageData, selectedProgram],
+    [sets, selectedProgram],
   );
 
   const availableSets = useMemo(
     () =>
-      (pageData?.sets ?? []).filter(
-        (s) => s.program === selectedProgram && s.yearLevel === selectedYearLevel,
+      sets.filter(
+        (s) => s.program === selectedProgram?.code && s.yearLevel === selectedYearLevel,
       ),
-    [pageData, selectedProgram, selectedYearLevel],
-  );
-
-  const availableSubjects = useMemo(
-    () =>
-      (pageData?.subjects ?? []).filter(
-        (s) => s.program === selectedProgram && s.yearLevel === selectedYearLevel && s.semester === semester,
-      ),
-    [pageData, selectedProgram, selectedYearLevel, semester],
+    [sets, selectedProgram, selectedYearLevel],
   );
 
   const displaySchedules = useMemo<Schedule[]>(
@@ -152,18 +160,18 @@ function SchedulesNewPage() {
         id: slot.tempId,
         schoolYear,
         semester,
-        subjectId: slot.subjectId,
+        subjectId: String(slot.subjectId),
         subjectCode: slot.subjectCode,
         subjectTitle: slot.subjectTitle,
-        setId: selectedSet?.id ?? "",
+        setId: String(selectedSet?.id ?? ""),
         setCode: selectedSet?.setCode ?? "",
-        program: selectedSet?.program ?? selectedProgram,
-        yearLevel: selectedSet?.yearLevel ?? ((selectedYearLevel || 1) as YearLevel),
-        facultyId: slot.facultyId,
+        program: selectedProgram?.code ?? "",
+        yearLevel: (selectedYearLevel || 1) as YearLevel,
+        facultyId: String(slot.facultyId ?? ""),
         facultyName: slot.facultyName,
-        roomId: slot.roomId,
+        roomId: String(slot.roomId ?? ""),
         roomName: slot.roomName,
-        buildingCode: slot.buildingCode,
+        buildingCode: "",
         mode: slot.mode,
         day: slot.day,
         startTime: slot.startTime,
@@ -172,92 +180,58 @@ function SchedulesNewPage() {
     [slots, schoolYear, semester, selectedSet, selectedProgram, selectedYearLevel],
   );
 
-  function handleProgramChange(program: string) {
-    setSelectedProgram(program);
-    const newYl =
-      YEAR_LEVELS.find((yl) =>
-        (pageData?.sets ?? []).some((s) => s.program === program && s.yearLevel === yl),
-      ) ?? (1 as YearLevel);
-    setSelectedYearLevel(newYl);
+  function handleProgramChange(programId: string) {
+    setSelectedProgramId(programId);
+    const code = programs?.find((p) => String(p.id) === programId)?.code;
+    const newYl = YEAR_LEVELS.find((yl) =>
+      sets.some((s) => s.program === code && s.yearLevel === yl),
+    );
+    setSelectedYearLevel(newYl ?? "");
     setSelectedSetId(
-      (pageData?.sets ?? []).find((s) => s.program === program && s.yearLevel === newYl)?.id ?? "",
+      String(sets.find((s) => s.program === code && s.yearLevel === newYl)?.id ?? ""),
     );
     setSlots([]);
+    setHasGenerated(false);
   }
 
   function handleYearLevelChange(yl: YearLevel) {
     setSelectedYearLevel(yl);
     setSelectedSetId(
-      (pageData?.sets ?? []).find((s) => s.program === selectedProgram && s.yearLevel === yl)?.id ?? "",
+      String(
+        sets.find((s) => s.program === selectedProgram?.code && s.yearLevel === yl)?.id ?? "",
+      ),
     );
     setSlots([]);
+    setHasGenerated(false);
   }
 
-  // function handleAutoGenerate() {
-  //   if (!pageData || !selectedSet) return;
-  //
-  //   const programSubjects = availableSubjects;
-  //   const activeFaculty = pageData.faculty.filter((f) => f.status === "active");
-  //   if (programSubjects.length === 0 || activeFaculty.length === 0 || pageData.rooms.length === 0) return;
-  //
-  //   setAutoGenerating(true);
-  //
-  //   // Small delay so the spinner renders
-  //   setTimeout(() => {
-  //     const sortedSubjects = [...programSubjects].sort(
-  //       (a, b) => a.code.localeCompare(b.code),
-  //     );
-  //
-  //     // Grid of available slots: iterate day x timeBlock
-  //     const gridSlots: Array<{ day: Day; startTime: string; endTime: string }> = [];
-  //     for (const day of DAY_ORDER) {
-  //       for (const block of TIME_BLOCKS) {
-  //         gridSlots.push({ day, startTime: block.start, endTime: block.end });
-  //       }
-  //     }
-  //
-  //     const newSlots: Omit<PendingSlot, "tempId">[] = [];
-  //     let cursor = 0;
-  //
-  //     for (const subject of sortedSubjects) {
-  //       const h = getHoursForSubjectType(subject.subjectType);
-  //       const totalHours = h.lectureHours + h.labHours;
-  //       const numSlots = Math.max(1, Math.ceil(totalHours / 3));
-  //
-  //       for (let i = 0; i < numSlots && cursor < gridSlots.length; i++) {
-  //         const slot = gridSlots[cursor];
-  //         cursor++;
-  //
-  //         const facultyMember = activeFaculty[newSlots.length % activeFaculty.length];
-  //         const room = pageData.rooms[newSlots.length % pageData.rooms.length];
-  //
-  //         newSlots.push({
-  //           subjectId: subject.id,
-  //           subjectCode: subject.code,
-  //           subjectTitle: subject.title,
-  //           day: slot.day,
-  //           startTime: slot.startTime,
-  //           endTime: slot.endTime,
-  //           facultyId: facultyMember.id,
-  //           facultyName: `${facultyMember.firstName} ${facultyMember.lastName}`,
-  //           roomId: room.id,
-  //           roomName: room.name,
-  //           buildingCode: room.buildingCode,
-  //           mode: "F2F" as const,
-  //         });
-  //       }
-  //     }
-  //
-  //     tempIdCounter.current = 0;
-  //     const slotsWithIds: PendingSlot[] = newSlots.map((slot) => {
-  //       tempIdCounter.current += 1;
-  //       return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
-  //     });
-  //
-  //     setSlots(slotsWithIds);
-  //     setAutoGenerating(false);
-  //   }, 200);
-  // }
+  async function handleAutoGenerate() {
+    if (!selectedSet || !selectedProgram || !selectedYearLevel) return;
+
+    setSaveError(null);
+    setIsGenerating(true);
+    try {
+      const generated = await scheduleService.autoGenerate({
+        schoolYear,
+        semester,
+        yearLevel: selectedYearLevel,
+        programId: selectedProgram.id,
+        setId: selectedSet.id,
+      });
+      tempIdCounter.current = 0;
+      setSlots(
+        generated.map((slot) => {
+          tempIdCounter.current += 1;
+          return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
+        }),
+      );
+      setHasGenerated(true);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Unable to generate a schedule.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   function openAddDrawer() {
     setEditing(null);
@@ -296,60 +270,59 @@ function SchedulesNewPage() {
     const slot = slots.find((s) => s.tempId === schedule.id);
     if (!slot) return;
     tempIdCounter.current += 1;
-    setSlots((current) => [
-      ...current,
-      { ...slot, day, tempId: `tmp-${tempIdCounter.current}` },
-    ]);
+    setSlots((current) => [...current, { ...slot, day, tempId: `tmp-${tempIdCounter.current}` }]);
   }
 
-  // async function handleSave() {
-  //   if (!selectedSet) return;
-  //
-  //   setSaveError(null);
-  //   setIsSaving(true);
-  //   const remaining = [...slots];
-  //   try {
-  //     for (const slot of slots) {
-  //       await scheduleService.create({
-  //         schoolYear,
-  //         semester,
-  //         subjectId: slot.subjectId,
-  //         subjectCode: slot.subjectCode,
-  //         subjectTitle: slot.subjectTitle,
-  //         setId: selectedSet.id,
-  //         setCode: selectedSet.setCode,
-  //         program: selectedSet.program,
-  //         yearLevel: selectedSet.yearLevel,
-  //         facultyId: slot.facultyId,
-  //         facultyName: slot.facultyName,
-  //         roomId: slot.roomId,
-  //         roomName: slot.roomName,
-  //         buildingCode: slot.buildingCode,
-  //         mode: slot.mode,
-  //         day: slot.day,
-  //         startTime: slot.startTime,
-  //         endTime: slot.endTime,
-  //       });
-  //       remaining.shift();
-  //     }
-  //     navigate("/schedules/regular-class");
-  //   } catch (err) {
-  //     setSlots(remaining);
-  //     setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-  //     setIsSaving(false);
-  //   }
-  // }
+  async function handleSave() {
+    if (!selectedSet || !selectedProgram) return;
+
+    const unassigned = slots.filter((s) => s.facultyId === null);
+    if (unassigned.length > 0) {
+      setSaveError(
+        `${unassigned.length} slot${unassigned.length === 1 ? " has" : "s have"} no faculty assigned — edit ${unassigned.length === 1 ? "it" : "them"} before saving.`,
+      );
+      return;
+    }
+
+    setSaveError(null);
+    setIsSaving(true);
+    try {
+      await scheduleService.createRegular({
+        schoolYear,
+        semester,
+        programId: selectedProgram.id,
+        setId: selectedSet.id,
+        slots: slots.map((s) => ({
+          day: s.day,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          subjectId: s.subjectId,
+          mode: s.mode,
+          facultyId: s.facultyId as number,
+          facultyName: s.facultyName,
+          roomId: s.roomId,
+        })),
+      });
+      navigate("/schedules/regular-class");
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setIsSaving(false);
+    }
+  }
 
   const contextLocked = slots.length > 0;
-  const canAddSlot = Boolean(selectedSet) && availableSubjects.length > 0;
-  const canAutoGenerate = Boolean(selectedSet) && availableSubjects.length > 0;
+  const canGenerate =
+    Boolean(selectedSet) && Boolean(selectedYearLevel) && schoolYearValid && !isGenerating;
+  const canAddSlot = Boolean(selectedSet) && schoolYearValid && subjects.length > 0;
+  const unassignedCount = slots.filter((s) => s.facultyId === null).length;
   const lockHint = contextLocked ? "Remove all slots to change." : undefined;
+  const isLoading = programs === null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="New Schedule"
-        description="Select a set, auto-generate or add time slots for its subjects, then save the whole week at once."
+        description="Select a set, add time slots for its subjects, then save the whole week at once."
         actions={
           <>
             <Button
@@ -360,7 +333,7 @@ function SchedulesNewPage() {
             >
               Cancel
             </Button>
-            {/* <Button
+            <Button
               type="button"
               block={false}
               disabled={slots.length === 0 || !selectedSet}
@@ -369,14 +342,166 @@ function SchedulesNewPage() {
               onClick={handleSave}
             >
               Save Schedule{slots.length > 0 ? ` (${slots.length})` : ""}
-            </Button> */}
+            </Button>
           </>
         }
       />
 
-      <ResultState tone="error" title="Not available">
-        This feature is not connected to the backend yet.
-      </ResultState>
+      {isLoading ? (
+        <div
+          role="status"
+          aria-label="Loading schedule builder"
+          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+        >
+          <Spinner />
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-col gap-4">
+          <FormError message={saveError} />
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <Input
+              id="sn-school-year"
+              label="School Year"
+              type="text"
+              placeholder="e.g. 2026-2027"
+              value={schoolYear}
+              onChange={(e) => setSchoolYear(e.target.value)}
+              disabled={contextLocked}
+              hint={lockHint}
+            />
+            <Select
+              id="sn-semester"
+              label="Semester"
+              value={semester}
+              onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
+              disabled={contextLocked}
+            >
+              {REGULAR_SEMESTERS.map((s) => (
+                <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
+              ))}
+            </Select>
+            <Select
+              id="sn-program"
+              label="Program"
+              value={selectedProgramId}
+              onChange={(e) => handleProgramChange(e.target.value)}
+              disabled={contextLocked}
+            >
+              <option value="">Select a program</option>
+              {(programs ?? []).map((p) => (
+                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
+              ))}
+            </Select>
+            <Select
+              id="sn-year-level"
+              label="Year Level"
+              value={selectedYearLevel}
+              onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
+              disabled={contextLocked}
+            >
+              {availableYearLevels.length === 0 ? (
+                <option value="">No year levels</option>
+              ) : (
+                availableYearLevels.map((yl) => (
+                  <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+                ))
+              )}
+            </Select>
+            <Select
+              id="sn-set"
+              label="Set"
+              value={selectedSetId}
+              onChange={(e) => setSelectedSetId(e.target.value)}
+              disabled={contextLocked}
+            >
+              {availableSets.length === 0 ? (
+                <option value="">No sets</option>
+              ) : (
+                availableSets.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.program}-{s.yearLevel}{s.setCode}
+                  </option>
+                ))
+              )}
+            </Select>
+          </div>
+
+          <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+            <div className="hidden sm:block" />
+            <div className="flex justify-center">
+              <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                disabled={!canGenerate}
+                isLoading={isGenerating}
+                loadingLabel="Generating…"
+                onClick={handleAutoGenerate}
+              >
+                <ZapIcon />
+                Auto-Generate
+              </Button>
+              {hasGenerated && (
+                <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
+                  <PlusIcon />
+                  Add Slot
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {unassignedCount > 0 && (
+            <ResultState tone="error" title="Slots need attention">
+              {unassignedCount} generated slot{unassignedCount === 1 ? "" : "s"} ha
+              {unassignedCount === 1 ? "s" : "ve"} no available faculty — edit
+              {unassignedCount === 1 ? " it" : " them"} before saving.
+            </ResultState>
+          )}
+
+          {slots.length === 0 ? (
+            <EmptyState title="No slots yet">
+              {canGenerate
+                ? "Auto-generate a schedule for the selected set, then fine-tune the slots."
+                : "Pick a school year, semester, program, year level, and set with assigned subjects first."}
+            </EmptyState>
+          ) : viewMode === "grid" ? (
+            <ScheduleGrid
+              schedules={displaySchedules}
+              onEdit={handleEditSlot}
+              onDelete={handleRemoveSlot}
+              onDuplicate={handleDuplicateSlot}
+            />
+          ) : (
+            <ScheduleTable
+              schedules={displaySchedules}
+              onEdit={handleEditSlot}
+              onDelete={handleRemoveSlot}
+              onDuplicate={handleDuplicateSlot}
+            />
+          )}
+        </div>
+      )}
+
+      <Drawer
+        open={drawerOpen}
+        onClose={closeDrawer}
+        title={editing ? "Edit Slot" : "Add Slot"}
+      >
+        <SlotEntryForm
+          key={editing?.tempId ?? "new"}
+          initialSlot={editing ?? undefined}
+          subjects={subjects}
+          rooms={rooms}
+          labTimeSlots={labTimeSlots}
+          existingSlots={slots}
+          onAdd={handleSubmitSlot}
+          onCancelEdit={editing ? closeDrawer : undefined}
+        />
+      </Drawer>
     </div>
   );
 }

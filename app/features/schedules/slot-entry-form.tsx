@@ -3,8 +3,11 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { Select } from "~/components/ui/select";
-import type { Faculty } from "~/types/faculty";
-import type { Room } from "~/types/room";
+import type {
+  ScheduleRoomOption,
+  ScheduleSubjectOption,
+  SlotDraft,
+} from "~/services/schedule.service";
 import {
   DAYS,
   DAY_LABELS,
@@ -13,32 +16,21 @@ import {
   generateTimeSlots,
   formatTime,
   getSlotDurationHours,
+  parseTime12h,
   type Day,
   type ScheduleMode,
 } from "~/types/schedule";
-import type { Subject } from "~/types/subject";
+import type { LabSlot } from "~/types/weekly-hour-allocation";
 
-export type PendingSlot = {
-  tempId: string;
-  subjectId: string;
-  subjectCode: string;
-  subjectTitle: string;
-  day: Day;
-  startTime: string;
-  endTime: string;
-  facultyId: string;
-  facultyName: string;
-  roomId: string;
-  roomName: string;
-  buildingCode: string;
-  mode: ScheduleMode;
-};
+export type PendingSlot = SlotDraft & { tempId: string };
 
 type SlotEntryFormProps = {
   initialSlot?: PendingSlot;
-  subjects: Subject[];
-  faculty: Faculty[];
-  rooms: Room[];
+  /** Curriculum subjects for the chosen term, each with its assigned faculties. */
+  subjects: ScheduleSubjectOption[];
+  rooms: ScheduleRoomOption[];
+  /** Configured lab time slots (Weekly Hour Allocations, "Major with Lab"). */
+  labTimeSlots: LabSlot[];
   existingSlots: PendingSlot[];
   onAdd: (slot: Omit<PendingSlot, "tempId">) => void;
   onCancelEdit?: () => void;
@@ -49,30 +41,48 @@ const TIME_SLOTS = generateTimeSlots();
 export function SlotEntryForm({
   initialSlot,
   subjects,
-  faculty,
   rooms,
+  labTimeSlots,
   existingSlots,
   onAdd,
   onCancelEdit,
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
 
-  const defaultSubject = initialSlot
-    ? subjects.find((s) => s.id === initialSlot.subjectId) ?? subjects[0]
-    : subjects[0];
-
-  const [selectedSubjectId, setSelectedSubjectId] = useState(defaultSubject?.id ?? "");
+  const [selectedSubjectId, setSelectedSubjectId] = useState(
+    String(initialSlot?.subjectId ?? subjects[0]?.id ?? ""),
+  );
   const [day, setDay] = useState<Day>(initialSlot?.day ?? "M");
   const [startTime, setStartTime] = useState(initialSlot?.startTime ?? "07:00");
   const [endTime, setEndTime] = useState(initialSlot?.endTime ?? "10:00");
-  const [facultyId, setFacultyId] = useState(
-    initialSlot?.facultyId ?? faculty.find((f) => f.status === "active")?.id ?? "",
-  );
-  const [roomId, setRoomId] = useState(initialSlot?.roomId ?? rooms[0]?.id ?? "");
+  const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? ""));
+  const [roomId, setRoomId] = useState(String(initialSlot?.roomId ?? rooms[0]?.id ?? ""));
   const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "F2F");
 
   const isEditing = Boolean(initialSlot);
-  const activeFaculty = faculty.filter((f) => f.status === "active");
+  const selectedSubject = subjects.find((s) => String(s.id) === selectedSubjectId);
+  const faculties = selectedSubject?.faculties ?? [];
+  const selectedFaculty = faculties.find((f) => String(f.id) === facultyId);
+  const needsRoom = mode === "F2F";
+  const isLabSubject = selectedSubject?.subjectType === "Major with Lab";
+
+  /** Applies a configured lab slot ("8:00 AM – 10:30 AM") to the time pickers. */
+  function applyLabSlot(value: string) {
+    if (!value) return;
+    const slot = labTimeSlots[Number(value)];
+    if (!slot) return;
+    setStartTime(parseTime12h(slot.start));
+    setEndTime(parseTime12h(slot.end));
+    setError(null);
+  }
+
+  function handleSubjectChange(id: string) {
+    setSelectedSubjectId(id);
+    // Faculties are per subject — reset to the subject's first option.
+    const subject = subjects.find((s) => String(s.id) === id);
+    setFacultyId(String(subject?.faculties[0]?.id ?? ""));
+    setError(null);
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,13 +92,11 @@ export function SlotEntryForm({
       return;
     }
 
-    const subject = subjects.find((s) => s.id === selectedSubjectId);
-    const member = faculty.find((f) => f.id === facultyId);
-    const room = rooms.find((r) => r.id === roomId);
+    const room = rooms.find((r) => String(r.id) === roomId);
 
-    if (!subject) { setError("Select a subject."); return; }
-    if (!member) { setError("Select a faculty member."); return; }
-    if (!room) { setError("Select a room."); return; }
+    if (!selectedSubject) { setError("Select a subject."); return; }
+    if (!selectedFaculty) { setError("Select a faculty member."); return; }
+    if (needsRoom && !room) { setError("Select a room."); return; }
 
     const conflict = existingSlots.find(
       (s) =>
@@ -102,25 +110,20 @@ export function SlotEntryForm({
       return;
     }
 
-    try {
-      onAdd({
-        subjectId: subject.id,
-        subjectCode: subject.code,
-        subjectTitle: subject.title,
-        day,
-        startTime,
-        endTime,
-        facultyId,
-        facultyName: `${member.firstName} ${member.lastName}`,
-        roomId,
-        roomName: room.name,
-        buildingCode: room.buildingCode,
-        mode,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't add the slot.");
-      return;
-    }
+    onAdd({
+      subjectId: selectedSubject.id,
+      subjectCode: selectedSubject.code,
+      subjectTitle: selectedSubject.title,
+      day,
+      startTime,
+      endTime,
+      facultyId: selectedFaculty.id,
+      facultyName: selectedFaculty.fullName,
+      roomId: needsRoom && room ? room.id : null,
+      roomName: needsRoom && room ? room.roomName : "",
+      mode,
+      sessionType: initialSlot?.sessionType,
+    });
 
     setError(null);
     if (!isEditing) {
@@ -138,13 +141,13 @@ export function SlotEntryForm({
         id="slot-subject"
         label="Subject"
         value={selectedSubjectId}
-        onChange={(e) => setSelectedSubjectId(e.target.value)}
+        onChange={(e) => handleSubjectChange(e.target.value)}
       >
         {subjects.length === 0 ? (
           <option value="">No subjects for this set</option>
         ) : (
           [...subjects]
-            .sort((a, b) => a.semester - b.semester || a.code.localeCompare(b.code))
+            .sort((a, b) => a.code.localeCompare(b.code))
             .map((s) => (
               <option key={s.id} value={s.id}>
                 {s.code} — {s.title}
@@ -163,6 +166,22 @@ export function SlotEntryForm({
           <option key={d} value={d}>{DAY_LABELS[d]}</option>
         ))}
       </Select>
+
+      {isLabSubject && labTimeSlots.length > 0 && (
+        <Select
+          id="slot-lab-slot"
+          label="Lab Time Slot"
+          defaultValue=""
+          onChange={(e) => applyLabSlot(e.target.value)}
+        >
+          <option value="">Pick a configured lab slot…</option>
+          {labTimeSlots.map((slot, i) => (
+            <option key={`${slot.start}-${slot.end}`} value={i}>
+              {slot.start} – {slot.end}
+            </option>
+          ))}
+        </Select>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Select
@@ -204,35 +223,38 @@ export function SlotEntryForm({
         value={facultyId}
         onChange={(e) => setFacultyId(e.target.value)}
       >
-        {activeFaculty.map((f) => (
-          <option key={f.id} value={f.id}>
-            {f.lastName}, {f.firstName} ({f.departmentCode})
-          </option>
-        ))}
+        {faculties.length === 0 ? (
+          <option value="">No faculty assigned to this subject</option>
+        ) : (
+          faculties.map((f) => (
+            <option key={f.id} value={f.id}>{f.fullName}</option>
+          ))
+        )}
       </Select>
 
-      {facultyId && (
+      {selectedFaculty && (
         <InstructorLoad
-          facultyId={facultyId}
+          faculty={selectedFaculty}
           existingSlots={existingSlots}
           startTime={startTime}
           endTime={endTime}
-          facultyList={faculty}
         />
       )}
 
-      <Select
-        id="slot-room"
-        label="Room"
-        value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
-      >
-        {rooms.map((r) => (
-          <option key={r.id} value={r.id}>
-            {r.buildingCode} — {r.name} (cap. {r.capacity})
-          </option>
-        ))}
-      </Select>
+      {needsRoom && (
+        <Select
+          id="slot-room"
+          label="Room"
+          value={roomId}
+          onChange={(e) => setRoomId(e.target.value)}
+        >
+          {rooms.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.buildingName} — {r.roomName} (cap. {r.roomCapacity})
+            </option>
+          ))}
+        </Select>
+      )}
 
       <div className="flex flex-col gap-2">
         <Button>
@@ -250,34 +272,30 @@ export function SlotEntryForm({
 }
 
 function InstructorLoad({
-  facultyId,
+  faculty,
   existingSlots,
   startTime,
   endTime,
-  facultyList,
 }: {
-  facultyId: string;
+  faculty: { id: number; fullName: string; maxWeeklyHours: number | null; currentWeeklyHours: number | null };
   existingSlots: PendingSlot[];
   startTime: string;
   endTime: string;
-  facultyList: Faculty[];
 }) {
-  const faculty = facultyList.find((f) => f.id === facultyId);
-  const maxHours = faculty?.maxWeeklyHours;
-  if (!faculty || !maxHours || maxHours <= 0) return null;
+  const maxHours = faculty.maxWeeklyHours;
+  if (!maxHours || maxHours <= 0) return null;
 
-  const currentHours = existingSlots
-    .filter((s) => s.facultyId === facultyId)
-    .reduce((sum, s) => sum + getSlotDurationHours(s.startTime, s.endTime), 0);
+  const currentHours =
+    (faculty.currentWeeklyHours ?? 0) +
+    existingSlots
+      .filter((s) => s.facultyId === faculty.id)
+      .reduce((sum, s) => sum + getSlotDurationHours(s.startTime, s.endTime), 0);
 
   const proposedHours =
-    startTime && endTime ? getSlotDurationHours(startTime, endTime) : 0;
+    startTime && endTime && startTime < endTime ? getSlotDurationHours(startTime, endTime) : 0;
 
   const newTotal = currentHours + proposedHours;
-  const percent = Math.min(
-    Math.round((newTotal / maxHours) * 100),
-    100,
-  );
+  const percent = Math.min(Math.round((newTotal / maxHours) * 100), 100);
   const isOver = newTotal > maxHours;
 
   return (
@@ -294,18 +312,13 @@ function InstructorLoad({
           }
         >
           {currentHours}
-          {proposedHours > 0 ? ` + ${proposedHours}` : ""} /{" "}
-          {faculty.maxWeeklyHours} hrs
+          {proposedHours > 0 ? ` + ${proposedHours}` : ""} / {maxHours} hrs
         </span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
         <div
           className={`h-full rounded-full transition-all duration-200 ${
-            isOver
-              ? "bg-red-500"
-              : percent >= 80
-                ? "bg-amber-500"
-                : "bg-emerald-500"
+            isOver ? "bg-red-500" : percent >= 80 ? "bg-amber-500" : "bg-emerald-500"
           }`}
           style={{ width: `${percent}%` }}
         />
