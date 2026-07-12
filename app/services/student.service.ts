@@ -1,10 +1,37 @@
 import { ApiError, apiGet, apiPost } from "~/lib/api";
-import type { CreateStudentAccountInput, StudentAccountRow } from "~/types/student";
+import type {
+  CreateStudentAccountInput,
+  CreateStudentRecordInput,
+  StudentAccountRow,
+} from "~/types/student";
 
 /**
- * Student account service (super_admin module). The wider student CRUD is not
- * connected to the backend yet.
+ * Student records (students module) and login accounts (super_admin module).
  */
+
+/** POST /students — creates the profile, academic record, and enrolled subjects. */
+async function createRecord(input: CreateStudentRecordInput): Promise<void> {
+  await apiPost("/students", {
+    ...(input.studentId && { studentId: input.studentId }),
+    firstName: input.firstName,
+    ...(input.midName && { midName: input.midName }),
+    lastName: input.lastName,
+    mobile: input.mobile,
+    email: input.email,
+    academic: {
+      programId: input.programId,
+      yearLevel: input.yearLevel,
+      setId: input.setId,
+      studentType: input.studentType,
+      // Ignored by the current backend schema (unknown = EXCLUDE); sent for
+      // when enrolledStatus is added to StudentAcademicSchema.
+      enrolledStatus: input.enrolledStatus,
+      syId: input.syId,
+      semId: input.semId,
+    },
+    enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
+  });
+}
 
 /** POST /super-admin/create-student-accounts — emails temp password. */
 async function createAccount(
@@ -50,4 +77,4 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
   }));
 }
 
-export const studentService = { createAccount, listAccounts };
+export const studentService = { createRecord, createAccount, listAccounts };

@@ -24,6 +24,24 @@ export type Student = {
 export type CreateStudentInput = Omit<Student, "id">;
 export type UpdateStudentInput = Partial<CreateStudentInput>;
 
+/** POST /students payload — creates the student profile + academic record. */
+export type CreateStudentRecordInput = {
+  studentId?: string;
+  firstName: string;
+  midName?: string;
+  lastName: string;
+  mobile: string;
+  email: string;
+  programId: number;
+  yearLevel: number;
+  setId: number;
+  studentType: string;
+  enrolledStatus: string;
+  syId: number;
+  semId: number;
+  subjectIds: number[];
+};
+
 /** The backend only accepts the Student role on this endpoint. */
 export type CreateStudentAccountInput = {
   email: string;
