@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { ResultState } from "~/components/feedback/result-state";
 import { Card } from "~/components/ui/card";
@@ -45,7 +46,8 @@ function WeeklyHoursPage() {
   }, []);
 
   async function handleCreate(input: CreateWeeklyHourAllocationInput) {
-    await weeklyHourService.create(input);
+    const message = await weeklyHourService.create(input);
+    toast.success(message);
     // The backend upserts per subject type — refetch for the saved state.
     weeklyHourService.list().then(setAllocations).catch(() => {});
   }

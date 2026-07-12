@@ -3,6 +3,7 @@ import { Outlet } from "react-router";
 import { AuthGuard } from "~/auth/auth-guard";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { LayoutSidebarIcon } from "~/components/ui/icons";
+import { Toaster } from "~/components/ui/sonner";
 import { Navbar } from "~/layouts/navbar";
 import { Sidebar } from "~/layouts/sidebar";
 
@@ -15,6 +16,7 @@ export default function AppShell() {
       <AuthGuard>
         <Shell />
       </AuthGuard>
+      <Toaster />
     </ThemeProvider>
   );
 }

@@ -30,9 +30,9 @@ async function list(): Promise<WeeklyHourAllocation[]> {
   }));
 }
 
-/** POST /schedule/subject-weekly-hour-allocations — upserts per subject type. */
-async function create(input: CreateWeeklyHourAllocationInput): Promise<void> {
-  await apiPost("/schedule/subject-weekly-hour-allocations", {
+/** POST /schedule/subject-weekly-hour-allocations — upserts per subject type. Returns the backend message. */
+async function create(input: CreateWeeklyHourAllocationInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/schedule/subject-weekly-hour-allocations", {
     subjectType: input.subjectType,
     weeklyHours: input.lectureHours + input.labHours,
     lectureHours: input.lectureHours,
@@ -40,6 +40,9 @@ async function create(input: CreateWeeklyHourAllocationInput): Promise<void> {
     meetings: input.meetings,
     ...(input.labTimeSlots && { labTimeSlots: input.labTimeSlots }),
   });
+  return typeof data?.message === "string" && data.message.trim()
+    ? data.message
+    : "Weekly hour allocation saved.";
 }
 
 export const weeklyHourService = { list, create };

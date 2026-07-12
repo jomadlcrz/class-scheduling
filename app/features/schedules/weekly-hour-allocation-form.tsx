@@ -75,8 +75,8 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
     if (!subjectType) { setError("Select a subject type."); return; }
     const lec = parseFloat(lectureHours);
     if (!Number.isFinite(lec) || lec < 0) { setError("Enter valid lecture hours."); return; }
-    const lab = parseFloat(labHours);
-    if (!Number.isFinite(lab) || lab < 0) { setError("Enter valid lab hours."); return; }
+    const lab = hasLab ? parseFloat(labHours) : 0;
+    if (hasLab && (!Number.isFinite(lab) || lab < 0)) { setError("Enter valid lab hours."); return; }
     const m = parseInt(meetings);
     if (!Number.isInteger(m) || m < 1 || m > 3) { setError("Meetings per week must be 1-3."); return; }
 
@@ -104,6 +104,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
       setLabSlots([{ start: "", end: "" }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
       setIsLoading(false);
     }
   }
