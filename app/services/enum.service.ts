@@ -42,7 +42,7 @@ type EnumOptionsResponse = {
   room_type: string[];
   subject_type: string[];
   day_of_week: DayOfWeekOption[];
-  year_levels: YearLevelOption[];
+  year_level: string[];
 };
 
 // Static per deploy, so one fetch serves the whole session.
@@ -62,7 +62,8 @@ function getOptions(): Promise<EnumOptions> {
       roomType: data.room_type,
       subjectType: data.subject_type,
       dayOfWeek: data.day_of_week,
-      yearLevels: data.year_levels,
+      // Backend sends ordered YearLevelEnum labels; the level number is the position.
+      yearLevels: data.year_level.map((name, i) => ({ id: i + 1, name })),
     }))
     .catch((err) => {
       cached = null; // allow a retry on the next call

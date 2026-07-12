@@ -7,12 +7,10 @@ import type { YearLevel } from "~/types/subject";
 type SetsResponse = {
   department_name: string;
   program_name: string;
-  program_abbrev: string;
   sets: {
     set_id: number;
-    set_name: string;
     set_code: string;
-    year_level: number;
+    set_name: string;
   }[];
 }[];
 
@@ -26,12 +24,17 @@ async function list(): Promise<ClassSet[]> {
     throw err;
   }
   return data.flatMap((p) =>
-    p.sets.map((s) => ({
-      id: s.set_id,
-      program: p.program_abbrev,
-      yearLevel: s.year_level as YearLevel,
-      setCode: s.set_code,
-    })),
+    p.sets.map((s) => {
+      // set_name is "{PROGRAM}-{year}{SET}", e.g. "BSIT-1A" — the response
+      // carries no separate program_abbrev/year_level fields.
+      const [programAbbrev = "", yearAndSet = ""] = s.set_name?.split("-") ?? [];
+      return {
+        id: s.set_id,
+        program: programAbbrev,
+        yearLevel: parseInt(yearAndSet, 10) as YearLevel,
+        setCode: s.set_code,
+      };
+    }),
   );
 }
 
