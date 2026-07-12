@@ -41,17 +41,18 @@ type ViewScheduleResponse = {
 
 /** GET /schedule/view — role-scoped list of saved schedules. */
 async function view(): Promise<Schedule[]> {
-  let data: ViewScheduleResponse[];
+  let data: { schedules: ViewScheduleResponse[] };
   try {
-    data = await apiGet<ViewScheduleResponse[]>("/schedule/view");
+    data = await apiGet<{ schedules: ViewScheduleResponse[] }>("/schedule/view");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
+  const schedules = data.schedules ?? [];
   const semesters = await semesterService.list();
   const semByName = new Map(semesters.map((s) => [s.semester, s.semesterNumber]));
 
-  return data.map((r, index) => {
+  return schedules.map((r, index) => {
     const [start, end] = r.class_time.split(" - ");
     // set_name is "{PROGRAM}-{year}{SET}", e.g. "BSIT-1A".
     const [programAbbrev, yearAndSet] = r.set_name?.split("-") ?? [];
