@@ -6,7 +6,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { EmptyState } from "~/components/ui/empty-state";
-import { PlusIcon } from "~/components/ui/icons";
+import { PlusIcon, RotateIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
@@ -17,6 +17,8 @@ import {
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
+import { useSemesters } from "~/hooks/use-semesters";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
 import {
@@ -27,7 +29,6 @@ import {
 import { setService } from "~/services/set.service";
 import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
 import type { Program } from "~/types/program";
-import type { LabSlot } from "~/types/weekly-hour-allocation";
 import {
   type Day,
   type Schedule,
@@ -35,8 +36,7 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
-import { useSemesters } from "~/hooks/use-semesters";
-import { useYearLevels } from "~/hooks/use-year-levels";
+import type { LabSlot } from "~/types/weekly-hour-allocation";
 
 function ZapIcon() {
   return (
@@ -435,18 +435,33 @@ function SchedulesNewPage() {
               <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
             </div>
             <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                block={false}
-                disabled={!canGenerate}
-                isLoading={isGenerating}
-                loadingLabel="Generating…"
-                onClick={handleAutoGenerate}
-              >
-                <ZapIcon />
-                Auto-Generate
-              </Button>
+              {hasGenerated ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  disabled={!canGenerate}
+                  isLoading={isGenerating}
+                  loadingLabel="Regenerating…"
+                  onClick={handleAutoGenerate}
+                >
+                  <RotateIcon />
+                  Regenerate
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  disabled={!canGenerate}
+                  isLoading={isGenerating}
+                  loadingLabel="Generating…"
+                  onClick={handleAutoGenerate}
+                >
+                  <ZapIcon />
+                  Auto-Generate
+                </Button>
+              )}
               {hasGenerated && (
                 <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
                   <PlusIcon />
