@@ -69,8 +69,9 @@ function ClassroomMappingPage() {
     let stale = false;
     setLoadError(null);
     setClassrooms(null);
+    const semesterNumber = semesters.find((s) => s.semester === semester)?.semesterNumber;
     Promise.all([
-      classroomMappingService.list({ schoolYear, semester }),
+      classroomMappingService.list({ schoolYear, semester, semesterNumber }),
       buildingService.list(),
     ])
       .then(([result, buildingList]) => {
@@ -83,7 +84,7 @@ function ClassroomMappingPage() {
         setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
       });
     return () => { stale = true; };
-  }, [semester, schoolYear]);
+  }, [semester, schoolYear, semesters]);
 
   const search = useDeferredValue(rawSearch);
 

@@ -1,9 +1,9 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
 import { StatusBadge } from "./class-card";
 import {
-  DAYS, DAY_STYLES, ROOM_COL_W, DAY_COL_W, SLOT_COL_W, TIME_SLOTS, TYPE_STYLES, buildDayCells,
-  type Classroom, type DayOfWeek,
+  DAYS, DAY_STYLES, ROOM_COL_W, DAY_COL_W, SLOT_COL_W, TYPE_STYLES, buildDayCells, buildTimeSlots,
+  type Classroom, type DayOfWeek, type TimeSlot,
 } from "./mapping-model";
 
 type MappingTableViewProps = {
@@ -13,6 +13,9 @@ type MappingTableViewProps = {
 export function MappingTableView({ classrooms }: MappingTableViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   useDragScroll(scrollRef);
+
+  // One shared header for every room, so columns come from all entries.
+  const slots = useMemo(() => buildTimeSlots(classrooms), [classrooms]);
 
   return (
     <div
@@ -26,13 +29,13 @@ export function MappingTableView({ classrooms }: MappingTableViewProps) {
           borderSpacing: 0,
           borderCollapse: "separate",
           tableLayout: "fixed",
-          width: ROOM_COL_W + DAY_COL_W + TIME_SLOTS.length * SLOT_COL_W,
+          width: ROOM_COL_W + DAY_COL_W + slots.length * SLOT_COL_W,
         }}
       >
         <colgroup>
           <col style={{ width: ROOM_COL_W }} />
           <col style={{ width: DAY_COL_W }} />
-          {TIME_SLOTS.map((_, idx) => (
+          {slots.map((_, idx) => (
             <col key={idx} style={{ width: SLOT_COL_W }} />
           ))}
         </colgroup>
@@ -45,7 +48,7 @@ export function MappingTableView({ classrooms }: MappingTableViewProps) {
               style={{ left: ROOM_COL_W }}>
               Day
             </th>
-            {TIME_SLOTS.map((slot, idx) => (
+            {slots.map((slot, idx) => (
               <th key={idx} className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400">
                 {slot.start}
                 <span className="mx-0.5 text-slate-300 dark:text-slate-600">–</span>
@@ -58,11 +61,11 @@ export function MappingTableView({ classrooms }: MappingTableViewProps) {
           <tbody key={room.id}>
             {roomIdx > 0 && (
               <tr>
-                <td colSpan={TIME_SLOTS.length + 2} className="border-t-2 border-slate-200 dark:border-white/10" aria-hidden="true" />
+                <td colSpan={slots.length + 2} className="border-t-2 border-slate-200 dark:border-white/10" aria-hidden="true" />
               </tr>
             )}
             {DAYS.map((day, dayIdx) => (
-              <RoomDayRow key={`${room.id}-${day}`} room={room} day={day} showRoomCell={dayIdx === 0} />
+              <RoomDayRow key={`${room.id}-${day}`} room={room} day={day} slots={slots} showRoomCell={dayIdx === 0} />
             ))}
           </tbody>
         ))}
@@ -71,13 +74,14 @@ export function MappingTableView({ classrooms }: MappingTableViewProps) {
   );
 }
 
-function RoomDayRow({ room, day, showRoomCell }: {
+function RoomDayRow({ room, day, slots, showRoomCell }: {
   room: Classroom;
   day: DayOfWeek;
+  slots: TimeSlot[];
   showRoomCell: boolean;
 }) {
   const ds = DAY_STYLES[day];
-  const cells = buildDayCells(day, room.entries, TIME_SLOTS);
+  const cells = buildDayCells(day, room.entries, slots);
 
   return (
     <tr className="transition-colors hover:bg-slate-50 dark:hover:bg-white/5">
@@ -106,6 +110,11 @@ function RoomDayRow({ room, day, showRoomCell }: {
               <span className="mt-0.5 block font-body text-[0.7rem] leading-tight text-slate-500 dark:text-slate-400">
                 {cell.entry.instructor}
               </span>
+              {cell.hiddenCount > 0 && (
+                <span className="mt-0.5 block font-body text-[0.65rem] font-semibold text-slate-400 dark:text-slate-500">
+                  +{cell.hiddenCount} more
+                </span>
+              )}
             </td>
           );
         }

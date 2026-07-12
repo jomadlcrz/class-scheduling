@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { EmptyState } from "~/components/ui/empty-state";
+import { formatTime12h } from "~/lib/time";
 import type { Conflict } from "~/services/conflict.service";
 
 type FacultyConflictsProps = {
@@ -65,7 +66,7 @@ function ScheduleChip({ schedule: s }: { schedule: Conflict["scheduleA"] }) {
       </p>
       <p className="font-body text-xs text-slate-500 dark:text-slate-400">{s.subjectTitle}</p>
       <p className="mt-1 font-body text-xs text-slate-400 dark:text-slate-500">
-        {s.day} · {s.startTime}–{s.endTime}
+        {s.day} · {formatTime12h(s.startTime)}–{formatTime12h(s.endTime)}
       </p>
     </Link>
   );

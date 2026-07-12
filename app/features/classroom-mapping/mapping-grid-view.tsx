@@ -1,11 +1,11 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { UserSmallIcon } from "~/components/ui/icons";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
 import { ClassCard, FreeCell, StatusBadge } from "./class-card";
 import {
-  DAYS, DAY_STYLES, TIME_SLOTS, buildDayCells,
-  type Classroom,
+  DAYS, DAY_STYLES, buildDayCells, buildTimeSlots,
+  type Classroom, type TimeSlot,
 } from "./mapping-model";
 
 type MappingGridViewProps = {
@@ -13,6 +13,8 @@ type MappingGridViewProps = {
 };
 
 export function MappingGridView({ classrooms }: MappingGridViewProps) {
+  // Shared across every room so all accordions line up on the same columns.
+  const slots = useMemo(() => buildTimeSlots(classrooms), [classrooms]);
   return (
     <Accordion>
       {classrooms.map((room, roomIdx) => (
@@ -34,18 +36,18 @@ export function MappingGridView({ classrooms }: MappingGridViewProps) {
             </span>
           }
         >
-          <TimetableGrid room={room} />
+          <TimetableGrid room={room} slots={slots} />
         </AccordionItem>
       ))}
     </Accordion>
   );
 }
 
-function TimetableGrid({ room }: { room: Classroom }) {
+function TimetableGrid({ room, slots }: { room: Classroom; slots: TimeSlot[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   useDragScroll(scrollRef);
 
-  const gridCols = `repeat(${TIME_SLOTS.length}, minmax(170px, 1fr))`;
+  const gridCols = `repeat(${slots.length}, minmax(170px, 1fr))`;
 
   return (
     <div
@@ -56,7 +58,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
       <div className="grid min-w-max" style={{ gridTemplateColumns: gridCols }}>
         {DAYS.map((day, di) => {
           const ds = DAY_STYLES[day];
-          const cells = buildDayCells(day, room.entries, TIME_SLOTS);
+          const cells = buildDayCells(day, room.entries, slots);
           return (
             <div key={day} style={{ display: "contents" }}>
               <div
@@ -76,7 +78,7 @@ function TimetableGrid({ room }: { room: Classroom }) {
                   className="border-b border-r border-l border-slate-200 p-2 last:border-r-0 dark:border-white/8"
                 >
                   {cell.kind === "class" ? (
-                    <ClassCard entry={cell.entry} />
+                    <ClassCard entry={cell.entry} hiddenCount={cell.hiddenCount} />
                   ) : (
                     <FreeCell slot={cell.slot} />
                   )}

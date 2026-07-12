@@ -61,7 +61,14 @@ function toStatus(roomStatus: string): ClassroomStatus {
 type MappingFilters = {
   schoolYear?: string;
   semester?: string;
+  /** semester_number from GET /semesters — matched against the ordinal in the view's label. */
+  semesterNumber?: number;
 };
+
+/** "1st Semester" → 1; NaN when the label has no leading ordinal. */
+function semesterOrdinal(label: string | null | undefined): number {
+  return Number.parseInt(label ?? "", 10);
+}
 
 type MappingResult = {
   classrooms: Classroom[];
@@ -81,10 +88,16 @@ async function list(filters?: MappingFilters): Promise<MappingResult> {
 
   const schedules = Array.isArray(scheduleData) ? [] : scheduleData.schedules ?? [];
 
+  const wantedSemester = filters?.semester?.trim().toLowerCase();
+  const wantedOrdinal = filters?.semesterNumber ?? semesterOrdinal(filters?.semester);
+  const matchesSemester = (label: string) =>
+    label?.trim().toLowerCase() === wantedSemester ||
+    (Number.isFinite(wantedOrdinal) && semesterOrdinal(label) === wantedOrdinal);
+
   const roomScheduleMap = new Map<string, ClassEntry[]>();
   for (const schedule of schedules) {
     if (filters?.schoolYear && schedule.school_year !== filters.schoolYear) continue;
-    if (filters?.semester && schedule.semester !== filters.semester) continue;
+    if ((wantedSemester || filters?.semesterNumber) && !matchesSemester(schedule.semester)) continue;
     if (!schedule.room_name) continue;
 
     const day = DAYS.find((d) => d === schedule.day_of_week) as DayOfWeek | undefined;

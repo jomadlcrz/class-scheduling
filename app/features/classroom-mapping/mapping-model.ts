@@ -1,5 +1,5 @@
 import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, getScheduleDayKey, type ScheduleDay } from "~/lib/schedule-days";
-import { timeToMinutes } from "~/lib/time";
+import { formatTime12h, timeToMinutes } from "~/lib/time";
 
 export type SubjectType = "major_lab" | "major_no_lab" | "gen_ed";
 export type ClassroomStatus = "available" | "full";
@@ -30,21 +30,43 @@ export interface TimeSlot {
 }
 
 export type DayCell =
-  | { kind: "class"; entry: ClassEntry; colspan: number }
+  | { kind: "class"; entry: ClassEntry; colspan: number; hiddenCount: number }
   | { kind: "empty"; slot: TimeSlot };
 
 export const DAYS: DayOfWeek[] = [...SCHEDULE_DAY_NAMES];
 
-export const TIME_SLOTS: TimeSlot[] = [
-  { start: "7:00 AM",  end: "8:30 AM"  },
-  { start: "8:30 AM",  end: "10:00 AM" },
-  { start: "10:00 AM", end: "11:30 AM" },
-  { start: "11:30 AM", end: "1:00 PM"  },
-  { start: "1:00 PM",  end: "2:30 PM"  },
-  { start: "2:30 PM",  end: "4:00 PM"  },
-  { start: "4:00 PM",  end: "5:30 PM"  },
-  { start: "4:30 PM",  end: "6:00 PM"  },
-];
+/** Baseline column boundaries (minutes): 7:00 AM – 5:30 PM in 90-min steps. */
+const BASELINE_BOUNDARIES = [420, 510, 600, 690, 780, 870, 960, 1050];
+
+function minutesToLabel(minutes: number): string {
+  const hh = String(Math.floor(minutes / 60)).padStart(2, "0");
+  const mm = String(minutes % 60).padStart(2, "0");
+  return formatTime12h(`${hh}:${mm}`);
+}
+
+/**
+ * Column boundaries come from the data: every class start/end becomes a slot
+ * boundary (merged with the baseline grid), so every class aligns exactly to
+ * a contiguous run of slots.
+ */
+export function buildTimeSlots(classrooms: Classroom[]): TimeSlot[] {
+  const boundaries = new Set<number>(BASELINE_BOUNDARIES);
+  for (const room of classrooms) {
+    for (const entry of room.entries) {
+      const start = timeToMinutes(entry.startTime);
+      const end = timeToMinutes(entry.endTime);
+      if (end <= start) continue;
+      boundaries.add(start);
+      boundaries.add(end);
+    }
+  }
+  const sorted = [...boundaries].sort((a, b) => a - b);
+  const slots: TimeSlot[] = [];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    slots.push({ start: minutesToLabel(sorted[i]), end: minutesToLabel(sorted[i + 1]) });
+  }
+  return slots;
+}
 
 export const DAY_STYLES: Record<DayOfWeek, { color: string; bg: string; border: string }> = Object.fromEntries(
   SCHEDULE_DAY_NAMES.map((name) => {
@@ -91,33 +113,40 @@ export function buildDayCells(
 
   const cells: DayCell[] = [];
 
-  for (let i = 0; i < slots.length; i++) {
+  // Every row must cover exactly slots.length columns, so the index advances
+  // by the number of columns each cell spans.
+  let i = 0;
+  while (i < slots.length) {
     const slotStart = timeToMinutes(slots[i].start);
-    const slotEnd = timeToMinutes(slots[i].end);
 
-    const entry = dayEntries.find((e) => {
-      const eStart = timeToMinutes(e.startTime);
-      const eEnd = timeToMinutes(e.endTime);
-      return slotStart >= eStart && slotEnd <= eEnd;
-    });
+    const entry = dayEntries.find(
+      (e) => timeToMinutes(e.startTime) === slotStart && timeToMinutes(e.endTime) > slotStart,
+    );
 
     if (!entry) {
       cells.push({ kind: "empty", slot: slots[i] });
+      i += 1;
       continue;
     }
 
-    if (slotStart !== timeToMinutes(entry.startTime)) continue;
-
     const entryEnd = timeToMinutes(entry.endTime);
-    let colspan = 1;
-    for (let j = i + 1; j < slots.length; j++) {
-      const nextStart = timeToMinutes(slots[j].start);
-      const nextEnd = timeToMinutes(slots[j].end);
-      if (!(nextStart >= timeToMinutes(entry.startTime) && nextEnd <= entryEnd)) break;
+    let colspan = 0;
+    while (i + colspan < slots.length && timeToMinutes(slots[i + colspan].end) <= entryEnd) {
       colspan++;
     }
+    if (colspan === 0) colspan = 1;
 
-    cells.push({ kind: "class", entry, colspan });
+    // Overlapping classes in the same room/day can't share a cell; the first
+    // by start time renders and the rest are surfaced as a count.
+    const hiddenCount = dayEntries.filter(
+      (other) =>
+        other !== entry &&
+        timeToMinutes(other.startTime) >= slotStart &&
+        timeToMinutes(other.startTime) < entryEnd,
+    ).length;
+
+    cells.push({ kind: "class", entry, colspan, hiddenCount });
+    i += colspan;
   }
 
   return cells;
