@@ -1,4 +1,4 @@
-import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, type ScheduleDay } from "~/lib/schedule-days";
+import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, getScheduleDayKey, type ScheduleDay } from "~/lib/schedule-days";
 import { timeToMinutes } from "~/lib/time";
 
 export type SubjectType = "major_lab" | "major_no_lab" | "gen_ed";
@@ -46,14 +46,10 @@ export const TIME_SLOTS: TimeSlot[] = [
   { start: "4:30 PM",  end: "6:00 PM"  },
 ];
 
-const DAY_NAME_TO_SCHEDULE_DAY: Record<DayOfWeek, ScheduleDay> = {
-  Monday: "MON", Tuesday: "TUE", Wednesday: "WED",
-  Thursday: "THU", Friday: "FRI", Saturday: "SAT",
-};
-
 export const DAY_STYLES: Record<DayOfWeek, { color: string; bg: string; border: string }> = Object.fromEntries(
   SCHEDULE_DAY_NAMES.map((name) => {
-    const colors = SCHEDULE_DAY_COLORS[DAY_NAME_TO_SCHEDULE_DAY[name]];
+    const key = getScheduleDayKey(name)!;
+    const colors = SCHEDULE_DAY_COLORS[key];
     return [name, {
       color: colors.text + " dark:" + colors.text.replace("text-", "text-").replace("-600", "-400"),
       bg: colors.bg + " dark:" + colors.bg.replace("bg-", "bg-").replace("-100", "-950/50"),
@@ -61,6 +57,10 @@ export const DAY_STYLES: Record<DayOfWeek, { color: string; bg: string; border: 
     }];
   }),
 ) as Record<DayOfWeek, { color: string; bg: string; border: string }>;
+
+function dayOfWeekToScheduleDay(day: DayOfWeek): ScheduleDay | null {
+  return getScheduleDayKey(day);
+}
 
 export const TYPE_STYLES: Record<SubjectType, { card: string; border: string; code: string; tableCode: string; dot: string }> = {
   major_lab:    { card: "bg-blue-100 dark:bg-blue-950/60",    border: "border-l-blue-500",    code: "text-blue-800 dark:text-blue-300",    tableCode: "text-blue-600 dark:text-blue-400",    dot: "bg-blue-500"    },

@@ -58,11 +58,6 @@ function toStatus(roomStatus: string): ClassroomStatus {
   return roomStatus === "Vacant" ? "available" : "full";
 }
 
-/** "07:00 AM" → "7:00 AM" so it matches the TIME_SLOTS format. */
-function formatTimeShort(time: string): string {
-  return normalizeTime(time.trim());
-}
-
 type MappingFilters = {
   schoolYear?: string;
   semester?: string;
@@ -98,8 +93,8 @@ async function list(filters?: MappingFilters): Promise<MappingResult> {
     const [startTime = "", endTime = ""] = schedule.class_time.split(" - ");
     const entry: ClassEntry = {
       day,
-      startTime: formatTimeShort(startTime),
-      endTime: formatTimeShort(endTime),
+      startTime: normalizeTime(startTime.trim()),
+      endTime: normalizeTime(endTime.trim()),
       subjectCode: schedule.subject_code,
       descriptiveTitle: schedule.desc_title,
       instructor: schedule.faculty_name,

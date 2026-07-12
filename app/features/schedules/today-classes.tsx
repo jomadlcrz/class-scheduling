@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
-import { getScheduleDayKey } from "~/lib/schedule-days";
-import type { Day, Schedule } from "~/types/schedule";
+import { SCHEDULE_DAY_NAMES, getScheduleDayKey } from "~/lib/schedule-days";
+import { DAYS, DAY_LABELS, type Day, type Schedule } from "~/types/schedule";
 
 type TodayClassesProps = {
   /** Schedules already filtered to the selected school year + semester. */
@@ -16,25 +16,18 @@ type Occurrence = {
   end: number;
 };
 
-const JS_DAY_TO_ScheduleDay: Record<number, string | null> = {
-  0: null,
-  1: "Monday",
-  2: "Tuesday",
-  3: "Wednesday",
-  4: "Thursday",
-  5: "Friday",
-  6: "Saturday",
-};
+const JS_DAY_TO_NAME: (string | null)[] = [
+  null, ...SCHEDULE_DAY_NAMES,
+];
 
-const SCHEDULE_DAY_TO_DAY: Record<string, Day> = {
-  MON: "M", TUE: "T", WED: "W", THU: "Th", FRI: "F", SAT: "S",
-};
+const DAY_BY_LABEL: Record<string, Day> = Object.fromEntries(
+  DAYS.map((d) => [DAY_LABELS[d], d]),
+);
 
 function getTodayDay(): Day | null {
-  const name = JS_DAY_TO_ScheduleDay[new Date().getDay()];
+  const name = JS_DAY_TO_NAME[new Date().getDay()];
   if (!name) return null;
-  const key = getScheduleDayKey(name);
-  return key ? SCHEDULE_DAY_TO_DAY[key] : null;
+  return DAY_BY_LABEL[name] ?? null;
 }
 
 function buildTodayOccurrences(schedules: Schedule[]): Occurrence[] {
