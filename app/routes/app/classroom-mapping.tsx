@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useDeferredValue } from "react";
+import { useEffect, useMemo, useState, useDeferredValue } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/ui/empty-state";
 import { SearchIcon } from "~/components/ui/icons";
@@ -47,41 +47,41 @@ function ClassroomMappingPage() {
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Bootstrap semesters + school years once, then set defaults.
+  const [booted, setBooted] = useState(false);
   useEffect(() => {
-    semesterService
-      .list()
-      .then((list) => {
-        setSemesters(list);
-        if (list.length > 0 && !semester) setSemester(list[0].semester);
+    Promise.all([semesterService.list(), schoolYearService.list()])
+      .then(([semList, syList]) => {
+        setSemesters(semList);
+        setSchoolYears(syList.map((o) => o.schoolYear));
+        if (semList.length > 0) setSemester(semList[0].semester);
+        if (syList.length > 0) setSchoolYear(syList[0].schoolYear);
+        setBooted(true);
       })
-      .catch(() => setSemesters([]));
+      .catch(() => setBooted(true));
   }, []);
 
-  const load = useCallback(async () => {
-    setLoadError(null);
-    try {
-      const [result, buildingList, syOptions] = await Promise.all([
-        classroomMappingService.list({
-          schoolYear: schoolYear || undefined,
-          semester: semester || undefined,
-        }),
-        buildingService.list(),
-        schoolYearService.list(),
-      ]);
-      setClassrooms(result.classrooms);
-      setSchoolYears(syOptions.map((o) => o.schoolYear));
-      if (!schoolYear && syOptions.length > 0) {
-        setSchoolYear(syOptions[0].schoolYear);
-      }
-      setBuildings(buildingList);
-    } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
-    }
-  }, [schoolYear, semester]);
-
+  // Fetch classrooms + buildings only after defaults are resolved.
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!booted || !schoolYear || !semester) return;
+    let stale = false;
+    setLoadError(null);
+    setClassrooms(null);
+    Promise.all([
+      classroomMappingService.list({ schoolYear, semester }),
+      buildingService.list(),
+    ])
+      .then(([result, buildingList]) => {
+        if (stale) return;
+        setClassrooms(result.classrooms);
+        setBuildings(buildingList);
+      })
+      .catch((err) => {
+        if (stale) return;
+        setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
+      });
+    return () => { stale = true; };
+  }, [booted, schoolYear, semester]);
 
   const search = useDeferredValue(rawSearch);
 
