@@ -52,14 +52,13 @@ function ClassroomMappingPage() {
       .list()
       .then((list) => {
         setSemesters(list);
-        if (list.length > 0 && !semester) setSemester(String(list[0].semesterNumber));
+        if (list.length > 0 && !semester) setSemester(list[0].semester);
       })
       .catch(() => setSemesters([]));
   }, []);
 
   const load = useCallback(async () => {
     setLoadError(null);
-    setClassrooms(null);
     try {
       const [result, buildingList, syOptions] = await Promise.all([
         classroomMappingService.list({
