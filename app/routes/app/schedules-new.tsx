@@ -399,7 +399,7 @@ function SchedulesNewPage() {
               disabled={contextLocked}
             >
               {availableYearLevels.length === 0 ? (
-                <option value="">No year levels</option>
+                <option value="">Select a program first</option>
               ) : (
                 availableYearLevels.map((yl) => (
                   <option key={yl} value={yl}>{yearLevelLabel(yl)}</option>
@@ -414,7 +414,7 @@ function SchedulesNewPage() {
               disabled={contextLocked}
             >
               {availableSets.length === 0 ? (
-                <option value="">No sets</option>
+                <option value="">Select a year level first</option>
               ) : (
                 availableSets.map((s) => (
                   <option key={s.id} value={s.id}>

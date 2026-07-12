@@ -20,7 +20,7 @@ import type { Role } from "~/types/user";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 
-type NavLeaf = { label: string; to: string; roles: Role[]; matchPrefix?: boolean };
+type NavLeaf = { label: string; to: string; roles: Role[]; matchPrefix?: boolean; matchPaths?: string[] };
 type NavItem = NavLeaf & { icon: ReactNode; subItems?: undefined };
 type NavSubmenu = {
   label: string;
@@ -47,7 +47,7 @@ const NAV_GROUPS: NavGroup[] = [
             subItems: [
               { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["registrar", "dean"] },
               { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", roles: ["registrar", "dean"] },
-              { label: "Regular Class", to: "/schedules/regular-class", roles: ["registrar", "dean"] },
+              { label: "Regular Class", to: "/schedules/regular-class", roles: ["registrar", "dean"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
               { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["registrar", "dean"] },
             ],
           },
@@ -163,7 +163,11 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
       for (const item of group.items) {
         if (
           item.subItems?.some((sub) =>
-            sub.matchPrefix ? location.pathname.startsWith(sub.to) : sub.to === location.pathname,
+            sub.matchPaths
+              ? sub.matchPaths.some((p) => location.pathname.startsWith(p))
+              : sub.matchPrefix
+                ? location.pathname.startsWith(sub.to)
+                : sub.to === location.pathname,
           )
         ) {
           setOpenSubmenus((current) =>
@@ -307,15 +311,18 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                             >
                               <NavLink
                                 to={sub.to}
-                                end={!sub.matchPrefix}
+                                end={!sub.matchPrefix && !sub.matchPaths}
                                 onClick={onNavigate}
-                                className={({ isActive }) =>
-                                  `block truncate rounded-md px-2.5 py-1.5 font-body text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
-                                    isActive
+                                className={({ isActive }) => {
+                                  const active = sub.matchPaths
+                                    ? sub.matchPaths.some((p) => location.pathname.startsWith(p))
+                                    : isActive;
+                                  return `block truncate rounded-md px-2.5 py-1.5 font-body text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                                    active
                                       ? "bg-gwc-blue-bright font-extrabold text-white"
                                       : "text-white/85 hover:bg-gwc-blue-bright hover:text-white"
-                                  }`
-                                }
+                                  }`;
+                                }}
                               >
                                 {sub.label}
                               </NavLink>
