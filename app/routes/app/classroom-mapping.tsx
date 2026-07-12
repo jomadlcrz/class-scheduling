@@ -110,10 +110,11 @@ function ClassroomMappingPage() {
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem] md:items-end">
           <div className="grid grid-cols-3 gap-3">
             <Select label="School Year" id="cm-year" hideLabel value={schoolYear} onChange={e => setSchoolYear(e.target.value)}>
-              {schoolYears.length === 0 && <option value="">No school years</option>}
+              {schoolYears.length === 0 && <option value="">Loading…</option>}
               {schoolYears.map(y => <option key={y} value={y}>{y}</option>)}
             </Select>
             <Select label="Semester" id="cm-sem" hideLabel value={semester} onChange={e => setSemester(e.target.value)}>
+              {semesters.length === 0 && <option value="">Loading…</option>}
               {semesters.map(s => <option key={s.id} value={s.semester}>{s.semester}</option>)}
             </Select>
             <Select label="Building" id="cm-building" hideLabel value={buildingFilter} onChange={e => setBuildingFilter(e.target.value)}>

@@ -128,13 +128,10 @@ function RegularClassPage() {
             value={schoolYear}
             onChange={(e) => setSchoolYear(e.target.value)}
           >
-            {schoolYears.length === 0 ? (
-              <option value="">No school years</option>
-            ) : (
-              schoolYears.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))
-            )}
+            {schoolYears.length === 0 && <option value="">Loading…</option>}
+            {schoolYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
           </Select>
           <Select
             id="rc-semester"
@@ -142,6 +139,7 @@ function RegularClassPage() {
             value={semester}
             onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
           >
+            {semesters.length === 0 && <option value="">Loading…</option>}
             {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
               <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
             ))}
@@ -152,13 +150,10 @@ function RegularClassPage() {
             value={setName}
             onChange={(e) => setSetName(e.target.value)}
           >
-            {availableSets.length === 0 ? (
-              <option value="">No sets</option>
-            ) : (
-              availableSets.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))
-            )}
+            {availableSets.length === 0 && <option value="">Loading…</option>}
+            {availableSets.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </Select>
         </div>
       </div>
