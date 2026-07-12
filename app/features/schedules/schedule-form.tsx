@@ -9,8 +9,6 @@ import { scheduleSchema } from "~/schemas/schedule.schema";
 import {
   DAYS,
   DAY_LABELS,
-  SCHEDULE_MODES,
-  SCHEDULE_MODE_LABELS,
   generateTimeSlots,
   formatTime,
   type CreateScheduleInput,
@@ -25,6 +23,7 @@ import type { YearLevel } from "~/types/subject";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import { useClassModes } from "~/hooks/use-class-modes";
 
 type ScheduleFormProps = {
   schedule?: Schedule;
@@ -56,6 +55,7 @@ export function ScheduleForm({
   const { semesters, semesterLabel } = useSemesters();
   const { schoolYears } = useSchoolYears();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
+  const { classModes } = useClassModes();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -280,8 +280,8 @@ export function ScheduleForm({
         </Select>
 
         <Select id="sched-mode" label="Mode" defaultValue={schedule?.mode ?? "F2F"}>
-          {SCHEDULE_MODES.map((m) => (
-            <option key={m} value={m}>{SCHEDULE_MODE_LABELS[m]}</option>
+          {classModes.map((m) => (
+            <option key={m} value={m}>{m}</option>
           ))}
         </Select>
       </div>

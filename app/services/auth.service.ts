@@ -23,7 +23,7 @@ const LOGIN_ENDPOINTS: Record<string, string> = {
   SUPER_ADMIN: "/super-admin/login",
   REGISTRAR_ADMIN: "/registrar-admin/login",
   DEAN: "/deans/login",
-  FACULTY: "/faculty/login",
+  INSTRUCTOR: "/faculty/login",
   STUDENT: "/students/login",
 };
 

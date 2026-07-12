@@ -11,8 +11,6 @@ import type {
 import {
   DAYS,
   DAY_LABELS,
-  SCHEDULE_MODES,
-  SCHEDULE_MODE_LABELS,
   generateTimeSlots,
   formatTime,
   getSlotDurationHours,
@@ -21,6 +19,7 @@ import {
   type ScheduleMode,
 } from "~/types/schedule";
 import type { LabSlot } from "~/types/weekly-hour-allocation";
+import { useClassModes } from "~/hooks/use-class-modes";
 
 export type PendingSlot = SlotDraft & { tempId: string };
 
@@ -48,6 +47,7 @@ export function SlotEntryForm({
   onCancelEdit,
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
+  const { classModes } = useClassModes();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState(
     String(initialSlot?.subjectId ?? subjects[0]?.id ?? ""),
@@ -212,8 +212,8 @@ export function SlotEntryForm({
         value={mode}
         onChange={(e) => setMode(e.target.value as ScheduleMode)}
       >
-        {SCHEDULE_MODES.map((m) => (
-          <option key={m} value={m}>{SCHEDULE_MODE_LABELS[m]}</option>
+        {classModes.map((m) => (
+          <option key={m} value={m}>{m}</option>
         ))}
       </Select>
 

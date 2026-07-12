@@ -31,7 +31,7 @@ const ROLE_MAP: Record<string, Role> = {
   SUPER_ADMIN: "admin",
   REGISTRAR_ADMIN: "registrar",
   DEAN: "dean",
-  FACULTY: "faculty",
+  INSTRUCTOR: "faculty",
   STUDENT: "student",
 };
 
