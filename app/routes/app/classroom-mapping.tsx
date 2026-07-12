@@ -47,23 +47,25 @@ function ClassroomMappingPage() {
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Bootstrap semesters + school years once, then set defaults.
-  const [booted, setBooted] = useState(false);
   useEffect(() => {
-    Promise.all([semesterService.list(), schoolYearService.list()])
-      .then(([semList, syList]) => {
-        setSemesters(semList);
-        setSchoolYears(syList.map((o) => o.schoolYear));
-        if (semList.length > 0) setSemester(semList[0].semester);
-        if (syList.length > 0) setSchoolYear(syList[0].schoolYear);
-        setBooted(true);
+    semesterService
+      .list()
+      .then((list) => {
+        setSemesters(list);
+        if (list.length > 0 && !semester) setSemester(list[0].semester);
       })
-      .catch(() => setBooted(true));
+      .catch(() => setSemesters([]));
+    schoolYearService
+      .list()
+      .then((list) => {
+        setSchoolYears(list.map((o) => o.schoolYear));
+        if (list.length > 0 && !schoolYear) setSchoolYear(list[0].schoolYear);
+      })
+      .catch(() => setSchoolYears([]));
   }, []);
 
-  // Fetch classrooms + buildings only after defaults are resolved.
   useEffect(() => {
-    if (!booted || !schoolYear || !semester) return;
+    if (!semester || !schoolYear) return;
     let stale = false;
     setLoadError(null);
     setClassrooms(null);
@@ -81,7 +83,7 @@ function ClassroomMappingPage() {
         setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
       });
     return () => { stale = true; };
-  }, [booted, schoolYear, semester]);
+  }, [semester, schoolYear]);
 
   const search = useDeferredValue(rawSearch);
 
