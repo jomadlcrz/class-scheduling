@@ -110,6 +110,9 @@ function RoomDayRow({ room, day, slots, showRoomCell }: {
               <span className="mt-0.5 block font-body text-[0.7rem] leading-tight text-slate-500 dark:text-slate-400">
                 {cell.entry.instructor}
               </span>
+              <span className="mt-0.5 block font-body text-[0.65rem] font-semibold leading-tight text-slate-400 dark:text-slate-500">
+                {cell.entry.section}
+              </span>
               {cell.hiddenCount > 0 && (
                 <span className="mt-0.5 block font-body text-[0.65rem] font-semibold text-slate-400 dark:text-slate-500">
                   +{cell.hiddenCount} more
