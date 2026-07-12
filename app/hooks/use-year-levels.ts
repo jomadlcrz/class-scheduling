@@ -15,7 +15,7 @@ export function useYearLevels(): UseYearLevelsResult {
   useEffect(() => {
     enumService
       .getOptions()
-      .then((opts) => setYearLevels(opts.yearLevels))
+      .then((opts) => setYearLevels(opts.yearLevels ?? []))
       .catch(() => setYearLevels([]))
       .finally(() => setLoading(false));
   }, []);
