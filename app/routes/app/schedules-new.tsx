@@ -27,7 +27,7 @@ import {
   type ScheduleSubjectOption,
 } from "~/services/schedule.service";
 import { setService } from "~/services/set.service";
-import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
+
 import type { Program } from "~/types/program";
 import {
   type Day,
@@ -36,7 +36,7 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
-import type { LabSlot } from "~/types/weekly-hour-allocation";
+
 
 function ZapIcon() {
   return (
@@ -85,7 +85,6 @@ function SchedulesNewPage() {
 
   const [slots, setSlots] = useState<PendingSlot[]>([]);
   const [hasGenerated, setHasGenerated] = useState(false);
-  const [labTimeSlots, setLabTimeSlots] = useState<LabSlot[]>([]);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
@@ -98,15 +97,6 @@ function SchedulesNewPage() {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
     setService.list().then(setSets).catch(() => setSets([]));
     scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
-    // Lab sessions are pinned to the slots configured in Weekly Hour Allocations.
-    weeklyHourService
-      .list()
-      .then((allocations) =>
-        setLabTimeSlots(
-          allocations.find((a) => a.subjectType === "Major with Lab")?.labTimeSlots ?? [],
-        ),
-      )
-      .catch(() => setLabTimeSlots([]));
   }, []);
 
   const selectedProgram = programs?.find((p) => String(p.id) === selectedProgramId);
@@ -513,7 +503,6 @@ function SchedulesNewPage() {
           initialSlot={editing ?? undefined}
           subjects={subjects}
           rooms={rooms}
-          labTimeSlots={labTimeSlots}
           existingSlots={slots}
           onAdd={handleSubmitSlot}
           onCancelEdit={editing ? closeDrawer : undefined}

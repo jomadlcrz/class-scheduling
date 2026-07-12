@@ -14,11 +14,9 @@ import {
   generateTimeSlots,
   formatTime,
   getSlotDurationHours,
-  parseTime12h,
   type Day,
   type ScheduleMode,
 } from "~/types/schedule";
-import type { LabSlot } from "~/types/weekly-hour-allocation";
 import { useClassModes } from "~/hooks/use-class-modes";
 
 export type PendingSlot = SlotDraft & { tempId: string };
@@ -28,8 +26,6 @@ type SlotEntryFormProps = {
   /** Curriculum subjects for the chosen term, each with its assigned faculties. */
   subjects: ScheduleSubjectOption[];
   rooms: ScheduleRoomOption[];
-  /** Configured lab time slots (Weekly Hour Allocations, "Major with Lab"). */
-  labTimeSlots: LabSlot[];
   existingSlots: PendingSlot[];
   onAdd: (slot: Omit<PendingSlot, "tempId">) => void;
   onCancelEdit?: () => void;
@@ -41,7 +37,6 @@ export function SlotEntryForm({
   initialSlot,
   subjects,
   rooms,
-  labTimeSlots,
   existingSlots,
   onAdd,
   onCancelEdit,
@@ -64,18 +59,6 @@ export function SlotEntryForm({
   const faculties = selectedSubject?.faculties ?? [];
   const selectedFaculty = faculties.find((f) => String(f.id) === facultyId);
   const needsRoom = mode === "F2F";
-  const isLabSubject = selectedSubject?.subjectType === "Major with Lab";
-
-  /** Applies a configured lab slot ("8:00 AM – 10:30 AM") to the time pickers. */
-  function applyLabSlot(value: string) {
-    if (!value) return;
-    const slot = labTimeSlots[Number(value)];
-    if (!slot) return;
-    setStartTime(parseTime12h(slot.start));
-    setEndTime(parseTime12h(slot.end));
-    setError(null);
-  }
-
   function handleSubjectChange(id: string) {
     setSelectedSubjectId(id);
     // Faculties are per subject — reset to the subject's first option.
@@ -166,22 +149,6 @@ export function SlotEntryForm({
           <option key={d} value={d}>{DAY_LABELS[d]}</option>
         ))}
       </Select>
-
-      {isLabSubject && labTimeSlots.length > 0 && (
-        <Select
-          id="slot-lab-slot"
-          label="Lab Time Slot"
-          defaultValue=""
-          onChange={(e) => applyLabSlot(e.target.value)}
-        >
-          <option value="">Pick a configured lab slot…</option>
-          {labTimeSlots.map((slot, i) => (
-            <option key={`${slot.start}-${slot.end}`} value={i}>
-              {slot.start} – {slot.end}
-            </option>
-          ))}
-        </Select>
-      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Select
