@@ -24,11 +24,11 @@ export function RoomForm({ room, buildings, roomTypes, onSubmit, onCancel }: Roo
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const buildingName = isEdit ? room!.buildingName : String(data.get("room-building") ?? "");
+    const buildingName = String(data.get("room-building") ?? "").trim();
     const floor = Number(data.get("room-floor"));
     const name = String(data.get("room-name") ?? "").trim();
     const capacity = Number(data.get("room-capacity"));
-    const type = isEdit ? room!.type : String(data.get("room-type") ?? "");
+    const type = String(data.get("room-type") ?? "").trim();
 
     const result = roomSchema.safeParse({ buildingName, name, floor, capacity, type });
     if (!result.success) {
