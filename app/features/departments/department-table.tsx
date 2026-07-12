@@ -1,5 +1,6 @@
 import { Badge } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -37,8 +38,9 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
             <TableCell>
               <div className="flex items-center gap-3">
                 <img
-                  src={`/images/departments/${dept.code.toLowerCase()}.avif`}
+                  src={departmentLogoUrl(dept.code)}
                   alt={`${dept.code} logo`}
+                  onError={onDepartmentLogoError}
                   className="size-10 rounded-lg object-contain"
                 />
                 <div>

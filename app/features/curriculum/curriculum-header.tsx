@@ -1,5 +1,6 @@
 import { GraduationCapIcon } from "~/components/ui/icons";
 import { Select } from "~/components/ui/select";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import type { ProgramCurriculum } from "~/types/curriculum";
 import type { Program } from "~/types/program";
 
@@ -9,10 +10,6 @@ type CurriculumHeaderProps = {
   onChange: (code: string) => void;
   curriculum: ProgramCurriculum | null | "loading";
 };
-
-function departmentLogo(code: string): string {
-  return `/images/departments/${code.toLowerCase()}.avif`;
-}
 
 export function CurriculumHeader({ programs, selected, onChange, curriculum }: CurriculumHeaderProps) {
   const selectedProgram = programs.find((p) => p.code === selected);
@@ -28,8 +25,9 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
         <div className="flex min-w-0 items-center gap-4">
           {departmentCode ? (
             <img
-              src={departmentLogo(departmentCode)}
+              src={departmentLogoUrl(departmentCode)}
               alt={`${departmentCode} logo`}
+              onError={onDepartmentLogoError}
               className="size-14 shrink-0 rounded-lg object-contain"
             />
           ) : (

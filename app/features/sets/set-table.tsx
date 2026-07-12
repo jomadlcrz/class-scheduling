@@ -1,4 +1,5 @@
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -49,8 +50,9 @@ export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
                 <div className="flex items-center gap-2">
                   {program && (
                     <img
-                      src={`/images/departments/${program.departmentCode.toLowerCase()}.avif`}
+                      src={departmentLogoUrl(program.departmentCode)}
                       alt={`${program.departmentCode} logo`}
+                      onError={onDepartmentLogoError}
                       className="size-8 rounded-lg object-contain"
                     />
                   )}

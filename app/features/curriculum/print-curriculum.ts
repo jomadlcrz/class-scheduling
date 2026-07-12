@@ -114,7 +114,7 @@ export function openCurriculumPrint(curriculum: ProgramCurriculum, semesterLabel
 <body>
   <header class="cp-header">
     <img class="cp-logo cp-logo-left" src="${origin}/images/logos/gwc-logo.avif" alt="GWC logo" />
-    <img class="cp-logo cp-logo-right" src="${origin}/images/departments/${safe(curriculum.departmentCode.toLowerCase())}.avif" alt="${safe(curriculum.departmentCode)} logo" />
+    <img class="cp-logo cp-logo-right" src="${origin}/images/departments/${safe(curriculum.departmentCode.toLowerCase())}.avif" alt="${safe(curriculum.departmentCode)} logo" onerror="if(this.src!=='${origin}/images/departments/no-logo.avif')this.src='${origin}/images/departments/no-logo.avif'" />
     <strong>GOLDEN WEST COLLEGES, INC.</strong>
     <span>San Jose Drive, Alaminos City, Pangasinan</span>
     <small>Curriculum for</small>

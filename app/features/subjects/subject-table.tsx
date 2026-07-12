@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import { type Program } from "~/types/program";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -59,8 +60,9 @@ export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTa
               <div className="flex items-center gap-3">
                 {programDeptMap.has(subject.program) && (
                   <img
-                    src={`/images/departments/${programDeptMap.get(subject.program)!.toLowerCase()}.avif`}
+                    src={departmentLogoUrl(programDeptMap.get(subject.program)!)}
                     alt={`${programDeptMap.get(subject.program)!} logo`}
+                    onError={onDepartmentLogoError}
                     className="size-10 rounded-lg object-contain"
                   />
                 )}

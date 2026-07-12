@@ -1,4 +1,5 @@
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -36,8 +37,9 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
             <TableCell>
               <div className="flex items-center gap-3">
                 <img
-                  src={`/images/departments/${prog.departmentCode.toLowerCase()}.avif`}
+                  src={departmentLogoUrl(prog.departmentCode)}
                   alt={`${prog.departmentCode} logo`}
+                  onError={onDepartmentLogoError}
                   className="size-10 rounded-lg object-contain"
                 />
                 <div>

@@ -1,5 +1,6 @@
 import { Badge } from "~/components/ui/badge";
 import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -49,8 +50,9 @@ export function DeanTable({ deans, onEdit, onToggleStatus }: DeanTableProps) {
             <TableCell>
               <div className="flex items-center gap-2">
                 <img
-                  src={`/images/departments/${member.departmentCode.toLowerCase()}.avif`}
+                  src={departmentLogoUrl(member.departmentCode)}
                   alt={`${member.departmentCode} logo`}
+                  onError={onDepartmentLogoError}
                   className="size-8 rounded-lg object-contain"
                 />
                 <span className="text-slate-600 dark:text-slate-300">{member.departmentCode}</span>
