@@ -1,11 +1,11 @@
 import { apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { programService } from "~/services/program.service";
 import type { Semester, Subject, UpdateSubjectInput, YearLevel } from "~/types/subject";
 
 /** Curriculum subjects against the curriculums module (registrar_admin). */
 
 type SubjectsResponse = {
   program_name: string;
-  program_abbrev: string;
   program_total_units: number;
   curriculum_details: {
     year_level: number;
@@ -27,13 +27,19 @@ type SubjectsResponse = {
 
 /** GET /subjects — grouped per program/year/semester; flattened here. */
 async function list(): Promise<Subject[]> {
-  const data = await apiGet<SubjectsResponse>("/subjects");
+  // The response identifies programs by name only, but consumers filter by
+  // program code (abbrev), so the code is resolved through the programs list.
+  const [data, programs] = await Promise.all([
+    apiGet<SubjectsResponse>("/subjects"),
+    programService.list(),
+  ]);
+  const codeByName = new Map(programs.map((p) => [p.name, p.code]));
   return data.flatMap((program) =>
     program.curriculum_details.flatMap((year) =>
       year.semester_details.flatMap((sem) =>
         sem.subjects.map((s) => ({
           id: s.subject_id,
-          program: program.program_abbrev,
+          program: codeByName.get(program.program_name) ?? program.program_name,
           yearLevel: year.year_level as YearLevel,
           semester: sem.semester as Semester,
           code: s.subject_code,

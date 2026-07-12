@@ -10,7 +10,6 @@ import { programService } from "~/services/program.service";
 
 type SubjectsResponse = {
   program_name: string;
-  program_abbrev: string;
   program_total_units: number;
   curriculum_details: {
     year_level: number;
@@ -39,7 +38,8 @@ async function getByProgram(programCode: string): Promise<ProgramCurriculum | nu
   const program = programs.find((p) => p.code === programCode);
   if (!program) return null;
 
-  const node = data.find((entry) => entry.program_abbrev === programCode);
+  // The response identifies programs by name only (no program_abbrev).
+  const node = data.find((entry) => entry.program_name === program.name);
 
   const groups: CurriculumGroup[] = (node?.curriculum_details ?? [])
     .flatMap((year) =>
