@@ -41,6 +41,7 @@ function FacultyPage() {
   const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
   const [rolePermissions, setRolePermissions] = useState<PermissionSummary[]>([]);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
 
@@ -48,7 +49,10 @@ function FacultyPage() {
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    facultyService.list().then(setFacultyList).catch(() => setFacultyList([]));
+    facultyService.list().then(setFacultyList).catch((err) => {
+      setLoadError(err instanceof Error ? err.message : "Unable to load faculty.");
+      setFacultyList([]);
+    });
     // Real departments + enum values for the account form; failures
     // just leave the dropdowns empty (validation reports the department).
     facultyService
@@ -149,7 +153,11 @@ function FacultyPage() {
           </Select>
         </div>
 
-        {facultyList === null ? (
+        {loadError ? (
+          <ResultState tone="error" title="Unable to load">
+            {loadError}
+          </ResultState>
+        ) : facultyList === null ? (
           <div
             role="status"
             aria-label="Loading faculty"

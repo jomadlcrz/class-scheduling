@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { Badge } from "~/components/ui/badge";
 import type { Faculty } from "~/types/faculty";
 
 type FacultyTableProps = {
@@ -21,6 +22,7 @@ export function FacultyTable({ faculty }: FacultyTableProps) {
         <TableHeader className="hidden lg:table-cell">Mobile</TableHeader>
         <TableHeader>Department</TableHeader>
         <TableHeader>Role</TableHeader>
+        <TableHeader>Account</TableHeader>
       </TableHead>
       <TableBody>
         {faculty.map((member) => (
@@ -43,6 +45,11 @@ export function FacultyTable({ faculty }: FacultyTableProps) {
               <span className="text-slate-600 dark:text-slate-300">
                 {member.roles.map((r) => r.name).join(", ") || "—"}
               </span>
+            </TableCell>
+            <TableCell>
+              <Badge tone={member.hasAccount ? "emerald" : "slate"}>
+                {member.hasAccount ? "Active" : "No account"}
+              </Badge>
             </TableCell>
           </TableRow>
         ))}

@@ -13,6 +13,7 @@ export type Faculty = {
   mobile: string | null;
   email: string | null;
   roles: { id: number; name: string }[];
+  hasAccount: boolean;
   /** Present when sourced from mock data; absent for real data. */
   status?: "active" | "inactive";
   /** Present when sourced from mock data; absent for real data. */

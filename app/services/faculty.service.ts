@@ -34,6 +34,7 @@ async function list(): Promise<Faculty[]> {
     department: string;
     mobile: string | null;
     email: string | null;
+    has_account: boolean;
     roles: { role_id: number; role_name: string; permissions: unknown[] }[];
   };
 
@@ -58,6 +59,7 @@ async function list(): Promise<Faculty[]> {
       departmentCode: deptParts[0] ?? f.department,
       mobile: f.mobile,
       email: f.email,
+      hasAccount: f.has_account,
       roles: (f.roles ?? []).map((r) => ({ id: r.role_id, name: r.role_name })),
     };
   });
