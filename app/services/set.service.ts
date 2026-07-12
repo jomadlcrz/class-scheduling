@@ -15,10 +15,16 @@ type SetsResponse = {
 }[];
 
 /** GET /sets — sets come nested per program; flattened here. 404 → empty. */
-async function list(): Promise<ClassSet[]> {
+async function list(filters?: { syId?: number; semId?: number; programId?: number }): Promise<ClassSet[]> {
+  const params = new URLSearchParams();
+  if (filters?.syId) params.set("sy_id", String(filters.syId));
+  if (filters?.semId) params.set("sem_id", String(filters.semId));
+  if (filters?.programId) params.set("program_id", String(filters.programId));
+  const qs = params.toString();
+
   let data: SetsResponse;
   try {
-    data = await apiGet<SetsResponse>("/sets");
+    data = await apiGet<SetsResponse>(`/sets${qs ? `?${qs}` : ""}`);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;

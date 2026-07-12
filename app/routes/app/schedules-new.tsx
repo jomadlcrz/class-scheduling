@@ -18,6 +18,7 @@ import {
 } from "~/features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
 import { useSemesters } from "~/hooks/use-semesters";
+import { useSchoolYears } from "~/hooks/use-school-years";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
@@ -61,14 +62,10 @@ export default function SchedulesNew() {
   );
 }
 
-function defaultSchoolYear(): string {
-  const year = new Date().getFullYear();
-  return `${year}-${year + 1}`;
-}
-
 function SchedulesNewPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel } = useSemesters();
+  const { schoolYears, defaultSchoolYear } = useSchoolYears();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
   const [programs, setPrograms] = useState<Program[] | null>(null);
@@ -76,8 +73,7 @@ function SchedulesNewPage() {
   const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
   const [subjects, setSubjects] = useState<ScheduleSubjectOption[]>([]);
 
-  // The backend requires the opening year to be the current year — typed, not picked.
-  const [schoolYear, setSchoolYear] = useState(defaultSchoolYear());
+  const [schoolYear, setSchoolYear] = useState(defaultSchoolYear);
   const [semester, setSemester] = useState<ScheduleSemester>(1);
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">("");
@@ -95,9 +91,24 @@ function SchedulesNewPage() {
 
   useEffect(() => {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
-    setService.list().then(setSets).catch(() => setSets([]));
     scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
   }, []);
+
+  // Re-fetch sets whenever the context changes so already-scheduled sets are excluded.
+  const matchedSy = schoolYears.find((s) => s.schoolYear === schoolYear);
+  const matchedSem = semesters.find((s) => s.semesterNumber === semester);
+  useEffect(() => {
+    if (!matchedSy || !matchedSem || !selectedProgramId) return;
+    setSets([]);
+    setService
+      .list({
+        syId: matchedSy.id,
+        semId: matchedSem.id,
+        programId: Number(selectedProgramId),
+      })
+      .then(setSets)
+      .catch(() => setSets([]));
+  }, [matchedSy?.id, matchedSem?.id, selectedProgramId]);
 
   const selectedProgram = programs?.find((p) => String(p.id) === selectedProgramId);
   const selectedSet = sets.find((s) => String(s.id) === selectedSetId);
@@ -177,20 +188,15 @@ function SchedulesNewPage() {
       sets.some((s) => s.program === code && s.yearLevel === yl),
     );
     setSelectedYearLevel(newYl ?? "");
-    setSelectedSetId(
-      String(sets.find((s) => s.program === code && s.yearLevel === newYl)?.id ?? ""),
-    );
+    setSelectedSetId("");
+    setSets([]);
     setSlots([]);
     setHasGenerated(false);
   }
 
   function handleYearLevelChange(yl: YearLevel) {
     setSelectedYearLevel(yl);
-    setSelectedSetId(
-      String(
-        sets.find((s) => s.program === selectedProgram?.code && s.yearLevel === yl)?.id ?? "",
-      ),
-    );
+    setSelectedSetId("");
     setSlots([]);
     setHasGenerated(false);
   }
