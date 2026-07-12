@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -69,20 +70,23 @@ function DepartmentsPage() {
   }
 
   async function handleCreate(input: CreateDepartmentInput) {
-    await departmentService.create(input);
+    const message = await departmentService.create(input);
+    if (message) toast.success(message);
     await refresh();
     setCreateOpen(false);
   }
 
   async function handleEdit(input: CreateDepartmentInput) {
     if (!editTarget) return;
-    await departmentService.update(editTarget.id, { code: input.code, name: input.name });
+    const message = await departmentService.update(editTarget.id, { code: input.code, name: input.name });
+    if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
   }
 
   async function handleDelete(target: Department) {
-    await departmentService.remove(target.id);
+    const message = await departmentService.remove(target.id);
+    if (message) toast.success(message);
     await refresh();
   }
 

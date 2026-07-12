@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiPost } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 
@@ -7,9 +7,9 @@ import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
  * real API (super_admin + registrar modules).
  */
 
-/** POST /super-admin/create-faculty-accounts — emails temp password. */
-async function create(input: CreateFacultyAccountInput): Promise<void> {
-  await apiPost("/super-admin/create-faculty-accounts", {
+/** POST /super-admin/create-faculty-accounts — emails temp password. Returns the backend message. */
+async function create(input: CreateFacultyAccountInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/super-admin/create-faculty-accounts", {
     departmentId: input.departmentId,
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
@@ -20,6 +20,7 @@ async function create(input: CreateFacultyAccountInput): Promise<void> {
     contact: { mobile: input.mobile, email: input.email },
     roleName: input.roleName,
   });
+  return apiMessage(data);
 }
 
 /** GET /super-admin/create-faculty-accounts — returns all faculty profiles. 404 → empty. */

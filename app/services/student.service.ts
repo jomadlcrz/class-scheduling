@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiPost } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
@@ -9,9 +9,9 @@ import type {
  * Student records (students module) and login accounts (super_admin module).
  */
 
-/** POST /students — creates the profile, academic record, and enrolled subjects. */
-async function createRecord(input: CreateStudentRecordInput): Promise<void> {
-  await apiPost("/students", {
+/** POST /students — creates the profile, academic record, and enrolled subjects. Returns the backend message. */
+async function createRecord(input: CreateStudentRecordInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/students", {
     ...(input.studentId && { studentId: input.studentId }),
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
@@ -31,17 +31,19 @@ async function createRecord(input: CreateStudentRecordInput): Promise<void> {
     },
     enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
   });
+  return apiMessage(data);
 }
 
-/** POST /super-admin/create-student-accounts — emails temp password. */
+/** POST /super-admin/create-student-accounts — emails temp password. Returns the backend message. */
 async function createAccount(
   studentProfileId: number,
   input: CreateStudentAccountInput,
-): Promise<void> {
-  await apiPost(
+): Promise<string> {
+  const data = await apiPost<{ message?: string }>(
     `/super-admin/create-student-accounts?student_profile_id=${studentProfileId}`,
     { email: input.email, roleName: input.roleName },
   );
+  return apiMessage(data);
 }
 
 /** GET /super-admin/create-student-accounts — all student profiles. 404 → empty. */

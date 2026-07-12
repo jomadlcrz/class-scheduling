@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { Pagination } from "~/components/ui/pagination";
 import { usePagination } from "~/hooks/use-pagination";
 import { RoleGuard } from "~/auth/role-guard";
@@ -100,14 +101,16 @@ function SubjectsPage() {
 
   async function handleFormSubmit(input: UpdateSubjectInput) {
     if (!editTarget) return;
-    await subjectService.update(editTarget.id, input);
+    const message = await subjectService.update(editTarget.id, input);
+    if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
   }
 
   async function handleDelete(target: Subject) {
     // The backend asks for the subject code as the deletion confirmation.
-    await subjectService.remove(target.id, target.code);
+    const message = await subjectService.remove(target.id, target.code);
+    if (message) toast.success(message);
     await refresh();
   }
 

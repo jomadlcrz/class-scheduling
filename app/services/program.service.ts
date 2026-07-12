@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import type { CreateProgramInput, Program, UpdateProgramInput } from "~/types/program";
 
 /** Programs CRUD against the curriculums module (registrar_admin). */
@@ -33,9 +33,9 @@ async function list(): Promise<Program[]> {
   }));
 }
 
-/** POST /programs — bulk endpoint; a single create sends a one-item list. */
-async function create(input: CreateProgramInput): Promise<void> {
-  await apiPost("/programs", {
+/** POST /programs — bulk endpoint; a single create sends a one-item list. Returns the backend message. */
+async function create(input: CreateProgramInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/programs", {
     programs: [
       {
         departmentName: input.departmentName,
@@ -46,21 +46,24 @@ async function create(input: CreateProgramInput): Promise<void> {
       },
     ],
   });
+  return apiMessage(data);
 }
 
-/** PUT /programs/:id — the department link is not updatable. */
-async function update(id: number, input: UpdateProgramInput): Promise<void> {
-  await apiPut(`/programs/${id}`, {
+/** PUT /programs/:id — the department link is not updatable. Returns the backend message. */
+async function update(id: number, input: UpdateProgramInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/programs/${id}`, {
     ...(input.code !== undefined && { programAbbrev: input.code }),
     ...(input.name !== undefined && { programName: input.name }),
     ...(input.type !== undefined && { programType: input.type }),
     ...(input.lengthYears !== undefined && { programLength: input.lengthYears }),
   });
+  return apiMessage(data);
 }
 
-/** DELETE /programs/:id */
-async function remove(id: number): Promise<void> {
-  await apiDelete(`/programs/${id}`);
+/** DELETE /programs/:id — returns the backend message. */
+async function remove(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/programs/${id}`);
+  return apiMessage(data);
 }
 
 export const programService = { list, create, update, remove };

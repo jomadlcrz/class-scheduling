@@ -47,7 +47,7 @@ function WeeklyHoursPage() {
 
   async function handleCreate(input: CreateWeeklyHourAllocationInput) {
     const message = await weeklyHourService.create(input);
-    toast.success(message);
+    if (message) toast.success(message);
     // The backend upserts per subject type — refetch for the saved state.
     weeklyHourService.list().then(setAllocations).catch(() => {});
   }

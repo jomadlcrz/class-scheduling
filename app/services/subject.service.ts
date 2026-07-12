@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import { apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import type { Semester, Subject, UpdateSubjectInput, YearLevel } from "~/types/subject";
 
 /** Curriculum subjects against the curriculums module (registrar_admin). */
@@ -57,12 +57,12 @@ export type CurriculumSubjectEntry = {
   prerequisites: string[];
 };
 
-/** POST /subjects — one nested payload creates a whole batch of curriculum entries. */
+/** POST /subjects — one nested payload creates a whole batch of curriculum entries. Returns the backend message. */
 async function createCurriculum(
   programAbbrev: string,
   programName: string,
   entries: CurriculumSubjectEntry[],
-): Promise<void> {
+): Promise<string> {
   const yearLevels = new Map<number, Map<number, CurriculumSubjectEntry[]>>();
   for (const entry of entries) {
     const semesters = yearLevels.get(entry.yearLevel) ?? new Map();
@@ -72,7 +72,7 @@ async function createCurriculum(
     subjects.push(entry);
   }
 
-  await apiPost("/subjects", {
+  const data = await apiPost<{ message?: string }>("/subjects", {
     programAbbrev,
     programName,
     yearLevels: [...yearLevels.entries()].map(([yearName, semesters]) => ({
@@ -89,22 +89,25 @@ async function createCurriculum(
       })),
     })),
   });
+  return apiMessage(data);
 }
 
-/** PUT /subjects/:id — the curriculum slot (program/year/semester) is fixed. */
-async function update(id: number, input: UpdateSubjectInput): Promise<void> {
-  await apiPut(`/subjects/${id}`, {
+/** PUT /subjects/:id — the curriculum slot (program/year/semester) is fixed. Returns the backend message. */
+async function update(id: number, input: UpdateSubjectInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/subjects/${id}`, {
     subjectCode: input.code,
     descriptiveTitle: input.title,
     units: input.units,
     subjectType: input.subjectType,
     prerequisites: input.prerequisites.map((code) => ({ subjectCode: code })),
   });
+  return apiMessage(data);
 }
 
-/** DELETE /subjects/:id — soft delete; the backend requires the code as confirmation. */
-async function remove(id: number, confirmCode: string): Promise<void> {
-  await apiDelete(`/subjects/${id}`, { confirm: confirmCode });
+/** DELETE /subjects/:id — soft delete; the backend requires the code as confirmation. Returns the backend message. */
+async function remove(id: number, confirmCode: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/subjects/${id}`, { confirm: confirmCode });
+  return apiMessage(data);
 }
 
 export const subjectService = {

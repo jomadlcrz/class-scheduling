@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import type { CreateDepartmentInput, Department, UpdateDepartmentInput } from "~/types/department";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
@@ -31,9 +31,9 @@ async function list(): Promise<Department[]> {
   }));
 }
 
-/** POST /departments — bulk endpoint; a single create sends a one-item list. */
-async function create(input: CreateDepartmentInput): Promise<void> {
-  await apiPost("/departments", {
+/** POST /departments — bulk endpoint; a single create sends a one-item list. Returns the backend message. */
+async function create(input: CreateDepartmentInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/departments", {
     departments: [
       {
         buildingName: input.buildingName,
@@ -42,19 +42,22 @@ async function create(input: CreateDepartmentInput): Promise<void> {
       },
     ],
   });
+  return apiMessage(data);
 }
 
-/** PUT /departments/:id — only the code and name are updatable. */
-async function update(id: number, input: UpdateDepartmentInput): Promise<void> {
-  await apiPut(`/departments/${id}`, {
+/** PUT /departments/:id — only the code and name are updatable. Returns the backend message. */
+async function update(id: number, input: UpdateDepartmentInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/departments/${id}`, {
     ...(input.code !== undefined && { departmentAbbrev: input.code }),
     ...(input.name !== undefined && { departmentName: input.name }),
   });
+  return apiMessage(data);
 }
 
-/** DELETE /departments/:id */
-async function remove(id: number): Promise<void> {
-  await apiDelete(`/departments/${id}`);
+/** DELETE /departments/:id — returns the backend message. */
+async function remove(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/departments/${id}`);
+  return apiMessage(data);
 }
 
 export const departmentService = { list, create, update, remove };

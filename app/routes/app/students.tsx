@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -109,7 +110,8 @@ function StudentsPage() {
   const pagination = usePagination(visibleStudents, resetKey);
 
   async function handleCreateRecord(input: CreateStudentRecordInput) {
-    await studentService.createRecord(input);
+    const message = await studentService.createRecord(input);
+    if (message) toast.success(message);
     setCreatedRecord(true);
     // Refresh the list so the new student appears.
     studentService.listAccounts().then(setStudentList).catch(() => {});
@@ -122,7 +124,8 @@ function StudentsPage() {
 
   async function handleCreateAccount(input: CreateStudentAccountInput) {
     if (!accountTarget) return;
-    await studentService.createAccount(accountTarget.studentProfileId, input);
+    const message = await studentService.createAccount(accountTarget.studentProfileId, input);
+    if (message) toast.success(message);
     setCreatedEmail(input.email);
     // Refresh the list so the account status updates.
     studentService.listAccounts().then(setStudentList).catch(() => {});

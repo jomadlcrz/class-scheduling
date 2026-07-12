@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import type { CreateRoomInput, Room, UpdateRoomInput } from "~/types/room";
 
 /** Rooms CRUD against the facilities module (registrar_admin). */
@@ -42,9 +42,9 @@ async function list(): Promise<Room[]> {
   );
 }
 
-/** POST /rooms — bulk floors-per-building endpoint; a single create sends one floor with one room. */
-async function create(input: CreateRoomInput): Promise<void> {
-  await apiPost("/rooms", {
+/** POST /rooms — bulk floors-per-building endpoint; a single create sends one floor with one room. Returns the backend message. */
+async function create(input: CreateRoomInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/rooms", {
     buildingName: input.buildingName,
     floors: [
       {
@@ -59,20 +59,23 @@ async function create(input: CreateRoomInput): Promise<void> {
       },
     ],
   });
+  return apiMessage(data);
 }
 
-/** PUT /rooms/:id — only floor, name, and capacity are updatable. */
-async function update(id: number, input: UpdateRoomInput): Promise<void> {
-  await apiPut(`/rooms/${id}`, {
+/** PUT /rooms/:id — only floor, name, and capacity are updatable. Returns the backend message. */
+async function update(id: number, input: UpdateRoomInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/rooms/${id}`, {
     ...(input.floor !== undefined && { floorLevel: input.floor }),
     ...(input.name !== undefined && { roomName: input.name }),
     ...(input.capacity !== undefined && { roomCapacity: input.capacity }),
   });
+  return apiMessage(data);
 }
 
-/** DELETE /rooms/:id */
-async function remove(id: number): Promise<void> {
-  await apiDelete(`/rooms/${id}`);
+/** DELETE /rooms/:id — returns the backend message. */
+async function remove(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/rooms/${id}`);
+  return apiMessage(data);
 }
 
 export const roomService = { list, create, update, remove };

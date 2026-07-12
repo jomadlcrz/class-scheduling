@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
@@ -193,11 +194,12 @@ function SubjectsNewPage() {
     setIsSaving(true);
     try {
       // One nested payload creates the whole batch atomically backend-side.
-      await subjectService.createCurriculum(
+      const message = await subjectService.createCurriculum(
         selectedProgram.code,
         selectedProgram.name,
         pending.map(({ tempId: _tempId, program: _program, ...entry }) => entry),
       );
+      if (message) toast.success(message);
       navigate("/subjects");
     } catch (err) {
       setSaveError(

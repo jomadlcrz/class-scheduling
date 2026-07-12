@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import type { Building, CreateBuildingInput, UpdateBuildingInput } from "~/types/building";
 
 /** Buildings CRUD against the facilities module (registrar_admin). */
@@ -27,24 +27,27 @@ async function list(): Promise<Building[]> {
   }));
 }
 
-/** POST /buildings — bulk endpoint; a single create sends a one-item list. */
-async function create(input: CreateBuildingInput): Promise<void> {
-  await apiPost("/buildings", {
+/** POST /buildings — bulk endpoint; a single create sends a one-item list. Returns the backend message. */
+async function create(input: CreateBuildingInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/buildings", {
     buildings: [{ buildingName: input.name, floorCount: input.floorCount }],
   });
+  return apiMessage(data);
 }
 
-/** PUT /buildings/:id */
-async function update(id: number, input: UpdateBuildingInput): Promise<void> {
-  await apiPut(`/buildings/${id}`, {
+/** PUT /buildings/:id — returns the backend message. */
+async function update(id: number, input: UpdateBuildingInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/buildings/${id}`, {
     ...(input.name !== undefined && { buildingName: input.name }),
     ...(input.floorCount !== undefined && { floorCount: input.floorCount }),
   });
+  return apiMessage(data);
 }
 
-/** DELETE /buildings/:id */
-async function remove(id: number): Promise<void> {
-  await apiDelete(`/buildings/${id}`);
+/** DELETE /buildings/:id — returns the backend message. */
+async function remove(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/buildings/${id}`);
+  return apiMessage(data);
 }
 
 export const buildingService = { list, create, update, remove };

@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import type { ClassSet, CreateSetInput } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
@@ -38,24 +38,28 @@ async function list(): Promise<ClassSet[]> {
 /**
  * POST /sets — bulk per program + year level. The form guarantees all inputs
  * share one program and year, so they collapse into a single request.
+ * Returns the backend message.
  */
-async function create(inputs: CreateSetInput[]): Promise<void> {
-  if (inputs.length === 0) return;
-  await apiPost("/sets", {
+async function create(inputs: CreateSetInput[]): Promise<string> {
+  if (inputs.length === 0) return "";
+  const data = await apiPost<{ message?: string }>("/sets", {
     programAbbrev: inputs[0].program,
     yearLevel: inputs[0].yearLevel,
     sets: inputs.map((input) => ({ setCode: input.setCode })),
   });
+  return apiMessage(data);
 }
 
-/** PUT /sets/:id — only the set code is updatable. */
-async function update(id: number, setCode: string): Promise<void> {
-  await apiPut(`/sets/${id}`, { setCode });
+/** PUT /sets/:id — only the set code is updatable. Returns the backend message. */
+async function update(id: number, setCode: string): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/sets/${id}`, { setCode });
+  return apiMessage(data);
 }
 
-/** DELETE /sets/:id */
-async function remove(id: number): Promise<void> {
-  await apiDelete(`/sets/${id}`);
+/** DELETE /sets/:id — returns the backend message. */
+async function remove(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/sets/${id}`);
+  return apiMessage(data);
 }
 
 export const setService = {

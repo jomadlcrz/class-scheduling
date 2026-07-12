@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -56,20 +57,23 @@ function BuildingsPage() {
   }
 
   async function handleCreate(input: CreateBuildingInput) {
-    await buildingService.create(input);
+    const message = await buildingService.create(input);
+    if (message) toast.success(message);
     await refresh();
     setCreateOpen(false);
   }
 
   async function handleEdit(input: CreateBuildingInput) {
     if (!editTarget) return;
-    await buildingService.update(editTarget.id, input);
+    const message = await buildingService.update(editTarget.id, input);
+    if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
   }
 
   async function handleDelete(target: Building) {
-    await buildingService.remove(target.id);
+    const message = await buildingService.remove(target.id);
+    if (message) toast.success(message);
     await refresh();
   }
 

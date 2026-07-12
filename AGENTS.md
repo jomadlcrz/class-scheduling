@@ -4,7 +4,7 @@ Guidance for AI agents and contributors working in this repo. Follow these conve
 
 ## Project overview
 
-A class-scheduling web app for GWC (builds conflict-free academic timetables). **Connected to the real backend** (Flask, separate repo; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`): auth, roles (read-only), faculty-account creation, and the department options for it. Everything else still runs on **mock services** (in-memory data + fake latency). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline mock data in components. To connect another domain to the backend, swap only that service's internals — `auth.service.ts` is the reference pattern.
+A class-scheduling web app for GWC (builds conflict-free academic timetables). **Connected to the real backend** (Flask, separate repo at `C:\Users\jomadlcrz\Desktop\class-scheduling-backend` — check there for actual endpoints, schemas, enum values, and response messages; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`): auth, roles (read-only), faculty-account creation, and the department options for it. Everything else still runs on **mock services** (in-memory data + fake latency). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline mock data in components. To connect another domain to the backend, swap only that service's internals — `auth.service.ts` is the reference pattern.
 
 The auth slice is live against the backend end-to-end:
 
@@ -22,8 +22,9 @@ The auth slice is live against the backend end-to-end:
 
 **Backend is the single source of truth — never hardcode its vocabulary in the frontend:**
 
-- **Enums** (gender, civil status, roles, student type, academic status) are fetched from `GET /student-registration/register-students` via `enumService.getOptions()` (`services/enum.service.ts`, cached per session) and passed through unmodified. Do NOT re-declare enum value lists as frontend constants or add invented options (e.g. a "Not specified" entry) — selects render exactly what the endpoint returns; an unselected optional field is omitted from the payload and the backend applies its own default.
+- **Enums** (gender, civil status, roles, student type, academic status, subject type, room type, classroom status, …) are fetched from `GET /student-registration/register-students` via `enumService.getOptions()` (`services/enum.service.ts`, cached per session) and passed through unmodified. **Always** load select/filter vocabulary from this endpoint — do NOT re-declare enum value lists as frontend constants or add invented options (e.g. a "Not specified" entry); selects render exactly what the endpoint returns; an unselected optional field is omitted from the payload and the backend applies its own default.
 - **Error messages** shown in the UI come verbatim from backend responses via `ApiError` (see auth slice above) — no frontend-authored copy for API failures.
+- **Success messages** follow the same rule: mutation service functions return the backend response's `message` verbatim via `apiMessage(data)` (`lib/api.ts`) — typed as `apiPost<{ message?: string }>(…)` — and route handlers surface it with `if (message) toast.success(message);` (sonner). Never write frontend success copy; if the response carries no `message`, show no toast (and fix it backend-side). Errors stay inline via `FormError` — do not toast them.
 - If the backend response is missing something (a filtered value, an absent endpoint), fix or request it backend-side rather than patching values into the frontend.
 
 Remaining mock services share the in-memory store `app/services/mock-data.ts` (demo accounts there no longer control login — real credentials live in the backend DB).
@@ -107,7 +108,8 @@ app/
 | Select dropdown | `Select` — `components/ui/select.tsx` (shares `FieldChrome`/`inputClassName` from input.tsx) |
 | Empty list placeholder | `EmptyState` — `components/ui/empty-state.tsx` |
 | Auth API (real backend) | `authService` — `services/auth.service.ts` |
-| Backend fetch wrapper (Bearer token, verbatim backend errors) | `apiGet`/`apiPost`/`apiPatch`/`apiPut`/`apiDelete`, `ApiError` — `lib/api.ts` |
+| Backend fetch wrapper (Bearer token, verbatim backend errors) | `apiGet`/`apiPost`/`apiPatch`/`apiPut`/`apiDelete`, `ApiError`, `apiMessage` — `lib/api.ts` |
+| Success toasts (backend message verbatim) | `toast` from `sonner`; `Toaster` — `components/ui/sonner.tsx`, mounted in `layouts/app-shell.tsx` |
 | Backend enum options (gender, civil status, roles, …) | `enumService.getOptions()` — `services/enum.service.ts` |
 | JWT/session helpers (claims → `User`, pending first-login state) | `loadSession`/`saveSession`/`userFromToken`/… — `lib/session.ts` |
 | Safe browser storage (SSR-proof) | `loadJson`/`saveJson`/`removeJson` — `lib/storage.ts` |

@@ -88,6 +88,11 @@ async function request<T>(
   return data as T;
 }
 
+/** Surfaces a mutation response's backend message verbatim; empty string when the response has none. */
+export function apiMessage(data: { message?: unknown } | null | undefined): string {
+  return typeof data?.message === "string" ? data.message.trim() : "";
+}
+
 export function apiGet<T>(endpoint: string): Promise<T> {
   return request<T>(endpoint, "GET");
 }

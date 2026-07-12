@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -79,20 +80,23 @@ function SetsPage() {
   }
 
   async function handleCreate(inputs: CreateSetInput[]) {
-    await setService.create(inputs);
+    const message = await setService.create(inputs);
+    if (message) toast.success(message);
     await refresh();
     setCreateOpen(false);
   }
 
   async function handleEdit(inputs: CreateSetInput[]) {
     if (!editTarget || inputs.length === 0) return;
-    await setService.update(editTarget.id, inputs[0].setCode);
+    const message = await setService.update(editTarget.id, inputs[0].setCode);
+    if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
   }
 
   async function handleDelete(target: ClassSet) {
-    await setService.remove(target.id);
+    const message = await setService.remove(target.id);
+    if (message) toast.success(message);
     await refresh();
   }
 

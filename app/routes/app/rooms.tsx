@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -88,24 +89,27 @@ function RoomsPage() {
   }
 
   async function handleCreate(input: CreateRoomInput) {
-    await roomService.create(input);
+    const message = await roomService.create(input);
+    if (message) toast.success(message);
     await refresh();
     setCreateOpen(false);
   }
 
   async function handleEdit(input: CreateRoomInput) {
     if (!editTarget) return;
-    await roomService.update(editTarget.id, {
+    const message = await roomService.update(editTarget.id, {
       floor: input.floor,
       name: input.name,
       capacity: input.capacity,
     });
+    if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
   }
 
   async function handleDelete(target: Room) {
-    await roomService.remove(target.id);
+    const message = await roomService.remove(target.id);
+    if (message) toast.success(message);
     await refresh();
   }
 

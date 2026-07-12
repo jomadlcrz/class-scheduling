@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -75,25 +76,28 @@ function ProgramsPage() {
   }
 
   async function handleCreate(input: CreateProgramInput) {
-    await programService.create(input);
+    const message = await programService.create(input);
+    if (message) toast.success(message);
     await refresh();
     setCreateOpen(false);
   }
 
   async function handleEdit(input: CreateProgramInput) {
     if (!editTarget) return;
-    await programService.update(editTarget.id, {
+    const message = await programService.update(editTarget.id, {
       code: input.code,
       name: input.name,
       type: input.type,
       lengthYears: input.lengthYears,
     });
+    if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
   }
 
   async function handleDelete(target: Program) {
-    await programService.remove(target.id);
+    const message = await programService.remove(target.id);
+    if (message) toast.success(message);
     await refresh();
   }
 

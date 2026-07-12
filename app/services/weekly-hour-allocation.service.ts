@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiPost } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import type { CreateWeeklyHourAllocationInput, WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 /** Weekly hour allocations per subject type (registrar schedules module). */
@@ -40,9 +40,7 @@ async function create(input: CreateWeeklyHourAllocationInput): Promise<string> {
     meetings: input.meetings,
     ...(input.labTimeSlots && { labTimeSlots: input.labTimeSlots }),
   });
-  return typeof data?.message === "string" && data.message.trim()
-    ? data.message
-    : "Weekly hour allocation saved.";
+  return apiMessage(data);
 }
 
 export const weeklyHourService = { list, create };

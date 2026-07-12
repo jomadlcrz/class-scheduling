@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/ui/empty-state";
@@ -104,7 +105,8 @@ function FacultyPage() {
   const pagination = usePagination(visibleFaculty, resetKey);
 
   async function handleCreate(input: CreateFacultyAccountInput) {
-    await facultyService.create(input);
+    const message = await facultyService.create(input);
+    if (message) toast.success(message);
     setCreatedEmail(input.email);
     // Refresh the list so the new faculty member appears.
     facultyService.list().then(setFacultyList).catch(() => {});
