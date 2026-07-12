@@ -10,6 +10,7 @@ import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
 import { openCurriculumPrint } from "~/features/curriculum/print-curriculum";
 import { useSemesters } from "~/hooks/use-semesters";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { curriculumService } from "~/services/curriculum.service";
 import type { ProgramCurriculum } from "~/types/curriculum";
@@ -32,6 +33,7 @@ export default function CurriculumRoute() {
 
 function CurriculumPage() {
   const { semesterLabel } = useSemesters();
+  const { yearLevelLabel } = useYearLevels();
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [selectedCode, setSelectedCode] = useState("");
   const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
@@ -113,7 +115,7 @@ function CurriculumPage() {
                 <button
                   type="button"
                   aria-label="Print curriculum"
-                  onClick={() => openCurriculumPrint(curriculum, semesterLabel)}
+                  onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
                   className="grid size-10 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
                 >
                   <PrinterIcon />

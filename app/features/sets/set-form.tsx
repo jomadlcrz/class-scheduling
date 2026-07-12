@@ -6,7 +6,8 @@ import { Textarea } from "~/components/ui/textarea";
 import type { Program } from "~/types/program";
 import { setSchema } from "~/schemas/set.schema";
 import { type ClassSet, type CreateSetInput } from "~/types/set";
-import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "~/types/subject";
+import { useYearLevels } from "~/hooks/use-year-levels";
+import type { YearLevel } from "~/types/subject";
 
 type SetFormProps = {
   /** Provided when editing an existing set. */
@@ -18,6 +19,7 @@ type SetFormProps = {
 };
 
 export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,9 +81,9 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         label="Year Level"
         defaultValue={set?.yearLevel ?? 1}
       >
-        {YEAR_LEVELS.map((year) => (
+        {yearLevelIds.map((year) => (
           <option key={year} value={year}>
-            {YEAR_LEVEL_LABELS[year]}
+            {yearLevelLabel(year)}
           </option>
         ))}
       </Select>

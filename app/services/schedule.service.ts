@@ -9,7 +9,7 @@ import {
   type ScheduleMode,
   type ScheduleSemester,
 } from "~/types/schedule";
-import { YEAR_LEVEL_LABELS, type YearLevel } from "~/types/subject";
+import { type YearLevel } from "~/types/subject";
 
 /** Regular class schedules (registrar_admin schedules module). */
 
@@ -232,13 +232,14 @@ async function autoGenerate(input: {
   semester: ScheduleSemester;
   semesterLabel: string;
   yearLevel: YearLevel;
+  yearLevelLabel: string;
   programId: number;
   setId: number;
 }): Promise<SlotDraft[]> {
   const data = await apiPost<AutoGenerateResponse>("/regular_schedule/auto-generate-schedule", {
     schoolYear: input.schoolYear,
     semester: input.semesterLabel,
-    yearLevel: YEAR_LEVEL_LABELS[input.yearLevel],
+    yearLevel: input.yearLevelLabel,
     programId: input.programId,
     setId: input.setId,
   });

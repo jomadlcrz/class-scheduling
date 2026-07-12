@@ -34,8 +34,9 @@ import {
   type ScheduleSemester,
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
-import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "~/types/subject";
+import type { YearLevel } from "~/types/subject";
 import { useSemesters } from "~/hooks/use-semesters";
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 function ZapIcon() {
   return (
@@ -68,6 +69,7 @@ function defaultSchoolYear(): string {
 function SchedulesNewPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel } = useSemesters();
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [sets, setSets] = useState<ClassSet[]>([]);
@@ -138,10 +140,10 @@ function SchedulesNewPage() {
 
   const availableYearLevels = useMemo(
     () =>
-      YEAR_LEVELS.filter((yl) =>
+      yearLevelIds.filter((yl) =>
         sets.some((s) => s.program === selectedProgram?.code && s.yearLevel === yl),
       ),
-    [sets, selectedProgram],
+    [sets, selectedProgram, yearLevelIds],
   );
 
   const availableSets = useMemo(
@@ -181,7 +183,7 @@ function SchedulesNewPage() {
   function handleProgramChange(programId: string) {
     setSelectedProgramId(programId);
     const code = programs?.find((p) => String(p.id) === programId)?.code;
-    const newYl = YEAR_LEVELS.find((yl) =>
+    const newYl = yearLevelIds.find((yl) =>
       sets.some((s) => s.program === code && s.yearLevel === yl),
     );
     setSelectedYearLevel(newYl ?? "");
@@ -214,6 +216,7 @@ function SchedulesNewPage() {
         semester,
         semesterLabel: semesterLabel(semester),
         yearLevel: selectedYearLevel,
+        yearLevelLabel: yearLevelLabel(selectedYearLevel),
         programId: selectedProgram.id,
         setId: selectedSet.id,
       });
@@ -403,7 +406,7 @@ function SchedulesNewPage() {
                 <option value="">No year levels</option>
               ) : (
                 availableYearLevels.map((yl) => (
-                  <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+                  <option key={yl} value={yl}>{yearLevelLabel(yl)}</option>
                 ))
               )}
             </Select>

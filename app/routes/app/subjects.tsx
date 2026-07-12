@@ -18,11 +18,10 @@ import { programService } from "~/services/program.service";
 import { subjectService } from "~/services/subject.service";
 import type { Program } from "~/types/program";
 import {
-  YEAR_LEVEL_LABELS,
-  YEAR_LEVELS,
   type Subject,
   type UpdateSubjectInput,
 } from "~/types/subject";
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 export function meta() {
   return [
@@ -44,6 +43,7 @@ export default function Subjects() {
 
 function SubjectsPage() {
   const navigate = useNavigate();
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
@@ -156,9 +156,9 @@ function SubjectsPage() {
             onChange={(e) => setYearLevel(e.target.value)}
           >
             <option value="all">All year levels</option>
-            {YEAR_LEVELS.map((year) => (
+            {yearLevelIds.map((year) => (
               <option key={year} value={year}>
-                {YEAR_LEVEL_LABELS[year]}
+                {yearLevelLabel(year)}
               </option>
             ))}
           </Select>

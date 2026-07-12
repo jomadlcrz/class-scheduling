@@ -5,9 +5,8 @@ import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { useSemesters } from "~/hooks/use-semesters";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import {
-  YEAR_LEVEL_LABELS,
-  YEAR_LEVELS,
   type CreateSubjectInput,
   type Semester,
   type YearLevel,
@@ -38,6 +37,7 @@ export function CurriculumEntryForm({
 }: CurriculumEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { semesters, semesterLabel } = useSemesters();
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   // Controlled so they survive form.reset() between consecutive adds.
   const [yearLevel, setYearLevel] = useState<YearLevel>(initialEntry?.yearLevel ?? 1);
   const [semester, setSemester] = useState<Semester>(initialEntry?.semester ?? 1);
@@ -99,9 +99,9 @@ export function CurriculumEntryForm({
           value={yearLevel}
           onChange={(e) => setYearLevel(Number(e.target.value) as YearLevel)}
         >
-          {YEAR_LEVELS.map((year) => (
+          {yearLevelIds.map((year) => (
             <option key={year} value={year}>
-              {YEAR_LEVEL_LABELS[year]}
+              {yearLevelLabel(year)}
             </option>
           ))}
         </Select>

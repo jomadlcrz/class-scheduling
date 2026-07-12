@@ -16,7 +16,7 @@ import { setService } from "~/services/set.service";
 import { usePagination } from "~/hooks/use-pagination";
 import type { Program } from "~/types/program";
 import type { ClassSet, CreateSetInput } from "~/types/set";
-import { YEAR_LEVEL_LABELS, YEAR_LEVELS } from "~/types/subject";
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 export function meta() {
   return [
@@ -34,6 +34,7 @@ export default function Sets() {
 }
 
 function SetsPage() {
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [sets, setSets] = useState<ClassSet[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
 
@@ -140,9 +141,9 @@ function SetsPage() {
             onChange={(e) => setYearLevel(e.target.value)}
           >
             <option value="all">All year levels</option>
-            {YEAR_LEVELS.map((year) => (
+            {yearLevelIds.map((year) => (
               <option key={year} value={year}>
-                {YEAR_LEVEL_LABELS[year]}
+                {yearLevelLabel(year)}
               </option>
             ))}
           </Select>
@@ -206,7 +207,7 @@ function SetsPage() {
         <span className="font-medium text-navy-700 dark:text-white">
           {deleteTarget?.setCode}
         </span>{" "}
-        ({deleteTarget?.program}, {deleteTarget ? YEAR_LEVEL_LABELS[deleteTarget.yearLevel] : ""}){" "}
+        ({deleteTarget?.program}, {deleteTarget ? yearLevelLabel(deleteTarget.yearLevel) : ""}){" "}
         will be permanently removed.
       </ConfirmDialog>
     </div>

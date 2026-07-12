@@ -6,7 +6,7 @@ import { CurriculumSubjects } from "~/features/curriculum/curriculum-subjects";
 import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
 import type { YearLevel } from "~/types/subject";
 import { useSemesters } from "~/hooks/use-semesters";
-import { YEAR_LEVEL_LABELS } from "~/types/subject";
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 type CurriculumTableProps = {
   curriculum: ProgramCurriculum;
@@ -69,13 +69,14 @@ function YearBlock({
   groups: CurriculumGroup[];
   forceOpen: boolean;
 }) {
+  const { yearLevelLabel } = useYearLevels();
   return (
     <AccordionItem
       open={forceOpen || undefined}
       defaultOpen
       title={
         <span className="font-body text-base font-semibold text-navy-700 dark:text-white">
-          {YEAR_LEVEL_LABELS[yearLevel]}
+          {yearLevelLabel(yearLevel)}
         </span>
       }
       adornment={<Badge tone="gold">{yearUnits} units</Badge>}

@@ -5,9 +5,8 @@ import { EmptyState } from "~/components/ui/empty-state";
 import { ChevronRightIcon, EditIcon, TrashIcon } from "~/components/ui/icons";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import { useSemesters } from "~/hooks/use-semesters";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import {
-  YEAR_LEVEL_LABELS,
-  YEAR_LEVELS,
   type CreateSubjectInput,
   type Subject,
 } from "~/types/subject";
@@ -77,6 +76,7 @@ export function CurriculumStructure({
   onRemovePending,
 }: CurriculumStructureProps) {
   const { semesters, semesterLabel } = useSemesters();
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const rows: (StructureRow & { yearLevel: number; semester: number })[] = [
     ...saved.map((s) => ({ ...s, key: `saved-${s.id}` })),
     ...pending.map((p) => ({ ...p, key: p.tempId, tempId: p.tempId })),
@@ -92,7 +92,7 @@ export function CurriculumStructure({
 
   return (
     <div className="flex flex-col gap-5">
-      {YEAR_LEVELS.map((year) => {
+      {yearLevelIds.map((year) => {
         const yearRows = rows.filter((r) => r.yearLevel === year);
         if (yearRows.length === 0) return null;
         const yearUnits = yearRows.reduce((sum, r) => sum + r.units, 0);
@@ -116,7 +116,7 @@ export function CurriculumStructure({
                   <ChevronRightIcon />
                 </span>
                 <span className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
-                  {YEAR_LEVEL_LABELS[year]}
+                  {yearLevelLabel(year)}
                 </span>
               </span>
               <Badge tone="navy">{yearUnits} units</Badge>

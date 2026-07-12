@@ -21,9 +21,10 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { Subject } from "~/types/subject";
-import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "~/types/subject";
+import type { YearLevel } from "~/types/subject";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useSchoolYears } from "~/hooks/use-school-years";
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 type ScheduleFormProps = {
   schedule?: Schedule;
@@ -54,6 +55,7 @@ export function ScheduleForm({
 }: ScheduleFormProps) {
   const { semesters, semesterLabel } = useSemesters();
   const { schoolYears } = useSchoolYears();
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +65,7 @@ export function ScheduleForm({
 
   const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">(
     schedule?.yearLevel ??
-      (YEAR_LEVELS.find((yl) =>
+      (yearLevelIds.find((yl) =>
         subjects.some((s) => s.program === (schedule?.program ?? programs[0]?.code ?? "") && s.yearLevel === yl),
       ) ?? ""),
   );
@@ -72,7 +74,7 @@ export function ScheduleForm({
     schedule?.subjectId ?? "",
   );
 
-  const availableYearLevels = YEAR_LEVELS.filter((yl) =>
+  const availableYearLevels = yearLevelIds.filter((yl) =>
     subjects.some((s) => s.program === selectedProgram && s.yearLevel === yl),
   );
 
@@ -93,7 +95,7 @@ export function ScheduleForm({
   function handleProgramChange(program: string) {
     setSelectedProgram(program);
     const newYl =
-      YEAR_LEVELS.find((yl) => subjects.some((s) => s.program === program && s.yearLevel === yl)) ??
+      yearLevelIds.find((yl) => subjects.some((s) => s.program === program && s.yearLevel === yl)) ??
       (1 as YearLevel);
     setSelectedYearLevel(newYl);
     setSelectedSubjectId(subjects.find((s) => s.program === program && s.yearLevel === newYl)?.id ?? "");
@@ -210,7 +212,7 @@ export function ScheduleForm({
             <option value="">No year levels</option>
           ) : (
             availableYearLevels.map((yl) => (
-              <option key={yl} value={yl}>{YEAR_LEVEL_LABELS[yl]}</option>
+              <option key={yl} value={yl}>{yearLevelLabel(yl)}</option>
             ))
           )}
         </Select>

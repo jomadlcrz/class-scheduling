@@ -11,6 +11,7 @@ import type { Semester } from "~/types/semester";
 import type { SchoolYearOption } from "~/services/school-year.service";
 import type { CreateStudentRecordInput } from "~/types/student";
 import type { Subject } from "~/types/subject";
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 type StudentRecordFormProps = {
   programs: Program[];
@@ -39,6 +40,7 @@ export function StudentRecordForm({
 }: StudentRecordFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
   // Program, year level, and semester drive the set and subject choices.
   const [programId, setProgramId] = useState("");
@@ -48,9 +50,8 @@ export function StudentRecordForm({
   const selectedProgram = programs.find((p) => String(p.id) === programId);
   const selectedSemester = semesters.find((s) => String(s.id) === semId);
 
-  const yearOptions = Array.from(
-    { length: selectedProgram?.lengthYears ?? 6 },
-    (_, i) => i + 1,
+  const yearOptions = yearLevelIds.filter(
+    (y) => y <= (selectedProgram?.lengthYears ?? 6),
   );
 
   const filteredSets = selectedProgram
@@ -199,7 +200,7 @@ export function StudentRecordForm({
               <option value="">Select a year</option>
               {yearOptions.map((y) => (
                 <option key={y} value={y}>
-                  {y}
+                  {yearLevelLabel(y)}
                 </option>
               ))}
             </Select>

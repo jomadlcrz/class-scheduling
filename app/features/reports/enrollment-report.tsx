@@ -1,14 +1,9 @@
 import { Card } from "~/components/ui/card";
 import type { EnrollmentStats } from "~/services/report.service";
-
-const YEAR_LABELS: Record<number, string> = {
-  1: "1st Year",
-  2: "2nd Year",
-  3: "3rd Year",
-  4: "4th Year",
-};
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
+  const { yearLevelLabel } = useYearLevels();
   const programEntries = Object.entries(data.byProgram).sort((a, b) => b[1] - a[1]);
   const yearEntries = Object.entries(data.byYearLevel)
     .sort(([a], [b]) => Number(a) - Number(b));
@@ -71,7 +66,7 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
                   <li key={year}>
                     <div className="mb-1 flex items-center justify-between">
                       <span className="font-body text-sm text-slate-700 dark:text-slate-300">
-                        {YEAR_LABELS[Number(year)] ?? `Year ${year}`}
+                        {yearLevelLabel(Number(year))}
                       </span>
                       <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
                         {count}

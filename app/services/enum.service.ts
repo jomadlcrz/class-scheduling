@@ -10,6 +10,11 @@ export type DayOfWeekOption = {
   name: string;
 };
 
+export type YearLevelOption = {
+  id: number;
+  name: string;
+};
+
 export type EnumOptions = {
   classMode: string[];
   gender: string[];
@@ -22,6 +27,7 @@ export type EnumOptions = {
   roomType: string[];
   subjectType: string[];
   dayOfWeek: DayOfWeekOption[];
+  yearLevels: YearLevelOption[];
 };
 
 type EnumOptionsResponse = {
@@ -36,6 +42,7 @@ type EnumOptionsResponse = {
   room_type: string[];
   subject_type: string[];
   day_of_week: DayOfWeekOption[];
+  year_levels: YearLevelOption[];
 };
 
 // Static per deploy, so one fetch serves the whole session.
@@ -55,6 +62,7 @@ function getOptions(): Promise<EnumOptions> {
       roomType: data.room_type,
       subjectType: data.subject_type,
       dayOfWeek: data.day_of_week,
+      yearLevels: data.year_levels,
     }))
     .catch((err) => {
       cached = null; // allow a retry on the next call

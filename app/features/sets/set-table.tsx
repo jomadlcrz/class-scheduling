@@ -9,7 +9,7 @@ import {
 } from "~/components/ui/table";
 import { type Program } from "~/types/program";
 import { type ClassSet } from "~/types/set";
-import { YEAR_LEVEL_LABELS } from "~/types/subject";
+import { useYearLevels } from "~/hooks/use-year-levels";
 
 type SetTableProps = {
   sets: ClassSet[];
@@ -22,6 +22,7 @@ const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
+  const { yearLevelLabel } = useYearLevels();
   function getProgram(code: string) {
     return programs.find((p) => p.code === code);
   }
@@ -65,7 +66,7 @@ export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
                   </div>
                 </div>
               </TableCell>
-              <TableCell>{YEAR_LEVEL_LABELS[set.yearLevel]}</TableCell>
+              <TableCell>{yearLevelLabel(set.yearLevel)}</TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">
                   <button
