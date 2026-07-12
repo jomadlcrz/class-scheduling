@@ -5,7 +5,8 @@ import { EmptyState } from "~/components/ui/empty-state";
 import { CurriculumSubjects } from "~/features/curriculum/curriculum-subjects";
 import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
 import type { YearLevel } from "~/types/subject";
-import { SEMESTER_LABELS, YEAR_LEVEL_LABELS } from "~/types/subject";
+import { useSemesters } from "~/hooks/use-semesters";
+import { YEAR_LEVEL_LABELS } from "~/types/subject";
 
 type CurriculumTableProps = {
   curriculum: ProgramCurriculum;
@@ -91,11 +92,12 @@ function YearBlock({
 }
 
 function SemesterCard({ group }: { group: CurriculumGroup }) {
+  const { semesterLabel } = useSemesters();
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-navy-800/60">
       <div className="px-3 py-2 text-center">
         <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-          {SEMESTER_LABELS[group.semester]}
+          {semesterLabel(group.semester)}
         </span>
       </div>
       <div className="flex-1">

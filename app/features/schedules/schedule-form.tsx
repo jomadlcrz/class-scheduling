@@ -11,9 +11,6 @@ import {
   DAY_LABELS,
   SCHEDULE_MODES,
   SCHEDULE_MODE_LABELS,
-  SCHEDULE_SEMESTER_LABELS,
-  SCHEDULE_SEMESTERS,
-  SCHOOL_YEARS,
   generateTimeSlots,
   formatTime,
   type CreateScheduleInput,
@@ -25,6 +22,8 @@ import {
 import type { ClassSet } from "~/types/set";
 import type { Subject } from "~/types/subject";
 import { YEAR_LEVELS, YEAR_LEVEL_LABELS, type YearLevel } from "~/types/subject";
+import { useSemesters } from "~/hooks/use-semesters";
+import { useSchoolYears } from "~/hooks/use-school-years";
 
 type ScheduleFormProps = {
   schedule?: Schedule;
@@ -53,6 +52,8 @@ export function ScheduleForm({
   onSubmit,
   onCancel,
 }: ScheduleFormProps) {
+  const { semesters, semesterLabel } = useSemesters();
+  const { schoolYears } = useSchoolYears();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -173,8 +174,8 @@ export function ScheduleForm({
           label="School Year"
           defaultValue={schedule?.schoolYear ?? defaultSchoolYear}
         >
-          {SCHOOL_YEARS.map((y) => (
-            <option key={y} value={y}>{y}</option>
+          {schoolYears.map((y) => (
+            <option key={y.id} value={y.schoolYear}>{y.schoolYear}</option>
           ))}
         </Select>
         <Select
@@ -182,8 +183,8 @@ export function ScheduleForm({
           label="Semester"
           defaultValue={schedule?.semester ?? defaultSemester}
         >
-          {SCHEDULE_SEMESTERS.map((s) => (
-            <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
+          {semesters.map((s) => (
+            <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
           ))}
         </Select>
       </div>

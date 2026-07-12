@@ -15,11 +15,10 @@ import { studentService } from "~/services/student.service";
 import { subjectService } from "~/services/subject.service";
 import {
   DAYS,
-  DEFAULT_SCHOOL_YEAR,
-  SCHEDULE_SEMESTER_LABELS,
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
+import { useSchoolYears } from "~/hooks/use-school-years";
 import { STUDENT_STATUS_LABELS, type Student, type StudentStatus } from "~/types/student";
 import type { Subject } from "~/types/subject";
 import type { BadgeTone } from "~/components/ui/badge";
@@ -47,12 +46,13 @@ const STATUS_TONE: Record<StudentStatus, BadgeTone> = {
 
 function StudentSchedulePage() {
   const { user } = useAuth();
+  const { defaultSchoolYear } = useSchoolYears();
   const studentId = user?.studentId;
 
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
   const [student, setStudent] = useState<Student | null>(null);
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
-  const schoolYear = DEFAULT_SCHOOL_YEAR;
+  const schoolYear = defaultSchoolYear;
   const semester: ScheduleSemester = 1;
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
 

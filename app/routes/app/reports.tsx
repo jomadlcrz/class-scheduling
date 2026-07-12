@@ -18,12 +18,10 @@ import {
   reportService,
 } from "~/services/report.service";
 import {
-  DEFAULT_SCHOOL_YEAR,
-  SCHEDULE_SEMESTER_LABELS,
-  SCHEDULE_SEMESTERS,
-  SCHOOL_YEARS,
   type ScheduleSemester,
 } from "~/types/schedule";
+import { useSemesters } from "~/hooks/use-semesters";
+import { useSchoolYears } from "~/hooks/use-school-years";
 
 export function meta() {
   return [
@@ -58,8 +56,10 @@ type ReportData = {
 };
 
 function ReportsPage() {
+  const { semesters, semesterLabel } = useSemesters();
+  const { schoolYears, defaultSchoolYear } = useSchoolYears();
   const [activeTab, setActiveTab] = useState<Tab>("schedule");
-  const [schoolYear, setSchoolYear] = useState(DEFAULT_SCHOOL_YEAR);
+  const [schoolYear, setSchoolYear] = useState(defaultSchoolYear);
   const [semester, setSemester] = useState<ScheduleSemester>(1);
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,9 +97,9 @@ function ReportsPage() {
               value={schoolYear}
               onChange={(e) => setSchoolYear(e.target.value)}
             >
-              {SCHOOL_YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
+              {schoolYears.map((y) => (
+                <option key={y.id} value={y.schoolYear}>
+                  {y.schoolYear}
                 </option>
               ))}
             </Select>
@@ -110,9 +110,9 @@ function ReportsPage() {
               value={semester}
               onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
             >
-              {SCHEDULE_SEMESTERS.map((s) => (
-                <option key={s} value={s}>
-                  {SCHEDULE_SEMESTER_LABELS[s]}
+              {semesters.map((s) => (
+                <option key={s.id} value={s.semesterNumber}>
+                  {semesterLabel(s.semesterNumber)}
                 </option>
               ))}
             </Select>

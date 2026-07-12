@@ -1,6 +1,6 @@
 import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
 import type { YearLevel } from "~/types/subject";
-import { SEMESTER_LABELS, YEAR_LEVEL_LABELS } from "~/types/subject";
+import { YEAR_LEVEL_LABELS } from "~/types/subject";
 
 function safe(value: string): string {
   return value
@@ -11,7 +11,7 @@ function safe(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function renderSemesterTable(group: CurriculumGroup): string {
+function renderSemesterTable(group: CurriculumGroup, semesterLabel: (n: number) => string): string {
   const rows = group.subjects
     .map(
       (subject) => `
@@ -29,7 +29,7 @@ function renderSemesterTable(group: CurriculumGroup): string {
 
   return `
     <section class="cp-semester">
-      <h4>${safe(SEMESTER_LABELS[group.semester]).toUpperCase()}</h4>
+      <h4>${safe(semesterLabel(group.semester)).toUpperCase()}</h4>
       <table>
         <thead>
           <tr><th>SUBJECT CODE</th><th>DESCRIPTIVE TITLE</th><th>UNITS</th><th>PRE-REQUISITE</th></tr>
@@ -41,12 +41,12 @@ function renderSemesterTable(group: CurriculumGroup): string {
   `;
 }
 
-function renderYearBlock(yearLevel: YearLevel, groups: CurriculumGroup[]): string {
+function renderYearBlock(yearLevel: YearLevel, groups: CurriculumGroup[], semesterLabel: (n: number) => string): string {
   return `
     <section class="cp-year">
       <h3>${safe(YEAR_LEVEL_LABELS[yearLevel]).toUpperCase()}</h3>
       <div class="cp-semester-grid">
-        ${groups.map((group) => renderSemesterTable(group)).join("")}
+        ${groups.map((group) => renderSemesterTable(group, semesterLabel)).join("")}
       </div>
     </section>
   `;
@@ -58,7 +58,7 @@ function renderYearBlock(yearLevel: YearLevel, groups: CurriculumGroup[]): strin
  * legacy print layout. Runs in an isolated document so it never needs to hide
  * the app shell (sidebar/navbar) or touch global print CSS.
  */
-export function openCurriculumPrint(curriculum: ProgramCurriculum): boolean {
+export function openCurriculumPrint(curriculum: ProgramCurriculum, semesterLabel: (n: number) => string): boolean {
   // "noopener" would make window.open return null — this tab hosts only our markup.
   const win = window.open("", "_blank");
   if (!win) return false;
@@ -67,7 +67,7 @@ export function openCurriculumPrint(curriculum: ProgramCurriculum): boolean {
   const yearLevels = [...new Set(curriculum.groups.map((g) => g.yearLevel))].sort() as YearLevel[];
 
   const yearBlocks = yearLevels
-    .map((year) => renderYearBlock(year, curriculum.groups.filter((g) => g.yearLevel === year)))
+    .map((year) => renderYearBlock(year, curriculum.groups.filter((g) => g.yearLevel === year), semesterLabel))
     .join("");
 
   win.document.open();

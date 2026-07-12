@@ -11,7 +11,8 @@ import {
 } from "~/components/ui/table";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import { type Program } from "~/types/program";
-import { SEMESTER_LABELS, YEAR_LEVEL_LABELS, type Subject } from "~/types/subject";
+import { useSemesters } from "~/hooks/use-semesters";
+import { YEAR_LEVEL_LABELS, type Subject } from "~/types/subject";
 
 type SubjectTableProps = {
   /** Rows to display (already filtered and sorted). */
@@ -25,6 +26,7 @@ const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTableProps) {
+  const { semesterLabel } = useSemesters();
   const programDeptMap = useMemo(
     () => new Map(programs.map((p) => [p.code, p.departmentCode])),
     [programs],
@@ -66,7 +68,7 @@ export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTa
               </div>
             </TableCell>
             <TableCell className="hidden sm:table-cell">
-              {YEAR_LEVEL_LABELS[subject.yearLevel]} · {SEMESTER_LABELS[subject.semester]}
+              {YEAR_LEVEL_LABELS[subject.yearLevel]} · {semesterLabel(subject.semester)}
             </TableCell>
             <TableCell className="hidden md:table-cell text-center">{subject.units}</TableCell>
             <TableCell className="hidden sm:table-cell">

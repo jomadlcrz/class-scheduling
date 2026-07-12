@@ -29,13 +29,13 @@ import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
 import type { Program } from "~/types/program";
 import type { LabSlot } from "~/types/weekly-hour-allocation";
 import {
-  SCHEDULE_SEMESTER_LABELS,
   type Day,
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import { YEAR_LEVEL_LABELS, YEAR_LEVELS, type YearLevel } from "~/types/subject";
+import { useSemesters } from "~/hooks/use-semesters";
 
 function ZapIcon() {
   return (
@@ -60,9 +60,6 @@ export default function SchedulesNew() {
   );
 }
 
-// Regular class schedules only cover the two main semesters.
-const REGULAR_SEMESTERS: ScheduleSemester[] = [1, 2];
-
 function defaultSchoolYear(): string {
   const year = new Date().getFullYear();
   return `${year}-${year + 1}`;
@@ -70,6 +67,7 @@ function defaultSchoolYear(): string {
 
 function SchedulesNewPage() {
   const navigate = useNavigate();
+  const { semesters, semesterLabel } = useSemesters();
 
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [sets, setSets] = useState<ClassSet[]>([]);
@@ -214,6 +212,7 @@ function SchedulesNewPage() {
       const generated = await scheduleService.autoGenerate({
         schoolYear,
         semester,
+        semesterLabel: semesterLabel(semester),
         yearLevel: selectedYearLevel,
         programId: selectedProgram.id,
         setId: selectedSet.id,
@@ -377,8 +376,8 @@ function SchedulesNewPage() {
               onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
               disabled={contextLocked}
             >
-              {REGULAR_SEMESTERS.map((s) => (
-                <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
+              {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
+                <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
               ))}
             </Select>
             <Select

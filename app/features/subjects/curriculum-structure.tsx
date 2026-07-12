@@ -4,9 +4,8 @@ import { DropdownMenu } from "~/components/ui/dropdown";
 import { EmptyState } from "~/components/ui/empty-state";
 import { ChevronRightIcon, EditIcon, TrashIcon } from "~/components/ui/icons";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
+import { useSemesters } from "~/hooks/use-semesters";
 import {
-  SEMESTER_LABELS,
-  SEMESTERS,
   YEAR_LEVEL_LABELS,
   YEAR_LEVELS,
   type CreateSubjectInput,
@@ -77,6 +76,7 @@ export function CurriculumStructure({
   onEditPending,
   onRemovePending,
 }: CurriculumStructureProps) {
+  const { semesters, semesterLabel } = useSemesters();
   const rows: (StructureRow & { yearLevel: number; semester: number })[] = [
     ...saved.map((s) => ({ ...s, key: `saved-${s.id}` })),
     ...pending.map((p) => ({ ...p, key: p.tempId, tempId: p.tempId })),
@@ -133,7 +133,7 @@ export function CurriculumStructure({
                   className="overflow-hidden"
                 >
                   <div className="mt-2 flex flex-col gap-3">
-                    {SEMESTERS.map((semester) => {
+                    {semesters.map(({ semesterNumber: semester }) => {
                       const semesterRows = yearRows.filter(
                         (r) => r.semester === semester,
                       );
@@ -168,7 +168,7 @@ export function CurriculumStructure({
                                 <ChevronRightIcon />
                               </span>
                               <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-                                {SEMESTER_LABELS[semester]}
+                                {semesterLabel(semester)}
                               </span>
                             </span>
                             <Badge tone="slate">{semesterUnits} units</Badge>

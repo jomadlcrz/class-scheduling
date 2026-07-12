@@ -10,18 +10,32 @@ export type SchoolYearOption = {
   schoolYear: string;
 };
 
-/** GET /school-years — 404 → empty. */
+let cachedSchoolYears: SchoolYearOption[] | null = null;
+let cachePromise: Promise<SchoolYearOption[]> | null = null;
+
+/** GET /school-years — 404 → empty. Result is cached after the first fetch. */
 async function list(): Promise<SchoolYearOption[]> {
-  let data: SchoolYearEntry[];
-  try {
-    data = await apiGet<SchoolYearEntry[]>("/school-years");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data
-    .map((s) => ({ id: s.id, schoolYear: s.school_year }))
-    .sort((a, b) => b.schoolYear.localeCompare(a.schoolYear));
+  if (cachedSchoolYears) return cachedSchoolYears;
+  if (cachePromise) return cachePromise;
+
+  cachePromise = (async () => {
+    let data: SchoolYearEntry[];
+    try {
+      data = await apiGet<SchoolYearEntry[]>("/school-years");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        cachedSchoolYears = [];
+        return cachedSchoolYears;
+      }
+      throw err;
+    }
+    cachedSchoolYears = data
+      .map((s) => ({ id: s.id, schoolYear: s.school_year }))
+      .sort((a, b) => b.schoolYear.localeCompare(a.schoolYear));
+    return cachedSchoolYears;
+  })();
+
+  return cachePromise;
 }
 
 export const schoolYearService = { list };

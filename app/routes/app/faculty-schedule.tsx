@@ -9,13 +9,10 @@ import { PageHeader } from "~/layouts/page-header";
 import { scheduleService } from "~/services/schedule.service";
 import {
   DAYS,
-  DEFAULT_SCHOOL_YEAR,
-  SCHEDULE_SEMESTER_LABELS,
-  SCHEDULE_SEMESTERS,
-  SCHOOL_YEARS,
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
+import { useSchoolYears } from "~/hooks/use-school-years";
 
 export function meta() {
   return [
@@ -34,10 +31,11 @@ export default function FacultyScheduleRoute() {
 
 function FacultySchedulePage() {
   const { user } = useAuth();
+  const { defaultSchoolYear } = useSchoolYears();
   const facultyId = user?.facultyId;
 
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
-  const [schoolYear, setSchoolYear] = useState(DEFAULT_SCHOOL_YEAR);
+  const [schoolYear, setSchoolYear] = useState(defaultSchoolYear);
   const [semester, setSemester] = useState<ScheduleSemester>(1);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
 

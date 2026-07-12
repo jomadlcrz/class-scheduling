@@ -15,8 +15,10 @@ import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { classroomMappingService } from "~/services/classroom-mapping.service";
 import { schoolYearService } from "~/services/school-year.service";
+import { semesterService } from "~/services/semester.service";
 import type { Building } from "~/types/building";
 import type { Classroom } from "~/features/classroom-mapping/mapping-model";
+import type { Semester } from "~/types/semester";
 
 export function meta() {
   return [
@@ -24,8 +26,6 @@ export function meta() {
     { name: "description", content: "Weekly schedule and availability for all classrooms." },
   ];
 }
-
-const SEMESTER_OPTIONS = ["1st Semester", "2nd Semester"];
 
 export default function ClassroomMappingRoute() {
   return (
@@ -39,12 +39,23 @@ function ClassroomMappingPage() {
   const [classrooms, setClassrooms] = useState<Classroom[] | null>(null);
   const [schoolYears, setSchoolYears] = useState<string[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
   const [schoolYear, setSchoolYear] = useState("");
-  const [semester, setSemester] = useState(SEMESTER_OPTIONS[0]);
+  const [semester, setSemester] = useState("");
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [rawSearch, setRawSearch] = useState("");
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    semesterService
+      .list()
+      .then((list) => {
+        setSemesters(list);
+        if (list.length > 0 && !semester) setSemester(String(list[0].semesterNumber));
+      })
+      .catch(() => setSemesters([]));
+  }, []);
 
   const load = useCallback(async () => {
     setLoadError(null);
@@ -102,7 +113,7 @@ function ClassroomMappingPage() {
               {schoolYears.map(y => <option key={y} value={y}>{y}</option>)}
             </Select>
             <Select label="Semester" id="cm-sem" hideLabel value={semester} onChange={e => setSemester(e.target.value)}>
-              {SEMESTER_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+              {semesters.map(s => <option key={s.id} value={s.semester}>{s.semester}</option>)}
             </Select>
             <Select label="Building" id="cm-building" hideLabel value={buildingFilter} onChange={e => setBuildingFilter(e.target.value)}>
               <option value="all">All buildings</option>

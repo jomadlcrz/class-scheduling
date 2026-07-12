@@ -4,9 +4,8 @@ import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
+import { useSemesters } from "~/hooks/use-semesters";
 import {
-  SEMESTER_LABELS,
-  SEMESTERS,
   YEAR_LEVEL_LABELS,
   YEAR_LEVELS,
   type CreateSubjectInput,
@@ -38,6 +37,7 @@ export function CurriculumEntryForm({
   onCancelEdit,
 }: CurriculumEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
+  const { semesters, semesterLabel } = useSemesters();
   // Controlled so they survive form.reset() between consecutive adds.
   const [yearLevel, setYearLevel] = useState<YearLevel>(initialEntry?.yearLevel ?? 1);
   const [semester, setSemester] = useState<Semester>(initialEntry?.semester ?? 1);
@@ -111,9 +111,9 @@ export function CurriculumEntryForm({
           value={semester}
           onChange={(e) => setSemester(Number(e.target.value) as Semester)}
         >
-          {SEMESTERS.map((s) => (
-            <option key={s} value={s}>
-              {SEMESTER_LABELS[s]}
+          {semesters.map((s) => (
+            <option key={s.id} value={s.semesterNumber}>
+              {semesterLabel(s.semesterNumber)}
             </option>
           ))}
         </Select>

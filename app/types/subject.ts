@@ -10,13 +10,7 @@ export const YEAR_LEVEL_LABELS: Record<YearLevel, string> = {
   4: "4th Year",
 };
 
-export const SEMESTERS = [1, 2] as const;
-export type Semester = (typeof SEMESTERS)[number];
-
-export const SEMESTER_LABELS: Record<Semester, string> = {
-  1: "1st Semester",
-  2: "2nd Semester",
-};
+export type Semester = number;
 
 /**
  * Subject type vocabulary lives in the backend (app/enums.py SubjectTypeName)

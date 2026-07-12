@@ -21,14 +21,7 @@ const DAY_SHORT: Record<Day, string> = {
   S: "Sat",
 };
 
-export const SCHEDULE_SEMESTERS = [1, 2, 3] as const;
-export type ScheduleSemester = (typeof SCHEDULE_SEMESTERS)[number];
-
-export const SCHEDULE_SEMESTER_LABELS: Record<ScheduleSemester, string> = {
-  1: "1st Semester",
-  2: "2nd Semester",
-  3: "Summer",
-};
+export type ScheduleSemester = number;
 
 export const SCHEDULE_MODES = ["F2F", "Online", "Modular"] as const;
 export type ScheduleMode = (typeof SCHEDULE_MODES)[number];
@@ -106,5 +99,4 @@ export function timeToMinutes(time: string): number {
   return h * 60 + m;
 }
 
-export const SCHOOL_YEARS = ["2023-2024", "2024-2025", "2025-2026", "2026-2027"] as const;
-export const DEFAULT_SCHOOL_YEAR = "2025-2026";
+

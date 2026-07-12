@@ -1,8 +1,8 @@
 import { ApiError, apiGet, apiPost } from "~/lib/api";
+import { semesterService } from "~/services/semester.service";
 import {
   DAY_LABELS,
   SCHEDULE_MODES,
-  SCHEDULE_SEMESTER_LABELS,
   parseTime12h,
   type Day,
   type Schedule,
@@ -48,6 +48,9 @@ async function view(): Promise<Schedule[]> {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
+  const semesters = await semesterService.list();
+  const semByName = new Map(semesters.map((s) => [s.semester, s.semesterNumber]));
+
   return data.map((r, index) => {
     const [start, end] = r.class_time.split(" - ");
     // set_name is "{PROGRAM}-{year}{SET}", e.g. "BSIT-1A".
@@ -56,7 +59,7 @@ async function view(): Promise<Schedule[]> {
     return {
       id: String(index),
       schoolYear: r.school_year,
-      semester: (r.semester === "2nd Semester" ? 2 : 1) as ScheduleSemester,
+      semester: (semByName.get(r.semester) ?? 1) as ScheduleSemester,
       subjectId: "",
       subjectCode: r.subject_code,
       subjectTitle: r.desc_title,
@@ -227,14 +230,14 @@ type AutoGenerateResponse = {
 async function autoGenerate(input: {
   schoolYear: string;
   semester: ScheduleSemester;
+  semesterLabel: string;
   yearLevel: YearLevel;
   programId: number;
   setId: number;
 }): Promise<SlotDraft[]> {
   const data = await apiPost<AutoGenerateResponse>("/regular_schedule/auto-generate-schedule", {
     schoolYear: input.schoolYear,
-    // The backend maps the display labels back to numbers.
-    semester: SCHEDULE_SEMESTER_LABELS[input.semester],
+    semester: input.semesterLabel,
     yearLevel: YEAR_LEVEL_LABELS[input.yearLevel],
     programId: input.programId,
     setId: input.setId,

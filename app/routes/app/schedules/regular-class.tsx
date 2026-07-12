@@ -17,11 +17,10 @@ import { PageHeader } from "~/layouts/page-header";
 import { scheduleService } from "~/services/schedule.service";
 import {
   DAYS,
-  SCHEDULE_SEMESTERS,
-  SCHEDULE_SEMESTER_LABELS,
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
+import { useSemesters } from "~/hooks/use-semesters";
 
 export function meta() {
   return [
@@ -40,6 +39,7 @@ export default function RegularClassRoute() {
 
 function RegularClassPage() {
   const navigate = useNavigate();
+  const { semesters, semesterLabel } = useSemesters();
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -142,8 +142,8 @@ function RegularClassPage() {
             value={semester}
             onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
           >
-            {SCHEDULE_SEMESTERS.filter((s) => s !== 3).map((s) => (
-              <option key={s} value={s}>{SCHEDULE_SEMESTER_LABELS[s]}</option>
+            {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
+              <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
             ))}
           </Select>
           <Select

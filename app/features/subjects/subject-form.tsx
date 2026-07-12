@@ -3,12 +3,8 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
-import {
-  SEMESTER_LABELS,
-  YEAR_LEVEL_LABELS,
-  type Subject,
-  type UpdateSubjectInput,
-} from "~/types/subject";
+import { useSemesters } from "~/hooks/use-semesters";
+import { YEAR_LEVEL_LABELS, type Subject, type UpdateSubjectInput } from "~/types/subject";
 import { subjectSchema } from "~/schemas/subject.schema";
 import { PrerequisitePicker } from "~/features/subjects/prerequisite-picker";
 
@@ -28,6 +24,7 @@ type SubjectFormProps = {
  * The curriculum slot (program/year/semester) is fixed by the backend.
  */
 export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCancel }: SubjectFormProps) {
+  const { semesterLabel } = useSemesters();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prerequisites, setPrerequisites] = useState<string[]>(subject.prerequisites);
@@ -67,7 +64,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
 
       <p className="rounded-lg bg-slate-100 px-3 py-2 font-body text-sm text-slate-600 dark:bg-white/5 dark:text-slate-300">
         {subject.program} · {YEAR_LEVEL_LABELS[subject.yearLevel]} ·{" "}
-        {SEMESTER_LABELS[subject.semester]}
+        {semesterLabel(subject.semester)}
       </p>
 
       <Input
