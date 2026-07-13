@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
-import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { ResultState } from "~/components/feedback/result-state";
+import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { ResultState } from "~/components/feedback/result-state";
 import { FacultyAccountForm } from "~/features/faculty/faculty-account-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
+import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
 import { facultyService } from "~/services/faculty.service";
 import { permissionService } from "~/services/permission.service";
-import { usePagination } from "~/hooks/use-pagination";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 import type { PermissionSummary } from "~/types/permission";
@@ -120,8 +120,8 @@ function FacultyPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
-        title="Faculty & Deans"
-        description="Faculty members and deans with their department assignments."
+        title="Instructors & Deans"
+        description="Instructors and deans with their department assignments."
         actions={
           <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
             <PlusIcon />
