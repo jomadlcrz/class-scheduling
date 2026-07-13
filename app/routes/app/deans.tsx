@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";

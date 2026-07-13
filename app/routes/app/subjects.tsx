@@ -5,7 +5,7 @@ import { Pagination } from "~/components/ui/pagination";
 import { usePagination } from "~/hooks/use-pagination";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";

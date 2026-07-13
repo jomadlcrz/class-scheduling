@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { PrinterIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pagination } from "~/components/ui/pagination";
 import { usePagination } from "~/hooks/use-pagination";
 import { RoleGuard } from "~/auth/role-guard";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";

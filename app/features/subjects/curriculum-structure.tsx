@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Badge } from "~/components/ui/badge";
 import { DropdownMenu } from "~/components/ui/dropdown";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { ChevronRightIcon, EditIcon, TrashIcon } from "~/components/ui/icons";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import { useSemesters } from "~/hooks/use-semesters";

@@ -1,4 +1,4 @@
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import type { Conflict } from "~/services/conflict.service";
 import { ConflictCard } from "~/features/conflicts/faculty-conflicts";
 

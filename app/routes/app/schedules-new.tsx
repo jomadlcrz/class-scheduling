@@ -5,7 +5,7 @@ import { ResultState } from "~/components/feedback/result-state";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon, RotateIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";

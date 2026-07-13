@@ -106,7 +106,7 @@ app/
 | Tables | `Table`/`TableHead`/`TableBody`/`TableRow`/`TableHeader`/`TableCell` — `components/ui/table.tsx` |
 | Modals & confirmations | `Modal`, `ConfirmDialog` — `components/ui/modal.tsx` |
 | Select dropdown | `Select` — `components/ui/select.tsx` (shares `FieldChrome`/`inputClassName` from input.tsx) |
-| Empty list placeholder | `EmptyState` — `components/ui/empty-state.tsx` |
+| Empty list placeholder | `EmptyState` — `components/feedback/empty-state.tsx` |
 | Auth API (real backend) | `authService` — `services/auth.service.ts` |
 | Backend fetch wrapper (Bearer token, verbatim backend errors) | `apiGet`/`apiPost`/`apiPatch`/`apiPut`/`apiDelete`, `ApiError`, `apiMessage` — `lib/api.ts` |
 | Success toasts (backend message verbatim) | `toast` from `sonner`; `Toaster` — `components/ui/sonner.tsx`, mounted in `layouts/app-shell.tsx` |

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon, PrinterIcon } from "~/components/ui/icons";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";

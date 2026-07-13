@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import type { Schedule } from "~/types/schedule";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";

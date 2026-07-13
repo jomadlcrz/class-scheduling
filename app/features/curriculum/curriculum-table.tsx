@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { AccordionItem } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { CurriculumSubjects } from "~/features/curriculum/curriculum-subjects";
 import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
 import type { YearLevel } from "~/types/subject";

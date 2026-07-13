@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useDeferredValue } from "react";
 import { RoleGuard } from "~/auth/role-guard";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";

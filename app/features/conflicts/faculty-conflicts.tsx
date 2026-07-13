@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
-import { EmptyState } from "~/components/ui/empty-state";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { formatTime12h } from "~/lib/time";
 import type { Conflict } from "~/services/conflict.service";
 
