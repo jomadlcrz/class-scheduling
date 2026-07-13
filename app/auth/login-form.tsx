@@ -6,6 +6,7 @@ import { Input, PasswordInput } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { loginSchema } from "~/schemas/auth.schema";
 import { useAuth } from "~/auth/auth-provider";
+import { markJustLoggedIn } from "~/layouts/dashboard-intro";
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -30,9 +31,12 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       const outcome = await login({ ...result.data, remember });
-      navigate("requiresPasswordChange" in outcome ? "/change-password" : "/dashboard", {
-        replace: true,
-      });
+      if ("requiresPasswordChange" in outcome) {
+        navigate("/change-password", { replace: true });
+      } else {
+        markJustLoggedIn();
+        navigate("/dashboard", { replace: true });
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong. Please try again.",

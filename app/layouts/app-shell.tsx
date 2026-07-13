@@ -1,14 +1,17 @@
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Outlet } from "react-router";
 import { AuthGuard } from "~/auth/auth-guard";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { LayoutSidebarIcon } from "~/components/ui/icons";
 import { Toaster } from "~/components/ui/sonner";
+import { DashboardIntroOverlay, useJustLoggedIn } from "~/layouts/dashboard-intro";
 import { Navbar } from "~/layouts/navbar";
 import { Sidebar } from "~/layouts/sidebar";
 
 const COLLAPSED_KEY = "cs-sidebar-collapsed";
 const MOBILE_QUERY = "(max-width: 1023px)";
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 export default function AppShell() {
   return (
@@ -22,6 +25,7 @@ export default function AppShell() {
 }
 
 function Shell() {
+  const justLoggedIn = useJustLoggedIn();
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(COLLAPSED_KEY) === "1";
@@ -71,14 +75,20 @@ function Shell() {
 
   return (
     <div className="flex min-h-dvh bg-slate-50 dark:bg-navy-950">
+      {justLoggedIn && <DashboardIntroOverlay />}
+
       {/* Desktop sidebar */}
-      <div className="sticky top-0 hidden h-dvh lg:block">
+      <motion.div
+        className="sticky top-0 hidden h-dvh lg:block"
+        initial={{ opacity: 0, x: -16 }}
+        animate={{ opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE_OUT } }}
+      >
         <Sidebar
           collapsed={collapsed}
           onExpand={() => setCollapsedPersisted(false)}
           onNavigate={() => setMobileOpen(false)}
         />
-      </div>
+      </motion.div>
 
       {/* Mobile drawer */}
       <>
@@ -113,12 +123,16 @@ function Shell() {
         </div>
       </>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <motion.div
+        className="flex min-w-0 flex-1 flex-col"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.05, ease: EASE_OUT } }}
+      >
         <Navbar onToggleSidebar={toggleSidebar} />
         <main className="min-w-0 flex-1">
           <Outlet />
         </main>
-      </div>
+      </motion.div>
     </div>
   );
 }

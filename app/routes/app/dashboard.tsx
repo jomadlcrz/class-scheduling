@@ -1,4 +1,6 @@
-﻿import { useEffect, useState } from "react";
+﻿import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { fadeUp, staggerContainer } from "~/landing/motion";
 import { useAuth } from "~/hooks/use-auth";
 import { PageHeader } from "~/layouts/page-header";
 import { fetchDashboardGreeting } from "~/services/dashboard.service";
@@ -23,13 +25,20 @@ export default function Dashboard() {
   }, [user]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <PageHeader
-        title="Dashboard"
-        description={
-          greeting || (user ? "Dashboard" : "Overview of the current academic term.")
-        }
-      />
-    </div>
+    <motion.div
+      className="mx-auto max-w-6xl px-4 py-8"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={fadeUp}>
+        <PageHeader
+          title="Dashboard"
+          description={
+            greeting || (user ? "Dashboard" : "Overview of the current academic term.")
+          }
+        />
+      </motion.div>
+    </motion.div>
   );
 }
