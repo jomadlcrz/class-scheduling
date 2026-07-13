@@ -2,13 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
-import { ResultState } from "~/components/feedback/result-state";
-import { FormError } from "~/components/forms/form-error";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ConfirmDialog } from "~/components/ui/modal";
-import { PlusIcon, RotateIcon } from "~/components/ui/icons";
+import { AlertIcon, AlertTriangleIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
@@ -366,7 +365,12 @@ function SchedulesNewPage() {
         </div>
       ) : (
         <div className="mt-4 flex flex-col gap-4">
-          <FormError message={saveError} />
+          {saveError && (
+            <Alert variant="destructive">
+              <AlertIcon />
+              <AlertDescription>{saveError}</AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <Input
@@ -479,16 +483,19 @@ function SchedulesNewPage() {
           </div>
 
           {generationConflicts.length > 0 && (
-            <ResultState
-              tone="error"
-              title={`${generationConflicts.length} subject${generationConflicts.length === 1 ? "" : "s"} could not be scheduled`}
-            >
-              <ul className="list-disc space-y-1 pl-4 text-left">
-                {generationConflicts.map((c, i) => (
-                  <li key={i}>{c}</li>
-                ))}
-              </ul>
-            </ResultState>
+            <Alert variant="warning">
+              <AlertTriangleIcon />
+              <AlertTitle>
+                {generationConflicts.length} subject{generationConflicts.length === 1 ? "" : "s"} could not be scheduled
+              </AlertTitle>
+              <AlertDescription>
+                <ul className="list-disc space-y-1 pl-4">
+                  {generationConflicts.map((c, i) => (
+                    <li key={i}>{c}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
           )}
 
           {slots.length === 0 ? (
