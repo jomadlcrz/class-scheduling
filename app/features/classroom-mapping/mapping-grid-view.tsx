@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { UserSmallIcon } from "~/components/ui/icons";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
-import { ClassCard, FreeCell, StatusBadge } from "./class-card";
+import { ClassCard, FreeCell } from "./class-card";
 import {
   DAYS, DAY_STYLES, buildDayCells, buildTimeSlots,
   type Classroom, type TimeSlot,
@@ -26,7 +26,6 @@ export function MappingGridView({ classrooms }: MappingGridViewProps) {
               <span className="font-display text-lg tracking-tight text-slate-800 dark:text-white">
                 {room.name}
               </span>
-              <StatusBadge status={room.status} />
             </span>
           }
           adornment={

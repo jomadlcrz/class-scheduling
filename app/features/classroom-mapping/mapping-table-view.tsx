@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
-import { StatusBadge } from "./class-card";
+
 import {
   DAYS, DAY_STYLES, ROOM_COL_W, DAY_COL_W, SLOT_COL_W, TYPE_STYLES, buildDayCells, buildTimeSlots,
   type Classroom, type DayOfWeek, type TimeSlot,
@@ -90,9 +90,7 @@ function RoomDayRow({ room, day, slots, showRoomCell }: {
           <span className="block font-display text-base tracking-tight text-slate-800 dark:text-white">
             {room.name}
           </span>
-          <span className="mt-1 inline-block">
-            <StatusBadge status={room.status} />
-          </span>
+
         </td>
       )}
       <td className={`sticky z-10 border-r-2 border-b border-slate-200 bg-white px-3 py-2 align-middle font-body text-xs font-bold uppercase tracking-widest dark:border-white/10 dark:bg-slate-900 ${ds.color}`}

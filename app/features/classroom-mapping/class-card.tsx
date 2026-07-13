@@ -1,6 +1,6 @@
 import { UserSmallIcon } from "~/components/ui/icons";
 import { formatTime12h } from "~/lib/time";
-import { TYPE_STYLES, type ClassEntry, type ClassroomStatus, type TimeSlot } from "./mapping-model";
+import { TYPE_STYLES, type ClassEntry, type TimeSlot } from "./mapping-model";
 
 export function ClassCard({ entry, hiddenCount = 0 }: { entry: ClassEntry; hiddenCount?: number }) {
   const s = TYPE_STYLES[entry.type];
@@ -45,14 +45,4 @@ export function FreeCell({ slot }: { slot: TimeSlot }) {
   );
 }
 
-export function StatusBadge({ status }: { status: ClassroomStatus }) {
-  return status === "available" ? (
-    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-      Available
-    </span>
-  ) : (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 font-body text-xs font-semibold text-red-800 dark:bg-red-950/60 dark:text-red-300">
-      Full
-    </span>
-  );
-}
+

@@ -43,6 +43,7 @@ function ClassroomMappingPage() {
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState("");
   const [buildingFilter, setBuildingFilter] = useState("all");
+  const buildingName = buildings.find((b) => String(b.id) === buildingFilter)?.name;
   const [rawSearch, setRawSearch] = useState("");
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -68,9 +69,8 @@ function ClassroomMappingPage() {
     let stale = false;
     setLoadError(null);
     setClassrooms(null);
-    const semesterNumber = semesters.find((s) => s.semester === semester)?.semesterNumber;
     Promise.all([
-      classroomMappingService.list({ schoolYear, semester, semesterNumber }),
+      classroomMappingService.list({ schoolYear, semester, building: buildingName }),
       buildingService.list(),
     ])
       .then(([result, buildingList]) => {
@@ -83,20 +83,16 @@ function ClassroomMappingPage() {
         setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
       });
     return () => { stale = true; };
-  }, [semester, schoolYear, semesters]);
+  }, [semester, schoolYear, semesters, buildingName]);
 
   const search = useDeferredValue(rawSearch);
 
   const filtered = useMemo(
     () => {
       if (!classrooms) return [];
-      let result = classrooms;
-      if (buildingFilter !== "all") {
-        result = result.filter((r) => r.buildingId === buildingFilter);
-      }
-      return filterClassrooms(result, search);
+      return filterClassrooms(classrooms, search);
     },
-    [classrooms, search, buildingFilter],
+    [classrooms, search],
   );
 
   return (

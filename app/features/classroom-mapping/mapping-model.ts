@@ -2,7 +2,6 @@ import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, getScheduleDayKey, type Schedu
 import { formatTime12h, timeToMinutes } from "~/lib/time";
 
 export type SubjectType = "major_lab" | "major_no_lab" | "gen_ed";
-export type ClassroomStatus = "available" | "full";
 export type DayOfWeek = (typeof SCHEDULE_DAY_NAMES)[number];
 
 export interface ClassEntry {
@@ -19,8 +18,6 @@ export interface ClassEntry {
 export interface Classroom {
   id: string;
   name: string;
-  buildingId: string;
-  status: ClassroomStatus;
   entries: ClassEntry[];
 }
 
