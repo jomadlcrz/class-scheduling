@@ -123,7 +123,13 @@ function ModalContent({
     };
   }, []);
 
-  // Escape is intentionally NOT wired — modal closes only via its own buttons.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   return (
     <>
@@ -132,7 +138,7 @@ function ModalContent({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
+        transition={{ duration: 0.2 }}
         className="fixed inset-0 z-40 bg-navy-950/40"
         aria-hidden="true"
       />
@@ -143,10 +149,10 @@ function ModalContent({
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          initial={{ opacity: 0, scale: 0.96, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 8 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-navy-900 ${wide ? "max-w-3xl" : "max-w-md"}`}
         >
           <div className="flex shrink-0 items-start justify-between gap-4">
