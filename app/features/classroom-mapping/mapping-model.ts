@@ -35,8 +35,8 @@ export type DayCell =
 
 export const DAYS: DayOfWeek[] = [...SCHEDULE_DAY_NAMES];
 
-/** Baseline column boundaries (minutes): 7:00 AM – 5:30 PM in 90-min steps. */
-const BASELINE_BOUNDARIES = [420, 510, 600, 690, 780, 870, 960, 1050];
+/** Baseline column boundaries (minutes): 7:00 AM – 6:00 PM, 90-min steps (final step is 30 min to land on 6:00 PM). */
+const BASELINE_BOUNDARIES = [420, 510, 600, 690, 780, 870, 960, 1050, 1080];
 
 function minutesToLabel(minutes: number): string {
   const hh = String(Math.floor(minutes / 60)).padStart(2, "0");

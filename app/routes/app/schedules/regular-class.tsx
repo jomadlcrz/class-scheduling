@@ -39,7 +39,7 @@ export default function RegularClassRoute() {
 
 function RegularClassPage() {
   const navigate = useNavigate();
-  const { semesters, semesterLabel } = useSemesters();
+  const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -128,10 +128,15 @@ function RegularClassPage() {
             value={schoolYear}
             onChange={(e) => setSchoolYear(e.target.value)}
           >
-            {schoolYears.length === 0 && <option value="">Loading…</option>}
-            {schoolYears.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
+            {isLoading ? (
+              <option value="">Loading…</option>
+            ) : schoolYears.length === 0 ? (
+              <option value="">No school year</option>
+            ) : (
+              schoolYears.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))
+            )}
           </Select>
           <Select
             id="rc-semester"
@@ -139,10 +144,15 @@ function RegularClassPage() {
             value={semester}
             onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
           >
-            {semesters.length === 0 && <option value="">Loading…</option>}
-            {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
-              <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
-            ))}
+            {semestersLoading ? (
+              <option value="">Loading…</option>
+            ) : semesters.length === 0 ? (
+              <option value="">No semester</option>
+            ) : (
+              semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
+                <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
+              ))
+            )}
           </Select>
           <Select
             id="rc-set"
@@ -150,10 +160,15 @@ function RegularClassPage() {
             value={setName}
             onChange={(e) => setSetName(e.target.value)}
           >
-            {availableSets.length === 0 && <option value="">Loading…</option>}
-            {availableSets.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+            {isLoading ? (
+              <option value="">Loading…</option>
+            ) : availableSets.length === 0 ? (
+              <option value="">No set</option>
+            ) : (
+              availableSets.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))
+            )}
           </Select>
         </div>
       </div>

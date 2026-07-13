@@ -46,22 +46,21 @@ function ClassroomMappingPage() {
   const [rawSearch, setRawSearch] = useState("");
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [contextLoading, setContextLoading] = useState(true);
 
   useEffect(() => {
-    semesterService
-      .list()
-      .then((list) => {
-        setSemesters(list);
-        if (list.length > 0 && !semester) setSemester(list[0].semester);
+    Promise.all([semesterService.list(), schoolYearService.list()])
+      .then(([semesterList, schoolYearList]) => {
+        setSemesters(semesterList);
+        if (semesterList.length > 0 && !semester) setSemester(semesterList[0].semester);
+        setSchoolYears(schoolYearList.map((o) => o.schoolYear));
+        if (schoolYearList.length > 0 && !schoolYear) setSchoolYear(schoolYearList[0].schoolYear);
       })
-      .catch(() => setSemesters([]));
-    schoolYearService
-      .list()
-      .then((list) => {
-        setSchoolYears(list.map((o) => o.schoolYear));
-        if (list.length > 0 && !schoolYear) setSchoolYear(list[0].schoolYear);
+      .catch(() => {
+        setSemesters([]);
+        setSchoolYears([]);
       })
-      .catch(() => setSchoolYears([]));
+      .finally(() => setContextLoading(false));
   }, []);
 
   useEffect(() => {
@@ -111,12 +110,22 @@ function ClassroomMappingPage() {
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem] md:items-end">
           <div className="grid grid-cols-3 gap-3">
             <Select label="School Year" id="cm-year" hideLabel value={schoolYear} onChange={e => setSchoolYear(e.target.value)}>
-              {schoolYears.length === 0 && <option value="">Loading…</option>}
-              {schoolYears.map(y => <option key={y} value={y}>{y}</option>)}
+              {contextLoading ? (
+                <option value="">Loading…</option>
+              ) : schoolYears.length === 0 ? (
+                <option value="">No school year</option>
+              ) : (
+                schoolYears.map(y => <option key={y} value={y}>{y}</option>)
+              )}
             </Select>
             <Select label="Semester" id="cm-sem" hideLabel value={semester} onChange={e => setSemester(e.target.value)}>
-              {semesters.length === 0 && <option value="">Loading…</option>}
-              {semesters.map(s => <option key={s.id} value={s.semester}>{s.semester}</option>)}
+              {contextLoading ? (
+                <option value="">Loading…</option>
+              ) : semesters.length === 0 ? (
+                <option value="">No semester</option>
+              ) : (
+                semesters.map(s => <option key={s.id} value={s.semester}>{s.semester}</option>)
+              )}
             </Select>
             <Select label="Building" id="cm-building" hideLabel value={buildingFilter} onChange={e => setBuildingFilter(e.target.value)}>
               <option value="all">All buildings</option>
@@ -149,6 +158,14 @@ function ClassroomMappingPage() {
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>
+        ) : !contextLoading && schoolYears.length === 0 ? (
+          <EmptyState title="No school year">
+            No school year has been added yet.
+          </EmptyState>
+        ) : !contextLoading && semesters.length === 0 ? (
+          <EmptyState title="No semester">
+            No semester has been configured yet.
+          </EmptyState>
         ) : classrooms === null ? (
           <div
             role="status"
