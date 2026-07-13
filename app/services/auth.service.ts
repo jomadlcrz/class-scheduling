@@ -97,6 +97,23 @@ async function requestPasswordReset(email: string): Promise<void> {
   await apiPost("/auth/forgot-password", { email });
 }
 
+// TODO: endpoint not implemented on the backend yet — confirm the path once
+// it lands. Gates the reset-password form: any failure (invalid, expired,
+// already-used token, or a network error) is treated as "can't proceed".
+async function verifyResetToken(token: string): Promise<boolean> {
+  try {
+    await apiPost("/auth/verify-reset-token", { token });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// TODO: endpoint not implemented on the backend yet — confirm the path once it lands.
+async function resetPassword(token: string, newPassword: string): Promise<void> {
+  await apiPost("/auth/reset-password", { token, newPassword });
+}
+
 async function changePassword(newPassword: string, _currentPassword?: string): Promise<void> {
   const session = loadSession();
   const pending = getPending();
@@ -126,5 +143,7 @@ export const authService = {
   logout,
   getStoredSession,
   requestPasswordReset,
+  verifyResetToken,
+  resetPassword,
   changePassword,
 };

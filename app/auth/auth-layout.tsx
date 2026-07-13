@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
+import { ThemeToggle } from "~/components/theme/theme-toggle";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { ArrowLeftIcon } from "~/components/ui/icons";
+
+const themeToggleClassName =
+  "fixed right-4 top-4 z-50 grid size-9 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10";
 
 /** Fixed radial-gradient backdrop shared by every auth page. */
 export function AmbientBackground() {
@@ -75,6 +79,8 @@ export function AuthLayout({ backHref, backLabel = "Back", children }: AuthLayou
       <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-navy-950">
         <AmbientBackground />
 
+        <ThemeToggle className={themeToggleClassName} iconSize={18} />
+
         {backHref && (
           <a
             href={backHref}
@@ -116,6 +122,8 @@ export function AuthSplitLayout({ label, backHref, backLabel = "Back", children 
     <ThemeProvider>
       <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-navy-950">
         <AmbientBackground />
+
+        <ThemeToggle className={themeToggleClassName} iconSize={18} />
 
         {backHref && (
           <a
