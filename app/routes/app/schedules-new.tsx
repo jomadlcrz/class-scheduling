@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { ResultState } from "~/components/feedback/result-state";
 import { FormError } from "~/components/forms/form-error";
@@ -289,18 +290,10 @@ function SchedulesNewPage() {
   async function handleSave() {
     if (!selectedSet || !selectedProgram) return;
 
-    const unassigned = slots.filter((s) => s.facultyId === null);
-    if (unassigned.length > 0) {
-      setSaveError(
-        `${unassigned.length} slot${unassigned.length === 1 ? " has" : "s have"} no faculty assigned — edit ${unassigned.length === 1 ? "it" : "them"} before saving.`,
-      );
-      return;
-    }
-
     setSaveError(null);
     setIsSaving(true);
     try {
-      await scheduleService.createRegular({
+      const result = await scheduleService.createRegular({
         schoolYear,
         semester,
         programId: selectedProgram.id,
@@ -316,6 +309,10 @@ function SchedulesNewPage() {
           roomId: s.roomId,
         })),
       });
+      if (result.message) toast.success(result.message);
+      if (result.warnings?.length) {
+        for (const w of result.warnings) toast.warning(w);
+      }
       navigate("/schedules/regular-class");
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -327,7 +324,6 @@ function SchedulesNewPage() {
   const canGenerate =
     Boolean(selectedSet) && Boolean(selectedYearLevel) && schoolYearValid && !isGenerating;
   const canAddSlot = Boolean(selectedSet) && schoolYearValid && subjects.length > 0;
-  const unassignedCount = slots.filter((s) => s.facultyId === null).length;
   const lockHint = contextLocked ? "Remove all slots to change." : undefined;
   const isLoading = programs === null;
 
@@ -481,14 +477,6 @@ function SchedulesNewPage() {
               )}
             </div>
           </div>
-
-          {unassignedCount > 0 && (
-            <ResultState tone="error" title="Slots need attention">
-              {unassignedCount} generated slot{unassignedCount === 1 ? "" : "s"} ha
-              {unassignedCount === 1 ? "s" : "ve"} no available faculty — edit
-              {unassignedCount === 1 ? " it" : " them"} before saving.
-            </ResultState>
-          )}
 
           {generationConflicts.length > 0 && (
             <ResultState

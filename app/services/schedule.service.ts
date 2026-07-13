@@ -309,7 +309,7 @@ async function createRegular(input: {
   programId: number;
   setId: number;
   slots: RegularSlotInput[];
-}): Promise<void> {
+}): Promise<{ message?: string; warnings?: string[] }> {
   const byDay = new Map<Day, RegularSlotInput[]>();
   for (const slot of input.slots) {
     const slots = byDay.get(slot.day) ?? [];
@@ -317,7 +317,7 @@ async function createRegular(input: {
     slots.push(slot);
   }
 
-  await apiPost("/regular_schedule/create-regular-class-schedules", {
+  return apiPost<{ message?: string; warnings?: string[] }>("/regular_schedule/create-regular-class-schedules", {
     schoolYear: input.schoolYear,
     semester: input.semester,
     programId: input.programId,
