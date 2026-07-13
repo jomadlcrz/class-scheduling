@@ -1,3 +1,4 @@
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -37,7 +38,15 @@ export function FacultyTable({ faculty }: FacultyTableProps) {
               {member.mobile ?? "—"}
             </TableCell>
             <TableCell>
-              <span className="text-slate-600 dark:text-slate-300">{member.departmentCode}</span>
+              <div className="flex items-center gap-2">
+                <img
+                  src={departmentLogoUrl(member.departmentCode)}
+                  alt={`${member.departmentCode} logo`}
+                  onError={onDepartmentLogoError}
+                  className="size-8 rounded-lg object-contain"
+                />
+                <span className="text-slate-600 dark:text-slate-300">{member.departmentCode}</span>
+              </div>
             </TableCell>
             <TableCell>
               <span className="text-slate-600 dark:text-slate-300">
