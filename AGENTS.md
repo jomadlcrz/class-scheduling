@@ -4,7 +4,7 @@ Guidance for AI agents and contributors working in this repo. Follow these conve
 
 ## Project overview
 
-A class-scheduling web app for GWC (builds conflict-free academic timetables). **Connected to the real backend** (Flask, separate repo at `C:\Users\jomadlcrz\Desktop\class-scheduling-backend` — check there for actual endpoints, schemas, enum values, and response messages; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`): auth, roles (read-only), faculty-account creation, and the department options for it. Everything else still runs on **mock services** (in-memory data + fake latency). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline mock data in components. To connect another domain to the backend, swap only that service's internals — `auth.service.ts` is the reference pattern.
+A class-scheduling web app for GWC (builds conflict-free academic timetables). **Connected to the real backend** (Flask, separate repo at `C:\Users\jomadlcrz\Desktop\class-scheduling-backend` — check there for actual endpoints, schemas, enum values, and response messages; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline data in components.
 
 The auth slice is live against the backend end-to-end:
 
@@ -18,7 +18,17 @@ The auth slice is live against the backend end-to-end:
 **Super-admin slice (also live):**
 
 - **Roles page** (`/roles`) — `roleService.list()` calls `GET /super-admin/permission-slugs` (requires a Super Admin token + `system:manage_roles`): real role names and permission slugs; the permission matrix is derived from the union of the roles' permissions. An empty roles table comes back as 404 + `[]` — the service maps that to an empty list.
-- **Faculty account creation** (`/faculty` → New Faculty) — `facultyService.create()` calls `POST /super-admin/create-faculty-accounts` (`{ departmentId, firstName, midName?, lastName, gender, civilStatus, contact: { mobile, email }, roleName: "Faculty" }`); the backend creates the login account + faculty profile and emails a temp password. The form (`faculty-account-form.tsx`) mirrors that contract; the department dropdown loads real integer-id departments via `facultyService.listDepartmentOptions()` (`GET /departments`, 404 = empty). **The faculty table/edit/status flows are still mocked**, so newly created accounts don't appear in the list yet. `faculty-form.tsx` remains the mock edit form — don't merge the two while the list is mocked.
+- **Faculty account creation** (`/faculty` → New Faculty) — `facultyService.create()` calls `POST /super-admin/create-faculty-accounts` (`{ departmentId, firstName, midName?, lastName, gender, civilStatus, contact: { mobile, email }, roleName: "Faculty" }`); the backend creates the login account + faculty profile and emails a temp password. The form (`faculty-account-form.tsx`) mirrors that contract; the department dropdown loads real integer-id departments via `facultyService.listDepartmentOptions()` (`GET /departments`, 404 = empty).
+
+**Classroom mapping slice (live):**
+
+- `classroomMappingService.list()` calls `GET /room_mapping/get-room-mapped` with query params `school_year`, `semester`, `building` (all optional). The backend returns rooms with their schedule days and 30-minute available slots. The frontend maps the response into `Classroom[]` with `ClassEntry[]` per room. Building filter is passed server-side, not filtered client-side.
+
+**Schedule slice (live):**
+
+- `scheduleService.createRegular()` calls `POST /regular_schedule/create-regular-class-schedules` and returns `{ message?, warnings? }` from the backend. Success messages are shown via `toast.success(message)`, warnings via `toast.warning()` (sonner). Error messages come verbatim from `ApiError` — never write frontend copy.
+- `scheduleService.autoGenerate()` calls `POST /regular_schedule/auto-generate-schedule` and returns `{ slots, conflicts }`. Conflicts are backend-generated explanations for subjects that couldn't be placed.
+- Frontend form validation (zod) only checks required fields are filled; all business logic validation (room occupied, faculty conflict, hour caps, missing load, gap violations) is handled by the backend and surfaced via `ApiError.message`.
 
 **Backend is the single source of truth — never hardcode its vocabulary in the frontend:**
 
@@ -26,8 +36,6 @@ The auth slice is live against the backend end-to-end:
 - **Error messages** shown in the UI come verbatim from backend responses via `ApiError` (see auth slice above) — no frontend-authored copy for API failures.
 - **Success messages** follow the same rule: mutation service functions return the backend response's `message` verbatim via `apiMessage(data)` (`lib/api.ts`) — typed as `apiPost<{ message?: string }>(…)` — and route handlers surface it with `if (message) toast.success(message);` (sonner). Never write frontend success copy; if the response carries no `message`, show no toast (and fix it backend-side). Errors stay inline via `FormError` — do not toast them.
 - If the backend response is missing something (a filtered value, an absent endpoint), fix or request it backend-side rather than patching values into the frontend.
-
-Remaining mock services share the in-memory store `app/services/mock-data.ts` (demo accounts there no longer control login — real credentials live in the backend DB).
 
 **Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `FACULTY`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Users + Roles admin pages are live (`/users`, `/roles`).
 
@@ -66,8 +74,7 @@ app/
 ├── layouts/               # App-shell layouts (EMPTY STUBS)
 ├── hooks/                 # Shared hooks (use-theme, use-auth are live; rest are stubs)
 ├── lib/                   # Pure utilities (validators, storage, api, session are live)
-├── services/              # Data layer — auth + role + faculty.create talk to the REAL
-│                          #   backend; the rest are MOCKS over mock-data.ts
+├── services/              # Data layer — all services talk to the REAL backend
 └── types/                 # Domain types (user, auth, role, subject are live; rest are stubs)
 ```
 

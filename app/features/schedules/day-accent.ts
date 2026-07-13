@@ -2,53 +2,52 @@ import type { Day } from "~/types/schedule";
 
 /**
  * Per-day accent classes shared by the grid and list schedule views.
- * Light-mode colors mirror the reference client (C:\Users\jomadlcrz\Desktop\client);
- * dark-mode variants use the nearest Tailwind palette shade.
+ * Colors match the classroom-mapping palette from lib/schedule-days.ts.
  */
 export const DAY_ACCENT: Record<
   Day,
   { borderL: string; cardBg: string; cellBg: string; text: string; topBorder: string }
 > = {
   M:  {
-    borderL: "border-l-[#0d4da1] dark:border-l-blue-400",
-    cardBg: "bg-[#f5faff] dark:bg-blue-900/20",
-    cellBg: "bg-[#e8f4ff] dark:bg-blue-900/20",
-    text: "text-[#0d4da1] dark:text-blue-300",
-    topBorder: "border-t-[#0d4da1] dark:border-t-blue-400",
+    borderL: "border-l-red-500 dark:border-l-red-900",
+    cardBg: "bg-red-100 dark:bg-red-950/50",
+    cellBg: "bg-red-100 dark:bg-red-950/50",
+    text: "text-red-600 dark:text-red-400",
+    topBorder: "border-t-red-500 dark:border-t-red-900",
   },
   T:  {
-    borderL: "border-l-[#15803d] dark:border-l-green-400",
-    cardBg: "bg-[#f5fff8] dark:bg-green-900/20",
-    cellBg: "bg-[#e7faef] dark:bg-green-900/20",
-    text: "text-[#15803d] dark:text-green-300",
-    topBorder: "border-t-[#15803d] dark:border-t-green-400",
+    borderL: "border-l-amber-500 dark:border-l-amber-900",
+    cardBg: "bg-amber-100 dark:bg-amber-950/50",
+    cellBg: "bg-amber-100 dark:bg-amber-950/50",
+    text: "text-amber-600 dark:text-amber-400",
+    topBorder: "border-t-amber-500 dark:border-t-amber-900",
   },
   W:  {
-    borderL: "border-l-[#b77913] dark:border-l-amber-400",
-    cardBg: "bg-[#fffaf0] dark:bg-amber-900/20",
-    cellBg: "bg-[#fff7e5] dark:bg-amber-900/20",
-    text: "text-[#b77913] dark:text-amber-300",
-    topBorder: "border-t-[#b77913] dark:border-t-amber-400",
+    borderL: "border-l-red-500 dark:border-l-red-900",
+    cardBg: "bg-red-100 dark:bg-red-950/50",
+    cellBg: "bg-red-100 dark:bg-red-950/50",
+    text: "text-red-600 dark:text-red-400",
+    topBorder: "border-t-red-500 dark:border-t-red-900",
   },
   Th: {
-    borderL: "border-l-[#6d28d9] dark:border-l-violet-400",
-    cardBg: "bg-[#faf8ff] dark:bg-violet-900/20",
-    cellBg: "bg-[#f1edff] dark:bg-violet-900/20",
-    text: "text-[#6d28d9] dark:text-violet-300",
-    topBorder: "border-t-[#6d28d9] dark:border-t-violet-400",
+    borderL: "border-l-amber-500 dark:border-l-amber-900",
+    cardBg: "bg-amber-100 dark:bg-amber-950/50",
+    cellBg: "bg-amber-100 dark:bg-amber-950/50",
+    text: "text-amber-600 dark:text-amber-400",
+    topBorder: "border-t-amber-500 dark:border-t-amber-900",
   },
   F:  {
-    borderL: "border-l-[#be123c] dark:border-l-rose-400",
-    cardBg: "bg-[#fff7f9] dark:bg-rose-900/20",
-    cellBg: "bg-[#ffe8ed] dark:bg-rose-900/20",
-    text: "text-[#be123c] dark:text-rose-300",
-    topBorder: "border-t-[#be123c] dark:border-t-rose-400",
+    borderL: "border-l-red-500 dark:border-l-red-900",
+    cardBg: "bg-red-100 dark:bg-red-950/50",
+    cellBg: "bg-red-100 dark:bg-red-950/50",
+    text: "text-red-600 dark:text-red-400",
+    topBorder: "border-t-red-500 dark:border-t-red-900",
   },
   S:  {
-    borderL: "border-l-[#0d8fa6] dark:border-l-cyan-400",
-    cardBg: "bg-[#f2fdff] dark:bg-cyan-900/20",
-    cellBg: "bg-[#e5fbff] dark:bg-cyan-900/20",
-    text: "text-[#0d8fa6] dark:text-cyan-300",
-    topBorder: "border-t-[#0d8fa6] dark:border-t-cyan-400",
+    borderL: "border-l-pink-500 dark:border-l-pink-900",
+    cardBg: "bg-pink-100 dark:bg-pink-950/50",
+    cellBg: "bg-pink-100 dark:bg-pink-950/50",
+    text: "text-pink-700 dark:text-pink-400",
+    topBorder: "border-t-pink-500 dark:border-t-pink-900",
   },
 };

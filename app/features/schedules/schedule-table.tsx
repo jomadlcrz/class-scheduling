@@ -90,7 +90,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
                   {i === 0 && (
                     <td
                       rowSpan={slots.length}
-                      className={`whitespace-nowrap px-3 py-2.5 text-center align-middle font-body text-xs font-semibold ${accent.cellBg} ${accent.text}`}
+                      className={`whitespace-nowrap px-3 py-2.5 text-center align-middle font-body text-xs font-semibold uppercase tracking-widest ${accent.cellBg} ${accent.text}`}
                     >
                       {dayLabels[day]}
                     </td>
@@ -179,7 +179,7 @@ function MobileDayCard({
   return (
     <div className="overflow-hidden rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
       <div
-        className={`border-l-4 px-4 py-2 font-body text-sm font-semibold ${accent.borderL} ${accent.cellBg} ${accent.text}`}
+        className={`border-l-4 px-4 py-2 font-body text-sm font-semibold uppercase tracking-widest ${accent.borderL} ${accent.cellBg} ${accent.text}`}
       >
         {dayLabels[day]}
       </div>
