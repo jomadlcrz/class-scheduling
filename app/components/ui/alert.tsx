@@ -1,4 +1,7 @@
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
+
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 const variants = {
   default:
@@ -22,12 +25,16 @@ type AlertProps = {
 /** Callout for user attention: icon, title, description, optional action. */
 export function Alert({ variant = "default", className, children }: AlertProps) {
   return (
-    <div
+    <motion.div
       role="alert"
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+      transition={{ duration: 0.25, ease: EASE_OUT }}
       className={`relative grid w-full grid-cols-[0_1fr] has-[>svg]:grid-cols-[20px_1fr] items-start gap-x-3 gap-y-1 rounded-lg border px-4 py-3 font-body [&>svg]:size-5 [&>svg]:translate-y-0.5 ${variants[variant]} ${className ?? ""}`.trim()}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 

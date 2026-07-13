@@ -1,3 +1,4 @@
+import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -320,8 +321,8 @@ function SchedulesNewPage() {
   }
 
   const contextLocked = slots.length > 0;
-  const canGenerate =
-    Boolean(selectedSet) && Boolean(selectedYearLevel) && schoolYearValid && !isGenerating;
+  const canGenerateBase = Boolean(selectedSet) && Boolean(selectedYearLevel) && schoolYearValid;
+  const canGenerate = canGenerateBase && !isGenerating;
   const canAddSlot = Boolean(selectedSet) && schoolYearValid && subjects.length > 0;
   const lockHint = contextLocked ? "Remove all slots to change." : undefined;
   const isLoading = programs === null;
@@ -365,12 +366,14 @@ function SchedulesNewPage() {
         </div>
       ) : (
         <div className="mt-4 flex flex-col gap-4">
-          {saveError && (
-            <Alert variant="destructive">
-              <AlertIcon />
-              <AlertDescription>{saveError}</AlertDescription>
-            </Alert>
-          )}
+          <AnimatePresence>
+            {saveError && (
+              <Alert key="save-error" variant="destructive">
+                <AlertIcon />
+                <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
+            )}
+          </AnimatePresence>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <Input
@@ -446,61 +449,67 @@ function SchedulesNewPage() {
               <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
             </div>
             <div className="flex justify-end gap-2">
-              {hasGenerated ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  block={false}
-                  disabled={!canGenerate}
-                  isLoading={isGenerating}
-                  loadingLabel="Regenerating…"
-                  onClick={handleAutoGenerate}
-                >
-                  <RotateIcon />
-                  Regenerate
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  block={false}
-                  disabled={!canGenerate}
-                  isLoading={isGenerating}
-                  loadingLabel="Generating…"
-                  onClick={handleAutoGenerate}
-                >
-                  <ZapIcon />
-                  Auto-Generate
-                </Button>
-              )}
-              {hasGenerated && (
-                <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
-                  <PlusIcon />
-                  Add Slot
-                </Button>
+              {slots.length > 0 && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    disabled={!canGenerate}
+                    isLoading={isGenerating}
+                    loadingLabel="Regenerating…"
+                    onClick={handleAutoGenerate}
+                  >
+                    <RotateIcon />
+                    Regenerate
+                  </Button>
+                  <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
+                    <PlusIcon />
+                    Add Slot
+                  </Button>
+                </>
               )}
             </div>
           </div>
 
-          {generationConflicts.length > 0 && (
-            <Alert variant="warning">
-              <AlertTriangleIcon />
-              <AlertTitle>
-                {generationConflicts.length} subject{generationConflicts.length === 1 ? "" : "s"} could not be scheduled
-              </AlertTitle>
-              <AlertDescription>
-                <ul className="list-disc space-y-1 pl-4">
-                  {generationConflicts.map((c, i) => (
-                    <li key={i}>{c}</li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
+          <AnimatePresence>
+            {generationConflicts.length > 0 && (
+              <Alert key="generation-conflicts" variant="warning">
+                <AlertTriangleIcon />
+                <AlertTitle>
+                  {generationConflicts.length} subject{generationConflicts.length === 1 ? "" : "s"} could not be scheduled
+                </AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc space-y-1 pl-4">
+                    {generationConflicts.map((c, i) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+          </AnimatePresence>
 
           {slots.length === 0 ? (
-            <EmptyState title="No slots yet">
-              {canGenerate
+            <EmptyState
+              title="No slots yet"
+              action={
+                canGenerateBase ? (
+                  <Button
+                    type="button"
+                    block={false}
+                    disabled={!canGenerate}
+                    isLoading={isGenerating}
+                    loadingLabel={hasGenerated ? "Regenerating…" : "Generating…"}
+                    onClick={handleAutoGenerate}
+                  >
+                    {hasGenerated ? <RotateIcon /> : <ZapIcon />}
+                    {hasGenerated ? "Regenerate" : "Auto-Generate"}
+                  </Button>
+                ) : undefined
+              }
+            >
+              {canGenerateBase
                 ? "Auto-generate a schedule for the selected set, then fine-tune the slots."
                 : "Pick a school year, semester, program, year level, and set with assigned subjects first."}
             </EmptyState>
