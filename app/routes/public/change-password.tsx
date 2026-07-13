@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
-import { AuthHeading, AuthLayout } from "~/auth/auth-layout";
+import { AuthHeading, AuthSplitLayout } from "~/auth/auth-layout";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { LoadingState } from "~/components/feedback/loading-state";
 import { ResultState } from "~/components/feedback/result-state";
@@ -36,9 +36,9 @@ export default function ChangePassword() {
   if (status === "denied") return <Navigate to="/login" replace />;
 
   return (
-    <AuthLayout>
+    <AuthSplitLayout label="ACCOUNT SECURITY">
       <ChangePasswordContent />
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }
 

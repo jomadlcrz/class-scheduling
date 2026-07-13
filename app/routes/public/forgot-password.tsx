@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { AuthHeading, AuthLayout } from "~/auth/auth-layout";
+import { AuthHeading, AuthSplitLayout } from "~/auth/auth-layout";
 import { ForgotPasswordForm } from "~/auth/forgot-password-form";
+import { GuestGuard } from "~/auth/guest-guard";
 import { ResultState } from "~/components/feedback/result-state";
 
 export function meta() {
@@ -15,9 +16,11 @@ export function meta() {
 
 export default function ForgotPassword() {
   return (
-    <AuthLayout backHref="/login" backLabel="Back to log in">
-      <ForgotPasswordContent />
-    </AuthLayout>
+    <GuestGuard>
+      <AuthSplitLayout label="ACCOUNT SECURITY" backHref="/login" backLabel="Back to log in">
+        <ForgotPasswordContent />
+      </AuthSplitLayout>
+    </GuestGuard>
   );
 }
 
