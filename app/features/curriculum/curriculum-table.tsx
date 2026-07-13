@@ -95,15 +95,11 @@ function YearBlock({
 function SemesterCard({ group }: { group: CurriculumGroup }) {
   const { semesterLabel } = useSemesters();
   return (
-    <div className="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-navy-800/60">
-      <div className="px-3 py-2 text-center">
-        <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-          {semesterLabel(group.semester)}
-        </span>
-      </div>
-      <div className="flex-1">
-        <CurriculumSubjects group={group} />
-      </div>
+    <div className="flex flex-col gap-2">
+      <p className="text-center font-body text-sm font-semibold text-navy-700 dark:text-white">
+        {semesterLabel(group.semester)}
+      </p>
+      <CurriculumSubjects group={group} />
     </div>
   );
 }

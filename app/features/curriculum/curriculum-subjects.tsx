@@ -8,14 +8,14 @@ type CurriculumSubjectsProps = {
 export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
   if (group.subjects.length === 0) {
     return (
-      <p className="py-4 text-center font-body text-sm text-slate-400 dark:text-slate-500">
+      <div className="rounded-xl border border-dashed border-slate-300 py-6 text-center font-body text-sm text-slate-400 dark:border-white/15 dark:text-slate-500">
         No subjects assigned.
-      </p>
+      </div>
     );
   }
 
   return (
-    <Table bare>
+    <Table>
       <TableHead>
         <TableHeader>Subject Code</TableHeader>
         <TableHeader>Descriptive Title</TableHeader>

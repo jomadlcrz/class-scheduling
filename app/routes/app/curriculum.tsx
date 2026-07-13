@@ -63,6 +63,9 @@ function CurriculumPage() {
 
   const isLoaded = curriculum !== null && curriculum !== "loading";
   const hasSubjects = isLoaded && curriculum.groups.length > 0;
+  const totalSubjects = isLoaded
+    ? curriculum.groups.reduce((sum, g) => sum + g.subjects.length, 0)
+    : 0;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -100,27 +103,32 @@ function CurriculumPage() {
           </EmptyState>
         ) : (
           <>
-            <div className="flex items-end gap-3">
-              <div className="flex-1">
-                <Input
-                  id="curriculum-search"
-                  label="Search"
-                  type="search"
-                  placeholder="Code or title…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+            <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 dark:border-white/10 sm:flex-row sm:items-end sm:justify-between">
+              <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in this curriculum
+              </p>
+              <div className="flex items-end gap-3">
+                <div className="w-full sm:w-64">
+                  <Input
+                    id="curriculum-search"
+                    label="Search"
+                    type="search"
+                    placeholder="Code or title…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <Tooltip label="Print curriculum">
+                  <button
+                    type="button"
+                    aria-label="Print curriculum"
+                    onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
+                    className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                  >
+                    <PrinterIcon />
+                  </button>
+                </Tooltip>
               </div>
-              <Tooltip label="Print curriculum">
-                <button
-                  type="button"
-                  aria-label="Print curriculum"
-                  onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
-                  className="grid size-10 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
-                >
-                  <PrinterIcon />
-                </button>
-              </Tooltip>
             </div>
 
             <CurriculumTable curriculum={curriculum} search={search} />

@@ -2,14 +2,7 @@ import type { ReactNode } from "react";
 
 /** Composable table primitives sharing the card-style chrome of the app. */
 
-export function Table({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
-  if (bare) {
-    return (
-      <div className="scrollbar-thin overflow-x-auto">
-        <table className="w-full text-left font-body text-sm">{children}</table>
-      </div>
-    );
-  }
+export function Table({ children }: { children: ReactNode }) {
   return (
     <div className="scrollbar-thin overflow-x-auto rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
       <table className="w-full text-left font-body text-sm">{children}</table>
