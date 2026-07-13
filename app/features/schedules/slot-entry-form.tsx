@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { Select } from "~/components/ui/select";
 import type {
+  ScheduleFacultyOption,
   ScheduleRoomOption,
   ScheduleSubjectOption,
   SlotDraft,
@@ -20,6 +21,32 @@ import {
 import { useClassModes } from "~/hooks/use-class-modes";
 
 export type PendingSlot = SlotDraft & { tempId: string };
+
+/**
+ * The subject's usual faculty list (/schedule/subjects) only shows instructors
+ * assigned under this exact program's curriculum. Auto-generate can assign someone
+ * from a different program's curriculum for the same subject instead — that
+ * instructor won't be in `base`, so the dropdown would silently show nothing
+ * selected. Fill in whoever the slot actually has (via its own faculty_choices,
+ * or the assignment itself) as extra options so editing always resolves correctly.
+ */
+function mergeFaculties(
+  base: ScheduleFacultyOption[],
+  slot: PendingSlot | undefined,
+): ScheduleFacultyOption[] {
+  if (!slot) return base;
+
+  const candidates = [...(slot.facultyChoices ?? [])];
+  if (slot.facultyId != null && !candidates.some((f) => f.id === slot.facultyId)) {
+    candidates.push({ id: slot.facultyId, fullName: slot.facultyName });
+  }
+
+  const missing = candidates
+    .filter((f) => !base.some((b) => b.id === f.id))
+    .map((f) => ({ id: f.id, fullName: f.fullName, maxWeeklyHours: null, currentWeeklyHours: null }));
+
+  return [...base, ...missing];
+}
 
 type SlotEntryFormProps = {
   initialSlot?: PendingSlot;
@@ -56,7 +83,11 @@ export function SlotEntryForm({
 
   const isEditing = Boolean(initialSlot);
   const selectedSubject = subjects.find((s) => String(s.id) === selectedSubjectId);
-  const faculties = selectedSubject?.faculties ?? [];
+  const isOriginalSubject = isEditing && selectedSubjectId === String(initialSlot?.subjectId ?? "");
+  const faculties = mergeFaculties(
+    selectedSubject?.faculties ?? [],
+    isOriginalSubject ? initialSlot : undefined,
+  );
   const selectedFaculty = faculties.find((f) => String(f.id) === facultyId);
   const needsRoom = mode === "F2F";
   function handleSubjectChange(id: string) {

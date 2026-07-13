@@ -195,6 +195,13 @@ export type SlotDraft = {
   roomName: string;
   mode: ScheduleMode;
   sessionType?: "Lecture" | "Lab";
+  /**
+   * Other instructors the auto-generate algorithm considered viable for this exact
+   * slot (may include faculty from other programs' curricula that /schedule/subjects
+   * doesn't surface for this program). Lets the Edit form always offer the faculty
+   * that was actually assigned, even when it isn't in the subject's usual faculty list.
+   */
+  facultyChoices?: { id: number; fullName: string }[];
 };
 
 type AutoGenerateResponse = {
@@ -257,6 +264,10 @@ async function autoGenerate(input: {
       facultyName: s.faculty_name ?? "",
       roomId: s.room_id,
       roomName: s.room_name ?? "",
+      facultyChoices: (s.faculty_choices ?? []).map((f) => ({
+        id: f.faculty_id,
+        fullName: f.faculty_name,
+      })),
       mode: normalizeMode(s.mode),
       sessionType: s.session_type,
     })),
