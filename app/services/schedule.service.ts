@@ -202,6 +202,8 @@ export type SlotDraft = {
    * that was actually assigned, even when it isn't in the subject's usual faculty list.
    */
   facultyChoices?: { id: number; fullName: string }[];
+  /** Rooms of the correct type (lecture/lab) the algorithm considered viable for this slot. */
+  roomChoices?: { id: number; roomName: string }[];
 };
 
 type AutoGenerateResponse = {
@@ -228,6 +230,14 @@ type AutoGenerateResponse = {
       end_time: string;
     }[];
   }[];
+  /** Human-readable reasons for subjects the algorithm couldn't place at all. */
+  conflicts: string[];
+};
+
+export type AutoGenerateResult = {
+  slots: SlotDraft[];
+  /** Subjects the algorithm couldn't fit anywhere, with the reason why. */
+  conflicts: string[];
 };
 
 /**
@@ -243,7 +253,7 @@ async function autoGenerate(input: {
   yearLevelLabel: string;
   programId: number;
   setId: number;
-}): Promise<SlotDraft[]> {
+}): Promise<AutoGenerateResult> {
   const data = await apiPost<AutoGenerateResponse>("/regular_schedule/auto-generate-schedule", {
     schoolYear: input.schoolYear,
     semester: input.semesterLabel,
@@ -252,7 +262,7 @@ async function autoGenerate(input: {
     setId: input.setId,
   });
 
-  return data.day_schedules.flatMap((day) =>
+  const slots = data.day_schedules.flatMap((day) =>
     day.subject_schedules.map((s) => ({
       subjectId: s.subject_id,
       subjectCode: s.subject_code,
@@ -268,10 +278,16 @@ async function autoGenerate(input: {
         id: f.faculty_id,
         fullName: f.faculty_name,
       })),
+      roomChoices: (s.room_choices ?? []).map((r) => ({
+        id: r.room_id,
+        roomName: r.room_name,
+      })),
       mode: normalizeMode(s.mode),
       sessionType: s.session_type,
     })),
   );
+
+  return { slots, conflicts: data.conflicts ?? [] };
 }
 
 export type RegularSlotInput = {

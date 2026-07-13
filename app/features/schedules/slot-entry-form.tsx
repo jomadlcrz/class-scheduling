@@ -48,6 +48,26 @@ function mergeFaculties(
   return [...base, ...missing];
 }
 
+/**
+ * Auto-generate already resolves each slot to a room of the correct type (lecture
+ * vs lab) via its own room_choices — but /schedule/rooms has no type info at all,
+ * so nothing stops reassigning a Lab session to a lecture room unless the dropdown
+ * is narrowed to what the algorithm actually vetted for this exact slot.
+ */
+function mergeRooms(base: ScheduleRoomOption[], slot: PendingSlot | undefined): ScheduleRoomOption[] {
+  if (!slot || !slot.roomChoices || slot.roomChoices.length === 0) return base;
+
+  const candidates = [...slot.roomChoices];
+  if (slot.roomId != null && !candidates.some((r) => r.id === slot.roomId)) {
+    candidates.push({ id: slot.roomId, roomName: slot.roomName });
+  }
+
+  return candidates.map((c) => {
+    const match = base.find((b) => b.id === c.id);
+    return match ?? { id: c.id, buildingName: "", floorLevel: 0, roomName: c.roomName, roomCapacity: 0 };
+  });
+}
+
 type SlotEntryFormProps = {
   initialSlot?: PendingSlot;
   /** Curriculum subjects for the chosen term, each with its assigned faculties. */
@@ -89,6 +109,7 @@ export function SlotEntryForm({
     isOriginalSubject ? initialSlot : undefined,
   );
   const selectedFaculty = faculties.find((f) => String(f.id) === facultyId);
+  const roomOptions = mergeRooms(rooms, isOriginalSubject ? initialSlot : undefined);
   const needsRoom = mode === "F2F";
   function handleSubjectChange(id: string) {
     setSelectedSubjectId(id);
@@ -106,7 +127,7 @@ export function SlotEntryForm({
       return;
     }
 
-    const room = rooms.find((r) => String(r.id) === roomId);
+    const room = roomOptions.find((r) => String(r.id) === roomId);
 
     if (!selectedSubject) { setError("Select a subject."); return; }
     if (!selectedFaculty) { setError("Select a faculty member."); return; }
@@ -246,9 +267,9 @@ export function SlotEntryForm({
           value={roomId}
           onChange={(e) => setRoomId(e.target.value)}
         >
-          {rooms.map((r) => (
+          {roomOptions.map((r) => (
             <option key={r.id} value={r.id}>
-              {r.buildingName} — {r.roomName} (cap. {r.roomCapacity})
+              {r.buildingName ? `${r.buildingName} — ${r.roomName} (cap. ${r.roomCapacity})` : r.roomName}
             </option>
           ))}
         </Select>

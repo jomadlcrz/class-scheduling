@@ -49,6 +49,11 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
             <TableCell className="hidden sm:table-cell">{room.type}</TableCell>
             <TableCell>
               <Badge tone={ROOM_STATUS_TONES[room.status] ?? "slate"}>{room.status}</Badge>
+              {room.timeRemaining && (
+                <p className="mt-1 font-body text-xs text-slate-400 dark:text-slate-500">
+                  {room.timeRemaining}
+                </p>
+              )}
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">

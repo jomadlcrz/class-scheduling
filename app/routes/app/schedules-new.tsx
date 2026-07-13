@@ -87,6 +87,7 @@ function SchedulesNewPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [generationConflicts, setGenerationConflicts] = useState<string[]>([]);
   const tempIdCounter = useRef(0);
 
   useEffect(() => {
@@ -192,6 +193,7 @@ function SchedulesNewPage() {
     setSets([]);
     setSlots([]);
     setHasGenerated(false);
+    setGenerationConflicts([]);
   }
 
   function handleYearLevelChange(yl: YearLevel) {
@@ -199,15 +201,17 @@ function SchedulesNewPage() {
     setSelectedSetId("");
     setSlots([]);
     setHasGenerated(false);
+    setGenerationConflicts([]);
   }
 
   async function handleAutoGenerate() {
     if (!selectedSet || !selectedProgram || !selectedYearLevel) return;
 
     setSaveError(null);
+    setGenerationConflicts([]);
     setIsGenerating(true);
     try {
-      const generated = await scheduleService.autoGenerate({
+      const { slots: generated, conflicts } = await scheduleService.autoGenerate({
         schoolYear,
         semester,
         semesterLabel: semesterLabel(semester),
@@ -223,6 +227,7 @@ function SchedulesNewPage() {
           return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
         }),
       );
+      setGenerationConflicts(conflicts);
       setHasGenerated(true);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Unable to generate a schedule.");
@@ -472,6 +477,19 @@ function SchedulesNewPage() {
               {unassignedCount} generated slot{unassignedCount === 1 ? "" : "s"} ha
               {unassignedCount === 1 ? "s" : "ve"} no available faculty — edit
               {unassignedCount === 1 ? " it" : " them"} before saving.
+            </ResultState>
+          )}
+
+          {generationConflicts.length > 0 && (
+            <ResultState
+              tone="error"
+              title={`${generationConflicts.length} subject${generationConflicts.length === 1 ? "" : "s"} could not be scheduled`}
+            >
+              <ul className="list-disc space-y-1 pl-4 text-left">
+                {generationConflicts.map((c, i) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
             </ResultState>
           )}
 

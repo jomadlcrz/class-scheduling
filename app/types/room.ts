@@ -22,6 +22,8 @@ export type Room = {
   type: string;
   /** Backend ClassroomStatus value, e.g. "Vacant" — managed by the scheduler. */
   status: string;
+  /** Backend-composed countdown string, e.g. "Time Remaining Before: Occupied is 2:30:00". */
+  timeRemaining: string;
 };
 
 /** Status is backend-managed and buildings are referenced by name on create. */

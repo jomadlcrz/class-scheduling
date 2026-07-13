@@ -15,6 +15,7 @@ type RoomsResponse = {
       room_type: string;
       room_capacity: number;
       room_status: string;
+      time_remaining: string;
     }[];
   }[];
 };
@@ -38,6 +39,7 @@ async function list(): Promise<Room[]> {
       capacity: r.room_capacity,
       type: r.room_type,
       status: r.room_status,
+      timeRemaining: r.time_remaining,
     })),
   );
 }
