@@ -34,6 +34,7 @@ export default [
     route("curriculum", "routes/app/curriculum.tsx"),
     route("students", "routes/app/students.tsx"),
     route("classroom-mapping", "routes/app/classroom-mapping.tsx"),
+    route("audit", "routes/app/audit.tsx"),
     route("conflicts", "routes/app/conflicts.tsx"),
     route("reports", "routes/app/reports.tsx"),
 

@@ -7,6 +7,7 @@ import {
   CalendarIcon,
   ChartIcon,
   ChevronRightIcon,
+  ClockIcon,
   DashboardIcon,
   GraduationCapIcon,
   SettingsIcon,
@@ -78,8 +79,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Academic Community",
     items: [
-      { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin", "registrar", "dean"] },
-      { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin", "registrar", "dean"] },
+      { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin"] },
+      { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin"] },
     ],
   },
   {
@@ -93,6 +94,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Users", to: "/users", icon: <UserIcon />, roles: ["admin"] },
       { label: "Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
+      { label: "Audit Log", to: "/audit", icon: <ClockIcon />, roles: ["admin"] },
     ],
   },
   {
