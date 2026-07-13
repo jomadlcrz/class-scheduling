@@ -61,10 +61,10 @@ function TimetableGrid({ room, slots }: { room: Classroom; slots: TimeSlot[] }) 
           return (
             <div key={day} style={{ display: "contents" }}>
               <div
-                className="col-span-full border-t-2 border-b border-slate-200 px-2 py-1 first:border-t-0 dark:border-white/10"
+                className={`col-span-full border-t-2 border-b px-3 py-1.5 first:border-t-0 ${ds.border} ${ds.color}`}
               >
                 <span
-                  className={`inline-block rounded px-2.5 py-0.5 font-body text-[0.68rem] font-bold uppercase tracking-widest ${ds.color} ${ds.bg}`}
+                  className="font-body text-xs font-bold uppercase tracking-widest"
                   style={{ position: "sticky", left: "1rem" }}
                 >
                   {day}
