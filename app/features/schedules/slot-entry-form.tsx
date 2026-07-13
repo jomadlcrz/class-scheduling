@@ -11,14 +11,15 @@ import type {
 } from "~/services/schedule.service";
 import {
   DAYS,
-  DAY_LABELS,
   generateTimeSlots,
   formatTime,
   getSlotDurationHours,
+  timeToMinutes,
   type Day,
   type ScheduleMode,
 } from "~/types/schedule";
 import { useClassModes } from "~/hooks/use-class-modes";
+import { useDays } from "~/hooks/use-days";
 
 export type PendingSlot = SlotDraft & { tempId: string };
 
@@ -90,6 +91,7 @@ export function SlotEntryForm({
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { classModes } = useClassModes();
+  const { dayLabels } = useDays();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState(
     String(initialSlot?.subjectId ?? subjects[0]?.id ?? ""),
@@ -141,7 +143,7 @@ export function SlotEntryForm({
         s.endTime > startTime,
     );
     if (conflict) {
-      setError(`A slot already exists on ${DAY_LABELS[day]} at that time.`);
+      setError(`A slot already exists on ${dayLabels[day]} at that time.`);
       return;
     }
 
@@ -198,7 +200,7 @@ export function SlotEntryForm({
         onChange={(e) => setDay(e.target.value as Day)}
       >
         {DAYS.map((d) => (
-          <option key={d} value={d}>{DAY_LABELS[d]}</option>
+          <option key={d} value={d}>{dayLabels[d]}</option>
         ))}
       </Select>
 
@@ -219,7 +221,7 @@ export function SlotEntryForm({
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
         >
-          {TIME_SLOTS.slice(1).map((t) => (
+          {TIME_SLOTS.filter((t) => timeToMinutes(t) > timeToMinutes(startTime)).map((t) => (
             <option key={t} value={t}>{formatTime(t)}</option>
           ))}
         </Select>

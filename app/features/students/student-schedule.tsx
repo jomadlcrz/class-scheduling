@@ -1,5 +1,6 @@
 import { formatTime12h } from "~/lib/time";
-import { DAY_LABELS, type Schedule } from "~/types/schedule";
+import { useDays } from "~/hooks/use-days";
+import { type Schedule } from "~/types/schedule";
 import type { Student } from "~/types/student";
 
 type StudentScheduleProps = {
@@ -8,6 +9,7 @@ type StudentScheduleProps = {
 };
 
 export function StudentSchedule({ student, schedules }: StudentScheduleProps) {
+  const { dayLabels } = useDays();
   const studentSchedules = schedules.filter(
     (s) =>
       s.program === student.program &&
@@ -47,7 +49,7 @@ export function StudentSchedule({ student, schedules }: StudentScheduleProps) {
                 {s.buildingCode} — {s.roomName}
               </td>
               <td className="py-2.5 pr-4 text-slate-500 dark:text-slate-400">
-                {DAY_LABELS[s.day] ?? s.day}
+                {dayLabels[s.day] ?? s.day}
               </td>
               <td className="py-2.5 text-slate-500 dark:text-slate-400">
                 {formatTime12h(s.startTime)} – {formatTime12h(s.endTime)}

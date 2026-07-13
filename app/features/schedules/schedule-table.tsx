@@ -1,6 +1,7 @@
 import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
-import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "~/types/schedule";
+import { useDays } from "~/hooks/use-days";
+import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
 import { ModeBadge } from "~/features/schedules/mode-badge";
 
@@ -21,6 +22,7 @@ const th =
 
 /** Schedule table: stacked cards on mobile, a single grouped table on sm and up. */
 export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: ScheduleTableProps) {
+  const { dayLabels } = useDays();
   const showActions = Boolean(onEdit || onDelete || onDuplicate);
 
   // Days the same subject isn't already scheduled on (excluding its current day).
@@ -47,6 +49,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
             key={day}
             day={day}
             slots={slots}
+            dayLabels={dayLabels}
             onEdit={onEdit}
             onDelete={onDelete}
             onDuplicate={onDuplicate}
@@ -89,7 +92,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
                       rowSpan={slots.length}
                       className={`whitespace-nowrap px-3 py-2.5 text-center align-middle font-body text-xs font-semibold ${accent.cellBg} ${accent.text}`}
                     >
-                      {DAY_LABELS[day]}
+                      {dayLabels[day]}
                     </td>
                   )}
                   <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
@@ -116,6 +119,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
                         {onDuplicate && (
                           <DuplicateButton
                             days={availableDays(sched)}
+                            dayLabels={dayLabels}
                             onPick={(d) => onDuplicate(sched, d)}
                           />
                         )}
@@ -157,6 +161,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
 function MobileDayCard({
   day,
   slots,
+  dayLabels,
   onEdit,
   onDelete,
   onDuplicate,
@@ -164,6 +169,7 @@ function MobileDayCard({
 }: {
   day: Day;
   slots: Schedule[];
+  dayLabels: Record<Day, string>;
   onEdit?: (schedule: Schedule) => void;
   onDelete?: (schedule: Schedule) => void;
   onDuplicate?: (schedule: Schedule, day: Day) => void;
@@ -175,7 +181,7 @@ function MobileDayCard({
       <div
         className={`border-l-4 px-4 py-2 font-body text-sm font-semibold ${accent.borderL} ${accent.cellBg} ${accent.text}`}
       >
-        {DAY_LABELS[day]}
+        {dayLabels[day]}
       </div>
       <ul className="divide-y divide-slate-200 dark:divide-white/10">
         {slots.map((sched) => (
@@ -189,6 +195,7 @@ function MobileDayCard({
                 {onDuplicate && (
                   <DuplicateButton
                     days={availableDays(sched)}
+                    dayLabels={dayLabels}
                     onPick={(d) => onDuplicate(sched, d)}
                   />
                 )}
@@ -242,7 +249,15 @@ function MobileDayCard({
 }
 
 /** Copy action that opens an anchored popover to pick the target day. */
-function DuplicateButton({ days, onPick }: { days: Day[]; onPick: (day: Day) => void }) {
+function DuplicateButton({
+  days,
+  dayLabels,
+  onPick,
+}: {
+  days: Day[];
+  dayLabels: Record<Day, string>;
+  onPick: (day: Day) => void;
+}) {
   return (
     <Popover
       label="Duplicate to another day"
@@ -271,7 +286,7 @@ function DuplicateButton({ days, onPick }: { days: Day[]; onPick: (day: Day) => 
                 }}
                 className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
               >
-                {DAY_LABELS[d]}
+                {dayLabels[d]}
               </button>
             ))
           )}

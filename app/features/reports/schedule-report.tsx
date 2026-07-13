@@ -1,8 +1,10 @@
 import { Card } from "~/components/ui/card";
+import { useDays } from "~/hooks/use-days";
 import type { ScheduleSummary } from "~/services/report.service";
-import { DAYS, DAY_LABELS } from "~/types/schedule";
+import { DAYS } from "~/types/schedule";
 
 export function ScheduleReport({ data }: { data: ScheduleSummary }) {
+  const { dayLabels } = useDays();
   const programEntries = Object.entries(data.byProgram).sort((a, b) => b[1] - a[1]);
   const maxProgram = Math.max(...programEntries.map(([, n]) => n), 1);
 
@@ -63,7 +65,7 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
                   <li key={day}>
                     <div className="mb-1 flex items-center justify-between">
                       <span className="font-body text-sm text-slate-700 dark:text-slate-300">
-                        {DAY_LABELS[day]}
+                        {dayLabels[day]}
                       </span>
                       <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
                         {count}

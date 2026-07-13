@@ -6,6 +6,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { PlusIcon, RotateIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
@@ -20,6 +21,7 @@ import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry
 import { useSemesters } from "~/hooks/use-semesters";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import { useDays } from "~/hooks/use-days";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
 import {
@@ -31,6 +33,7 @@ import { setService } from "~/services/set.service";
 
 import type { Program } from "~/types/program";
 import {
+  formatTime,
   type Day,
   type Schedule,
   type ScheduleSemester,
@@ -67,6 +70,7 @@ function SchedulesNewPage() {
   const { semesters, semesterLabel } = useSemesters();
   const { schoolYears, defaultSchoolYear } = useSchoolYears();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
+  const { dayLabels } = useDays();
 
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [sets, setSets] = useState<ClassSet[]>([]);
@@ -83,6 +87,7 @@ function SchedulesNewPage() {
   const [hasGenerated, setHasGenerated] = useState(false);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -266,7 +271,12 @@ function SchedulesNewPage() {
   }
 
   function handleRemoveSlot(schedule: Schedule) {
-    setSlots((current) => current.filter((s) => s.tempId !== schedule.id));
+    setDeleteTarget(schedule);
+  }
+
+  async function confirmRemoveSlot() {
+    if (!deleteTarget) return;
+    setSlots((current) => current.filter((s) => s.tempId !== deleteTarget.id));
   }
 
   function handleDuplicateSlot(schedule: Schedule, day: Day) {
@@ -532,6 +542,26 @@ function SchedulesNewPage() {
           onCancelEdit={editing ? closeDrawer : undefined}
         />
       </Drawer>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title="Remove slot"
+        confirmLabel="Remove"
+        loadingLabel="Removing…"
+        confirmVariant="danger"
+        onConfirm={confirmRemoveSlot}
+      >
+        {deleteTarget && (
+          <>
+            <span className="font-medium text-navy-700 dark:text-white">
+              {deleteTarget.subjectCode}
+            </span>{" "}
+            on {dayLabels[deleteTarget.day]} ({formatTime(deleteTarget.startTime)}–
+            {formatTime(deleteTarget.endTime)}) will be removed from this schedule.
+          </>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

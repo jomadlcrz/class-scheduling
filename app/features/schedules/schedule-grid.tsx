@@ -1,6 +1,7 @@
 import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
-import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "~/types/schedule";
+import { useDays } from "~/hooks/use-days";
+import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
 import { ModeBadge } from "~/features/schedules/mode-badge";
 
@@ -16,6 +17,7 @@ const actionBtn =
   "grid size-6 cursor-pointer place-items-center rounded-md text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: ScheduleGridProps) {
+  const { dayLabels } = useDays();
   const timeRows = [...new Map(schedules.map((s) => [`${s.startTime}|${s.endTime}`, s])).values()]
     .map((s) => ({ startTime: s.startTime, endTime: s.endTime }))
     .sort((a, b) => a.startTime.localeCompare(b.startTime) || a.endTime.localeCompare(b.endTime));
@@ -40,7 +42,7 @@ export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: Sched
         >
           <HeaderCell>Time</HeaderCell>
           {DAYS.map((day) => (
-            <HeaderCell key={day}>{DAY_LABELS[day]}</HeaderCell>
+            <HeaderCell key={day}>{dayLabels[day]}</HeaderCell>
           ))}
         </div>
 
@@ -69,6 +71,7 @@ export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: Sched
                     <GridClassCard
                       key={entry.id}
                       entry={entry}
+                      dayLabels={dayLabels}
                       onEdit={onEdit}
                       onDelete={onDelete}
                       onDuplicate={onDuplicate}
@@ -96,6 +99,7 @@ function HeaderCell({ children }: { children: React.ReactNode }) {
 
 function GridClassCard({
   entry,
+  dayLabels,
   onEdit,
   onDelete,
   onDuplicate,
@@ -103,6 +107,7 @@ function GridClassCard({
   showActions,
 }: {
   entry: Schedule;
+  dayLabels: Record<Day, string>;
   onEdit?: (schedule: Schedule) => void;
   onDelete?: (schedule: Schedule) => void;
   onDuplicate?: (schedule: Schedule, day: Day) => void;
@@ -161,7 +166,7 @@ function GridClassCard({
                         }}
                         className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
                       >
-                        {DAY_LABELS[d]}
+                        {dayLabels[d]}
                       </button>
                     ))
                   )}
