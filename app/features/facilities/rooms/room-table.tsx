@@ -1,5 +1,5 @@
 import { Badge } from "~/components/ui/badge";
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { ClockIcon, EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { Tooltip } from "~/components/ui/tooltip";
 import { getBuildingTone } from "~/types/building";
 import type { Room } from "~/types/room";
 import { ROOM_STATUS_TONES } from "~/types/room";
@@ -28,7 +29,6 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
         <TableHeader>Room</TableHeader>
         <TableHeader>Building</TableHeader>
         <TableHeader className="hidden sm:table-cell text-center">Floor</TableHeader>
-        <TableHeader className="hidden md:table-cell text-center">Capacity</TableHeader>
         <TableHeader className="hidden sm:table-cell">Type</TableHeader>
         <TableHeader>Status</TableHeader>
         <TableHeader>
@@ -45,15 +45,22 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
               <Badge tone={getBuildingTone(room.buildingName)}>{room.buildingName}</Badge>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-center">{room.floor}</TableCell>
-            <TableCell className="hidden md:table-cell text-center">{room.capacity}</TableCell>
             <TableCell className="hidden sm:table-cell">{room.type}</TableCell>
             <TableCell>
-              <Badge tone={ROOM_STATUS_TONES[room.status] ?? "slate"}>{room.status}</Badge>
-              {room.timeRemaining && (
-                <p className="mt-1 font-body text-xs text-slate-400 dark:text-slate-500">
-                  {room.timeRemaining}
-                </p>
-              )}
+              <div className="flex items-center gap-1.5">
+                <Badge tone={ROOM_STATUS_TONES[room.status] ?? "slate"}>{room.status}</Badge>
+                {room.timeRemaining && (
+                  <Tooltip label={room.timeRemaining} direction="top" wrap>
+                    <button
+                      type="button"
+                      aria-label={room.timeRemaining}
+                      className="grid size-5 shrink-0 cursor-help place-items-center rounded-full text-slate-400 transition-colors duration-150 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:text-slate-300"
+                    >
+                      <ClockIcon size={13} />
+                    </button>
+                  </Tooltip>
+                )}
+              </div>
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">

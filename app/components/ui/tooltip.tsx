@@ -10,6 +10,8 @@ type TooltipProps = {
   gap?: number;
   /** Suppress the tooltip (e.g. only show it while the sidebar is collapsed). */
   disabled?: boolean;
+  /** Wrap onto multiple lines at a bounded width instead of one nowrap line — for longer copy. */
+  wrap?: boolean;
   children: ReactNode;
 };
 
@@ -29,6 +31,7 @@ export function Tooltip({
   direction = "bottom",
   gap = 8,
   disabled = false,
+  wrap = false,
   children,
 }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
@@ -107,7 +110,9 @@ export function Tooltip({
             ref={bubbleRef}
             role="tooltip"
             style={{ top: position?.top ?? 0, left: position?.left ?? 0 }}
-            className={`pointer-events-none fixed z-50 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 font-body text-xs font-semibold text-slate-100 shadow-lg transition-[opacity,transform] duration-150 dark:bg-white dark:text-navy-900 ${
+            className={`pointer-events-none fixed z-50 rounded-md bg-slate-900 px-2.5 py-1.5 font-body text-xs font-semibold text-slate-100 shadow-lg transition-[opacity,transform] duration-150 dark:bg-white dark:text-navy-900 ${
+              wrap ? "w-max max-w-64 text-pretty" : "whitespace-nowrap"
+            } ${
               position ? "translate-x-0 translate-y-0 opacity-100" : `opacity-0 ${ENTER_OFFSET[direction]}`
             }`}
           >
