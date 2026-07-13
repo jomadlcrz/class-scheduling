@@ -1,10 +1,12 @@
+import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
-import { ResultState } from "~/components/feedback/result-state";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { PlusIcon, PrinterIcon } from "~/components/ui/icons";
+import { AlertIcon, PlusIcon, PrinterIcon } from "~/components/ui/icons";
 import { Select } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
@@ -121,7 +123,7 @@ function RegularClassPage() {
 
       {/* Filters */}
       <div className="mt-4 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
           <Select
             id="rc-school-year"
             label="School Year"
@@ -170,7 +172,7 @@ function RegularClassPage() {
               ))
             )}
           </Select>
-        </div>
+        </Card>
       </div>
 
       {/* View toggle + print */}
@@ -188,11 +190,16 @@ function RegularClassPage() {
       </div>
 
       <div className="mt-4">
-        {loadError ? (
-          <ResultState tone="error" title="Unable to load">
-            {loadError}
-          </ResultState>
-        ) : isLoading ? (
+        <AnimatePresence>
+          {loadError && (
+            <Alert key="load-error" variant="destructive" className="mb-4">
+              <AlertIcon />
+              <AlertDescription>{loadError}</AlertDescription>
+            </Alert>
+          )}
+        </AnimatePresence>
+
+        {loadError ? null : isLoading ? (
           <div
             role="status"
             aria-label="Loading schedules"
@@ -201,7 +208,15 @@ function RegularClassPage() {
             <Spinner />
           </div>
         ) : visibleSchedules.length === 0 ? (
-          <EmptyState title="No schedules found">
+          <EmptyState
+            title="No schedules found"
+            action={
+              <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
+                <PlusIcon />
+                Create Schedule
+              </Button>
+            }
+          >
             No schedules match the current filters. Create a schedule to get started.
           </EmptyState>
         ) : viewMode === "grid" ? (

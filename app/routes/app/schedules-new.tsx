@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { Drawer } from "~/components/ui/drawer";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ConfirmDialog } from "~/components/ui/modal";
@@ -375,7 +376,7 @@ function SchedulesNewPage() {
             )}
           </AnimatePresence>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
             <Input
               id="sn-school-year"
               label="School Year"
@@ -441,7 +442,7 @@ function SchedulesNewPage() {
                 ))
               )}
             </Select>
-          </div>
+          </Card>
 
           <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
             <div className="hidden sm:block" />
