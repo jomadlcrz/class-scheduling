@@ -97,6 +97,7 @@ export function openSchedulePrint(
     .sp-day td:nth-child(6),.sp-day th:nth-child(6){width:12%;text-align:center}
 
     @media print{body{padding:0.35in}}
+    @media print and (orientation:landscape){.sp-day{margin-top:0.9rem}}
   </style>
 </head>
 <body>
