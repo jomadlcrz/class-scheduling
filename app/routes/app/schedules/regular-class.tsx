@@ -166,7 +166,7 @@ function RegularClassPage() {
                         .filter((s) => s.semesterNumber !== 3)
                         .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))
               }
-              value={String(semester)}
+              value={semestersLoading ? "" : String(semester)}
               onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
             >
               <SelectTrigger id="rc-semester">
@@ -189,13 +189,13 @@ function RegularClassPage() {
           </FieldChrome>
           <FieldChrome id="rc-set" label="Set">
             <Select
-              items={
-                isLoading
-                  ? [{ value: "", label: "Loading…" }]
-                  : availableSets.length === 0
-                    ? [{ value: "", label: "No set" }]
-                    : availableSets.map((s) => ({ value: s, label: s }))
-              }
+              items={[
+                {
+                  value: "",
+                  label: isLoading ? "Loading…" : availableSets.length === 0 ? "No set" : "Select a set",
+                },
+                ...availableSets.map((s) => ({ value: s, label: s })),
+              ]}
               value={setName}
               onValueChange={(v) => setSetName(v as string)}
             >
@@ -203,17 +203,14 @@ function RegularClassPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {isLoading ? (
-                  <SelectItem value="">Loading…</SelectItem>
-                ) : availableSets.length === 0 ? (
-                  <SelectItem value="">No set</SelectItem>
-                ) : (
-                  availableSets.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))
-                )}
+                <SelectItem value="">
+                  {isLoading ? "Loading…" : availableSets.length === 0 ? "No set" : "Select a set"}
+                </SelectItem>
+                {availableSets.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </FieldChrome>

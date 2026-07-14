@@ -1,16 +1,16 @@
 import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useBlocker, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Drawer } from "~/components/ui/drawer";
-import { EmptyState } from "~/components/feedback/empty-state";
-import { ConfirmDialog } from "~/components/ui/modal";
 import { AlertIcon, AlertTriangleIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
@@ -20,10 +20,10 @@ import {
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
-import { useSemesters } from "~/hooks/use-semesters";
-import { useSchoolYears } from "~/hooks/use-school-years";
-import { useYearLevels } from "~/hooks/use-year-levels";
 import { useDays } from "~/hooks/use-days";
+import { useSchoolYears } from "~/hooks/use-school-years";
+import { useSemesters } from "~/hooks/use-semesters";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
 import {
@@ -42,6 +42,16 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
+
+
+const SUBJECT_CODE_RE = /\b([A-Z]{2,4}\d{3,4})\b/g;
+
+function highlightSubjectCode(text: string) {
+  const parts = text.split(SUBJECT_CODE_RE);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <strong key={i} className="font-semibold">{part}</strong> : part
+  );
+}
 
 
 function ZapIcon() {
@@ -96,6 +106,39 @@ function SchedulesNewPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [generationConflicts, setGenerationConflicts] = useState<string[]>([]);
   const tempIdCounter = useRef(0);
+
+  const isDirty = slots.length > 0;
+  const [reloadPromptOpen, setReloadPromptOpen] = useState(false);
+  const reloadConfirmed = useRef(false);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      if (reloadConfirmed.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [isDirty]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isReload =
+        e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r");
+      if (!isReload) return;
+      e.preventDefault();
+      setReloadPromptOpen(true);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isDirty]);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && !isSaving && !isGenerating && currentLocation.pathname !== nextLocation.pathname,
+  );
 
   useEffect(() => {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
@@ -321,11 +364,17 @@ function SchedulesNewPage() {
     }
   }
 
-  const contextLocked = slots.length > 0;
+  const contextLocked = slots.length > 0 || isGenerating || isSaving;
   const canGenerateBase = Boolean(selectedSet) && Boolean(selectedYearLevel) && schoolYearValid;
   const canGenerate = canGenerateBase && !isGenerating;
   const canAddSlot = Boolean(selectedSet) && schoolYearValid && subjects.length > 0;
-  const lockHint = contextLocked ? "Remove all slots to change." : undefined;
+  const lockHint = isGenerating
+    ? "Generating schedule…"
+    : isSaving
+      ? "Saving schedule…"
+      : contextLocked
+        ? "Remove all slots to change."
+        : undefined;
   const isLoading = programs === null;
 
   return (
@@ -339,6 +388,7 @@ function SchedulesNewPage() {
               type="button"
               variant="outline"
               block={false}
+              disabled={isSaving || isGenerating}
               onClick={() => navigate("/schedules/regular-class")}
             >
               Cancel
@@ -346,7 +396,7 @@ function SchedulesNewPage() {
             <Button
               type="button"
               block={false}
-              disabled={slots.length === 0 || !selectedSet}
+              disabled={slots.length === 0 || !selectedSet || isGenerating}
               isLoading={isSaving}
               loadingLabel="Saving…"
               onClick={handleSave}
@@ -383,7 +433,7 @@ function SchedulesNewPage() {
                 <AlertDescription>
                   <ul className="list-disc space-y-1 pl-4">
                     {generationConflicts.map((c, i) => (
-                      <li key={i}>{c}</li>
+                      <li key={i}>{highlightSubjectCode(c)}</li>
                     ))}
                   </ul>
                 </AlertDescription>
@@ -448,11 +498,13 @@ function SchedulesNewPage() {
             </FieldChrome>
             <FieldChrome id="sn-year-level" label="Year Level">
               <Select
-                items={
-                  availableYearLevels.length === 0
-                    ? [{ value: "", label: "Select a program first" }]
-                    : availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) }))
-                }
+                items={[
+                  {
+                    value: "",
+                    label: availableYearLevels.length === 0 ? "Select a program first" : "Select a year level",
+                  },
+                  ...availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) })),
+                ]}
                 value={String(selectedYearLevel)}
                 onValueChange={(v) => handleYearLevelChange(Number(v) as YearLevel)}
                 disabled={contextLocked}
@@ -461,28 +513,29 @@ function SchedulesNewPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableYearLevels.length === 0 ? (
-                    <SelectItem value="">Select a program first</SelectItem>
-                  ) : (
-                    availableYearLevels.map((yl) => (
-                      <SelectItem key={yl} value={String(yl)}>
-                        {yearLevelLabel(yl)}
-                      </SelectItem>
-                    ))
-                  )}
+                  <SelectItem value="">
+                    {availableYearLevels.length === 0 ? "Select a program first" : "Select a year level"}
+                  </SelectItem>
+                  {availableYearLevels.map((yl) => (
+                    <SelectItem key={yl} value={String(yl)}>
+                      {yearLevelLabel(yl)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FieldChrome>
             <FieldChrome id="sn-set" label="Set">
               <Select
-                items={
-                  availableSets.length === 0
-                    ? [{ value: "", label: "Select a year level first" }]
-                    : availableSets.map((s) => ({
-                        value: String(s.id),
-                        label: `${s.program}-${s.yearLevel}${s.setCode}`,
-                      }))
-                }
+                items={[
+                  {
+                    value: "",
+                    label: availableSets.length === 0 ? "Select a year level first" : "Select a set",
+                  },
+                  ...availableSets.map((s) => ({
+                    value: String(s.id),
+                    label: `${s.program}-${s.yearLevel}${s.setCode}`,
+                  })),
+                ]}
                 value={selectedSetId}
                 onValueChange={(v) => setSelectedSetId(v as string)}
                 disabled={contextLocked}
@@ -491,15 +544,14 @@ function SchedulesNewPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableSets.length === 0 ? (
-                    <SelectItem value="">Select a year level first</SelectItem>
-                  ) : (
-                    availableSets.map((s) => (
-                      <SelectItem key={s.id} value={String(s.id)}>
-                        {s.program}-{s.yearLevel}{s.setCode}
-                      </SelectItem>
-                    ))
-                  )}
+                  <SelectItem value="">
+                    {availableSets.length === 0 ? "Select a year level first" : "Select a set"}
+                  </SelectItem>
+                  {availableSets.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.program}-{s.yearLevel}{s.setCode}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FieldChrome>
@@ -525,7 +577,7 @@ function SchedulesNewPage() {
                     <RotateIcon />
                     Regenerate
                   </Button>
-                  <Button type="button" block={false} disabled={!canAddSlot} onClick={openAddDrawer}>
+                  <Button type="button" block={false} disabled={!canAddSlot || isGenerating || isSaving} onClick={openAddDrawer}>
                     <PlusIcon />
                     Add Slot
                   </Button>
@@ -611,6 +663,33 @@ function SchedulesNewPage() {
             {formatTime(deleteTarget.endTime)}) will be removed from this schedule.
           </>
         )}
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={blocker.state === "blocked"}
+        onClose={() => blocker.reset?.()}
+        title="Discard unsaved schedule?"
+        confirmLabel="Discard"
+        loadingLabel="Discarding…"
+        confirmVariant="danger"
+        onConfirm={async () => blocker.proceed?.()}
+      >
+        You have unsaved schedule slots. Leaving this page will discard them.
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={reloadPromptOpen}
+        onClose={() => setReloadPromptOpen(false)}
+        title="Discard unsaved schedule?"
+        confirmLabel="Reload"
+        loadingLabel="Reloading…"
+        confirmVariant="danger"
+        onConfirm={async () => {
+          reloadConfirmed.current = true;
+          window.location.reload();
+        }}
+      >
+        You have unsaved schedule slots. Reloading will discard them.
       </ConfirmDialog>
     </div>
   );

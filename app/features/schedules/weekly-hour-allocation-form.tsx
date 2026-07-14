@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { FormError } from "~/components/forms/form-error";
-import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { generateTimeSlots } from "~/types/schedule";
@@ -187,28 +187,37 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
               </label>
               {labSlots.map((slot, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <select
+                  <Select
+                    items={[{ value: "", label: "Start" }, ...TIME_OPTIONS.map((t) => ({ value: t, label: t }))]}
                     value={slot.start}
-                    onChange={(e) => updateLabSlot(i, "start", e.target.value)}
-                    aria-label="Lab slot start time"
-                    className={`${inputClassName} flex-1`}
+                    onValueChange={(v) => updateLabSlot(i, "start", v as string)}
                   >
-                    <option value="">Start</option>
-                    {TIME_OPTIONS.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger aria-label="Lab slot start time" className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Start</SelectItem>
+                      {TIME_OPTIONS.map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <span className="text-slate-400">–</span>
-                  <select
+                  <Select
+                    items={[{ value: "", label: "End" }, ...TIME_OPTIONS.filter((t) => !slot.start || timeToMinutes(t) > timeToMinutes(slot.start)).map((t) => ({ value: t, label: t }))]}
                     value={slot.end}
-                    onChange={(e) => updateLabSlot(i, "end", e.target.value)}
-                    aria-label="Lab slot end time"
-                    className={`${inputClassName} flex-1`}
+                    onValueChange={(v) => updateLabSlot(i, "end", v as string)}
                   >
-                    {[<option key="" value="">End</option>, ...TIME_OPTIONS.filter((t) => !slot.start || timeToMinutes(t) > timeToMinutes(slot.start)).map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))]}
-                  </select>
+                    <SelectTrigger aria-label="Lab slot end time" className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">End</SelectItem>
+                      {TIME_OPTIONS.filter((t) => !slot.start || timeToMinutes(t) > timeToMinutes(slot.start)).map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {labSlots.length > 1 && (
                     <button
                       type="button"

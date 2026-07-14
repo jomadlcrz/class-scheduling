@@ -328,7 +328,7 @@ export function SlotEntryForm({
             items={roomOptions.map((r) => ({
               value: String(r.id),
               label: r.buildingName
-                ? `${r.buildingName} — ${r.roomName} (cap. ${r.roomCapacity})`
+                ? `${r.buildingName} — ${r.roomName}`
                 : r.roomName,
             }))}
             value={roomId}
@@ -341,7 +341,7 @@ export function SlotEntryForm({
               {roomOptions.map((r) => (
                 <SelectItem key={r.id} value={String(r.id)}>
                   {r.buildingName
-                    ? `${r.buildingName} — ${r.roomName} (cap. ${r.roomCapacity})`
+                    ? `${r.buildingName} — ${r.roomName}`
                     : r.roomName}
                 </SelectItem>
               ))}
