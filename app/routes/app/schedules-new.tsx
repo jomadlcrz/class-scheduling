@@ -473,23 +473,7 @@ function SchedulesNewPage() {
             </div>
           </div>
 
-          <AnimatePresence>
-            {generationConflicts.length > 0 && (
-              <Alert key="generation-conflicts" variant="warning">
-                <AlertTriangleIcon />
-                <AlertTitle>
-                  {generationConflicts.length} subject{generationConflicts.length === 1 ? "" : "s"} could not be scheduled
-                </AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc space-y-1 pl-4">
-                    {generationConflicts.map((c, i) => (
-                      <li key={i}>{c}</li>
-                    ))}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            )}
-          </AnimatePresence>
+
 
           {slots.length === 0 ? (
             <EmptyState
