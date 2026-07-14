@@ -84,7 +84,7 @@ export function openSchedulePrint(
     .sp-logo-left{left:0.03in}
     .sp-logo-right{right:0.03in}
 
-    .sp-day{break-inside:avoid;margin-top:0.3rem}
+    .sp-day{break-inside:avoid;margin-top:2rem}
     .sp-day h4{border:1px solid #444;padding:0.12rem 0.2rem;text-align:center;font-size:11px;border-bottom:none}
     .sp-day table{width:100%;table-layout:fixed;border-collapse:collapse}
     .sp-day th,.sp-day td{border:1px solid #444;padding:0.12rem 0.2rem;color:#000;font-size:9px;line-height:1.2;vertical-align:middle}
