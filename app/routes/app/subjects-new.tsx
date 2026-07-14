@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -40,6 +40,23 @@ export default function SubjectsNew() {
 
 function SubjectsNewPage() {
   const navigate = useNavigate();
+  const formCardObserver = useRef<ResizeObserver | null>(null);
+  /** Live height of the form card, so the structure card can cap itself to match and scroll internally. */
+  const [formCardHeight, setFormCardHeight] = useState<number>();
+  // Callback ref (not a plain ref + mount effect): the form card only enters the DOM
+  // once loading finishes, well after the initial mount, so an empty-deps effect
+  // would never see it and the observer would never attach.
+  const formCardRef = useCallback((node: HTMLDivElement | null) => {
+    formCardObserver.current?.disconnect();
+    if (!node) return;
+    // contentRect excludes the card's own padding/border; getBoundingClientRect
+    // reports the border-box height, matching what's actually on screen.
+    const observer = new ResizeObserver(() => {
+      setFormCardHeight(node.getBoundingClientRect().height);
+    });
+    observer.observe(node);
+    formCardObserver.current = observer;
+  }, []);
   const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
@@ -256,7 +273,10 @@ function SubjectsNewPage() {
           <FormError message={saveError} />
 
           <div className="grid items-start gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
-            <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80">
+            <div
+              ref={formCardRef}
+              className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80"
+            >
               <FieldChrome id="new-subject-program" label="Program">
                 <Select
                   items={(programs ?? []).map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
@@ -291,7 +311,10 @@ function SubjectsNewPage() {
               />
             </div>
 
-            <div className="scrollbar-thin rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80 lg:max-h-[calc(100vh-11rem)] lg:overflow-y-auto">
+            <div
+              className="scrollbar-thin rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80 lg:overflow-y-auto"
+              style={formCardHeight ? { maxHeight: formCardHeight } : undefined}
+            >
               <CurriculumStructure
                 program={program}
                 saved={savedForProgram}

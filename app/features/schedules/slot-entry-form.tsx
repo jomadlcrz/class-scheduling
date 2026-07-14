@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
 import { PlusIcon } from "~/components/ui/icons";
-import { FieldChrome } from "~/components/ui/input";
+import { FieldChrome, inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type {
   ScheduleFacultyOption,
@@ -101,6 +102,7 @@ export function SlotEntryForm({
   const [startTime, setStartTime] = useState(initialSlot?.startTime ?? "07:00");
   const [endTime, setEndTime] = useState(initialSlot?.endTime ?? "10:00");
   const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? ""));
+  const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? "");
   const [roomId, setRoomId] = useState(String(initialSlot?.roomId ?? rooms[0]?.id ?? ""));
   const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "F2F");
 
@@ -112,13 +114,18 @@ export function SlotEntryForm({
     isOriginalSubject ? initialSlot : undefined,
   );
   const selectedFaculty = faculties.find((f) => String(f.id) === facultyId);
+  const filteredFaculties = faculties.filter((f) =>
+    f.fullName.toLowerCase().includes(facultyQuery.trim().toLowerCase()),
+  );
   const roomOptions = mergeRooms(rooms, isOriginalSubject ? initialSlot : undefined);
   const needsRoom = mode === "F2F";
   function handleSubjectChange(id: string) {
     setSelectedSubjectId(id);
     // Faculties are per subject — reset to the subject's first option.
     const subject = subjects.find((s) => String(s.id) === id);
-    setFacultyId(String(subject?.faculties[0]?.id ?? ""));
+    const firstFaculty = subject?.faculties[0];
+    setFacultyId(String(firstFaculty?.id ?? ""));
+    setFacultyQuery(firstFaculty?.fullName ?? "");
     setError(null);
   }
 
@@ -287,30 +294,32 @@ export function SlotEntryForm({
       </FieldChrome>
 
       <FieldChrome id="slot-faculty" label="Faculty">
-        <Select
-          items={
-            faculties.length === 0
-              ? [{ value: "", label: "No faculty assigned to this subject" }]
-              : faculties.map((f) => ({ value: String(f.id), label: f.fullName }))
-          }
-          value={facultyId}
-          onValueChange={(v) => setFacultyId(v as string)}
-        >
-          <SelectTrigger id="slot-faculty">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {faculties.length === 0 ? (
-              <SelectItem value="">No faculty assigned to this subject</SelectItem>
-            ) : (
-              faculties.map((f) => (
-                <SelectItem key={f.id} value={String(f.id)}>
-                  {f.fullName}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+        {faculties.length === 0 ? (
+          <div className={`${inputClassName} text-slate-400 dark:text-slate-500`}>
+            No faculty assigned to this subject
+          </div>
+        ) : (
+          <Command
+            value={facultyId}
+            onValueChange={(v) => setFacultyId(v as string)}
+            itemToStringLabel={(id) => faculties.find((f) => String(f.id) === id)?.fullName ?? ""}
+            inputValue={facultyQuery}
+            onInputValueChange={setFacultyQuery}
+          >
+            <CommandInput id="slot-faculty" placeholder="Select faculty" focusPlaceholder="Search faculty…" />
+            <CommandList>
+              {filteredFaculties.length === 0 ? (
+                <CommandEmpty>No faculty found.</CommandEmpty>
+              ) : (
+                filteredFaculties.map((f) => (
+                  <CommandItem key={f.id} value={String(f.id)}>
+                    {f.fullName}
+                  </CommandItem>
+                ))
+              )}
+            </CommandList>
+          </Command>
+        )}
       </FieldChrome>
 
       {selectedFaculty && (
