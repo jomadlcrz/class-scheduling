@@ -3,6 +3,8 @@ import { AccordionItem } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { CurriculumSubjects } from "~/features/curriculum/curriculum-subjects";
+import { SubjectCardGrid } from "~/features/curriculum/subject-card-grid";
+import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
 import type { YearLevel } from "~/types/subject";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -12,9 +14,10 @@ type CurriculumTableProps = {
   curriculum: ProgramCurriculum;
   /** Filters visible subjects by code/title match; matching sections auto-expand. */
   search?: string;
+  viewMode?: ScheduleViewMode;
 };
 
-export function CurriculumTable({ curriculum, search = "" }: CurriculumTableProps) {
+export function CurriculumTable({ curriculum, search = "", viewMode = "grid" }: CurriculumTableProps) {
   const query = search.trim().toLowerCase();
 
   const filteredGroups = useMemo(() => {
@@ -51,6 +54,7 @@ export function CurriculumTable({ curriculum, search = "" }: CurriculumTableProp
             yearUnits={yearUnits}
             groups={yearGroups}
             forceOpen={query.length > 0}
+            viewMode={viewMode}
           />
         );
       })}
@@ -63,11 +67,13 @@ function YearBlock({
   yearUnits,
   groups,
   forceOpen,
+  viewMode,
 }: {
   yearLevel: YearLevel;
   yearUnits: number;
   groups: CurriculumGroup[];
   forceOpen: boolean;
+  viewMode: ScheduleViewMode;
 }) {
   const { yearLevelLabel } = useYearLevels();
   return (
@@ -84,7 +90,7 @@ function YearBlock({
       <div className="p-5">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {groups.map((group) => (
-            <SemesterCard key={group.semester} group={group} />
+            <SemesterCard key={group.semester} group={group} viewMode={viewMode} />
           ))}
         </div>
       </div>
@@ -92,14 +98,23 @@ function YearBlock({
   );
 }
 
-function SemesterCard({ group }: { group: CurriculumGroup }) {
+function SemesterCard({ group, viewMode }: { group: CurriculumGroup; viewMode: ScheduleViewMode }) {
   const { semesterLabel } = useSemesters();
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-center font-body text-sm font-semibold text-navy-700 dark:text-white">
-        {semesterLabel(group.semester)}
-      </p>
-      <CurriculumSubjects group={group} />
+      <div className="flex items-center justify-center gap-2">
+        <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+          {semesterLabel(group.semester)}
+        </p>
+        {viewMode === "grid" && group.subjects.length > 0 && (
+          <Badge tone="slate">{group.totalUnits} units</Badge>
+        )}
+      </div>
+      {viewMode === "grid" ? (
+        <SubjectCardGrid subjects={group.subjects} />
+      ) : (
+        <CurriculumSubjects group={group} />
+      )}
     </div>
   );
 }

@@ -8,10 +8,11 @@ export type Semester = number;
  * Subject type vocabulary lives in the backend (app/enums.py SubjectTypeName)
  * and is fetched via enumService — only display tones are mapped here, by value.
  */
+/** Mirrors the classroom-mapping legend (~/features/classroom-mapping/mapping-model.ts TYPE_STYLES). */
 export const SUBJECT_TYPE_TONES: Record<string, BadgeTone> = {
   GenEd: "violet",
-  "Major with Lab": "navy",
-  "Major without Lab": "emerald",
+  "Major with Lab": "blue",
+  "Major without Lab": "green",
 };
 
 /** A curriculum entry: a subject offered by one program at a year/semester slot. */

@@ -1,3 +1,4 @@
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { GraduationCapIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -19,6 +20,7 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
   const hasSubjects = isLoaded && curriculum.groups.length > 0;
   const totalUnits = hasSubjects ? curriculum.totalUnits : null;
   const termCount = hasSubjects ? curriculum.groups.length : null;
+  const reduceMotion = useReducedMotion();
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
@@ -83,9 +85,17 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
             <p className="mt-0.5 font-display text-2xl tracking-wide text-slate-300 dark:text-slate-600">—</p>
           ) : (
             <>
-              <p className="mt-0.5 font-display text-4xl tabular-nums tracking-wide text-navy-700 dark:text-white">
-                {totalUnits}
-              </p>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.p
+                  key={totalUnits}
+                  initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-0.5 font-display text-4xl tabular-nums tracking-wide text-navy-700 dark:text-white"
+                >
+                  {totalUnits}
+                </motion.p>
+              </AnimatePresence>
               <p className="font-body text-xs text-slate-400 dark:text-slate-500">
                 across {termCount} term{termCount !== 1 ? "s" : ""}
               </p>

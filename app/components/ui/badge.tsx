@@ -7,6 +7,11 @@ const tones = {
     "border-green-200 bg-green-100 text-green-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300",
   red: "border-red-200 bg-red-100 text-red-800 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-300",
   sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-300",
+  /** Matches the classroom-mapping legend's "Major (Lab)" dot (blue-500). */
+  blue: "border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300",
+  /** Matches the classroom-mapping legend's "Major (w/o Lab)" dot (green-500). */
+  green:
+    "border-green-200 bg-green-100 text-green-800 dark:border-green-400/20 dark:bg-green-400/10 dark:text-green-300",
   slate:
     "border-slate-300 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300",
   violet:

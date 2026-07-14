@@ -13,6 +13,8 @@ const DISC_TONES: Record<BadgeTone, string> = {
   navy: "bg-blue-100 text-blue-800 dark:bg-navy-300/10 dark:text-navy-300",
   gold: "bg-amber-100 text-amber-800 dark:bg-gold-400/10 dark:text-gold-300",
   emerald: "bg-green-100 text-green-800 dark:bg-emerald-400/10 dark:text-emerald-300",
+  blue: "bg-blue-100 text-blue-800 dark:bg-blue-400/10 dark:text-blue-300",
+  green: "bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300",
   red: "bg-red-100 text-red-800 dark:bg-red-400/10 dark:text-red-300",
   sky: "bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300",
   slate: "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-300",

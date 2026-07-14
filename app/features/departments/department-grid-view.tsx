@@ -86,7 +86,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
 
                 <div className="flex flex-wrap gap-1.5">
                   <Badge tone={getBuildingTone(dept.buildingName)}>{dept.buildingName}</Badge>
-                  <Badge tone={programCount > 0 ? "gold" : "slate"}>
+                  <Badge tone={programCount > 0 ? "emerald" : "slate"}>
                     {programCount} {programCount === 1 ? "Program" : "Programs"}
                   </Badge>
                 </div>

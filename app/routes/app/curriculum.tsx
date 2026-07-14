@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Card } from "~/components/ui/card";
 import { PrinterIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { Tooltip } from "~/components/ui/tooltip";
 import { CurriculumForm } from "~/features/curriculum/curriculum-form";
 import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
 import { openCurriculumPrint } from "~/features/curriculum/print-curriculum";
+import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
@@ -39,6 +40,8 @@ function CurriculumPage() {
   const [selectedCode, setSelectedCode] = useState("");
   const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     curriculumService
@@ -123,20 +126,32 @@ function CurriculumPage() {
                     className={`${inputClassName} pl-9 pr-4`}
                   />
                 </div>
-                <Tooltip label="Print curriculum">
+                <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Curriculum view" />
+                <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-300 dark:border-white/10">
                   <button
                     type="button"
+                    title="Print curriculum"
                     aria-label="Print curriculum"
                     onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
-                    className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                    className="grid h-8 w-9 cursor-pointer place-items-center bg-white text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300"
                   >
-                    <PrinterIcon />
+                    <PrinterIcon size={15} />
                   </button>
-                </Tooltip>
+                </div>
               </div>
             </Card>
 
-            <CurriculumTable curriculum={curriculum} search={search} />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={`${selectedCode}-${viewMode}`}
+                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+              >
+                <CurriculumTable curriculum={curriculum} search={search} viewMode={viewMode} />
+              </motion.div>
+            </AnimatePresence>
           </>
         )}
       </div>
