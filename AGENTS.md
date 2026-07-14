@@ -15,24 +15,10 @@ The auth slice is live against the backend end-to-end:
 - **Error messages come verbatim from backend responses** (`{ error }` or `{ message }`) via `ApiError` — never write frontend copy for API failures; a generic fallback exists only for network failures/bodyless responses.
 - `requestPasswordReset` targets `POST /auth/forgot-password`, which the backend does **not implement yet** — confirm the path when it lands.
 
-**Super-admin slice (also live):**
-
-- **Roles page** (`/roles`) — `roleService.list()` calls `GET /super-admin/permission-slugs` (requires a Super Admin token + `system:manage_roles`): real role names and permission slugs; the permission matrix is derived from the union of the roles' permissions. An empty roles table comes back as 404 + `[]` — the service maps that to an empty list.
-- **Faculty account creation** (`/faculty` → New Faculty) — `facultyService.create()` calls `POST /super-admin/create-faculty-accounts` (`{ departmentId, firstName, midName?, lastName, gender, civilStatus, contact: { mobile, email }, roleName: "Faculty" }`); the backend creates the login account + faculty profile and emails a temp password. The form (`faculty-account-form.tsx`) mirrors that contract; the department dropdown loads real integer-id departments via `facultyService.listDepartmentOptions()` (`GET /departments`, 404 = empty).
-
-**Classroom mapping slice (live):**
-
-- `classroomMappingService.list()` calls `GET /room_mapping/get-room-mapped` with query params `school_year`, `semester`, `building` (all optional). The backend returns rooms with their schedule days and 30-minute available slots. The frontend maps the response into `Classroom[]` with `ClassEntry[]` per room. Building filter is passed server-side, not filtered client-side.
-
-**Schedule slice (live):**
-
-- `scheduleService.createRegular()` calls `POST /regular_schedule/create-regular-class-schedules` and returns `{ message?, warnings? }` from the backend. Success messages are shown via `toast.success(message)`, warnings via `toast.warning()` (sonner). Error messages come verbatim from `ApiError` — never write frontend copy.
-- `scheduleService.autoGenerate()` calls `POST /regular_schedule/auto-generate-schedule` and returns `{ slots, conflicts }`. Conflicts are backend-generated explanations for subjects that couldn't be placed.
-- Frontend form validation (zod) only checks required fields are filled; all business logic validation (room occupied, faculty conflict, hour caps, missing load, gap violations) is handled by the backend and surfaced via `ApiError.message`.
-
 **Backend is the single source of truth — never hardcode its vocabulary in the frontend:**
 
-- **Enums** (gender, civil status, roles, student type, academic status, subject type, room type, classroom status, …) are fetched from `GET /student-registration/register-students` via `enumService.getOptions()` (`services/enum.service.ts`, cached per session) and passed through unmodified. **Always** load select/filter vocabulary from this endpoint — do NOT re-declare enum value lists as frontend constants or add invented options (e.g. a "Not specified" entry); selects render exactly what the endpoint returns; an unselected optional field is omitted from the payload and the backend applies its own default.
+- **Enums** (gender, civil status, roles, student type, academic status, subject type, room type, classroom status, …) are fetched via `enumService.getOptions()` (`services/enum.service.ts`, cached per session) and passed through unmodified. **Always** load select/filter vocabulary from this endpoint — do NOT re-declare enum value lists as frontend constants or add invented options (e.g. a "Not specified" entry); selects render exactly what the endpoint returns; an unselected optional field is omitted from the payload and the backend applies its own default.
+- **Frontend validation (zod)** only checks that required fields are filled (plus basic format, e.g. a valid email shape) — it never encodes business rules. Any business-logic validation (room conflicts, faculty double-booking, hour caps, uniqueness, etc.) is backend-only; its message is shown verbatim via `ApiError`. Never add frontend copy for those cases.
 - **Error messages** shown in the UI come verbatim from backend responses via `ApiError` (see auth slice above) — no frontend-authored copy for API failures.
 - **Success messages** follow the same rule: mutation service functions return the backend response's `message` verbatim via `apiMessage(data)` (`lib/api.ts`) — typed as `apiPost<{ message?: string }>(…)` — and route handlers surface it with `if (message) toast.success(message);` (sonner). Never write frontend success copy; if the response carries no `message`, show no toast (and fix it backend-side). Errors stay inline via `FormError` — do not toast them.
 - If the backend response is missing something (a filtered value, an absent endpoint), fix or request it backend-side rather than patching values into the frontend.
