@@ -291,15 +291,17 @@ function SubjectsNewPage() {
               />
             </div>
 
-            <CurriculumStructure
-              program={program}
-              saved={savedForProgram}
-              pending={pending}
-              collapsed={collapsed}
-              onToggleSection={handleToggleSection}
-              onEditPending={handleEditPending}
-              onRemovePending={handleRemovePending}
-            />
+            <div className="scrollbar-thin rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80 lg:max-h-[calc(100vh-11rem)] lg:overflow-y-auto">
+              <CurriculumStructure
+                program={program}
+                saved={savedForProgram}
+                pending={pending}
+                collapsed={collapsed}
+                onToggleSection={handleToggleSection}
+                onEditPending={handleEditPending}
+                onRemovePending={handleRemovePending}
+              />
+            </div>
           </div>
         </div>
       )}

@@ -107,7 +107,7 @@ function SchedulesNewPage() {
   const [generationConflicts, setGenerationConflicts] = useState<string[]>([]);
   const tempIdCounter = useRef(0);
 
-  const isDirty = slots.length > 0;
+  const isDirty = slots.length > 0 || isGenerating;
   const [reloadPromptOpen, setReloadPromptOpen] = useState(false);
   const reloadConfirmed = useRef(false);
 
@@ -137,7 +137,7 @@ function SchedulesNewPage() {
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && !isSaving && !isGenerating && currentLocation.pathname !== nextLocation.pathname,
+      isDirty && !isSaving && currentLocation.pathname !== nextLocation.pathname,
   );
 
   useEffect(() => {
@@ -668,28 +668,32 @@ function SchedulesNewPage() {
       <ConfirmDialog
         open={blocker.state === "blocked"}
         onClose={() => blocker.reset?.()}
-        title="Discard unsaved schedule?"
-        confirmLabel="Discard"
-        loadingLabel="Discarding…"
+        title={isGenerating ? "Cancel schedule generation?" : "Discard unsaved schedule?"}
+        confirmLabel={isGenerating ? "Cancel Generation" : "Discard"}
+        loadingLabel={isGenerating ? "Cancelling…" : "Discarding…"}
         confirmVariant="danger"
         onConfirm={async () => blocker.proceed?.()}
       >
-        You have unsaved schedule slots. Leaving this page will discard them.
+        {isGenerating
+          ? "Schedule generation is in progress. Leaving this page will cancel it."
+          : "You have unsaved schedule slots. Leaving this page will discard them."}
       </ConfirmDialog>
 
       <ConfirmDialog
         open={reloadPromptOpen}
         onClose={() => setReloadPromptOpen(false)}
-        title="Discard unsaved schedule?"
-        confirmLabel="Reload"
-        loadingLabel="Reloading…"
+        title={isGenerating ? "Cancel schedule generation?" : "Discard unsaved schedule?"}
+        confirmLabel={isGenerating ? "Cancel Generation" : "Reload"}
+        loadingLabel={isGenerating ? "Cancelling…" : "Reloading…"}
         confirmVariant="danger"
         onConfirm={async () => {
           reloadConfirmed.current = true;
           window.location.reload();
         }}
       >
-        You have unsaved schedule slots. Reloading will discard them.
+        {isGenerating
+          ? "Schedule generation is in progress. Reloading will cancel it."
+          : "You have unsaved schedule slots. Reloading will discard them."}
       </ConfirmDialog>
     </div>
   );
