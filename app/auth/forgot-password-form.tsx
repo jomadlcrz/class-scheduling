@@ -39,7 +39,7 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
 
   <Input
     id="email"
-    label="Email"
+    label="Email Address"
     type="email"
     autoComplete="email"
     placeholder="you@gwc.edu.ph"

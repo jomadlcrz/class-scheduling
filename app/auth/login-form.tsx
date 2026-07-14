@@ -51,7 +51,7 @@ export function LoginForm() {
 
   <Input
     id="identifier"
-    label="Email"
+    label="Email Address"
     type="text"
     autoComplete="username"
     placeholder="you@gwc.edu.ph"
