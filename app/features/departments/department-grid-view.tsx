@@ -50,11 +50,11 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
             <Card className="group relative flex h-full flex-col overflow-hidden shadow-sm transition-shadow duration-200 hover:shadow-lg">
               <span
                 aria-hidden
-                className="pointer-events-none absolute left-2 top-2 h-3 w-3 border-l-2 border-t-2 border-gold-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                className="pointer-events-none absolute left-2 top-2 z-10 h-3 w-3 border-l-2 border-t-2 border-gold-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               />
               <span
                 aria-hidden
-                className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-b-2 border-r-2 border-gold-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                className="pointer-events-none absolute bottom-2 right-2 z-10 h-3 w-3 border-b-2 border-r-2 border-gold-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               />
 
               <div className="relative h-28 shrink-0 overflow-hidden bg-slate-100 dark:bg-navy-900/60">

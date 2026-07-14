@@ -67,6 +67,7 @@ async function view(): Promise<Schedule[]> {
       setId: r.set_name ?? "",
       setCode: r.set_name ?? "",
       program: programAbbrev ?? r.dept_abbrev ?? "",
+      departmentCode: r.dept_abbrev ?? "",
       yearLevel: ([1, 2, 3, 4].includes(yearLevel) ? yearLevel : 1) as YearLevel,
       facultyId: "",
       facultyName: r.faculty_name,

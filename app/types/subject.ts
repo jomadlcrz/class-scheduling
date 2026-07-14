@@ -15,6 +15,13 @@ export const SUBJECT_TYPE_TONES: Record<string, BadgeTone> = {
   "Major without Lab": "green",
 };
 
+/** Display labels matching classroom-mapping TYPE_LABELS. */
+export const SUBJECT_TYPE_LABELS: Record<string, string> = {
+  GenEd: "GenEd",
+  "Major with Lab": "Major (Lab)",
+  "Major without Lab": "Major (w/o Lab)",
+};
+
 /** A curriculum entry: a subject offered by one program at a year/semester slot. */
 export type Subject = {
   id: number;

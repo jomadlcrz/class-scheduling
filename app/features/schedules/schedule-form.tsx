@@ -150,6 +150,7 @@ export function ScheduleForm({
         setId: result.data.setId,
         setCode: set.setCode,
         program: set.program,
+        departmentCode: programs.find((p) => p.code === set.program)?.departmentCode ?? "",
         yearLevel: set.yearLevel,
         facultyId: result.data.facultyId,
         facultyName: `${member.firstName} ${member.lastName}`,

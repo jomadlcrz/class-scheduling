@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import {
+  SUBJECT_TYPE_LABELS,
   type CreateSubjectInput,
   type Semester,
   type YearLevel,
@@ -164,7 +165,10 @@ export function CurriculumEntryForm({
         />
         <FieldChrome id="entry-subject-type" label="Subject Type">
           <Select
-            items={subjectTypes.map((type) => ({ value: type, label: type }))}
+            items={subjectTypes.map((type) => ({
+              value: type,
+              label: SUBJECT_TYPE_LABELS[type] ?? type,
+            }))}
             name="entry-subject-type"
             defaultValue={initialEntry?.subjectType ?? subjectTypes[0] ?? ""}
           >
@@ -174,7 +178,7 @@ export function CurriculumEntryForm({
             <SelectContent>
               {subjectTypes.map((type) => (
                 <SelectItem key={type} value={type}>
-                  {type}
+                  {SUBJECT_TYPE_LABELS[type] ?? type}
                 </SelectItem>
               ))}
             </SelectContent>

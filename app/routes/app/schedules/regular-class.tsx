@@ -11,6 +11,7 @@ import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
+import { openSchedulePrint } from "~/features/schedules/print-schedule";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
   ScheduleViewToggle,
@@ -224,7 +225,15 @@ function RegularClassPage() {
           <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
         </div>
         <div className="flex justify-end">
-          <Button type="button" variant="outline" block={false} onClick={() => window.print()}>
+          <Button
+            type="button"
+            variant="outline"
+            block={false}
+            disabled={visibleSchedules.length === 0}
+            onClick={() =>
+              openSchedulePrint(visibleSchedules, { schoolYear, semesterLabel: semesterLabel(semester) })
+            }
+          >
             <PrinterIcon />
             Print
           </Button>

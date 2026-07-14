@@ -58,10 +58,6 @@ function renderYearBlock(yearLevel: YearLevel, groups: CurriculumGroup[], semest
  * the app shell (sidebar/navbar) or touch global print CSS.
  */
 export function openCurriculumPrint(curriculum: ProgramCurriculum, semesterLabel: (n: number) => string, yearLevelLabel: (n: number) => string): boolean {
-  // "noopener" would make window.open return null — this tab hosts only our markup.
-  const win = window.open("", "_blank");
-  if (!win) return false;
-
   const origin = window.location.origin;
   const yearLevels = [...new Set(curriculum.groups.map((g) => g.yearLevel))].sort() as YearLevel[];
 
@@ -69,12 +65,12 @@ export function openCurriculumPrint(curriculum: ProgramCurriculum, semesterLabel
     .map((year) => renderYearBlock(year, curriculum.groups.filter((g) => g.yearLevel === year), semesterLabel, yearLevelLabel))
     .join("");
 
-  win.document.open();
-  win.document.write(`<!doctype html>
+  const html = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Curriculum — ${safe(curriculum.programName)}</title>
+  <link rel="icon" href="${origin}/favicon.ico" />
   <style>
     *{box-sizing:border-box;margin:0}
     body{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:0.4in}
@@ -124,7 +120,17 @@ export function openCurriculumPrint(curriculum: ProgramCurriculum, semesterLabel
   <p class="cp-total">TOTAL UNITS: <strong>${curriculum.totalUnits}</strong></p>
   <script>window.addEventListener("load",function(){setTimeout(function(){window.print()},200)})</script>
 </body>
-</html>`);
-  win.document.close();
+</html>`;
+
+  // A blob URL is a real navigation target, unlike document.write into "about:blank" —
+  // browsers only pick up <link rel="icon"> on an actual navigated document.
+  const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  // "noopener" would make window.open return null — this tab hosts only our markup.
+  const win = window.open(url, "_blank");
+  if (!win) {
+    URL.revokeObjectURL(url);
+    return false;
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
   return true;
 }

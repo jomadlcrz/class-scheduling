@@ -218,6 +218,7 @@ function SchedulesNewPage() {
         setId: String(selectedSet?.id ?? ""),
         setCode: selectedSet?.setCode ?? "",
         program: selectedProgram?.code ?? "",
+        departmentCode: selectedProgram?.departmentCode ?? "",
         yearLevel: (selectedYearLevel || 1) as YearLevel,
         facultyId: String(slot.facultyId ?? ""),
         facultyName: slot.facultyName,

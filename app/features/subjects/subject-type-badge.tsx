@@ -1,9 +1,13 @@
 import { Badge, type BadgeTone } from "~/components/ui/badge";
-import { SUBJECT_TYPE_TONES } from "~/types/subject";
+import { SUBJECT_TYPE_LABELS, SUBJECT_TYPE_TONES } from "~/types/subject";
 
-/** Renders a backend SubjectTypeName value, e.g. "GenEd" or "Major with Lab". */
+/** Renders a backend SubjectTypeName value with a display label. */
 export function SubjectTypeBadge({ type }: { type: string }) {
-  return <Badge tone={SUBJECT_TYPE_TONES[type] ?? "slate"}>{type}</Badge>;
+  return (
+    <Badge tone={SUBJECT_TYPE_TONES[type] ?? "slate"}>
+      {SUBJECT_TYPE_LABELS[type] ?? type}
+    </Badge>
+  );
 }
 
 const TYPE_TEXT_CLASS: Record<BadgeTone, string> = {
@@ -21,5 +25,9 @@ const TYPE_TEXT_CLASS: Record<BadgeTone, string> = {
 /** Compact colored-text version of SubjectTypeBadge for dense table/list rows. */
 export function SubjectTypeText({ type }: { type: string }) {
   const tone = SUBJECT_TYPE_TONES[type] ?? "slate";
-  return <span className={`font-body text-xs font-medium ${TYPE_TEXT_CLASS[tone]}`}>{type}</span>;
+  return (
+    <span className={`font-body text-xs font-medium ${TYPE_TEXT_CLASS[tone]}`}>
+      {SUBJECT_TYPE_LABELS[type] ?? type}
+    </span>
+  );
 }
