@@ -41,7 +41,7 @@ function DepartmentsPage() {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [search, setSearch] = useState("");
   const [buildingFilter, setBuildingFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Department | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);

@@ -54,7 +54,7 @@ function StudentSchedulePage() {
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
   const schoolYear = defaultSchoolYear;
   const semester: ScheduleSemester = 1;
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
   // useEffect(() => {
   //   Promise.all([scheduleService.list(), studentService.list(), subjectService.list()]).then(

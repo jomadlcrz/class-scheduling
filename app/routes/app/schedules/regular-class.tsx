@@ -51,7 +51,7 @@ function RegularClassPage() {
   const [semester, setSemester] = useState<ScheduleSemester>(1);
   const [setName, setSetName] = useState("");
 
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
   useEffect(() => {
     scheduleService

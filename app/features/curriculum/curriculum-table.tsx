@@ -17,7 +17,7 @@ type CurriculumTableProps = {
   viewMode?: ScheduleViewMode;
 };
 
-export function CurriculumTable({ curriculum, search = "", viewMode = "grid" }: CurriculumTableProps) {
+export function CurriculumTable({ curriculum, search = "", viewMode = "table" }: CurriculumTableProps) {
   const query = search.trim().toLowerCase();
 
   const filteredGroups = useMemo(() => {

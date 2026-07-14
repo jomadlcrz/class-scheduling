@@ -45,7 +45,7 @@ function ClassroomMappingPage() {
   const [buildingFilter, setBuildingFilter] = useState("all");
   const buildingName = buildings.find((b) => String(b.id) === buildingFilter)?.name;
   const [rawSearch, setRawSearch] = useState("");
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contextLoading, setContextLoading] = useState(true);
 

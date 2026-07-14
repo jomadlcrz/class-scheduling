@@ -37,7 +37,7 @@ function FacultySchedulePage() {
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
   const [schoolYear, setSchoolYear] = useState(defaultSchoolYear);
   const [semester, setSemester] = useState<ScheduleSemester>(1);
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
   // useEffect(() => {
   //   scheduleService.list().then(setSchedules);

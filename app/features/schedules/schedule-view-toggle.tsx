@@ -9,8 +9,8 @@ type ScheduleViewToggleOption<T extends string = ScheduleViewMode> = {
 };
 
 const DEFAULT_OPTIONS = [
-  { mode: "grid", title: "Grid view", Icon: GridIcon },
   { mode: "table", title: "List view", Icon: ListIcon },
+  { mode: "grid", title: "Grid view", Icon: GridIcon },
   ] as const satisfies readonly ScheduleViewToggleOption[];
 
 type Props<T extends string = ScheduleViewMode> = {

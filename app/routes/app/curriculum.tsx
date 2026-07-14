@@ -40,7 +40,7 @@ function CurriculumPage() {
   const [selectedCode, setSelectedCode] = useState("");
   const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
