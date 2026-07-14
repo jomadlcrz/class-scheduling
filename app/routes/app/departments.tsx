@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -10,7 +11,9 @@ import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { DepartmentForm } from "~/features/departments/department-form";
+import { DepartmentGridView } from "~/features/departments/department-grid-view";
 import { DepartmentTable } from "~/features/departments/department-table";
+import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
@@ -38,6 +41,7 @@ function DepartmentsPage() {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [search, setSearch] = useState("");
   const [buildingFilter, setBuildingFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("grid");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Department | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
@@ -63,6 +67,7 @@ function DepartmentsPage() {
   }, [depts, search, buildingFilter]);
 
   const pagination = usePagination(visibleDepts, resetKey);
+  const reduceMotion = useReducedMotion();
 
   // Mutations return only a message, so the list is refetched afterwards.
   async function refresh() {
@@ -104,43 +109,46 @@ function DepartmentsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="relative w-full sm:w-64">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-              <SearchIcon />
-            </span>
-            <input
-              id="dept-search"
-              type="search"
-              placeholder="Code or name…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search"
-              className={`${inputClassName} pl-9 pr-4`}
-            />
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="relative w-full sm:w-64">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <SearchIcon />
+              </span>
+              <input
+                id="dept-search"
+                type="search"
+                placeholder="Code or name…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search"
+                className={`${inputClassName} pl-9 pr-4`}
+              />
+            </div>
+            <div className="w-36 sm:w-44">
+              <Select
+                items={[
+                  { value: "all", label: "All buildings" },
+                  ...buildings.map((b) => ({ value: b.name, label: b.name })),
+                ]}
+                value={buildingFilter}
+                onValueChange={(v) => setBuildingFilter(v as string)}
+              >
+                <SelectTrigger id="dept-building-filter" aria-label="Building">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All buildings</SelectItem>
+                  {buildings.map((b) => (
+                    <SelectItem key={b.id} value={b.name}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[
-                { value: "all", label: "All buildings" },
-                ...buildings.map((b) => ({ value: b.name, label: b.name })),
-              ]}
-              value={buildingFilter}
-              onValueChange={(v) => setBuildingFilter(v as string)}
-            >
-              <SelectTrigger id="dept-building-filter" aria-label="Building">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All buildings</SelectItem>
-                {buildings.map((b) => (
-                  <SelectItem key={b.id} value={b.name}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Department view" />
         </div>
 
         {depts === null ? (
@@ -157,11 +165,29 @@ function DepartmentsPage() {
           </EmptyState>
         ) : (
           <>
-            <DepartmentTable
-              departments={pagination.pageItems}
-              onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
-            />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={viewMode}
+                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+              >
+                {viewMode === "grid" ? (
+                  <DepartmentGridView
+                    departments={pagination.pageItems}
+                    onEdit={setEditTarget}
+                    onDelete={setDeleteTarget}
+                  />
+                ) : (
+                  <DepartmentTable
+                    departments={pagination.pageItems}
+                    onEdit={setEditTarget}
+                    onDelete={setDeleteTarget}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
             <Pagination
               page={pagination.page}
               totalItems={pagination.totalItems}
