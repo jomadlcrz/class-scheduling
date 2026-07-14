@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { Department } from "~/types/department";
 import type { Faculty } from "~/types/faculty";
 
@@ -73,17 +73,24 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
         defaultValue={member?.email ?? ""}
       />
 
-      <Select
-        id="faculty-department"
-        label="Department"
-        defaultValue={member?.departmentCode ?? departments[0]?.id}
-      >
-        {departments.map((d) => (
-          <option key={d.id} value={d.id}>
-            {d.code} — {d.name}
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="faculty-department" label="Department">
+        <Select
+          items={departments.map((d) => ({ value: String(d.id), label: `${d.code} — ${d.name}` }))}
+          name="faculty-department"
+          defaultValue={member?.departmentCode ?? String(departments[0]?.id ?? "")}
+        >
+          <SelectTrigger id="faculty-department">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {departments.map((d) => (
+              <SelectItem key={d.id} value={String(d.id)}>
+                {d.code} — {d.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>

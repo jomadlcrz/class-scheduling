@@ -4,8 +4,9 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog } from "~/components/ui/modal";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumEntryForm } from "~/features/subjects/curriculum-entry-form";
 import {
@@ -256,23 +257,29 @@ function SubjectsNewPage() {
 
           <div className="grid items-start gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
             <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80">
-              <Select
-                id="new-subject-program"
-                label="Program"
-                value={program}
-                onChange={(e) => {
-                  setProgram(e.target.value);
-                  // Prerequisites belong to a program; switching drops staged work.
-                  setPending([]);
-                  setEditing(null);
-                }}
-              >
-                {(programs ?? []).map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.code} — {p.name}
-                  </option>
-                ))}
-              </Select>
+              <FieldChrome id="new-subject-program" label="Program">
+                <Select
+                  items={(programs ?? []).map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+                  value={program}
+                  onValueChange={(v) => {
+                    setProgram(v as string);
+                    // Prerequisites belong to a program; switching drops staged work.
+                    setPending([]);
+                    setEditing(null);
+                  }}
+                >
+                  <SelectTrigger id="new-subject-program">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(programs ?? []).map((p) => (
+                      <SelectItem key={p.code} value={p.code}>
+                        {p.code} — {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldChrome>
 
               <CurriculumEntryForm
                 key={editing?.tempId ?? "new"}

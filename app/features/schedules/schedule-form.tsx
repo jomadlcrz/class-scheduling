@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Select } from "~/components/ui/select";
+import { FieldChrome } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { Faculty } from "~/types/faculty";
 import type { Program } from "~/types/program";
 import type { Room } from "~/types/room";
@@ -88,7 +89,7 @@ export function ScheduleForm({
 
   const effectiveSubjectId = availableSubjects.some((s) => s.id === selectedSubjectId)
     ? selectedSubjectId
-    : (availableSubjects[0]?.id ?? "");
+    : String(availableSubjects[0]?.id ?? "");
 
   const activeFaculty = faculty.filter((f) => f.status === "active");
 
@@ -171,137 +172,266 @@ export function ScheduleForm({
       <FormError message={error} />
 
       <div className="grid grid-cols-2 gap-3">
-        <Select
-          id="sched-school-year"
-          label="School Year"
-          defaultValue={schedule?.schoolYear ?? defaultSchoolYear}
-        >
-          {schoolYears.map((y) => (
-            <option key={y.id} value={y.schoolYear}>{y.schoolYear}</option>
-          ))}
-        </Select>
-        <Select
-          id="sched-semester"
-          label="Semester"
-          defaultValue={schedule?.semester ?? defaultSemester}
-        >
-          {semesters.map((s) => (
-            <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
-          ))}
-        </Select>
+        <FieldChrome id="sched-school-year" label="School Year">
+          <Select
+            items={schoolYears.map((y) => ({ value: y.schoolYear, label: y.schoolYear }))}
+            name="sched-school-year"
+            defaultValue={schedule?.schoolYear ?? defaultSchoolYear}
+          >
+            <SelectTrigger id="sched-school-year">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {schoolYears.map((y) => (
+                <SelectItem key={y.id} value={y.schoolYear}>
+                  {y.schoolYear}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="sched-semester" label="Semester">
+          <Select
+            items={semesters.map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))}
+            name="sched-semester"
+            defaultValue={String(schedule?.semester ?? defaultSemester)}
+          >
+            <SelectTrigger id="sched-semester">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {semesters.map((s) => (
+                <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                  {semesterLabel(s.semesterNumber)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Select
-          id="sched-program"
-          label="Program"
-          value={selectedProgram}
-          onChange={(e) => handleProgramChange(e.target.value)}
-        >
-          {programs.map((p) => (
-            <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
-          ))}
-        </Select>
-        <Select
-          id="sched-year-level"
-          label="Year Level"
-          value={selectedYearLevel}
-          onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
-        >
-          {availableYearLevels.length === 0 ? (
-            <option value="">No year levels</option>
-          ) : (
-            availableYearLevels.map((yl) => (
-              <option key={yl} value={yl}>{yearLevelLabel(yl)}</option>
-            ))
-          )}
-        </Select>
+        <FieldChrome id="sched-program" label="Program">
+          <Select
+            items={programs.map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+            value={selectedProgram}
+            onValueChange={(v) => handleProgramChange(v as string)}
+          >
+            <SelectTrigger id="sched-program">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {programs.map((p) => (
+                <SelectItem key={p.code} value={p.code}>
+                  {p.code} — {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="sched-year-level" label="Year Level">
+          <Select
+            items={
+              availableYearLevels.length === 0
+                ? [{ value: "", label: "No year levels" }]
+                : availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) }))
+            }
+            value={String(selectedYearLevel)}
+            onValueChange={(v) => handleYearLevelChange(Number(v) as YearLevel)}
+          >
+            <SelectTrigger id="sched-year-level">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYearLevels.length === 0 ? (
+                <SelectItem value="">No year levels</SelectItem>
+              ) : (
+                availableYearLevels.map((yl) => (
+                  <SelectItem key={yl} value={String(yl)}>
+                    {yearLevelLabel(yl)}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
-      <Select
-        id="sched-subject"
-        label="Subject"
-        value={effectiveSubjectId}
-        onChange={(e) => setSelectedSubjectId(e.target.value)}
-      >
-        {availableSubjects.length === 0 ? (
-          <option value="">No subjects for this program &amp; year level</option>
-        ) : (
-          [...availableSubjects]
-            .sort((a, b) => a.semester - b.semester || a.code.localeCompare(b.code))
-            .map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.code} — {s.title}
-              </option>
-            ))
-        )}
-      </Select>
+      <FieldChrome id="sched-subject" label="Subject">
+        <Select
+          items={
+            availableSubjects.length === 0
+              ? [{ value: "", label: "No subjects for this program & year level" }]
+              : [...availableSubjects]
+                  .sort((a, b) => a.semester - b.semester || a.code.localeCompare(b.code))
+                  .map((s) => ({ value: String(s.id), label: `${s.code} — ${s.title}` }))
+          }
+          value={effectiveSubjectId}
+          onValueChange={(v) => setSelectedSubjectId(v as string)}
+        >
+          <SelectTrigger id="sched-subject">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {availableSubjects.length === 0 ? (
+              <SelectItem value="">No subjects for this program &amp; year level</SelectItem>
+            ) : (
+              [...availableSubjects]
+                .sort((a, b) => a.semester - b.semester || a.code.localeCompare(b.code))
+                .map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {s.code} — {s.title}
+                  </SelectItem>
+                ))
+            )}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
-      <Select
-        id="sched-set"
-        label="Set"
-        defaultValue={schedule?.setId ?? availableSets[0]?.id}
-        key={`${selectedProgram}-${selectedYearLevel}`}
-      >
-        {availableSets.length === 0 ? (
-          <option value="">No sets for this program &amp; year level</option>
-        ) : (
-          availableSets.map((s) => (
-            <option key={s.id} value={s.id}>
-              Set {s.setCode}
-            </option>
-          ))
-        )}
-      </Select>
+      <FieldChrome id="sched-set" label="Set">
+        <Select
+          items={
+            availableSets.length === 0
+              ? [{ value: "", label: "No sets for this program & year level" }]
+              : availableSets.map((s) => ({ value: String(s.id), label: `Set ${s.setCode}` }))
+          }
+          name="sched-set"
+          defaultValue={schedule?.setId ?? String(availableSets[0]?.id ?? "")}
+          key={`${selectedProgram}-${selectedYearLevel}`}
+        >
+          <SelectTrigger id="sched-set">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {availableSets.length === 0 ? (
+              <SelectItem value="">No sets for this program &amp; year level</SelectItem>
+            ) : (
+              availableSets.map((s) => (
+                <SelectItem key={s.id} value={String(s.id)}>
+                  Set {s.setCode}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
-      <Select
-        id="sched-faculty"
-        label="Faculty"
-        defaultValue={schedule?.facultyId ?? activeFaculty[0]?.id}
-      >
-        {activeFaculty.map((f) => (
-          <option key={f.id} value={f.id}>
-            {f.lastName}, {f.firstName} ({f.departmentCode})
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="sched-faculty" label="Faculty">
+        <Select
+          items={activeFaculty.map((f) => ({
+            value: String(f.id),
+            label: `${f.lastName}, ${f.firstName} (${f.departmentCode})`,
+          }))}
+          name="sched-faculty"
+          defaultValue={schedule?.facultyId ?? String(activeFaculty[0]?.id ?? "")}
+        >
+          <SelectTrigger id="sched-faculty">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {activeFaculty.map((f) => (
+              <SelectItem key={f.id} value={String(f.id)}>
+                {f.lastName}, {f.firstName} ({f.departmentCode})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       <div className="grid grid-cols-2 gap-3">
-        <Select
-          id="sched-room"
-          label="Room"
-          defaultValue={schedule?.roomId ?? rooms[0]?.id}
-        >
-          {rooms.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.buildingCode} — {r.name} (cap. {r.capacity}, {r.type})
-            </option>
-          ))}
-        </Select>
+        <FieldChrome id="sched-room" label="Room">
+          <Select
+            items={rooms.map((r) => ({
+              value: String(r.id),
+              label: `${r.buildingCode} — ${r.name} (cap. ${r.capacity}, ${r.type})`,
+            }))}
+            name="sched-room"
+            defaultValue={schedule?.roomId ?? String(rooms[0]?.id ?? "")}
+          >
+            <SelectTrigger id="sched-room">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {rooms.map((r) => (
+                <SelectItem key={r.id} value={String(r.id)}>
+                  {r.buildingCode} — {r.name} (cap. {r.capacity}, {r.type})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
 
-        <Select id="sched-mode" label="Mode" defaultValue={schedule?.mode ?? "F2F"}>
-          {classModes.map((m) => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </Select>
+        <FieldChrome id="sched-mode" label="Mode">
+          <Select
+            items={classModes.map((m) => ({ value: m, label: m }))}
+            name="sched-mode"
+            defaultValue={schedule?.mode ?? "F2F"}
+          >
+            <SelectTrigger id="sched-mode">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {classModes.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Select id="sched-day" label="Day" defaultValue={schedule?.day ?? "M"}>
-          {DAYS.map((d) => (
-            <option key={d} value={d}>{DAY_LABELS[d]}</option>
-          ))}
-        </Select>
-        <Select id="sched-start" label="Start Time" defaultValue={schedule?.startTime ?? "07:00"}>
-          {TIME_SLOTS.slice(0, -1).map((t) => (
-            <option key={t} value={t}>{formatTime(t)}</option>
-          ))}
-        </Select>
-        <Select id="sched-end" label="End Time" defaultValue={schedule?.endTime ?? "10:00"}>
-          {TIME_SLOTS.slice(1).map((t) => (
-            <option key={t} value={t}>{formatTime(t)}</option>
-          ))}
-        </Select>
+        <FieldChrome id="sched-day" label="Day">
+          <Select items={DAYS.map((d) => ({ value: d, label: DAY_LABELS[d] }))} name="sched-day" defaultValue={schedule?.day ?? "M"}>
+            <SelectTrigger id="sched-day">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DAYS.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {DAY_LABELS[d]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="sched-start" label="Start Time">
+          <Select
+            items={TIME_SLOTS.slice(0, -1).map((t) => ({ value: t, label: formatTime(t) }))}
+            name="sched-start"
+            defaultValue={schedule?.startTime ?? "07:00"}
+          >
+            <SelectTrigger id="sched-start">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIME_SLOTS.slice(0, -1).map((t) => (
+                <SelectItem key={t} value={t}>
+                  {formatTime(t)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="sched-end" label="End Time">
+          <Select
+            items={TIME_SLOTS.slice(1).map((t) => ({ value: t, label: formatTime(t) }))}
+            name="sched-end"
+            defaultValue={schedule?.endTime ?? "10:00"}
+          >
+            <SelectTrigger id="sched-end">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIME_SLOTS.slice(1).map((t) => (
+                <SelectItem key={t} value={t}>
+                  {formatTime(t)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
       <div className="flex justify-end gap-2">

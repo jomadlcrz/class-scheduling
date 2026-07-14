@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { userSchema } from "~/schemas/user.schema";
 import type { CreateUserInput, Role, User } from "~/types/user";
 import { ROLE_LABELS } from "~/features/users/role-badge";
@@ -65,13 +65,24 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         defaultValue={user?.email}
       />
 
-      <Select id="user-role" label="Role" defaultValue={user?.role ?? "faculty"}>
-        {Object.entries(ROLE_LABELS).map(([role, label]) => (
-          <option key={role} value={role}>
-            {label}
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="user-role" label="Role">
+        <Select
+          items={Object.entries(ROLE_LABELS).map(([role, label]) => ({ value: role, label }))}
+          name="user-role"
+          defaultValue={user?.role ?? "faculty"}
+        >
+          <SelectTrigger id="user-role">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(ROLE_LABELS).map(([role, label]) => (
+              <SelectItem key={role} value={role}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       {!isEditing && (
         <p className="font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">

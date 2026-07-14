@@ -2,8 +2,8 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CheckIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { facultySchema, FACULTY_ROLES } from "~/schemas/faculty.schema";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput } from "~/types/faculty";
@@ -104,48 +104,96 @@ export function FacultyAccountForm({
             }}
           />
 
-          <Select id="faculty-department" label="Department" defaultValue="" required>
-            <option value="">Select a department</option>
-            {departments.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.code} — {d.name}
-              </option>
-            ))}
-          </Select>
+          <FieldChrome id="faculty-department" label="Department" required>
+            <Select
+              items={[
+                { value: "", label: "Select a department" },
+                ...departments.map((d) => ({ value: d.id, label: `${d.code} — ${d.name}` })),
+              ]}
+              name="faculty-department"
+              defaultValue=""
+            >
+              <SelectTrigger id="faculty-department">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Select a department</SelectItem>
+                {departments.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.code} — {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
 
           <div className="grid grid-cols-2 gap-3">
-            <Select id="faculty-gender" label="Gender" defaultValue="" required>
-              <option value="">Select a gender</option>
-              {genders.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </Select>
-            <Select id="faculty-civil-status" label="Civil Status" defaultValue="" required>
-              <option value="">Select a status</option>
-              {civilStatuses.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
+            <FieldChrome id="faculty-gender" label="Gender" required>
+              <Select
+                items={[{ value: "", label: "Select a gender" }, ...genders.map((g) => ({ value: g, label: g }))]}
+                name="faculty-gender"
+                defaultValue=""
+              >
+                <SelectTrigger id="faculty-gender">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a gender</SelectItem>
+                  {genders.map((g) => (
+                    <SelectItem key={g} value={g}>
+                      {g}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="faculty-civil-status" label="Civil Status" required>
+              <Select
+                items={[
+                  { value: "", label: "Select a status" },
+                  ...civilStatuses.map((s) => ({ value: s, label: s })),
+                ]}
+                name="faculty-civil-status"
+                defaultValue=""
+              >
+                <SelectTrigger id="faculty-civil-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a status</SelectItem>
+                  {civilStatuses.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
           </div>
 
-          <Select
-            id="faculty-role"
-            label="Role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            required
-          >
-            <option value="">Select a role</option>
-            {FACULTY_ROLES.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </Select>
+          <FieldChrome id="faculty-role" label="Role" required>
+            <Select
+              items={[
+                { value: "", label: "Select a role" },
+                ...FACULTY_ROLES.map((r) => ({ value: r, label: r })),
+              ]}
+              name="faculty-role"
+              value={role}
+              onValueChange={(v) => setRole(v as string)}
+            >
+              <SelectTrigger id="faculty-role">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Select a role</SelectItem>
+                {FACULTY_ROLES.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
         </div>
 
         {showPermissions && <RolePermissionsPanel role={selectedRole} />}

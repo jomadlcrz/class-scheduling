@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ProgramForm } from "~/features/programs/program-form";
 import { ProgramTable } from "~/features/programs/program-table";
@@ -115,43 +115,62 @@ function ProgramsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="col-span-2 sm:col-span-2">
-            <Input
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="relative w-full sm:w-64">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
               id="prog-search"
-              label="Search"
               type="search"
               placeholder="Code or name…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search"
+              className={`${inputClassName} pl-9 pr-4`}
             />
           </div>
-          <Select
-            id="prog-dept-filter"
-            label="Department"
-            value={deptFilter}
-            onChange={(e) => setDeptFilter(e.target.value)}
-          >
-            <option value="all">All departments</option>
-            {departments.map((d) => (
-              <option key={d.id} value={d.code}>
-                {d.code}
-              </option>
-            ))}
-          </Select>
-          <Select
-            id="prog-type-filter"
-            label="Type"
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-          >
-            <option value="all">All types</option>
-            {PROGRAM_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </Select>
+          <div className="w-36 sm:w-44">
+            <Select
+              items={[
+                { value: "all", label: "All departments" },
+                ...departments.map((d) => ({ value: d.code, label: d.code })),
+              ]}
+              value={deptFilter}
+              onValueChange={(v) => setDeptFilter(v as string)}
+            >
+              <SelectTrigger id="prog-dept-filter" aria-label="Department">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All departments</SelectItem>
+                {departments.map((d) => (
+                  <SelectItem key={d.id} value={d.code}>
+                    {d.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-36 sm:w-44">
+            <Select
+              items={[{ value: "all", label: "All types" }, ...PROGRAM_TYPES.map((t) => ({ value: t, label: t }))]}
+              value={typeFilter}
+              onValueChange={(v) => setTypeFilter(v as string)}
+            >
+              <SelectTrigger id="prog-type-filter" aria-label="Type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {PROGRAM_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {programsList === null ? (

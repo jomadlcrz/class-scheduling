@@ -7,7 +7,8 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { AlertIcon, PlusIcon, PrinterIcon } from "~/components/ui/icons";
-import { Select } from "~/components/ui/select";
+import { FieldChrome } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
@@ -124,54 +125,98 @@ function RegularClassPage() {
       {/* Filters */}
       <div className="mt-4 flex flex-col gap-4">
         <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
-          <Select
-            id="rc-school-year"
-            label="School Year"
-            value={schoolYear}
-            onChange={(e) => setSchoolYear(e.target.value)}
-          >
-            {isLoading ? (
-              <option value="">Loading…</option>
-            ) : schoolYears.length === 0 ? (
-              <option value="">No school year</option>
-            ) : (
-              schoolYears.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))
-            )}
-          </Select>
-          <Select
-            id="rc-semester"
-            label="Semester"
-            value={semester}
-            onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-          >
-            {semestersLoading ? (
-              <option value="">Loading…</option>
-            ) : semesters.length === 0 ? (
-              <option value="">No semester</option>
-            ) : (
-              semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
-                <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
-              ))
-            )}
-          </Select>
-          <Select
-            id="rc-set"
-            label="Set"
-            value={setName}
-            onChange={(e) => setSetName(e.target.value)}
-          >
-            {isLoading ? (
-              <option value="">Loading…</option>
-            ) : availableSets.length === 0 ? (
-              <option value="">No set</option>
-            ) : (
-              availableSets.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))
-            )}
-          </Select>
+          <FieldChrome id="rc-school-year" label="School Year">
+            <Select
+              items={
+                isLoading
+                  ? [{ value: "", label: "Loading…" }]
+                  : schoolYears.length === 0
+                    ? [{ value: "", label: "No school year" }]
+                    : schoolYears.map((y) => ({ value: y, label: y }))
+              }
+              value={schoolYear}
+              onValueChange={(v) => setSchoolYear(v as string)}
+            >
+              <SelectTrigger id="rc-school-year">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoading ? (
+                  <SelectItem value="">Loading…</SelectItem>
+                ) : schoolYears.length === 0 ? (
+                  <SelectItem value="">No school year</SelectItem>
+                ) : (
+                  schoolYears.map((y) => (
+                    <SelectItem key={y} value={y}>
+                      {y}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
+          <FieldChrome id="rc-semester" label="Semester">
+            <Select
+              items={
+                semestersLoading
+                  ? [{ value: "", label: "Loading…" }]
+                  : semesters.length === 0
+                    ? [{ value: "", label: "No semester" }]
+                    : semesters
+                        .filter((s) => s.semesterNumber !== 3)
+                        .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))
+              }
+              value={String(semester)}
+              onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
+            >
+              <SelectTrigger id="rc-semester">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {semestersLoading ? (
+                  <SelectItem value="">Loading…</SelectItem>
+                ) : semesters.length === 0 ? (
+                  <SelectItem value="">No semester</SelectItem>
+                ) : (
+                  semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
+                    <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                      {semesterLabel(s.semesterNumber)}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
+          <FieldChrome id="rc-set" label="Set">
+            <Select
+              items={
+                isLoading
+                  ? [{ value: "", label: "Loading…" }]
+                  : availableSets.length === 0
+                    ? [{ value: "", label: "No set" }]
+                    : availableSets.map((s) => ({ value: s, label: s }))
+              }
+              value={setName}
+              onValueChange={(v) => setSetName(v as string)}
+            >
+              <SelectTrigger id="rc-set">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoading ? (
+                  <SelectItem value="">Loading…</SelectItem>
+                ) : availableSets.length === 0 ? (
+                  <SelectItem value="">No set</SelectItem>
+                ) : (
+                  availableSets.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
         </Card>
       </div>
 

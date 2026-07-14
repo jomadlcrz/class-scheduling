@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { FormError } from "~/components/forms/form-error";
-import { Input, inputClassName } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { generateTimeSlots } from "~/types/schedule";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
@@ -113,24 +113,33 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
 
-      <Select
-        id="wh-subject-type"
-        label="Subject Type"
-        value={subjectType}
-        onChange={(e) => {
-          setSubjectType(e.target.value);
-          setError(null);
-          if (!HAS_LAB_TYPES.has(e.target.value)) {
-            setLabHours("");
-            setLabSlots([{ start: "", end: "" }]);
-          }
-        }}
-      >
-        <option value="">— Select subject type —</option>
-        {types.map((t) => (
-          <option key={t} value={t}>{t}</option>
-        ))}
-      </Select>
+      <FieldChrome id="wh-subject-type" label="Subject Type">
+        <Select
+          items={[{ value: "", label: "— Select subject type —" }, ...types.map((t) => ({ value: t, label: t }))]}
+          value={subjectType}
+          onValueChange={(v) => {
+            const next = v as string;
+            setSubjectType(next);
+            setError(null);
+            if (!HAS_LAB_TYPES.has(next)) {
+              setLabHours("");
+              setLabSlots([{ start: "", end: "" }]);
+            }
+          }}
+        >
+          <SelectTrigger id="wh-subject-type">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">— Select subject type —</SelectItem>
+            {types.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       {subjectType && (
         <>

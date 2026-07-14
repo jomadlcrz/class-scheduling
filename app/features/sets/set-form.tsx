@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Select } from "~/components/ui/select";
+import { FieldChrome } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import type { Program } from "~/types/program";
 import { setSchema } from "~/schemas/set.schema";
@@ -64,29 +65,43 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
 
-      <Select
-        id="set-program"
-        label="Program"
-        defaultValue={set?.program ?? programs[0]?.code}
-      >
-        {programs.map((p) => (
-          <option key={p.code} value={p.code}>
-            {p.code} — {p.name}
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="set-program" label="Program">
+        <Select
+          items={programs.map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+          name="set-program"
+          defaultValue={set?.program ?? programs[0]?.code}
+        >
+          <SelectTrigger id="set-program">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {programs.map((p) => (
+              <SelectItem key={p.code} value={p.code}>
+                {p.code} — {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
-      <Select
-        id="set-year-level"
-        label="Year Level"
-        defaultValue={set?.yearLevel ?? 1}
-      >
-        {yearLevelIds.map((year) => (
-          <option key={year} value={year}>
-            {yearLevelLabel(year)}
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="set-year-level" label="Year Level">
+        <Select
+          items={yearLevelIds.map((year) => ({ value: year, label: yearLevelLabel(year) }))}
+          name="set-year-level"
+          defaultValue={set?.yearLevel ?? 1}
+        >
+          <SelectTrigger id="set-year-level">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {yearLevelIds.map((year) => (
+              <SelectItem key={year} value={year}>
+                {yearLevelLabel(year)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       <Textarea
         id="set-code"

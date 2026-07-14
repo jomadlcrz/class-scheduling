@@ -3,8 +3,8 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
@@ -91,14 +91,20 @@ function BuildingsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <Input
-          id="building-search"
-          label="Search"
-          type="search"
-          placeholder="Building name…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="relative w-full sm:w-64">
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+            <SearchIcon />
+          </span>
+          <input
+            id="building-search"
+            type="search"
+            placeholder="Building name…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search"
+            className={`${inputClassName} pl-9 pr-4`}
+          />
+        </div>
 
         {buildings === null ? (
           <div

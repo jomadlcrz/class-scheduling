@@ -5,10 +5,10 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { FacultyAccountForm } from "~/features/faculty/faculty-account-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
@@ -140,19 +140,28 @@ function FacultyPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Select
-            id="faculty-dept-filter"
-            label="Department"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-          >
-            <option value="all">All departments</option>
-            {departmentCodes.map((code) => (
-              <option key={code} value={code}>
-                {code}
-              </option>
-            ))}
-          </Select>
+          <FieldChrome id="faculty-dept-filter" label="Department">
+            <Select
+              items={[
+                { value: "all", label: "All departments" },
+                ...departmentCodes.map((code) => ({ value: code, label: code })),
+              ]}
+              value={department}
+              onValueChange={(v) => setDepartment(v as string)}
+            >
+              <SelectTrigger id="faculty-dept-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All departments</SelectItem>
+                {departmentCodes.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
         </div>
 
         {loadError ? (

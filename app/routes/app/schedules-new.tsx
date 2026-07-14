@@ -3,15 +3,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Drawer } from "~/components/ui/drawer";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { AlertIcon, AlertTriangleIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
@@ -376,6 +376,21 @@ function SchedulesNewPage() {
             )}
           </AnimatePresence>
 
+          <AnimatePresence>
+            {generationConflicts.length > 0 && (
+              <Alert key="generation-conflicts" variant="warning">
+                <AlertTriangleIcon />
+                <AlertDescription>
+                  <ul className="list-disc space-y-1 pl-4">
+                    {generationConflicts.map((c, i) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+          </AnimatePresence>
+
           <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
             <Input
               id="sn-school-year"
@@ -387,61 +402,107 @@ function SchedulesNewPage() {
               disabled={contextLocked}
               hint={lockHint}
             />
-            <Select
-              id="sn-semester"
-              label="Semester"
-              value={semester}
-              onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
-              disabled={contextLocked}
-            >
-              {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
-                <option key={s.id} value={s.semesterNumber}>{semesterLabel(s.semesterNumber)}</option>
-              ))}
-            </Select>
-            <Select
-              id="sn-program"
-              label="Program"
-              value={selectedProgramId}
-              onChange={(e) => handleProgramChange(e.target.value)}
-              disabled={contextLocked}
-            >
-              <option value="">Select a program</option>
-              {(programs ?? []).map((p) => (
-                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
-              ))}
-            </Select>
-            <Select
-              id="sn-year-level"
-              label="Year Level"
-              value={selectedYearLevel}
-              onChange={(e) => handleYearLevelChange(Number(e.target.value) as YearLevel)}
-              disabled={contextLocked}
-            >
-              {availableYearLevels.length === 0 ? (
-                <option value="">Select a program first</option>
-              ) : (
-                availableYearLevels.map((yl) => (
-                  <option key={yl} value={yl}>{yearLevelLabel(yl)}</option>
-                ))
-              )}
-            </Select>
-            <Select
-              id="sn-set"
-              label="Set"
-              value={selectedSetId}
-              onChange={(e) => setSelectedSetId(e.target.value)}
-              disabled={contextLocked}
-            >
-              {availableSets.length === 0 ? (
-                <option value="">Select a year level first</option>
-              ) : (
-                availableSets.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.program}-{s.yearLevel}{s.setCode}
-                  </option>
-                ))
-              )}
-            </Select>
+            <FieldChrome id="sn-semester" label="Semester">
+              <Select
+                items={semesters
+                  .filter((s) => s.semesterNumber !== 3)
+                  .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))}
+                value={String(semester)}
+                onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
+                disabled={contextLocked}
+              >
+                <SelectTrigger id="sn-semester">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
+                    <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                      {semesterLabel(s.semesterNumber)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="sn-program" label="Program">
+              <Select
+                items={[
+                  { value: "", label: "Select a program" },
+                  ...(programs ?? []).map((p) => ({ value: String(p.id), label: `${p.code} — ${p.name}` })),
+                ]}
+                value={selectedProgramId}
+                onValueChange={(v) => handleProgramChange(v as string)}
+                disabled={contextLocked}
+              >
+                <SelectTrigger id="sn-program">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a program</SelectItem>
+                  {(programs ?? []).map((p) => (
+                    <SelectItem key={p.id} value={String(p.id)}>
+                      {p.code} — {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="sn-year-level" label="Year Level">
+              <Select
+                items={
+                  availableYearLevels.length === 0
+                    ? [{ value: "", label: "Select a program first" }]
+                    : availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) }))
+                }
+                value={String(selectedYearLevel)}
+                onValueChange={(v) => handleYearLevelChange(Number(v) as YearLevel)}
+                disabled={contextLocked}
+              >
+                <SelectTrigger id="sn-year-level">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYearLevels.length === 0 ? (
+                    <SelectItem value="">Select a program first</SelectItem>
+                  ) : (
+                    availableYearLevels.map((yl) => (
+                      <SelectItem key={yl} value={String(yl)}>
+                        {yearLevelLabel(yl)}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="sn-set" label="Set">
+              <Select
+                items={
+                  availableSets.length === 0
+                    ? [{ value: "", label: "Select a year level first" }]
+                    : availableSets.map((s) => ({
+                        value: String(s.id),
+                        label: `${s.program}-${s.yearLevel}${s.setCode}`,
+                      }))
+                }
+                value={selectedSetId}
+                onValueChange={(v) => setSelectedSetId(v as string)}
+                disabled={contextLocked}
+              >
+                <SelectTrigger id="sn-set">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableSets.length === 0 ? (
+                    <SelectItem value="">Select a year level first</SelectItem>
+                  ) : (
+                    availableSets.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.program}-{s.yearLevel}{s.setCode}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
           </Card>
 
           <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">

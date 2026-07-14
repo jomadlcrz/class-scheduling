@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { Subject, UpdateSubjectInput } from "~/types/subject";
@@ -97,13 +97,24 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
           required
           defaultValue={subject.units}
         />
-        <Select id="subject-type" label="Subject Type" defaultValue={subject.subjectType}>
-          {subjectTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </Select>
+        <FieldChrome id="subject-type" label="Subject Type">
+          <Select
+            items={subjectTypes.map((type) => ({ value: type, label: type }))}
+            name="subject-type"
+            defaultValue={subject.subjectType}
+          >
+            <SelectTrigger id="subject-type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {subjectTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
       <PrerequisitePicker

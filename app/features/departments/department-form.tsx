@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { departmentSchema } from "~/schemas/department.schema";
 import type { Building } from "~/types/building";
 import type { CreateDepartmentInput, Department } from "~/types/department";
@@ -64,19 +64,29 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
         placeholder="College of Information Technology Education"
         defaultValue={department?.name ?? ""}
       />
-      <Select
+      <FieldChrome
         id="dept-building"
         label="Building"
-        defaultValue={defaultBuildingName}
-        disabled={isEdit}
         hint={isEdit ? "The building can't be changed after creation." : undefined}
       >
-        {buildings.map((b) => (
-          <option key={b.id} value={b.name}>
-            {b.name}
-          </option>
-        ))}
-      </Select>
+        <Select
+          items={buildings.map((b) => ({ value: b.name, label: b.name }))}
+          name="dept-building"
+          defaultValue={defaultBuildingName}
+          disabled={isEdit}
+        >
+          <SelectTrigger id="dept-building">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {buildings.map((b) => (
+              <SelectItem key={b.id} value={b.name}>
+                {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel

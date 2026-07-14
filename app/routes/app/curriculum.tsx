@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { PrinterIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { Card } from "~/components/ui/card";
+import { PrinterIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { Tooltip } from "~/components/ui/tooltip";
 import { CurriculumForm } from "~/features/curriculum/curriculum-form";
@@ -103,19 +104,23 @@ function CurriculumPage() {
           </EmptyState>
         ) : (
           <>
-            <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 dark:border-white/10 sm:flex-row sm:items-end sm:justify-between">
+            <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between">
               <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in this curriculum
               </p>
               <div className="flex items-end gap-3">
-                <div className="w-full sm:w-64">
-                  <Input
+                <div className="relative w-full sm:w-64">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                    <SearchIcon />
+                  </span>
+                  <input
                     id="curriculum-search"
-                    label="Search"
                     type="search"
                     placeholder="Code or title…"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    aria-label="Search"
+                    className={`${inputClassName} pl-9 pr-4`}
                   />
                 </div>
                 <Tooltip label="Print curriculum">
@@ -129,7 +134,7 @@ function CurriculumPage() {
                   </button>
                 </Tooltip>
               </div>
-            </div>
+            </Card>
 
             <CurriculumTable curriculum={curriculum} search={search} />
           </>

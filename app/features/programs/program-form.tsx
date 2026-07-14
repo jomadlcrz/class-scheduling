@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { programSchema } from "~/schemas/program.schema";
 import type { Department } from "~/types/department";
 import type { CreateProgramInput, Program } from "~/types/program";
@@ -58,19 +58,29 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
-      <Select
+      <FieldChrome
         id="prog-department"
         label="Department"
-        defaultValue={defaultDeptName}
-        disabled={isEdit}
         hint={isEdit ? "The department can't be changed after creation." : undefined}
       >
-        {departments.map((d) => (
-          <option key={d.id} value={d.name}>
-            {d.code} — {d.name}
-          </option>
-        ))}
-      </Select>
+        <Select
+          items={departments.map((d) => ({ value: d.name, label: `${d.code} — ${d.name}` }))}
+          name="prog-department"
+          defaultValue={defaultDeptName}
+          disabled={isEdit}
+        >
+          <SelectTrigger id="prog-department">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {departments.map((d) => (
+              <SelectItem key={d.id} value={d.name}>
+                {d.code} — {d.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
       <div className="grid grid-cols-2 gap-3">
         <Input
           id="prog-code"
@@ -79,18 +89,25 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           placeholder="BSIS"
           defaultValue={program?.code ?? ""}
         />
-        <Select
-          id="prog-type"
-          label="Type"
-          defaultValue={program?.type ?? PROGRAM_TYPES[0]}
-          onChange={(e) => setSelectedType(e.target.value)}
-        >
-          {PROGRAM_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </Select>
+        <FieldChrome id="prog-type" label="Type">
+          <Select
+            items={PROGRAM_TYPES.map((t) => ({ value: t, label: t }))}
+            name="prog-type"
+            defaultValue={program?.type ?? PROGRAM_TYPES[0]}
+            onValueChange={(v) => setSelectedType(v as string)}
+          >
+            <SelectTrigger id="prog-type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PROGRAM_TYPES.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
       <Input
         id="prog-name"

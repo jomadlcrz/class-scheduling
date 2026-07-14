@@ -1,5 +1,5 @@
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { Role, UserStatus } from "~/types/user";
 import { ROLE_LABELS } from "~/features/users/role-badge";
 
@@ -28,32 +28,49 @@ export function UserFilters({ value, onChange }: UserFiltersProps) {
         onChange={(e) => onChange({ ...value, search: e.target.value })}
       />
 
-      <Select
-        id="user-role-filter"
-        label="Role"
-        value={value.role}
-        onChange={(e) => onChange({ ...value, role: e.target.value as UserFiltersValue["role"] })}
-      >
-        <option value="all">All roles</option>
-        {Object.entries(ROLE_LABELS).map(([role, label]) => (
-          <option key={role} value={role}>
-            {label}
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="user-role-filter" label="Role">
+        <Select
+          items={[
+            { value: "all", label: "All roles" },
+            ...Object.entries(ROLE_LABELS).map(([role, label]) => ({ value: role, label })),
+          ]}
+          value={value.role}
+          onValueChange={(v) => onChange({ ...value, role: v as UserFiltersValue["role"] })}
+        >
+          <SelectTrigger id="user-role-filter">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All roles</SelectItem>
+            {Object.entries(ROLE_LABELS).map(([role, label]) => (
+              <SelectItem key={role} value={role}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
-      <Select
-        id="user-status-filter"
-        label="Status"
-        value={value.status}
-        onChange={(e) =>
-          onChange({ ...value, status: e.target.value as UserFiltersValue["status"] })
-        }
-      >
-        <option value="all">All statuses</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </Select>
+      <FieldChrome id="user-status-filter" label="Status">
+        <Select
+          items={[
+            { value: "all", label: "All statuses" },
+            { value: "active", label: "Active" },
+            { value: "inactive", label: "Inactive" },
+          ]}
+          value={value.status}
+          onValueChange={(v) => onChange({ ...value, status: v as UserFiltersValue["status"] })}
+        >
+          <SelectTrigger id="user-status-filter">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </FieldChrome>
     </div>
   );
 }

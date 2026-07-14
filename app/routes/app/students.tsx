@@ -4,10 +4,10 @@ import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ResultState } from "~/components/feedback/result-state";
 import { StudentAccountForm } from "~/features/students/student-account-form";
@@ -159,16 +159,26 @@ function StudentsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Select
-            id="student-account-filter"
-            label="Account"
-            value={accountFilter}
-            onChange={(e) => setAccountFilter(e.target.value)}
-          >
-            <option value="all">All students</option>
-            <option value="with">With account</option>
-            <option value="without">No account</option>
-          </Select>
+          <FieldChrome id="student-account-filter" label="Account">
+            <Select
+              items={[
+                { value: "all", label: "All students" },
+                { value: "with", label: "With account" },
+                { value: "without", label: "No account" },
+              ]}
+              value={accountFilter}
+              onValueChange={(v) => setAccountFilter(v as string)}
+            >
+              <SelectTrigger id="student-account-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All students</SelectItem>
+                <SelectItem value="with">With account</SelectItem>
+                <SelectItem value="without">No account</SelectItem>
+              </SelectContent>
+            </Select>
+          </FieldChrome>
         </div>
 
         {loadError ? (

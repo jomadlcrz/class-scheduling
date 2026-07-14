@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { DepartmentForm } from "~/features/departments/department-form";
 import { DepartmentTable } from "~/features/departments/department-table";
@@ -104,30 +104,43 @@ function DepartmentsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <div className="col-span-2 sm:col-span-1">
-            <Input
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="relative w-full sm:w-64">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
               id="dept-search"
-              label="Search"
               type="search"
               placeholder="Code or name…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search"
+              className={`${inputClassName} pl-9 pr-4`}
             />
           </div>
-          <Select
-            id="dept-building-filter"
-            label="Building"
-            value={buildingFilter}
-            onChange={(e) => setBuildingFilter(e.target.value)}
-          >
-            <option value="all">All buildings</option>
-            {buildings.map((b) => (
-              <option key={b.id} value={b.name}>
-                {b.name}
-              </option>
-            ))}
-          </Select>
+          <div className="w-36 sm:w-44">
+            <Select
+              items={[
+                { value: "all", label: "All buildings" },
+                ...buildings.map((b) => ({ value: b.name, label: b.name })),
+              ]}
+              value={buildingFilter}
+              onValueChange={(v) => setBuildingFilter(v as string)}
+            >
+              <SelectTrigger id="dept-building-filter" aria-label="Building">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All buildings</SelectItem>
+                {buildings.map((b) => (
+                  <SelectItem key={b.id} value={b.name}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {depts === null ? (

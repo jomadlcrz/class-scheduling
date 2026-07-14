@@ -7,7 +7,7 @@ type LabelProps = ComponentPropsWithoutRef<"label"> & {
 export function Label({ className = "", required, ...props }: LabelProps) {
   return (
     <label
-      className={`font-body text-sm font-semibold text-gray-700 dark:text-slate-300 ${className}`.trim()}
+      className={`font-body text-sm font-semibold text-gray-600 dark:text-slate-400 ${className}`.trim()}
       {...props}
     >
       {props.children}

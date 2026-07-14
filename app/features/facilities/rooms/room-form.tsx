@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { roomSchema } from "~/schemas/room.schema";
 import type { Building } from "~/types/building";
 import type { CreateRoomInput, Room } from "~/types/room";
@@ -51,19 +51,29 @@ export function RoomForm({ room, buildings, roomTypes, onSubmit, onCancel }: Roo
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
-      <Select
+      <FieldChrome
         id="room-building"
         label="Building"
-        defaultValue={defaultBuildingName}
-        disabled={isEdit}
         hint={isEdit ? "The building can't be changed after creation." : undefined}
       >
-        {buildings.map((b) => (
-          <option key={b.id} value={b.name}>
-            {b.name}
-          </option>
-        ))}
-      </Select>
+        <Select
+          items={buildings.map((b) => ({ value: b.name, label: b.name }))}
+          name="room-building"
+          defaultValue={defaultBuildingName}
+          disabled={isEdit}
+        >
+          <SelectTrigger id="room-building">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {buildings.map((b) => (
+              <SelectItem key={b.id} value={b.name}>
+                {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
       <div className="grid grid-cols-2 gap-3">
         <Input
           id="room-floor"
@@ -91,19 +101,29 @@ export function RoomForm({ room, buildings, roomTypes, onSubmit, onCancel }: Roo
         placeholder="Room 101"
         defaultValue={room?.name ?? ""}
       />
-      <Select
+      <FieldChrome
         id="room-type"
         label="Type"
-        defaultValue={room?.type ?? roomTypes[0] ?? ""}
-        disabled={isEdit}
         hint={isEdit ? "The room type can't be changed after creation." : undefined}
       >
-        {roomTypes.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </Select>
+        <Select
+          items={roomTypes.map((t) => ({ value: t, label: t }))}
+          name="room-type"
+          defaultValue={room?.type ?? roomTypes[0] ?? ""}
+          disabled={isEdit}
+        >
+          <SelectTrigger id="room-type">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {roomTypes.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel

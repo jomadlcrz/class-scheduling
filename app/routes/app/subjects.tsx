@@ -6,10 +6,10 @@ import { usePagination } from "~/hooks/use-pagination";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { SubjectForm } from "~/features/subjects/subject-form";
 import { SubjectTable } from "~/features/subjects/subject-table";
@@ -128,43 +128,65 @@ function SubjectsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <div className="col-span-2 sm:col-span-1">
-            <Input
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="relative w-full sm:w-64">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
               id="subject-search"
-              label="Search"
               type="search"
               placeholder="Code or title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search"
+              className={`${inputClassName} pl-9 pr-4`}
             />
           </div>
-          <Select
-            id="subject-program-filter"
-            label="Program"
-            value={program}
-            onChange={(e) => setProgram(e.target.value)}
-          >
-            <option value="all">All programs</option>
-            {(programs ?? []).map((p) => (
-              <option key={p.code} value={p.code}>
-                {p.code} — {p.name}
-              </option>
-            ))}
-          </Select>
-          <Select
-            id="subject-year-filter"
-            label="Year Level"
-            value={yearLevel}
-            onChange={(e) => setYearLevel(e.target.value)}
-          >
-            <option value="all">All year levels</option>
-            {yearLevelIds.map((year) => (
-              <option key={year} value={year}>
-                {yearLevelLabel(year)}
-              </option>
-            ))}
-          </Select>
+          <div className="w-36 sm:w-44">
+            <Select
+              items={[
+                { value: "all", label: "All programs" },
+                ...(programs ?? []).map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` })),
+              ]}
+              value={program}
+              onValueChange={(v) => setProgram(v as string)}
+            >
+              <SelectTrigger id="subject-program-filter" aria-label="Program">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All programs</SelectItem>
+                {(programs ?? []).map((p) => (
+                  <SelectItem key={p.code} value={p.code}>
+                    {p.code} — {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-36 sm:w-44">
+            <Select
+              items={[
+                { value: "all", label: "All year levels" },
+                ...yearLevelIds.map((year) => ({ value: String(year), label: yearLevelLabel(year) })),
+              ]}
+              value={yearLevel}
+              onValueChange={(v) => setYearLevel(String(v))}
+            >
+              <SelectTrigger id="subject-year-filter" aria-label="Year Level">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All year levels</SelectItem>
+                {yearLevelIds.map((year) => (
+                  <SelectItem key={year} value={String(year)}>
+                    {yearLevelLabel(year)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {subjects === null ? (

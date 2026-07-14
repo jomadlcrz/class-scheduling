@@ -2,8 +2,8 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { studentSchema } from "~/schemas/student.schema";
 import type { Program } from "~/types/program";
 import type { ClassSet } from "~/types/set";
@@ -154,95 +154,170 @@ export function StudentRecordForm({
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <Select id="student-type" label="Student Type" defaultValue="" required>
-              <option value="">Select a type</option>
-              {studentTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </Select>
-            <Select id="student-status" label="Enrolled Status" defaultValue="" required>
-              <option value="">Select a status</option>
-              {academicStatuses.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
+            <FieldChrome id="student-type" label="Student Type" required>
+              <Select
+                items={[{ value: "", label: "Select a type" }, ...studentTypes.map((t) => ({ value: t, label: t }))]}
+                name="student-type"
+                defaultValue=""
+              >
+                <SelectTrigger id="student-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a type</SelectItem>
+                  {studentTypes.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="student-status" label="Enrolled Status" required>
+              <Select
+                items={[
+                  { value: "", label: "Select a status" },
+                  ...academicStatuses.map((s) => ({ value: s, label: s })),
+                ]}
+                name="student-status"
+                defaultValue=""
+              >
+                <SelectTrigger id="student-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a status</SelectItem>
+                  {academicStatuses.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
           </div>
         </div>
 
         <div className="flex flex-col gap-4">
-          <Select
-            id="student-program"
-            label="Program"
-            value={programId}
-            onChange={(e) => setProgramId(e.target.value)}
-            required
-          >
-            <option value="">Select a program</option>
-            {programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.code} — {p.name}
-              </option>
-            ))}
-          </Select>
+          <FieldChrome id="student-program" label="Program" required>
+            <Select
+              items={[
+                { value: "", label: "Select a program" },
+                ...programs.map((p) => ({ value: String(p.id), label: `${p.code} — ${p.name}` })),
+              ]}
+              name="student-program"
+              value={programId}
+              onValueChange={(v) => setProgramId(v as string)}
+            >
+              <SelectTrigger id="student-program">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Select a program</SelectItem>
+                {programs.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.code} — {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
 
           <div className="grid grid-cols-2 gap-3">
-            <Select
-              id="student-year"
-              label="Year Level"
-              value={yearLevel}
-              onChange={(e) => setYearLevel(e.target.value)}
-              required
-            >
-              <option value="">Select a year</option>
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>
-                  {yearLevelLabel(y)}
-                </option>
-              ))}
-            </Select>
-            <Select
-              id="student-set"
-              key={`${programId}|${yearLevel}`}
-              label="Set"
-              defaultValue=""
-              required
-            >
-              <option value="">Select a set</option>
-              {filteredSets.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.setCode}
-                </option>
-              ))}
-            </Select>
+            <FieldChrome id="student-year" label="Year Level" required>
+              <Select
+                items={[
+                  { value: "", label: "Select a year" },
+                  ...yearOptions.map((y) => ({ value: String(y), label: yearLevelLabel(y) })),
+                ]}
+                name="student-year"
+                value={yearLevel}
+                onValueChange={(v) => setYearLevel(v as string)}
+              >
+                <SelectTrigger id="student-year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a year</SelectItem>
+                  {yearOptions.map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {yearLevelLabel(y)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="student-set" label="Set" required>
+              <Select
+                items={[
+                  { value: "", label: "Select a set" },
+                  ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode })),
+                ]}
+                name="student-set"
+                key={`${programId}|${yearLevel}`}
+                defaultValue=""
+              >
+                <SelectTrigger id="student-set">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a set</SelectItem>
+                  {filteredSets.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.setCode}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Select id="student-sy" label="School Year" defaultValue="" required>
-              <option value="">Select a school year</option>
-              {schoolYears.map((sy) => (
-                <option key={sy.id} value={sy.id}>
-                  {sy.schoolYear}
-                </option>
-              ))}
-            </Select>
-            <Select
-              id="student-sem"
-              label="Semester"
-              value={semId}
-              onChange={(e) => setSemId(e.target.value)}
-              required
-            >
-              <option value="">Select a semester</option>
-              {semesters.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.semester}
-                </option>
-              ))}
-            </Select>
+            <FieldChrome id="student-sy" label="School Year" required>
+              <Select
+                items={[
+                  { value: "", label: "Select a school year" },
+                  ...schoolYears.map((sy) => ({ value: String(sy.id), label: sy.schoolYear })),
+                ]}
+                name="student-sy"
+                defaultValue=""
+              >
+                <SelectTrigger id="student-sy">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a school year</SelectItem>
+                  {schoolYears.map((sy) => (
+                    <SelectItem key={sy.id} value={String(sy.id)}>
+                      {sy.schoolYear}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="student-sem" label="Semester" required>
+              <Select
+                items={[
+                  { value: "", label: "Select a semester" },
+                  ...semesters.map((s) => ({ value: String(s.id), label: s.semester })),
+                ]}
+                name="student-sem"
+                value={semId}
+                onValueChange={(v) => setSemId(v as string)}
+              >
+                <SelectTrigger id="student-sem">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a semester</SelectItem>
+                  {semesters.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.semester}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
           </div>
 
           <div>

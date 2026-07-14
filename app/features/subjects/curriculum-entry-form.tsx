@@ -2,8 +2,8 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import {
@@ -93,30 +93,45 @@ export function CurriculumEntryForm({
       <FormError message={error} />
 
       <div className="grid grid-cols-2 gap-3">
-        <Select
-          id="entry-year-level"
-          label="Year Level"
-          value={yearLevel}
-          onChange={(e) => setYearLevel(Number(e.target.value) as YearLevel)}
-        >
-          {yearLevelIds.map((year) => (
-            <option key={year} value={year}>
-              {yearLevelLabel(year)}
-            </option>
-          ))}
-        </Select>
-        <Select
-          id="entry-semester"
-          label="Semester"
-          value={semester}
-          onChange={(e) => setSemester(Number(e.target.value) as Semester)}
-        >
-          {semesters.map((s) => (
-            <option key={s.id} value={s.semesterNumber}>
-              {semesterLabel(s.semesterNumber)}
-            </option>
-          ))}
-        </Select>
+        <FieldChrome id="entry-year-level" label="Year Level">
+          <Select
+            items={yearLevelIds.map((year) => ({ value: String(year), label: yearLevelLabel(year) }))}
+            value={String(yearLevel)}
+            onValueChange={(v) => setYearLevel(Number(v) as YearLevel)}
+          >
+            <SelectTrigger id="entry-year-level">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {yearLevelIds.map((year) => (
+                <SelectItem key={year} value={String(year)}>
+                  {yearLevelLabel(year)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="entry-semester" label="Semester">
+          <Select
+            items={semesters.map((s) => ({
+              value: String(s.semesterNumber),
+              label: semesterLabel(s.semesterNumber),
+            }))}
+            value={String(semester)}
+            onValueChange={(v) => setSemester(Number(v) as Semester)}
+          >
+            <SelectTrigger id="entry-semester">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {semesters.map((s) => (
+                <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                  {semesterLabel(s.semesterNumber)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
       <Input
@@ -147,17 +162,24 @@ export function CurriculumEntryForm({
           required
           defaultValue={initialEntry?.units ?? 3}
         />
-        <Select
-          id="entry-subject-type"
-          label="Subject Type"
-          defaultValue={initialEntry?.subjectType ?? subjectTypes[0] ?? ""}
-        >
-          {subjectTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </Select>
+        <FieldChrome id="entry-subject-type" label="Subject Type">
+          <Select
+            items={subjectTypes.map((type) => ({ value: type, label: type }))}
+            name="entry-subject-type"
+            defaultValue={initialEntry?.subjectType ?? subjectTypes[0] ?? ""}
+          >
+            <SelectTrigger id="entry-subject-type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {subjectTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
       <PrerequisitePicker

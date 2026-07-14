@@ -3,10 +3,10 @@ import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ResultState } from "~/components/feedback/result-state";
 import { ActivateDeanDialog } from "~/features/deans/activate-dean-dialog";
@@ -121,29 +121,48 @@ function DeansPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Select
-            id="dean-dept-filter"
-            label="Department"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-          >
-            <option value="all">All departments</option>
-            {(departments ?? []).map((d) => (
-              <option key={d.id} value={d.code}>
-                {d.code} — {d.name}
-              </option>
-            ))}
-          </Select>
-          <Select
-            id="dean-status-filter"
-            label="Status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </Select>
+          <FieldChrome id="dean-dept-filter" label="Department">
+            <Select
+              items={[
+                { value: "all", label: "All departments" },
+                ...(departments ?? []).map((d) => ({ value: d.code, label: `${d.code} — ${d.name}` })),
+              ]}
+              value={department}
+              onValueChange={(v) => setDepartment(v as string)}
+            >
+              <SelectTrigger id="dean-dept-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All departments</SelectItem>
+                {(departments ?? []).map((d) => (
+                  <SelectItem key={d.id} value={d.code}>
+                    {d.code} — {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
+          <FieldChrome id="dean-status-filter" label="Status">
+            <Select
+              items={[
+                { value: "all", label: "All statuses" },
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ]}
+              value={status}
+              onValueChange={(v) => setStatus(v as string)}
+            >
+              <SelectTrigger id="dean-status-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </FieldChrome>
         </div>
 
         <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>

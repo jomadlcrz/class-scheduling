@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { deanSchema } from "~/schemas/dean.schema";
 import type { Department } from "~/types/department";
 import {
@@ -41,7 +41,7 @@ export function DeanForm({ member, departments, onSubmit, onCancel }: DeanFormPr
       return;
     }
 
-    const dept = departments.find((d) => d.id === departmentId);
+    const dept = departments.find((d) => String(d.id) === departmentId);
     if (!dept) { setError("Select a department."); return; }
 
     setError(null);
@@ -76,29 +76,43 @@ export function DeanForm({ member, departments, onSubmit, onCancel }: DeanFormPr
         defaultValue={member?.email}
       />
 
-      <Select
-        id="dean-department"
-        label="Department"
-        defaultValue={member?.departmentId ?? departments[0]?.id}
-      >
-        {departments.map((d) => (
-          <option key={d.id} value={d.id}>
-            {d.code} — {d.name}
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="dean-department" label="Department">
+        <Select
+          items={departments.map((d) => ({ value: String(d.id), label: `${d.code} — ${d.name}` }))}
+          name="dean-department"
+          defaultValue={member?.departmentId ?? String(departments[0]?.id ?? "")}
+        >
+          <SelectTrigger id="dean-department">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {departments.map((d) => (
+              <SelectItem key={d.id} value={String(d.id)}>
+                {d.code} — {d.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
-      <Select
-        id="dean-status"
-        label="Status"
-        defaultValue={member?.status ?? "active"}
-      >
-        {DEAN_STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {DEAN_STATUS_LABELS[s]}
-          </option>
-        ))}
-      </Select>
+      <FieldChrome id="dean-status" label="Status">
+        <Select
+          items={DEAN_STATUSES.map((s) => ({ value: s, label: DEAN_STATUS_LABELS[s] }))}
+          name="dean-status"
+          defaultValue={member?.status ?? "active"}
+        >
+          <SelectTrigger id="dean-status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {DEAN_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {DEAN_STATUS_LABELS[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>

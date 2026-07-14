@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { Card } from "~/components/ui/card";
-import { Select } from "~/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ResultState } from "~/components/feedback/result-state";
 import { EnrollmentReport } from "~/features/reports/enrollment-report";
@@ -91,30 +91,39 @@ function ReportsPage() {
         {needsFilter && (
           <Card className="flex flex-wrap items-end gap-4 p-4">
             <Select
-              id="school-year"
-              label="School Year"
-              hideLabel
+              items={schoolYears.map((y) => ({ value: y.schoolYear, label: y.schoolYear }))}
               value={schoolYear}
-              onChange={(e) => setSchoolYear(e.target.value)}
+              onValueChange={(v) => setSchoolYear(v as string)}
             >
-              {schoolYears.map((y) => (
-                <option key={y.id} value={y.schoolYear}>
-                  {y.schoolYear}
-                </option>
-              ))}
+              <SelectTrigger id="school-year" aria-label="School Year">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {schoolYears.map((y) => (
+                  <SelectItem key={y.id} value={y.schoolYear}>
+                    {y.schoolYear}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <Select
-              id="semester"
-              label="Semester"
-              hideLabel
-              value={semester}
-              onChange={(e) => setSemester(Number(e.target.value) as ScheduleSemester)}
+              items={semesters.map((s) => ({
+                value: String(s.semesterNumber),
+                label: semesterLabel(s.semesterNumber),
+              }))}
+              value={String(semester)}
+              onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
             >
-              {semesters.map((s) => (
-                <option key={s.id} value={s.semesterNumber}>
-                  {semesterLabel(s.semesterNumber)}
-                </option>
-              ))}
+              <SelectTrigger id="semester" aria-label="Semester">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {semesters.map((s) => (
+                  <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                    {semesterLabel(s.semesterNumber)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </Card>
         )}

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
-import { Select } from "~/components/ui/select";
+import { FieldChrome } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type {
   ScheduleFacultyOption,
   ScheduleRoomOption,
@@ -174,84 +175,143 @@ export function SlotEntryForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
 
-      <Select
-        id="slot-subject"
-        label="Subject"
-        value={selectedSubjectId}
-        onChange={(e) => handleSubjectChange(e.target.value)}
-      >
-        {subjects.length === 0 ? (
-          <option value="">No subjects for this set</option>
-        ) : (
-          [...subjects]
-            .sort((a, b) => a.code.localeCompare(b.code))
-            .map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.code} — {s.title}
-              </option>
-            ))
-        )}
-      </Select>
+      <FieldChrome id="slot-subject" label="Subject">
+        <Select
+          items={
+            subjects.length === 0
+              ? [{ value: "", label: "No subjects for this set" }]
+              : [...subjects]
+                  .sort((a, b) => a.code.localeCompare(b.code))
+                  .map((s) => ({ value: String(s.id), label: `${s.code} — ${s.title}` }))
+          }
+          value={selectedSubjectId}
+          onValueChange={(v) => handleSubjectChange(v as string)}
+        >
+          <SelectTrigger id="slot-subject">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {subjects.length === 0 ? (
+              <SelectItem value="">No subjects for this set</SelectItem>
+            ) : (
+              [...subjects]
+                .sort((a, b) => a.code.localeCompare(b.code))
+                .map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {s.code} — {s.title}
+                  </SelectItem>
+                ))
+            )}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
-      <Select
-        id="slot-day"
-        label="Day"
-        value={day}
-        onChange={(e) => setDay(e.target.value as Day)}
-      >
-        {DAYS.map((d) => (
-          <option key={d} value={d}>{dayLabels[d]}</option>
-        ))}
-      </Select>
+      <FieldChrome id="slot-day" label="Day">
+        <Select
+          items={DAYS.map((d) => ({ value: d, label: dayLabels[d] }))}
+          value={day}
+          onValueChange={(v) => setDay(v as Day)}
+        >
+          <SelectTrigger id="slot-day">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {DAYS.map((d) => (
+              <SelectItem key={d} value={d}>
+                {dayLabels[d]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       <div className="grid grid-cols-2 gap-3">
-        <Select
-          id="slot-start"
-          label="Start Time"
-          value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
-        >
-          {TIME_SLOTS.slice(0, -1).map((t) => (
-            <option key={t} value={t}>{formatTime(t)}</option>
-          ))}
-        </Select>
-        <Select
-          id="slot-end"
-          label="End Time"
-          value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
-        >
-          {TIME_SLOTS.filter((t) => timeToMinutes(t) > timeToMinutes(startTime)).map((t) => (
-            <option key={t} value={t}>{formatTime(t)}</option>
-          ))}
-        </Select>
+        <FieldChrome id="slot-start" label="Start Time">
+          <Select
+            items={TIME_SLOTS.slice(0, -1).map((t) => ({ value: t, label: formatTime(t) }))}
+            value={startTime}
+            onValueChange={(v) => setStartTime(v as string)}
+          >
+            <SelectTrigger id="slot-start">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIME_SLOTS.slice(0, -1).map((t) => (
+                <SelectItem key={t} value={t}>
+                  {formatTime(t)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="slot-end" label="End Time">
+          <Select
+            items={TIME_SLOTS.filter((t) => timeToMinutes(t) > timeToMinutes(startTime)).map((t) => ({
+              value: t,
+              label: formatTime(t),
+            }))}
+            value={endTime}
+            onValueChange={(v) => setEndTime(v as string)}
+          >
+            <SelectTrigger id="slot-end">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIME_SLOTS.filter((t) => timeToMinutes(t) > timeToMinutes(startTime)).map((t) => (
+                <SelectItem key={t} value={t}>
+                  {formatTime(t)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
 
-      <Select
-        id="slot-mode"
-        label="Mode"
-        value={mode}
-        onChange={(e) => setMode(e.target.value as ScheduleMode)}
-      >
-        {classModes.map((m) => (
-          <option key={m} value={m}>{m}</option>
-        ))}
-      </Select>
+      <FieldChrome id="slot-mode" label="Mode">
+        <Select
+          items={classModes.map((m) => ({ value: m, label: m }))}
+          value={mode}
+          onValueChange={(v) => setMode(v as ScheduleMode)}
+        >
+          <SelectTrigger id="slot-mode">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {classModes.map((m) => (
+              <SelectItem key={m} value={m}>
+                {m}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
-      <Select
-        id="slot-faculty"
-        label="Faculty"
-        value={facultyId}
-        onChange={(e) => setFacultyId(e.target.value)}
-      >
-        {faculties.length === 0 ? (
-          <option value="">No faculty assigned to this subject</option>
-        ) : (
-          faculties.map((f) => (
-            <option key={f.id} value={f.id}>{f.fullName}</option>
-          ))
-        )}
-      </Select>
+      <FieldChrome id="slot-faculty" label="Faculty">
+        <Select
+          items={
+            faculties.length === 0
+              ? [{ value: "", label: "No faculty assigned to this subject" }]
+              : faculties.map((f) => ({ value: String(f.id), label: f.fullName }))
+          }
+          value={facultyId}
+          onValueChange={(v) => setFacultyId(v as string)}
+        >
+          <SelectTrigger id="slot-faculty">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {faculties.length === 0 ? (
+              <SelectItem value="">No faculty assigned to this subject</SelectItem>
+            ) : (
+              faculties.map((f) => (
+                <SelectItem key={f.id} value={String(f.id)}>
+                  {f.fullName}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
 
       {selectedFaculty && (
         <InstructorLoad
@@ -263,18 +323,31 @@ export function SlotEntryForm({
       )}
 
       {needsRoom && (
-        <Select
-          id="slot-room"
-          label="Room"
-          value={roomId}
-          onChange={(e) => setRoomId(e.target.value)}
-        >
-          {roomOptions.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.buildingName ? `${r.buildingName} — ${r.roomName} (cap. ${r.roomCapacity})` : r.roomName}
-            </option>
-          ))}
-        </Select>
+        <FieldChrome id="slot-room" label="Room">
+          <Select
+            items={roomOptions.map((r) => ({
+              value: String(r.id),
+              label: r.buildingName
+                ? `${r.buildingName} — ${r.roomName} (cap. ${r.roomCapacity})`
+                : r.roomName,
+            }))}
+            value={roomId}
+            onValueChange={(v) => setRoomId(v as string)}
+          >
+            <SelectTrigger id="slot-room">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {roomOptions.map((r) => (
+                <SelectItem key={r.id} value={String(r.id)}>
+                  {r.buildingName
+                    ? `${r.buildingName} — ${r.roomName} (cap. ${r.roomCapacity})`
+                    : r.roomName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
       )}
 
       <div className="flex flex-col gap-2">
