@@ -109,8 +109,8 @@ function DepartmentsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="relative w-full sm:w-64">
               <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                 <SearchIcon />
@@ -125,30 +125,37 @@ function DepartmentsPage() {
                 className={`${inputClassName} pl-9 pr-4`}
               />
             </div>
-            <div className="w-36 sm:w-44">
-              <Select
-                items={[
-                  { value: "all", label: "All buildings" },
-                  ...buildings.map((b) => ({ value: b.name, label: b.name })),
-                ]}
-                value={buildingFilter}
-                onValueChange={(v) => setBuildingFilter(v as string)}
-              >
-                <SelectTrigger id="dept-building-filter" aria-label="Building">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All buildings</SelectItem>
-                  {buildings.map((b) => (
-                    <SelectItem key={b.id} value={b.name}>
-                      {b.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex w-full items-end justify-between gap-3 sm:w-auto sm:justify-start">
+              <div className="w-36 sm:w-44">
+                <Select
+                  items={[
+                    { value: "all", label: "All buildings" },
+                    ...buildings.map((b) => ({ value: b.name, label: b.name })),
+                  ]}
+                  value={buildingFilter}
+                  onValueChange={(v) => setBuildingFilter(v as string)}
+                >
+                  <SelectTrigger id="dept-building-filter" aria-label="Building">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All buildings</SelectItem>
+                    {buildings.map((b) => (
+                      <SelectItem key={b.id} value={b.name}>
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="sm:hidden">
+                <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Department view" />
+              </div>
             </div>
           </div>
-          <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Department view" />
+          <div className="hidden sm:block">
+            <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Department view" />
+          </div>
         </div>
 
         {depts === null ? (

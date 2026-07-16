@@ -111,7 +111,7 @@ function CurriculumPage() {
               <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in this curriculum
               </p>
-              <div className="flex items-end gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="relative w-full sm:w-64">
                   <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                     <SearchIcon />
@@ -126,17 +126,19 @@ function CurriculumPage() {
                     className={`${inputClassName} pl-9 pr-4`}
                   />
                 </div>
-                <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Curriculum view" />
-                <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-300 dark:border-white/10">
-                  <button
-                    type="button"
-                    title="Print curriculum"
-                    aria-label="Print curriculum"
-                    onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
-                    className="grid h-8 w-9 cursor-pointer place-items-center bg-white text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300"
-                  >
-                    <PrinterIcon size={15} />
-                  </button>
+                <div className="flex items-end justify-end gap-3">
+                  <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Curriculum view" />
+                  <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-300 dark:border-white/10">
+                    <button
+                      type="button"
+                      title="Print curriculum"
+                      aria-label="Print curriculum"
+                      onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
+                      className="grid h-8 w-9 cursor-pointer place-items-center bg-white text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300"
+                    >
+                      <PrinterIcon size={15} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </Card>
