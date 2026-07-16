@@ -37,9 +37,18 @@ type ViewScheduleResponse = {
   dept_abbrev: string | null;
   faculty_name: string;
   room_name: string | null;
+  /** Only present when the viewer is a STUDENT (StudentAcademic.enrolled_status). */
+  academic_status?: string;
 };
 
-/** GET /schedule/view — role-scoped list of saved schedules. */
+/**
+ * GET /schedule/view — role-scoped list of saved schedules. The backend
+ * already filters rows by the caller's JWT: DEAN → their department,
+ * INSTRUCTOR → schedules where they're the assigned faculty, STUDENT →
+ * schedules for the set they're enrolled in, REGISTRAR_ADMIN → everything.
+ * Callers don't need to (and can't, since faculty_id/subject_id aren't
+ * returned) filter by identity client-side — only by school year/semester.
+ */
 async function view(): Promise<Schedule[]> {
   let data: { schedules: ViewScheduleResponse[] };
   try {
@@ -64,6 +73,7 @@ async function view(): Promise<Schedule[]> {
       subjectId: "",
       subjectCode: r.subject_code,
       subjectTitle: r.desc_title,
+      units: r.units,
       setId: r.set_name ?? "",
       setCode: r.set_name ?? "",
       program: programAbbrev ?? r.dept_abbrev ?? "",
@@ -78,6 +88,7 @@ async function view(): Promise<Schedule[]> {
       day: DAY_BY_LABEL[r.day_of_week] ?? "M",
       startTime: parseTime12h(start),
       endTime: parseTime12h(end ?? start),
+      academicStatus: r.academic_status,
     };
   });
 }

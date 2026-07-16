@@ -39,6 +39,8 @@ export type Schedule = {
   subjectId: string;
   subjectCode: string;
   subjectTitle: string;
+  /** Only populated when read via scheduleService.view() (GET /schedule/view). */
+  units?: number;
   setId: string;
   setCode: string;
   program: string;
@@ -53,6 +55,8 @@ export type Schedule = {
   day: Day;
   startTime: string;
   endTime: string;
+  /** Only populated for a STUDENT viewer of scheduleService.view(). */
+  academicStatus?: string;
 };
 
 export type CreateScheduleInput = Omit<Schedule, "id">;

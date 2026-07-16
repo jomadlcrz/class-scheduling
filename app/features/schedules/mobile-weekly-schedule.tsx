@@ -2,15 +2,12 @@ import { useState } from "react";
 import { Card } from "~/components/ui/card";
 import { BriefcaseIcon, CalendarIcon, ClockIcon, MapPinIcon, UserSmallIcon } from "~/components/ui/icons";
 import { DAYS, formatTime, type Schedule } from "~/types/schedule";
-import type { Subject } from "~/types/subject";
 
 type MobileWeeklyScheduleProps = {
   schedules: Schedule[];
-  subjects: Subject[];
 };
 
 type SubjectGroup = {
-  subjectId: string;
   subjectCode: string;
   subjectTitle: string;
   units: number | undefined;
@@ -27,25 +24,24 @@ function joinBySlot(values: string[]): string {
   return unique.length === 1 ? unique[0] : values.join(" / ");
 }
 
-function groupBySubject(schedules: Schedule[], subjects: Subject[]): SubjectGroup[] {
+function groupBySubject(schedules: Schedule[]): SubjectGroup[] {
   const groups = new Map<string, Schedule[]>();
   for (const s of schedules) {
-    const slots = groups.get(s.subjectId);
+    const slots = groups.get(s.subjectCode);
     if (slots) slots.push(s);
-    else groups.set(s.subjectId, [s]);
+    else groups.set(s.subjectCode, [s]);
   }
 
   return [...groups.entries()]
-    .map(([subjectId, slots]) => {
+    .map(([subjectCode, slots]) => {
       const sorted = [...slots].sort(
         (a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.startTime.localeCompare(b.startTime),
       );
       const first = sorted[0];
       return {
-        subjectId,
-        subjectCode: first.subjectCode,
+        subjectCode,
         subjectTitle: first.subjectTitle,
-        units: subjects.find((sub) => sub.id === subjectId)?.units,
+        units: first.units,
         facultyName: first.facultyName,
         setCode: first.setCode,
         dayPattern: sorted.map((s) => s.day).join(""),
@@ -57,9 +53,9 @@ function groupBySubject(schedules: Schedule[], subjects: Subject[]): SubjectGrou
 }
 
 /** Mobile-only "View weekly schedule" disclosure with subject-grouped cards, mirroring the production student portal's mobile layout. */
-export function MobileWeeklySchedule({ schedules, subjects }: MobileWeeklyScheduleProps) {
+export function MobileWeeklySchedule({ schedules }: MobileWeeklyScheduleProps) {
   const [expanded, setExpanded] = useState(false);
-  const groups = groupBySubject(schedules, subjects);
+  const groups = groupBySubject(schedules);
 
   return (
     <div>
@@ -76,7 +72,7 @@ export function MobileWeeklySchedule({ schedules, subjects }: MobileWeeklySchedu
       {expanded && (
         <div className="mt-3 flex flex-col gap-3">
           {groups.map((group) => (
-            <Card key={group.subjectId} className="overflow-hidden border-l-4 border-l-navy-400 p-4 dark:border-l-navy-300/50">
+            <Card key={group.subjectCode} className="overflow-hidden border-l-4 border-l-navy-400 p-4 dark:border-l-navy-300/50">
               <p className="truncate font-display text-base tracking-wide text-navy-700 dark:text-white">
                 {group.subjectCode}
               </p>
