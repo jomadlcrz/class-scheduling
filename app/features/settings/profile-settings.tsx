@@ -2,6 +2,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { SettingsCard } from "~/components/ui/settings-card";
 import { useAuth } from "~/hooks/use-auth";
+import { Breadcrumb } from "~/layouts/breadcrumb";
 import { PageHeader } from "~/layouts/page-header";
 import type { Role } from "~/types/user";
 
@@ -27,6 +28,7 @@ export function ProfileSettings() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Profile" }]} />
       <PageHeader title="Profile" description="Your account details as recorded in the system." />
 
       <div className="mt-6 flex flex-col gap-6">

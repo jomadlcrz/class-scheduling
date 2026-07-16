@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SettingsCard } from "~/components/ui/settings-card";
 import { Switch } from "~/components/ui/switch";
+import { Breadcrumb } from "~/layouts/breadcrumb";
 import { PageHeader } from "~/layouts/page-header";
 
 type NotificationPrefs = {
@@ -22,6 +23,7 @@ export function NotificationSettings() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Notifications" }]} />
       <PageHeader title="Notifications" description="Choose which in-app notifications you receive." />
 
       <div className="mt-6">

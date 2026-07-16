@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTheme, type Theme } from "~/hooks/use-theme";
+import { Breadcrumb } from "~/layouts/breadcrumb";
 import { PageHeader } from "~/layouts/page-header";
 
 type ThemeCard = {
@@ -33,6 +34,7 @@ export function AppearanceSettings() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Appearance" }]} />
       <PageHeader title="Appearance" description="Choose how the interface looks on this device." />
 
       <div className="mt-6 flex flex-col gap-6">

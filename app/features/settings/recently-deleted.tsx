@@ -7,6 +7,7 @@ import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
+import { Breadcrumb } from "~/layouts/breadcrumb";
 import { PageHeader } from "~/layouts/page-header";
 import { recycleBinService, type DeletedSubject } from "~/services/recycle-bin.service";
 
@@ -35,6 +36,7 @@ export function RecentlyDeleted() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Recently Deleted" }]} />
       <PageHeader
         title="Recently Deleted"
         description="Restore items deleted within the last 30 days before they are permanently removed."

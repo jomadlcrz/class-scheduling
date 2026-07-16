@@ -1,9 +1,12 @@
-import { redirect } from "react-router";
+import { SettingsHome } from "~/features/settings/settings-home";
 
-export function loader() {
-  return redirect("/settings/profile");
+export function meta() {
+  return [
+    { title: "Settings — GWC Class Scheduling" },
+    { name: "description", content: "Manage your account, preferences, and system options." },
+  ];
 }
 
-export default function SettingsIndex() {
-  return null;
+export default function SettingsIndexRoute() {
+  return <SettingsHome />;
 }
