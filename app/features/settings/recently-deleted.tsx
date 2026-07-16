@@ -41,21 +41,28 @@ export function RecentlyDeleted() {
       />
 
       {error ? (
-        <EmptyState title="Couldn't load recently deleted items">{error}</EmptyState>
+        <div className="mt-6">
+          <EmptyState title="Couldn't load recently deleted items">{error}</EmptyState>
+        </div>
       ) : subjects === null ? (
         <div
           role="status"
           aria-label="Loading recently deleted items"
-          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          className="mt-6 grid place-items-center py-12 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
         </div>
       ) : subjects.length === 0 ? (
-        <EmptyState title="No recently deleted items">
-          Deleted subjects and other recoverable items will appear here for 30 days.
-        </EmptyState>
-      ) : (
         <div className="mt-6">
+          <EmptyState title="No recently deleted items">
+            Deleted subjects and other recoverable items will appear here for 30 days.
+          </EmptyState>
+        </div>
+      ) : (
+        <div className="mt-6 flex flex-col gap-3">
+          <h2 className="font-body text-base font-semibold text-navy-700 dark:text-white">
+            Deleted Subjects
+          </h2>
           <Table>
             <TableHead>
               <TableHeader>Code</TableHeader>

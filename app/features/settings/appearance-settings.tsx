@@ -35,7 +35,7 @@ export function AppearanceSettings() {
     <div>
       <PageHeader title="Appearance" description="Choose how the interface looks on this device." />
 
-      <div className="flex flex-col gap-6">
+      <div className="mt-6 flex flex-col gap-6">
         <div className="grid grid-cols-2 gap-3">
           {THEME_OPTIONS.map((option) => {
             const isSelected = mounted && theme === option.value;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { Card } from "~/components/ui/card";
+import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ResultState } from "~/components/feedback/result-state";
@@ -89,42 +90,46 @@ function ReportsPage() {
 
       <div className="mt-6 flex flex-col gap-6">
         {needsFilter && (
-          <Card className="flex flex-wrap items-end gap-4 p-4">
-            <Select
-              items={schoolYears.map((y) => ({ value: y.schoolYear, label: y.schoolYear }))}
-              value={schoolYear}
-              onValueChange={(v) => setSchoolYear(v as string)}
-            >
-              <SelectTrigger id="school-year" aria-label="School Year">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {schoolYears.map((y) => (
-                  <SelectItem key={y.id} value={y.schoolYear}>
-                    {y.schoolYear}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              items={semesters.map((s) => ({
-                value: String(s.semesterNumber),
-                label: semesterLabel(s.semesterNumber),
-              }))}
-              value={String(semester)}
-              onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
-            >
-              <SelectTrigger id="semester" aria-label="Semester">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {semesters.map((s) => (
-                  <SelectItem key={s.id} value={String(s.semesterNumber)}>
-                    {semesterLabel(s.semesterNumber)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Card className="grid grid-cols-2 gap-3 p-4 sm:max-w-md">
+            <FieldChrome id="school-year" label="School Year">
+              <Select
+                items={schoolYears.map((y) => ({ value: y.schoolYear, label: y.schoolYear }))}
+                value={schoolYear}
+                onValueChange={(v) => setSchoolYear(v as string)}
+              >
+                <SelectTrigger id="school-year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {schoolYears.map((y) => (
+                    <SelectItem key={y.id} value={y.schoolYear}>
+                      {y.schoolYear}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="semester" label="Semester">
+              <Select
+                items={semesters.map((s) => ({
+                  value: String(s.semesterNumber),
+                  label: semesterLabel(s.semesterNumber),
+                }))}
+                value={String(semester)}
+                onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
+              >
+                <SelectTrigger id="semester">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {semesters.map((s) => (
+                    <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                      {semesterLabel(s.semesterNumber)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
           </Card>
         )}
 
@@ -132,7 +137,7 @@ function ReportsPage() {
           <div
             role="tablist"
             aria-label="Report types"
-            className="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-white/8"
+            className="flex gap-6 overflow-x-auto border-b border-slate-200 dark:border-white/8"
           >
             {TABS.map((tab) => (
               <button
@@ -141,9 +146,9 @@ function ReportsPage() {
                 aria-selected={activeTab === tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`shrink-0 border-b-2 px-3 pb-3 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                className={`shrink-0 border-b-2 px-1 pb-3 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   activeTab === tab.id
-                    ? "border-navy-700 text-navy-700 dark:border-gold-400 dark:text-gold-400"
+                    ? "border-navy-700 font-semibold text-navy-700 dark:border-gold-400 dark:text-gold-400"
                     : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                 }`}
               >
@@ -152,7 +157,7 @@ function ReportsPage() {
             ))}
           </div>
 
-          <div role="tabpanel" className="mt-6">
+          <div role="tabpanel" className="mt-8">
             <ResultState tone="error" title="Not available">
               This feature is not connected to the backend yet.
             </ResultState>
