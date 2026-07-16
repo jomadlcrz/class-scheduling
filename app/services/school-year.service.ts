@@ -1,4 +1,4 @@
-import { ApiError, apiGet } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 
 type SchoolYearEntry = {
   id: number;
@@ -38,4 +38,12 @@ async function list(): Promise<SchoolYearOption[]> {
   return cachePromise;
 }
 
-export const schoolYearService = { list };
+/** POST /school-years — invalidates the list cache so the next list() refetches. Returns the backend message. */
+async function create(schoolYear: string): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/school-years", { schoolYear });
+  cachedSchoolYears = null;
+  cachePromise = null;
+  return apiMessage(data);
+}
+
+export const schoolYearService = { list, create };

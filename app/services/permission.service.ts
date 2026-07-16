@@ -1,4 +1,4 @@
-import { ApiError, apiGet } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import type { PermissionSummary } from "~/types/permission";
 
 /** Roles + permissions from the backend (super_admin module). Read-only. */
@@ -34,6 +34,22 @@ async function list(): Promise<PermissionSummary[]> {
   }));
 }
 
+/** POST /super-admin/permission-slugs — creates a role with its permission slugs. Returns the backend message. */
+async function create(input: {
+  roleName: string;
+  permissions: { permissionSlug: string; description: string }[];
+}): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/super-admin/permission-slugs", {
+    roleName: input.roleName,
+    permissions: input.permissions.map((p) => ({
+      permissionSlug: p.permissionSlug,
+      description: p.description,
+    })),
+  });
+  return apiMessage(data);
+}
+
 export const permissionService = {
   list,
+  create,
 };

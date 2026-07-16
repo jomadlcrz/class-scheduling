@@ -9,10 +9,11 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Drawer } from "~/components/ui/drawer";
 import { AlertIcon, AlertTriangleIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
-import { FieldChrome, Input } from "~/components/ui/input";
-import { ConfirmDialog } from "~/components/ui/modal";
+import { FieldChrome } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { AddSchoolYearForm } from "~/features/schedules/add-school-year-form";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -31,6 +32,7 @@ import {
   type ScheduleRoomOption,
   type ScheduleSubjectOption,
 } from "~/services/schedule.service";
+import { schoolYearService } from "~/services/school-year.service";
 import { setService } from "~/services/set.service";
 
 import type { Program } from "~/types/program";
@@ -80,7 +82,7 @@ export default function SchedulesNew() {
 function SchedulesNewPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel } = useSemesters();
-  const { schoolYears, defaultSchoolYear } = useSchoolYears();
+  const { schoolYears, defaultSchoolYear, refresh: refreshSchoolYears } = useSchoolYears();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const { dayLabels } = useDays();
 
@@ -88,12 +90,14 @@ function SchedulesNewPage() {
   const [sets, setSets] = useState<ClassSet[]>([]);
   const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
   const [subjects, setSubjects] = useState<ScheduleSubjectOption[]>([]);
+  const [scheduledSetIds, setScheduledSetIds] = useState<Set<number>>(new Set());
 
-  const [schoolYear, setSchoolYear] = useState(defaultSchoolYear);
+  const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">("");
   const [selectedSetId, setSelectedSetId] = useState("");
+  const [addSchoolYearOpen, setAddSchoolYearOpen] = useState(false);
 
   const [slots, setSlots] = useState<PendingSlot[]>([]);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -143,7 +147,17 @@ function SchedulesNewPage() {
   useEffect(() => {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
     scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
+    scheduleService
+      .getSetsWithSchedules()
+      .then(setScheduledSetIds)
+      .catch(() => setScheduledSetIds(new Set()));
   }, []);
+
+  // Default to the most recent school year once the list loads; a manual pick isn't overridden.
+  useEffect(() => {
+    if (schoolYear || schoolYears.length === 0) return;
+    setSchoolYear(defaultSchoolYear);
+  }, [schoolYear, schoolYears, defaultSchoolYear]);
 
   // Re-fetch sets whenever the context changes so already-scheduled sets are excluded.
   const matchedSy = schoolYears.find((s) => s.schoolYear === schoolYear);
@@ -201,9 +215,12 @@ function SchedulesNewPage() {
   const availableSets = useMemo(
     () =>
       sets.filter(
-        (s) => s.program === selectedProgram?.code && s.yearLevel === selectedYearLevel,
+        (s) =>
+          s.program === selectedProgram?.code &&
+          s.yearLevel === selectedYearLevel &&
+          !scheduledSetIds.has(s.id),
       ),
-    [sets, selectedProgram, selectedYearLevel],
+    [sets, selectedProgram, selectedYearLevel, scheduledSetIds],
   );
 
   const displaySchedules = useMemo<Schedule[]>(
@@ -443,16 +460,48 @@ function SchedulesNewPage() {
           </AnimatePresence>
 
           <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
-            <Input
+            <FieldChrome
               id="sn-school-year"
               label="School Year"
-              type="text"
-              placeholder="e.g. 2026-2027"
-              value={schoolYear}
-              onChange={(e) => setSchoolYear(e.target.value)}
-              disabled={contextLocked}
+              labelEnd={
+                <button
+                  type="button"
+                  onClick={() => setAddSchoolYearOpen(true)}
+                  disabled={contextLocked}
+                  className="font-body text-xs font-medium text-blue-700 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400"
+                >
+                  + Add new
+                </button>
+              }
               hint={lockHint}
-            />
+            >
+              <Select
+                items={[
+                  {
+                    value: "",
+                    label: schoolYears.length === 0 ? "No school years yet" : "Select a school year",
+                  },
+                  ...schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear })),
+                ]}
+                value={schoolYear}
+                onValueChange={(v) => setSchoolYear(v as string)}
+                disabled={contextLocked}
+              >
+                <SelectTrigger id="sn-school-year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">
+                    {schoolYears.length === 0 ? "No school years yet" : "Select a school year"}
+                  </SelectItem>
+                  {schoolYears.map((sy) => (
+                    <SelectItem key={sy.id} value={sy.schoolYear}>
+                      {sy.schoolYear}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
             <FieldChrome id="sn-semester" label="Semester">
               <Select
                 items={semesters
@@ -645,6 +694,23 @@ function SchedulesNewPage() {
           onCancelEdit={editing ? closeDrawer : undefined}
         />
       </Drawer>
+
+      <Modal
+        open={addSchoolYearOpen}
+        onClose={() => setAddSchoolYearOpen(false)}
+        title="Add School Year"
+      >
+        <AddSchoolYearForm
+          onAdd={async (newSchoolYear) => {
+            const message = await schoolYearService.create(newSchoolYear);
+            if (message) toast.success(message);
+            await refreshSchoolYears();
+            setSchoolYear(newSchoolYear);
+            setAddSchoolYearOpen(false);
+          }}
+          onCancel={() => setAddSchoolYearOpen(false)}
+        />
+      </Modal>
 
       <ConfirmDialog
         open={deleteTarget !== null}

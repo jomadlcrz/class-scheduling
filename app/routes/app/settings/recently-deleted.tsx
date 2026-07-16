@@ -10,7 +10,7 @@ export function meta() {
 
 export default function RecentlyDeletedRoute() {
   return (
-    <RoleGuard allow={["admin"]}>
+    <RoleGuard allow={["admin", "registrar"]}>
       <RecentlyDeleted />
     </RoleGuard>
   );

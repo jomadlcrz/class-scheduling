@@ -1,23 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
 
 type UseSchoolYearsResult = {
   schoolYears: SchoolYearOption[];
   defaultSchoolYear: string;
   loading: boolean;
+  refresh: () => Promise<void>;
 };
 
 export function useSchoolYears(): UseSchoolYearsResult {
   const [schoolYears, setSchoolYears] = useState<SchoolYearOption[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const refresh = useCallback(async () => {
+    const data = await schoolYearService.list();
+    setSchoolYears(data);
+  }, []);
+
   useEffect(() => {
-    schoolYearService
-      .list()
-      .then(setSchoolYears)
+    refresh()
       .catch(() => setSchoolYears([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [refresh]);
 
   const defaultSchoolYear = useMemo(
     () =>
@@ -25,5 +29,5 @@ export function useSchoolYears(): UseSchoolYearsResult {
     [schoolYears],
   );
 
-  return { schoolYears, defaultSchoolYear, loading };
+  return { schoolYears, defaultSchoolYear, loading, refresh };
 }

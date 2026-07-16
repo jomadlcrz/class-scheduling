@@ -15,7 +15,12 @@ const SETTINGS_NAV: SettingsNavItem[] = [
   { label: "Profile", href: "/settings/profile", icon: UserIcon },
   { label: "Appearance", href: "/settings/appearance", icon: PaletteIcon },
   { label: "Security", href: "/settings/security", icon: KeyIcon },
-  { label: "Recently Deleted", href: "/settings/recently-deleted", icon: TrashIcon, roles: ["admin"] },
+  {
+    label: "Recently Deleted",
+    href: "/settings/recently-deleted",
+    icon: TrashIcon,
+    roles: ["admin", "registrar"],
+  },
 ];
 
 const linkClassName = ({ isActive }: { isActive: boolean }) =>

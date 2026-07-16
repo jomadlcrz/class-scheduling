@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Button } from "~/components/ui/button";
+import { PlusIcon } from "~/components/ui/icons";
+import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
+import { PermissionForm } from "~/features/permissions/permission-form";
 import { PermissionMatrix } from "~/features/permissions/permission-matrix";
 import { PermissionTable } from "~/features/permissions/permission-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -29,21 +34,30 @@ export default function Permissions() {
 function PermissionsPage() {
   const [roles, setRoles] = useState<PermissionSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [addRoleOpen, setAddRoleOpen] = useState(false);
 
-  useEffect(() => {
+  function refresh() {
     permissionService
       .list()
       .then(setRoles)
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
       );
-  }, []);
+  }
+
+  useEffect(refresh, []);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Permissions"
         description="System roles and what each one can do."
+        actions={
+          <Button type="button" block={false} onClick={() => setAddRoleOpen(true)}>
+            <PlusIcon />
+            Add Role
+          </Button>
+        }
       />
 
       {error ? (
@@ -71,6 +85,17 @@ function PermissionsPage() {
           </section>
         </div>
       )}
+
+      <Modal open={addRoleOpen} onClose={() => setAddRoleOpen(false)} title="Add Role">
+        <PermissionForm
+          onCreated={(message) => {
+            if (message) toast.success(message);
+            refresh();
+            setAddRoleOpen(false);
+          }}
+          onCancel={() => setAddRoleOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }
