@@ -53,6 +53,85 @@ async function list(): Promise<Subject[]> {
   );
 }
 
+type PaginationSubjectsResponse = {
+  data: {
+    id: number;
+    curriculum_id: number;
+    program: { id: number; name: string } | null;
+    subject: {
+      id: number;
+      code: string;
+      title: string;
+      subject_type: string;
+      prerequisites: { id: number; info: { id: number; code: string; title: string } | null }[];
+      text_prerequisites: { id: number; description: string }[];
+    } | null;
+  }[];
+  total_subjects: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+};
+
+export type PaginatedSubject = {
+  id: number;
+  curriculumId: number;
+  program: { id: number; name: string } | null;
+  subject: {
+    id: number;
+    code: string;
+    title: string;
+    subjectType: string;
+    prerequisites: { id: number; code: string | null; title: string | null }[];
+    textPrerequisites: string[];
+  } | null;
+};
+
+export type PaginatedSubjectsResult = {
+  items: PaginatedSubject[];
+  totalSubjects: number;
+  page: number;
+  perPage: number;
+  totalPages: number;
+};
+
+/**
+ * GET /pagination_subjects — server-side paginated subjects with structured
+ * prerequisites. No search/program/year-level filter params, so this doesn't
+ * replace list()'s full-fetch + client-side filtering on the main Subjects
+ * page — it's a separate, additive capability for consumers that only need
+ * straight pagination over the full set.
+ */
+async function listPaginated(page = 1, perPage = 9): Promise<PaginatedSubjectsResult> {
+  const query = new URLSearchParams({ page: String(page), per_page: String(perPage) });
+  const data = await apiGet<PaginationSubjectsResponse>(`/pagination_subjects?${query}`);
+  return {
+    items: data.data.map((d) => ({
+      id: d.id,
+      curriculumId: d.curriculum_id,
+      program: d.program,
+      subject: d.subject
+        ? {
+            id: d.subject.id,
+            code: d.subject.code,
+            title: d.subject.title,
+            subjectType: d.subject.subject_type,
+            prerequisites: d.subject.prerequisites.map((p) => ({
+              id: p.id,
+              code: p.info?.code ?? null,
+              title: p.info?.title ?? null,
+            })),
+            textPrerequisites: d.subject.text_prerequisites.map((t) => t.description),
+          }
+        : null,
+    })),
+    totalSubjects: data.total_subjects,
+    page: data.page,
+    perPage: data.per_page,
+    totalPages: data.total_pages,
+  };
+}
+
 export type CurriculumSubjectEntry = {
   yearLevel: number;
   semester: number;
@@ -118,6 +197,7 @@ async function remove(id: number, confirmCode: string): Promise<string> {
 
 export const subjectService = {
   list,
+  listPaginated,
   createCurriculum,
   update,
   remove,

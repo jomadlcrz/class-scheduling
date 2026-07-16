@@ -350,6 +350,17 @@ async function getSetsWithSchedules(): Promise<Set<number>> {
   return new Set(data.sets.map((s) => s.set_id));
 }
 
+/**
+ * GET /schedule/subject-type-options — subject-type vocabulary scoped to the
+ * schedule module. Same values as enumService.getOptions().subjectType, kept
+ * as a separate call for consumers that specifically need the schedule-scoped
+ * (registrar:subject-hours:read) endpoint rather than the general enums one.
+ */
+async function getSubjectTypeOptions(): Promise<string[]> {
+  const data = await apiGet<{ subject_types: string }[]>("/schedule/subject-type-options");
+  return data.map((d) => d.subject_types);
+}
+
 export const scheduleService = {
   view,
   listScheduleSubjects,
@@ -357,4 +368,5 @@ export const scheduleService = {
   autoGenerate,
   createRegular,
   getSetsWithSchedules,
+  getSubjectTypeOptions,
 };
