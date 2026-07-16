@@ -1,7 +1,7 @@
 ﻿import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { fadeUp, staggerContainer } from "~/landing/motion";
 import { useAuth } from "~/hooks/use-auth";
+import { fadeUp, staggerContainer } from "~/landing/motion";
 import { PageHeader } from "~/layouts/page-header";
 import { fetchDashboardGreeting } from "~/services/dashboard.service";
 
@@ -35,7 +35,7 @@ export default function Dashboard() {
         <PageHeader
           title="Dashboard"
           description={
-            greeting || (user ? "Dashboard" : "Overview of the current academic term.")
+            greeting || "Overview of the current academic term."
           }
         />
       </motion.div>

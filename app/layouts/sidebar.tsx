@@ -80,6 +80,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Academic Community",
     items: [
       { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin"] },
+      { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
       { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin"] },
     ],
   },
