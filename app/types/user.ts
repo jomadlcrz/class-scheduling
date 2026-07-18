@@ -5,6 +5,8 @@ export type UserStatus = "active" | "inactive";
 export type User = {
   id: string;
   name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: Role;
   status: UserStatus;

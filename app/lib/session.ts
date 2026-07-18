@@ -58,6 +58,8 @@ export function userFromToken(token: string): User | null {
   return {
     id: String(payload.user_id),
     name: `${payload.first_name} ${payload.last_name}`.trim(),
+    firstName: payload.first_name ?? "",
+    lastName: payload.last_name ?? "",
     email: payload.email,
     role,
     // The backend refuses inactive logins, so having a token implies active.
@@ -78,7 +80,10 @@ export function loadSession(): AuthSession | null {
     removeJson(SESSION_KEY);
     return null;
   }
-  return session;
+  // Rebuild the user from token claims so sessions persisted before a User
+  // shape change never surface a stale object.
+  const user = userFromToken(session.token);
+  return user ? { ...session, user } : session;
 }
 
 export function saveSession(session: AuthSession, remember: boolean) {

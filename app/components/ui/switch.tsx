@@ -37,7 +37,7 @@ export function Switch({ id, label, description, checked, onChange, disabled = f
         }`}
       >
         <span
-          className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+          className={`pointer-events-none inline-block size-4 rounded-full bg-white transition-transform duration-200 ${
             checked ? "translate-x-6" : "translate-x-1"
           }`}
         />

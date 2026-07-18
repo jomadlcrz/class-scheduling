@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { CheckIcon } from "~/components/ui/icons";
+import { SettingsCard } from "~/components/ui/settings-card";
 import { useTheme, type Theme } from "~/hooks/use-theme";
 import { Breadcrumb } from "~/layouts/breadcrumb";
 import { PageHeader } from "~/layouts/page-header";
@@ -37,40 +39,42 @@ export function AppearanceSettings() {
       <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Appearance" }]} />
       <PageHeader title="Appearance" description="Choose how the interface looks on this device." />
 
-      <div className="mt-6 flex flex-col gap-6">
-        <div className="grid grid-cols-2 gap-3">
-          {THEME_OPTIONS.map((option) => {
-            const isSelected = mounted && theme === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleSelect(option.value)}
-                aria-pressed={isSelected}
-                className={`flex flex-col gap-2 rounded-xl border-2 p-4 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                  isSelected
-                    ? "border-navy-700 bg-navy-50 dark:border-gold-400 dark:bg-white/5"
-                    : "border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-white/3 dark:hover:border-white/20"
-                }`}
-              >
-                <ThemePreview variant={option.value} />
-                <div>
-                  <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
-                    {option.label}
-                  </p>
-                  <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                    {option.description}
-                  </p>
-                </div>
-                {isSelected && (
-                  <span className="self-start rounded-full bg-navy-700 px-2 py-0.5 font-body text-[0.6rem] font-medium uppercase tracking-wider text-white dark:bg-gold-400 dark:text-navy-900">
-                    Active
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      <div className="mt-6">
+        <SettingsCard title="Theme">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {THEME_OPTIONS.map((option) => {
+              const isSelected = mounted && theme === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleSelect(option.value)}
+                  aria-pressed={isSelected}
+                  className={`relative flex cursor-pointer flex-col gap-2.5 rounded-xl border-2 p-4 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                    isSelected
+                      ? "border-navy-700 bg-navy-700/4 dark:border-gold-400 dark:bg-white/5"
+                      : "border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-white/3 dark:hover:border-white/20"
+                  }`}
+                >
+                  {isSelected && (
+                    <span className="absolute right-3 top-3 grid size-6 place-items-center rounded-full bg-navy-700 text-white dark:bg-gold-400 dark:text-navy-900 [&>svg]:size-3.5">
+                      <CheckIcon />
+                    </span>
+                  )}
+                  <ThemePreview variant={option.value} />
+                  <div>
+                    <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+                      {option.label}
+                    </p>
+                    <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                      {option.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </SettingsCard>
       </div>
     </div>
   );

@@ -13,13 +13,13 @@ type SettingsCardProps = {
 export function SettingsCard({ title, description, children, footer }: SettingsCardProps) {
   return (
     <Card className="overflow-hidden">
-      <div className="p-5">
+      <div className="border-b border-slate-100 px-5 py-4 dark:border-white/8">
         <h2 className="font-body text-base font-semibold text-navy-700 dark:text-white">{title}</h2>
         {description && (
           <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">{description}</p>
         )}
-        <div className="mt-4">{children}</div>
       </div>
+      <div className="p-5">{children}</div>
       {footer && (
         <div className="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3 dark:border-white/8 dark:bg-white/3">
           {footer}
