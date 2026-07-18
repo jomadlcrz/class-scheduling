@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { EditIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { Input, PasswordInput } from "~/components/ui/input";
+import { Modal } from "~/components/ui/modal";
 import { SettingsCard } from "~/components/ui/settings-card";
 import { useAuth } from "~/hooks/use-auth";
 import { Breadcrumb } from "~/layouts/breadcrumb";
@@ -8,6 +10,7 @@ import { PageHeader } from "~/layouts/page-header";
 
 export function ProfileSettings() {
   const { user } = useAuth();
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
 
   if (!user) return null;
 
@@ -65,15 +68,46 @@ export function ProfileSettings() {
                 </div>
               </div>
               <div>
-                <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Email
+                <p className="font-body text-sm font-semibold text-gray-600 dark:text-slate-400">
+                  Email Address
                 </p>
-                <p className="mt-1 font-body text-sm text-navy-700 dark:text-white">{user.email}</p>
+                <div className="mt-1 flex items-center gap-3">
+                  <p className="min-w-0 truncate font-body text-sm text-navy-700 dark:text-white">
+                    {user.email}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    onClick={() => setEmailModalOpen(true)}
+                  >
+                    Change
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </SettingsCard>
       </div>
+
+      <Modal open={emailModalOpen} onClose={() => setEmailModalOpen(false)} title="Change Email">
+        <div className="flex flex-col gap-4">
+          <Input
+            id="change-email-address"
+            label="New Email Address"
+            type="email"
+            autoComplete="email"
+            placeholder={user.email}
+            hint="If you change your email, you may need to reconfirm your account."
+          />
+          <PasswordInput
+            id="change-email-password"
+            label="Current Password"
+            autoComplete="current-password"
+          />
+          <Button type="button">Change Email</Button>
+        </div>
+      </Modal>
     </div>
   );
 }
