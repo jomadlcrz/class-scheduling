@@ -1,16 +1,19 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { ThemeToggle } from "~/components/theme/theme-toggle";
 import { Popover } from "~/components/ui/popover";
 import {
   BellIcon,
   ChevronDownIcon,
-  KeyIcon,
   LogoutIcon,
   MenuIcon,
-  PaletteIcon,
+  MonitorIcon,
+  MoonIcon,
+  SettingsIcon,
+  SunIcon,
   UserIcon,
 } from "~/components/ui/icons";
 import { useAuth } from "~/hooks/use-auth";
+import { useTheme, type ThemePreference } from "~/hooks/use-theme";
 
 /** Static placeholders until a notifications backend exists. */
 const NOTIFICATIONS = [
@@ -23,7 +26,7 @@ const iconButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10";
 
 const menuItemClassName =
-  "flex w-full cursor-pointer items-center gap-2.5 px-3.5 py-2 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white";
+  "flex w-full cursor-pointer items-center justify-between gap-2.5 px-3.5 py-2 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white [&>svg]:size-3";
 
 export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { user, logout } = useAuth();
@@ -46,11 +49,6 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       </button>
 
       <div className="flex-1" />
-
-      <ThemeToggle
-        className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full border border-slate-300/70 bg-white/60 text-navy-600 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-gold-300 dark:hover:bg-white/10"
-        iconSize={16}
-      />
 
       {user && (
         <Popover
@@ -154,7 +152,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   navigate("/settings/profile");
                 }}
               >
-                <UserIcon /> Profile
+                Profile <UserIcon />
               </button>
               <button
                 type="button"
@@ -162,22 +160,12 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 className={menuItemClassName}
                 onClick={() => {
                   close();
-                  navigate("/settings/security");
+                  navigate("/settings");
                 }}
               >
-                <KeyIcon /> Security
+                Settings <SettingsIcon />
               </button>
-              <button
-                type="button"
-                role="menuitem"
-                className={menuItemClassName}
-                onClick={() => {
-                  close();
-                  navigate("/settings/appearance");
-                }}
-              >
-                <PaletteIcon /> Appearance
-              </button>
+              <ThemeRow />
               <button
                 type="button"
                 role="menuitem"
@@ -187,13 +175,62 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   handleLogout();
                 }}
               >
-                <LogoutIcon /> Log out
+                Log out <LogoutIcon />
               </button>
             </>
           )}
         </Popover>
       )}
     </header>
+  );
+}
+
+const THEME_OPTIONS: { value: ThemePreference; label: string; icon: typeof MonitorIcon }[] = [
+  { value: "system", label: "System theme", icon: MonitorIcon },
+  { value: "light", label: "Light theme", icon: SunIcon },
+  { value: "dark", label: "Dark theme", icon: MoonIcon },
+];
+
+/** "Theme" menu row with a system/light/dark segmented control; stays open on change. */
+function ThemeRow() {
+  const { preference, setPreference } = useTheme();
+
+  // The stored preference is only known on the client, so defer the active state
+  // until after mount to keep the first paint matching the server-rendered markup.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  return (
+    <div className="flex w-full items-center justify-between gap-2.5 px-3.5 py-1.5">
+      <span className="font-body text-sm text-slate-600 dark:text-slate-300">Theme</span>
+      <div
+        role="radiogroup"
+        aria-label="Theme"
+        className="-mr-[7px] flex items-center gap-0.5 rounded-full border border-slate-200 p-0.5 dark:border-white/10"
+      >
+        {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
+          const isActive = mounted && preference === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={isActive}
+              aria-label={label}
+              title={label}
+              onClick={() => setPreference(value)}
+              className={`grid size-5 cursor-pointer place-items-center rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                isActive
+                  ? "bg-navy-800 text-white dark:bg-white dark:text-navy-900"
+                  : "text-slate-400 hover:text-navy-700 dark:text-slate-500 dark:hover:text-white"
+              }`}
+            >
+              <Icon size={12} />
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

@@ -15,7 +15,7 @@ type PopoverProps = {
 };
 
 const panelBase =
-  "z-50 max-h-[60vh] overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-navy-900";
+  "z-50 max-h-[60vh] overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-[0_0_0_1px_#d1d9e080,0_6px_12px_-3px_#25292e0a,0_6px_18px_0_#25292e1f] dark:border-white/10 dark:bg-navy-900 dark:shadow-[0_0_0_1px_#ffffff14,0_6px_12px_-3px_#0000005c,0_6px_18px_0_#00000080]";
 
 /**
  * Anchored popover rendered in a portal so it escapes overflow/scroll clipping.

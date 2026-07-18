@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { BellIcon, KeyIcon, PaletteIcon, TrashIcon, UserIcon } from "~/components/ui/icons";
+import { BellIcon, KeyIcon, TrashIcon, UserIcon } from "~/components/ui/icons";
 import type { Role } from "~/types/user";
 
 export type SettingsSection = {
@@ -38,12 +38,6 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
   {
     label: "Preferences",
     sections: [
-      {
-        label: "Appearance",
-        description: "Choose how the interface looks on this device.",
-        href: "/settings/appearance",
-        icon: PaletteIcon,
-      },
       {
         label: "Notifications",
         description: "Choose which in-app notifications you receive.",

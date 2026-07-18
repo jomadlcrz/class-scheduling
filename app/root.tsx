@@ -19,9 +19,9 @@ import { AuthProvider } from "~/auth/auth-provider";
 const themeInitScript = `(() => {
   try {
     const stored = localStorage.getItem("gwc-theme");
-    const isDark = stored
-      ? stored === "dark"
-      : !window.matchMedia("(prefers-color-scheme: light)").matches;
+    const isDark =
+      stored === "dark" ||
+      (stored !== "light" && !window.matchMedia("(prefers-color-scheme: light)").matches);
     document.documentElement.classList.toggle("dark", isDark);
   } catch (_) {
     document.documentElement.classList.add("dark");

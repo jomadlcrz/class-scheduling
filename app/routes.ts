@@ -42,7 +42,6 @@ export default [
     layout("layouts/settings-layout.tsx", [
       route("settings", "routes/app/settings/index.tsx"),
       route("settings/profile", "routes/app/settings/profile.tsx"),
-      route("settings/appearance", "routes/app/settings/appearance.tsx"),
       route("settings/notifications", "routes/app/settings/notifications.tsx"),
       route("settings/security", "routes/app/settings/security.tsx"),
       route("settings/recently-deleted", "routes/app/settings/recently-deleted.tsx"),
