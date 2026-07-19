@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -35,7 +35,7 @@ export function StudentAccountTable({ students, onCreateAccount }: StudentAccoun
               {student.studentId}
             </TableCell>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">
+              <span className="font-medium text-navy-700 dark:text-mist-100">
                 {student.lastName}, {student.firstName}
               </span>
             </TableCell>

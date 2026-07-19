@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+﻿import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 type AccordionItemProps = {
@@ -20,11 +20,11 @@ export function AccordionItem({ title, children, defaultOpen, open, adornment }:
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/60">
+    <div className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised/60">
       <button
         type="button"
         onClick={toggle}
-        className="flex w-full items-center gap-3 px-5 py-4 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-white"
+        className="flex w-full items-center gap-3 px-5 py-4 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100"
       >
         <span className="flex-1">{title}</span>
         {adornment && <span className="shrink-0">{adornment}</span>}

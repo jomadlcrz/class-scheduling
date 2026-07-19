@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+﻿import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
 import { CloseIcon } from "~/components/ui/icons";
 
@@ -78,11 +78,11 @@ function DrawerPanel({
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "tween", duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl dark:bg-navy-900"
+        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl dark:bg-surface-raised"
       >
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-6 py-4 dark:border-white/8">
           <div>
-            <h2 className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+            <h2 className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               {title}
             </h2>
             {description && (

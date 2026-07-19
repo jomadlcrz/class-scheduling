@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, type Variants } from "motion/react";
+﻿import { motion, useReducedMotion, type Variants } from "motion/react";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
@@ -57,7 +57,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
                 className="pointer-events-none absolute bottom-2 right-2 z-10 h-3 w-3 border-b-2 border-r-2 border-gold-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               />
 
-              <div className="relative h-28 shrink-0 overflow-hidden bg-slate-100 dark:bg-navy-900/60">
+              <div className="relative h-28 shrink-0 overflow-hidden bg-slate-100 dark:bg-surface-raised/60">
                 <img
                   src={departmentLogoUrl(dept.code)}
                   alt=""
@@ -65,7 +65,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
                   onError={onDepartmentLogoError}
                   className="absolute inset-0 size-full scale-125 object-cover object-center opacity-70 blur-2xl saturate-150"
                 />
-                <div className="absolute inset-0 bg-white/30 dark:bg-navy-950/40" />
+                <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
                 <img
                   src={departmentLogoUrl(dept.code)}
                   alt={`${dept.code} logo`}
@@ -76,7 +76,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
 
               <div className="flex flex-1 flex-col gap-3 p-4">
                 <div>
-                  <p className="font-display text-xl tracking-wide text-navy-800 dark:text-white">
+                  <p className="font-display text-xl tracking-wide text-navy-800 dark:text-mist-100">
                     {dept.code}
                   </p>
                   <p className="mt-0.5 line-clamp-2 font-body text-sm text-slate-600 dark:text-slate-300">

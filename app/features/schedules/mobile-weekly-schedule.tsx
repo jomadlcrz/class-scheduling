@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Card } from "~/components/ui/card";
 import { BriefcaseIcon, CalendarIcon, ClockIcon, MapPinIcon, UserSmallIcon } from "~/components/ui/icons";
 import { DAYS, formatTime, type Schedule } from "~/types/schedule";
@@ -73,7 +73,7 @@ export function MobileWeeklySchedule({ schedules }: MobileWeeklyScheduleProps) {
         <div className="mt-3 flex flex-col gap-3">
           {groups.map((group) => (
             <Card key={group.subjectCode} className="overflow-hidden border-l-4 border-l-navy-400 p-4 dark:border-l-navy-300/50">
-              <p className="truncate font-display text-base tracking-wide text-navy-700 dark:text-white">
+              <p className="truncate font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 {group.subjectCode}
               </p>
               <p className="truncate font-body text-sm text-slate-500 dark:text-slate-400">

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { Card } from "~/components/ui/card";
 
 type SettingsCardProps = {
@@ -14,7 +14,7 @@ export function SettingsCard({ title, description, children, footer }: SettingsC
   return (
     <Card className="overflow-hidden">
       <div className="border-b border-slate-100 px-5 py-4 dark:border-white/8">
-        <h2 className="font-body text-base font-semibold text-navy-700 dark:text-white">{title}</h2>
+        <h2 className="font-body text-base font-semibold text-navy-700 dark:text-mist-100">{title}</h2>
         {description && (
           <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">{description}</p>
         )}

@@ -1,4 +1,4 @@
-import type { FacultyLoadRow } from "~/services/report.service";
+﻿import type { FacultyLoadRow } from "~/services/report.service";
 import {
   Table,
   TableBody,
@@ -37,7 +37,7 @@ export function FacultyLoad({ rows }: { rows: FacultyLoadRow[] }) {
               </p>
             </TableCell>
             <TableCell className="text-center">{row.subjectCount}</TableCell>
-            <TableCell className="text-right font-medium text-navy-700 dark:text-white">
+            <TableCell className="text-right font-medium text-navy-700 dark:text-mist-100">
               {row.totalHours.toFixed(1)} hrs
             </TableCell>
             <TableCell>

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+﻿import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { GraduationCapIcon } from "~/components/ui/icons";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
@@ -22,7 +22,7 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80">
+    <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised/80">
       <div className="flex flex-col gap-5 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           {departmentCode ? (
@@ -55,7 +55,7 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
             <>
               <div
                 aria-hidden="true"
-                className="blueprint-grid pointer-events-none absolute inset-0 -z-10 text-navy-900/5 dark:text-white/8"
+                className="blueprint-grid pointer-events-none absolute inset-0 -z-10 text-navy-900/5 dark:text-mist-100/8"
               />
               <div
                 aria-hidden="true"
@@ -77,7 +77,7 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
                   initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
-                  className="mt-0.5 font-display text-4xl tabular-nums tracking-wide text-navy-700 dark:text-white"
+                  className="mt-0.5 font-display text-4xl tabular-nums tracking-wide text-navy-700 dark:text-mist-100"
                 >
                   {totalUnits}
                 </motion.p>

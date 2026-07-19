@@ -1,4 +1,4 @@
-import { Spinner } from "~/components/ui/spinner";
+﻿import { Spinner } from "~/components/ui/spinner";
 
 /** Full-viewport centered spinner, shown while auth/session state resolves. */
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
@@ -6,7 +6,7 @@ export function LoadingState({ label = "Loading…" }: { label?: string }) {
     <div
       role="status"
       aria-label={label}
-      className="grid min-h-dvh place-items-center bg-cream-50 text-navy-700 dark:bg-navy-950 dark:text-slate-200"
+      className="grid min-h-dvh place-items-center bg-cream-50 text-navy-700 dark:bg-surface dark:text-slate-200"
     >
       <Spinner />
     </div>

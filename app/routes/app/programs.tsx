@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -206,7 +206,7 @@ function ProgramsPage() {
         onConfirm={() => handleDelete(deleteTarget!)}
       >
         Program{" "}
-        <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.code}</span>{" "}
+        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.code}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
       </ConfirmDialog>
     </div>

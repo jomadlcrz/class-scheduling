@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
@@ -40,7 +40,7 @@ export function DeanTable({ deans, onEdit, onToggleStatus }: DeanTableProps) {
         {deans.map((member) => (
           <TableRow key={member.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">
+              <span className="font-medium text-navy-700 dark:text-mist-100">
                 {member.name}
               </span>
             </TableCell>

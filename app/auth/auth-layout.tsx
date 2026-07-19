@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { ThemeToggle } from "~/components/theme/theme-toggle";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { ArrowLeftIcon } from "~/components/ui/icons";
@@ -51,7 +51,7 @@ export function BrandLogo({ width = 56, className = "size-14 object-contain" }: 
 export function AuthHeading({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <h1 className="font-display text-3xl tracking-wide text-navy-700 dark:text-white">
+      <h1 className="font-display text-3xl tracking-wide text-navy-700 dark:text-mist-100">
         {title}
       </h1>
       {children && (
@@ -76,7 +76,7 @@ type AuthLayoutProps = {
 export function AuthLayout({ backHref, backLabel = "Back", children }: AuthLayoutProps) {
   return (
     <ThemeProvider>
-      <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-navy-950">
+      <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-surface">
         <AmbientBackground />
 
         <ThemeToggle className={themeToggleClassName} iconSize={18} />
@@ -120,7 +120,7 @@ type AuthSplitLayoutProps = {
 export function AuthSplitLayout({ label, backHref, backLabel = "Back", children }: AuthSplitLayoutProps) {
   return (
     <ThemeProvider>
-      <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-navy-950">
+      <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-surface">
         <AmbientBackground />
 
         <ThemeToggle className={themeToggleClassName} iconSize={18} />
@@ -129,7 +129,7 @@ export function AuthSplitLayout({ label, backHref, backLabel = "Back", children 
           <a
             href={backHref}
             aria-label={backLabel}
-            className="fixed left-4 top-4 z-50 grid size-9 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10 lg:text-white lg:hover:bg-white/10 lg:dark:text-white lg:dark:hover:bg-white/10"
+            className="fixed left-4 top-4 z-50 grid size-9 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10 lg:text-white lg:hover:bg-white/10 lg:dark:text-mist-100 lg:dark:hover:bg-white/10"
           >
             <ArrowLeftIcon />
           </a>
@@ -143,7 +143,7 @@ export function AuthSplitLayout({ label, backHref, backLabel = "Back", children 
             <div className="mb-8 flex flex-col items-center gap-3 lg:hidden">
               <BrandLogo width={64} className="size-16 object-contain" />
               <div className="text-center">
-                <p className="font-display text-xl tracking-wide text-navy-800 dark:text-white">
+                <p className="font-display text-xl tracking-wide text-navy-800 dark:text-mist-100">
                   GOLDEN WEST COLLEGES, INC.
                 </p>
                 <p className="font-display text-lg tracking-[1px] text-gold-500 dark:text-gold-400">
@@ -163,7 +163,7 @@ export function AuthSplitLayout({ label, backHref, backLabel = "Back", children 
 /** Left branding panel, desktop only. */
 function AuthBrandingPanel({ label }: { label: string }) {
   return (
-    <aside className="relative hidden flex-col items-center justify-center overflow-hidden bg-navy-800 dark:bg-navy-900 px-12 text-white lg:flex lg:w-[45%] xl:w-1/2">
+    <aside className="relative hidden flex-col items-center justify-center overflow-hidden bg-navy-800 dark:bg-surface-raised px-12 text-white lg:flex lg:w-[45%] xl:w-1/2">
       {/* Dot grid */}
       <div
         aria-hidden="true"

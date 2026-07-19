@@ -1,4 +1,4 @@
-import { Card } from "~/components/ui/card";
+﻿import { Card } from "~/components/ui/card";
 import { SubjectBadgeList } from "~/features/schedules/irregular-student-badges";
 import type { IrregularStudent } from "~/services/irregular-class.service";
 
@@ -12,7 +12,7 @@ export function IrregularClassCards({ students }: IrregularClassCardsProps) {
       {students.map((student) => (
         <Card key={student.studentId} className="flex flex-col gap-2 p-4">
           <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-navy-700 dark:text-white">{student.studentName}</span>
+            <span className="font-medium text-navy-700 dark:text-mist-100">{student.studentName}</span>
             <span className="whitespace-nowrap font-body text-xs text-slate-500 dark:text-slate-400">
               {student.studentId}
             </span>

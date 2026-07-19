@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -44,7 +44,7 @@ export function StudentAccountForm({ student, onSubmit, onCancel }: StudentAccou
 
       <p className="text-sm text-slate-600 dark:text-slate-300">
         Create a login account for{" "}
-        <span className="font-medium text-navy-700 dark:text-white">
+        <span className="font-medium text-navy-700 dark:text-mist-100">
           {student.lastName}, {student.firstName}
         </span>{" "}
         ({student.studentId}). A temporary password will be emailed.

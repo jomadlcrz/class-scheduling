@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+﻿import { AnimatePresence, motion } from "motion/react";
 import { Badge } from "~/components/ui/badge";
 import { DropdownMenu } from "~/components/ui/dropdown";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -115,7 +115,7 @@ export function CurriculumStructure({
                 >
                   <ChevronRightIcon />
                 </span>
-                <span className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
+                <span className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
                   {yearLevelLabel(year)}
                 </span>
               </span>
@@ -148,13 +148,13 @@ export function CurriculumStructure({
                       return (
                         <div
                           key={semester}
-                          className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/80"
+                          className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised/80"
                         >
                           <button
                             type="button"
                             aria-expanded={semesterOpen}
                             onClick={() => onToggleSection(semesterKey)}
-                            className={`flex w-full cursor-pointer items-center justify-between gap-3 bg-slate-50 px-4 py-2.5 text-left rounded-t-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:bg-navy-800/60 ${
+                            className={`flex w-full cursor-pointer items-center justify-between gap-3 bg-slate-50 px-4 py-2.5 text-left rounded-t-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:bg-surface-overlay/60 ${
                               semesterOpen
                                 ? "border-b border-slate-200 dark:border-white/10"
                                 : "rounded-b-xl"
@@ -167,7 +167,7 @@ export function CurriculumStructure({
                               >
                                 <ChevronRightIcon />
                               </span>
-                              <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+                              <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                                 {semesterLabel(semester)}
                               </span>
                             </span>
@@ -191,7 +191,7 @@ export function CurriculumStructure({
                                         row.tempId ? "bg-gold-400/10" : ""
                                       }`}
                                     >
-                                      <span className="w-24 shrink-0 font-medium text-navy-700 dark:text-white">
+                                      <span className="w-24 shrink-0 font-medium text-navy-700 dark:text-mist-100">
                                         {row.code}
                                       </span>
                                       {/* min-w keeps the title from collapsing; overflowing

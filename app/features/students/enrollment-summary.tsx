@@ -1,4 +1,4 @@
-import type { Student } from "~/types/student";
+﻿import type { Student } from "~/types/student";
 
 type EnrollmentSummaryProps = {
   students: Student[];
@@ -17,7 +17,7 @@ export function EnrollmentSummary({ students }: EnrollmentSummaryProps) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <StatCard label="Total Students" value={total} color="text-navy-700 dark:text-white" />
+      <StatCard label="Total Students" value={total} color="text-navy-700 dark:text-mist-100" />
       <StatCard label="Enrolled" value={enrolled} color="text-emerald-600 dark:text-emerald-400" />
       <StatCard label="Inactive" value={inactive} color="text-slate-500 dark:text-slate-400" />
       <StatCard label="Graduated" value={graduated} color="text-sky-600 dark:text-sky-400" />
@@ -32,7 +32,7 @@ export function EnrollmentSummary({ students }: EnrollmentSummaryProps) {
               .sort(([, a], [, b]) => b - a)
               .map(([code, count]) => (
                 <div key={code} className="flex items-baseline gap-1.5">
-                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                     {count}
                   </span>
                   <span className="font-body text-xs text-slate-400 dark:text-slate-500">

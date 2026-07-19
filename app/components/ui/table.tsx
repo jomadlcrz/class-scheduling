@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 
 /** Composable table primitives sharing the card-style chrome of the app. */
 
@@ -12,7 +12,7 @@ export function Table({ children }: { children: ReactNode }) {
 
 export function TableHead({ children }: { children: ReactNode }) {
   return (
-    <thead className="border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-navy-900">
+    <thead className="border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-surface-raised">
       <tr>{children}</tr>
     </thead>
   );

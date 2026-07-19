@@ -1,4 +1,4 @@
-import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+﻿import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
@@ -37,7 +37,7 @@ export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate }: Sched
       <div className="min-w-4xl">
         {/* Header row */}
         <div
-          className="grid border-b-2 border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-navy-900"
+          className="grid border-b-2 border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-surface-raised"
           style={{ gridTemplateColumns: GRID_TEMPLATE }}
         >
           <HeaderCell>Time</HeaderCell>
@@ -120,7 +120,7 @@ function GridClassCard({
       className={`flex flex-col gap-1 rounded-lg border border-l-4 border-slate-300 p-2 dark:border-white/10 ${accent.borderL} ${accent.cardBg}`}
     >
       <div className="flex items-start justify-between gap-1.5">
-        <strong className="font-body text-xs font-semibold text-navy-700 dark:text-white">
+        <strong className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
           {entry.subjectCode}
         </strong>
         <ModeBadge mode={entry.mode} />

@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+﻿import { motion, useReducedMotion } from "motion/react";
 import { SCHEDULE_DAYS } from "~/lib/schedule-days";
 import { popIn, staggerContainer } from "~/landing/motion";
 
@@ -41,10 +41,10 @@ export function ScheduleCard() {
       style={{ transformPerspective: 1000 }}
       className="w-full min-w-0 max-w-sm sm:max-w-md lg:max-w-lg transform-3d"
     >
-      <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/95 p-3 sm:p-4 lg:p-5 shadow-2xl shadow-slate-900/10 dark:border-white/10 dark:bg-navy-800/90 dark:shadow-black/40">
+      <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/95 p-3 sm:p-4 lg:p-5 shadow-2xl shadow-slate-900/10 dark:border-white/10 dark:bg-surface-overlay/90 dark:shadow-black/40">
         <header className="mb-2 sm:mb-3 lg:mb-4 flex items-center justify-between">
           <div>
-            <p className="font-display text-lg sm:text-xl lg:text-2xl tracking-wide text-navy-700 dark:text-white">
+            <p className="font-display text-lg sm:text-xl lg:text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               Spring Term
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">

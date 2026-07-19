@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+﻿import { Link } from "react-router";
 import { ChevronRightIcon } from "~/components/ui/icons";
 import { visibleGroups } from "~/features/settings/sections";
 import { useAuth } from "~/hooks/use-auth";
@@ -28,11 +28,11 @@ export function SettingsHome() {
                   to={section.href}
                   className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-colors duration-150 hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-navy-700/8 text-navy-700 transition-colors duration-150 group-hover:bg-navy-800 group-hover:text-gold-300 dark:bg-white/10 dark:text-white dark:group-hover:bg-gold-400 dark:group-hover:text-navy-900">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-navy-700/8 text-navy-700 transition-colors duration-150 group-hover:bg-navy-800 group-hover:text-gold-300 dark:bg-white/10 dark:text-mist-100 dark:group-hover:bg-gold-400 dark:group-hover:text-navy-900">
                     <section.icon />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-body text-sm font-semibold text-navy-700 dark:text-white">
+                    <span className="block font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                       {section.label}
                     </span>
                     <span className="mt-0.5 block truncate font-body text-xs text-slate-500 dark:text-slate-400">

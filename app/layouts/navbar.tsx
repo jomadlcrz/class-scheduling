@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   BellIcon,
@@ -38,7 +38,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-navy-950/90">
+    <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-surface/90">
       <button
         type="button"
         onClick={onToggleSidebar}
@@ -69,7 +69,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         >
           {(close) => (
             <>
-              <div className="mb-1 border-b border-slate-100 px-2.5 py-2.5 font-body text-sm font-semibold text-slate-800 dark:border-white/10 dark:text-white">
+              <div className="mb-1 border-b border-slate-100 px-2.5 py-2.5 font-body text-sm font-semibold text-slate-800 dark:border-white/10 dark:text-mist-100">
                 Notifications
               </div>
               {NOTIFICATIONS.map((notification) => (
@@ -110,7 +110,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 {initials(user.name)}
               </span>
               <span className="hidden flex-col items-start leading-tight sm:flex">
-                <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
+                <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                   {firstName(user.name)}
                 </span>
                 <span className="font-body text-xs capitalize text-slate-500 dark:text-slate-400">
@@ -135,7 +135,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   {initials(user.name)}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate font-body text-sm font-semibold text-slate-800 dark:text-white">
+                  <p className="truncate font-body text-sm font-semibold text-slate-800 dark:text-mist-100">
                     {user.name}
                   </p>
                   <p className="truncate font-body text-xs text-slate-500 dark:text-slate-400">

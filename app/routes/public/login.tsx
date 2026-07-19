@@ -1,4 +1,4 @@
-import { AuthSplitLayout } from "~/auth/auth-layout";
+﻿import { AuthSplitLayout } from "~/auth/auth-layout";
 import { GuestGuard } from "~/auth/guest-guard";
 import { LoginForm } from "~/auth/login-form";
 
@@ -16,7 +16,7 @@ export default function Login() {
   return (
     <GuestGuard>
       <AuthSplitLayout label="CLASS SCHEDULING">
-        <h1 className="hidden font-display text-3xl tracking-wide text-navy-700 dark:text-white lg:block">
+        <h1 className="hidden font-display text-3xl tracking-wide text-navy-700 dark:text-mist-100 lg:block">
           Log in to your GWC account
         </h1>
 

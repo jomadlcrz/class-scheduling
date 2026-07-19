@@ -1,4 +1,4 @@
-import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+﻿import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
@@ -61,7 +61,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
       {/* sm+: single grouped table (scrolls horizontally if cramped) */}
       <div className="scrollbar-thin hidden overflow-x-auto rounded-xl border border-slate-300 bg-white sm:block dark:border-white/10 dark:bg-white/5">
         <table className="w-full min-w-176 border-collapse text-left font-body text-sm">
-          <thead className="border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-navy-900">
+          <thead className="border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-surface-raised">
             <tr>
               <th className={`${th} text-center`}>Day</th>
               <th className={`${th} whitespace-nowrap`}>Time</th>
@@ -98,7 +98,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
                   <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
                     {formatTime(sched.startTime)} – {formatTime(sched.endTime)}
                   </td>
-                  <td className="px-3 py-2.5 text-center font-semibold text-navy-700 dark:text-white">
+                  <td className="px-3 py-2.5 text-center font-semibold text-navy-700 dark:text-mist-100">
                     {sched.subjectCode}
                   </td>
                   <td className="px-3 py-2.5 text-slate-600 dark:text-slate-300">
@@ -224,7 +224,7 @@ function MobileDayCard({
               </div>
             </div>
             <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+              <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                 {sched.subjectCode}
               </span>
               <span className="font-body text-xs text-slate-600 dark:text-slate-300">

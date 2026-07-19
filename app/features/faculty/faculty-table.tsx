@@ -1,4 +1,4 @@
-import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
+﻿import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ export function FacultyTable({ faculty }: FacultyTableProps) {
         {faculty.map((member) => (
           <TableRow key={member.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">
+              <span className="font-medium text-navy-700 dark:text-mist-100">
                 {member.lastName}, {member.firstName}
               </span>
             </TableCell>

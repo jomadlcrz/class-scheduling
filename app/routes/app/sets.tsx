@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -202,7 +202,7 @@ function SetsPage() {
         onConfirm={() => handleDelete(deleteTarget!)}
       >
         Set{" "}
-        <span className="font-medium text-navy-700 dark:text-white">
+        <span className="font-medium text-navy-700 dark:text-mist-100">
           {deleteTarget?.setCode}
         </span>{" "}
         ({deleteTarget?.program}, {deleteTarget ? yearLevelLabel(deleteTarget.yearLevel) : ""}){" "}

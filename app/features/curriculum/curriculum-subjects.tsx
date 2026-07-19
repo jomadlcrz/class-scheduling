@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+﻿import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SubjectTypeText } from "~/features/subjects/subject-type-badge";
 import type { CurriculumGroup } from "~/types/curriculum";
 
@@ -27,7 +27,7 @@ export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
         {group.subjects.map((subject) => (
           <TableRow key={subject.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">{subject.code}</span>
+              <span className="font-medium text-navy-700 dark:text-mist-100">{subject.code}</span>
               <div className="mt-0.5">
                 <SubjectTypeText type={subject.subjectType} />
               </div>
@@ -45,7 +45,7 @@ export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
           <td colSpan={2} className="px-4 py-2.5 font-semibold text-slate-500 dark:text-slate-400">
             Total Units
           </td>
-          <td className="px-4 py-2.5 text-center font-semibold tabular-nums text-navy-700 dark:text-white">
+          <td className="px-4 py-2.5 text-center font-semibold tabular-nums text-navy-700 dark:text-mist-100">
             {group.totalUnits}
           </td>
           <td />

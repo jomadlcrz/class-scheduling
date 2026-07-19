@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+﻿import { useId, useRef, useState } from "react";
 import { FieldChrome } from "~/components/ui/input";
 
 export type PrerequisiteOption = {
@@ -48,7 +48,7 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
     >
       <div
         onClick={() => inputRef.current?.focus()}
-        className={`flex min-h-10.5 cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-white dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
+        className={`flex min-h-10.5 cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
           disabled ? "cursor-not-allowed opacity-60" : ""
         }`}
       >

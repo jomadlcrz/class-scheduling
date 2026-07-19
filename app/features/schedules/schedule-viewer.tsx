@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import type { Schedule } from "~/types/schedule";
@@ -34,7 +34,7 @@ export function ScheduleViewer({
     <>
       <div className={`mt-4 flex flex-wrap items-center gap-3 ${title ? "justify-between" : "justify-end"}`}>
         {title && (
-          <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-white">{title}</h2>
+          <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">{title}</h2>
         )}
         <div className="flex items-center gap-2">
           {actions}

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+﻿import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 interface Message {
@@ -92,12 +92,12 @@ function PanelContent({ onClose }: { onClose: () => void }) {
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "tween", duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-        className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-navy-900 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-105 sm:border-l sm:border-slate-200 sm:shadow-2xl dark:sm:border-white/10"
+        className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-surface-raised sm:inset-y-0 sm:left-auto sm:right-0 sm:w-105 sm:border-l sm:border-slate-200 sm:shadow-2xl dark:sm:border-white/10"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-white/10">
           <div className="flex items-center gap-2.5">
-            <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+            <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               Ask AI
             </span>
           </div>
@@ -115,7 +115,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
         <div className="flex-1 overflow-y-auto px-5 py-6">
           {messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <h2 className="mt-4 font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+              <h2 className="mt-4 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
                 How can I help?
               </h2>
               <p className="mt-1.5 max-w-xs font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
@@ -185,7 +185,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a question…"
               aria-label="Ask a question"
-              className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-4 pr-12 font-body text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25"
+              className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-4 pr-12 font-body text-base text-slate-900 placeholder-slate-400 outline-none transition-colors duration-150 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:placeholder-slate-500 dark:focus:border-gold-400 dark:focus:ring-gold-400/25"
             />
             <button
               type="submit"

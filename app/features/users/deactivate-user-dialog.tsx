@@ -1,4 +1,4 @@
-import { ConfirmDialog } from "~/components/ui/modal";
+﻿import { ConfirmDialog } from "~/components/ui/modal";
 import type { User } from "~/types/user";
 
 type DeactivateUserDialogProps = {
@@ -18,7 +18,7 @@ export function DeactivateUserDialog({ user, onClose, onConfirm }: DeactivateUse
       confirmVariant="danger"
       onConfirm={() => onConfirm(user!)}
     >
-      <span className="font-medium text-navy-700 dark:text-white">{user?.name}</span> will no
+      <span className="font-medium text-navy-700 dark:text-mist-100">{user?.name}</span> will no
       longer be able to log in. Their data is kept and the account can be reactivated anytime.
     </ConfirmDialog>
   );

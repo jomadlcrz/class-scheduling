@@ -1,4 +1,4 @@
-import { Card } from "~/components/ui/card";
+﻿import { Card } from "~/components/ui/card";
 import { useDays } from "~/hooks/use-days";
 import type { ScheduleSummary } from "~/services/report.service";
 import { DAYS } from "~/types/schedule";
@@ -14,7 +14,7 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
         <p className="font-body text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
           Total Schedules
         </p>
-        <p className="mt-1 font-display text-4xl font-bold text-navy-700 dark:text-white">
+        <p className="mt-1 font-display text-4xl font-bold text-navy-700 dark:text-mist-100">
           {data.totalSchedules}
         </p>
       </Card>
@@ -34,7 +34,7 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
                     <span className="font-body text-sm text-slate-700 dark:text-slate-300">
                       {program}
                     </span>
-                    <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
+                    <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                       {count}
                     </span>
                   </div>
@@ -67,7 +67,7 @@ export function ScheduleReport({ data }: { data: ScheduleSummary }) {
                       <span className="font-body text-sm text-slate-700 dark:text-slate-300">
                         {dayLabels[day]}
                       </span>
-                      <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
+                      <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                         {count}
                       </span>
                     </div>

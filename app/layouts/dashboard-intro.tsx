@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 const FLAG_KEY = "cs-just-logged-in";
@@ -46,7 +46,7 @@ export function DashboardIntroOverlay() {
       {visible && (
         <motion.div
           aria-hidden="true"
-          className="pointer-events-none fixed inset-0 z-50 overflow-hidden bg-cream-50 dark:bg-navy-950"
+          className="pointer-events-none fixed inset-0 z-50 overflow-hidden bg-cream-50 dark:bg-surface"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: reduceMotion ? 0.15 : 0.45, ease: EASE_OUT } }}
         >

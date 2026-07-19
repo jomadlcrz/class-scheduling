@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import {
   animate,
   motion,
@@ -34,9 +34,9 @@ export function Stats() {
           <motion.div
             key={stat.label}
             variants={fadeUp}
-            className="flex flex-col items-center gap-1 bg-cream-50/98 px-6 py-9 text-center dark:bg-navy-900/95"
+            className="flex flex-col items-center gap-1 bg-cream-50/98 px-6 py-9 text-center dark:bg-surface-raised/95"
           >
-            <dd className="font-display text-5xl tracking-wide text-navy-700 dark:text-white sm:text-6xl">
+            <dd className="font-display text-5xl tracking-wide text-navy-700 dark:text-mist-100 sm:text-6xl">
               <CountUp value={stat.value} suffix={stat.suffix} />
             </dd>
             <dt className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">

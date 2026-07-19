@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 /* Manual (class-based) dark mode so the theme toggle controls it, not the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -50,6 +50,17 @@
   /* Light surface (warm white). */
   --color-cream-50: #f7f7f2;
   --color-cream-100: #eeeee6;
+
+  /* Soft dark-mode chrome — distinct from the navy-* brand scale (which stays
+     unprefixed/light-mode too, e.g. buttons, avatars, scrims). These three are
+     the page/card/hover surfaces behind dark:bg-*, lifted off near-black and
+     de-saturated a touch so the theme reads soft instead of harsh. */
+  --color-surface: #131a2c;
+  --color-surface-raised: #1a2338;
+  --color-surface-overlay: #232e48;
+
+  /* Soft off-white foreground for dark-mode text — replaces stark pure-white text. */
+  --color-mist-100: #e8eaf1;
 }
 
 /* Chart palette — full color values so var(--chart-N) resolves directly. */
@@ -77,7 +88,7 @@
 
 html,
 body {
-  @apply bg-cream-50 font-body text-slate-900 dark:bg-navy-950 dark:text-[#e6eaf2];
+  @apply bg-cream-50 font-body text-slate-900 dark:bg-surface dark:text-mist-100;
   touch-action: manipulation;
 }
 

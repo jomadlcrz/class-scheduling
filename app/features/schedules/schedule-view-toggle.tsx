@@ -1,4 +1,4 @@
-import { GridIcon, ListIcon } from "~/components/ui/icons";
+﻿import { GridIcon, ListIcon } from "~/components/ui/icons";
 
 export type ScheduleViewMode = "grid" | "table";
 
@@ -47,7 +47,7 @@ export function ScheduleViewToggle<T extends string = ScheduleViewMode>({
             aria-label={title}
             className={`inline-flex h-8 w-9 cursor-pointer items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 [&+button]:border-l [&+button]:border-slate-300 dark:[&+button]:border-white/10 ${
               isActive
-                ? "bg-slate-100 text-slate-800 dark:bg-white/10 dark:text-white"
+                ? "bg-slate-100 text-slate-800 dark:bg-white/10 dark:text-mist-100"
                 : "bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-500 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-slate-300"
             }`}
           >

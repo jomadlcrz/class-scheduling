@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ThemeToggle } from "~/components/theme/theme-toggle";
 import { AskAiPanel } from "~/features/ai/ask-ai-panel";
@@ -40,7 +40,7 @@ export function SiteHeader() {
       <header
         className={`sticky top-0 z-30 transition-colors duration-300 ${
           scrolled
-            ? "border-b border-slate-900/10 bg-cream-50/95 dark:border-white/10 dark:bg-navy-950/95"
+            ? "border-b border-slate-900/10 bg-cream-50/95 dark:border-white/10 dark:bg-surface/95"
             : "border-b border-transparent bg-transparent"
         }`}
       >
@@ -143,7 +143,7 @@ function MobileMenu({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
-        className="fixed inset-0 z-40 overflow-y-auto scrollbar-hide bg-cream-50 dark:bg-navy-950"
+        className="fixed inset-0 z-40 overflow-y-auto scrollbar-hide bg-cream-50 dark:bg-surface"
       >
         <div className="min-h-full pb-16">
           {/* Brand lockup — same position as the header, no shift on open */}
@@ -168,7 +168,7 @@ function MobileMenu({
                 key={link.href}
                 href={link.href}
                 onClick={onClose}
-                className="flex cursor-pointer items-center justify-between border-b border-slate-200 py-4 text-base font-medium text-slate-900 transition-colors duration-200 hover:text-gold-600 dark:border-white/10 dark:text-white dark:hover:text-gold-300"
+                className="flex cursor-pointer items-center justify-between border-b border-slate-200 py-4 text-base font-medium text-slate-900 transition-colors duration-200 hover:text-gold-600 dark:border-white/10 dark:text-mist-100 dark:hover:text-gold-300"
               >
                 {link.label}
                 <ChevronRightIcon size={16} />
@@ -217,7 +217,7 @@ function BrandLockup({ whiteOnDark = false }: { whiteOnDark?: boolean }) {
         )}
       </a>
       <span className="flex flex-col items-center text-center leading-none">
-        <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-white sm:text-[1.7rem]">
+        <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100 sm:text-[1.7rem]">
           GWC
         </span>
         <span className="-mt-2 font-body text-[0.65rem] tracking-wide text-navy-500 dark:text-navy-300 sm:text-xs">

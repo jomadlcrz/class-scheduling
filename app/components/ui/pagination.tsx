@@ -1,5 +1,5 @@
-const navButtonClassName =
-  "cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-slate-600 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-navy-900 dark:text-slate-300 dark:hover:bg-navy-800";
+﻿const navButtonClassName =
+  "cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-slate-600 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-surface-raised dark:text-slate-300 dark:hover:bg-navy-800";
 
 type PaginationProps = {
   page: number;

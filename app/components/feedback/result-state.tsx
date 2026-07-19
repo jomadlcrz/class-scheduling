@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { ButtonLink } from "~/components/ui/button";
 import { AlertIcon, CheckIcon } from "~/components/ui/icons";
 
@@ -36,7 +36,7 @@ export function ResultState({ tone, title, children, action }: ResultStateProps)
       >
         <span className={t.iconColor}>{t.icon}</span>
       </div>
-      <h2 className="font-display text-2xl tracking-wide text-gray-900 dark:text-white">
+      <h2 className="font-display text-2xl tracking-wide text-gray-900 dark:text-mist-100">
         {title}
       </h2>
       <p className="mt-2 font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">

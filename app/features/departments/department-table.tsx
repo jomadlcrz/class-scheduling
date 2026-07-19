@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
@@ -44,7 +44,7 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
                   className="size-10 rounded-lg object-contain"
                 />
                 <div>
-                  <span className="font-medium text-navy-700 dark:text-white">{dept.code}</span>
+                  <span className="font-medium text-navy-700 dark:text-mist-100">{dept.code}</span>
                 </div>
               </div>
             </TableCell>

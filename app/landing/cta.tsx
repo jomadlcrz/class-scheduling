@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+﻿import { motion } from "motion/react";
 import { fadeUp, inViewSection } from "~/landing/motion";
 
 /** Closing call-to-action band. */
@@ -17,7 +17,7 @@ export function Cta() {
         />
         <motion.h2
           variants={fadeUp}
-          className="relative font-display text-5xl tracking-wide text-navy-700 dark:text-white sm:text-6xl"
+          className="relative font-display text-5xl tracking-wide text-navy-700 dark:text-mist-100 sm:text-6xl"
         >
           Plan the term in an afternoon
         </motion.h2>
@@ -31,7 +31,7 @@ export function Cta() {
         <motion.div variants={fadeUp} className="relative mt-8">
           <a
             href="#top"
-            className="inline-flex h-12 items-center justify-center rounded-full bg-gold-400 px-8 text-sm font-semibold text-navy-900 shadow-lg shadow-gold-400/30 transition-colors duration-200 hover:bg-gold-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:focus-visible:ring-offset-navy-950"
+            className="inline-flex h-12 items-center justify-center rounded-full bg-gold-400 px-8 text-sm font-semibold text-navy-900 shadow-lg shadow-gold-400/30 transition-colors duration-200 hover:bg-gold-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:focus-visible:ring-offset-surface"
           >
             Get started for free
           </a>

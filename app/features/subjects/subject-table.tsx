@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
@@ -53,7 +53,7 @@ export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTa
         {subjects.map((subject) => (
           <TableRow key={subject.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">{subject.code}</span>
+              <span className="font-medium text-navy-700 dark:text-mist-100">{subject.code}</span>
             </TableCell>
             <TableCell>{subject.title}</TableCell>
             <TableCell>
@@ -67,7 +67,7 @@ export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTa
                   />
                 )}
                 <div>
-                  <span className="font-medium text-navy-700 dark:text-white">{subject.program}</span>
+                  <span className="font-medium text-navy-700 dark:text-mist-100">{subject.program}</span>
                 </div>
               </div>
             </TableCell>

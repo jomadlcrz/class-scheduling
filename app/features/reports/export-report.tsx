@@ -1,4 +1,4 @@
-import { Card } from "~/components/ui/card";
+﻿import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { PrinterIcon } from "~/components/ui/icons";
 
@@ -15,7 +15,7 @@ export function ExportReport() {
             <PrinterIcon />
           </span>
           <div className="flex-1">
-            <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+            <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
               Print Report
             </p>
             <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">

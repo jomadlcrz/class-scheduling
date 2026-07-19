@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+﻿import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SubjectBadgeList } from "~/features/schedules/irregular-student-badges";
 import type { IrregularStudent } from "~/services/irregular-class.service";
 
@@ -18,7 +18,7 @@ export function IrregularClassTable({ students }: IrregularClassTableProps) {
       <TableBody>
         {students.map((student) => (
           <TableRow key={student.studentId}>
-            <TableCell className="font-medium text-navy-700 dark:text-white">
+            <TableCell className="font-medium text-navy-700 dark:text-mist-100">
               {student.studentId}
             </TableCell>
             <TableCell>{student.studentName}</TableCell>

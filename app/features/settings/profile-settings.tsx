@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { EditIcon } from "~/components/ui/icons";
 import { Input, PasswordInput } from "~/components/ui/input";
@@ -34,7 +34,7 @@ export function ProfileSettings() {
             <button
               type="button"
               aria-label="Edit profile picture"
-              className="group relative shrink-0 cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-navy-950"
+              className="group relative shrink-0 cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-surface"
             >
               <span
                 aria-hidden="true"
@@ -42,7 +42,7 @@ export function ProfileSettings() {
               >
                 {initials}
               </span>
-              <span className="absolute bottom-3 -left-1 inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 font-body text-xs font-medium text-navy-700 transition-colors duration-150 group-hover:bg-slate-50 dark:border-white/15 dark:bg-navy-800 dark:text-white dark:group-hover:bg-navy-700 [&_svg]:size-3.5">
+              <span className="absolute bottom-3 -left-1 inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 font-body text-xs font-medium text-navy-700 transition-colors duration-150 group-hover:bg-slate-50 dark:border-white/15 dark:bg-surface-overlay dark:text-mist-100 dark:group-hover:bg-navy-700 [&_svg]:size-3.5">
                 <EditIcon />
                 Edit
               </span>
@@ -72,7 +72,7 @@ export function ProfileSettings() {
                   Email Address
                 </p>
                 <div className="mt-1 flex items-center gap-3">
-                  <p className="min-w-0 truncate font-body text-sm text-navy-700 dark:text-white">
+                  <p className="min-w-0 truncate font-body text-sm text-navy-700 dark:text-mist-100">
                     {user.email}
                   </p>
                   <Button

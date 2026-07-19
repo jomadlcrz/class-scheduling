@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -220,7 +220,7 @@ function DepartmentsPage() {
         onConfirm={() => handleDelete(deleteTarget!)}
       >
         Department{" "}
-        <span className="font-medium text-navy-700 dark:text-white">{deleteTarget?.code}</span>{" "}
+        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.code}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
       </ConfirmDialog>
     </div>

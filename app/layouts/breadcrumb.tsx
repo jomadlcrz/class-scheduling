@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+﻿import { Link } from "react-router";
 
 type BreadcrumbItem = {
   label: string;
@@ -34,7 +34,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                 </svg>
               )}
               {isLast ? (
-                <span className="font-semibold text-navy-700 dark:text-white" aria-current="page">
+                <span className="font-semibold text-navy-700 dark:text-mist-100" aria-current="page">
                   {item.label}
                 </span>
               ) : item.href ? (

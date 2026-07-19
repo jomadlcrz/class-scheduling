@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import type { BadgeTone } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 
@@ -35,7 +35,7 @@ export function ScheduleKpiCard({ icon, tone, label, value }: ScheduleKpiCardPro
         <span className="block font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
           {label}
         </span>
-        <span className="mt-0.5 block truncate font-display text-lg tracking-wide text-navy-700 dark:text-white">
+        <span className="mt-0.5 block truncate font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
           {value}
         </span>
       </span>

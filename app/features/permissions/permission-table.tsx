@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import type { PermissionSummary } from "~/types/permission";
 
 /** Card per system role: name and how many permissions it holds. */
@@ -11,7 +11,7 @@ export function PermissionTable({ roles }: { roles: PermissionSummary[] }) {
           className="rounded-xl border border-slate-200 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5"
         >
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+            <h2 className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               {role.name}
             </h2>
             <Badge tone="slate">

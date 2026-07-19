@@ -1,4 +1,4 @@
-import { ThemeToggle } from "~/components/theme/theme-toggle";
+﻿import { ThemeToggle } from "~/components/theme/theme-toggle";
 
 interface FooterColumn {
   heading: string;
@@ -15,7 +15,7 @@ const COLUMNS: readonly FooterColumn[] = [
 /** Site footer — follows the theme: light surface in light mode, navy in dark. */
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-slate-200 bg-cream-100 text-slate-600 dark:border-white/10 dark:bg-navy-950 dark:text-slate-300">
+    <footer className="relative z-10 border-t border-slate-200 bg-cream-100 text-slate-600 dark:border-white/10 dark:bg-surface dark:text-slate-300">
       {/* Hairline gold accent along the top edge. */}
       <div className="h-px w-full bg-linear-to-r from-transparent via-gold-400/50 to-transparent" />
 
@@ -47,7 +47,7 @@ export function SiteFooter() {
                 />
               </a>
               <span className="flex flex-col items-center text-center leading-none">
-                <span className="font-display text-3xl tracking-wide text-navy-700 dark:text-white">
+                <span className="font-display text-3xl tracking-wide text-navy-700 dark:text-mist-100">
                   GWC
                 </span>
                 <span className="-mt-2 font-body text-sm tracking-wide text-navy-500 dark:text-navy-300">
@@ -63,7 +63,7 @@ export function SiteFooter() {
 
           {COLUMNS.map((column) => (
             <nav key={column.heading} aria-label={column.heading}>
-              <h3 className="font-display text-lg tracking-wide text-navy-700 dark:text-white">
+              <h3 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
                 {column.heading}
               </h3>
               <ul className="mt-4 space-y-2.5">

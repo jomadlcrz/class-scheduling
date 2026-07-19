@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+﻿import { motion } from "motion/react";
 import { fadeUp, inViewSection } from "~/landing/motion";
 import type { ReactNode } from "react";
 
@@ -42,7 +42,7 @@ export function Features() {
       <motion.div {...inViewSection}>
         <motion.h2
           variants={fadeUp}
-          className="text-center font-display text-5xl tracking-wide text-navy-700 dark:text-white sm:text-6xl"
+          className="text-center font-display text-5xl tracking-wide text-navy-700 dark:text-mist-100 sm:text-6xl"
         >
           Everything a registrar needs
         </motion.h2>
@@ -58,7 +58,7 @@ export function Features() {
             <motion.article
               key={feature.title}
               variants={fadeUp}
-              className="group rounded-2xl border border-slate-200 bg-white/90 p-7 transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-navy-900/80 dark:hover:border-gold-400/40"
+              className="group rounded-2xl border border-slate-200 bg-white/90 p-7 transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-surface-raised/80 dark:hover:border-gold-400/40"
             >
               <span className="inline-grid size-12 place-items-center rounded-xl bg-gold-400/15 text-navy-600 dark:text-gold-300">
                 <svg
@@ -75,7 +75,7 @@ export function Features() {
                   {feature.icon}
                 </svg>
               </span>
-              <h3 className="mt-5 font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+              <h3 className="mt-5 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
                 {feature.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">

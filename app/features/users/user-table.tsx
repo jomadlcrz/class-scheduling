@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import { EditIcon, KeyIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import {
   Table,
@@ -45,7 +45,7 @@ export function UserTable({
           <TableRow key={user.id}>
             <TableCell>
               <div className="flex flex-col">
-                <span className="font-medium text-navy-700 dark:text-white">{user.name}</span>
+                <span className="font-medium text-navy-700 dark:text-mist-100">{user.name}</span>
                 <span className="text-xs text-slate-500 dark:text-slate-400">{user.email}</span>
               </div>
             </TableCell>

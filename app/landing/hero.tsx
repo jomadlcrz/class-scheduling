@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+﻿import { motion } from "motion/react";
 import { fadeUp, staggerContainer } from "~/landing/motion";
 import { ScheduleCard } from "~/landing/schedule-card";
 
@@ -22,7 +22,7 @@ export function Hero() {
 
         <motion.h1
           variants={fadeUp}
-          className="mt-6 font-display text-5xl leading-[0.95] tracking-wide text-navy-700 dark:text-white sm:text-6xl md:text-7xl lg:text-8xl"
+          className="mt-6 font-display text-5xl leading-[0.95] tracking-wide text-navy-700 dark:text-mist-100 sm:text-6xl md:text-7xl lg:text-8xl"
         >
           Conflict-free
           <br />
@@ -44,13 +44,13 @@ export function Hero() {
         >
           <a
             href="#get-started"
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-gold-400 px-7 text-sm font-semibold text-navy-900 shadow-lg shadow-gold-400/30 transition-colors duration-200 hover:bg-gold-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:focus-visible:ring-offset-navy-950 sm:w-auto"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-gold-400 px-7 text-sm font-semibold text-navy-900 shadow-lg shadow-gold-400/30 transition-colors duration-200 hover:bg-gold-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:focus-visible:ring-offset-surface sm:w-auto"
           >
             Get started
           </a>
           <a
             href="#features"
-            className="inline-flex h-12 w-full items-center justify-center rounded-full border border-navy-300/60 px-7 text-sm font-semibold text-navy-700 transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-white dark:hover:bg-white/5 sm:w-auto"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full border border-navy-300/60 px-7 text-sm font-semibold text-navy-700 transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-mist-100 dark:hover:bg-white/5 sm:w-auto"
           >
             See how it works
           </a>

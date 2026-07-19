@@ -1,4 +1,4 @@
-import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
+﻿import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { useState, type ComponentProps, type ReactNode } from "react";
 import { CheckIcon, ChevronDownIcon, SearchIcon } from "~/components/ui/icons";
 
@@ -28,7 +28,7 @@ function CommandInput({ className = "", placeholder, focusPlaceholder, onFocus, 
           setFocused(false);
           onBlur?.(e);
         }}
-        className={`w-full bg-transparent font-body text-sm text-gray-900 outline-none placeholder-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-white dark:placeholder-slate-500 ${className}`.trim()}
+        className={`w-full bg-transparent font-body text-sm text-gray-900 outline-none placeholder-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-mist-100 dark:placeholder-slate-500 ${className}`.trim()}
         {...props}
       />
       <span className="shrink-0 text-slate-400 dark:text-slate-500">
@@ -49,7 +49,7 @@ function CommandList({ className = "", children, ...props }: ComboboxPrimitive.P
       >
         <ComboboxPrimitive.Popup
           data-slot="command-list"
-          className={`max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-navy-900 ${className}`.trim()}
+          className={`max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised ${className}`.trim()}
           {...props}
         >
           <ComboboxPrimitive.List data-slot="command-list-items" className="outline-none">
@@ -97,7 +97,7 @@ function CommandItem({ className = "", children, ...props }: ComboboxPrimitive.I
   return (
     <ComboboxPrimitive.Item
       data-slot="command-item"
-      className={`relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-highlighted:bg-slate-100 data-disabled:pointer-events-none data-disabled:opacity-50 dark:text-white dark:data-highlighted:bg-white/10 ${className}`.trim()}
+      className={`relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-highlighted:bg-slate-100 data-disabled:pointer-events-none data-disabled:opacity-50 dark:text-mist-100 dark:data-highlighted:bg-white/10 ${className}`.trim()}
       {...props}
     >
       <span className="truncate">{children}</span>

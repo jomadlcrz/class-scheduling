@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+﻿import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Outlet } from "react-router";
 import { AuthGuard } from "~/auth/auth-guard";
@@ -74,7 +74,7 @@ function Shell() {
   }, [mobileOpen]);
 
   return (
-    <div className="flex min-h-dvh bg-slate-50 dark:bg-navy-950">
+    <div className="flex min-h-dvh bg-slate-50 dark:bg-surface">
       {justLoggedIn && <DashboardIntroOverlay />}
 
       {/* Desktop sidebar */}

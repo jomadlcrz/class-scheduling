@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+﻿import { useMemo, useRef } from "react";
 import { UserSmallIcon } from "~/components/ui/icons";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
 
@@ -42,15 +42,15 @@ export function MappingTableView({ classrooms }: MappingTableViewProps) {
         </colgroup>
         <thead>
           <tr>
-            <th className="sticky top-0 left-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400">
+            <th className="sticky top-0 left-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
               Room
             </th>
-            <th className="sticky top-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400"
+            <th className="sticky top-0 z-30 border-r-2 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400"
               style={{ left: ROOM_COL_W }}>
               Day
             </th>
             {slots.map((slot, idx) => (
-              <th key={idx} className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-navy-900 dark:text-slate-400">
+              <th key={idx} className="sticky top-0 z-20 border-r border-b-2 border-slate-300 bg-slate-50 px-3 py-2 text-left font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
                 {slot.start}
                 <span className="mx-0.5 text-slate-300 dark:text-slate-600">–</span>
                 {slot.end}
@@ -88,7 +88,7 @@ function RoomDayRow({ room, day, slots, showRoomCell }: {
     <tr className="transition-colors hover:bg-slate-50 dark:hover:bg-white/5">
       {showRoomCell && (
         <td rowSpan={DAYS.length} className="sticky left-0 z-10 border-r-2 border-b border-slate-200 bg-white px-3 py-2 align-middle text-center dark:border-white/10 dark:bg-slate-900">
-          <span className="block font-display text-base tracking-tight text-slate-800 dark:text-white">
+          <span className="block font-display text-base tracking-tight text-slate-800 dark:text-mist-100">
             {room.name}
           </span>
           <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-body text-[0.65rem] text-slate-500 dark:bg-white/10 dark:text-slate-400">

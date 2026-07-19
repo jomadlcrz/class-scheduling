@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+﻿import { useEffect, useState, type FormEvent } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { PlusIcon, TrashIcon } from "~/components/ui/icons";
@@ -132,7 +132,7 @@ export function PermissionForm({ onCreated, onCancel }: PermissionFormProps) {
               className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 dark:border-white/10"
             >
               <div>
-                <p className="font-body text-sm font-medium text-navy-700 dark:text-white">
+                <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                   {row.permissionSlug}
                 </p>
                 <p className="font-body text-xs text-slate-500 dark:text-slate-400">{row.description}</p>

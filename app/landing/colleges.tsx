@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+﻿import { motion } from "motion/react";
 import { fadeUp, inViewSection } from "~/landing/motion";
 
 interface College {
@@ -31,7 +31,7 @@ export function Colleges() {
             <motion.div
               key={college.code}
               variants={fadeUp}
-              className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 p-6 text-center transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-navy-900/80 dark:hover:border-gold-400/40"
+              className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 p-6 text-center transition-colors duration-200 hover:border-gold-400/60 dark:border-white/10 dark:bg-surface-raised/80 dark:hover:border-gold-400/40"
             >
               <span className="grid size-16 place-items-center">
                 <img
@@ -43,7 +43,7 @@ export function Colleges() {
                   className="size-full object-contain transition-transform duration-300 ease-out motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:scale-110"
                 />
               </span>
-              <span className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
+              <span className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
                 {college.code}
               </span>
               <span className="text-[0.7rem] leading-snug text-slate-500 dark:text-slate-400">

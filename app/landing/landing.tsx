@@ -1,4 +1,4 @@
-import { Colleges } from "~/landing/colleges";
+﻿import { Colleges } from "~/landing/colleges";
 import { Cta } from "~/landing/cta";
 import { Features } from "~/landing/features";
 import { Hero } from "~/landing/hero";
@@ -38,7 +38,7 @@ function Backdrop() {
         className="absolute inset-0 size-full object-cover opacity-[0.06] dark:opacity-[0.10]"
       />
       {/* Blueprint timetable grid. */}
-      <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-white/5" />
+      <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-mist-100/5" />
       {/* Gold radial glow, top-center — radial-gradient skips the GPU blur filter pass. */}
       <div
         className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-20 dark:opacity-[0.15]"
@@ -50,7 +50,7 @@ function Backdrop() {
         style={{ background: "radial-gradient(circle, rgb(30 58 110) 0%, transparent 65%)" }}
       />
       {/* Bottom fade into the base surface. */}
-      <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-cream-50 to-transparent dark:from-navy-950" />
+      <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-cream-50 to-transparent dark:from-surface" />
     </div>
   );
 }

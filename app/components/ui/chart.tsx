@@ -1,4 +1,4 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { Legend, ResponsiveContainer, Tooltip } from "recharts";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -77,9 +77,9 @@ function ChartTooltipContent({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="grid min-w-32 items-start gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-xl dark:border-white/10 dark:bg-navy-800">
+    <div className="grid min-w-32 items-start gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-xl dark:border-white/10 dark:bg-surface-overlay">
       {!hideLabel && label && (
-        <p className="font-medium text-slate-700 dark:text-white">{label}</p>
+        <p className="font-medium text-slate-700 dark:text-mist-100">{label}</p>
       )}
       <div className="grid gap-1">
         {payload.map((item) => {
@@ -104,7 +104,7 @@ function ChartTooltipContent({
               <span className="flex-1 text-slate-500 dark:text-slate-400">
                 {configEntry?.label ?? key}
               </span>
-              <span className="font-body font-medium tabular-nums text-slate-700 dark:text-white">
+              <span className="font-body font-medium tabular-nums text-slate-700 dark:text-mist-100">
                 {item.value}
               </span>
             </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -275,7 +275,7 @@ function SubjectsNewPage() {
           <div className="grid items-start gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
             <div
               ref={formCardRef}
-              className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80"
+              className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-surface-raised/80"
             >
               <FieldChrome id="new-subject-program" label="Program">
                 <Select
@@ -312,7 +312,7 @@ function SubjectsNewPage() {
             </div>
 
             <div
-              className="scrollbar-thin rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-navy-900/80 lg:overflow-y-auto"
+              className="scrollbar-thin rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-surface-raised/80 lg:overflow-y-auto"
               style={formCardHeight ? { maxHeight: formCardHeight } : undefined}
             >
               <CurriculumStructure

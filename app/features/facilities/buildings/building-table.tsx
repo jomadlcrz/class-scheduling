@@ -1,4 +1,4 @@
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+﻿import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
         {buildings.map((building) => (
           <TableRow key={building.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">{building.name}</span>
+              <span className="font-medium text-navy-700 dark:text-mist-100">{building.name}</span>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-center">{building.floorCount}</TableCell>
             <TableCell>

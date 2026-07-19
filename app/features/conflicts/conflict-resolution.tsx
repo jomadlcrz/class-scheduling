@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+﻿import { Link } from "react-router";
 import { CalendarIcon } from "~/components/ui/icons";
 
 export function ConflictResolution() {
@@ -9,7 +9,7 @@ export function ConflictResolution() {
           <CalendarIcon />
         </span>
         <div>
-          <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+          <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
             Resolve Conflicts
           </p>
           <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+﻿import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
@@ -153,10 +153,10 @@ function ModalContent({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-navy-900 ${wide ? "max-w-3xl" : "max-w-md"}`}
+          className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-surface-raised ${wide ? "max-w-3xl" : "max-w-md"}`}
         >
           <div className="flex shrink-0 items-start justify-between gap-4">
-            <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
+            <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
               {title}
             </h2>
             <button

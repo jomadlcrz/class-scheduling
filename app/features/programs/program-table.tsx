@@ -1,4 +1,4 @@
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+﻿import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
@@ -43,7 +43,7 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
                   className="size-10 rounded-lg object-contain"
                 />
                 <div>
-                  <span className="font-medium text-navy-700 dark:text-white">{prog.code}</span>
+                  <span className="font-medium text-navy-700 dark:text-mist-100">{prog.code}</span>
                 </div>
               </div>
             </TableCell>

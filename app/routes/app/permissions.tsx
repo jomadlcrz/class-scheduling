@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -78,7 +78,7 @@ function PermissionsPage() {
         <div className="mt-6 flex flex-col gap-6">
           <PermissionTable roles={roles} />
           <section>
-            <h2 className="mb-3 font-display text-2xl tracking-wide text-navy-700 dark:text-white">
+            <h2 className="mb-3 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               Permission Matrix
             </h2>
             <PermissionMatrix roles={roles} />

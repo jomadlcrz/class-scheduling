@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+﻿import { useState, type ReactNode } from "react";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -21,7 +21,7 @@ function SecurityRow({ label, description, trailing, onClick }: SecurityRowProps
   const content = (
     <>
       <div>
-        <p className="font-body text-sm font-medium text-navy-700 dark:text-white">{label}</p>
+        <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">{label}</p>
         {description && (
           <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">{description}</p>
         )}
@@ -89,7 +89,7 @@ function ActiveSessionsModalContent() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4 dark:border-white/10">
         <div>
-          <p className="font-body text-sm font-medium text-navy-700 dark:text-white">This device</p>
+          <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">This device</p>
           <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
             You're currently signed in from this browser.
           </p>

@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 type Props = {
@@ -29,7 +29,7 @@ export function WeeklyHourAllocationList({ allocations }: Props) {
             {i + 1}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+            <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
               {a.subjectTypeLabel}
             </p>
             <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">

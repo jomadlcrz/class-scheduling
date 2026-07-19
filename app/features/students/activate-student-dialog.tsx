@@ -1,4 +1,4 @@
-import { ConfirmDialog } from "~/components/ui/modal";
+﻿import { ConfirmDialog } from "~/components/ui/modal";
 import type { Student } from "~/types/student";
 
 type ActivateStudentDialogProps = {
@@ -17,7 +17,7 @@ export function ActivateStudentDialog({ student, onClose, onConfirm }: ActivateS
       loadingLabel="Activating…"
       onConfirm={() => onConfirm(student!)}
     >
-      <span className="font-medium text-navy-700 dark:text-white">
+      <span className="font-medium text-navy-700 dark:text-mist-100">
         {student?.firstName} {student?.lastName} ({student?.studentNumber})
       </span>{" "}
       will be restored to active status.

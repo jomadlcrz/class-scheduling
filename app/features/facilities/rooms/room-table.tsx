@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import { ClockIcon, EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
@@ -39,7 +39,7 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
         {rooms.map((room) => (
           <TableRow key={room.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">{room.name}</span>
+              <span className="font-medium text-navy-700 dark:text-mist-100">{room.name}</span>
             </TableCell>
             <TableCell>
               <Badge tone={getBuildingTone(room.buildingName)}>{room.buildingName}</Badge>

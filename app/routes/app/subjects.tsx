@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Pagination } from "~/components/ui/pagination";
@@ -212,7 +212,7 @@ function SubjectsPage() {
         confirmVariant="danger"
         onConfirm={() => handleDelete(deleteTarget!)}
       >
-        <span className="font-medium text-navy-700 dark:text-white">
+        <span className="font-medium text-navy-700 dark:text-mist-100">
           {deleteTarget?.code} — {deleteTarget?.title}
         </span>{" "}
         will be removed from {deleteTarget?.program}. It can be restored from the recycle bin.

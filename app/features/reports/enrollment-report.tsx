@@ -1,4 +1,4 @@
-import { Card } from "~/components/ui/card";
+﻿import { Card } from "~/components/ui/card";
 import type { EnrollmentStats } from "~/services/report.service";
 import { useYearLevels } from "~/hooks/use-year-levels";
 
@@ -36,7 +36,7 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
                     <span className="font-body text-sm text-slate-700 dark:text-slate-300">
                       {program}
                     </span>
-                    <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
+                    <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                       {count}
                     </span>
                   </div>
@@ -68,7 +68,7 @@ export function EnrollmentReport({ data }: { data: EnrollmentStats }) {
                       <span className="font-body text-sm text-slate-700 dark:text-slate-300">
                         {yearLevelLabel(Number(year))}
                       </span>
-                      <span className="font-body text-sm font-medium text-navy-700 dark:text-white">
+                      <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                         {count}
                       </span>
                     </div>
@@ -105,7 +105,7 @@ function StatCard({
       </p>
       <p
         className={`mt-1 font-display text-3xl font-bold ${
-          accent ? "text-navy-700 dark:text-gold-400" : "text-slate-800 dark:text-white"
+          accent ? "text-navy-700 dark:text-gold-400" : "text-slate-800 dark:text-mist-100"
         }`}
       >
         {value}

@@ -1,4 +1,4 @@
-import { AnimatePresence } from "motion/react";
+﻿import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -723,7 +723,7 @@ function SchedulesNewPage() {
       >
         {deleteTarget && (
           <>
-            <span className="font-medium text-navy-700 dark:text-white">
+            <span className="font-medium text-navy-700 dark:text-mist-100">
               {deleteTarget.subjectCode}
             </span>{" "}
             on {dayLabels[deleteTarget.day]} ({formatTime(deleteTarget.startTime)}–

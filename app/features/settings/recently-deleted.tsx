@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Badge } from "~/components/ui/badge";
@@ -62,7 +62,7 @@ export function RecentlyDeleted() {
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-3">
-          <h2 className="font-body text-base font-semibold text-navy-700 dark:text-white">
+          <h2 className="font-body text-base font-semibold text-navy-700 dark:text-mist-100">
             Deleted Subjects
           </h2>
           <Table>
@@ -77,7 +77,7 @@ export function RecentlyDeleted() {
             <TableBody>
               {subjects.map((subject) => (
                 <TableRow key={subject.subjectId}>
-                  <TableCell className="font-medium text-navy-700 dark:text-white">
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
                     {subject.subjectCode}
                   </TableCell>
                   <TableCell>{subject.descTitle}</TableCell>
@@ -124,7 +124,7 @@ export function RecentlyDeleted() {
         loadingLabel="Restoring…"
         onConfirm={handleRestore}
       >
-        <span className="font-medium text-navy-700 dark:text-white">
+        <span className="font-medium text-navy-700 dark:text-mist-100">
           {restoreTarget?.subjectCode} — {restoreTarget?.descTitle}
         </span>{" "}
         will be restored to {restoreTarget?.program}.

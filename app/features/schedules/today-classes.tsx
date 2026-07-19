@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
@@ -61,7 +61,7 @@ export function TodayClasses({ schedules }: TodayClassesProps) {
   return (
     <div className="flex flex-col gap-3">
       {/* Mobile-only heading */}
-      <p className="font-display text-sm tracking-wide text-navy-700 sm:hidden dark:text-white">
+      <p className="font-display text-sm tracking-wide text-navy-700 sm:hidden dark:text-mist-100">
         Today • {now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
       </p>
 
@@ -102,7 +102,7 @@ export function TodayClasses({ schedules }: TodayClassesProps) {
                     <span className="block">{formatTime12h(o.schedule.endTime)}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-display text-sm text-navy-700 dark:text-white">
+                    <span className="block truncate font-display text-sm text-navy-700 dark:text-mist-100">
                       {o.schedule.subjectCode} — {o.schedule.subjectTitle}
                     </span>
                     <span className="block truncate font-body text-xs text-slate-500 dark:text-slate-400">
@@ -159,7 +159,7 @@ function TodayCard({
           <Badge tone="gold">{formatStartsIn(start, nowMinutes)}</Badge>
         )}
       </div>
-      <p className="mt-2 truncate font-display text-base tracking-wide text-navy-700 dark:text-white">
+      <p className="mt-2 truncate font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
         {schedule.subjectCode} — {schedule.subjectTitle}
       </p>
       <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">

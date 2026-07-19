@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import type { Building } from "~/types/building";
 import type { Room } from "~/types/room";
 import { ROOM_STATUS_LABELS, ROOM_TYPE_LABELS } from "~/types/room";
@@ -27,7 +27,7 @@ export function FacilityTable({ rooms, buildings }: FacilityTableProps) {
             className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/3"
           >
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 dark:border-white/8">
-              <span className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+              <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                 {building.name}
               </span>
               <span className="font-body text-xs text-slate-400 dark:text-slate-500">

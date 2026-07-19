@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
@@ -15,10 +15,10 @@ interface LegalLayoutProps {
 export function LegalLayout({ activePage, title, intro, children }: LegalLayoutProps) {
   return (
     <ThemeProvider>
-      <div className="relative min-h-dvh overflow-x-clip bg-cream-50 dark:bg-navy-950">
+      <div className="relative min-h-dvh overflow-x-clip bg-cream-50 dark:bg-surface">
         {/* Ambient background */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
-          <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-white/5" />
+          <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-mist-100/5" />
           <div
             className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-[0.12] dark:opacity-[0.08]"
             style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
@@ -28,9 +28,9 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
         <SiteHeader />
 
         {/* ── Full-width page title bar ── */}
-        <div className="relative z-10 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900">
+        <div className="relative z-10 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised">
           <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
-            <h1 className="font-display text-4xl tracking-wide text-navy-700 dark:text-white sm:text-[2.75rem]">
+            <h1 className="font-display text-4xl tracking-wide text-navy-700 dark:text-mist-100 sm:text-[2.75rem]">
               {title}
             </h1>
           </div>
@@ -44,7 +44,7 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
               <div className="sticky top-24">
                 <nav
                   aria-label="Legal pages"
-                  className="overflow-hidden rounded-sm border border-slate-200 bg-white/90 divide-y divide-slate-200 dark:border-white/10 dark:bg-navy-800/60 dark:divide-white/10"
+                  className="overflow-hidden rounded-sm border border-slate-200 bg-white/90 divide-y divide-slate-200 dark:border-white/10 dark:bg-surface-overlay/60 dark:divide-white/10"
                 >
                   <SidebarLink href="/privacy-policy" active={activePage === "privacy-policy"}>
                     Privacy Policy
@@ -59,7 +59,7 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
             {/* ── Content ── */}
             <div className="flex-1 min-w-0">
               {/* Mobile tab switcher */}
-              <div className="mb-6 flex gap-1 rounded-lg border border-slate-200 bg-white/80 p-1 backdrop-blur-sm dark:border-white/10 dark:bg-navy-800/60 lg:hidden">
+              <div className="mb-6 flex gap-1 rounded-lg border border-slate-200 bg-white/80 p-1 backdrop-blur-sm dark:border-white/10 dark:bg-surface-overlay/60 lg:hidden">
                 <MobileTab href="/privacy-policy" active={activePage === "privacy-policy"}>
                   Privacy Policy
                 </MobileTab>
@@ -68,7 +68,7 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
                 </MobileTab>
               </div>
 
-              <div className="rounded-sm border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-800/60">
+              <div className="rounded-sm border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-surface-overlay/60">
                 {/* Intro */}
                 <div className="border-b border-slate-200 px-8 py-8 dark:border-white/10 sm:px-12">
                   <p className="font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
@@ -95,7 +95,7 @@ export function LegalLayout({ activePage, title, intro, children }: LegalLayoutP
 export function LegalSection({ id, heading, body }: { id: string; heading: string; body: string }) {
   return (
     <section id={id} className="scroll-mt-24 py-8">
-      <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-white">
+      <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
         {heading}
       </h2>
       <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
@@ -120,7 +120,7 @@ function SidebarLink({
       aria-current={active ? "page" : undefined}
       className={`relative block cursor-pointer px-4 py-3 font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-gold-400 ${
         active
-          ? "bg-white/90 font-semibold text-navy-700 dark:bg-navy-800/80 dark:text-white"
+          ? "bg-white/90 font-semibold text-navy-700 dark:bg-surface-overlay/80 dark:text-mist-100"
           : "text-slate-500 hover:bg-slate-50 hover:text-navy-600 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
       }`}
     >

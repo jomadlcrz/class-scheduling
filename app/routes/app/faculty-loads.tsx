@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useBlocker } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -310,7 +310,7 @@ function FacultyLoadsPage() {
 
           {pending.length > 0 && (
             <section className="flex flex-col gap-2">
-              <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-white">
+              <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
                 Staged for this save
               </h2>
               <FacultyLoadTable
@@ -322,7 +322,7 @@ function FacultyLoadsPage() {
           )}
 
           <section className="flex flex-col gap-2">
-            <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-white">
+            <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
               Existing Faculty Loads
             </h2>
             {!contextReady ? (

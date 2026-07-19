@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+﻿import { Badge } from "~/components/ui/badge";
 import type { BadgeTone } from "~/components/ui/badge";
 import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
@@ -56,12 +56,12 @@ export function StudentTable({ students, programs, onEdit, onToggleStatus }: Stu
           return (
             <TableRow key={s.id}>
               <TableCell>
-                <span className="font-medium text-navy-700 dark:text-white">
+                <span className="font-medium text-navy-700 dark:text-mist-100">
                   {s.studentNumber}
                 </span>
               </TableCell>
               <TableCell>
-                <span className="font-medium text-navy-700 dark:text-white">
+                <span className="font-medium text-navy-700 dark:text-mist-100">
                   {s.lastName}, {s.firstName}
                 </span>
               </TableCell>
@@ -79,7 +79,7 @@ export function StudentTable({ students, programs, onEdit, onToggleStatus }: Stu
                     />
                   )}
                   <div>
-                    <span className="font-medium text-navy-700 dark:text-white">
+                    <span className="font-medium text-navy-700 dark:text-mist-100">
                       {s.program}
                     </span>
                     {program && (

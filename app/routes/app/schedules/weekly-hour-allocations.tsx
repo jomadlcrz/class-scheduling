@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { ResultState } from "~/components/feedback/result-state";
@@ -61,14 +61,14 @@ function WeeklyHoursPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
         <Card className="h-fit p-4">
-          <h2 className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-white">
+          <h2 className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
             Set Allocation
           </h2>
           <WeeklyHourAllocationForm types={types} onSubmit={handleCreate} />
         </Card>
 
         <div>
-          <h2 className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-white">
+          <h2 className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
             Current Allocations
           </h2>
           {loadError ? (

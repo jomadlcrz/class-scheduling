@@ -1,4 +1,4 @@
-import type { Room } from "~/types/room";
+﻿import type { Room } from "~/types/room";
 import { ROOM_STATUS_LABELS } from "~/types/room";
 
 type FacilityUtilizationProps = {
@@ -18,7 +18,7 @@ export function FacilityUtilization({ rooms }: FacilityUtilizationProps) {
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/3">
-      <h2 className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+      <h2 className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
         Room Status Overview
       </h2>
       <p className="mt-0.5 font-body text-xs text-slate-400 dark:text-slate-500">
@@ -46,7 +46,7 @@ export function FacilityUtilization({ rooms }: FacilityUtilizationProps) {
             <span className="font-body text-xs text-slate-600 dark:text-slate-300">
               {c.status}
             </span>
-            <span className="font-body text-xs font-semibold text-navy-700 dark:text-white">
+            <span className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
               {c.count}
             </span>
           </div>

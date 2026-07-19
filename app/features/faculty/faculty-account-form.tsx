@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CheckIcon } from "~/components/ui/icons";
@@ -215,7 +215,7 @@ export function FacultyAccountForm({
 function RolePermissionsPanel({ role }: { role: PermissionSummary | undefined }) {
   return (
     <aside className="h-fit rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-      <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-white">
+      <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
         Role Permissions
       </h3>
       {role ? (
@@ -226,7 +226,7 @@ function RolePermissionsPanel({ role }: { role: PermissionSummary | undefined })
                 <CheckIcon />
               </span>
               <span>
-                <span className="block text-sm font-medium text-navy-700 dark:text-white">
+                <span className="block text-sm font-medium text-navy-700 dark:text-mist-100">
                   {p.description || p.slug}
                 </span>
                 <span className="block text-xs text-slate-400 dark:text-slate-500">{p.slug}</span>

@@ -1,4 +1,4 @@
-import { Menu } from "@base-ui/react/menu";
+﻿import { Menu } from "@base-ui/react/menu";
 import type { ReactNode } from "react";
 import { CheckIcon, ChevronDownIcon, CloseIcon } from "~/components/ui/icons";
 
@@ -15,7 +15,7 @@ type FilterDropdownProps = {
 };
 
 const itemClassName =
-  "relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-[highlighted]:bg-slate-100 dark:text-white dark:data-[highlighted]:bg-white/10";
+  "relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-[highlighted]:bg-slate-100 dark:text-mist-100 dark:data-[highlighted]:bg-white/10";
 
 function FilterMenuItem({ children }: { children: ReactNode }) {
   return (
@@ -64,7 +64,7 @@ export function FilterDropdown({
 
         <Menu.Portal>
           <Menu.Positioner sideOffset={6} align="start" collisionPadding={8} className="z-50 outline-none">
-            <Menu.Popup className="max-h-[60vh] min-w-40 max-w-(--available-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-navy-900">
+            <Menu.Popup className="max-h-[60vh] min-w-40 max-w-(--available-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised">
               <Menu.RadioGroup value={value} onValueChange={(v) => onChange(v as string)}>
                 <Menu.RadioItem value={allValue} closeOnClick className={itemClassName}>
                   <FilterMenuItem>{allLabel}</FilterMenuItem>

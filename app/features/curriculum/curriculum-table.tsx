@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { AccordionItem } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -81,7 +81,7 @@ function YearBlock({
       open={forceOpen || undefined}
       defaultOpen
       title={
-        <span className="font-body text-base font-semibold text-navy-700 dark:text-white">
+        <span className="font-body text-base font-semibold text-navy-700 dark:text-mist-100">
           {yearLevelLabel(yearLevel)}
         </span>
       }
@@ -103,7 +103,7 @@ function SemesterCard({ group, viewMode }: { group: CurriculumGroup; viewMode: S
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-center gap-2">
-        <p className="font-body text-sm font-semibold text-navy-700 dark:text-white">
+        <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
           {semesterLabel(group.semester)}
         </p>
         {viewMode === "grid" && group.subjects.length > 0 && (

@@ -1,4 +1,4 @@
-import { CheckIcon } from "~/components/ui/icons";
+﻿import { CheckIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ export function PermissionMatrix({ roles }: { roles: PermissionSummary[] }) {
         {permissions.map((permission) => (
           <TableRow key={permission.slug}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">
+              <span className="font-medium text-navy-700 dark:text-mist-100">
                 {permission.description || permission.slug}
               </span>
               <span className="mt-0.5 block text-xs text-slate-400 dark:text-slate-500">

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+﻿import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { formatTime12h } from "~/lib/time";
@@ -61,7 +61,7 @@ function ScheduleChip({ schedule: s }: { schedule: Conflict["scheduleA"] }) {
       to="/schedules"
       className="rounded-lg border border-red-200 bg-white p-3 transition-colors hover:border-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-red-500/20 dark:bg-white/5 dark:hover:border-red-400/30"
     >
-      <p className="font-body text-xs font-semibold text-navy-700 dark:text-white">
+      <p className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
         {s.subjectCode}
       </p>
       <p className="font-body text-xs text-slate-500 dark:text-slate-400">{s.subjectTitle}</p>

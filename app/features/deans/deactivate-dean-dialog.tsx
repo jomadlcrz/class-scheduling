@@ -1,4 +1,4 @@
-import { ConfirmDialog } from "~/components/ui/modal";
+﻿import { ConfirmDialog } from "~/components/ui/modal";
 import type { Dean } from "~/types/dean";
 
 type DeactivateDeanDialogProps = {
@@ -18,7 +18,7 @@ export function DeactivateDeanDialog({ dean, onClose, onConfirm }: DeactivateDea
       confirmVariant="danger"
       onConfirm={() => onConfirm(dean!)}
     >
-      <span className="font-medium text-navy-700 dark:text-white">{dean?.name}</span> will be
+      <span className="font-medium text-navy-700 dark:text-mist-100">{dean?.name}</span> will be
       marked as inactive. Their data is kept and can be reactivated anytime.
     </ConfirmDialog>
   );

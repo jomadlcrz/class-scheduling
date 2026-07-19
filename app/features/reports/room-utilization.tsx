@@ -1,4 +1,4 @@
-import type { RoomUtilizationRow } from "~/services/report.service";
+﻿import type { RoomUtilizationRow } from "~/services/report.service";
 import {
   Table,
   TableBody,
@@ -35,7 +35,7 @@ export function RoomUtilization({ rows }: { rows: RoomUtilizationRow[] }) {
               <p className="text-xs text-slate-400 dark:text-slate-500">{row.buildingCode}</p>
             </TableCell>
             <TableCell className="text-center">{row.scheduledCount}</TableCell>
-            <TableCell className="text-right font-medium text-navy-700 dark:text-white">
+            <TableCell className="text-right font-medium text-navy-700 dark:text-mist-100">
               {row.totalHours.toFixed(1)} hrs
             </TableCell>
             <TableCell>

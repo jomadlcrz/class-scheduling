@@ -1,4 +1,4 @@
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+﻿import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
@@ -44,7 +44,7 @@ export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
           return (
             <TableRow key={set.id}>
               <TableCell>
-                <span className="font-medium text-navy-700 dark:text-white">{set.setCode}</span>
+                <span className="font-medium text-navy-700 dark:text-mist-100">{set.setCode}</span>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
                     />
                   )}
                   <div>
-                    <span className="font-medium text-navy-700 dark:text-white">
+                    <span className="font-medium text-navy-700 dark:text-mist-100">
                       {set.program}
                     </span>
                     {program && (

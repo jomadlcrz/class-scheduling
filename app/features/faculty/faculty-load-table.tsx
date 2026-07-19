@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+﻿import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 
 export type FacultyLoadRow = {
@@ -36,7 +36,7 @@ export function FacultyLoadTable({ rows, onEdit, onRemove }: FacultyLoadTablePro
         {rows.map((row) => (
           <TableRow key={row.key}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-white">{row.fullName}</span>
+              <span className="font-medium text-navy-700 dark:text-mist-100">{row.fullName}</span>
             </TableCell>
             <TableCell className="text-slate-600 dark:text-slate-300">
               {row.programs.join(", ") || "—"}

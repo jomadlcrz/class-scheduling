@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+﻿import { useMemo, useRef } from "react";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { UserSmallIcon } from "~/components/ui/icons";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
@@ -23,7 +23,7 @@ export function MappingGridView({ classrooms }: MappingGridViewProps) {
           defaultOpen={roomIdx === 0}
           title={
             <span className="flex items-center gap-3">
-              <span className="font-display text-lg tracking-tight text-slate-800 dark:text-white">
+              <span className="font-display text-lg tracking-tight text-slate-800 dark:text-mist-100">
                 {room.name}
               </span>
             </span>
