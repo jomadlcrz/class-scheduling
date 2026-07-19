@@ -1,5 +1,4 @@
 ﻿import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { SubjectTypeText } from "~/features/subjects/subject-type-badge";
 import type { CurriculumGroup } from "~/types/curriculum";
 
 type CurriculumSubjectsProps = {
@@ -28,9 +27,6 @@ export function CurriculumSubjects({ group }: CurriculumSubjectsProps) {
           <TableRow key={subject.id}>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">{subject.code}</span>
-              <div className="mt-0.5">
-                <SubjectTypeText type={subject.subjectType} />
-              </div>
             </TableCell>
             <TableCell>{subject.title}</TableCell>
             <TableCell className="text-center tabular-nums">{subject.units}</TableCell>

@@ -1,5 +1,4 @@
 ﻿import { motion, useReducedMotion, type Variants } from "motion/react";
-import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import type { Subject } from "~/types/subject";
 
 type SubjectCardGridProps = {
@@ -8,8 +7,7 @@ type SubjectCardGridProps = {
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
-/** Per-subject cards for a semester: the unit count reads like a credit stamp,
- *  and the subject-type badge (matching the classroom-mapping legend) carries the color. */
+/** Per-subject cards for a semester: the unit count reads like a credit stamp. */
 export function SubjectCardGrid({ subjects }: SubjectCardGridProps) {
   const reduceMotion = useReducedMotion();
 
@@ -47,14 +45,13 @@ export function SubjectCardGrid({ subjects }: SubjectCardGridProps) {
             <p className="mt-0.5 truncate font-body text-sm text-slate-600 dark:text-slate-300">
               {subject.title}
             </p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <SubjectTypeBadge type={subject.subjectType} />
-              {subject.prerequisites.length > 0 && (
+            {subject.prerequisites.length > 0 && (
+              <div className="mt-1.5">
                 <span className="font-body text-xs text-slate-400 dark:text-slate-500">
                   Requires {subject.prerequisites.join(", ")}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           <div className="shrink-0 text-right">
             <p className="font-display text-2xl tabular-nums text-navy-700 dark:text-mist-100">
