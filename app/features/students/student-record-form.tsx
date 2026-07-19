@@ -4,14 +4,14 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import { studentSchema } from "~/schemas/student.schema";
-import type { Program } from "~/types/program";
-import type { ClassSet } from "~/types/set";
-import type { Semester } from "~/types/semester";
 import type { SchoolYearOption } from "~/services/school-year.service";
+import type { Program } from "~/types/program";
+import type { Semester } from "~/types/semester";
+import type { ClassSet } from "~/types/set";
 import type { CreateStudentRecordInput } from "~/types/student";
 import type { Subject } from "~/types/subject";
-import { useYearLevels } from "~/hooks/use-year-levels";
 
 type StudentRecordFormProps = {
   programs: Program[];
@@ -46,10 +46,12 @@ export function StudentRecordForm({
   const [programId, setProgramId] = useState("");
   const [yearLevel, setYearLevel] = useState("");
   const [semId, setSemId] = useState("");
+  const [enrolledStatus, setEnrolledStatus] = useState("");
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<Set<number>>(new Set());
 
   const selectedProgram = programs.find((p) => String(p.id) === programId);
   const selectedSemester = semesters.find((s) => String(s.id) === semId);
+  const isIrregular = enrolledStatus === "Irregular";
 
   const yearOptions = yearLevelIds.filter(
     (y) => y <= (selectedProgram?.lengthYears ?? 6),
@@ -63,20 +65,30 @@ export function StudentRecordForm({
       )
     : [];
 
-  const filteredSubjects =
-    selectedProgram && yearLevel && selectedSemester
+  // Irregular students can take subjects from multiple year levels within
+  // the same semester (a semester is still one fixed academic term), so the
+  // picker drops the year-level filter but keeps the semester one.
+  const filteredSubjects = !selectedProgram || !selectedSemester
+    ? []
+    : isIrregular
       ? subjects.filter(
           (s) =>
             s.program === selectedProgram.code &&
-            String(s.yearLevel) === yearLevel &&
             s.semester === selectedSemester.semesterNumber,
         )
-      : [];
+      : yearLevel
+        ? subjects.filter(
+            (s) =>
+              s.program === selectedProgram.code &&
+              String(s.yearLevel) === yearLevel &&
+              s.semester === selectedSemester.semesterNumber,
+          )
+        : [];
 
-  // Subject choices change with program/year/semester; drop stale selections.
+  // Subject choices change with program/year/semester/status; drop stale selections.
   useEffect(() => {
     setSelectedSubjectIds(new Set());
-  }, [programId, yearLevel, semId]);
+  }, [programId, yearLevel, semId, enrolledStatus]);
 
   const allSubjectsSelected =
     filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
@@ -109,7 +121,7 @@ export function StudentRecordForm({
       yearLevel,
       setId: String(data.get("student-set") ?? ""),
       studentType: String(data.get("student-type") ?? ""),
-      enrolledStatus: String(data.get("student-status") ?? ""),
+      enrolledStatus,
       syId: String(data.get("student-sy") ?? ""),
       semId,
       subjectIds: Array.from(selectedSubjectIds),
@@ -143,7 +155,7 @@ export function StudentRecordForm({
             id="student-id"
             label="Student ID"
             type="text"
-            placeholder="Leave blank to auto-assign"
+            placeholder="Optional"
             maxLength={50}
           />
 
@@ -202,7 +214,8 @@ export function StudentRecordForm({
                   ...academicStatuses.map((s) => ({ value: s, label: s })),
                 ]}
                 name="student-status"
-                defaultValue=""
+                value={enrolledStatus}
+                onValueChange={(v) => setEnrolledStatus(v as string)}
               >
                 <SelectTrigger id="student-status">
                   <SelectValue />
@@ -359,8 +372,10 @@ export function StudentRecordForm({
             <div className="mt-1 flex max-h-48 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10">
               {filteredSubjects.length === 0 ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {selectedProgram && yearLevel && semId
-                    ? "No curriculum subjects found for this program, year, and semester."
+                  {selectedProgram && semId && (isIrregular || yearLevel)
+                    ? isIrregular
+                      ? "No curriculum subjects found for this program and semester."
+                      : "No curriculum subjects found for this program, year, and semester."
                     : "Select a program, year level, and semester to list subjects."}
                 </p>
               ) : (
