@@ -264,7 +264,7 @@ function SchedulesNewPage() {
     setGenerationConflicts([]);
   }
 
-  function handleYearLevelChange(yl: YearLevel) {
+  function handleYearLevelChange(yl: YearLevel | "") {
     setSelectedYearLevel(yl);
     setSelectedSetId("");
     setSlots([]);
@@ -556,7 +556,7 @@ function SchedulesNewPage() {
                   ...availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) })),
                 ]}
                 value={String(selectedYearLevel)}
-                onValueChange={(v) => handleYearLevelChange(Number(v) as YearLevel)}
+                onValueChange={(v) => handleYearLevelChange(v === "" ? "" : (Number(v) as YearLevel))}
                 disabled={contextLocked}
               >
                 <SelectTrigger id="sn-year-level">
