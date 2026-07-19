@@ -155,7 +155,7 @@ export function StudentRecordForm({
             id="student-id"
             label="Student ID"
             type="text"
-            placeholder="Optional"
+            placeholder="Leave blank if not available"
             maxLength={50}
           />
 
