@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
   BellIcon,
   ChevronDownIcon,
@@ -31,6 +31,8 @@ const menuItemClassName =
 export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isSettingsRoute = location.pathname.startsWith("/settings");
 
   function handleLogout() {
     logout();
@@ -39,14 +41,40 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
   return (
     <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-surface/90">
+      {/* Settings routes hide the main app Sidebar on desktop, so the toggle
+          has nothing to do there — show the brand lockup instead. It still
+          opens the mobile drawer below lg. */}
       <button
         type="button"
         onClick={onToggleSidebar}
         aria-label="Toggle navigation menu"
-        className={iconButtonClassName}
+        className={`${iconButtonClassName} ${isSettingsRoute ? "lg:hidden" : ""}`}
       >
         <MenuIcon />
       </button>
+      {isSettingsRoute && (
+        <Link
+          to="/dashboard"
+          aria-label="GWC Class Scheduling — dashboard"
+          className="hidden items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 lg:flex"
+        >
+          <img
+            src="/images/logos/gwc-logo.avif"
+            alt="GWC logo"
+            width={28}
+            height={28}
+            className="size-7 object-contain"
+          />
+          <span className="flex flex-col items-center text-center leading-none">
+            <span className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+              GWC
+            </span>
+            <span className="-mt-1 font-body text-[0.65rem] tracking-wide text-navy-500 dark:text-navy-300">
+              Class Scheduling
+            </span>
+          </span>
+        </Link>
+      )}
 
       <div className="flex-1" />
 

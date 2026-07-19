@@ -1,6 +1,6 @@
 ﻿import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { AuthGuard } from "~/auth/auth-guard";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { LayoutSidebarIcon } from "~/components/ui/icons";
@@ -26,6 +26,8 @@ export default function AppShell() {
 
 function Shell() {
   const justLoggedIn = useJustLoggedIn();
+  const location = useLocation();
+  const isSettingsRoute = location.pathname.startsWith("/settings");
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(COLLAPSED_KEY) === "1";
@@ -77,20 +79,22 @@ function Shell() {
     <div className="flex min-h-dvh bg-slate-50 dark:bg-surface">
       {justLoggedIn && <DashboardIntroOverlay />}
 
-      {/* Desktop sidebar */}
-      <motion.div
-        className="sticky top-0 hidden h-dvh lg:block"
-        initial={{ opacity: 0, x: -16 }}
-        animate={{ opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE_OUT } }}
-      >
-        <Sidebar
-          collapsed={collapsed}
-          onExpand={() => setCollapsedPersisted(false)}
-          onNavigate={() => setMobileOpen(false)}
-        />
-      </motion.div>
+      {/* Desktop sidebar — settings routes use their own SettingsSidebar instead */}
+      {!isSettingsRoute && (
+        <motion.div
+          className="sticky top-0 hidden h-dvh lg:block"
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE_OUT } }}
+        >
+          <Sidebar
+            collapsed={collapsed}
+            onExpand={() => setCollapsedPersisted(false)}
+            onNavigate={() => setMobileOpen(false)}
+          />
+        </motion.div>
+      )}
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer — still reachable from the navbar hamburger on every route, including settings */}
       <>
         <button
           type="button"

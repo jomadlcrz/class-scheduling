@@ -4,9 +4,8 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { CheckIcon, ChevronRightIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
-import { SettingsCard } from "~/components/ui/settings-card";
+import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { Breadcrumb } from "~/layouts/breadcrumb";
-import { PageHeader } from "~/layouts/page-header";
 import { authService } from "~/services/auth.service";
 
 type SecurityRowProps = {
@@ -130,42 +129,35 @@ export function SecuritySettings() {
   return (
     <div>
       <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Account & Security" }]} />
-      <PageHeader
-        title="Account & Security"
-        description="Manage how you sign in and keep your account secure."
-      />
+      <SettingsPageHeader title="Account & Security" />
 
-      <div className="mt-6">
-        <SettingsCard title="Password & Security">
-          <div className="flex flex-col divide-y divide-slate-100 dark:divide-white/8">
-            <SecurityRow
-              label="Password"
-              description="Change the password you use to sign in."
-              trailing={
-                <span className="font-body text-sm font-medium text-blue-700 dark:text-blue-400">
-                  Change Password
-                </span>
-              }
-              onClick={() => setPasswordModalOpen(true)}
-            />
-            <SecurityRow
-              label="Two-Factor Authentication"
-              description="Add an extra layer of security when you sign in."
-              trailing={
-                <Badge tone={twoFactorEnabled ? "emerald" : "slate"}>
-                  {twoFactorEnabled ? "Enabled" : "Disabled"}
-                </Badge>
-              }
-              onClick={() => setTwoFactorModalOpen(true)}
-            />
-            <SecurityRow
-              label="Active Sessions"
-              description="See where you're signed in."
-              trailing={<Badge tone="slate">1 active</Badge>}
-              onClick={() => setSessionsModalOpen(true)}
-            />
-          </div>
-        </SettingsCard>
+      <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">
+        <SecurityRow
+          label="Password"
+          description="Change the password you use to sign in."
+          trailing={
+            <span className="font-body text-sm font-medium text-blue-700 dark:text-blue-400">
+              Change Password
+            </span>
+          }
+          onClick={() => setPasswordModalOpen(true)}
+        />
+        <SecurityRow
+          label="Two-Factor Authentication"
+          description="Add an extra layer of security when you sign in."
+          trailing={
+            <Badge tone={twoFactorEnabled ? "emerald" : "slate"}>
+              {twoFactorEnabled ? "Enabled" : "Disabled"}
+            </Badge>
+          }
+          onClick={() => setTwoFactorModalOpen(true)}
+        />
+        <SecurityRow
+          label="Active Sessions"
+          description="See where you're signed in."
+          trailing={<Badge tone="slate">1 active</Badge>}
+          onClick={() => setSessionsModalOpen(true)}
+        />
       </div>
 
       <Modal open={passwordModalOpen} onClose={closePasswordModal} title="Change Password">

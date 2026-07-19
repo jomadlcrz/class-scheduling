@@ -16,7 +16,7 @@ export type SettingsGroup = {
   sections: SettingsSection[];
 };
 
-/** Single source for settings navigation — the hub cards and the sidebar rail both render from this. */
+/** Single source for settings navigation — the hub cards and the mobile quick-switcher both render from this. */
 export const SETTINGS_GROUPS: SettingsGroup[] = [
   {
     label: "Account",

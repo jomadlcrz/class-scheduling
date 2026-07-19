@@ -10,7 +10,6 @@ import {
   ClockIcon,
   DashboardIcon,
   GraduationCapIcon,
-  SettingsIcon,
   ShieldIcon,
   UserIcon,
   UsersIcon,
@@ -96,12 +95,6 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Users", to: "/users", icon: <UserIcon />, roles: ["admin"] },
       { label: "Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
       { label: "Audit Log", to: "/audit", icon: <ClockIcon />, roles: ["admin"] },
-    ],
-  },
-  {
-    label: "",
-    items: [
-      { label: "Settings", to: "/settings", icon: <SettingsIcon />, roles: ALL_ROLES },
     ],
   },
 ];

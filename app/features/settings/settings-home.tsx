@@ -2,7 +2,7 @@
 import { ChevronRightIcon } from "~/components/ui/icons";
 import { visibleGroups } from "~/features/settings/sections";
 import { useAuth } from "~/hooks/use-auth";
-import { PageHeader } from "~/layouts/page-header";
+import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 
 export function SettingsHome() {
   const { user } = useAuth();
@@ -13,7 +13,7 @@ export function SettingsHome() {
 
   return (
     <div>
-      <PageHeader title="Settings" description="Manage your account, preferences, and system options." />
+      <SettingsPageHeader title="Settings" hideMobileNav />
 
       <div className="mt-6 flex flex-col gap-8">
         {groups.map((group) => (
