@@ -110,6 +110,13 @@ export function StudentRecordForm({
     e.preventDefault();
     const data = new FormData(e.currentTarget);
 
+    // Irregular students don't belong to a standard set, but the backend
+    // still requires a set_id — the Set field is hidden for them, so fall
+    // back to any set matching their program/year level.
+    const setId = isIrregular
+      ? String(filteredSets[0]?.id ?? "")
+      : String(data.get("student-set") ?? "");
+
     const result = studentSchema.safeParse({
       studentId: String(data.get("student-id") ?? "").trim(),
       firstName: String(data.get("student-first-name") ?? "").trim(),
@@ -119,7 +126,7 @@ export function StudentRecordForm({
       email: String(data.get("student-email") ?? "").trim(),
       programId,
       yearLevel,
-      setId: String(data.get("student-set") ?? ""),
+      setId,
       studentType: String(data.get("student-type") ?? ""),
       enrolledStatus,
       syId: String(data.get("student-sy") ?? ""),
@@ -258,7 +265,7 @@ export function StudentRecordForm({
             </Select>
           </FieldChrome>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className={`grid gap-3 ${isIrregular ? "grid-cols-1" : "grid-cols-2"}`}>
             <FieldChrome id="student-year" label="Year Level" required>
               <Select
                 items={[
@@ -282,29 +289,31 @@ export function StudentRecordForm({
                 </SelectContent>
               </Select>
             </FieldChrome>
-            <FieldChrome id="student-set" label="Set" required>
-              <Select
-                items={[
-                  { value: "", label: "Select a set" },
-                  ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode })),
-                ]}
-                name="student-set"
-                key={`${programId}|${yearLevel}`}
-                defaultValue=""
-              >
-                <SelectTrigger id="student-set">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Select a set</SelectItem>
-                  {filteredSets.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.setCode}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
+            {!isIrregular && (
+              <FieldChrome id="student-set" label="Set" required>
+                <Select
+                  items={[
+                    { value: "", label: "Select a set" },
+                    ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode })),
+                  ]}
+                  name="student-set"
+                  key={`${programId}|${yearLevel}`}
+                  defaultValue=""
+                >
+                  <SelectTrigger id="student-set">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Select a set</SelectItem>
+                    {filteredSets.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.setCode}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldChrome>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

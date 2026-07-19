@@ -66,8 +66,8 @@ const NAV_GROUPS: NavGroup[] = [
         subItems: [
           { label: "Buildings", to: "/buildings", roles: ["registrar"] },
           { label: "Rooms", to: "/rooms", roles: ["registrar"] },
-          { label: "Departments", to: "/departments", roles: ["registrar", "dean"] },
-          { label: "Programs", to: "/programs", roles: ["registrar", "dean"] },
+          { label: "Departments", to: "/departments", roles: ["registrar"] },
+          { label: "Programs", to: "/programs", roles: ["registrar"] },
           { label: "Curriculum", to: "/curriculum", roles: ["registrar", "dean"] },
           { label: "Subjects", to: "/subjects", roles: ["registrar", "dean"], matchPrefix: true },
           { label: "Sets", to: "/sets", roles: ["registrar", "dean"] },
