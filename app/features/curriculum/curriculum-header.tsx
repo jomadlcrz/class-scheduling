@@ -1,7 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { GraduationCapIcon } from "~/components/ui/icons";
-import { FieldChrome } from "~/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import type { ProgramCurriculum } from "~/types/curriculum";
 import type { Program } from "~/types/program";
@@ -39,28 +38,15 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
             </span>
           )}
           <div className="min-w-0 max-w-xs">
-            <FieldChrome id="curriculum-program" label="Program">
-              <Select
-                items={[
-                  { value: "", label: "Select a program…" },
-                  ...programs.map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` })),
-                ]}
-                value={selected}
-                onValueChange={(v) => onChange((v as string) ?? "")}
-              >
-                <SelectTrigger id="curriculum-program">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Select a program…</SelectItem>
-                  {programs.map((p) => (
-                    <SelectItem key={p.id} value={p.code}>
-                      {p.code} — {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
+            <FilterDropdown
+              id="curriculum-program"
+              label="Program"
+              allLabel="Select a program…"
+              allValue=""
+              options={programs.map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+              value={selected}
+              onChange={onChange}
+            />
           </div>
         </div>
 

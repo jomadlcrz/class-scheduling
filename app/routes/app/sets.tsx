@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { SetForm } from "~/features/sets/set-form";
 import { SetTable } from "~/features/sets/set-table";
@@ -129,50 +129,22 @@ function SetsPage() {
               className={`${inputClassName} pl-9 pr-4`}
             />
           </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[
-                { value: "all", label: "All programs" },
-                ...(programs ?? []).map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` })),
-              ]}
-              value={program}
-              onValueChange={(v) => setProgram(v as string)}
-            >
-              <SelectTrigger id="set-program-filter" aria-label="Program">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All programs</SelectItem>
-                {(programs ?? []).map((p) => (
-                  <SelectItem key={p.code} value={p.code}>
-                    {p.code} — {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[
-                { value: "all", label: "All year levels" },
-                ...yearLevelIds.map((year) => ({ value: String(year), label: yearLevelLabel(year) })),
-              ]}
-              value={yearLevel}
-              onValueChange={(v) => setYearLevel(String(v))}
-            >
-              <SelectTrigger id="set-year-filter" aria-label="Year Level">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All year levels</SelectItem>
-                {yearLevelIds.map((year) => (
-                  <SelectItem key={year} value={String(year)}>
-                    {yearLevelLabel(year)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FilterDropdown
+            id="set-program-filter"
+            label="Program"
+            allLabel="All programs"
+            options={(programs ?? []).map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+            value={program}
+            onChange={setProgram}
+          />
+          <FilterDropdown
+            id="set-year-filter"
+            label="Year Level"
+            allLabel="All year levels"
+            options={yearLevelIds.map((year) => ({ value: String(year), label: yearLevelLabel(year) }))}
+            value={yearLevel}
+            onChange={(v) => setYearLevel(String(v))}
+          />
         </div>
 
         {sets === null ? (

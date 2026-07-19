@@ -4,11 +4,11 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { DepartmentForm } from "~/features/departments/department-form";
 import { DepartmentGridView } from "~/features/departments/department-grid-view";
@@ -126,28 +126,14 @@ function DepartmentsPage() {
               />
             </div>
             <div className="flex w-full items-end justify-between gap-3 sm:w-auto sm:justify-start">
-              <div className="w-36 sm:w-44">
-                <Select
-                  items={[
-                    { value: "all", label: "All buildings" },
-                    ...buildings.map((b) => ({ value: b.name, label: b.name })),
-                  ]}
-                  value={buildingFilter}
-                  onValueChange={(v) => setBuildingFilter(v as string)}
-                >
-                  <SelectTrigger id="dept-building-filter" aria-label="Building">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All buildings</SelectItem>
-                    {buildings.map((b) => (
-                      <SelectItem key={b.id} value={b.name}>
-                        {b.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <FilterDropdown
+                id="dept-building-filter"
+                label="Building"
+                allLabel="All buildings"
+                options={buildings.map((b) => ({ value: b.name, label: b.name }))}
+                value={buildingFilter}
+                onChange={setBuildingFilter}
+              />
               <div className="sm:hidden">
                 <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Department view" />
               </div>

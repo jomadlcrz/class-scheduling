@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { RoomForm } from "~/features/facilities/rooms/room-form";
 import { RoomTable } from "~/features/facilities/rooms/room-table";
@@ -142,69 +142,30 @@ function RoomsPage() {
               className={`${inputClassName} pl-9 pr-4`}
             />
           </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[
-                { value: "all", label: "All buildings" },
-                ...buildings.map((b) => ({ value: String(b.id), label: b.name })),
-              ]}
-              value={buildingFilter}
-              onValueChange={(v) => setBuildingFilter(v as string)}
-            >
-              <SelectTrigger id="room-building-filter" aria-label="Building">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All buildings</SelectItem>
-                {buildings.map((b) => (
-                  <SelectItem key={b.id} value={String(b.id)}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[{ value: "all", label: "All types" }, ...roomTypes.map((t) => ({ value: t, label: t }))]}
-              value={typeFilter}
-              onValueChange={(v) => setTypeFilter(v as string)}
-            >
-              <SelectTrigger id="room-type-filter" aria-label="Type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {roomTypes.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[
-                { value: "all", label: "All statuses" },
-                ...roomStatuses.map((s) => ({ value: s, label: s })),
-              ]}
-              value={statusFilter}
-              onValueChange={(v) => setStatusFilter(v as string)}
-            >
-              <SelectTrigger id="room-status-filter" aria-label="Status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                {roomStatuses.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FilterDropdown
+            id="room-building-filter"
+            label="Building"
+            allLabel="All buildings"
+            options={buildings.map((b) => ({ value: String(b.id), label: b.name }))}
+            value={buildingFilter}
+            onChange={setBuildingFilter}
+          />
+          <FilterDropdown
+            id="room-type-filter"
+            label="Type"
+            allLabel="All types"
+            options={roomTypes.map((t) => ({ value: t, label: t }))}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
+          <FilterDropdown
+            id="room-status-filter"
+            label="Status"
+            allLabel="All statuses"
+            options={roomStatuses.map((s) => ({ value: s, label: s }))}
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
         </div>
 
         {rooms === null ? (

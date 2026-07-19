@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ProgramForm } from "~/features/programs/program-form";
 import { ProgramTable } from "~/features/programs/program-table";
@@ -130,47 +130,22 @@ function ProgramsPage() {
               className={`${inputClassName} pl-9 pr-4`}
             />
           </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[
-                { value: "all", label: "All departments" },
-                ...departments.map((d) => ({ value: d.code, label: d.code })),
-              ]}
-              value={deptFilter}
-              onValueChange={(v) => setDeptFilter(v as string)}
-            >
-              <SelectTrigger id="prog-dept-filter" aria-label="Department">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All departments</SelectItem>
-                {departments.map((d) => (
-                  <SelectItem key={d.id} value={d.code}>
-                    {d.code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-36 sm:w-44">
-            <Select
-              items={[{ value: "all", label: "All types" }, ...PROGRAM_TYPES.map((t) => ({ value: t, label: t }))]}
-              value={typeFilter}
-              onValueChange={(v) => setTypeFilter(v as string)}
-            >
-              <SelectTrigger id="prog-type-filter" aria-label="Type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {PROGRAM_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FilterDropdown
+            id="prog-dept-filter"
+            label="Department"
+            allLabel="All departments"
+            options={departments.map((d) => ({ value: d.code, label: d.code }))}
+            value={deptFilter}
+            onChange={setDeptFilter}
+          />
+          <FilterDropdown
+            id="prog-type-filter"
+            label="Type"
+            allLabel="All types"
+            options={PROGRAM_TYPES.map((t) => ({ value: t, label: t }))}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
         </div>
 
         {programsList === null ? (
