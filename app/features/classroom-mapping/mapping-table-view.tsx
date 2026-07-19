@@ -1,4 +1,5 @@
 import { useMemo, useRef } from "react";
+import { UserSmallIcon } from "~/components/ui/icons";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
 
 import {
@@ -90,7 +91,10 @@ function RoomDayRow({ room, day, slots, showRoomCell }: {
           <span className="block font-display text-base tracking-tight text-slate-800 dark:text-white">
             {room.name}
           </span>
-
+          <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-body text-[0.65rem] text-slate-500 dark:bg-white/10 dark:text-slate-400">
+            <UserSmallIcon />
+            {room.entries.length} class{room.entries.length !== 1 ? "es" : ""}
+          </span>
         </td>
       )}
       <td className={`sticky z-10 border-r-2 border-b border-slate-200 bg-white px-3 py-2 align-middle font-body text-xs font-bold uppercase tracking-widest dark:border-white/10 dark:bg-slate-900 ${ds.color}`}

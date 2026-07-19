@@ -104,71 +104,77 @@ function ClassroomMappingPage() {
 
       <div className="mt-4 flex flex-col gap-4">
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem] md:items-end">
-          <div className="grid grid-cols-3 gap-3">
-            <Select
-              items={
-                contextLoading
-                  ? [{ value: "", label: "Loading…" }]
-                  : schoolYears.length === 0
-                    ? [{ value: "", label: "No school year" }]
-                    : schoolYears.map((y) => ({ value: y, label: y }))
-              }
-              value={schoolYear}
-              onValueChange={(v) => setSchoolYear(v as string)}
-            >
-              <SelectTrigger id="cm-year" aria-label="School Year">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {contextLoading ? (
-                  <SelectItem value="">Loading…</SelectItem>
-                ) : schoolYears.length === 0 ? (
-                  <SelectItem value="">No school year</SelectItem>
-                ) : (
-                  schoolYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)
-                )}
-              </SelectContent>
-            </Select>
-            <Select
-              items={
-                contextLoading
-                  ? [{ value: "", label: "Loading…" }]
-                  : semesters.length === 0
-                    ? [{ value: "", label: "No semester" }]
-                    : semesters.map((s) => ({ value: s.semester, label: s.semester }))
-              }
-              value={semester}
-              onValueChange={(v) => setSemester(v as string)}
-            >
-              <SelectTrigger id="cm-sem" aria-label="Semester">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {contextLoading ? (
-                  <SelectItem value="">Loading…</SelectItem>
-                ) : semesters.length === 0 ? (
-                  <SelectItem value="">No semester</SelectItem>
-                ) : (
-                  semesters.map(s => <SelectItem key={s.id} value={s.semester}>{s.semester}</SelectItem>)
-                )}
-              </SelectContent>
-            </Select>
-            <Select
-              items={[
-                { value: "all", label: "All buildings" },
-                ...buildings.map((b) => ({ value: String(b.id), label: b.name })),
-              ]}
-              value={buildingFilter}
-              onValueChange={(v) => setBuildingFilter(v as string)}
-            >
-              <SelectTrigger id="cm-building" aria-label="Building">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All buildings</SelectItem>
-                {buildings.map(b => <SelectItem key={b.id} value={String(b.id)}>{b.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-3 gap-3 md:flex md:flex-wrap">
+            <div className="md:w-44">
+              <Select
+                items={
+                  contextLoading
+                    ? [{ value: "", label: "Loading…" }]
+                    : schoolYears.length === 0
+                      ? [{ value: "", label: "No school year" }]
+                      : schoolYears.map((y) => ({ value: y, label: y }))
+                }
+                value={schoolYear}
+                onValueChange={(v) => setSchoolYear(v as string)}
+              >
+                <SelectTrigger id="cm-year" aria-label="School Year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {contextLoading ? (
+                    <SelectItem value="">Loading…</SelectItem>
+                  ) : schoolYears.length === 0 ? (
+                    <SelectItem value="">No school year</SelectItem>
+                  ) : (
+                    schoolYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:w-44">
+              <Select
+                items={
+                  contextLoading
+                    ? [{ value: "", label: "Loading…" }]
+                    : semesters.length === 0
+                      ? [{ value: "", label: "No semester" }]
+                      : semesters.map((s) => ({ value: s.semester, label: s.semester }))
+                }
+                value={semester}
+                onValueChange={(v) => setSemester(v as string)}
+              >
+                <SelectTrigger id="cm-sem" aria-label="Semester">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {contextLoading ? (
+                    <SelectItem value="">Loading…</SelectItem>
+                  ) : semesters.length === 0 ? (
+                    <SelectItem value="">No semester</SelectItem>
+                  ) : (
+                    semesters.map(s => <SelectItem key={s.id} value={s.semester}>{s.semester}</SelectItem>)
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:w-44">
+              <Select
+                items={[
+                  { value: "all", label: "All buildings" },
+                  ...buildings.map((b) => ({ value: String(b.id), label: b.name })),
+                ]}
+                value={buildingFilter}
+                onValueChange={(v) => setBuildingFilter(v as string)}
+              >
+                <SelectTrigger id="cm-building" aria-label="Building">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All buildings</SelectItem>
+                  {buildings.map(b => <SelectItem key={b.id} value={String(b.id)}>{b.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="relative w-full md:self-end">
