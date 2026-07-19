@@ -18,7 +18,7 @@ export function SettingsRow({ label, htmlFor, hint, children }: SettingsRowProps
     <div className="flex flex-col gap-2 py-5 first:pt-0 last:pb-0 sm:flex-row sm:gap-6">
       <label
         htmlFor={htmlFor}
-        className="shrink-0 font-body text-sm font-medium text-slate-500 dark:text-slate-400 sm:w-40 sm:pt-2 sm:text-right"
+        className="shrink-0 font-body text-sm font-semibold text-slate-500 dark:text-slate-400 sm:w-40 sm:pt-2 sm:text-right"
       >
         {label}
       </label>

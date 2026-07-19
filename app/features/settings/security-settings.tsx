@@ -20,9 +20,9 @@ function SecurityRow({ label, description, trailing, onClick }: SecurityRowProps
   const content = (
     <>
       <div>
-        <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">{label}</p>
+        <p className="font-body text-sm font-semibold text-slate-500 dark:text-slate-400">{label}</p>
         {description && (
-          <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">{description}</p>
+          <p className="mt-1.5 font-body text-xs text-slate-400 dark:text-slate-500">{description}</p>
         )}
       </div>
       <div className="flex shrink-0 items-center gap-2">
@@ -36,7 +36,9 @@ function SecurityRow({ label, description, trailing, onClick }: SecurityRowProps
 
   if (!onClick) {
     return (
-      <div className="flex w-full items-center justify-between gap-4 py-4 opacity-60">{content}</div>
+      <div className="flex w-full items-center justify-between gap-4 rounded-xl px-4 py-4 opacity-60">
+        {content}
+      </div>
     );
   }
 
@@ -44,7 +46,7 @@ function SecurityRow({ label, description, trailing, onClick }: SecurityRowProps
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full cursor-pointer items-center justify-between gap-4 py-4 text-left transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/5"
+      className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-xl px-4 py-4 text-left transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8"
     >
       {content}
     </button>
@@ -89,7 +91,7 @@ function ActiveSessionsModalContent() {
       <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4 dark:border-white/10">
         <div>
           <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">This device</p>
-          <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-1.5 font-body text-xs text-slate-400 dark:text-slate-500">
             You're currently signed in from this browser.
           </p>
         </div>

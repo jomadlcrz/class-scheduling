@@ -34,7 +34,7 @@ export function SettingsMobileNav() {
         <div className="flex flex-col gap-5">
           {groups.map((group) => (
             <div key={group.label}>
-              <p className="px-2.5 pb-1.5 font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+              <p className="px-2.5 pb-1.5 font-body text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-slate-400 dark:text-slate-500">
                 {group.label}
               </p>
               <div className="flex flex-col gap-0.5">
