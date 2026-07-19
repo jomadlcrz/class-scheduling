@@ -35,7 +35,7 @@ type ViewScheduleResponse = {
   class_time: string;
   class_duration: string;
   dept_abbrev: string | null;
-  faculty_name: string;
+  instructor_name: string;
   room_name: string | null;
   /** Only present when the viewer is a STUDENT (StudentAcademic.enrolled_status). */
   academic_status?: string;
@@ -80,7 +80,7 @@ async function view(): Promise<Schedule[]> {
       departmentCode: r.dept_abbrev ?? "",
       yearLevel: ([1, 2, 3, 4].includes(yearLevel) ? yearLevel : 1) as YearLevel,
       facultyId: "",
-      facultyName: r.faculty_name,
+      facultyName: r.instructor_name,
       roomId: "",
       roomName: r.room_name ?? "",
       buildingCode: "",
@@ -114,8 +114,8 @@ type ScheduleSubjectsResponse = {
     subject_code: string;
     descriptive_title: string;
     subject_type: string;
-    faculties: {
-      faculty_id: number;
+    instructors: {
+      instructor_id: number;
       full_name: string;
       max_weekly_hours: number | string | null;
       current_weekly_hours: number | string | null;
@@ -143,8 +143,8 @@ async function listScheduleSubjects(params: {
     code: s.subject_code,
     title: s.descriptive_title,
     subjectType: s.subject_type,
-    faculties: (s.faculties ?? []).map((f) => ({
-      id: f.faculty_id,
+    faculties: (s.instructors ?? []).map((f) => ({
+      id: f.instructor_id,
       fullName: f.full_name,
       maxWeeklyHours: f.max_weekly_hours === null ? null : Number(f.max_weekly_hours),
       currentWeeklyHours: f.current_weekly_hours === null ? null : Number(f.current_weekly_hours),
@@ -232,11 +232,11 @@ type AutoGenerateResponse = {
       duration: number;
       session_type: "Lecture" | "Lab";
       mode: string;
-      faculty_id: number | null;
-      faculty_name: string | null;
+      instructor_id: number | null;
+      instructor_name: string | null;
       room_id: number | null;
       room_name: string | null;
-      faculty_choices: { faculty_id: number; faculty_name: string }[];
+      instructor_choices: { instructor_id: number; instructor_name: string }[];
       room_choices: { room_id: number; room_name: string }[];
       start_time: string;
       end_time: string;
@@ -282,13 +282,13 @@ async function autoGenerate(input: {
       day: DAY_BY_LABEL[day.day_of_week] ?? ("M" as Day),
       startTime: parseTime12h(s.start_time),
       endTime: parseTime12h(s.end_time),
-      facultyId: s.faculty_id,
-      facultyName: s.faculty_name ?? "",
+      facultyId: s.instructor_id,
+      facultyName: s.instructor_name ?? "",
       roomId: s.room_id,
       roomName: s.room_name ?? "",
-      facultyChoices: (s.faculty_choices ?? []).map((f) => ({
-        id: f.faculty_id,
-        fullName: f.faculty_name,
+      facultyChoices: (s.instructor_choices ?? []).map((f) => ({
+        id: f.instructor_id,
+        fullName: f.instructor_name,
       })),
       roomChoices: (s.room_choices ?? []).map((r) => ({
         id: r.room_id,
@@ -341,8 +341,8 @@ async function createRegular(input: {
         endTime: s.endTime,
         subjectId: s.subjectId,
         mode: s.mode,
-        facultyId: s.facultyId,
-        facultyName: s.facultyName,
+        instructorId: s.facultyId,
+        instructorName: s.facultyName,
         roomId: s.roomId,
       })),
     })),
