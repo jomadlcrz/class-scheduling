@@ -17,11 +17,3 @@ export type User = {
   /** Links a student account to its Student record (drives the student schedule view). */
   studentId?: string;
 };
-
-export type CreateUserInput = {
-  name: string;
-  email: string;
-  role: Role;
-};
-
-export type UpdateUserInput = Partial<CreateUserInput>;

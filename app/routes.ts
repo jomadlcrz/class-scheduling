@@ -13,7 +13,7 @@ export default [
   // Authenticated area â€” AppShell provides theme, auth guard, and chrome.
   layout("layouts/app-shell.tsx", [
     route("dashboard", "routes/app/dashboard.tsx"),
-    route("users", "routes/app/users.tsx"),
+    route("administrators", "routes/app/administrators.tsx"),
     route("permissions", "routes/app/permissions.tsx"),
     route("buildings", "routes/app/buildings.tsx"),
     route("rooms", "routes/app/rooms.tsx"),
@@ -36,8 +36,6 @@ export default [
     route("students", "routes/app/students.tsx"),
     route("classroom-mapping", "routes/app/classroom-mapping.tsx"),
     route("audit", "routes/app/audit.tsx"),
-    route("conflicts", "routes/app/conflicts.tsx"),
-    route("reports", "routes/app/reports.tsx"),
 
     layout("layouts/settings-layout.tsx", [
       route("settings", "routes/app/settings/index.tsx"),

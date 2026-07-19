@@ -2,10 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router";
 import {
-  AlertTriangleIcon,
   BookIcon,
   CalendarIcon,
-  ChartIcon,
   ChevronRightIcon,
   ClockIcon,
   DashboardIcon,
@@ -53,7 +51,6 @@ const NAV_GROUPS: NavGroup[] = [
           },
           { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
           { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
-          { label: "Conflicts", to: "/conflicts", icon: <AlertTriangleIcon />, roles: ["registrar", "dean", "faculty"] },
         ],
       },
   {
@@ -78,21 +75,15 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Academic Community",
     items: [
+      { label: "Administrators", to: "/administrators", icon: <UserIcon />, roles: ["admin"] },
       { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin"] },
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
       { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin"] },
     ],
   },
   {
-    label: "Insights",
-    items: [
-      { label: "Reports", to: "/reports", icon: <ChartIcon />, roles: ["admin", "registrar", "dean"] },
-    ],
-  },
-  {
     label: "Administration",
     items: [
-      { label: "Users", to: "/users", icon: <UserIcon />, roles: ["admin"] },
       { label: "Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
       { label: "Audit Log", to: "/audit", icon: <ClockIcon />, roles: ["admin"] },
     ],

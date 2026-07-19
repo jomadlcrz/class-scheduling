@@ -45,4 +45,4 @@ There is no unit/component test suite and no ESLint/Prettier configured — `tsc
 
 ## Known issue
 
-`app/services/conflict.service.ts` references undefined `schedules`/`delay` identifiers with no imports — leftover mock-era code not yet reconciled with the backend-truth convention. Worth fixing if you touch the conflicts feature; not otherwise in scope.
+`app/services/administrator.service.ts` is a UI-only in-memory mock (no backend endpoints exist yet for admin/registrar account management) — swap its internals for real `apiGet`/`apiPost`/`apiPatch`/`apiDelete` calls (see `faculty.service.ts`) once the backend exposes them.
