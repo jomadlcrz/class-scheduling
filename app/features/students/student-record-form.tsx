@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -46,6 +46,7 @@ export function StudentRecordForm({
   const [programId, setProgramId] = useState("");
   const [yearLevel, setYearLevel] = useState("");
   const [semId, setSemId] = useState("");
+  const [selectedSubjectIds, setSelectedSubjectIds] = useState<Set<number>>(new Set());
 
   const selectedProgram = programs.find((p) => String(p.id) === programId);
   const selectedSemester = semesters.find((s) => String(s.id) === semId);
@@ -72,6 +73,27 @@ export function StudentRecordForm({
         )
       : [];
 
+  // Subject choices change with program/year/semester; drop stale selections.
+  useEffect(() => {
+    setSelectedSubjectIds(new Set());
+  }, [programId, yearLevel, semId]);
+
+  const allSubjectsSelected =
+    filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
+
+  function toggleSubject(subjectId: number, checked: boolean) {
+    setSelectedSubjectIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(subjectId);
+      else next.delete(subjectId);
+      return next;
+    });
+  }
+
+  function toggleSelectAll(checked: boolean) {
+    setSelectedSubjectIds(checked ? new Set(filteredSubjects.map((s) => s.id)) : new Set());
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -90,7 +112,7 @@ export function StudentRecordForm({
       enrolledStatus: String(data.get("student-status") ?? ""),
       syId: String(data.get("student-sy") ?? ""),
       semId,
-      subjectIds: data.getAll("student-subjects").map(Number),
+      subjectIds: Array.from(selectedSubjectIds),
     });
     if (!result.success) {
       setError(result.error.issues[0].message);
@@ -321,13 +343,20 @@ export function StudentRecordForm({
           </div>
 
           <div>
-            <span className="font-body text-sm text-slate-600 dark:text-slate-300">
-              Enrolled Subjects
-            </span>
-            <div
-              key={`${programId}|${yearLevel}|${semId}`}
-              className="mt-1 flex max-h-48 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10"
-            >
+            <div className="flex items-center justify-between">
+              <span className="font-body text-sm text-slate-600 dark:text-slate-300">
+                Enrolled Subjects
+              </span>
+              {filteredSubjects.length > 0 && (
+                <Checkbox
+                  id="student-subjects-select-all"
+                  label="Select All"
+                  checked={allSubjectsSelected}
+                  onChange={toggleSelectAll}
+                />
+              )}
+            </div>
+            <div className="mt-1 flex max-h-48 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10">
               {filteredSubjects.length === 0 ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   {selectedProgram && yearLevel && semId
@@ -339,9 +368,9 @@ export function StudentRecordForm({
                   <Checkbox
                     key={s.id}
                     id={`student-subject-${s.id}`}
-                    name="student-subjects"
-                    value={String(s.id)}
                     label={`${s.code} — ${s.title} (${s.units} units)`}
+                    checked={selectedSubjectIds.has(s.id)}
+                    onChange={(checked) => toggleSubject(s.id, checked)}
                   />
                 ))
               )}

@@ -57,6 +57,22 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     mobile: string | null;
     email: string | null;
     has_account: boolean;
+    academics: {
+      student_academic_id: number;
+      year_level: number;
+      program: string;
+      set: string | null;
+      enrolled_status: string;
+      student_type: string;
+      school_year: string | null;
+      semester: string | null;
+    }[];
+    enrolled_subjects: {
+      subject_id: number;
+      subject_code: string;
+      descriptive_title: string;
+      units: number;
+    }[];
   };
 
   let data: StudentAccountResponse[];
@@ -76,6 +92,22 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     mobile: s.mobile,
     email: s.email,
     hasAccount: s.has_account,
+    academics: s.academics.map((a) => ({
+      studentAcademicId: a.student_academic_id,
+      yearLevel: a.year_level,
+      program: a.program,
+      set: a.set,
+      enrolledStatus: a.enrolled_status,
+      studentType: a.student_type,
+      schoolYear: a.school_year,
+      semester: a.semester,
+    })),
+    enrolledSubjects: s.enrolled_subjects.map((es) => ({
+      subjectId: es.subject_id,
+      subjectCode: es.subject_code,
+      descriptiveTitle: es.descriptive_title,
+      units: es.units,
+    })),
   }));
 }
 

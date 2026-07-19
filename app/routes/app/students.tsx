@@ -4,14 +4,14 @@ import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
-import { FieldChrome, Input } from "~/components/ui/input";
+import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ResultState } from "~/components/feedback/result-state";
 import { StudentAccountForm } from "~/features/students/student-account-form";
 import { StudentAccountTable } from "~/features/students/student-account-table";
+import { StudentDetailsModal } from "~/features/students/student-details-modal";
 import { StudentRecordForm } from "~/features/students/student-record-form";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
@@ -59,12 +59,12 @@ function StudentsPage() {
   const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
 
   const [search, setSearch] = useState("");
-  const [accountFilter, setAccountFilter] = useState("all");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdRecord, setCreatedRecord] = useState(false);
   const [accountTarget, setAccountTarget] = useState<StudentAccountRow | null>(null);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
+  const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
 
   useEffect(() => {
     studentService
@@ -84,15 +84,13 @@ function StudentsPage() {
     enumService.getOptions().then(setEnumOptions).catch(() => setEnumOptions(null));
   }, []);
 
-  const resetKey = `${search}|${accountFilter}`;
+  const resetKey = search;
 
   const visibleStudents = useMemo(() => {
     if (!studentList) return [];
     const query = search.trim().toLowerCase();
     return studentList
       .filter((s) => {
-        if (accountFilter === "with" && !s.hasAccount) return false;
-        if (accountFilter === "without" && s.hasAccount) return false;
         if (
           query &&
           !s.firstName.toLowerCase().includes(query) &&
@@ -105,7 +103,7 @@ function StudentsPage() {
         return true;
       })
       .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
-  }, [studentList, search, accountFilter]);
+  }, [studentList, search]);
 
   const pagination = usePagination(visibleStudents, resetKey);
 
@@ -150,36 +148,14 @@ function StudentsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
-          <Input
-            id="student-search"
-            label="Search"
-            type="search"
-            placeholder="Name, student ID, or email…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FieldChrome id="student-account-filter" label="Account">
-            <Select
-              items={[
-                { value: "all", label: "All students" },
-                { value: "with", label: "With account" },
-                { value: "without", label: "No account" },
-              ]}
-              value={accountFilter}
-              onValueChange={(v) => setAccountFilter(v as string)}
-            >
-              <SelectTrigger id="student-account-filter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All students</SelectItem>
-                <SelectItem value="with">With account</SelectItem>
-                <SelectItem value="without">No account</SelectItem>
-              </SelectContent>
-            </Select>
-          </FieldChrome>
-        </div>
+        <Input
+          id="student-search"
+          label="Search"
+          type="search"
+          placeholder="Name, student ID, or email…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
         {loadError ? (
           <ResultState tone="error" title="Unable to load">
@@ -202,6 +178,7 @@ function StudentsPage() {
             <StudentAccountTable
               students={pagination.pageItems}
               onCreateAccount={setAccountTarget}
+              onView={setViewTarget}
             />
             <Pagination
               page={pagination.page}
@@ -262,6 +239,15 @@ function StudentsPage() {
             />
           )
         )}
+      </Modal>
+
+      <Modal
+        open={viewTarget !== null}
+        onClose={() => setViewTarget(null)}
+        title="Student Details"
+        wide
+      >
+        {viewTarget && <StudentDetailsModal student={viewTarget} />}
       </Modal>
     </div>
   );
