@@ -3,7 +3,8 @@ import { ApiError, apiGet } from "~/lib/api";
 /** Irregular students and their enrolled subjects (registrar_admin schedules module). */
 
 type IrregularStudentsResponse = {
-  student_id: string;
+  student_profile_id: number;
+  student_id: string | null;
   first_name: string;
   mid_name: string | null;
   last_name: string;
@@ -21,7 +22,10 @@ type IrregularStudentsResponse = {
 }[];
 
 export type IrregularStudent = {
-  studentId: string;
+  /** Real, always-unique primary key — use this for identity (list keys, selection), never studentId. */
+  studentProfileId: number;
+  /** Display-only school ID number; can be null (irregular students aren't required to have one assigned yet). */
+  studentId: string | null;
   studentName: string;
   programTaken: string;
   subjectsEnrolled: { subjectId: number; subjectCode: string; descTitle: string; units: number }[];
@@ -47,6 +51,7 @@ async function listStudents(): Promise<IrregularStudent[]> {
     throw err;
   }
   return data.map((s) => ({
+    studentProfileId: s.student_profile_id,
     studentId: s.student_id,
     studentName: `${s.last_name}, ${s.first_name}`,
     programTaken: latestProgram(s.academics),
