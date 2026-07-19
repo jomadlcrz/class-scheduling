@@ -1,4 +1,6 @@
+import { Card } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
+import { SectionHeading } from "~/components/ui/section-heading";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { StudentAccountRow } from "~/types/student";
@@ -13,33 +15,33 @@ export function StudentDetailsModal({ student }: StudentDetailsModalProps) {
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <h3 className="border-b border-slate-200 pb-2 font-display text-base tracking-wide text-navy-700 dark:border-white/10 dark:text-mist-100">
-          Personal Information
-        </h3>
-        <dl className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Student ID" value={student.studentId} />
-          <Field label="Name" value={`${student.lastName}, ${student.firstName}${student.midName ? ` ${student.midName}` : ""}`} />
-          <Field label="Email" value={student.email ?? "—"} />
-          <Field label="Mobile" value={student.mobile ?? "—"} />
-        </dl>
+        <SectionHeading>Personal Information</SectionHeading>
+        <Card className="mt-2 p-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Student ID" value={student.studentId || "—"} />
+            <Field label="Name" value={`${student.lastName}, ${student.firstName}${student.midName ? ` ${student.midName}` : ""}`} />
+            <Field label="Email" value={student.email ?? "—"} />
+            <Field label="Mobile" value={student.mobile ?? "—"} />
+          </dl>
+        </Card>
       </section>
 
       <section>
-        <h3 className="border-b border-slate-200 pb-2 font-display text-base tracking-wide text-navy-700 dark:border-white/10 dark:text-mist-100">
-          Academic Records
-        </h3>
-        {student.academics.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            No academic records found.
-          </p>
-        ) : (
-          <div className="mt-3 flex flex-col gap-3">
-            {student.academics.map((a) => (
-              <div
-                key={a.studentAcademicId}
-                className="rounded-lg border border-slate-200 p-3 dark:border-white/10"
-              >
-                <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <SectionHeading>Academic Records</SectionHeading>
+        <Card className="mt-2 p-4">
+          {student.academics.length === 0 ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              No academic records found.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {student.academics.map((a, i) => (
+                <div
+                  key={a.studentAcademicId}
+                  className={`grid grid-cols-1 gap-3 sm:grid-cols-3 ${
+                    i > 0 ? "border-t border-slate-200 pt-3 dark:border-white/10" : ""
+                  }`}
+                >
                   <Field label="Program" value={a.program} />
                   <Field label="Year Level" value={yearLevelLabel(a.yearLevel)} />
                   <Field label="Set" value={a.set ?? "—"} />
@@ -47,23 +49,21 @@ export function StudentDetailsModal({ student }: StudentDetailsModalProps) {
                   <Field label="Student Type" value={a.studentType} />
                   <Field label="School Year" value={a.schoolYear ?? "—"} />
                   <Field label="Semester" value={a.semester ?? "—"} />
-                </dl>
-              </div>
-            ))}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       </section>
 
       <section>
-        <h3 className="border-b border-slate-200 pb-2 font-display text-base tracking-wide text-navy-700 dark:border-white/10 dark:text-mist-100">
-          Enrolled Subjects
-        </h3>
+        <SectionHeading>Enrolled Subjects</SectionHeading>
         {student.enrolledSubjects.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             No enrolled subjects found.
           </p>
         ) : (
-          <div className="mt-3">
+          <div className="mt-2">
             <Table>
               <TableHead>
                 <TableHeader>Code</TableHeader>
