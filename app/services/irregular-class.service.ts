@@ -4,12 +4,18 @@ import { ApiError, apiGet } from "~/lib/api";
 
 type IrregularStudentsResponse = {
   student_id: string;
-  student_name: string;
-  program_taken: string;
-  subjects_enrolled: {
+  first_name: string;
+  mid_name: string | null;
+  last_name: string;
+  academics: {
+    program: string;
+    school_year: string | null;
+    semester: number | null;
+  }[];
+  enrolled_subjects: {
     subject_id: number;
     subject_code: string;
-    desc_title: string;
+    descriptive_title: string;
     units: number;
   }[];
 }[];
@@ -21,23 +27,33 @@ export type IrregularStudent = {
   subjectsEnrolled: { subjectId: number; subjectCode: string; descTitle: string; units: number }[];
 };
 
-/** GET /get-irregular-students — students flagged AcademicStatus.IRREGULAR. 404 → empty. */
+/** Picks the most recent academic record (by school year, then semester) to source the current program. */
+function latestProgram(academics: IrregularStudentsResponse[number]["academics"]): string {
+  if (academics.length === 0) return "—";
+  const sorted = [...academics].sort(
+    (a, b) =>
+      (b.school_year ?? "").localeCompare(a.school_year ?? "") || (b.semester ?? 0) - (a.semester ?? 0),
+  );
+  return sorted[0].program;
+}
+
+/** GET /students/irregular — students flagged AcademicStatus.IRREGULAR. 404 → empty. */
 async function listStudents(): Promise<IrregularStudent[]> {
   let data: IrregularStudentsResponse;
   try {
-    data = await apiGet<IrregularStudentsResponse>("/get-irregular-students");
+    data = await apiGet<IrregularStudentsResponse>("/students/irregular");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
   return data.map((s) => ({
     studentId: s.student_id,
-    studentName: s.student_name,
-    programTaken: s.program_taken,
-    subjectsEnrolled: s.subjects_enrolled.map((sub) => ({
+    studentName: `${s.last_name}, ${s.first_name}`,
+    programTaken: latestProgram(s.academics),
+    subjectsEnrolled: s.enrolled_subjects.map((sub) => ({
       subjectId: sub.subject_id,
       subjectCode: sub.subject_code,
-      descTitle: sub.desc_title,
+      descTitle: sub.descriptive_title,
       units: sub.units,
     })),
   }));
