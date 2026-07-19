@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Popover } from "~/components/ui/popover";
 import {
   BellIcon,
   ChevronDownIcon,
@@ -12,6 +11,7 @@ import {
   SunIcon,
   UserIcon,
 } from "~/components/ui/icons";
+import { Popover } from "~/components/ui/popover";
 import { useAuth } from "~/hooks/use-auth";
 import { useTheme, type ThemePreference } from "~/hooks/use-theme";
 
@@ -26,7 +26,7 @@ const iconButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10";
 
 const menuItemClassName =
-  "flex w-full cursor-pointer items-center justify-between gap-2.5 px-3.5 py-2 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white [&>svg]:size-3";
+  "flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white [&>svg]:size-3.5";
 
 export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { user, logout } = useAuth();
@@ -65,11 +65,11 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             </span>
           }
           triggerClassName={iconButtonClassName}
-          className="w-80"
+          className="w-80 px-1.5"
         >
           {(close) => (
             <>
-              <div className="border-b border-slate-100 px-4 py-2.5 font-body text-sm font-semibold text-slate-800 dark:border-white/10 dark:text-white">
+              <div className="mb-1 border-b border-slate-100 px-2.5 py-2.5 font-body text-sm font-semibold text-slate-800 dark:border-white/10 dark:text-white">
                 Notifications
               </div>
               {NOTIFICATIONS.map((notification) => (
@@ -123,14 +123,14 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             </span>
           }
           triggerClassName="ml-1 flex cursor-pointer items-center rounded-lg px-1 py-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8"
-          className="w-60"
+          className="w-72 px-1.5"
         >
           {(close) => (
             <>
-              <div className="flex items-center gap-3 border-b border-slate-100 px-3.5 pb-2.5 pt-1.5 dark:border-white/10">
+              <div className="mb-1 flex items-center gap-3 border-b border-slate-100 px-2.5 pb-3 pt-2 dark:border-white/10">
                 <span
                   aria-hidden="true"
-                  className="grid size-9 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-white dark:bg-white dark:text-navy-900"
+                  className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-white dark:bg-white dark:text-navy-900"
                 >
                   {initials(user.name)}
                 </span>
@@ -201,12 +201,12 @@ function ThemeRow() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="flex w-full items-center justify-between gap-2.5 px-3.5 py-1.5">
+    <div className="flex w-full items-center justify-between gap-2.5 p-2.5">
       <span className="font-body text-sm text-slate-600 dark:text-slate-300">Theme</span>
       <div
         role="radiogroup"
         aria-label="Theme"
-        className="-mr-[7px] flex items-center gap-0.5 rounded-full border border-slate-200 p-0.5 dark:border-white/10"
+        className="-mr-1.5 flex items-center gap-0.5 rounded-full border border-slate-200 p-0.5 dark:border-white/10"
       >
         {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
           const isActive = mounted && preference === value;
