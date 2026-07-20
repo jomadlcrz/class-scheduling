@@ -8,6 +8,7 @@ export default [
   route("change-password", "routes/public/change-password.tsx"),
   route("privacy-policy", "routes/public/privacy-policy.tsx"),
   route("terms-of-use", "routes/public/terms-of-use.tsx"),
+  route("help", "routes/public/help.tsx"),
   route("unauthorized", "routes/unauthorized.tsx"),
 
   // Authenticated area â€” AppShell provides theme, auth guard, and chrome.
