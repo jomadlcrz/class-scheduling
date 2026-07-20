@@ -17,7 +17,7 @@ export function SiteFooter() {
       {/* Hairline gold accent along the top edge. */}
       <div className="h-px w-full bg-linear-to-r from-transparent via-gold-400/50 to-transparent" />
 
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-10">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export function SiteFooter() {
 
       {/* Bottom bar — its own container/background, distinct from the main footer above. */}
       <div className="bg-navy-800 dark:bg-navy-950">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row sm:px-8 lg:px-10">
           <p className="text-xs text-mist-100/50">
             &copy; {new Date().getFullYear()} GWC Class Scheduling. All rights reserved.
           </p>

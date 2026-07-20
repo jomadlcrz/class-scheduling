@@ -315,6 +315,15 @@ export function ChevronRightIcon() {
   );
 }
 
+export function MailIcon() {
+  return (
+    <IconBase size={20}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <polyline points="22 6 12 13 2 6" />
+    </IconBase>
+  );
+}
+
 export function EditIcon() {
   return (
     <IconBase size={16}>
