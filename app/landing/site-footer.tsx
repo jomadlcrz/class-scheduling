@@ -1,6 +1,4 @@
-﻿import { ThemeToggle } from "~/components/theme/theme-toggle";
-
-interface FooterColumn {
+﻿interface FooterColumn {
   heading: string;
   links: readonly string[];
 }
@@ -81,28 +79,47 @@ export function SiteFooter() {
             </nav>
           ))}
         </div>
+      </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 dark:border-white/10 sm:flex-row">
-          <p className="text-xs text-slate-500">
+      {/* Bottom bar — its own container/background, distinct from the main footer above. */}
+      <div className="bg-navy-800 dark:bg-navy-950">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6 lg:px-8">
+          <p className="text-xs text-mist-100/50">
             &copy; {new Date().getFullYear()} GWC Class Scheduling. All rights reserved.
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col items-center gap-3 sm:items-end">
+            <div className="flex items-center gap-5">
+              <a
+                href="/privacy-policy"
+                className="text-xs text-mist-100/50 transition-colors duration-200 hover:text-gold-400 focus-visible:text-gold-400 focus-visible:outline-none"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="/terms-of-use"
+                className="text-xs text-mist-100/50 transition-colors duration-200 hover:text-gold-400 focus-visible:text-gold-400 focus-visible:outline-none"
+              >
+                Terms of Use
+              </a>
+            </div>
             <a
-              href="/privacy-policy"
-              className="text-xs text-slate-500 transition-colors duration-200 hover:text-gold-600 focus-visible:text-gold-600 focus-visible:outline-none dark:text-slate-400 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
+              href="#"
+              aria-label="GWC Class Scheduling on Facebook"
+              className="text-mist-100/50 transition-colors duration-200 hover:text-gold-400 focus-visible:text-gold-400 focus-visible:outline-none"
             >
-              Privacy Policy
+              <FacebookIcon />
             </a>
-            <a
-              href="/terms-of-use"
-              className="text-xs text-slate-500 transition-colors duration-200 hover:text-gold-600 focus-visible:text-gold-600 focus-visible:outline-none dark:text-slate-400 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
-            >
-              Terms of Use
-            </a>
-            <ThemeToggle />
           </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+function FacebookIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94z" />
+    </svg>
   );
 }
