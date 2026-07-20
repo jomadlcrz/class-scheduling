@@ -1,5 +1,4 @@
 ﻿import { Colleges } from "~/landing/colleges";
-import { Cta } from "~/landing/cta";
 import { Features } from "~/landing/features";
 import { Hero } from "~/landing/hero";
 import { SiteFooter } from "~/landing/site-footer";
@@ -19,7 +18,6 @@ export function Landing() {
           <Stats />
           <Features />
           <Colleges />
-          <Cta />
         </main>
         <SiteFooter />
       </div>
