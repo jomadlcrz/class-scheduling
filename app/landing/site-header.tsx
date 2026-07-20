@@ -1,7 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ThemeToggle } from "~/components/theme/theme-toggle";
-import { AskAiPanel } from "~/features/ai/ask-ai-panel";
 
 interface NavLink {
   label: string;
@@ -17,7 +16,6 @@ const NAV_LINKS: readonly NavLink[] = [
 export function SiteHeader() {
   const scrolled = useScrolled(8);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
 
   // Freeze body scroll without overflow:hidden so the scrollbar stays visible.
   // position:fixed + saved scrollY prevents keyboard/scrollbar from scrolling the page.
@@ -62,13 +60,6 @@ export function SiteHeader() {
 
           {/* Desktop actions */}
           <div className="hidden items-center justify-end gap-2 md:flex">
-            <button
-              type="button"
-              onClick={() => setAiOpen(true)}
-              className="flex cursor-pointer items-center rounded-md border border-slate-300 bg-transparent px-3.5 py-1.5 text-sm font-medium text-navy-700 transition-colors duration-200 hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-200 dark:hover:border-white/30 dark:hover:bg-white/5"
-            >
-              Ask AI
-            </button>
             <a
               href="/login"
               className="flex items-center rounded-md bg-navy-800 px-3.5 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
@@ -79,13 +70,6 @@ export function SiteHeader() {
 
           {/* Mobile actions */}
           <div className="flex shrink-0 items-center justify-end gap-2 md:hidden">
-            <button
-              type="button"
-              onClick={() => setAiOpen(true)}
-              className="flex h-9 cursor-pointer items-center whitespace-nowrap rounded-full border border-slate-300 bg-transparent px-4 text-sm font-medium text-navy-700 transition-colors duration-200 hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-200 dark:hover:border-white/30 dark:hover:bg-white/5"
-            >
-              Ask AI
-            </button>
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
@@ -104,9 +88,6 @@ export function SiteHeader() {
           <MobileMenu links={NAV_LINKS} onClose={() => setMenuOpen(false)} />
         )}
       </AnimatePresence>
-
-      {/* Ask AI slide-over */}
-      <AskAiPanel open={aiOpen} onClose={() => setAiOpen(false)} />
     </>
   );
 }
