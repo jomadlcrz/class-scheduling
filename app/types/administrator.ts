@@ -7,21 +7,27 @@ export type Administrator = {
   firstName: string;
   midName: string | null;
   lastName: string;
-  email: string;
+  gender: string;
+  civilStatus: string;
+  /** Raw department string from backend, e.g. "CS - Computer Science". */
+  department: string;
+  /** Department code extracted from `department` (part before " - "). */
+  departmentCode: string;
+  mobile: string | null;
+  email: string | null;
   roleName: AdministratorRole;
-  /** Only set for Registrar Admin accounts — Super Admin has no department. */
-  departmentId: number | null;
-  isActive: boolean;
-  isTemp: boolean;
 };
 
 /** Creates the login account + admin/registrar profile in one shot (temp password emailed). */
 export type CreateAdministratorAccountInput = {
+  departmentId: number;
   firstName: string;
   midName?: string;
   lastName: string;
   email: string;
+  mobile: string;
   roleName: AdministratorRole;
-  /** Required only when roleName is "Registrar Admin". */
-  departmentId?: number;
+  /** Enum values fetched via enumService; omitted = "N/A" on the server. */
+  gender?: string;
+  civilStatus?: string;
 };

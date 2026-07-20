@@ -66,12 +66,12 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
       student_type: string;
       school_year: string | null;
       semester: string | null;
-    }[];
-    enrolled_subjects: {
-      subject_id: number;
-      subject_code: string;
-      descriptive_title: string;
-      units: number;
+      enrolled_subjects: {
+        subject_id: number;
+        subject_code: string;
+        descriptive_title: string;
+        units: number;
+      }[];
     }[];
   };
 
@@ -101,12 +101,12 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
       studentType: a.student_type,
       schoolYear: a.school_year,
       semester: a.semester,
-    })),
-    enrolledSubjects: s.enrolled_subjects.map((es) => ({
-      subjectId: es.subject_id,
-      subjectCode: es.subject_code,
-      descriptiveTitle: es.descriptive_title,
-      units: es.units,
+      enrolledSubjects: a.enrolled_subjects.map((es) => ({
+        subjectId: es.subject_id,
+        subjectCode: es.subject_code,
+        descriptiveTitle: es.descriptive_title,
+        units: es.units,
+      })),
     })),
   }));
 }

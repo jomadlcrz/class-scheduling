@@ -1,15 +1,15 @@
-import type { FacultyLoadRecord } from "~/types/faculty-load";
+import type { FacultyLoadingEntry } from "~/types/faculty-load";
 
 type FacultyAvailabilityProps = {
-  /** The faculty's existing teaching term for the selected school year + semester, if any. */
-  existingLoad: FacultyLoadRecord | undefined;
+  /** The faculty's existing loading-sheet entry for the selected school year + semester, if any. */
+  existingLoad: FacultyLoadingEntry | undefined;
 };
 
 /**
  * Shows what a faculty member is already carrying for the selected term before
- * the dean adds more subjects — current_weekly_hours only reflects generated
- * class schedules (set elsewhere), not this assignment step, so it's shown as
- * reference rather than a live projection.
+ * the dean adds more subjects. GET /deans/faculty-loading only reports
+ * assigned subjects and their scheduled sessions — it doesn't return
+ * max/current weekly hours, so this is a subject/unit summary, not a capacity meter.
  */
 export function FacultyAvailability({ existingLoad }: FacultyAvailabilityProps) {
   if (!existingLoad) {
@@ -20,39 +20,16 @@ export function FacultyAvailability({ existingLoad }: FacultyAvailabilityProps) 
     );
   }
 
-  const { maxWeeklyHours, currentWeeklyHours, loadedSubjects, totalLoadUnits } = existingLoad;
-  const percent = maxWeeklyHours > 0 ? Math.min(Math.round((currentWeeklyHours / maxWeeklyHours) * 100), 100) : 0;
-  const isOver = maxWeeklyHours > 0 && currentWeeklyHours > maxWeeklyHours;
+  const subjectCount = existingLoad.subjects.length;
+  const totalUnits = existingLoad.subjects.reduce((sum, s) => sum + s.units.total, 0);
 
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
-      <div className="flex items-center justify-between gap-2 font-body text-xs">
-        <span className="font-semibold text-slate-500 dark:text-slate-400">
-          Already teaching this term
-        </span>
-        <span
-          className={
-            isOver
-              ? "font-semibold text-red-600 dark:text-red-400"
-              : "text-slate-500 dark:text-slate-400"
-          }
-        >
-          {currentWeeklyHours} / {maxWeeklyHours} hrs
-        </span>
-      </div>
-      {maxWeeklyHours > 0 && (
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-          <div
-            className={`h-full rounded-full transition-all duration-200 ${
-              isOver ? "bg-red-500" : percent >= 80 ? "bg-amber-500" : "bg-emerald-500"
-            }`}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      )}
+      <span className="font-body text-xs font-semibold text-slate-500 dark:text-slate-400">
+        Already teaching this term
+      </span>
       <p className="mt-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
-        {loadedSubjects.length} subject{loadedSubjects.length === 1 ? "" : "s"} assigned ·{" "}
-        {totalLoadUnits} units
+        {subjectCount} subject{subjectCount === 1 ? "" : "s"} assigned · {totalUnits} units
       </p>
     </div>
   );

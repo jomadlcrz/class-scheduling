@@ -10,6 +10,9 @@ import type { DepartmentOption } from "~/types/department";
 
 type AdministratorAccountFormProps = {
   departments: DepartmentOption[];
+  /** Backend enum values (enumService); empty selection = not specified. */
+  genders: string[];
+  civilStatuses: string[];
   onSubmit: (input: CreateAdministratorAccountInput) => Promise<void>;
   onCancel: () => void;
 };
@@ -17,6 +20,8 @@ type AdministratorAccountFormProps = {
 /** Creates a Super Admin or Registrar Admin account (temp password emailed). */
 export function AdministratorAccountForm({
   departments,
+  genders,
+  civilStatuses,
   onSubmit,
   onCancel,
 }: AdministratorAccountFormProps) {
@@ -24,24 +29,21 @@ export function AdministratorAccountForm({
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState("");
 
-  const isRegistrar = role === "Registrar Admin";
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
 
-    const raw: Record<string, unknown> = {
+    const result = administratorSchema.safeParse({
       firstName: String(data.get("admin-first-name") ?? "").trim(),
       midName: String(data.get("admin-mid-name") ?? "").trim(),
       lastName: String(data.get("admin-last-name") ?? "").trim(),
       email: String(data.get("admin-email") ?? "").trim(),
+      mobile: String(data.get("admin-mobile") ?? "").trim(),
       roleName: String(data.get("admin-role") ?? ""),
-    };
-    if (isRegistrar) {
-      raw.departmentId = String(data.get("admin-department") ?? "");
-    }
-
-    const result = administratorSchema.safeParse(raw);
+      departmentId: String(data.get("admin-department") ?? ""),
+      gender: String(data.get("admin-gender") ?? ""),
+      civilStatus: String(data.get("admin-civil-status") ?? ""),
+    });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -70,6 +72,20 @@ export function AdministratorAccountForm({
 
       <Input id="admin-email" label="Email" type="email" required placeholder="Enter email address" />
 
+      <Input
+        id="admin-mobile"
+        label="Mobile Number"
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        maxLength={11}
+        required
+        placeholder="Enter mobile number"
+        onInput={(e) => {
+          e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 11);
+        }}
+      />
+
       <FieldChrome id="admin-role" label="Role" required>
         <Select
           items={[
@@ -94,30 +110,72 @@ export function AdministratorAccountForm({
         </Select>
       </FieldChrome>
 
-      {isRegistrar && (
-        <FieldChrome id="admin-department" label="Department" required>
+      <FieldChrome id="admin-department" label="Department" required>
+        <Select
+          items={[
+            { value: "", label: "Select a department" },
+            ...departments.map((d) => ({ value: d.id, label: `${d.code} — ${d.name}` })),
+          ]}
+          name="admin-department"
+          defaultValue=""
+        >
+          <SelectTrigger id="admin-department">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Select a department</SelectItem>
+            {departments.map((d) => (
+              <SelectItem key={d.id} value={d.id}>
+                {d.code} — {d.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
+
+      <div className="grid grid-cols-2 gap-3">
+        <FieldChrome id="admin-gender" label="Gender" required>
           <Select
-            items={[
-              { value: "", label: "Select a department" },
-              ...departments.map((d) => ({ value: d.id, label: `${d.code} — ${d.name}` })),
-            ]}
-            name="admin-department"
+            items={[{ value: "", label: "Select a gender" }, ...genders.map((g) => ({ value: g, label: g }))]}
+            name="admin-gender"
             defaultValue=""
           >
-            <SelectTrigger id="admin-department">
+            <SelectTrigger id="admin-gender">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Select a department</SelectItem>
-              {departments.map((d) => (
-                <SelectItem key={d.id} value={d.id}>
-                  {d.code} — {d.name}
+              <SelectItem value="">Select a gender</SelectItem>
+              {genders.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </FieldChrome>
-      )}
+        <FieldChrome id="admin-civil-status" label="Civil Status" required>
+          <Select
+            items={[
+              { value: "", label: "Select a status" },
+              ...civilStatuses.map((s) => ({ value: s, label: s })),
+            ]}
+            name="admin-civil-status"
+            defaultValue=""
+          >
+            <SelectTrigger id="admin-civil-status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Select a status</SelectItem>
+              {civilStatuses.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+      </div>
 
       <p className="font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
         New administrators start with a temporary password and must set their own at first login.

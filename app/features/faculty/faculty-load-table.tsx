@@ -7,8 +7,8 @@ export type FacultyLoadRow = {
   programs: string[];
   subjectCount: number;
   totalUnits: number;
-  maxDailyHours: number;
-  maxWeeklyHours: number;
+  /** Only present for staged/pending rows — GET /deans/faculty-loading never returns it. */
+  maxWeeklyHours?: number;
 };
 
 type FacultyLoadTableProps = {
@@ -29,7 +29,7 @@ export function FacultyLoadTable({ rows, onEdit, onRemove }: FacultyLoadTablePro
         <TableHeader>Programs</TableHeader>
         <TableHeader>Subjects</TableHeader>
         <TableHeader>Units</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Max Hours (Daily / Weekly)</TableHeader>
+        <TableHeader className="hidden sm:table-cell">Max Weekly Hours</TableHeader>
         {editable && <TableHeader className="text-right">Actions</TableHeader>}
       </TableHead>
       <TableBody>
@@ -44,7 +44,7 @@ export function FacultyLoadTable({ rows, onEdit, onRemove }: FacultyLoadTablePro
             <TableCell className="text-slate-600 dark:text-slate-300">{row.subjectCount}</TableCell>
             <TableCell className="text-slate-600 dark:text-slate-300">{row.totalUnits}</TableCell>
             <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-              {row.maxDailyHours} / {row.maxWeeklyHours} hrs
+              {row.maxWeeklyHours != null ? `${row.maxWeeklyHours} hrs` : "—"}
             </TableCell>
             {editable && (
               <TableCell>

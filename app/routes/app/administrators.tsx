@@ -9,15 +9,13 @@ import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
-import { ActivateAdministratorDialog } from "~/features/administrators/activate-administrator-dialog";
 import { AdministratorAccountForm } from "~/features/administrators/administrator-account-form";
 import { AdministratorTable } from "~/features/administrators/administrator-table";
-import { DeactivateAdministratorDialog } from "~/features/administrators/deactivate-administrator-dialog";
-import { ResetPasswordDialog } from "~/features/administrators/reset-password-dialog";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { administratorService } from "~/services/administrator.service";
 import { departmentService } from "~/services/department.service";
+import { enumService, type EnumOptions } from "~/services/enum.service";
 import type { Administrator, CreateAdministratorAccountInput } from "~/types/administrator";
 import type { DepartmentOption } from "~/types/department";
 
@@ -39,15 +37,12 @@ export default function AdministratorsRoute() {
 function AdministratorsPage() {
   const [administrators, setAdministrators] = useState<Administrator[] | null>(null);
   const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
+  const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
-
-  const [resetTarget, setResetTarget] = useState<Administrator | null>(null);
-  const [deactivateTarget, setDeactivateTarget] = useState<Administrator | null>(null);
-  const [activateTarget, setActivateTarget] = useState<Administrator | null>(null);
 
   function refresh() {
     administratorService
@@ -65,6 +60,10 @@ function AdministratorsPage() {
       .list()
       .then((departments) => setDepartmentOptions(departments.map((d) => ({ id: d.id, code: d.code, name: d.name }))))
       .catch(() => setDepartmentOptions([]));
+    enumService
+      .getOptions()
+      .then(setEnumOptions)
+      .catch(() => setEnumOptions(null));
   }, []);
 
   const visibleAdministrators = useMemo(() => {
@@ -76,7 +75,7 @@ function AdministratorsPage() {
           query &&
           !admin.firstName.toLowerCase().includes(query) &&
           !admin.lastName.toLowerCase().includes(query) &&
-          !admin.email.toLowerCase().includes(query)
+          !(admin.email ?? "").toLowerCase().includes(query)
         ) {
           return false;
         }
@@ -87,6 +86,9 @@ function AdministratorsPage() {
 
   const pagination = usePagination(visibleAdministrators, search);
 
+  // No PATCH/DELETE endpoint exists yet for admin accounts, so there's no
+  // reset-password/deactivate/reactivate action here — only create + list,
+  // matching what the backend supports.
   async function handleCreate(input: CreateAdministratorAccountInput) {
     const message = await administratorService.create(input);
     if (message) toast.success(message);
@@ -97,20 +99,6 @@ function AdministratorsPage() {
   function closeCreate() {
     setCreateOpen(false);
     setCreatedEmail(null);
-  }
-
-  async function handleResetPassword(admin: Administrator) {
-    const message = await administratorService.resetPassword(admin.id);
-    if (message) toast.success(message);
-    refresh();
-  }
-
-  async function handleToggleStatus(admin: Administrator) {
-    const message = admin.isActive
-      ? await administratorService.deactivate(admin.id)
-      : await administratorService.reactivate(admin.id);
-    if (message) toast.success(message);
-    refresh();
   }
 
   return (
@@ -154,12 +142,7 @@ function AdministratorsPage() {
           </EmptyState>
         ) : (
           <>
-            <AdministratorTable
-              administrators={pagination.pageItems}
-              departments={departmentOptions}
-              onResetPassword={setResetTarget}
-              onToggleStatus={(admin) => (admin.isActive ? setDeactivateTarget(admin) : setActivateTarget(admin))}
-            />
+            <AdministratorTable administrators={pagination.pageItems} />
             <Pagination
               page={pagination.page}
               totalItems={pagination.totalItems}
@@ -181,21 +164,15 @@ function AdministratorsPage() {
             </Button>
           </div>
         ) : (
-          <AdministratorAccountForm departments={departmentOptions} onSubmit={handleCreate} onCancel={closeCreate} />
+          <AdministratorAccountForm
+            departments={departmentOptions}
+            genders={enumOptions?.gender ?? []}
+            civilStatuses={enumOptions?.civilStatus ?? []}
+            onSubmit={handleCreate}
+            onCancel={closeCreate}
+          />
         )}
       </Modal>
-
-      <ResetPasswordDialog admin={resetTarget} onClose={() => setResetTarget(null)} onConfirm={handleResetPassword} />
-      <DeactivateAdministratorDialog
-        admin={deactivateTarget}
-        onClose={() => setDeactivateTarget(null)}
-        onConfirm={handleToggleStatus}
-      />
-      <ActivateAdministratorDialog
-        admin={activateTarget}
-        onClose={() => setActivateTarget(null)}
-        onConfirm={handleToggleStatus}
-      />
     </div>
   );
 }

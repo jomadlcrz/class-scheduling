@@ -48,6 +48,14 @@ export type CreateStudentAccountInput = {
   roleName: "Student";
 };
 
+export type EnrolledSubjectRow = {
+  subjectId: number;
+  subjectCode: string;
+  descriptiveTitle: string;
+  units: number;
+};
+
+/** One academic term's record — enrolled subjects differ per term, so they nest here. */
 export type StudentAcademicRecord = {
   studentAcademicId: number;
   yearLevel: number;
@@ -57,13 +65,7 @@ export type StudentAcademicRecord = {
   studentType: string;
   schoolYear: string | null;
   semester: string | null;
-};
-
-export type EnrolledSubjectRow = {
-  subjectId: number;
-  subjectCode: string;
-  descriptiveTitle: string;
-  units: number;
+  enrolledSubjects: EnrolledSubjectRow[];
 };
 
 export type StudentAccountRow = {
@@ -76,5 +78,4 @@ export type StudentAccountRow = {
   email: string | null;
   hasAccount: boolean;
   academics: StudentAcademicRecord[];
-  enrolledSubjects: EnrolledSubjectRow[];
 };

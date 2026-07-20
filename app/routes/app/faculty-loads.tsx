@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useBlocker } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -21,7 +21,7 @@ import type {
   DepartmentFacultyOption,
   DepartmentSubjectProgram,
   FacultyLoadInput,
-  FacultyLoadRecord,
+  FacultyLoadingEntry,
 } from "~/types/faculty-load";
 
 export function meta() {
@@ -54,20 +54,17 @@ function toRow(entry: FacultyLoadInput, unitsByKey: Map<string, number>): Facult
         ),
       0,
     ),
-    maxDailyHours: entry.maxDailyHours,
     maxWeeklyHours: entry.maxWeeklyHours,
   };
 }
 
-function toExistingRow(record: FacultyLoadRecord): FacultyLoadRow {
+function toExistingRow(entry: FacultyLoadingEntry): FacultyLoadRow {
   return {
-    key: String(record.teachingTermId),
-    fullName: record.fullName,
-    programs: record.programs,
-    subjectCount: record.loadedSubjects.length,
-    totalUnits: record.totalLoadUnits,
-    maxDailyHours: record.maxDailyHours,
-    maxWeeklyHours: record.maxWeeklyHours,
+    key: entry.instructorName,
+    fullName: entry.instructorName,
+    programs: [...new Set(entry.subjects.flatMap((s) => s.schedules.map((sc) => sc.course)))],
+    subjectCount: entry.subjects.length,
+    totalUnits: entry.subjects.reduce((sum, s) => sum + s.units.total, 0),
   };
 }
 
@@ -80,8 +77,10 @@ function FacultyLoadsPage() {
 
   const [faculties, setFaculties] = useState<DepartmentFacultyOption[] | null>(null);
   const [subjectPrograms, setSubjectPrograms] = useState<DepartmentSubjectProgram[] | null>(null);
-  const [existingLoads, setExistingLoads] = useState<FacultyLoadRecord[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [existingLoads, setExistingLoads] = useState<FacultyLoadingEntry[] | null>(null);
+  const [termError, setTermError] = useState<string | null>(null);
 
   const [pending, setPending] = useState<FacultyLoadInput[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -90,22 +89,17 @@ function FacultyLoadsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Department roster + curriculum are independent of the selected term.
   useEffect(() => {
-    Promise.all([
-      facultyLoadService.listDepartmentFaculties(),
-      facultyLoadService.listDepartmentSubjects(),
-      facultyLoadService.list(),
-    ])
-      .then(([facultyList, subjectList, loadList]) => {
+    Promise.all([facultyLoadService.listDepartmentFaculties(), facultyLoadService.listDepartmentSubjects()])
+      .then(([facultyList, subjectList]) => {
         setFaculties(facultyList);
         setSubjectPrograms(subjectList);
-        setExistingLoads(loadList);
       })
       .catch((err) => {
         setLoadError(err instanceof Error ? err.message : "Unable to load department data.");
         setFaculties([]);
         setSubjectPrograms([]);
-        setExistingLoads([]);
       });
   }, []);
 
@@ -125,13 +119,28 @@ function FacultyLoadsPage() {
   const matchedSy = schoolYears.find((s) => String(s.id) === schoolYearId);
   const matchedSem = semesters.find((s) => String(s.id) === semesterId);
 
-  const termLoads = useMemo(
-    () =>
-      (existingLoads ?? []).filter(
-        (l) => l.schoolYear === matchedSy?.schoolYear && l.semester === matchedSem?.semester,
-      ),
-    [existingLoads, matchedSy, matchedSem],
-  );
+  // GET /deans/faculty-loading requires sy_id + sem_id, so it can only run once a term is picked.
+  useEffect(() => {
+    if (!matchedSy || !matchedSem) return;
+    let cancelled = false;
+    setExistingLoads(null);
+    setTermError(null);
+    facultyLoadService
+      .getFacultyLoading(matchedSy.id, matchedSem.id)
+      .then((data) => {
+        if (!cancelled) setExistingLoads(data);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setTermError(err instanceof Error ? err.message : "Unable to load existing faculty loads.");
+        setExistingLoads([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [matchedSy?.id, matchedSem?.id]);
+
+  const termLoads = existingLoads ?? [];
 
   const unitsByKey = useMemo(() => {
     const map = new Map<string, number>();
@@ -199,10 +208,10 @@ function FacultyLoadsPage() {
     setSaveError(null);
     setIsSaving(true);
     try {
-      const message = await facultyLoadService.createBulk(matchedSem.id, matchedSy.id, pending);
+      const message = await facultyLoadService.createSubjectAssignments(matchedSy.id, matchedSem.id, pending);
       if (message) toast.success(message);
       setPending([]);
-      const refreshed = await facultyLoadService.list();
+      const refreshed = await facultyLoadService.getFacultyLoading(matchedSy.id, matchedSem.id);
       setExistingLoads(refreshed);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -211,7 +220,7 @@ function FacultyLoadsPage() {
     }
   }
 
-  const isLoading = faculties === null || subjectPrograms === null || existingLoads === null;
+  const isLoading = faculties === null || subjectPrograms === null;
   const contextReady = Boolean(matchedSy && matchedSem);
 
   return (
@@ -329,6 +338,18 @@ function FacultyLoadsPage() {
               <EmptyState title="Select a term">
                 Pick a school year and semester to see existing faculty loads.
               </EmptyState>
+            ) : existingLoads === null ? (
+              <div
+                role="status"
+                aria-label="Loading existing faculty loads"
+                className="grid place-items-center py-8 text-navy-700 dark:text-slate-200"
+              >
+                <Spinner />
+              </div>
+            ) : termError ? (
+              <ResultState tone="error" title="Unable to load">
+                {termError}
+              </ResultState>
             ) : termLoads.length === 0 ? (
               <EmptyState title="No faculty loads yet">
                 No faculty have been assigned subjects for this term yet.

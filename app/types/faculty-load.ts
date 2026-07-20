@@ -16,7 +16,6 @@ export type ProgramLoadInput = {
 export type FacultyLoadInput = {
   firstName: string;
   lastName: string;
-  maxDailyHours: number;
   maxWeeklyHours: number;
   programs: ProgramLoadInput[];
 };
@@ -62,32 +61,30 @@ export type DepartmentSubjectProgram = {
   curriculumDetails: DepartmentSubjectYearGroup[];
 };
 
-export type LoadedSubject = {
+/** One scheduled session under a subject, as returned by GET /deans/faculty-loading. */
+export type FacultyLoadingSchedule = {
+  day: string;
+  time: string;
+  numberOfStudents: number;
+  course: string;
   yearLevel: YearLevel;
-  semesterCategory: Semester;
-  subjectId: number;
+  setCode: string;
+  room: string | null;
+};
+
+/** One subject an instructor is carrying this term, with its scheduled sessions. */
+export type FacultyLoadingSubject = {
   subjectCode: string;
   descriptiveTitle: string;
-  units: number;
+  units: { total: number; lecHours: number; labHours: number };
+  schedules: FacultyLoadingSchedule[];
 };
 
-export type DailyLoad = {
-  dayOfWeek: number;
-  currentDailyHours: number;
-};
-
-/** One faculty's teaching term, as returned by GET /deans/view-faculty-loads (not filtered by term server-side). */
-export type FacultyLoadRecord = {
-  teachingTermId: number;
-  programs: string[];
-  departmentAbbrev: string;
-  fullName: string;
-  schoolYear: string;
+/** One instructor's loading sheet for a term, as returned by GET /deans/faculty-loading. */
+export type FacultyLoadingEntry = {
+  instructorName: string;
+  department: string;
   semester: string;
-  loadedSubjects: LoadedSubject[];
-  totalLoadUnits: number;
-  maxDailyHours: number;
-  maxWeeklyHours: number;
-  currentWeeklyHours: number;
-  dailyLoads: DailyLoad[];
+  academicYear: string;
+  subjects: FacultyLoadingSubject[];
 };

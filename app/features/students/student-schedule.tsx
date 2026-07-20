@@ -45,9 +45,7 @@ export function StudentSchedule({ student, schedules }: StudentScheduleProps) {
                 <p className="text-xs text-slate-400 dark:text-slate-500">{s.subjectTitle}</p>
               </td>
               <td className="py-2.5 pr-4 text-slate-600 dark:text-slate-300">{s.facultyName}</td>
-              <td className="py-2.5 pr-4 text-slate-500 dark:text-slate-400">
-                {s.buildingCode} — {s.roomName}
-              </td>
+              <td className="py-2.5 pr-4 text-slate-500 dark:text-slate-400">{s.roomName}</td>
               <td className="py-2.5 pr-4 text-slate-500 dark:text-slate-400">
                 {dayLabels[s.day] ?? s.day}
               </td>

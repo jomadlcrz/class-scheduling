@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import type { Program, ProgramType } from "~/types/program";
+import type { Program } from "~/types/program";
 import type { Student } from "~/types/student";
 import { STUDENT_STATUS_LABELS } from "~/types/student";
 import { useYearLevels } from "~/hooks/use-year-levels";

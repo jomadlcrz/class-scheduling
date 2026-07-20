@@ -21,8 +21,8 @@ type TokenPayload = {
   roles: string[];
   permissions: string[];
   department_id: number | null;
-  faculty_id: number | null;
-  student_info_id: number | null;
+  instructor_id: number | null;
+  student_profile_id: number | null;
   exp: number;
 };
 
@@ -66,8 +66,8 @@ export function userFromToken(token: string): User | null {
     status: "active",
     // A temp password never yields a token, so it is always resolved here.
     mustChangePassword: false,
-    ...(payload.faculty_id != null && { facultyId: String(payload.faculty_id) }),
-    ...(payload.student_info_id != null && { studentId: String(payload.student_info_id) }),
+    ...(payload.instructor_id != null && { facultyId: String(payload.instructor_id) }),
+    ...(payload.student_profile_id != null && { studentId: String(payload.student_profile_id) }),
   };
 }
 

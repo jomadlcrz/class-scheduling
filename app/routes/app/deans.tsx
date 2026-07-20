@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -9,16 +10,15 @@ import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ResultState } from "~/components/feedback/result-state";
-import { ActivateDeanDialog } from "~/features/deans/activate-dean-dialog";
-import { DeactivateDeanDialog } from "~/features/deans/deactivate-dean-dialog";
 import { DeanForm } from "~/features/deans/dean-form";
 import { DeanTable } from "~/features/deans/dean-table";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
-import { departmentService } from "~/services/department.service";
-import type { CreateDeanInput, Dean, DeanStatus } from "~/types/dean";
-import type { Department } from "~/types/department";
+import { enumService, type EnumOptions } from "~/services/enum.service";
+import { facultyService } from "~/services/faculty.service";
+import type { DepartmentOption } from "~/types/department";
+import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 
 export function meta() {
   return [
@@ -36,26 +36,45 @@ export default function DeansRoute() {
 }
 
 function DeansPage() {
-  const [deanList, setDeanList] = useState<Dean[] | null>(null);
-  const [departments, setDepartments] = useState<Department[] | null>(null);
+  const [deanList, setDeanList] = useState<Faculty[] | null>(null);
+  const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
+  const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
-  const [status, setStatus] = useState("all");
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<Dean | null>(null);
-  const [activateTarget, setActivateTarget] = useState<Dean | null>(null);
-  const [deactivateTarget, setDeactivateTarget] = useState<Dean | null>(null);
+  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   Promise.all([deanService.list(), departmentService.list()]).then(([d, dept]) => {
-  //     setDeanList(d);
-  //     setDepartments(dept);
-  //   });
-  // }, []);
+  useEffect(() => {
+    deanService
+      .list()
+      .then(setDeanList)
+      .catch((err) => {
+        setLoadError(err instanceof Error ? err.message : "Unable to load deans.");
+        setDeanList([]);
+      });
+    // Real departments + enum values for the account form; failures
+    // just leave the dropdowns empty (validation reports the department).
+    facultyService
+      .listDepartmentOptions()
+      .then(setDepartmentOptions)
+      .catch(() => setDepartmentOptions([]));
+    enumService
+      .getOptions()
+      .then(setEnumOptions)
+      .catch(() => setEnumOptions(null));
+  }, []);
 
-  const resetKey = `${search}|${department}|${status}`;
+  /** Unique department codes derived from the dean list. */
+  const departmentCodes = useMemo(() => {
+    if (!deanList) return [];
+    const codes = new Set(deanList.map((d) => d.departmentCode));
+    return [...codes].sort();
+  }, [deanList]);
+
+  const resetKey = `${search}|${department}`;
 
   const visibleDeans = useMemo(() => {
     if (!deanList) return [];
@@ -63,38 +82,35 @@ function DeansPage() {
     return deanList
       .filter((member) => {
         if (department !== "all" && member.departmentCode !== department) return false;
-        if (status !== "all" && member.status !== status) return false;
         if (
           query &&
-          !member.name.toLowerCase().includes(query) &&
-          !member.email.toLowerCase().includes(query)
+          !member.firstName.toLowerCase().includes(query) &&
+          !member.lastName.toLowerCase().includes(query) &&
+          !(member.email ?? "").toLowerCase().includes(query)
         ) {
           return false;
         }
         return true;
       })
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [deanList, search, department, status]);
+      .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
+  }, [deanList, search, department]);
 
   const pagination = usePagination(visibleDeans, resetKey);
 
-  // async function handleCreate(input: CreateDeanInput) {
-  //   const created = await deanService.create(input);
-  //   setDeanList((current) => [...(current ?? []), created]);
-  //   setCreateOpen(false);
-  // }
+  // No PATCH endpoint exists yet for faculty/dean accounts, so there's no
+  // Edit action here — only create + list, matching what the backend supports.
+  async function handleCreate(input: Omit<CreateFacultyAccountInput, "roleName">) {
+    const message = await deanService.create(input);
+    if (message) toast.success(message);
+    setCreatedEmail(input.email);
+    // Refresh the list so the new dean appears.
+    deanService.list().then(setDeanList).catch(() => {});
+  }
 
-  // async function handleEdit(input: CreateDeanInput) {
-  //   if (!editTarget) return;
-  //   const updated = await deanService.update(editTarget.id, input);
-  //   setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
-  //   setEditTarget(null);
-  // }
-
-  // async function handleSetStatus(target: Dean, status: DeanStatus) {
-  //   const updated = await deanService.setStatus(target.id, status);
-  //   setDeanList((current) => current!.map((d) => (d.id === updated.id ? updated : d)));
-  // }
+  function closeCreate() {
+    setCreateOpen(false);
+    setCreatedEmail(null);
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -110,22 +126,20 @@ function DeansPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <div className="col-span-2 sm:col-span-1">
-            <Input
-              id="dean-search"
-              label="Search"
-              type="search"
-              placeholder="Name or email…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+          <Input
+            id="dean-search"
+            label="Search"
+            type="search"
+            placeholder="Name or email…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
           <FieldChrome id="dean-dept-filter" label="Department">
             <Select
               items={[
                 { value: "all", label: "All departments" },
-                ...(departments ?? []).map((d) => ({ value: d.code, label: `${d.code} — ${d.name}` })),
+                ...departmentCodes.map((code) => ({ value: code, label: code })),
               ]}
               value={department}
               onValueChange={(v) => setDepartment(v as string)}
@@ -135,68 +149,65 @@ function DeansPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All departments</SelectItem>
-                {(departments ?? []).map((d) => (
-                  <SelectItem key={d.id} value={d.code}>
-                    {d.code} — {d.name}
+                {departmentCodes.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {code}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </FieldChrome>
-          <FieldChrome id="dean-status-filter" label="Status">
-            <Select
-              items={[
-                { value: "all", label: "All statuses" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-              ]}
-              value={status}
-              onValueChange={(v) => setStatus(v as string)}
-            >
-              <SelectTrigger id="dean-status-filter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </FieldChrome>
         </div>
 
-        <ResultState tone="error" title="Not available">This feature is not connected to the backend yet.</ResultState>
+        {loadError ? (
+          <ResultState tone="error" title="Unable to load">
+            {loadError}
+          </ResultState>
+        ) : deanList === null ? (
+          <div
+            role="status"
+            aria-label="Loading deans"
+            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          >
+            <Spinner />
+          </div>
+        ) : visibleDeans.length === 0 ? (
+          <EmptyState title="No deans found">
+            No deans match the current filters. Adjust the search or add a new dean.
+          </EmptyState>
+        ) : (
+          <>
+            <DeanTable deans={pagination.pageItems} />
+            <Pagination
+              page={pagination.page}
+              totalItems={pagination.totalItems}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setPage}
+            />
+          </>
+        )}
       </div>
 
-      {/* <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Dean">
-        <DeanForm
-          departments={departments ?? []}
-          onSubmit={handleCreate}
-          onCancel={() => setCreateOpen(false)}
-        />
-      </Modal>
-
-      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Dean">
-        {editTarget && (
+      <Modal open={createOpen} onClose={closeCreate} title="New Dean">
+        {createdEmail ? (
+          <div className="flex flex-col items-center gap-4">
+            <ResultState tone="success" title="Dean registered">
+              Login credentials with a temporary password were emailed to {createdEmail}.
+            </ResultState>
+            <Button type="button" block={false} onClick={closeCreate}>
+              <span className="px-4">Done</span>
+            </Button>
+          </div>
+        ) : (
           <DeanForm
-            member={editTarget}
-            departments={departments ?? []}
-            onSubmit={handleEdit}
-            onCancel={() => setEditTarget(null)}
+            departments={departmentOptions}
+            genders={enumOptions?.gender ?? []}
+            civilStatuses={enumOptions?.civilStatus ?? []}
+            onSubmit={handleCreate}
+            onCancel={closeCreate}
           />
         )}
       </Modal>
-
-      <DeactivateDeanDialog
-        dean={deactivateTarget}
-        onClose={() => setDeactivateTarget(null)}
-        onConfirm={(dean) => handleSetStatus(dean, "inactive")}
-      />
-      <ActivateDeanDialog
-        dean={activateTarget}
-        onClose={() => setActivateTarget(null)}
-        onConfirm={(dean) => handleSetStatus(dean, "active")}
-      /> */}
     </div>
   );
 }

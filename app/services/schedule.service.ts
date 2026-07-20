@@ -83,7 +83,6 @@ async function view(): Promise<Schedule[]> {
       facultyName: r.instructor_name,
       roomId: "",
       roomName: r.room_name ?? "",
-      buildingCode: "",
       mode: normalizeMode(r.mode),
       day: DAY_BY_LABEL[r.day_of_week] ?? "M",
       startTime: parseTime12h(start),

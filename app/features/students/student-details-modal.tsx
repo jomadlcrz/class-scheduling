@@ -38,52 +38,50 @@ export function StudentDetailsModal({ student }: StudentDetailsModalProps) {
               {student.academics.map((a, i) => (
                 <div
                   key={a.studentAcademicId}
-                  className={`grid grid-cols-1 gap-3 sm:grid-cols-3 ${
-                    i > 0 ? "border-t border-slate-200 pt-3 dark:border-white/10" : ""
-                  }`}
+                  className={i > 0 ? "border-t border-slate-200 pt-3 dark:border-white/10" : ""}
                 >
-                  <Field label="Program" value={a.program} />
-                  <Field label="Year Level" value={yearLevelLabel(a.yearLevel)} />
-                  <Field label="Set" value={a.set ?? "—"} />
-                  <Field label="Enrolled Status" value={a.enrolledStatus} />
-                  <Field label="Student Type" value={a.studentType} />
-                  <Field label="School Year" value={a.schoolYear ?? "—"} />
-                  <Field label="Semester" value={a.semester ?? "—"} />
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <Field label="Program" value={a.program} />
+                    <Field label="Year Level" value={yearLevelLabel(a.yearLevel)} />
+                    <Field label="Set" value={a.set ?? "—"} />
+                    <Field label="Enrolled Status" value={a.enrolledStatus} />
+                    <Field label="Student Type" value={a.studentType} />
+                    <Field label="School Year" value={a.schoolYear ?? "—"} />
+                    <Field label="Semester" value={a.semester ?? "—"} />
+                  </div>
+
+                  <div className="mt-3">
+                    <Label>Enrolled Subjects</Label>
+                    {a.enrolledSubjects.length === 0 ? (
+                      <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                        No enrolled subjects found.
+                      </p>
+                    ) : (
+                      <Table>
+                        <TableHead>
+                          <TableHeader>Code</TableHeader>
+                          <TableHeader>Descriptive Title</TableHeader>
+                          <TableHeader className="text-center">Units</TableHeader>
+                        </TableHead>
+                        <TableBody>
+                          {a.enrolledSubjects.map((es) => (
+                            <TableRow key={es.subjectId}>
+                              <TableCell className="text-slate-600 dark:text-slate-300">
+                                {es.subjectCode}
+                              </TableCell>
+                              <TableCell>{es.descriptiveTitle}</TableCell>
+                              <TableCell className="text-center">{es.units}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </Card>
-      </section>
-
-      <section>
-        <SectionHeading>Enrolled Subjects</SectionHeading>
-        {student.enrolledSubjects.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            No enrolled subjects found.
-          </p>
-        ) : (
-          <div className="mt-2">
-            <Table>
-              <TableHead>
-                <TableHeader>Code</TableHeader>
-                <TableHeader>Descriptive Title</TableHeader>
-                <TableHeader className="text-center">Units</TableHeader>
-              </TableHead>
-              <TableBody>
-                {student.enrolledSubjects.map((es) => (
-                  <TableRow key={es.subjectId}>
-                    <TableCell className="text-slate-600 dark:text-slate-300">
-                      {es.subjectCode}
-                    </TableCell>
-                    <TableCell>{es.descriptiveTitle}</TableCell>
-                    <TableCell className="text-center">{es.units}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
       </section>
     </div>
   );

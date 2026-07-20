@@ -5,7 +5,7 @@ const DASHBOARD_ENDPOINTS: Record<Role, string> = {
   admin: "/super-admin/protected-dashboard",
   registrar: "/registrar-admin/protected-dashboard",
   dean: "/deans/protected-dashboard",
-  faculty: "/faculty/protected-dashboard",
+  faculty: "/instructor/protected-dashboard",
   student: "/students/protected-dashboard",
 };
 

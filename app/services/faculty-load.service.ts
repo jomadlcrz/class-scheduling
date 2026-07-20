@@ -1,12 +1,10 @@
 import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import { programService } from "~/services/program.service";
 import type {
-  DailyLoad,
   DepartmentFacultyOption,
   DepartmentSubjectProgram,
   FacultyLoadInput,
-  FacultyLoadRecord,
-  LoadedSubject,
+  FacultyLoadingEntry,
 } from "~/types/faculty-load";
 
 /**
@@ -14,20 +12,21 @@ import type {
  * first/last name and resolves subjects per program abbreviation.
  */
 
-/** POST /deans/create-faculty-loads — bulk save for one semester + school year. Returns the backend message. */
-async function createBulk(
-  semId: number,
+/** POST /deans/subject-assignments — bulk save for one semester + school year. Returns the backend message. */
+async function createSubjectAssignments(
   syId: number,
-  facultyLoads: FacultyLoadInput[],
+  semId: number,
+  instructorLoads: FacultyLoadInput[],
 ): Promise<string> {
-  const data = await apiPost<{ message?: string }>(
-    `/deans/create-faculty-loads?sem_id=${semId}&sy_id=${syId}`,
-    { facultyLoads },
-  );
+  const data = await apiPost<{ message?: string }>("/deans/subject-assignments", {
+    instructorLoads,
+    syId,
+    semId,
+  });
   return apiMessage(data);
 }
 
-type DepartmentFacultiesResponse = {
+type DepartmentInstructorsResponse = {
   department: string;
   firstName: string;
   midName: string | null;
@@ -39,10 +38,10 @@ type DepartmentFacultiesResponse = {
   roles: string[];
 }[];
 
-/** GET /deans/view-department-faculties — the dean's own department roster. */
+/** GET /deans/instructors — the dean's own department roster. */
 async function listDepartmentFaculties(): Promise<DepartmentFacultyOption[]> {
   try {
-    return await apiGet<DepartmentFacultiesResponse>("/deans/view-department-faculties");
+    return await apiGet<DepartmentInstructorsResponse>("/deans/instructors");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -70,14 +69,14 @@ type DepartmentSubjectsResponse = {
 }[];
 
 /**
- * GET /deans/view-department-subjects — the dean's own department curriculum tree.
+ * GET /deans/subjects — the dean's own department curriculum tree.
  * The response only has program names, so program abbrevs are joined in from
  * programService.list() (the same trick curriculumService.getByProgram uses).
  */
 async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
   let data: DepartmentSubjectsResponse;
   try {
-    data = await apiGet<DepartmentSubjectsResponse>("/deans/view-department-subjects");
+    data = await apiGet<DepartmentSubjectsResponse>("/deans/subjects");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -110,65 +109,68 @@ async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
   });
 }
 
-type FacultyLoadsResponse = {
-  teaching_term_id: number;
-  programs: string[];
-  department_abbrev: string;
-  full_name: string;
-  school_year: string;
+type FacultyLoadingResponse = {
+  instructor_name: string;
+  department: string;
   semester: string;
-  loaded_subjects: {
-    year_level: number;
-    semester_category: number;
-    subj_id: number;
+  academic_year: string;
+  subjects: {
     subject_code: string;
-    desc_title: string;
-    subject_units: number;
+    descriptive_title: string;
+    units: { total: number; lec_hours: number; lab_hours: number };
+    schedules: {
+      day: string;
+      time: string;
+      number_of_students: number;
+      course: string;
+      year_level: number;
+      set_code: string;
+      room: string | null;
+    }[];
   }[];
-  total_load_units: number;
-  max_daily_hours: number;
-  max_weekly_hours: number;
-  current_weekly_hours: number;
-  daily_loads: { day_of_week: number; current_daily_hours: number }[];
 }[];
 
 /**
- * GET /deans/view-faculty-loads — every existing teaching term for the dean's
- * department. Not filtered by term server-side; callers filter by schoolYear/semester.
+ * GET /deans/faculty-loading — the loading sheet for one term (requires
+ * sy_id + sem_id). Unlike every other dean endpoint this one is hand-built
+ * snake_case JSON, not a marshmallow schema with camelCase data_keys — map
+ * it by hand rather than assuming the usual auto-camelCase convention.
  */
-async function list(): Promise<FacultyLoadRecord[]> {
-  let data: FacultyLoadsResponse;
+async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLoadingEntry[]> {
+  let data: FacultyLoadingResponse;
   try {
-    data = await apiGet<FacultyLoadsResponse>("/deans/view-faculty-loads");
+    data = await apiGet<FacultyLoadingResponse>(
+      `/deans/faculty-loading?sy_id=${syId}&sem_id=${semId}`,
+    );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((term) => ({
-    teachingTermId: term.teaching_term_id,
-    programs: term.programs,
-    departmentAbbrev: term.department_abbrev,
-    fullName: term.full_name,
-    schoolYear: term.school_year,
-    semester: term.semester,
-    loadedSubjects: term.loaded_subjects.map(
-      (s): LoadedSubject => ({
-        yearLevel: s.year_level,
-        semesterCategory: s.semester_category,
-        subjectId: s.subj_id,
-        subjectCode: s.subject_code,
-        descriptiveTitle: s.desc_title,
-        units: s.subject_units,
-      }),
-    ),
-    totalLoadUnits: term.total_load_units,
-    maxDailyHours: term.max_daily_hours,
-    maxWeeklyHours: term.max_weekly_hours,
-    currentWeeklyHours: term.current_weekly_hours,
-    dailyLoads: term.daily_loads.map(
-      (d): DailyLoad => ({ dayOfWeek: d.day_of_week, currentDailyHours: d.current_daily_hours }),
-    ),
+  return data.map((entry) => ({
+    instructorName: entry.instructor_name,
+    department: entry.department,
+    semester: entry.semester,
+    academicYear: entry.academic_year,
+    subjects: entry.subjects.map((s) => ({
+      subjectCode: s.subject_code,
+      descriptiveTitle: s.descriptive_title,
+      units: { total: s.units.total, lecHours: s.units.lec_hours, labHours: s.units.lab_hours },
+      schedules: s.schedules.map((sc) => ({
+        day: sc.day,
+        time: sc.time,
+        numberOfStudents: sc.number_of_students,
+        course: sc.course,
+        yearLevel: sc.year_level,
+        setCode: sc.set_code,
+        room: sc.room,
+      })),
+    })),
   }));
 }
 
-export const facultyLoadService = { createBulk, listDepartmentFaculties, listDepartmentSubjects, list };
+export const facultyLoadService = {
+  createSubjectAssignments,
+  listDepartmentFaculties,
+  listDepartmentSubjects,
+  getFacultyLoading,
+};

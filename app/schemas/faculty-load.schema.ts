@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const facultyLoadEntrySchema = z.object({
   facultyKey: z.string().min(1, "Select a faculty member."),
-  maxDailyHours: z.coerce.number().positive("Enter max daily hours."),
   maxWeeklyHours: z.coerce.number().positive("Enter max weekly hours."),
   programs: z
     .array(

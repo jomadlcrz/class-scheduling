@@ -8,6 +8,7 @@ import { FacultyAvailability } from "~/features/faculty/faculty-availability";
 import {
   facultyKey,
   flattenDepartmentSubjects,
+  formatInstructorName,
   groupSubjectsByProgram,
   type SubjectChoice,
 } from "~/lib/faculty-load";
@@ -16,7 +17,7 @@ import type {
   DepartmentFacultyOption,
   DepartmentSubjectProgram,
   FacultyLoadInput,
-  FacultyLoadRecord,
+  FacultyLoadingEntry,
 } from "~/types/faculty-load";
 
 type SubjectPickerProps = {
@@ -117,7 +118,7 @@ type FacultyAssignmentFormProps = {
   initialEntry?: FacultyLoadInput;
   faculties: DepartmentFacultyOption[];
   subjectPrograms: DepartmentSubjectProgram[];
-  existingLoads: FacultyLoadRecord[];
+  existingLoads: FacultyLoadingEntry[];
   /** Faculty keys already staged in the current batch — excluded from the picker unless editing. */
   stagedKeys: string[];
   onAdd: (entry: FacultyLoadInput) => void;
@@ -142,7 +143,6 @@ export function FacultyAssignmentForm({
   const [facultyQuery, setFacultyQuery] = useState(
     initialEntry ? `${initialEntry.firstName} ${initialEntry.lastName}` : "",
   );
-  const [maxDailyHours, setMaxDailyHours] = useState(String(initialEntry?.maxDailyHours ?? ""));
   const [maxWeeklyHours, setMaxWeeklyHours] = useState(String(initialEntry?.maxWeeklyHours ?? ""));
 
   const allSubjects = flattenDepartmentSubjects(subjectPrograms);
@@ -162,20 +162,19 @@ export function FacultyAssignmentForm({
     `${f.firstName} ${f.lastName}`.toLowerCase().includes(facultyQuery.trim().toLowerCase()),
   );
 
-  const existingLoad = existingLoads.find(
-    (l) => l.fullName.toLowerCase() === `${facultyQuery}`.trim().toLowerCase(),
-  );
+  const selectedFaculty = faculties.find((f) => facultyKey(f.firstName, f.lastName) === selectedKey);
+  const existingLoad = selectedFaculty
+    ? existingLoads.find((l) => l.instructorName === formatInstructorName(selectedFaculty))
+    : undefined;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const faculty = faculties.find((f) => facultyKey(f.firstName, f.lastName) === selectedKey);
-    const firstName = faculty?.firstName ?? initialEntry?.firstName ?? "";
-    const lastName = faculty?.lastName ?? initialEntry?.lastName ?? "";
+    const firstName = selectedFaculty?.firstName ?? initialEntry?.firstName ?? "";
+    const lastName = selectedFaculty?.lastName ?? initialEntry?.lastName ?? "";
 
     const result = facultyLoadEntrySchema.safeParse({
       facultyKey: selectedKey,
-      maxDailyHours,
       maxWeeklyHours,
       programs: groupSubjectsByProgram(selectedSubjects),
     });
@@ -188,7 +187,6 @@ export function FacultyAssignmentForm({
     onAdd({
       firstName,
       lastName,
-      maxDailyHours: result.data.maxDailyHours,
       maxWeeklyHours: result.data.maxWeeklyHours,
       programs: result.data.programs,
     });
@@ -196,7 +194,6 @@ export function FacultyAssignmentForm({
     if (!isEditing) {
       setSelectedKey("");
       setFacultyQuery("");
-      setMaxDailyHours("");
       setMaxWeeklyHours("");
       setSelectedSubjectKeys([]);
     }
@@ -242,28 +239,16 @@ export function FacultyAssignmentForm({
 
       {selectedKey && <FacultyAvailability existingLoad={existingLoad} />}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Input
-          id="fl-max-daily"
-          label="Max Daily Hours"
-          type="number"
-          min="0"
-          step="0.5"
-          placeholder="e.g. 6"
-          value={maxDailyHours}
-          onChange={(e) => setMaxDailyHours(e.target.value)}
-        />
-        <Input
-          id="fl-max-weekly"
-          label="Max Weekly Hours"
-          type="number"
-          min="0"
-          step="0.5"
-          placeholder="e.g. 24"
-          value={maxWeeklyHours}
-          onChange={(e) => setMaxWeeklyHours(e.target.value)}
-        />
-      </div>
+      <Input
+        id="fl-max-weekly"
+        label="Max Weekly Hours"
+        type="number"
+        min="0"
+        step="0.5"
+        placeholder="e.g. 24"
+        value={maxWeeklyHours}
+        onChange={(e) => setMaxWeeklyHours(e.target.value)}
+      />
 
       <SubjectPicker options={allSubjects} value={selectedSubjectKeys} onChange={setSelectedSubjectKeys} />
 

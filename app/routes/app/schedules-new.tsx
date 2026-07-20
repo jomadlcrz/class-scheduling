@@ -241,7 +241,6 @@ function SchedulesNewPage() {
         facultyName: slot.facultyName,
         roomId: String(slot.roomId ?? ""),
         roomName: slot.roomName,
-        buildingCode: "",
         mode: slot.mode,
         day: slot.day,
         startTime: slot.startTime,

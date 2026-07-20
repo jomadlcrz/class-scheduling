@@ -1,71 +1,69 @@
-import type { Administrator, CreateAdministratorAccountInput } from "~/types/administrator";
+import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
+import type { Administrator, AdministratorRole, CreateAdministratorAccountInput } from "~/types/administrator";
 
 /**
- * UI-only mock administrator service (in-memory, no backend yet). Swap the
- * internals for real `apiGet`/`apiPost`/`apiPatch`/`apiDelete` calls (see
- * faculty.service.ts) once the backend exposes admin/registrar endpoints —
- * the function signatures below are shaped to match that swap.
+ * Administrator service (Super Admin / Registrar Admin accounts). `create`
+ * and `list` talk to the real API (super_admin module) — there is no
+ * PATCH/DELETE endpoint, so reset-password/deactivate/reactivate aren't
+ * offered here.
  */
 
-function delay(ms = 400) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-let nextId = 1;
-let accounts: Administrator[] = [];
-
-function emailTaken(email: string): boolean {
-  return accounts.some((a) => a.email.toLowerCase() === email.toLowerCase());
-}
-
-async function list(): Promise<Administrator[]> {
-  await delay();
-  return [...accounts];
-}
-
+/** POST /super-admin/create-admin-accounts — emails temp password. Returns the backend message. */
 async function create(input: CreateAdministratorAccountInput): Promise<string> {
-  await delay();
-  if (emailTaken(input.email)) {
-    throw new Error("An administrator with that email already exists.");
+  const data = await apiPost<{ message?: string }>("/super-admin/create-admin-accounts", {
+    departmentId: input.departmentId,
+    firstName: input.firstName,
+    ...(input.midName && { midName: input.midName }),
+    lastName: input.lastName,
+    // Omitted enum fields default to "N/A" (NOT_SPECIFIED) on the backend.
+    ...(input.gender && { gender: input.gender }),
+    ...(input.civilStatus && { civilStatus: input.civilStatus }),
+    contact: { mobile: input.mobile, email: input.email },
+    roleName: input.roleName,
+  });
+  return apiMessage(data);
+}
+
+/** GET /super-admin/create-admin-accounts — returns all Super Admin/Registrar Admin profiles. 404 → empty. */
+async function list(): Promise<Administrator[]> {
+  type AdminResponse = {
+    profile_id: number;
+    first_name: string;
+    mid_name: string | null;
+    last_name: string;
+    gender: string;
+    civil_status: string;
+    department: string | null;
+    mobile: string | null;
+    email: string | null;
+    roles: { role_id: number; role_name: string; permissions: unknown[] }[];
+  };
+
+  let data: AdminResponse[];
+  try {
+    data = await apiGet<AdminResponse[]>("/super-admin/create-admin-accounts");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
   }
 
-  const record: Administrator = {
-    id: nextId++,
-    firstName: input.firstName,
-    midName: input.midName?.trim() ? input.midName : null,
-    lastName: input.lastName,
-    email: input.email,
-    roleName: input.roleName,
-    departmentId: input.roleName === "Registrar Admin" ? (input.departmentId ?? null) : null,
-    isActive: true,
-    isTemp: true,
-  };
-  accounts.push(record);
-  return `Administrator registered. Login credentials would be emailed to ${input.email}.`;
+  return data.map((a) => {
+    const department = a.department ?? "";
+    const deptParts = department.split(" - ");
+    return {
+      id: a.profile_id,
+      firstName: a.first_name,
+      midName: a.mid_name,
+      lastName: a.last_name,
+      gender: a.gender,
+      civilStatus: a.civil_status,
+      department,
+      departmentCode: deptParts[0] ?? department,
+      mobile: a.mobile,
+      email: a.email,
+      roleName: (a.roles[0]?.role_name ?? "Registrar Admin") as AdministratorRole,
+    };
+  });
 }
 
-async function resetPassword(id: number): Promise<string> {
-  await delay();
-  const account = accounts.find((a) => a.id === id);
-  if (!account) throw new Error("Administrator not found.");
-  account.isTemp = true;
-  return `Password reset. New login credentials would be emailed to ${account.email}.`;
-}
-
-async function deactivate(id: number): Promise<string> {
-  await delay();
-  const account = accounts.find((a) => a.id === id);
-  if (!account) throw new Error("Administrator not found.");
-  account.isActive = false;
-  return "Administrator deactivated.";
-}
-
-async function reactivate(id: number): Promise<string> {
-  await delay();
-  const account = accounts.find((a) => a.id === id);
-  if (!account) throw new Error("Administrator not found.");
-  account.isActive = true;
-  return "Administrator restored.";
-}
-
-export const administratorService = { list, create, resetPassword, deactivate, reactivate };
+export const administratorService = { list, create };

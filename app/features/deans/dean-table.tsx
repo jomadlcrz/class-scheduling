@@ -1,5 +1,3 @@
-﻿import { Badge } from "~/components/ui/badge";
-import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
@@ -9,39 +7,26 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  DEAN_STATUS_LABELS,
-  DEAN_STATUS_TONES,
-  type Dean,
-} from "~/types/dean";
+import type { Faculty } from "~/types/faculty";
 
 type DeanTableProps = {
-  deans: Dean[];
-  onEdit: (member: Dean) => void;
-  onToggleStatus: (member: Dean) => void;
+  deans: Faculty[];
 };
 
-const actionButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
-
-export function DeanTable({ deans, onEdit, onToggleStatus }: DeanTableProps) {
+export function DeanTable({ deans }: DeanTableProps) {
   return (
     <Table>
       <TableHead>
         <TableHeader>Name</TableHeader>
         <TableHeader className="hidden sm:table-cell">Email</TableHeader>
         <TableHeader>Department</TableHeader>
-        <TableHeader>Status</TableHeader>
-        <TableHeader>
-          <span className="sr-only">Actions</span>
-        </TableHeader>
       </TableHead>
       <TableBody>
         {deans.map((member) => (
           <TableRow key={member.id}>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">
-                {member.name}
+                {member.lastName}, {member.firstName}
               </span>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
@@ -56,37 +41,6 @@ export function DeanTable({ deans, onEdit, onToggleStatus }: DeanTableProps) {
                   className="size-8 rounded-lg object-contain"
                 />
                 <span className="text-slate-600 dark:text-slate-300">{member.departmentCode}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <Badge tone={DEAN_STATUS_TONES[member.status]}>
-                {DEAN_STATUS_LABELS[member.status]}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <div className="flex justify-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => onEdit(member)}
-                  aria-label={`Edit ${member.name}`}
-                  title="Edit"
-                  className={actionButtonClassName}
-                >
-                  <EditIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onToggleStatus(member)}
-                  aria-label={
-                    member.status === "active"
-                      ? `Deactivate ${member.name}`
-                      : `Activate ${member.name}`
-                  }
-                  title={member.status === "active" ? "Deactivate" : "Activate"}
-                  className={actionButtonClassName}
-                >
-                  {member.status === "active" ? <UserOffIcon /> : <UserCheckIcon />}
-                </button>
               </div>
             </TableCell>
           </TableRow>

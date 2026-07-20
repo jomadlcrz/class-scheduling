@@ -1,45 +1,19 @@
-import type { Dean, CreateDeanInput, DeanStatus, UpdateDeanInput } from "~/types/dean";
+import { facultyService } from "~/services/faculty.service";
+import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 
-function findDean(id: string): Dean {
-  const d = deans.find((d) => d.id === id);
-  if (!d) throw new Error("Dean not found.");
-  return d;
+/**
+ * Deans have no dedicated backend endpoint — they're Faculty accounts
+ * (POST/GET /super-admin/create-faculty-accounts) filtered/created with
+ * roleName "Dean". See faculty.service.ts for the real API calls.
+ */
+
+async function list(): Promise<Faculty[]> {
+  const faculty = await facultyService.list();
+  return faculty.filter((f) => f.roles.some((r) => r.name === "Dean"));
 }
 
-function emailTaken(email: string, excludeId?: string): boolean {
-  return deans.some(
-    (d) => d.id !== excludeId && d.email.toLowerCase() === email.trim().toLowerCase(),
-  );
+async function create(input: Omit<CreateFacultyAccountInput, "roleName">): Promise<string> {
+  return facultyService.create({ ...input, roleName: "Dean" });
 }
 
-async function list(): Promise<Dean[]> {
-  await delay();
-  return [...deans];
-}
-
-async function create(input: CreateDeanInput): Promise<Dean> {
-  await delay(300);
-  if (emailTaken(input.email))
-    throw new Error(`Email "${input.email}" is already in use.`);
-  const member: Dean = { id: newDeanId(), ...input };
-  deans.push(member);
-  return member;
-}
-
-async function update(id: string, input: UpdateDeanInput): Promise<Dean> {
-  await delay();
-  const member = findDean(id);
-  if (input.email && emailTaken(input.email, id))
-    throw new Error(`Email "${input.email}" is already in use.`);
-  Object.assign(member, input);
-  return member;
-}
-
-async function setStatus(id: string, status: DeanStatus): Promise<Dean> {
-  await delay();
-  const member = findDean(id);
-  member.status = status;
-  return member;
-}
-
-export const deanService = { list, create, update, setStatus };
+export const deanService = { list, create };

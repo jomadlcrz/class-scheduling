@@ -84,7 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Administration",
     items: [
-      { label: "Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
+      { label: "Roles & Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
       { label: "Audit Log", to: "/audit", icon: <ClockIcon />, roles: ["admin"] },
     ],
   },

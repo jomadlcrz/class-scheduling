@@ -43,6 +43,3 @@ There is no unit/component test suite and no ESLint/Prettier configured — `tsc
 
 **Design system:** tokens live in `app/app.css` under Tailwind v4's `@theme` block (no `tailwind.config.js`) — always use the Tailwind names, never hardcode hex values. Two fonts only: `font-display` (Bebas Neue, headings) and `font-sans` (Century Gothic, everything else). Dark mode is class-based (`.dark` on `<html>`) — every visual class needs a `dark:` counterpart.
 
-## Known issue
-
-`app/services/administrator.service.ts` is a UI-only in-memory mock (no backend endpoints exist yet for admin/registrar account management) — swap its internals for real `apiGet`/`apiPost`/`apiPatch`/`apiDelete` calls (see `faculty.service.ts`) once the backend exposes them.

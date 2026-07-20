@@ -50,7 +50,6 @@ export type Schedule = {
   facultyName: string;
   roomId: string;
   roomName: string;
-  buildingCode: string;
   mode: ScheduleMode;
   day: Day;
   startTime: string;
