@@ -3,8 +3,8 @@ import { AcademicYearPage } from "~/features/academic-year/academic-year-page";
 
 export function meta() {
   return [
-    { title: "Academic Year — GWC Class Scheduling" },
-    { name: "description", content: "Manage school years and semesters." },
+    { title: "Academic Years — GWC Class Scheduling" },
+    { name: "description", content: "Manage school years and their semesters." },
   ];
 }
 
