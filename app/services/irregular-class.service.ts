@@ -37,6 +37,7 @@ export type IrregularStudent = {
   /** Display-only school ID number; can be null (irregular students aren't required to have one assigned yet). */
   studentId: string | null;
   studentName: string;
+  email: string | null;
   programTaken: string;
   subjectsEnrolled: { subjectId: number; subjectCode: string; descTitle: string; units: number }[];
 };
@@ -71,6 +72,7 @@ async function listStudents(): Promise<IrregularStudent[]> {
       studentProfileId: s.student_profile_id,
       studentId: s.student_id,
       studentName: `${s.last_name}, ${s.first_name}`,
+      email: s.email,
       programTaken: current?.program ?? "—",
       subjectsEnrolled: (current?.enrolled_subjects ?? []).map((sub) => ({
         subjectId: sub.subject_id,

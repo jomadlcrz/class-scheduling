@@ -1,4 +1,3 @@
-import { Badge } from "~/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -18,7 +17,6 @@ export function RegularStudentTable({ students }: { students: RegularStudentRow[
         <TableHeader>Name</TableHeader>
         <TableHeader className="hidden sm:table-cell">Program</TableHeader>
         <TableHeader className="hidden lg:table-cell">Email</TableHeader>
-        <TableHeader>Account</TableHeader>
       </TableHead>
       <TableBody>
         {students.map((student) => {
@@ -38,9 +36,6 @@ export function RegularStudentTable({ students }: { students: RegularStudentRow[
               </TableCell>
               <TableCell className="hidden lg:table-cell text-slate-500 dark:text-slate-400">
                 {student.email ?? "—"}
-              </TableCell>
-              <TableCell>
-                <Badge tone="slate">{student.accountStatus}</Badge>
               </TableCell>
             </TableRow>
           );

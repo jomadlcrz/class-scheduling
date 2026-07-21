@@ -16,8 +16,10 @@ import { StudentDetailsModal } from "~/features/students/student-details-modal";
 import { StudentEnrollForm } from "~/features/students/student-enroll-form";
 import { StudentRecordForm } from "~/features/students/student-record-form";
 import { RegularStudentTable } from "~/features/students/regular-student-table";
+import { IrregularStudentTable } from "~/features/students/irregular-student-table";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
+import { irregularClassService, type IrregularStudent } from "~/services/irregular-class.service";
 import { programService } from "~/services/program.service";
 import { regularClassService } from "~/services/regular-class.service";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
@@ -65,9 +67,11 @@ function StudentsPage() {
   const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
 
   const [search, setSearch] = useState("");
-  const [activeView, setActiveView] = useState<"all" | "regular">("all");
+  const [activeView, setActiveView] = useState<"all" | "regular" | "irregular">("all");
   const [regularStudents, setRegularStudents] = useState<RegularStudentRow[] | null>(null);
   const [regularLoadError, setRegularLoadError] = useState<string | null>(null);
+  const [irregularStudents, setIrregularStudents] = useState<IrregularStudent[] | null>(null);
+  const [irregularLoadError, setIrregularLoadError] = useState<string | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdRecord, setCreatedRecord] = useState(false);
@@ -170,6 +174,18 @@ function StudentsPage() {
       });
   }, [activeView, regularStudents]);
 
+  // Lazy-loaded: only fetched once the Irregular Students view is opened.
+  useEffect(() => {
+    if (activeView !== "irregular" || irregularStudents !== null) return;
+    irregularClassService
+      .listStudents()
+      .then(setIrregularStudents)
+      .catch((err) => {
+        setIrregularLoadError(err instanceof Error ? err.message : "Unable to load irregular students.");
+        setIrregularStudents([]);
+      });
+  }, [activeView, irregularStudents]);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
@@ -184,7 +200,7 @@ function StudentsPage() {
       />
 
       <div className="mt-6 flex gap-2 border-b border-slate-200 dark:border-white/10">
-        {(["all", "regular"] as const).map((view) => (
+        {(["all", "regular", "irregular"] as const).map((view) => (
           <button
             key={view}
             type="button"
@@ -195,7 +211,7 @@ function StudentsPage() {
                 : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
-            {view === "all" ? "All Students" : "Regular Students"}
+            {view === "all" ? "All Students" : view === "regular" ? "Regular Students" : "Irregular Students"}
           </button>
         ))}
       </div>
@@ -252,7 +268,7 @@ function StudentsPage() {
             </>
           )}
         </div>
-      ) : (
+      ) : activeView === "regular" ? (
         <div className="mt-6">
           {regularLoadError ? (
             <ResultState tone="error" title="Unable to load">
@@ -272,6 +288,28 @@ function StudentsPage() {
             </EmptyState>
           ) : (
             <RegularStudentTable students={regularStudents} />
+          )}
+        </div>
+      ) : (
+        <div className="mt-6">
+          {irregularLoadError ? (
+            <ResultState tone="error" title="Unable to load">
+              {irregularLoadError}
+            </ResultState>
+          ) : irregularStudents === null ? (
+            <div
+              role="status"
+              aria-label="Loading irregular students"
+              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+            >
+              <Spinner />
+            </div>
+          ) : irregularStudents.length === 0 ? (
+            <EmptyState title="No irregular students">
+              No students are currently flagged as irregular.
+            </EmptyState>
+          ) : (
+            <IrregularStudentTable students={irregularStudents} />
           )}
         </div>
       )}
