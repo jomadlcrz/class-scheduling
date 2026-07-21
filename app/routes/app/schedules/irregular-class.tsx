@@ -6,6 +6,7 @@ import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { AssignedScheduleTable } from "~/features/schedules/assigned-schedule-table";
 import { AssignSchedulePanel } from "~/features/schedules/assign-schedule-panel";
 import { IrregularStudentList } from "~/features/schedules/irregular-student-list";
 import { IrregularStudentPanel } from "~/features/schedules/irregular-student-panel";
@@ -15,6 +16,7 @@ import { PageHeader } from "~/layouts/page-header";
 import {
   irregularClassService,
   type IrregularStudent,
+  type StudentAssignedSchedule,
   type StudentPendingSchedule,
 } from "~/services/irregular-class.service";
 
@@ -46,6 +48,7 @@ function IrregularClassPage() {
   const [schoolYear, setSchoolYear] = useState("");
   const [semId, setSemId] = useState("");
   const [pending, setPending] = useState<StudentPendingSchedule[] | null>(null);
+  const [assigned, setAssigned] = useState<StudentAssignedSchedule[] | null>(null);
 
   useEffect(() => {
     irregularClassService
@@ -67,12 +70,17 @@ function IrregularClassPage() {
   useEffect(() => {
     if (!matchedSy || !matchedSem) {
       setPending(null);
+      setAssigned(null);
       return;
     }
     irregularClassService
       .listPendingSchedule(matchedSy.id, matchedSem.id)
       .then(setPending)
       .catch(() => setPending([]));
+    irregularClassService
+      .listAssignedSchedule(matchedSy.id, matchedSem.id)
+      .then(setAssigned)
+      .catch(() => setAssigned([]));
   }, [matchedSy?.id, matchedSem?.id]);
 
   const selectedPending = !matchedSy || !matchedSem
@@ -87,6 +95,7 @@ function IrregularClassPage() {
     if (message) toast.success(message);
     if (matchedSy && matchedSem) {
       irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.id).then(setPending).catch(() => {});
+      irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.id).then(setAssigned).catch(() => {});
     }
   }
 
@@ -114,13 +123,7 @@ function IrregularClassPage() {
         ))}
       </div>
 
-      {activeTab === "assigned" ? (
-        <div className="mt-6">
-          <EmptyState title="No assignments yet">
-            Assigned schedules will appear here after assignments are made this session.
-          </EmptyState>
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="mt-6">
           <EmptyState title="Couldn't load irregular students">{error}</EmptyState>
         </div>
@@ -187,32 +190,52 @@ function IrregularClassPage() {
             </FieldChrome>
           </Card>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_minmax(0,1fr)]">
-            <Card className="h-144 p-4">
-              <IrregularStudentList
-                students={students}
-                selectedStudentProfileId={selectedStudent?.studentProfileId ?? null}
-                onSelect={setSelectedStudent}
-              />
-            </Card>
+          {activeTab === "students" ? (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_minmax(0,1fr)]">
+              <Card className="h-144 p-4">
+                <IrregularStudentList
+                  students={students}
+                  selectedStudentProfileId={selectedStudent?.studentProfileId ?? null}
+                  onSelect={setSelectedStudent}
+                />
+              </Card>
 
-            <Card className="h-144 p-4">
-              <IrregularStudentPanel student={selectedStudent} />
-            </Card>
+              <Card className="h-144 p-4">
+                <IrregularStudentPanel student={selectedStudent} />
+              </Card>
 
-            <Card className="flex h-144 flex-col p-4">
-              <h3 className="shrink-0 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
-                Assign Regular Class Schedule
-              </h3>
-              {!selectedStudent ? (
-                <p className="mt-4 flex min-h-0 flex-1 items-center justify-center text-center font-body text-sm text-slate-400 dark:text-slate-500">
-                  Select a student to view assignable schedules.
-                </p>
-              ) : (
-                <AssignSchedulePanel pending={selectedPending} onAssign={handleAssign} />
-              )}
-            </Card>
-          </div>
+              <Card className="flex h-144 flex-col p-4">
+                <h3 className="shrink-0 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
+                  Assign Regular Class Schedule
+                </h3>
+                {!selectedStudent ? (
+                  <p className="mt-4 flex min-h-0 flex-1 items-center justify-center text-center font-body text-sm text-slate-400 dark:text-slate-500">
+                    Select a student to view assignable schedules.
+                  </p>
+                ) : (
+                  <AssignSchedulePanel pending={selectedPending} onAssign={handleAssign} />
+                )}
+              </Card>
+            </div>
+          ) : !matchedSy || !matchedSem ? (
+            <EmptyState title="Select a term">
+              Pick a school year and semester to see assigned schedules.
+            </EmptyState>
+          ) : assigned === null ? (
+            <div
+              role="status"
+              aria-label="Loading assigned schedules"
+              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+            >
+              <Spinner />
+            </div>
+          ) : assigned.length === 0 ? (
+            <EmptyState title="No assigned schedules">
+              No irregular students have an assigned schedule for this term yet.
+            </EmptyState>
+          ) : (
+            <AssignedScheduleTable students={assigned} />
+          )}
         </div>
       )}
     </div>
