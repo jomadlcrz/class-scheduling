@@ -60,7 +60,7 @@ export function StudentRecordForm({
   const filteredSets = selectedProgram
     ? sets.filter(
         (s) =>
-          s.program === selectedProgram.code &&
+          s.program === selectedProgram.abbrev &&
           (!yearLevel || String(s.yearLevel) === yearLevel),
       )
     : [];
@@ -73,13 +73,13 @@ export function StudentRecordForm({
     : isIrregular
       ? subjects.filter(
           (s) =>
-            s.program === selectedProgram.code &&
+            s.program === selectedProgram.abbrev &&
             s.semester === selectedSemester.semesterNumber,
         )
       : yearLevel
         ? subjects.filter(
             (s) =>
-              s.program === selectedProgram.code &&
+              s.program === selectedProgram.abbrev &&
               String(s.yearLevel) === yearLevel &&
               s.semester === selectedSemester.semesterNumber,
           )
@@ -245,7 +245,7 @@ export function StudentRecordForm({
             <Select
               items={[
                 { value: "", label: "Select a program" },
-                ...programs.map((p) => ({ value: String(p.id), label: `${p.code} — ${p.name}` })),
+                ...programs.map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` })),
               ]}
               name="student-program"
               value={programId}
@@ -258,7 +258,7 @@ export function StudentRecordForm({
                 <SelectItem value="">Select a program</SelectItem>
                 {programs.map((p) => (
                   <SelectItem key={p.id} value={String(p.id)}>
-                    {p.code} — {p.name}
+                    {p.abbrev} — {p.name}
                   </SelectItem>
                 ))}
               </SelectContent>

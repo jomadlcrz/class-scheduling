@@ -86,7 +86,7 @@ async function listDepartmentOptions(): Promise<DepartmentOption[]> {
   }
   return data.departments.map((d) => ({
     id: d.department_id,
-    code: d.department_abbrev,
+    abbrev: d.department_abbrev,
     name: d.department_name,
   }));
 }

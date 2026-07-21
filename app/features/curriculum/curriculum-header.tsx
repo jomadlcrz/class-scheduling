@@ -13,9 +13,9 @@ type CurriculumHeaderProps = {
 };
 
 export function CurriculumHeader({ programs, selected, onChange, curriculum }: CurriculumHeaderProps) {
-  const selectedProgram = programs.find((p) => p.code === selected);
+  const selectedProgram = programs.find((p) => p.abbrev === selected);
   const isLoaded = curriculum !== null && curriculum !== "loading";
-  const departmentCode = isLoaded ? curriculum.departmentCode : selectedProgram?.departmentCode;
+  const departmentCode = isLoaded ? curriculum.departmentCode : selectedProgram?.departmentAbbrev;
   const hasSubjects = isLoaded && curriculum.groups.length > 0;
   const totalUnits = hasSubjects ? curriculum.totalUnits : null;
   const termCount = hasSubjects ? curriculum.groups.length : null;
@@ -43,7 +43,7 @@ export function CurriculumHeader({ programs, selected, onChange, curriculum }: C
               label="Program"
               allLabel="Select a program…"
               allValue=""
-              options={programs.map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+              options={programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
               value={selected}
               onChange={onChange}
             />

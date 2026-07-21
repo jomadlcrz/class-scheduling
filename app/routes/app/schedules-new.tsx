@@ -186,7 +186,7 @@ function SchedulesNewPage() {
   const availableYearLevels = useMemo(
     () =>
       yearLevelIds.filter((yl) =>
-        sets.some((s) => s.program === selectedProgram?.code && s.yearLevel === yl),
+        sets.some((s) => s.program === selectedProgram?.abbrev && s.yearLevel === yl),
       ),
     [sets, selectedProgram, yearLevelIds],
   );
@@ -195,7 +195,7 @@ function SchedulesNewPage() {
     () =>
       sets.filter(
         (s) =>
-          s.program === selectedProgram?.code &&
+          s.program === selectedProgram?.abbrev &&
           s.yearLevel === selectedYearLevel &&
           !scheduledSetIds.has(s.id),
       ),
@@ -213,8 +213,8 @@ function SchedulesNewPage() {
         subjectTitle: slot.subjectTitle,
         setId: String(selectedSet?.id ?? ""),
         setCode: selectedSet?.setCode ?? "",
-        program: selectedProgram?.code ?? "",
-        departmentCode: selectedProgram?.departmentCode ?? "",
+        program: selectedProgram?.abbrev ?? "",
+        departmentCode: selectedProgram?.departmentAbbrev ?? "",
         yearLevel: (selectedYearLevel || 1) as YearLevel,
         facultyId: String(slot.facultyId ?? ""),
         facultyName: slot.facultyName,
@@ -230,7 +230,7 @@ function SchedulesNewPage() {
 
   function handleProgramChange(programId: string) {
     setSelectedProgramId(programId);
-    const code = programs?.find((p) => String(p.id) === programId)?.code;
+    const code = programs?.find((p) => String(p.id) === programId)?.abbrev;
     const newYl = yearLevelIds.find((yl) =>
       sets.some((s) => s.program === code && s.yearLevel === yl),
     );

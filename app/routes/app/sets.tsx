@@ -133,7 +133,7 @@ function SetsPage() {
             id="set-program-filter"
             label="Program"
             allLabel="All programs"
-            options={(programs ?? []).map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+            options={(programs ?? []).map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
             value={program}
             onChange={setProgram}
           />

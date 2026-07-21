@@ -25,8 +25,8 @@ async function list(): Promise<Program[]> {
   }
   return data.programs.map((p) => ({
     id: p.program_id,
-    departmentCode: p.department?.department_abbrev ?? "",
-    code: p.program_abbrev,
+    departmentAbbrev: p.department?.department_abbrev ?? "",
+    abbrev: p.program_abbrev,
     name: p.program_name,
     type: p.program_type,
     lengthYears: p.program_length,
@@ -39,7 +39,7 @@ async function create(input: CreateProgramInput): Promise<string> {
     programs: [
       {
         departmentName: input.departmentName,
-        programAbbrev: input.code,
+        programAbbrev: input.abbrev,
         programName: input.name,
         programType: input.type,
         programLength: input.lengthYears,
@@ -52,7 +52,7 @@ async function create(input: CreateProgramInput): Promise<string> {
 /** PUT /programs/:id — the department link is not updatable. Returns the backend message. */
 async function update(id: number, input: UpdateProgramInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/programs/${id}`, {
-    ...(input.code !== undefined && { programAbbrev: input.code }),
+    ...(input.abbrev !== undefined && { programAbbrev: input.abbrev }),
     ...(input.name !== undefined && { programName: input.name }),
     ...(input.type !== undefined && { programType: input.type }),
     ...(input.lengthYears !== undefined && { programLength: input.lengthYears }),

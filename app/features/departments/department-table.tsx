@@ -1,6 +1,5 @@
 ﻿import { Badge } from "~/components/ui/badge";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
-import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -9,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { getBuildingTone } from "~/types/building";
 import type { Department } from "~/types/department";
 
@@ -25,7 +25,7 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
   return (
     <Table>
       <TableHead>
-        <TableHeader>Logo &amp; Code</TableHeader>
+        <TableHeader>Logo &amp; Abbrev</TableHeader>
         <TableHeader>Department Name</TableHeader>
         <TableHeader className="hidden sm:table-cell">Building</TableHeader>
         <TableHeader>
@@ -38,13 +38,13 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
             <TableCell>
               <div className="flex items-center gap-3">
                 <img
-                  src={departmentLogoUrl(dept.code)}
-                  alt={`${dept.code} logo`}
+                  src={departmentLogoUrl(dept.abbrev)}
+                  alt={`${dept.abbrev} logo`}
                   onError={onDepartmentLogoError}
                   className="size-10 rounded-lg object-contain"
                 />
                 <div>
-                  <span className="font-medium text-navy-700 dark:text-mist-100">{dept.code}</span>
+                  <span className="font-medium text-navy-700 dark:text-mist-100">{dept.abbrev}</span>
                 </div>
               </div>
             </TableCell>
@@ -57,7 +57,7 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
                 <button
                   type="button"
                   onClick={() => onEdit(dept)}
-                  aria-label={`Edit ${dept.code}`}
+                  aria-label={`Edit ${dept.abbrev}`}
                   title="Edit"
                   className={actionButtonClassName}
                 >
@@ -66,7 +66,7 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
                 <button
                   type="button"
                   onClick={() => onDelete(dept)}
-                  aria-label={`Delete ${dept.code}`}
+                  aria-label={`Delete ${dept.abbrev}`}
                   title="Delete"
                   className={actionButtonClassName}
                 >

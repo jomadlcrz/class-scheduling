@@ -67,17 +67,17 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
 
       <FieldChrome id="set-program" label="Program">
         <Select
-          items={programs.map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+          items={programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
           name="set-program"
-          defaultValue={set?.program ?? programs[0]?.code}
+          defaultValue={set?.program ?? programs[0]?.abbrev}
         >
           <SelectTrigger id="set-program">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {programs.map((p) => (
-              <SelectItem key={p.code} value={p.code}>
-                {p.code} — {p.name}
+              <SelectItem key={p.abbrev} value={p.abbrev}>
+                {p.abbrev} — {p.name}
               </SelectItem>
             ))}
           </SelectContent>

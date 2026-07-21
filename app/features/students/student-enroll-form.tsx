@@ -58,17 +58,17 @@ export function StudentEnrollForm({
   const yearOptions = yearLevelIds.filter((y) => y <= (selectedProgram?.lengthYears ?? 6));
 
   const filteredSets = selectedProgram
-    ? sets.filter((s) => s.program === selectedProgram.code && (!yearLevel || String(s.yearLevel) === yearLevel))
+    ? sets.filter((s) => s.program === selectedProgram.abbrev && (!yearLevel || String(s.yearLevel) === yearLevel))
     : [];
 
   const filteredSubjects = !selectedProgram || !selectedSemester
     ? []
     : isIrregular
-      ? subjects.filter((s) => s.program === selectedProgram.code && s.semester === selectedSemester.semesterNumber)
+      ? subjects.filter((s) => s.program === selectedProgram.abbrev && s.semester === selectedSemester.semesterNumber)
       : yearLevel
         ? subjects.filter(
             (s) =>
-              s.program === selectedProgram.code &&
+              s.program === selectedProgram.abbrev &&
               String(s.yearLevel) === yearLevel &&
               s.semester === selectedSemester.semesterNumber,
           )
@@ -145,7 +145,7 @@ export function StudentEnrollForm({
           <Select
             items={[
               { value: "", label: "Select a program" },
-              ...programs.map((p) => ({ value: String(p.id), label: `${p.code} — ${p.name}` })),
+              ...programs.map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` })),
             ]}
             value={programId}
             onValueChange={(v) => setProgramId(v as string)}
@@ -157,7 +157,7 @@ export function StudentEnrollForm({
               <SelectItem value="">Select a program</SelectItem>
               {programs.map((p) => (
                 <SelectItem key={p.id} value={String(p.id)}>
-                  {p.code} — {p.name}
+                  {p.abbrev} — {p.name}
                 </SelectItem>
               ))}
             </SelectContent>

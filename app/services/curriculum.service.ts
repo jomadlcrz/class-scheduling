@@ -35,7 +35,7 @@ async function getByProgram(programCode: string): Promise<ProgramCurriculum | nu
     programService.list(),
   ]);
 
-  const program = programs.find((p) => p.code === programCode);
+  const program = programs.find((p) => p.abbrev === programCode);
   if (!program) return null;
 
   // The response identifies programs by name only (no program_abbrev).
@@ -65,7 +65,7 @@ async function getByProgram(programCode: string): Promise<ProgramCurriculum | nu
   return {
     programCode,
     programName: program.name,
-    departmentCode: program.departmentCode,
+    departmentCode: program.departmentAbbrev,
     groups,
     totalUnits: node?.program_total_units ?? 0,
   };

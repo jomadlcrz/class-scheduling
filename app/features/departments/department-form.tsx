@@ -22,13 +22,13 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const code = String(data.get("dept-code") ?? "").trim();
+    const abbrev = String(data.get("dept-abbrev") ?? "").trim();
     const name = String(data.get("dept-name") ?? "").trim();
     const buildingName = isEdit
       ? department!.buildingName
       : String(data.get("dept-building") ?? "");
 
-    const result = departmentSchema.safeParse({ code, name, buildingName });
+    const result = departmentSchema.safeParse({ abbrev, name, buildingName });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -50,12 +50,12 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
       <Input
-        id="dept-code"
-        label="Department Code"
+        id="dept-abbrev"
+        label="Department Abbrev"
         required
         placeholder="CITE"
-        defaultValue={department?.code ?? ""}
-        hint="Short code, e.g. CITE, CBA, COEd."
+        defaultValue={department?.abbrev ?? ""}
+        hint="Short abbreviation, e.g. CITE, CBA, COEd."
       />
       <Input
         id="dept-name"

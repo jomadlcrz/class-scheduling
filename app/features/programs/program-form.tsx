@@ -27,14 +27,14 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
     const data = new FormData(e.currentTarget);
     // The backend links programs to departments by name; not updatable afterwards.
     const departmentName = isEdit
-      ? departments.find((d) => d.code === program!.departmentCode)?.name ?? "unchanged"
+      ? departments.find((d) => d.abbrev === program!.departmentAbbrev)?.name ?? "unchanged"
       : String(data.get("prog-department") ?? "");
-    const code = String(data.get("prog-code") ?? "").trim().toUpperCase();
+    const abbrev = String(data.get("prog-abbrev") ?? "").trim().toUpperCase();
     const name = String(data.get("prog-name") ?? "").trim();
     const type = String(data.get("prog-type") ?? "");
     const lengthYears = PROGRAM_TYPE_YEARS[type] ?? computedYears;
 
-    const result = programSchema.safeParse({ departmentName, code, name, type, lengthYears });
+    const result = programSchema.safeParse({ departmentName, abbrev, name, type, lengthYears });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -51,7 +51,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
   }
 
   const defaultDeptName =
-    departments.find((d) => d.code === program?.departmentCode)?.name ??
+    departments.find((d) => d.abbrev === program?.departmentAbbrev)?.name ??
     departments[0]?.name ??
     "";
 
@@ -64,7 +64,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
         hint={isEdit ? "The department can't be changed after creation." : undefined}
       >
         <Select
-          items={departments.map((d) => ({ value: d.name, label: `${d.code} — ${d.name}` }))}
+          items={departments.map((d) => ({ value: d.name, label: `${d.abbrev} — ${d.name}` }))}
           name="prog-department"
           defaultValue={defaultDeptName}
           disabled={isEdit}
@@ -75,7 +75,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           <SelectContent>
             {departments.map((d) => (
               <SelectItem key={d.id} value={d.name}>
-                {d.code} — {d.name}
+                {d.abbrev} — {d.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -83,11 +83,11 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
       </FieldChrome>
       <div className="grid grid-cols-2 gap-3">
         <Input
-          id="prog-code"
-          label="Program Code"
+          id="prog-abbrev"
+          label="Program Abbrev"
           required
           placeholder="BSIS"
-          defaultValue={program?.code ?? ""}
+          defaultValue={program?.abbrev ?? ""}
         />
         <FieldChrome id="prog-type" label="Type">
           <Select

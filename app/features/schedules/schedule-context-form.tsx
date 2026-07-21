@@ -129,7 +129,7 @@ export function ScheduleContextForm({
         <Select
           items={[
             { value: "", label: "Select a program" },
-            ...(programs ?? []).map((p) => ({ value: String(p.id), label: `${p.code} — ${p.name}` })),
+            ...(programs ?? []).map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` })),
           ]}
           value={selectedProgramId}
           onValueChange={(v) => onProgramChange(v as string)}
@@ -142,7 +142,7 @@ export function ScheduleContextForm({
             <SelectItem value="">Select a program</SelectItem>
             {(programs ?? []).map((p) => (
               <SelectItem key={p.id} value={String(p.id)}>
-                {p.code} — {p.name}
+                {p.abbrev} — {p.name}
               </SelectItem>
             ))}
           </SelectContent>

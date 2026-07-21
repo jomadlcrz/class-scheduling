@@ -31,7 +31,7 @@ export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTa
   const { semesterLabel } = useSemesters();
   const { yearLevelLabel } = useYearLevels();
   const programDeptMap = useMemo(
-    () => new Map(programs.map((p) => [p.code, p.departmentCode])),
+    () => new Map(programs.map((p) => [p.abbrev, p.departmentAbbrev])),
     [programs],
   );
 

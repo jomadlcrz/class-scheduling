@@ -24,8 +24,8 @@ const actionButtonClassName =
 
 export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
   const { yearLevelLabel } = useYearLevels();
-  function getProgram(code: string) {
-    return programs.find((p) => p.code === code);
+  function getProgram(abbrev: string) {
+    return programs.find((p) => p.abbrev === abbrev);
   }
 
   return (
@@ -50,8 +50,8 @@ export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
                 <div className="flex items-center gap-2">
                   {program && (
                     <img
-                      src={departmentLogoUrl(program.departmentCode)}
-                      alt={`${program.departmentCode} logo`}
+                      src={departmentLogoUrl(program.departmentAbbrev)}
+                      alt={`${program.departmentAbbrev} logo`}
                       onError={onDepartmentLogoError}
                       className="size-8 rounded-lg object-contain"
                     />

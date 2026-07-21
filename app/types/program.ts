@@ -12,8 +12,8 @@ export const PROGRAM_TYPE_YEARS: Record<string, number> = {
 export type Program = {
   id: number;
   /** Department abbrev from GET /programs, e.g. "CITE". */
-  departmentCode: string;
-  code: string;
+  departmentAbbrev: string;
+  abbrev: string;
   name: string;
   /** Backend program_type string, e.g. "Bachelor Degree". */
   type: string;
@@ -23,7 +23,7 @@ export type Program = {
 /** Programs are linked to departments by name on create; not updatable afterwards. */
 export type CreateProgramInput = {
   departmentName: string;
-  code: string;
+  abbrev: string;
   name: string;
   type: string;
   lengthYears: number;

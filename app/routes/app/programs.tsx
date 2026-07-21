@@ -56,15 +56,15 @@ function ProgramsPage() {
     const q = search.trim().toLowerCase();
     return programsList
       .filter((p) => {
-        if (deptFilter !== "all" && p.departmentCode !== deptFilter) return false;
+        if (deptFilter !== "all" && p.departmentAbbrev !== deptFilter) return false;
         if (typeFilter !== "all" && p.type !== typeFilter) return false;
-        if (q && !p.code.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q))
+        if (q && !p.abbrev.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q))
           return false;
         return true;
       })
       .sort(
         (a, b) =>
-          a.departmentCode.localeCompare(b.departmentCode) || a.code.localeCompare(b.code),
+          a.departmentAbbrev.localeCompare(b.departmentAbbrev) || a.abbrev.localeCompare(b.abbrev),
       );
   }, [programsList, search, deptFilter, typeFilter]);
 
@@ -85,7 +85,7 @@ function ProgramsPage() {
   async function handleEdit(input: CreateProgramInput) {
     if (!editTarget) return;
     const message = await programService.update(editTarget.id, {
-      code: input.code,
+      abbrev: input.abbrev,
       name: input.name,
       type: input.type,
       lengthYears: input.lengthYears,
@@ -134,7 +134,7 @@ function ProgramsPage() {
             id="prog-dept-filter"
             label="Department"
             allLabel="All departments"
-            options={departments.map((d) => ({ value: d.code, label: d.code }))}
+            options={departments.map((d) => ({ value: d.abbrev, label: d.abbrev }))}
             value={deptFilter}
             onChange={setDeptFilter}
           />
@@ -206,7 +206,7 @@ function ProgramsPage() {
         onConfirm={() => handleDelete(deleteTarget!)}
       >
         Program{" "}
-        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.code}</span>{" "}
+        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.abbrev}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
       </ConfirmDialog>
     </div>

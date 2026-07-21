@@ -394,7 +394,7 @@ async function getCreationContext(): Promise<{ yearLevels: ScheduleYearLevelOpti
   };
 }
 
-export type ScheduleProgramOption = { id: number; code: string; name: string };
+export type ScheduleProgramOption = { id: number; abbrev: string; name: string };
 
 type ScheduleProgramsResponse = {
   program_id: number;
@@ -410,7 +410,7 @@ type ScheduleProgramsResponse = {
  */
 async function listPrograms(): Promise<ScheduleProgramOption[]> {
   const data = await apiGet<ScheduleProgramsResponse>("/schedule/programs");
-  return data.map((p) => ({ id: p.program_id, code: p.program_abbrev, name: p.program_name }));
+  return data.map((p) => ({ id: p.program_id, abbrev: p.program_abbrev, name: p.program_name }));
 }
 
 export const scheduleService = {

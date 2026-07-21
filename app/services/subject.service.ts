@@ -33,7 +33,7 @@ async function list(): Promise<Subject[]> {
     apiGet<SubjectsResponse>("/subjects"),
     programService.list(),
   ]);
-  const codeByName = new Map(programs.map((p) => [p.name, p.code]));
+  const codeByName = new Map(programs.map((p) => [p.name, p.abbrev]));
   return data.flatMap((program) =>
     program.curriculum_details.flatMap((year) =>
       year.semester_details.flatMap((sem) =>

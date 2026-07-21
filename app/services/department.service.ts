@@ -24,7 +24,7 @@ async function list(): Promise<Department[]> {
   }
   return data.departments.map((d) => ({
     id: d.department_id,
-    code: d.department_abbrev,
+    abbrev: d.department_abbrev,
     name: d.department_name,
     buildingName: d.building_name,
     programs: (d.programs ?? []).map((p) => ({ abbrev: p.program_abbrev, name: p.program_name })),
@@ -37,7 +37,7 @@ async function create(input: CreateDepartmentInput): Promise<string> {
     departments: [
       {
         buildingName: input.buildingName,
-        departmentAbbrev: input.code,
+        departmentAbbrev: input.abbrev,
         departmentName: input.name,
       },
     ],
@@ -45,10 +45,10 @@ async function create(input: CreateDepartmentInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** PUT /departments/:id — only the code and name are updatable. Returns the backend message. */
+/** PUT /departments/:id — only the abbrev and name are updatable. Returns the backend message. */
 async function update(id: number, input: UpdateDepartmentInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/departments/${id}`, {
-    ...(input.code !== undefined && { departmentAbbrev: input.code }),
+    ...(input.abbrev !== undefined && { departmentAbbrev: input.abbrev }),
     ...(input.name !== undefined && { departmentName: input.name }),
   });
   return apiMessage(data);

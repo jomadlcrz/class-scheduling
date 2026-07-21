@@ -48,7 +48,7 @@ function CurriculumPage() {
       .listPrograms()
       .then((list) => {
         setPrograms(list);
-        if (list.length > 0) setSelectedCode(list[0].code);
+        if (list.length > 0) setSelectedCode(list[0].abbrev);
       })
       .catch(() => setPrograms([]));
   }, []);

@@ -1,6 +1,6 @@
 export type Department = {
   id: number;
-  code: string;
+  abbrev: string;
   name: string;
   buildingName: string;
   /** Programs offered by the department, as returned by GET /departments. */
@@ -9,19 +9,19 @@ export type Department = {
 
 /** Buildings are referenced by name on create; not updatable afterwards. */
 export type CreateDepartmentInput = {
-  code: string;
+  abbrev: string;
   name: string;
   buildingName: string;
 };
 
 export type UpdateDepartmentInput = {
-  code?: string;
+  abbrev?: string;
   name?: string;
 };
 
 /** Real backend department (integer id) — used where the API needs one. */
 export type DepartmentOption = {
   id: number;
-  code: string;
+  abbrev: string;
   name: string;
 };

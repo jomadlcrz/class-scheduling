@@ -76,7 +76,7 @@ function SubjectsNewPage() {
       .then(([s, p]) => {
         setAllSubjects(s);
         setPrograms(p);
-        setProgram((current) => current || (p[0]?.code ?? ""));
+        setProgram((current) => current || (p[0]?.abbrev ?? ""));
       })
       .catch(() => {
         setAllSubjects([]);
@@ -167,7 +167,7 @@ function SubjectsNewPage() {
   }
 
   async function handleSave() {
-    const selectedProgram = (programs ?? []).find((p) => p.code === program);
+    const selectedProgram = (programs ?? []).find((p) => p.abbrev === program);
     if (!selectedProgram || pending.length === 0) return;
 
     setSaveError(null);
@@ -175,7 +175,7 @@ function SubjectsNewPage() {
     try {
       // One nested payload creates the whole batch atomically backend-side.
       const message = await subjectService.createCurriculum(
-        selectedProgram.code,
+        selectedProgram.abbrev,
         selectedProgram.name,
         pending.map(({ tempId: _tempId, program: _program, ...entry }) => entry),
       );
@@ -241,7 +241,7 @@ function SubjectsNewPage() {
             >
               <FieldChrome id="new-subject-program" label="Program">
                 <Select
-                  items={(programs ?? []).map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` }))}
+                  items={(programs ?? []).map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
                   value={program}
                   onValueChange={(v) => {
                     setProgram(v as string);
@@ -255,8 +255,8 @@ function SubjectsNewPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {(programs ?? []).map((p) => (
-                      <SelectItem key={p.code} value={p.code}>
-                        {p.code} — {p.name}
+                      <SelectItem key={p.abbrev} value={p.abbrev}>
+                        {p.abbrev} — {p.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

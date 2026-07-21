@@ -75,7 +75,7 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
 
       <FieldChrome id="faculty-department" label="Department">
         <Select
-          items={departments.map((d) => ({ value: String(d.id), label: `${d.code} — ${d.name}` }))}
+          items={departments.map((d) => ({ value: String(d.id), label: `${d.abbrev} — ${d.name}` }))}
           name="faculty-department"
           defaultValue={member?.departmentCode ?? String(departments[0]?.id ?? "")}
         >
@@ -85,7 +85,7 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
           <SelectContent>
             {departments.map((d) => (
               <SelectItem key={d.id} value={String(d.id)}>
-                {d.code} — {d.name}
+                {d.abbrev} — {d.name}
               </SelectItem>
             ))}
           </SelectContent>

@@ -59,7 +59,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
 
               <div className="relative h-28 shrink-0 overflow-hidden bg-slate-100 dark:bg-surface-raised/60">
                 <img
-                  src={departmentLogoUrl(dept.code)}
+                  src={departmentLogoUrl(dept.abbrev)}
                   alt=""
                   aria-hidden="true"
                   onError={onDepartmentLogoError}
@@ -67,8 +67,8 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
                 />
                 <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
                 <img
-                  src={departmentLogoUrl(dept.code)}
-                  alt={`${dept.code} logo`}
+                  src={departmentLogoUrl(dept.abbrev)}
+                  alt={`${dept.abbrev} logo`}
                   onError={onDepartmentLogoError}
                   className="absolute inset-0 m-auto size-16 object-contain drop-shadow-md transition-transform duration-500 ease-out group-hover:scale-110"
                 />
@@ -77,7 +77,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
               <div className="flex flex-1 flex-col gap-3 p-4">
                 <div>
                   <p className="font-display text-xl tracking-wide text-navy-800 dark:text-mist-100">
-                    {dept.code}
+                    {dept.abbrev}
                   </p>
                   <p className="mt-0.5 line-clamp-2 font-body text-sm text-slate-600 dark:text-slate-300">
                     {dept.name}
@@ -95,7 +95,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
                   <button
                     type="button"
                     onClick={() => onEdit(dept)}
-                    aria-label={`Edit ${dept.code}`}
+                    aria-label={`Edit ${dept.abbrev}`}
                     title="Edit"
                     className={actionButtonClassName}
                   >
@@ -104,7 +104,7 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
                   <button
                     type="button"
                     onClick={() => onDelete(dept)}
-                    aria-label={`Delete ${dept.code}`}
+                    aria-label={`Delete ${dept.abbrev}`}
                     title="Delete"
                     className={actionButtonClassName}
                   >

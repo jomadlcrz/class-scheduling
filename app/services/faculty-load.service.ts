@@ -87,7 +87,7 @@ async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
   return data.map((program) => {
     const match = programs.find((p) => p.name === program.programName);
     return {
-      programAbbrev: match?.code ?? "",
+      programAbbrev: match?.abbrev ?? "",
       programName: program.programName,
       programTotalUnits: program.programTotalUnits,
       curriculumDetails: program.curriculumDetails.map((year) => ({

@@ -59,11 +59,11 @@ function DepartmentsPage() {
     return depts
       .filter((d) => {
         if (buildingFilter !== "all" && d.buildingName !== buildingFilter) return false;
-        if (q && !d.code.toLowerCase().includes(q) && !d.name.toLowerCase().includes(q))
+        if (q && !d.abbrev.toLowerCase().includes(q) && !d.name.toLowerCase().includes(q))
           return false;
         return true;
       })
-      .sort((a, b) => a.code.localeCompare(b.code));
+      .sort((a, b) => a.abbrev.localeCompare(b.abbrev));
   }, [depts, search, buildingFilter]);
 
   const pagination = usePagination(visibleDepts, resetKey);
@@ -83,7 +83,7 @@ function DepartmentsPage() {
 
   async function handleEdit(input: CreateDepartmentInput) {
     if (!editTarget) return;
-    const message = await departmentService.update(editTarget.id, { code: input.code, name: input.name });
+    const message = await departmentService.update(editTarget.id, { abbrev: input.abbrev, name: input.name });
     if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
@@ -220,7 +220,7 @@ function DepartmentsPage() {
         onConfirm={() => handleDelete(deleteTarget!)}
       >
         Department{" "}
-        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.code}</span>{" "}
+        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.abbrev}</span>{" "}
         ({deleteTarget?.name}) will be permanently removed.
       </ConfirmDialog>
     </div>

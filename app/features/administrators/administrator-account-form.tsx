@@ -114,7 +114,7 @@ export function AdministratorAccountForm({
         <Select
           items={[
             { value: "", label: "Select a department" },
-            ...departments.map((d) => ({ value: d.id, label: `${d.code} — ${d.name}` })),
+            ...departments.map((d) => ({ value: d.id, label: `${d.abbrev} — ${d.name}` })),
           ]}
           name="admin-department"
           defaultValue=""
@@ -126,7 +126,7 @@ export function AdministratorAccountForm({
             <SelectItem value="">Select a department</SelectItem>
             {departments.map((d) => (
               <SelectItem key={d.id} value={d.id}>
-                {d.code} — {d.name}
+                {d.abbrev} — {d.name}
               </SelectItem>
             ))}
           </SelectContent>

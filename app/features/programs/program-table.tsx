@@ -1,5 +1,4 @@
 ﻿import { EditIcon, TrashIcon } from "~/components/ui/icons";
-import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -8,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import type { Program } from "~/types/program";
 
 type ProgramTableProps = {
@@ -23,7 +23,7 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
   return (
     <Table>
       <TableHead>
-        <TableHeader>Logo &amp; Code</TableHeader>
+        <TableHeader>Logo &amp; Abbrev</TableHeader>
         <TableHeader>Program Name</TableHeader>
         <TableHeader className="hidden md:table-cell">Type</TableHeader>
         <TableHeader className="hidden md:table-cell text-center">Years</TableHeader>
@@ -37,13 +37,13 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
             <TableCell>
               <div className="flex items-center gap-3">
                 <img
-                  src={departmentLogoUrl(prog.departmentCode)}
-                  alt={`${prog.departmentCode} logo`}
+                  src={departmentLogoUrl(prog.departmentAbbrev)}
+                  alt={`${prog.departmentAbbrev} logo`}
                   onError={onDepartmentLogoError}
                   className="size-10 rounded-lg object-contain"
                 />
                 <div>
-                  <span className="font-medium text-navy-700 dark:text-mist-100">{prog.code}</span>
+                  <span className="font-medium text-navy-700 dark:text-mist-100">{prog.abbrev}</span>
                 </div>
               </div>
             </TableCell>
@@ -55,7 +55,7 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
                 <button
                   type="button"
                   onClick={() => onEdit(prog)}
-                  aria-label={`Edit ${prog.code}`}
+                  aria-label={`Edit ${prog.abbrev}`}
                   title="Edit"
                   className={actionButtonClassName}
                 >
@@ -64,7 +64,7 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
                 <button
                   type="button"
                   onClick={() => onDelete(prog)}
-                  aria-label={`Delete ${prog.code}`}
+                  aria-label={`Delete ${prog.abbrev}`}
                   title="Delete"
                   className={actionButtonClassName}
                 >

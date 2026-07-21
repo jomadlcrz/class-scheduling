@@ -59,7 +59,7 @@ function AdministratorsPage() {
     refresh();
     departmentService
       .list()
-      .then((departments) => setDepartmentOptions(departments.map((d) => ({ id: d.id, code: d.code, name: d.name }))))
+      .then((departments) => setDepartmentOptions(departments.map((d) => ({ id: d.id, abbrev: d.abbrev, name: d.name }))))
       .catch(() => setDepartmentOptions([]));
     enumService
       .getOptions()
