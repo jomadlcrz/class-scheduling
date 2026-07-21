@@ -2,23 +2,33 @@ import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 
 /** Irregular students and their enrolled subjects (registrar_admin schedules module). */
 
-type IrregularStudentsResponse = {
-  student_profile_id: number;
-  student_id: string | null;
-  first_name: string;
-  mid_name: string | null;
-  last_name: string;
-  academics: {
-    program: string;
-    school_year: string | null;
-    semester: number | null;
-  }[];
+type IrregularAcademicRecord = {
+  student_academic_id: number;
+  year_level: number;
+  program: string;
+  set: string | null;
+  enrolled_status: string;
+  student_type: string;
+  school_year: string | null;
+  semester: string | null;
   enrolled_subjects: {
     subject_id: number;
     subject_code: string;
     descriptive_title: string;
     units: number;
   }[];
+};
+
+type IrregularStudentsResponse = {
+  student_profile_id: number;
+  student_id: string | null;
+  first_name: string;
+  mid_name: string | null;
+  last_name: string;
+  mobile: string | null;
+  email: string | null;
+  account_status: string;
+  academics: IrregularAcademicRecord[];
 }[];
 
 export type IrregularStudent = {
@@ -31,14 +41,19 @@ export type IrregularStudent = {
   subjectsEnrolled: { subjectId: number; subjectCode: string; descTitle: string; units: number }[];
 };
 
-/** Picks the most recent academic record (by school year, then semester) to source the current program. */
-function latestProgram(academics: IrregularStudentsResponse[number]["academics"]): string {
-  if (academics.length === 0) return "—";
-  const sorted = [...academics].sort(
+/** "2nd Semester" sorts after "1st Semester" — only these two values occur here. */
+function semesterRank(semester: string | null): number {
+  return semester?.startsWith("2") ? 2 : 1;
+}
+
+/** Picks the most recent academic record (by school year, then semester) — that term's subjects are what's shown. */
+function latestAcademic(academics: IrregularAcademicRecord[]): IrregularAcademicRecord | null {
+  if (academics.length === 0) return null;
+  return [...academics].sort(
     (a, b) =>
-      (b.school_year ?? "").localeCompare(a.school_year ?? "") || (b.semester ?? 0) - (a.semester ?? 0),
-  );
-  return sorted[0].program;
+      (b.school_year ?? "").localeCompare(a.school_year ?? "") ||
+      semesterRank(b.semester) - semesterRank(a.semester),
+  )[0];
 }
 
 /** GET /students/irregular — students flagged AcademicStatus.IRREGULAR. 404 → empty. */
@@ -50,18 +65,21 @@ async function listStudents(): Promise<IrregularStudent[]> {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((s) => ({
-    studentProfileId: s.student_profile_id,
-    studentId: s.student_id,
-    studentName: `${s.last_name}, ${s.first_name}`,
-    programTaken: latestProgram(s.academics),
-    subjectsEnrolled: s.enrolled_subjects.map((sub) => ({
-      subjectId: sub.subject_id,
-      subjectCode: sub.subject_code,
-      descTitle: sub.descriptive_title,
-      units: sub.units,
-    })),
-  }));
+  return data.map((s) => {
+    const current = latestAcademic(s.academics);
+    return {
+      studentProfileId: s.student_profile_id,
+      studentId: s.student_id,
+      studentName: `${s.last_name}, ${s.first_name}`,
+      programTaken: current?.program ?? "—",
+      subjectsEnrolled: (current?.enrolled_subjects ?? []).map((sub) => ({
+        subjectId: sub.subject_id,
+        subjectCode: sub.subject_code,
+        descTitle: sub.descriptive_title,
+        units: sub.units,
+      })),
+    };
+  });
 }
 
 type PendingScheduleResponse = {
