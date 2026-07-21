@@ -6,8 +6,9 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
-import { FieldChrome } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { FacultyAssignmentForm } from "~/features/faculty/faculty-assignment";
@@ -15,7 +16,10 @@ import {
   FacultyLoadTable,
   toExistingFacultyLoadRow,
   toFacultyLoadRow,
+  type FacultyLoadRow,
 } from "~/features/faculty/faculty-load-table";
+import { FacultyLoadSubjectsModal } from "~/features/faculty/faculty-load-subjects-modal";
+import { usePagination } from "~/hooks/use-pagination";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -56,6 +60,7 @@ function FacultyLoadsPage() {
 
   const [existingLoads, setExistingLoads] = useState<FacultyLoadingEntry[] | null>(null);
   const [termError, setTermError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const [pending, setPending] = useState<FacultyLoadInput[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -63,6 +68,7 @@ function FacultyLoadsPage() {
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [viewTarget, setViewTarget] = useState<FacultyLoadRow | null>(null);
 
   // Department roster + curriculum are independent of the selected term.
   useEffect(() => {
@@ -116,6 +122,17 @@ function FacultyLoadsPage() {
   }, [matchedSy?.id, matchedSem?.id]);
 
   const termLoads = existingLoads ?? [];
+
+  const visibleTermLoads = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return termLoads;
+    return termLoads.filter((entry) => entry.instructorName.toLowerCase().includes(query));
+  }, [termLoads, search]);
+
+  const pagination = usePagination(
+    visibleTermLoads,
+    `${matchedSy?.id ?? ""}|${matchedSem?.id ?? ""}|${search}`,
+  );
 
   const unitsByKey = useMemo(() => {
     const map = new Map<string, number>();
@@ -249,47 +266,61 @@ function FacultyLoadsPage() {
             </ResultState>
           )}
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:max-w-md">
-            <FieldChrome id="fl-school-year" label="School Year">
-              <Select
-                items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
-                value={schoolYearId}
-                onValueChange={(v) => setSchoolYearId(v as string)}
-              >
-                <SelectTrigger id="fl-school-year">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {schoolYears.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.schoolYear}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="fl-semester" label="Semester">
-              <Select
-                items={semesters
-                  .filter((s) => s.semesterNumber !== 3)
-                  .map((s) => ({ value: String(s.id), label: semesterLabel(s.semesterNumber) }))}
-                value={semesterId}
-                onValueChange={(v) => setSemesterId(v as string)}
-              >
-                <SelectTrigger id="fl-semester">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {semesters
-                    .filter((s) => s.semesterNumber !== 3)
-                    .map((s) => (
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="w-40">
+              <FieldChrome id="fl-school-year" label="School Year">
+                <Select
+                  items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
+                  value={schoolYearId}
+                  onValueChange={(v) => setSchoolYearId(v as string)}
+                >
+                  <SelectTrigger id="fl-school-year">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schoolYears.map((s) => (
                       <SelectItem key={s.id} value={String(s.id)}>
-                        {semesterLabel(s.semesterNumber)}
+                        {s.schoolYear}
                       </SelectItem>
                     ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
+                  </SelectContent>
+                </Select>
+              </FieldChrome>
+            </div>
+            <div className="w-40">
+              <FieldChrome id="fl-semester" label="Semester">
+                <Select
+                  items={semesters
+                    .filter((s) => s.semesterNumber !== 3)
+                    .map((s) => ({ value: String(s.id), label: semesterLabel(s.semesterNumber) }))}
+                  value={semesterId}
+                  onValueChange={(v) => setSemesterId(v as string)}
+                >
+                  <SelectTrigger id="fl-semester">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {semesters
+                      .filter((s) => s.semesterNumber !== 3)
+                      .map((s) => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          {semesterLabel(s.semesterNumber)}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </FieldChrome>
+            </div>
+            <div className="ml-auto w-full sm:w-64">
+              <Input
+                id="faculty-load-search"
+                label="Search Faculty"
+                type="search"
+                placeholder="Faculty name…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
           </div>
 
           {pending.length > 0 && (
@@ -301,6 +332,7 @@ function FacultyLoadsPage() {
                 rows={pending.map((entry) => toFacultyLoadRow(entry, unitsByKey))}
                 onEdit={handleEditRow}
                 onRemove={(key) => setRemoveTarget(key)}
+                onViewSubjects={setViewTarget}
               />
             </section>
           )}
@@ -329,8 +361,23 @@ function FacultyLoadsPage() {
               <EmptyState title="No faculty loads yet">
                 No faculty have been assigned subjects for this term yet.
               </EmptyState>
+            ) : visibleTermLoads.length === 0 ? (
+              <EmptyState title="No faculty found">
+                No faculty match "{search}". Try a different search.
+              </EmptyState>
             ) : (
-              <FacultyLoadTable rows={termLoads.map(toExistingFacultyLoadRow)} />
+              <>
+                <FacultyLoadTable
+                  rows={pagination.pageItems.map(toExistingFacultyLoadRow)}
+                  onViewSubjects={setViewTarget}
+                />
+                <Pagination
+                  page={pagination.page}
+                  totalItems={pagination.totalItems}
+                  pageSize={pagination.pageSize}
+                  onPageChange={pagination.setPage}
+                />
+              </>
             )}
           </section>
         </div>
@@ -352,6 +399,14 @@ function FacultyLoadsPage() {
           onAdd={handleAddOrUpdate}
           onCancelEdit={editingEntry ? closeForm : undefined}
         />
+      </Modal>
+
+      <Modal
+        open={viewTarget !== null}
+        onClose={() => setViewTarget(null)}
+        title={viewTarget ? `Subjects — ${viewTarget.fullName}` : "Subjects"}
+      >
+        {viewTarget && <FacultyLoadSubjectsModal row={viewTarget} />}
       </Modal>
 
       <ConfirmDialog

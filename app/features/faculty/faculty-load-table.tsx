@@ -1,7 +1,17 @@
-﻿import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { EditIcon, EyeIcon, TrashIcon } from "~/components/ui/icons";
 import { facultyKey } from "~/lib/faculty-load";
 import type { FacultyLoadInput, FacultyLoadingEntry } from "~/types/faculty-load";
+
+export type FacultyLoadSubjectDetail = {
+  subjectCode: string;
+  descriptiveTitle: string;
+  units: number | null;
+  /** Staged (not-yet-saved) rows know the program they were assigned under. */
+  programAbbrev?: string;
+  /** Saved rows carry the actual scheduled sessions (GET /deans/faculty-loading). */
+  schedules?: { day: string; time: string; room: string | null; course: string }[];
+};
 
 export type FacultyLoadRow = {
   key: string;
@@ -10,25 +20,28 @@ export type FacultyLoadRow = {
   subjectCount: number;
   totalUnits: number;
   maxWeeklyHours?: number;
+  subjects: FacultyLoadSubjectDetail[];
 };
 
 /** Shapes one staged (not-yet-saved) assignment for display, resolving unit counts by "PROGRAM CODE" key. */
 export function toFacultyLoadRow(entry: FacultyLoadInput, unitsByKey: Map<string, number>): FacultyLoadRow {
+  const subjects: FacultyLoadSubjectDetail[] = entry.programs.flatMap((p) =>
+    p.subjects.map((s) => ({
+      subjectCode: s.subjectCode,
+      descriptiveTitle: s.descriptiveTitle,
+      units: unitsByKey.get(`${p.programAbbrev} ${s.subjectCode}`) ?? null,
+      programAbbrev: p.programAbbrev,
+    })),
+  );
+
   return {
     key: facultyKey(entry.firstName, entry.lastName),
     fullName: `${entry.firstName} ${entry.lastName}`,
     programs: entry.programs.map((p) => p.programAbbrev),
-    subjectCount: entry.programs.reduce((sum, p) => sum + p.subjects.length, 0),
-    totalUnits: entry.programs.reduce(
-      (sum, p) =>
-        sum +
-        p.subjects.reduce(
-          (subSum, s) => subSum + (unitsByKey.get(`${p.programAbbrev} ${s.subjectCode}`) ?? 0),
-          0,
-        ),
-      0,
-    ),
+    subjectCount: subjects.length,
+    totalUnits: subjects.reduce((sum, s) => sum + (s.units ?? 0), 0),
     maxWeeklyHours: entry.maxWeeklyHours,
+    subjects,
   };
 }
 
@@ -41,19 +54,34 @@ export function toExistingFacultyLoadRow(entry: FacultyLoadingEntry): FacultyLoa
     subjectCount: entry.subjects.length,
     totalUnits: entry.subjects.reduce((sum, s) => sum + s.units.total, 0),
     maxWeeklyHours: entry.maxWeeklyHours ?? undefined,
+    subjects: entry.subjects.map((s) => ({
+      subjectCode: s.subjectCode,
+      descriptiveTitle: s.descriptiveTitle,
+      units: s.units.total,
+      schedules: s.schedules.map((sc) => ({
+        day: sc.day,
+        time: sc.time,
+        room: sc.room,
+        course: sc.course,
+      })),
+    })),
   };
 }
 
 type FacultyLoadTableProps = {
   rows: FacultyLoadRow[];
-  /** Omit both to render a read-only table (used for already-saved loads). */
+  /** Omit all three to render a fully read-only table. */
   onEdit?: (key: string) => void;
   onRemove?: (key: string) => void;
+  onViewSubjects?: (row: FacultyLoadRow) => void;
 };
 
+const actionButtonClassName =
+  "cursor-pointer rounded-md p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+
 /** Shared table for both the staged batch (editable) and existing saved loads (read-only). */
-export function FacultyLoadTable({ rows, onEdit, onRemove }: FacultyLoadTableProps) {
-  const editable = Boolean(onEdit || onRemove);
+export function FacultyLoadTable({ rows, onEdit, onRemove, onViewSubjects }: FacultyLoadTableProps) {
+  const showActions = Boolean(onEdit || onRemove || onViewSubjects);
 
   return (
     <Table>
@@ -63,7 +91,11 @@ export function FacultyLoadTable({ rows, onEdit, onRemove }: FacultyLoadTablePro
         <TableHeader>Subjects</TableHeader>
         <TableHeader>Units</TableHeader>
         <TableHeader className="hidden sm:table-cell">Max Weekly Hours</TableHeader>
-        {editable && <TableHeader className="text-right">Actions</TableHeader>}
+        {showActions && (
+          <TableHeader>
+            <span className="sr-only">Actions</span>
+          </TableHeader>
+        )}
       </TableHead>
       <TableBody>
         {rows.map((row) => (
@@ -79,15 +111,27 @@ export function FacultyLoadTable({ rows, onEdit, onRemove }: FacultyLoadTablePro
             <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
               {row.maxWeeklyHours != null ? `${row.maxWeeklyHours} hrs` : "—"}
             </TableCell>
-            {editable && (
+            {showActions && (
               <TableCell>
                 <div className="flex justify-end gap-1">
+                  {onViewSubjects && (
+                    <button
+                      type="button"
+                      onClick={() => onViewSubjects(row)}
+                      aria-label={`View subjects for ${row.fullName}`}
+                      title="View subjects"
+                      className={actionButtonClassName}
+                    >
+                      <EyeIcon />
+                    </button>
+                  )}
                   {onEdit && (
                     <button
                       type="button"
                       onClick={() => onEdit(row.key)}
                       aria-label={`Edit ${row.fullName}`}
-                      className="cursor-pointer rounded-md p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white"
+                      title="Edit"
+                      className={actionButtonClassName}
                     >
                       <EditIcon />
                     </button>
@@ -97,6 +141,7 @@ export function FacultyLoadTable({ rows, onEdit, onRemove }: FacultyLoadTablePro
                       type="button"
                       onClick={() => onRemove(row.key)}
                       aria-label={`Remove ${row.fullName}`}
+                      title="Remove"
                       className="cursor-pointer rounded-md p-1.5 text-slate-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                     >
                       <TrashIcon />
