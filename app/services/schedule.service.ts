@@ -371,6 +371,48 @@ async function getSubjectTypeOptions(): Promise<string[]> {
   return data.map((d) => d.subject_types);
 }
 
+export type ScheduleYearLevelOption = { id: number; name: string };
+
+type CreationContextResponse = {
+  year_levels: { year_level_int: number; year_level_name: string }[];
+  semesters: { semester_int: number; semester_name: string }[];
+};
+
+/**
+ * GET /regular_schedule/create-regular-class-schedules — year levels & semesters
+ * scoped to schedule creation. Only the year levels are safe to source from here:
+ * the semesters this returns are just the 1st/2nd Semester label vocabulary, not
+ * real Semester rows, and callers elsewhere on this page need the real `semId`
+ * foreign key (from semesterService/useSemesters) to query sets.
+ */
+async function getCreationContext(): Promise<{ yearLevels: ScheduleYearLevelOption[] }> {
+  const data = await apiGet<CreationContextResponse>(
+    "/regular_schedule/create-regular-class-schedules",
+  );
+  return {
+    yearLevels: data.year_levels.map((y) => ({ id: y.year_level_int, name: y.year_level_name })),
+  };
+}
+
+export type ScheduleProgramOption = { id: number; code: string; name: string };
+
+type ScheduleProgramsResponse = {
+  program_id: number;
+  program_abbrev: string;
+  program_name: string;
+}[];
+
+/**
+ * GET /schedule/programs — lightweight program list scoped to schedule creation
+ * (id/abbrev/name only, no department join). Not swapped in for programService.list()
+ * on the New Schedule page: that page also needs each program's departmentCode for
+ * the built schedule's display metadata, which this endpoint doesn't return.
+ */
+async function listPrograms(): Promise<ScheduleProgramOption[]> {
+  const data = await apiGet<ScheduleProgramsResponse>("/schedule/programs");
+  return data.map((p) => ({ id: p.program_id, code: p.program_abbrev, name: p.program_name }));
+}
+
 export const scheduleService = {
   view,
   listScheduleSubjects,
@@ -379,4 +421,6 @@ export const scheduleService = {
   createRegular,
   getSetsWithSchedules,
   getSubjectTypeOptions,
+  getCreationContext,
+  listPrograms,
 };

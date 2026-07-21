@@ -1,5 +1,5 @@
 ﻿import { Button } from "~/components/ui/button";
-import { EyeIcon } from "~/components/ui/icons";
+import { EyeIcon, GraduationCapIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -14,12 +14,13 @@ type StudentAccountTableProps = {
   students: StudentAccountRow[];
   onCreateAccount: (student: StudentAccountRow) => void;
   onView: (student: StudentAccountRow) => void;
+  onEnroll: (student: StudentAccountRow) => void;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function StudentAccountTable({ students, onCreateAccount, onView }: StudentAccountTableProps) {
+export function StudentAccountTable({ students, onCreateAccount, onView, onEnroll }: StudentAccountTableProps) {
   return (
     <Table>
       <TableHead>
@@ -58,6 +59,15 @@ export function StudentAccountTable({ students, onCreateAccount, onView }: Stude
                   className={actionButtonClassName}
                 >
                   <EyeIcon />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onEnroll(student)}
+                  aria-label={`Enroll ${student.firstName} ${student.lastName} for a new term`}
+                  title="Enroll for a new term"
+                  className={actionButtonClassName}
+                >
+                  <GraduationCapIcon />
                 </button>
                 {!student.hasAccount && (
                   <Button

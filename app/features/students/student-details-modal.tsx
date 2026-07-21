@@ -1,9 +1,12 @@
+import { useEffect, useState } from "react";
 import { Card } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { SectionHeading } from "~/components/ui/section-heading";
+import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { useYearLevels } from "~/hooks/use-year-levels";
-import type { StudentAccountRow } from "~/types/student";
+import { studentService } from "~/services/student.service";
+import type { StudentAcademicRecord, StudentAccountRow } from "~/types/student";
 
 type StudentDetailsModalProps = {
   student: StudentAccountRow;
@@ -11,6 +14,17 @@ type StudentDetailsModalProps = {
 
 export function StudentDetailsModal({ student }: StudentDetailsModalProps) {
   const { yearLevelLabel } = useYearLevels();
+  // Fetched fresh via GET /students/{id}/enrollments rather than reused from the
+  // bulk list, so a just-completed enrollment shows up without a full page reload.
+  const [academics, setAcademics] = useState<StudentAcademicRecord[] | null>(null);
+
+  useEffect(() => {
+    setAcademics(null);
+    studentService
+      .getEnrollments(student.studentProfileId)
+      .then(setAcademics)
+      .catch(() => setAcademics(student.academics));
+  }, [student.studentProfileId, student.academics]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,13 +43,17 @@ export function StudentDetailsModal({ student }: StudentDetailsModalProps) {
       <section>
         <SectionHeading>Academic Records</SectionHeading>
         <Card className="mt-2 p-4">
-          {student.academics.length === 0 ? (
+          {academics === null ? (
+            <div role="status" aria-label="Loading academic records" className="grid place-items-center py-6">
+              <Spinner />
+            </div>
+          ) : academics.length === 0 ? (
             <p className="text-sm text-slate-500 dark:text-slate-400">
               No academic records found.
             </p>
           ) : (
             <div className="flex flex-col gap-3">
-              {student.academics.map((a, i) => (
+              {academics.map((a, i) => (
                 <div
                   key={a.studentAcademicId}
                   className={i > 0 ? "border-t border-slate-200 pt-3 dark:border-white/10" : ""}

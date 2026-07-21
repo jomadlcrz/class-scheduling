@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Card } from "~/components/ui/card";
-import { ClockIcon } from "~/components/ui/icons";
+import { FieldChrome } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { AssignSchedulePanel } from "~/features/schedules/assign-schedule-panel";
 import { IrregularStudentList } from "~/features/schedules/irregular-student-list";
 import { IrregularStudentPanel } from "~/features/schedules/irregular-student-panel";
+import { useSchoolYears } from "~/hooks/use-school-years";
+import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
-import { irregularClassService, type IrregularStudent } from "~/services/irregular-class.service";
+import {
+  irregularClassService,
+  type IrregularStudent,
+  type StudentPendingSchedule,
+} from "~/services/irregular-class.service";
 
 export function meta() {
   return [
@@ -32,6 +41,12 @@ function IrregularClassPage() {
   const [selectedStudent, setSelectedStudent] = useState<IrregularStudent | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("students");
 
+  const { schoolYears, defaultSchoolYear } = useSchoolYears();
+  const { semesters } = useSemesters();
+  const [schoolYear, setSchoolYear] = useState("");
+  const [semId, setSemId] = useState("");
+  const [pending, setPending] = useState<StudentPendingSchedule[] | null>(null);
+
   useEffect(() => {
     irregularClassService
       .listStudents()
@@ -40,6 +55,40 @@ function IrregularClassPage() {
         setError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
       );
   }, []);
+
+  useEffect(() => {
+    if (schoolYear || schoolYears.length === 0) return;
+    setSchoolYear(defaultSchoolYear);
+  }, [schoolYear, schoolYears, defaultSchoolYear]);
+
+  const matchedSy = schoolYears.find((sy) => sy.schoolYear === schoolYear);
+  const matchedSem = semesters.find((s) => String(s.id) === semId);
+
+  useEffect(() => {
+    if (!matchedSy || !matchedSem) {
+      setPending(null);
+      return;
+    }
+    irregularClassService
+      .listPendingSchedule(matchedSy.id, matchedSem.id)
+      .then(setPending)
+      .catch(() => setPending([]));
+  }, [matchedSy?.id, matchedSem?.id]);
+
+  const selectedPending = !matchedSy || !matchedSem
+    ? undefined
+    : pending?.find((p) => p.studentProfileId === selectedStudent?.studentProfileId) ?? null;
+
+  async function handleAssign(studentAcademicId: number, regularSchedId: number) {
+    const message = await irregularClassService.assign({
+      studentAcademicId,
+      regularSchedIds: [regularSchedId],
+    });
+    if (message) toast.success(message);
+    if (matchedSy && matchedSem) {
+      irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.id).then(setPending).catch(() => {});
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -91,6 +140,53 @@ function IrregularClassPage() {
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
+          <Card className="grid grid-cols-2 gap-3 p-4 sm:max-w-md">
+            <FieldChrome id="ic-school-year" label="School Year">
+              <Select
+                items={[
+                  { value: "", label: "Select a school year" },
+                  ...schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear })),
+                ]}
+                value={schoolYear}
+                onValueChange={(v) => setSchoolYear(v as string)}
+              >
+                <SelectTrigger id="ic-school-year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a school year</SelectItem>
+                  {schoolYears.map((sy) => (
+                    <SelectItem key={sy.id} value={sy.schoolYear}>
+                      {sy.schoolYear}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="ic-semester" label="Semester">
+              <Select
+                items={[
+                  { value: "", label: "Select a semester" },
+                  ...semesters.map((s) => ({ value: String(s.id), label: s.semester })),
+                ]}
+                value={semId}
+                onValueChange={(v) => setSemId(v as string)}
+              >
+                <SelectTrigger id="ic-semester">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a semester</SelectItem>
+                  {semesters.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.semester}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+          </Card>
+
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_1fr]">
             <Card className="p-4">
               <IrregularStudentList
@@ -106,15 +202,15 @@ function IrregularClassPage() {
 
             <Card className="p-4">
               <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
-                View Regular Class Schedules
+                Assign Regular Class Schedule
               </h3>
-              <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
-                <ClockIcon />
-                <EmptyState title="Coming soon">
-                  Picking a regular class schedule and assigning it to an irregular student isn't
-                  available yet — it needs a backend endpoint that doesn't exist here yet.
-                </EmptyState>
-              </div>
+              {!selectedStudent ? (
+                <p className="mt-4 font-body text-sm text-slate-400 dark:text-slate-500">
+                  Select a student to view assignable schedules.
+                </p>
+              ) : (
+                <AssignSchedulePanel pending={selectedPending} onAssign={handleAssign} />
+              )}
             </Card>
           </div>
         </div>

@@ -9,16 +9,16 @@ import {
 } from "~/components/ui/table";
 import type { RolePermission, PermissionSummary } from "~/types/permission";
 
+type PermissionMatrixProps = {
+  roles: PermissionSummary[];
+  /** Every permission that exists, granted or not (GET /permissions) — not just the ones already granted. */
+  catalog: RolePermission[];
+  onRevoke: (roleId: number, permissionId: number) => void;
+};
+
 /** Permissions × roles grid showing what each system role can do. */
-export function PermissionMatrix({ roles }: { roles: PermissionSummary[] }) {
-  // The catalog is the union of every permission the roles hold.
-  const catalog = new Map<string, RolePermission>();
-  for (const role of roles) {
-    for (const permission of role.permissions) {
-      if (!catalog.has(permission.slug)) catalog.set(permission.slug, permission);
-    }
-  }
-  const permissions = [...catalog.values()].sort((a, b) => a.slug.localeCompare(b.slug));
+export function PermissionMatrix({ roles, catalog, onRevoke }: PermissionMatrixProps) {
+  const permissions = [...catalog].sort((a, b) => a.slug.localeCompare(b.slug));
 
   return (
     <Table>
@@ -39,19 +39,28 @@ export function PermissionMatrix({ roles }: { roles: PermissionSummary[] }) {
                 {permission.slug}
               </span>
             </TableCell>
-            {roles.map((role) => (
-              <TableCell key={role.id}>
-                {role.permissions.some((p) => p.slug === permission.slug) ? (
-                  <span className="text-emerald-500" aria-label="Allowed">
-                    <CheckIcon />
-                  </span>
-                ) : (
-                  <span className="text-slate-300 dark:text-slate-600" aria-label="Not allowed">
-                    —
-                  </span>
-                )}
-              </TableCell>
-            ))}
+            {roles.map((role) => {
+              const granted = role.permissions.some((p) => p.id === permission.id);
+              return (
+                <TableCell key={role.id}>
+                  {granted ? (
+                    <button
+                      type="button"
+                      onClick={() => onRevoke(role.id, permission.id)}
+                      aria-label={`Revoke ${permission.slug} from ${role.name}`}
+                      title="Click to revoke"
+                      className="cursor-pointer text-emerald-500 transition-colors duration-150 hover:text-red-600 dark:hover:text-red-400"
+                    >
+                      <CheckIcon />
+                    </button>
+                  ) : (
+                    <span className="text-slate-300 dark:text-slate-600" aria-label="Not allowed">
+                      —
+                    </span>
+                  )}
+                </TableCell>
+              );
+            })}
           </TableRow>
         ))}
       </TableBody>

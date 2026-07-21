@@ -13,10 +13,13 @@ import { Spinner } from "~/components/ui/spinner";
 import { StudentAccountForm } from "~/features/students/student-account-form";
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
+import { StudentEnrollForm } from "~/features/students/student-enroll-form";
 import { StudentRecordForm } from "~/features/students/student-record-form";
+import { RegularStudentTable } from "~/features/students/regular-student-table";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
+import { regularClassService } from "~/services/regular-class.service";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
 import { semesterService } from "~/services/semester.service";
 import { setService } from "~/services/set.service";
@@ -29,6 +32,8 @@ import type { ClassSet } from "~/types/set";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
+  EnrollStudentInput,
+  RegularStudentRow,
   StudentAccountRow,
 } from "~/types/student";
 import type { Subject } from "~/types/subject";
@@ -60,12 +65,17 @@ function StudentsPage() {
   const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
 
   const [search, setSearch] = useState("");
+  const [activeView, setActiveView] = useState<"all" | "regular">("all");
+  const [regularStudents, setRegularStudents] = useState<RegularStudentRow[] | null>(null);
+  const [regularLoadError, setRegularLoadError] = useState<string | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdRecord, setCreatedRecord] = useState(false);
   const [accountTarget, setAccountTarget] = useState<StudentAccountRow | null>(null);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
+  const [enrollTarget, setEnrollTarget] = useState<StudentAccountRow | null>(null);
+  const [enrolled, setEnrolled] = useState(false);
 
   useEffect(() => {
     studentService
@@ -135,6 +145,31 @@ function StudentsPage() {
     setCreatedEmail(null);
   }
 
+  async function handleEnroll(input: EnrollStudentInput) {
+    if (!enrollTarget) return;
+    const message = await studentService.enroll(enrollTarget.studentProfileId, input);
+    if (message) toast.success(message);
+    setEnrolled(true);
+    studentService.listAccounts().then(setStudentList).catch(() => {});
+  }
+
+  function closeEnrollModal() {
+    setEnrollTarget(null);
+    setEnrolled(false);
+  }
+
+  // Lazy-loaded: only fetched once the Regular Students view is opened.
+  useEffect(() => {
+    if (activeView !== "regular" || regularStudents !== null) return;
+    regularClassService
+      .listStudents()
+      .then(setRegularStudents)
+      .catch((err) => {
+        setRegularLoadError(err instanceof Error ? err.message : "Unable to load regular students.");
+        setRegularStudents([]);
+      });
+  }, [activeView, regularStudents]);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
@@ -148,48 +183,90 @@ function StudentsPage() {
         }
       />
 
-      <div className="mt-6 flex flex-col gap-4">
-        <Input
-          id="student-search"
-          label="Search"
-          type="search"
-          placeholder="Name, student ID, or email…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        {loadError ? (
-          <ResultState tone="error" title="Unable to load">
-            {loadError}
-          </ResultState>
-        ) : studentList === null ? (
-          <div
-            role="status"
-            aria-label="Loading students"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+      <div className="mt-6 flex gap-2 border-b border-slate-200 dark:border-white/10">
+        {(["all", "regular"] as const).map((view) => (
+          <button
+            key={view}
+            type="button"
+            onClick={() => setActiveView(view)}
+            className={`-mb-px border-b-2 px-4 py-2 font-body text-sm font-medium transition-colors duration-150 ${
+              activeView === view
+                ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
+                : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
+            }`}
           >
-            <Spinner />
-          </div>
-        ) : visibleStudents.length === 0 ? (
-          <EmptyState title="No students found">
-            No students match the current filters.
-          </EmptyState>
-        ) : (
-          <>
-            <StudentAccountTable
-              students={pagination.pageItems}
-              onCreateAccount={setAccountTarget}
-              onView={setViewTarget}
-            />
-            <Pagination
-              page={pagination.page}
-              totalItems={pagination.totalItems}
-              pageSize={pagination.pageSize}
-              onPageChange={pagination.setPage}
-            />
-          </>
-        )}
+            {view === "all" ? "All Students" : "Regular Students"}
+          </button>
+        ))}
       </div>
+
+      {activeView === "all" ? (
+        <div className="mt-6 flex flex-col gap-4">
+          <Input
+            id="student-search"
+            label="Search"
+            type="search"
+            placeholder="Name, student ID, or email…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {loadError ? (
+            <ResultState tone="error" title="Unable to load">
+              {loadError}
+            </ResultState>
+          ) : studentList === null ? (
+            <div
+              role="status"
+              aria-label="Loading students"
+              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+            >
+              <Spinner />
+            </div>
+          ) : visibleStudents.length === 0 ? (
+            <EmptyState title="No students found">
+              No students match the current filters.
+            </EmptyState>
+          ) : (
+            <>
+              <StudentAccountTable
+                students={pagination.pageItems}
+                onCreateAccount={setAccountTarget}
+                onView={setViewTarget}
+                onEnroll={setEnrollTarget}
+              />
+              <Pagination
+                page={pagination.page}
+                totalItems={pagination.totalItems}
+                pageSize={pagination.pageSize}
+                onPageChange={pagination.setPage}
+              />
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="mt-6">
+          {regularLoadError ? (
+            <ResultState tone="error" title="Unable to load">
+              {regularLoadError}
+            </ResultState>
+          ) : regularStudents === null ? (
+            <div
+              role="status"
+              aria-label="Loading regular students"
+              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+            >
+              <Spinner />
+            </div>
+          ) : regularStudents.length === 0 ? (
+            <EmptyState title="No regular students">
+              No students are currently flagged as regular.
+            </EmptyState>
+          ) : (
+            <RegularStudentTable students={regularStudents} />
+          )}
+        </div>
+      )}
 
       <Modal open={createOpen} onClose={closeCreate} title="New Student" wide={!createdRecord}>
         {createdRecord ? (
@@ -239,6 +316,29 @@ function StudentsPage() {
         wide
       >
         {viewTarget && <StudentDetailsModal student={viewTarget} />}
+      </Modal>
+
+      <Modal open={enrollTarget !== null} onClose={closeEnrollModal} title="Enroll Student" wide={!enrolled}>
+        {enrolled ? (
+          <SuccessDone title="Student enrolled" onDone={closeEnrollModal}>
+            The student was enrolled for the selected term.
+          </SuccessDone>
+        ) : (
+          enrollTarget && (
+            <StudentEnrollForm
+              student={enrollTarget}
+              programs={programs}
+              sets={sets}
+              subjects={subjects}
+              schoolYears={schoolYears}
+              semesters={semesters}
+              studentTypes={enumOptions?.studentType ?? []}
+              academicStatuses={enumOptions?.academicStatus ?? []}
+              onSubmit={handleEnroll}
+              onCancel={closeEnrollModal}
+            />
+          )
+        )}
       </Modal>
     </div>
   );

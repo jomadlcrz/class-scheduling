@@ -1,5 +1,5 @@
 ﻿import { AnimatePresence } from "motion/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -28,13 +28,13 @@ import { useDays } from "~/hooks/use-days";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
-import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
 import {
   scheduleService,
   type ScheduleRoomOption,
   type ScheduleSubjectOption,
+  type ScheduleYearLevelOption,
 } from "~/services/schedule.service";
 import { schoolYearService } from "~/services/school-year.service";
 import { setService } from "~/services/set.service";
@@ -69,8 +69,22 @@ function SchedulesNewPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel } = useSemesters();
   const { schoolYears, defaultSchoolYear, refresh: refreshSchoolYears } = useSchoolYears();
-  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const { dayLabels } = useDays();
+
+  // Sourced from the schedule-scoped GET /regular_schedule/create-regular-class-schedules
+  // rather than the general year-level enum, so the label sent to auto-generate always
+  // matches this module's own vocabulary (YEAR_LEVEL_INT_TO_NAME on the backend).
+  const [yearLevels, setYearLevels] = useState<ScheduleYearLevelOption[]>([]);
+  const yearLevelIds = useMemo(() => yearLevels.map((yl) => yl.id), [yearLevels]);
+  const yearLevelLabelMap = useMemo(() => {
+    const m = new Map<number, string>();
+    for (const yl of yearLevels) m.set(yl.id, yl.name);
+    return m;
+  }, [yearLevels]);
+  const yearLevelLabel = useCallback(
+    (n: number) => yearLevelLabelMap.get(n) ?? `${n}th Year`,
+    [yearLevelLabelMap],
+  );
 
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [sets, setSets] = useState<ClassSet[]>([]);
@@ -112,6 +126,10 @@ function SchedulesNewPage() {
       .getSetsWithSchedules()
       .then(setScheduledSetIds)
       .catch(() => setScheduledSetIds(new Set()));
+    scheduleService
+      .getCreationContext()
+      .then(({ yearLevels }) => setYearLevels(yearLevels))
+      .catch(() => setYearLevels([]));
   }, []);
 
   // Default to the most recent school year once the list loads; a manual pick isn't overridden.

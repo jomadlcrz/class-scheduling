@@ -2,6 +2,8 @@ import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
+  EnrollStudentInput,
+  StudentAcademicRecord,
   StudentAccountRow,
 } from "~/types/student";
 
@@ -111,4 +113,59 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
   }));
 }
 
-export const studentService = { createRecord, createAccount, listAccounts };
+/** POST /students/{id}/enroll — re-enrolls an existing student profile into a new term. Returns the backend message. */
+async function enroll(studentProfileId: number, input: EnrollStudentInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>(`/students/${studentProfileId}/enroll`, {
+    academic: {
+      programId: input.programId,
+      yearLevel: input.yearLevel,
+      setId: input.setId,
+      studentType: input.studentType,
+      enrolledStatus: input.enrolledStatus,
+      syId: input.syId,
+      semId: input.semId,
+    },
+    enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
+  });
+  return apiMessage(data);
+}
+
+type EnrollmentHistoryResponse = {
+  student_academic_id: number;
+  year_level: number;
+  program: string;
+  set: string | null;
+  enrolled_status: string;
+  student_type: string;
+  school_year: string | null;
+  semester: string | null;
+  enrolled_subjects: {
+    subject_id: number;
+    subject_code: string;
+    descriptive_title: string;
+    units: number;
+  }[];
+}[];
+
+/** GET /students/{id}/enrollments — every term this student has been enrolled in. */
+async function getEnrollments(studentProfileId: number): Promise<StudentAcademicRecord[]> {
+  const data = await apiGet<EnrollmentHistoryResponse>(`/students/${studentProfileId}/enrollments`);
+  return data.map((a) => ({
+    studentAcademicId: a.student_academic_id,
+    yearLevel: a.year_level,
+    program: a.program,
+    set: a.set,
+    enrolledStatus: a.enrolled_status,
+    studentType: a.student_type,
+    schoolYear: a.school_year,
+    semester: a.semester,
+    enrolledSubjects: a.enrolled_subjects.map((es) => ({
+      subjectId: es.subject_id,
+      subjectCode: es.subject_code,
+      descriptiveTitle: es.descriptive_title,
+      units: es.units,
+    })),
+  }));
+}
+
+export const studentService = { createRecord, createAccount, listAccounts, enroll, getEnrollments };

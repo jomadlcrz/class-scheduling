@@ -1,5 +1,5 @@
-import { ApiError, apiGet, apiPost } from "~/lib/api";
-import type { PermissionSummary } from "~/types/permission";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import type { PermissionSummary, RolePermission } from "~/types/permission";
 
 /**
  * Roles + permissions (super_admin RBAC module). The backend has no single
@@ -80,7 +80,45 @@ async function create(input: {
   return typeof data.message === "string" ? data.message : "";
 }
 
+type PermissionCatalogResponse = {
+  permission_id: number;
+  permission_slug: string;
+  description: string | null;
+}[];
+
+/** GET /permissions — every permission that exists, granted or not. 404 → empty. */
+async function listCatalog(): Promise<RolePermission[]> {
+  try {
+    const data = await apiGet<PermissionCatalogResponse>("/permissions");
+    return data.map((p) => ({
+      id: p.permission_id,
+      slug: p.permission_slug,
+      description: p.description ?? "",
+    }));
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+}
+
+/** PUT /roles/{roleId}/permissions — declaratively sets a role's grants to exactly these permission ids. */
+async function replace(roleId: number, permissionIds: number[]): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/roles/${roleId}/permissions`, {
+    permissionIds,
+  });
+  return apiMessage(data);
+}
+
+/** DELETE /roles/{roleId}/permissions/{permissionId} — revokes a single permission from a role. */
+async function revoke(roleId: number, permissionId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/roles/${roleId}/permissions/${permissionId}`);
+  return apiMessage(data);
+}
+
 export const permissionService = {
   list,
   create,
+  listCatalog,
+  replace,
+  revoke,
 };
