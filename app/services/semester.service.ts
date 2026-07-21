@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiPost } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import type { CreateSemesterInput, Semester } from "~/types/semester";
 
 type SemesterResponse = {
@@ -37,12 +37,15 @@ async function list(): Promise<Semester[]> {
   return cachePromise;
 }
 
-/** POST /semesters — 409 when the semester already exists. */
-async function create(input: CreateSemesterInput): Promise<void> {
-  await apiPost("/semesters", {
+/** POST /semesters — 409 when the semester already exists. Invalidates the list cache. */
+async function create(input: CreateSemesterInput): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/semesters", {
     semester: input.semester,
     semesterNumber: input.semesterNumber,
   });
+  cachedSemesters = null;
+  cachePromise = null;
+  return apiMessage(data);
 }
 
 export const semesterService = { list, create };

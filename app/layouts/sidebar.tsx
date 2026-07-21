@@ -38,6 +38,7 @@ const NAV_GROUPS: NavGroup[] = [
       {
         label: "Scheduling",
         items: [
+          { label: "Academic Year", to: "/academic-year", icon: <CalendarIcon />, roles: ["registrar"] },
           {
             label: "Schedules",
             icon: <CalendarIcon />,

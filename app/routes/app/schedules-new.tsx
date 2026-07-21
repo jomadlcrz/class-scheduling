@@ -8,9 +8,8 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { AlertIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
-import { AddSchoolYearForm } from "~/features/schedules/add-school-year-form";
 import { ScheduleContextForm } from "~/features/schedules/schedule-context-form";
 import {
   AutoGenerateIcon,
@@ -36,7 +35,6 @@ import {
   type ScheduleSubjectOption,
   type ScheduleYearLevelOption,
 } from "~/services/schedule.service";
-import { schoolYearService } from "~/services/school-year.service";
 import { setService } from "~/services/set.service";
 
 import type { Program } from "~/types/program";
@@ -68,7 +66,7 @@ export default function SchedulesNew() {
 function SchedulesNewPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel } = useSemesters();
-  const { schoolYears, defaultSchoolYear, refresh: refreshSchoolYears } = useSchoolYears();
+  const { schoolYears, defaultSchoolYear } = useSchoolYears();
   const { dayLabels } = useDays();
 
   // Sourced from the schedule-scoped GET /regular_schedule/create-regular-class-schedules
@@ -97,7 +95,6 @@ function SchedulesNewPage() {
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">("");
   const [selectedSetId, setSelectedSetId] = useState("");
-  const [addSchoolYearOpen, setAddSchoolYearOpen] = useState(false);
 
   const [slots, setSlots] = useState<PendingSlot[]>([]);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
@@ -424,7 +421,6 @@ function SchedulesNewPage() {
             schoolYears={schoolYears}
             schoolYear={schoolYear}
             onSchoolYearChange={setSchoolYear}
-            onAddSchoolYear={() => setAddSchoolYearOpen(true)}
             semesters={semesters}
             semester={semester}
             onSemesterChange={setSemester}
@@ -530,23 +526,6 @@ function SchedulesNewPage() {
           onCancelEdit={editing ? closeDrawer : undefined}
         />
       </Drawer>
-
-      <Modal
-        open={addSchoolYearOpen}
-        onClose={() => setAddSchoolYearOpen(false)}
-        title="Add School Year"
-      >
-        <AddSchoolYearForm
-          onAdd={async (newSchoolYear) => {
-            const message = await schoolYearService.create(newSchoolYear);
-            if (message) toast.success(message);
-            await refreshSchoolYears();
-            setSchoolYear(newSchoolYear);
-            setAddSchoolYearOpen(false);
-          }}
-          onCancel={() => setAddSchoolYearOpen(false)}
-        />
-      </Modal>
 
       <ConfirmDialog
         open={deleteTarget !== null}

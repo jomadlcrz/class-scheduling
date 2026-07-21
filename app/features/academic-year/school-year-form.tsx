@@ -2,19 +2,17 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-
-const SCHOOL_YEAR_RE = /^\d{4}-\d{4}$/;
+import { schoolYearSchema } from "~/schemas/school-year.schema";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const EXAMPLE_SCHOOL_YEAR = `${CURRENT_YEAR}-${CURRENT_YEAR + 1}`;
 
-type AddSchoolYearFormProps = {
-  onAdd: (schoolYear: string) => Promise<void>;
+type SchoolYearFormProps = {
+  onSubmit: (schoolYear: string) => Promise<void>;
   onCancel: () => void;
 };
 
-/** Small form for creating a new school year inline, e.g. from a modal. */
-export function AddSchoolYearForm({ onAdd, onCancel }: AddSchoolYearFormProps) {
+export function SchoolYearForm({ onSubmit, onCancel }: SchoolYearFormProps) {
   const [schoolYear, setSchoolYear] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -33,20 +31,16 @@ export function AddSchoolYearForm({ onAdd, onCancel }: AddSchoolYearFormProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!SCHOOL_YEAR_RE.test(schoolYear)) {
-      setError(`Enter a school year like ${EXAMPLE_SCHOOL_YEAR}.`);
-      return;
-    }
-    const [start, end] = schoolYear.split("-").map(Number);
-    if (end !== start + 1) {
-      setError("The end year must be one year after the start year.");
+    const result = schoolYearSchema.safeParse({ schoolYear });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 
     setError(null);
     setIsSaving(true);
     try {
-      await onAdd(schoolYear);
+      await onSubmit(result.data.schoolYear);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {

@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -12,7 +13,6 @@ type ScheduleContextFormProps = {
   schoolYears: SchoolYearOption[];
   schoolYear: string;
   onSchoolYearChange: (schoolYear: string) => void;
-  onAddSchoolYear: () => void;
 
   semesters: Semester[];
   semester: ScheduleSemester;
@@ -42,7 +42,6 @@ export function ScheduleContextForm({
   schoolYears,
   schoolYear,
   onSchoolYearChange,
-  onAddSchoolYear,
   semesters,
   semester,
   onSemesterChange,
@@ -66,14 +65,12 @@ export function ScheduleContextForm({
         id="sn-school-year"
         label="School Year"
         labelEnd={
-          <button
-            type="button"
-            onClick={onAddSchoolYear}
-            disabled={locked}
-            className="font-body text-xs font-medium text-blue-700 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400"
+          <Link
+            to="/academic-year"
+            className="font-body text-xs font-medium text-blue-700 hover:underline dark:text-blue-400"
           >
             + Add new
-          </button>
+          </Link>
         }
         hint={lockHint}
       >
