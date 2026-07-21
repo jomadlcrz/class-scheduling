@@ -5,8 +5,8 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { SuccessDone } from "~/components/feedback/success-done";
-import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
@@ -202,14 +202,22 @@ function StudentsPage() {
 
       {activeView === "all" ? (
         <div className="mt-6 flex flex-col gap-4">
-          <Input
-            id="student-search"
-            label="Search"
-            type="search"
-            placeholder="Name, student ID, or email…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="relative ml-auto w-full sm:w-64">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <SearchIcon />
+              </span>
+              <input
+                id="student-search"
+                type="search"
+                placeholder="Name, student ID, or email…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search"
+                className={`${inputClassName} pl-9 pr-4`}
+              />
+            </div>
+          </div>
 
           {loadError ? (
             <ResultState tone="error" title="Unable to load">

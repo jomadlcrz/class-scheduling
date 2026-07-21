@@ -5,8 +5,8 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { SuccessDone } from "~/components/feedback/success-done";
 import { Button } from "~/components/ui/button";
-import { PlusIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
@@ -132,21 +132,27 @@ function FacultyPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
-          <Input
-            id="faculty-search"
-            label="Search"
-            type="search"
-            placeholder="Name or email…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-wrap items-end gap-3">
           <DepartmentFilterSelect
             id="faculty-dept-filter"
             departmentCodes={departmentCodes}
             value={department}
             onValueChange={setDepartment}
           />
+          <div className="relative order-first w-full sm:order-0 sm:ml-auto sm:w-64">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
+              id="faculty-search"
+              type="search"
+              placeholder="Name or email…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search"
+              className={`${inputClassName} pl-9 pr-4`}
+            />
+          </div>
         </div>
 
         {loadError ? (

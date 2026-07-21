@@ -5,8 +5,8 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
-import { PlusIcon } from "~/components/ui/icons";
-import { FieldChrome, Input } from "~/components/ui/input";
+import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -268,57 +268,57 @@ function FacultyLoadsPage() {
 
           <div className="flex flex-wrap items-end gap-3">
             <div className="w-40">
-              <FieldChrome id="fl-school-year" label="School Year">
-                <Select
-                  items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
-                  value={schoolYearId}
-                  onValueChange={(v) => setSchoolYearId(v as string)}
-                >
-                  <SelectTrigger id="fl-school-year">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {schoolYears.map((s) => (
-                      <SelectItem key={s.id} value={String(s.id)}>
-                        {s.schoolYear}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FieldChrome>
+              <Select
+                items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
+                value={schoolYearId}
+                onValueChange={(v) => setSchoolYearId(v as string)}
+              >
+                <SelectTrigger id="fl-school-year" aria-label="School Year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {schoolYears.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.schoolYear}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="w-40">
-              <FieldChrome id="fl-semester" label="Semester">
-                <Select
-                  items={semesters
+              <Select
+                items={semesters
+                  .filter((s) => s.semesterNumber !== 3)
+                  .map((s) => ({ value: String(s.id), label: semesterLabel(s.semesterNumber) }))}
+                value={semesterId}
+                onValueChange={(v) => setSemesterId(v as string)}
+              >
+                <SelectTrigger id="fl-semester" aria-label="Semester">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {semesters
                     .filter((s) => s.semesterNumber !== 3)
-                    .map((s) => ({ value: String(s.id), label: semesterLabel(s.semesterNumber) }))}
-                  value={semesterId}
-                  onValueChange={(v) => setSemesterId(v as string)}
-                >
-                  <SelectTrigger id="fl-semester">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {semesters
-                      .filter((s) => s.semesterNumber !== 3)
-                      .map((s) => (
-                        <SelectItem key={s.id} value={String(s.id)}>
-                          {semesterLabel(s.semesterNumber)}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </FieldChrome>
+                    .map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {semesterLabel(s.semesterNumber)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="ml-auto w-full sm:w-64">
-              <Input
+            <div className="relative order-first w-full sm:order-0 sm:ml-auto sm:w-64">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <SearchIcon />
+              </span>
+              <input
                 id="faculty-load-search"
-                label="Search Faculty"
                 type="search"
                 placeholder="Faculty name…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search"
+                className={`${inputClassName} pl-9 pr-4`}
               />
             </div>
           </div>
