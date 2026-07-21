@@ -11,7 +11,11 @@ import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { FacultyAssignmentForm } from "~/features/faculty/faculty-assignment";
-import { FacultyLoadTable, type FacultyLoadRow } from "~/features/faculty/faculty-load-table";
+import {
+  FacultyLoadTable,
+  toExistingFacultyLoadRow,
+  toFacultyLoadRow,
+} from "~/features/faculty/faculty-load-table";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -37,35 +41,6 @@ export default function FacultyLoadsRoute() {
       <FacultyLoadsPage />
     </RoleGuard>
   );
-}
-
-function toRow(entry: FacultyLoadInput, unitsByKey: Map<string, number>): FacultyLoadRow {
-  return {
-    key: facultyKey(entry.firstName, entry.lastName),
-    fullName: `${entry.firstName} ${entry.lastName}`,
-    programs: entry.programs.map((p) => p.programAbbrev),
-    subjectCount: entry.programs.reduce((sum, p) => sum + p.subjects.length, 0),
-    totalUnits: entry.programs.reduce(
-      (sum, p) =>
-        sum +
-        p.subjects.reduce(
-          (subSum, s) => subSum + (unitsByKey.get(`${p.programAbbrev} ${s.subjectCode}`) ?? 0),
-          0,
-        ),
-      0,
-    ),
-    maxWeeklyHours: entry.maxWeeklyHours,
-  };
-}
-
-function toExistingRow(entry: FacultyLoadingEntry): FacultyLoadRow {
-  return {
-    key: entry.instructorName,
-    fullName: entry.instructorName,
-    programs: [...new Set(entry.subjects.flatMap((s) => s.schedules.map((sc) => sc.course)))],
-    subjectCount: entry.subjects.length,
-    totalUnits: entry.subjects.reduce((sum, s) => sum + s.units.total, 0),
-  };
 }
 
 function FacultyLoadsPage() {
@@ -323,7 +298,7 @@ function FacultyLoadsPage() {
                 Staged for this save
               </h2>
               <FacultyLoadTable
-                rows={pending.map((entry) => toRow(entry, unitsByKey))}
+                rows={pending.map((entry) => toFacultyLoadRow(entry, unitsByKey))}
                 onEdit={handleEditRow}
                 onRemove={(key) => setRemoveTarget(key)}
               />
@@ -355,7 +330,7 @@ function FacultyLoadsPage() {
                 No faculty have been assigned subjects for this term yet.
               </EmptyState>
             ) : (
-              <FacultyLoadTable rows={termLoads.map(toExistingRow)} />
+              <FacultyLoadTable rows={termLoads.map(toExistingFacultyLoadRow)} />
             )}
           </section>
         </div>

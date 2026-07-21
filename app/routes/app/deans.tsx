@@ -3,15 +3,16 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { ResultState } from "~/components/feedback/result-state";
+import { SuccessDone } from "~/components/feedback/success-done";
 import { PlusIcon } from "~/components/ui/icons";
-import { FieldChrome, Input } from "~/components/ui/input";
+import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { ResultState } from "~/components/feedback/result-state";
 import { DeanForm } from "~/features/deans/dean-form";
 import { DeanTable } from "~/features/deans/dean-table";
+import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
@@ -135,28 +136,12 @@ function DeansPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <FieldChrome id="dean-dept-filter" label="Department">
-            <Select
-              items={[
-                { value: "all", label: "All departments" },
-                ...departmentCodes.map((code) => ({ value: code, label: code })),
-              ]}
-              value={department}
-              onValueChange={(v) => setDepartment(v as string)}
-            >
-              <SelectTrigger id="dean-dept-filter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All departments</SelectItem>
-                {departmentCodes.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
+          <DepartmentFilterSelect
+            id="dean-dept-filter"
+            departmentCodes={departmentCodes}
+            value={department}
+            onValueChange={setDepartment}
+          />
         </div>
 
         {loadError ? (
@@ -190,14 +175,9 @@ function DeansPage() {
 
       <Modal open={createOpen} onClose={closeCreate} title="New Dean">
         {createdEmail ? (
-          <div className="flex flex-col items-center gap-4">
-            <ResultState tone="success" title="Dean registered">
-              Login credentials with a temporary password were emailed to {createdEmail}.
-            </ResultState>
-            <Button type="button" block={false} onClick={closeCreate}>
-              <span className="px-4">Done</span>
-            </Button>
-          </div>
+          <SuccessDone title="Dean registered" onDone={closeCreate}>
+            Login credentials with a temporary password were emailed to {createdEmail}.
+          </SuccessDone>
         ) : (
           <DeanForm
             departments={departmentOptions}

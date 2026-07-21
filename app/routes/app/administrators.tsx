@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
+import { SuccessDone } from "~/components/feedback/success-done";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
@@ -155,14 +156,9 @@ function AdministratorsPage() {
 
       <Modal open={createOpen} onClose={closeCreate} title="New Administrator">
         {createdEmail ? (
-          <div className="flex flex-col items-center gap-4">
-            <ResultState tone="success" title="Administrator registered">
-              Login credentials with a temporary password will be emailed to {createdEmail}.
-            </ResultState>
-            <Button type="button" block={false} onClick={closeCreate}>
-              <span className="px-4">Done</span>
-            </Button>
-          </div>
+          <SuccessDone title="Administrator registered" onDone={closeCreate}>
+            Login credentials with a temporary password will be emailed to {createdEmail}.
+          </SuccessDone>
         ) : (
           <AdministratorAccountForm
             departments={departmentOptions}

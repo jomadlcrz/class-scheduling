@@ -3,13 +3,14 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
+import { SuccessDone } from "~/components/feedback/success-done";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
-import { FieldChrome, Input } from "~/components/ui/input";
+import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
 import { FacultyAccountForm } from "~/features/faculty/faculty-account-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
 import { usePagination } from "~/hooks/use-pagination";
@@ -140,28 +141,12 @@ function FacultyPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <FieldChrome id="faculty-dept-filter" label="Department">
-            <Select
-              items={[
-                { value: "all", label: "All departments" },
-                ...departmentCodes.map((code) => ({ value: code, label: code })),
-              ]}
-              value={department}
-              onValueChange={(v) => setDepartment(v as string)}
-            >
-              <SelectTrigger id="faculty-dept-filter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All departments</SelectItem>
-                {departmentCodes.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
+          <DepartmentFilterSelect
+            id="faculty-dept-filter"
+            departmentCodes={departmentCodes}
+            value={department}
+            onValueChange={setDepartment}
+          />
         </div>
 
         {loadError ? (
@@ -200,14 +185,9 @@ function FacultyPage() {
         wide={!createdEmail && rolePermissions.length > 0}
       >
         {createdEmail ? (
-          <div className="flex flex-col items-center gap-4">
-            <ResultState tone="success" title="Faculty registered">
-              Login credentials with a temporary password were emailed to {createdEmail}.
-            </ResultState>
-            <Button type="button" block={false} onClick={closeCreate}>
-              <span className="px-4">Done</span>
-            </Button>
-          </div>
+          <SuccessDone title="Faculty registered" onDone={closeCreate}>
+            Login credentials with a temporary password were emailed to {createdEmail}.
+          </SuccessDone>
         ) : (
           <FacultyAccountForm
             departments={departmentOptions}

@@ -3,12 +3,13 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { ResultState } from "~/components/feedback/result-state";
+import { SuccessDone } from "~/components/feedback/success-done";
 import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
-import { ResultState } from "~/components/feedback/result-state";
 import { StudentAccountForm } from "~/features/students/student-account-form";
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
@@ -192,15 +193,10 @@ function StudentsPage() {
 
       <Modal open={createOpen} onClose={closeCreate} title="New Student" wide={!createdRecord}>
         {createdRecord ? (
-          <div className="flex flex-col items-center gap-4">
-            <ResultState tone="success" title="Student registered">
-              The student record was created. Use “Create Account” on the student’s row to set
-              up their login.
-            </ResultState>
-            <Button type="button" block={false} onClick={closeCreate}>
-              <span className="px-4">Done</span>
-            </Button>
-          </div>
+          <SuccessDone title="Student registered" onDone={closeCreate}>
+            The student record was created. Use “Create Account” on the student’s row to set
+            up their login.
+          </SuccessDone>
         ) : (
           <StudentRecordForm
             programs={programs}
@@ -222,14 +218,9 @@ function StudentsPage() {
         title="Create Student Account"
       >
         {createdEmail ? (
-          <div className="flex flex-col items-center gap-4">
-            <ResultState tone="success" title="Account created">
-              Login credentials with a temporary password were emailed to {createdEmail}.
-            </ResultState>
-            <Button type="button" block={false} onClick={closeAccountModal}>
-              <span className="px-4">Done</span>
-            </Button>
-          </div>
+          <SuccessDone title="Account created" onDone={closeAccountModal}>
+            Login credentials with a temporary password were emailed to {createdEmail}.
+          </SuccessDone>
         ) : (
           accountTarget && (
             <StudentAccountForm

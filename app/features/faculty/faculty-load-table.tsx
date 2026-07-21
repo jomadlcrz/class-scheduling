@@ -1,5 +1,7 @@
 ﻿import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { facultyKey } from "~/lib/faculty-load";
+import type { FacultyLoadInput, FacultyLoadingEntry } from "~/types/faculty-load";
 
 export type FacultyLoadRow = {
   key: string;
@@ -10,6 +12,37 @@ export type FacultyLoadRow = {
   /** Only present for staged/pending rows — GET /deans/faculty-loading never returns it. */
   maxWeeklyHours?: number;
 };
+
+/** Shapes one staged (not-yet-saved) assignment for display, resolving unit counts by "PROGRAM CODE" key. */
+export function toFacultyLoadRow(entry: FacultyLoadInput, unitsByKey: Map<string, number>): FacultyLoadRow {
+  return {
+    key: facultyKey(entry.firstName, entry.lastName),
+    fullName: `${entry.firstName} ${entry.lastName}`,
+    programs: entry.programs.map((p) => p.programAbbrev),
+    subjectCount: entry.programs.reduce((sum, p) => sum + p.subjects.length, 0),
+    totalUnits: entry.programs.reduce(
+      (sum, p) =>
+        sum +
+        p.subjects.reduce(
+          (subSum, s) => subSum + (unitsByKey.get(`${p.programAbbrev} ${s.subjectCode}`) ?? 0),
+          0,
+        ),
+      0,
+    ),
+    maxWeeklyHours: entry.maxWeeklyHours,
+  };
+}
+
+/** Shapes an already-saved faculty loading entry (GET /deans/faculty-loading) for display. */
+export function toExistingFacultyLoadRow(entry: FacultyLoadingEntry): FacultyLoadRow {
+  return {
+    key: entry.instructorName,
+    fullName: entry.instructorName,
+    programs: [...new Set(entry.subjects.flatMap((s) => s.schedules.map((sc) => sc.course)))],
+    subjectCount: entry.subjects.length,
+    totalUnits: entry.subjects.reduce((sum, s) => sum + s.units.total, 0),
+  };
+}
 
 type FacultyLoadTableProps = {
   rows: FacultyLoadRow[];
