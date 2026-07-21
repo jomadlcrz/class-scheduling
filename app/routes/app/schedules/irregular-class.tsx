@@ -188,7 +188,7 @@ function IrregularClassPage() {
           </Card>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_minmax(0,1fr)]">
-            <Card className="p-4">
+            <Card className="h-144 p-4">
               <IrregularStudentList
                 students={students}
                 selectedStudentProfileId={selectedStudent?.studentProfileId ?? null}
@@ -196,16 +196,16 @@ function IrregularClassPage() {
               />
             </Card>
 
-            <Card className="p-4">
+            <Card className="h-144 p-4">
               <IrregularStudentPanel student={selectedStudent} />
             </Card>
 
-            <Card className="p-4">
-              <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
+            <Card className="flex h-144 flex-col p-4">
+              <h3 className="shrink-0 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
                 Assign Regular Class Schedule
               </h3>
               {!selectedStudent ? (
-                <p className="mt-4 font-body text-sm text-slate-400 dark:text-slate-500">
+                <p className="mt-4 flex min-h-0 flex-1 items-center justify-center text-center font-body text-sm text-slate-400 dark:text-slate-500">
                   Select a student to view assignable schedules.
                 </p>
               ) : (

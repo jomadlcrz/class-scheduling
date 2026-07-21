@@ -44,12 +44,12 @@ export function IrregularStudentList({
   const pagination = usePagination(filtered, `${search}|${programFilter}`);
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <h3 className="shrink-0 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
         Irregular Students
       </h3>
 
-      <div className="relative">
+      <div className="relative shrink-0">
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
           <SearchIcon />
         </span>
@@ -63,25 +63,27 @@ export function IrregularStudentList({
         />
       </div>
 
-      <Select
-        items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
-        value={programFilter}
-        onValueChange={(v) => setProgramFilter(v as string)}
-      >
-        <SelectTrigger aria-label="Filter by program">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Programs</SelectItem>
-          {programs.map((p) => (
-            <SelectItem key={p} value={p}>
-              {p}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="shrink-0">
+        <Select
+          items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
+          value={programFilter}
+          onValueChange={(v) => setProgramFilter(v as string)}
+        >
+          <SelectTrigger aria-label="Filter by program">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Programs</SelectItem>
+            {programs.map((p) => (
+              <SelectItem key={p} value={p}>
+                {p}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      <ul className="scrollbar-none flex max-h-105 flex-1 flex-col gap-1 overflow-y-auto">
+      <ul className="scrollbar-none flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
         {filtered.length === 0 ? (
           <li className="px-2 py-6 text-center font-body text-sm text-slate-400 dark:text-slate-500">
             {students.length ? "No students match your filter." : "No irregular students found."}
@@ -122,12 +124,14 @@ export function IrregularStudentList({
         )}
       </ul>
 
-      <Pagination
-        page={pagination.page}
-        totalItems={pagination.totalItems}
-        pageSize={pagination.pageSize}
-        onPageChange={pagination.setPage}
-      />
+      <div className="shrink-0">
+        <Pagination
+          page={pagination.page}
+          totalItems={pagination.totalItems}
+          pageSize={pagination.pageSize}
+          onPageChange={pagination.setPage}
+        />
+      </div>
     </div>
   );
 }

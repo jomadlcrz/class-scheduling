@@ -17,13 +17,13 @@ function SelectTrigger({ className = "", children, ...props }: SelectPrimitive.T
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
-      className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-gray-900 outline-none transition-colors duration-150 focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700/20 data-[popup-open]:border-blue-700 data-[popup-open]:ring-2 data-[popup-open]:ring-blue-700/20 data-[placeholder]:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/20 dark:data-[popup-open]:border-blue-400 dark:data-[popup-open]:ring-blue-400/20 dark:data-[placeholder]:text-slate-500 ${className}`.trim()}
+      className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-gray-900 outline-none transition-colors duration-150 focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700/20 data-popup-open:border-blue-700 data-popup-open:ring-2 data-popup-open:ring-blue-700/20 data-placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/20 dark:data-popup-open:border-blue-400 dark:data-popup-open:ring-blue-400/20 dark:data-placeholder:text-slate-500 ${className}`.trim()}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon
         data-slot="select-trigger-icon"
-        className="shrink-0 text-slate-400 transition-transform duration-150 data-[popup-open]:rotate-180 dark:text-slate-500"
+        className="shrink-0 text-slate-400 transition-transform duration-150 data-popup-open:rotate-180 dark:text-slate-500"
       >
         <ChevronDownIcon />
       </SelectPrimitive.Icon>
@@ -101,7 +101,7 @@ function SelectItem({ className = "", children, ...props }: SelectPrimitive.Item
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
-      className={`relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:text-mist-100 dark:focus:bg-white/10 ${className}`.trim()}
+      className={`relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none focus:bg-slate-100 data-disabled:pointer-events-none data-disabled:opacity-50 dark:text-mist-100 dark:focus:bg-white/10 ${className}`.trim()}
       {...props}
     >
       <SelectPrimitive.ItemText data-slot="select-item-text" className="truncate">

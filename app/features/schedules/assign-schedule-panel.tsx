@@ -17,7 +17,7 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
 
   if (pending === undefined) {
     return (
-      <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
         <ClockIcon />
         <p className="font-body text-sm text-slate-400 dark:text-slate-500">
           Select a school year and semester above to view assignable schedules.
@@ -28,7 +28,7 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
 
   if (!pending || pending.pendingSubjects.length === 0) {
     return (
-      <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
         <ClockIcon />
         <p className="font-body text-sm text-slate-400 dark:text-slate-500">
           No pending subjects for this student this term.
@@ -49,7 +49,7 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
   }
 
   return (
-    <ul className="scrollbar-none mt-4 flex max-h-105 flex-col gap-3 overflow-y-auto">
+    <ul className="scrollbar-none mt-4 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
       {pending.pendingSubjects.map((subject) => {
         const chosen = selected[subject.subjectId] ?? "";
         return (
