@@ -1,19 +1,22 @@
 ﻿import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useBlocker, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { Drawer } from "~/components/ui/drawer";
-import { AlertIcon, AlertTriangleIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
-import { FieldChrome } from "~/components/ui/input";
+import { AlertIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { AddSchoolYearForm } from "~/features/schedules/add-school-year-form";
+import { ScheduleContextForm } from "~/features/schedules/schedule-context-form";
+import {
+  AutoGenerateIcon,
+  GenerationConflictsAlert,
+  useAutoGenerate,
+} from "~/features/schedules/schedule-generator";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -24,6 +27,7 @@ import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry
 import { useDays } from "~/hooks/use-days";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
+import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
@@ -45,24 +49,6 @@ import {
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
-
-const SUBJECT_CODE_RE = /\b([A-Z]{2,4}\d{3,4})\b/g;
-
-function highlightSubjectCode(text: string) {
-  const parts = text.split(SUBJECT_CODE_RE);
-  return parts.map((part, i) =>
-    i % 2 === 1 ? <strong key={i} className="font-semibold">{part}</strong> : part
-  );
-}
-
-
-function ZapIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  );
-}
 
 export function meta() {
   return [
@@ -100,49 +86,24 @@ function SchedulesNewPage() {
   const [addSchoolYearOpen, setAddSchoolYearOpen] = useState(false);
 
   const [slots, setSlots] = useState<PendingSlot[]>([]);
-  const [hasGenerated, setHasGenerated] = useState(false);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [generationConflicts, setGenerationConflicts] = useState<string[]>([]);
+  const {
+    isGenerating,
+    hasGenerated,
+    conflicts: generationConflicts,
+    generate,
+    reset: resetGeneration,
+  } = useAutoGenerate();
   const tempIdCounter = useRef(0);
 
   const isDirty = slots.length > 0 || isGenerating;
-  const [reloadPromptOpen, setReloadPromptOpen] = useState(false);
-  const reloadConfirmed = useRef(false);
-
-  useEffect(() => {
-    if (!isDirty) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      if (reloadConfirmed.current) return;
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [isDirty]);
-
-  useEffect(() => {
-    if (!isDirty) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      const isReload =
-        e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r");
-      if (!isReload) return;
-      e.preventDefault();
-      setReloadPromptOpen(true);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isDirty]);
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && !isSaving && currentLocation.pathname !== nextLocation.pathname,
-  );
+  const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
+    useUnsavedChangesGuard(isDirty, !isSaving);
 
   useEffect(() => {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
@@ -259,26 +220,22 @@ function SchedulesNewPage() {
     setSelectedSetId("");
     setSets([]);
     setSlots([]);
-    setHasGenerated(false);
-    setGenerationConflicts([]);
+    resetGeneration();
   }
 
   function handleYearLevelChange(yl: YearLevel | "") {
     setSelectedYearLevel(yl);
     setSelectedSetId("");
     setSlots([]);
-    setHasGenerated(false);
-    setGenerationConflicts([]);
+    resetGeneration();
   }
 
   async function handleAutoGenerate() {
     if (!selectedSet || !selectedProgram || !selectedYearLevel) return;
 
     setSaveError(null);
-    setGenerationConflicts([]);
-    setIsGenerating(true);
     try {
-      const { slots: generated, conflicts } = await scheduleService.autoGenerate({
+      const generated = await generate({
         schoolYear,
         semester,
         semesterLabel: semesterLabel(semester),
@@ -294,12 +251,8 @@ function SchedulesNewPage() {
           return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
         }),
       );
-      setGenerationConflicts(conflicts);
-      setHasGenerated(true);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Unable to generate a schedule.");
-    } finally {
-      setIsGenerating(false);
     }
   }
 
@@ -445,166 +398,32 @@ function SchedulesNewPage() {
 
           <AnimatePresence>
             {generationConflicts.length > 0 && (
-              <Alert key="generation-conflicts" variant="warning">
-                <AlertTriangleIcon />
-                <AlertDescription>
-                  <ul className="list-disc space-y-1 pl-4">
-                    {generationConflicts.map((c, i) => (
-                      <li key={i}>{highlightSubjectCode(c)}</li>
-                    ))}
-                  </ul>
-                </AlertDescription>
-              </Alert>
+              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} />
             )}
           </AnimatePresence>
 
-          <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
-            <FieldChrome
-              id="sn-school-year"
-              label="School Year"
-              labelEnd={
-                <button
-                  type="button"
-                  onClick={() => setAddSchoolYearOpen(true)}
-                  disabled={contextLocked}
-                  className="font-body text-xs font-medium text-blue-700 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400"
-                >
-                  + Add new
-                </button>
-              }
-              hint={lockHint}
-            >
-              <Select
-                items={[
-                  {
-                    value: "",
-                    label: schoolYears.length === 0 ? "No school years yet" : "Select a school year",
-                  },
-                  ...schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear })),
-                ]}
-                value={schoolYear}
-                onValueChange={(v) => setSchoolYear(v as string)}
-                disabled={contextLocked}
-              >
-                <SelectTrigger id="sn-school-year">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">
-                    {schoolYears.length === 0 ? "No school years yet" : "Select a school year"}
-                  </SelectItem>
-                  {schoolYears.map((sy) => (
-                    <SelectItem key={sy.id} value={sy.schoolYear}>
-                      {sy.schoolYear}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="sn-semester" label="Semester">
-              <Select
-                items={semesters
-                  .filter((s) => s.semesterNumber !== 3)
-                  .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))}
-                value={String(semester)}
-                onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
-                disabled={contextLocked}
-              >
-                <SelectTrigger id="sn-semester">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
-                    <SelectItem key={s.id} value={String(s.semesterNumber)}>
-                      {semesterLabel(s.semesterNumber)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="sn-program" label="Program">
-              <Select
-                items={[
-                  { value: "", label: "Select a program" },
-                  ...(programs ?? []).map((p) => ({ value: String(p.id), label: `${p.code} — ${p.name}` })),
-                ]}
-                value={selectedProgramId}
-                onValueChange={(v) => handleProgramChange(v as string)}
-                disabled={contextLocked}
-              >
-                <SelectTrigger id="sn-program">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Select a program</SelectItem>
-                  {(programs ?? []).map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      {p.code} — {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="sn-year-level" label="Year Level">
-              <Select
-                items={[
-                  {
-                    value: "",
-                    label: availableYearLevels.length === 0 ? "Select a program first" : "Select a year level",
-                  },
-                  ...availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) })),
-                ]}
-                value={String(selectedYearLevel)}
-                onValueChange={(v) => handleYearLevelChange(v === "" ? "" : (Number(v) as YearLevel))}
-                disabled={contextLocked}
-              >
-                <SelectTrigger id="sn-year-level">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">
-                    {availableYearLevels.length === 0 ? "Select a program first" : "Select a year level"}
-                  </SelectItem>
-                  {availableYearLevels.map((yl) => (
-                    <SelectItem key={yl} value={String(yl)}>
-                      {yearLevelLabel(yl)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="sn-set" label="Set">
-              <Select
-                items={[
-                  {
-                    value: "",
-                    label: availableSets.length === 0 ? "Select a year level first" : "Select a set",
-                  },
-                  ...availableSets.map((s) => ({
-                    value: String(s.id),
-                    label: `${s.program}-${s.yearLevel}${s.setCode}`,
-                  })),
-                ]}
-                value={selectedSetId}
-                onValueChange={(v) => setSelectedSetId(v as string)}
-                disabled={contextLocked}
-              >
-                <SelectTrigger id="sn-set">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">
-                    {availableSets.length === 0 ? "Select a year level first" : "Select a set"}
-                  </SelectItem>
-                  {availableSets.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.program}-{s.yearLevel}{s.setCode}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-          </Card>
+          <ScheduleContextForm
+            schoolYears={schoolYears}
+            schoolYear={schoolYear}
+            onSchoolYearChange={setSchoolYear}
+            onAddSchoolYear={() => setAddSchoolYearOpen(true)}
+            semesters={semesters}
+            semester={semester}
+            onSemesterChange={setSemester}
+            semesterLabel={semesterLabel}
+            programs={programs}
+            selectedProgramId={selectedProgramId}
+            onProgramChange={handleProgramChange}
+            availableYearLevels={availableYearLevels}
+            selectedYearLevel={selectedYearLevel}
+            onYearLevelChange={handleYearLevelChange}
+            yearLevelLabel={yearLevelLabel}
+            availableSets={availableSets}
+            selectedSetId={selectedSetId}
+            onSetIdChange={setSelectedSetId}
+            locked={contextLocked}
+            lockHint={lockHint}
+          />
 
           <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
             <div className="hidden sm:block" />
@@ -650,7 +469,7 @@ function SchedulesNewPage() {
                     loadingLabel={hasGenerated ? "Regenerating…" : "Generating…"}
                     onClick={handleAutoGenerate}
                   >
-                    {hasGenerated ? <RotateIcon /> : <ZapIcon />}
+                    {hasGenerated ? <RotateIcon /> : <AutoGenerateIcon />}
                     {hasGenerated ? "Regenerate" : "Auto-Generate"}
                   </Button>
                 ) : undefined
@@ -752,10 +571,7 @@ function SchedulesNewPage() {
         confirmLabel={isGenerating ? "Cancel Generation" : "Reload"}
         loadingLabel={isGenerating ? "Cancelling…" : "Reloading…"}
         confirmVariant="danger"
-        onConfirm={async () => {
-          reloadConfirmed.current = true;
-          window.location.reload();
-        }}
+        onConfirm={async () => confirmReload()}
       >
         {isGenerating
           ? "Schedule generation is in progress. Reloading will cancel it."

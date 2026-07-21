@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useBlocker, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { FormError } from "~/components/forms/form-error";
@@ -13,6 +13,7 @@ import {
   CurriculumStructure,
   type PendingEntry,
 } from "~/features/subjects/curriculum-structure";
+import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
@@ -89,47 +90,8 @@ function SubjectsNewPage() {
 
   /** Unsaved work: staged entries or one being edited in the form. */
   const isDirty = pending.length > 0 || editing !== null;
-  /** Keyboard reload (F5/Ctrl+R) caught while dirty; shows the styled dialog. */
-  const [reloadPromptOpen, setReloadPromptOpen] = useState(false);
-  /** Skips the native unload prompt for reloads already confirmed in the dialog. */
-  const reloadConfirmed = useRef(false);
-
-  // Browser-native warning on refresh/close while entries are unsaved.
-  // Toolbar reloads and tab closes can't show custom UI, so this stays
-  // as the fallback for anything the keydown guard below can't catch.
-  useEffect(() => {
-    if (!isDirty) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      if (reloadConfirmed.current) return;
-      e.preventDefault();
-      // Deprecated, but still required by older Chromium to show the prompt.
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [isDirty]);
-
-  // Keyboard reloads start as a keydown inside the page, so those can be
-  // intercepted and confirmed with the same dialog as in-app navigation.
-  useEffect(() => {
-    if (!isDirty) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      const isReload =
-        e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r");
-      if (!isReload) return;
-      e.preventDefault();
-      setReloadPromptOpen(true);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isDirty]);
-
-  // Confirm in-app navigation away while entries are unsaved. isSaving is
-  // excluded so the post-save redirect to /subjects passes through.
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && !isSaving && currentLocation.pathname !== nextLocation.pathname,
-  );
+  const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
+    useUnsavedChangesGuard(isDirty, !isSaving);
 
   const savedForProgram = useMemo(
     () => (allSubjects ?? []).filter((s) => s.program === program),
@@ -348,10 +310,7 @@ function SubjectsNewPage() {
         confirmLabel="Reload"
         loadingLabel="Reloading…"
         confirmVariant="danger"
-        onConfirm={async () => {
-          reloadConfirmed.current = true;
-          window.location.reload();
-        }}
+        onConfirm={async () => confirmReload()}
       >
         You have unsaved curriculum entries. Reloading will discard them.
       </ConfirmDialog>
