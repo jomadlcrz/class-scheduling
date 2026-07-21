@@ -6,27 +6,32 @@ import { semesterSchema } from "~/schemas/semester.schema";
 import type { CreateSemesterInput } from "~/types/semester";
 
 type SemesterFormProps = {
+  semester?: CreateSemesterInput;
   onSubmit: (input: CreateSemesterInput) => Promise<void>;
   onCancel: () => void;
 };
 
 /** Semester number is derived from the leading digit of the name (e.g. "1st Semester" → 1) — no separate field. */
-export function SemesterForm({ onSubmit, onCancel }: SemesterFormProps) {
+export function SemesterForm({ semester, onSubmit, onCancel }: SemesterFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isEdit = Boolean(semester);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const semester = String(data.get("semester-name") ?? "").trim();
-    const leadingDigit = semester.match(/^(\d)/)?.[1];
+    const semesterName = String(data.get("semester-name") ?? "").trim();
+    const leadingDigit = semesterName.match(/^(\d)/)?.[1];
 
     if (!leadingDigit) {
       setError("Start the name with the semester number, e.g. \"1st Semester\".");
       return;
     }
 
-    const result = semesterSchema.safeParse({ semester, semesterNumber: Number(leadingDigit) });
+    const result = semesterSchema.safeParse({
+      semester: semesterName,
+      semesterNumber: Number(leadingDigit),
+    });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -51,6 +56,7 @@ export function SemesterForm({ onSubmit, onCancel }: SemesterFormProps) {
         label="Semester Name"
         required
         placeholder="1st Semester"
+        defaultValue={semester?.semester ?? ""}
         hint="Start with the number, e.g. 1st Semester, 2nd Semester, 3rd Semester."
         autoFocus
       />
@@ -58,8 +64,13 @@ export function SemesterForm({ onSubmit, onCancel }: SemesterFormProps) {
         <Button type="button" variant="outline" block={false} onClick={onCancel} disabled={isSaving}>
           Cancel
         </Button>
-        <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Adding…">
-          Add Semester
+        <Button
+          type="submit"
+          block={false}
+          isLoading={isSaving}
+          loadingLabel={isEdit ? "Saving…" : "Adding…"}
+        >
+          {isEdit ? "Save Changes" : "Add Semester"}
         </Button>
       </div>
     </form>

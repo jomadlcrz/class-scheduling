@@ -8,14 +8,16 @@ const CURRENT_YEAR = new Date().getFullYear();
 const EXAMPLE_SCHOOL_YEAR = `${CURRENT_YEAR}-${CURRENT_YEAR + 1}`;
 
 type SchoolYearFormProps = {
+  initialValue?: string;
   onSubmit: (schoolYear: string) => Promise<void>;
   onCancel: () => void;
 };
 
-export function SchoolYearForm({ onSubmit, onCancel }: SchoolYearFormProps) {
-  const [schoolYear, setSchoolYear] = useState("");
+export function SchoolYearForm({ initialValue, onSubmit, onCancel }: SchoolYearFormProps) {
+  const [schoolYear, setSchoolYear] = useState(initialValue ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const isEdit = Boolean(initialValue);
 
   // The end year is always start + 1 (backend rule) — auto-fill it the moment
   // a 4-digit start year is typed, but leave the field free to edit after that.
@@ -64,8 +66,13 @@ export function SchoolYearForm({ onSubmit, onCancel }: SchoolYearFormProps) {
         <Button type="button" variant="outline" block={false} onClick={onCancel} disabled={isSaving}>
           Cancel
         </Button>
-        <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Adding…">
-          Add School Year
+        <Button
+          type="submit"
+          block={false}
+          isLoading={isSaving}
+          loadingLabel={isEdit ? "Saving…" : "Adding…"}
+        >
+          {isEdit ? "Save Changes" : "Add School Year"}
         </Button>
       </div>
     </form>
