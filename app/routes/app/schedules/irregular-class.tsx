@@ -187,7 +187,7 @@ function IrregularClassPage() {
             </FieldChrome>
           </Card>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_1fr]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_minmax(0,1fr)]">
             <Card className="p-4">
               <IrregularStudentList
                 students={students}

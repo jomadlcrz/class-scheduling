@@ -49,7 +49,7 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
   }
 
   return (
-    <ul className="mt-4 flex flex-col gap-3">
+    <ul className="scrollbar-none mt-4 flex max-h-105 flex-col gap-3 overflow-y-auto">
       {pending.pendingSubjects.map((subject) => {
         const chosen = selected[subject.subjectId] ?? "";
         return (
@@ -85,7 +85,7 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
                     setSelected((current) => ({ ...current, [subject.subjectId]: v as string }))
                   }
                 >
-                  <SelectTrigger id={`available-schedule-${subject.subjectId}`}>
+                  <SelectTrigger id={`available-schedule-${subject.subjectId}`} className="min-w-0 flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

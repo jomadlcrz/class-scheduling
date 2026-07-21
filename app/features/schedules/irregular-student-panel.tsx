@@ -53,7 +53,7 @@ export function IrregularStudentPanel({ student }: IrregularStudentPanelProps) {
             No enrolled subjects found for this student.
           </p>
         ) : (
-          <ul className="flex flex-col gap-1.5">
+          <ul className="scrollbar-none flex max-h-105 flex-col gap-1.5 overflow-y-auto">
             {subjects.map((s) => (
               <li
                 key={s.subjectId}

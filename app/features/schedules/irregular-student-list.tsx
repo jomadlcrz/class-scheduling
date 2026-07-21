@@ -81,7 +81,7 @@ export function IrregularStudentList({
         </SelectContent>
       </Select>
 
-      <ul className="scrollbar-thin flex max-h-105 flex-1 flex-col gap-1 overflow-y-auto">
+      <ul className="scrollbar-none flex max-h-105 flex-1 flex-col gap-1 overflow-y-auto">
         {filtered.length === 0 ? (
           <li className="px-2 py-6 text-center font-body text-sm text-slate-400 dark:text-slate-500">
             {students.length ? "No students match your filter." : "No irregular students found."}
