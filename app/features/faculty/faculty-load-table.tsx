@@ -9,7 +9,6 @@ export type FacultyLoadRow = {
   programs: string[];
   subjectCount: number;
   totalUnits: number;
-  /** Only present for staged/pending rows — GET /deans/faculty-loading never returns it. */
   maxWeeklyHours?: number;
 };
 
@@ -41,6 +40,7 @@ export function toExistingFacultyLoadRow(entry: FacultyLoadingEntry): FacultyLoa
     programs: [...new Set(entry.subjects.flatMap((s) => s.schedules.map((sc) => sc.course)))],
     subjectCount: entry.subjects.length,
     totalUnits: entry.subjects.reduce((sum, s) => sum + s.units.total, 0),
+    maxWeeklyHours: entry.maxWeeklyHours ?? undefined,
   };
 }
 

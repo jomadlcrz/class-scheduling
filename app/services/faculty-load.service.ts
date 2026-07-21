@@ -114,6 +114,7 @@ type FacultyLoadingResponse = {
   department: string;
   semester: string;
   academic_year: string;
+  max_weekly_hours: number | string | null;
   subjects: {
     subject_code: string;
     descriptive_title: string;
@@ -151,6 +152,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
     department: entry.department,
     semester: entry.semester,
     academicYear: entry.academic_year,
+    maxWeeklyHours: entry.max_weekly_hours === null ? null : Number(entry.max_weekly_hours),
     subjects: entry.subjects.map((s) => ({
       subjectCode: s.subject_code,
       descriptiveTitle: s.descriptive_title,

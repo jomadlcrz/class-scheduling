@@ -86,5 +86,6 @@ export type FacultyLoadingEntry = {
   department: string;
   semester: string;
   academicYear: string;
+  maxWeeklyHours: number | null;
   subjects: FacultyLoadingSubject[];
 };
