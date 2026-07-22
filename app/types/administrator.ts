@@ -31,3 +31,25 @@ export type CreateAdministratorAccountInput = {
   gender?: string;
   civilStatus?: string;
 };
+
+/** GET /super-admin/admin-accounts/<id> response, camelCased. */
+export type AdministratorDetail = {
+  id: number;
+  firstName: string;
+  midName: string | null;
+  lastName: string;
+  gender: string;
+  civilStatus: string;
+  mobile: string | null;
+  email: string | null;
+  accountActive: boolean | null;
+};
+
+/** PUT /super-admin/admin-accounts/<id> body — only name/contact fields are editable. */
+export type UpdateAdministratorInput = {
+  firstName?: string;
+  midName?: string;
+  lastName?: string;
+  mobile?: string;
+  email?: string;
+};

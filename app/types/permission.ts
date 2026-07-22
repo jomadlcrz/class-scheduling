@@ -11,3 +11,16 @@ export type PermissionSummary = {
   name: string;
   permissions: RolePermission[];
 };
+
+/** PUT /permissions/<id> body — both fields optional, only what's supplied is changed. */
+export type UpdatePermissionInput = {
+  permissionSlug?: string;
+  description?: string;
+};
+
+/** GET /permissions/recycle-bin row. */
+export type DeletedPermission = {
+  id: number;
+  slug: string;
+  deactivatedAt: string | null;
+};

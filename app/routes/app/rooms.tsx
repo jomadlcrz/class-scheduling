@@ -229,7 +229,7 @@ function RoomsPage() {
       >
         Room{" "}
         <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.name}</span>{" "}
-        will be permanently removed.
+        will be removed from active lists. It can be restored from Recently Deleted.
       </ConfirmDialog>
     </div>
   );

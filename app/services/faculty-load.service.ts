@@ -1,10 +1,12 @@
-import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import { programService } from "~/services/program.service";
 import type {
   DepartmentFacultyOption,
   DepartmentSubjectProgram,
   FacultyLoadInput,
   FacultyLoadingEntry,
+  SubjectAssignment,
+  TeachingTerm,
 } from "~/types/faculty-load";
 
 /**
@@ -152,7 +154,9 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
     department: entry.department,
     semester: entry.semester,
     academicYear: entry.academic_year,
-    maxWeeklyHours: entry.max_weekly_hours === null ? null : Number(entry.max_weekly_hours),
+    // Loose null check: the backend currently omits this field entirely rather than
+    // sending null, so `undefined` must map to `null` too or Number(undefined) → NaN.
+    maxWeeklyHours: entry.max_weekly_hours == null ? null : Number(entry.max_weekly_hours),
     subjects: entry.subjects.map((s) => ({
       subjectCode: s.subject_code,
       descriptiveTitle: s.descriptive_title,
@@ -170,9 +174,70 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
   }));
 }
 
+/** GET /deans/teaching-terms/<id> — one instructor's term-scoped load record. */
+async function getTeachingTerm(id: number): Promise<TeachingTerm> {
+  const data = await apiGet<{
+    id: number;
+    instructor_profile_id: number;
+    instructor_name: string;
+    sy_id: number;
+    sem_id: number;
+    max_weekly_hours: number | string;
+    current_weekly_hours: number | string;
+  }>(`/deans/teaching-terms/${id}`);
+  return {
+    id: data.id,
+    instructorProfileId: data.instructor_profile_id,
+    instructorName: data.instructor_name,
+    syId: data.sy_id,
+    semId: data.sem_id,
+    maxWeeklyHours: Number(data.max_weekly_hours),
+    currentWeeklyHours: Number(data.current_weekly_hours),
+  };
+}
+
+/** PUT /deans/teaching-terms/<id> — updates only the max weekly hours cap. */
+async function updateTeachingTerm(id: number, maxWeeklyHours: number): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/deans/teaching-terms/${id}`, { maxWeeklyHours });
+  return apiMessage(data);
+}
+
+/** DELETE /deans/teaching-terms/<id> — 409 if the term still has subject assignments. */
+async function removeTeachingTerm(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/deans/teaching-terms/${id}`);
+  return apiMessage(data);
+}
+
+/** GET /deans/subject-assignments/<id> — one subject-assignment link row. */
+async function getSubjectAssignment(id: number): Promise<SubjectAssignment> {
+  const data = await apiGet<{
+    id: number;
+    teaching_term_id: number;
+    curriculum_detail_id: number;
+    subject_code: string;
+  }>(`/deans/subject-assignments/${id}`);
+  return {
+    id: data.id,
+    teachingTermId: data.teaching_term_id,
+    curriculumDetailId: data.curriculum_detail_id,
+    subjectCode: data.subject_code,
+  };
+}
+
+/** DELETE /deans/subject-assignments/<id> — hard delete of the link row. */
+async function removeSubjectAssignment(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/deans/subject-assignments/${id}`);
+  return apiMessage(data);
+}
+
 export const facultyLoadService = {
   createSubjectAssignments,
   listDepartmentFaculties,
   listDepartmentSubjects,
   getFacultyLoading,
+  getTeachingTerm,
+  updateTeachingTerm,
+  removeTeachingTerm,
+  getSubjectAssignment,
+  removeSubjectAssignment,
 };

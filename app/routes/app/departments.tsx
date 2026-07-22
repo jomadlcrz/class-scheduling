@@ -221,7 +221,7 @@ function DepartmentsPage() {
       >
         Department{" "}
         <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.abbrev}</span>{" "}
-        ({deleteTarget?.name}) will be permanently removed.
+        ({deleteTarget?.name}) will be removed from active lists. It can be restored from Recently Deleted.
       </ConfirmDialog>
     </div>
   );

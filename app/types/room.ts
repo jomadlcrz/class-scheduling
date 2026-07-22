@@ -40,3 +40,14 @@ export type UpdateRoomInput = {
   name?: string;
   capacity?: number;
 };
+
+/** GET /rooms/:id response — a leaner shape than the nested-list `Room` (no buildingName/timeRemaining join). */
+export type RoomDetail = {
+  id: number;
+  buildingId: number;
+  floor: number;
+  name: string;
+  type: string;
+  capacity: number;
+  status: string;
+};

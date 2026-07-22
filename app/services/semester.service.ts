@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { CreateSemesterInput, Semester } from "~/types/semester";
 
 type SemesterResponse = {
@@ -7,8 +7,15 @@ type SemesterResponse = {
   semester_number: number;
 };
 
+export type DeletedSemester = Semester & { deactivatedAt: string | null };
+
 let cachedSemesters: Semester[] | null = null;
 let cachePromise: Promise<Semester[]> | null = null;
+
+function invalidateCache() {
+  cachedSemesters = null;
+  cachePromise = null;
+}
 
 /** GET /semesters — 404 → empty. Result is cached after the first fetch. */
 async function list(): Promise<Semester[]> {
@@ -43,9 +50,55 @@ async function create(input: CreateSemesterInput): Promise<string> {
     semester: input.semester,
     semesterNumber: input.semesterNumber,
   });
-  cachedSemesters = null;
-  cachePromise = null;
+  invalidateCache();
   return apiMessage(data);
 }
 
-export const semesterService = { list, create };
+/** PUT /semesters/:id */
+async function update(id: number, input: CreateSemesterInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/semesters/${id}`, {
+    semester: input.semester,
+    semesterNumber: input.semesterNumber,
+  });
+  invalidateCache();
+  return apiMessage(data);
+}
+
+/** DELETE /semesters/:id — soft-delete; 409 if still referenced by academic records/teaching terms. */
+async function remove(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/semesters/${id}`);
+  invalidateCache();
+  return apiMessage(data);
+}
+
+/** GET /semesters/recycle-bin — always fresh, not cached. 404 → empty. */
+async function listDeleted(): Promise<DeletedSemester[]> {
+  let data: (SemesterResponse & { deactivated_at: string | null })[];
+  try {
+    data = await apiGet<(SemesterResponse & { deactivated_at: string | null })[]>("/semesters/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((s) => ({
+    id: s.id,
+    semester: s.semester,
+    semesterNumber: s.semester_number,
+    deactivatedAt: s.deactivated_at,
+  }));
+}
+
+/** PATCH /semesters/:id/restore */
+async function restore(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/semesters/${id}/restore`);
+  invalidateCache();
+  return apiMessage(data);
+}
+
+/** GET /semesters/:id */
+async function get(id: number): Promise<Semester> {
+  const s = await apiGet<SemesterResponse>(`/semesters/${id}`);
+  return { id: s.id, semester: s.semester, semesterNumber: s.semester_number };
+}
+
+export const semesterService = { list, create, update, remove, listDeleted, restore, get };

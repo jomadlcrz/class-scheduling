@@ -10,8 +10,11 @@ import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
+import { ActivateFacultyDialog } from "~/features/faculty/activate-faculty-dialog";
+import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-dialog";
 import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
 import { FacultyAccountForm } from "~/features/faculty/faculty-account-form";
+import { FacultyEditForm } from "~/features/faculty/faculty-edit-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
@@ -49,6 +52,12 @@ function FacultyPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<Faculty | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<Faculty | null>(null);
+  const [reactivateTarget, setReactivateTarget] = useState<Faculty | null>(null);
+  // The list endpoint has no account_active field — fetched per-row (page-bounded
+  // by pagination) so Deactivate/Reactivate can show only the one that applies.
+  const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
 
   useEffect(() => {
     facultyService.list().then(setFacultyList).catch((err) => {
@@ -104,18 +113,64 @@ function FacultyPage() {
   }, [facultyList, search, department]);
 
   const pagination = usePagination(visibleFaculty, resetKey);
+  const pageAccountIds = pagination.pageItems.filter((f) => f.hasAccount).map((f) => f.id).join(",");
+
+  useEffect(() => {
+    if (!pageAccountIds) return;
+    const ids = pageAccountIds.split(",").map(Number);
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        facultyService
+          .get(id)
+          .then((detail) => [id, detail.accountActive ?? true] as const)
+          .catch(() => [id, true] as const),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      setAccountActiveById((current) => ({ ...current, ...Object.fromEntries(results) }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pageAccountIds]);
+
+  function refreshFacultyList() {
+    facultyService.list().then(setFacultyList).catch(() => {});
+  }
 
   async function handleCreate(input: CreateFacultyAccountInput) {
     const message = await facultyService.create(input);
     if (message) toast.success(message);
     setCreatedEmail(input.email);
-    // Refresh the list so the new faculty member appears.
-    facultyService.list().then(setFacultyList).catch(() => {});
+    refreshFacultyList();
   }
 
   function closeCreate() {
     setCreateOpen(false);
     setCreatedEmail(null);
+  }
+
+  async function handleEdit(input: { firstName: string; midName?: string; lastName: string; mobile: string; email: string }) {
+    if (!editTarget) return;
+    const message = await facultyService.update(editTarget.id, input);
+    if (message) toast.success(message);
+    setEditTarget(null);
+    refreshFacultyList();
+  }
+
+  async function handleDeactivate(member: Faculty) {
+    const message = await facultyService.deactivate(member.id);
+    if (message) toast.success(message);
+    setAccountActiveById((current) => ({ ...current, [member.id]: false }));
+    setDeactivateTarget(null);
+  }
+
+  async function handleReactivate(member: Faculty) {
+    const message = await facultyService.reactivate(member.id);
+    if (message) toast.success(message);
+    setAccountActiveById((current) => ({ ...current, [member.id]: true }));
+    setReactivateTarget(null);
   }
 
   return (
@@ -173,7 +228,13 @@ function FacultyPage() {
           </EmptyState>
         ) : (
           <>
-            <FacultyTable faculty={pagination.pageItems} />
+            <FacultyTable
+              faculty={pagination.pageItems}
+              accountActiveById={accountActiveById}
+              onEdit={setEditTarget}
+              onDeactivate={setDeactivateTarget}
+              onReactivate={setReactivateTarget}
+            />
             <Pagination
               page={pagination.page}
               totalItems={pagination.totalItems}
@@ -205,6 +266,24 @@ function FacultyPage() {
           />
         )}
       </Modal>
+
+      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Faculty">
+        {editTarget && (
+          <FacultyEditForm member={editTarget} onSubmit={handleEdit} onCancel={() => setEditTarget(null)} />
+        )}
+      </Modal>
+
+      <DeactivateFacultyDialog
+        member={deactivateTarget}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={handleDeactivate}
+      />
+
+      <ActivateFacultyDialog
+        member={reactivateTarget}
+        onClose={() => setReactivateTarget(null)}
+        onConfirm={handleReactivate}
+      />
     </div>
   );
 }

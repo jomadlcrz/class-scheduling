@@ -206,7 +206,7 @@ function SetsPage() {
           {deleteTarget?.setCode}
         </span>{" "}
         ({deleteTarget?.program}, {deleteTarget ? yearLevelLabel(deleteTarget.yearLevel) : ""}){" "}
-        will be permanently removed.
+        will be removed from active lists. It can be restored from Recently Deleted.
       </ConfirmDialog>
     </div>
   );

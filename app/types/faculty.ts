@@ -33,3 +33,25 @@ export type CreateFacultyAccountInput = {
   gender?: string;
   civilStatus?: string;
 };
+
+/** GET /super-admin/faculty-accounts/<id> response, camelCased. */
+export type FacultyDetail = {
+  id: number;
+  firstName: string;
+  midName: string | null;
+  lastName: string;
+  gender: string;
+  civilStatus: string;
+  mobile: string | null;
+  email: string | null;
+  accountActive: boolean | null;
+};
+
+/** PUT /super-admin/faculty-accounts/<id> body — only name/contact fields are editable. */
+export type UpdateFacultyInput = {
+  firstName?: string;
+  midName?: string;
+  lastName?: string;
+  mobile?: string;
+  email?: string;
+};

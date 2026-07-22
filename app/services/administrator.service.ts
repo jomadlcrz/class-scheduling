@@ -1,12 +1,13 @@
-import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
-import type { Administrator, AdministratorRole, CreateAdministratorAccountInput } from "~/types/administrator";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import type {
+  Administrator,
+  AdministratorDetail,
+  AdministratorRole,
+  CreateAdministratorAccountInput,
+  UpdateAdministratorInput,
+} from "~/types/administrator";
 
-/**
- * Administrator service (Super Admin / Registrar Admin accounts). `create`
- * and `list` talk to the real API (super_admin module) — there is no
- * PATCH/DELETE endpoint, so reset-password/deactivate/reactivate aren't
- * offered here.
- */
+/** Administrator service (Super Admin / Registrar Admin accounts, super_admin module). */
 
 /** POST /super-admin/create-admin-accounts — emails temp password. Returns the backend message. */
 async function create(input: CreateAdministratorAccountInput): Promise<string> {
@@ -66,4 +67,50 @@ async function list(): Promise<Administrator[]> {
   });
 }
 
-export const administratorService = { list, create };
+type AdminDetailResponse = {
+  profile_id: number;
+  first_name: string;
+  mid_name: string | null;
+  last_name: string;
+  gender: string;
+  civil_status: string;
+  mobile: string | null;
+  email: string | null;
+  account_active: boolean | null;
+};
+
+/** GET /super-admin/admin-accounts/<id> */
+async function get(id: number): Promise<AdministratorDetail> {
+  const d = await apiGet<AdminDetailResponse>(`/super-admin/admin-accounts/${id}`);
+  return {
+    id: d.profile_id,
+    firstName: d.first_name,
+    midName: d.mid_name,
+    lastName: d.last_name,
+    gender: d.gender,
+    civilStatus: d.civil_status,
+    mobile: d.mobile,
+    email: d.email,
+    accountActive: d.account_active,
+  };
+}
+
+/** PUT /super-admin/admin-accounts/<id> — edits name/contact fields only. */
+async function update(id: number, input: UpdateAdministratorInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/super-admin/admin-accounts/${id}`, input);
+  return apiMessage(data);
+}
+
+/** DELETE /super-admin/admin-accounts/<id> — deactivates the login, not the profile. */
+async function deactivate(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/super-admin/admin-accounts/${id}`);
+  return apiMessage(data);
+}
+
+/** PATCH /super-admin/admin-accounts/<id>/restore — reactivates the login. */
+async function reactivate(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/super-admin/admin-accounts/${id}/restore`);
+  return apiMessage(data);
+}
+
+export const administratorService = { list, create, get, update, deactivate, reactivate };

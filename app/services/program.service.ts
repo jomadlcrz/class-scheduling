@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { CreateProgramInput, Program, UpdateProgramInput } from "~/types/program";
 
 /** Programs CRUD against the curriculums module (registrar_admin). */
@@ -66,4 +66,61 @@ async function remove(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-export const programService = { list, create, update, remove };
+export type DeletedProgram = {
+  id: number;
+  abbrev: string;
+  name: string;
+  deactivatedAt: string | null;
+};
+
+type ProgramRecycleBinResponse = {
+  program_id: number;
+  program_abbrev: string;
+  program_name: string;
+  deactivated_at: string | null;
+}[];
+
+/** GET /programs/recycle-bin — 404 → empty. */
+async function listDeleted(): Promise<DeletedProgram[]> {
+  let data: ProgramRecycleBinResponse;
+  try {
+    data = await apiGet<ProgramRecycleBinResponse>("/programs/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((p) => ({
+    id: p.program_id,
+    abbrev: p.program_abbrev,
+    name: p.program_name,
+    deactivatedAt: p.deactivated_at,
+  }));
+}
+
+/** PATCH /programs/:id/restore */
+async function restore(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/programs/${id}/restore`);
+  return apiMessage(data);
+}
+
+/** GET /programs/:id — no auth required server-side (backend inconsistency vs. the rest of this module), harmless either way. */
+async function get(id: number): Promise<Program> {
+  const p = await apiGet<{
+    program_id: number;
+    program_abbrev: string;
+    program_name: string;
+    program_type: string;
+    program_length: number;
+    department_id: number;
+  }>(`/programs/${id}`);
+  return {
+    id: p.program_id,
+    departmentAbbrev: "",
+    abbrev: p.program_abbrev,
+    name: p.program_name,
+    type: p.program_type,
+    lengthYears: p.program_length,
+  };
+}
+
+export const programService = { list, create, update, remove, listDeleted, restore, get };

@@ -160,7 +160,8 @@ function BuildingsPage() {
       >
         Building{" "}
         <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.name}</span>{" "}
-        will be permanently removed.
+        and its rooms/departments will be removed from active lists. They can be restored together from Recently
+        Deleted.
       </ConfirmDialog>
     </div>
   );

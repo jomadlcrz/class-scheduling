@@ -1,6 +1,6 @@
-import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { DepartmentOption } from "~/types/department";
-import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
+import type { CreateFacultyAccountInput, Faculty, FacultyDetail, UpdateFacultyInput } from "~/types/faculty";
 
 /**
  * Faculty service. `create`, `list`, and `listDepartmentOptions` talk to the
@@ -91,4 +91,50 @@ async function listDepartmentOptions(): Promise<DepartmentOption[]> {
   }));
 }
 
-export const facultyService = { create, list, listDepartmentOptions };
+type FacultyDetailResponse = {
+  faculty_id: number;
+  first_name: string;
+  mid_name: string | null;
+  last_name: string;
+  gender: string;
+  civil_status: string;
+  mobile: string | null;
+  email: string | null;
+  account_active: boolean | null;
+};
+
+/** GET /super-admin/faculty-accounts/<id> */
+async function get(id: number): Promise<FacultyDetail> {
+  const d = await apiGet<FacultyDetailResponse>(`/super-admin/faculty-accounts/${id}`);
+  return {
+    id: d.faculty_id,
+    firstName: d.first_name,
+    midName: d.mid_name,
+    lastName: d.last_name,
+    gender: d.gender,
+    civilStatus: d.civil_status,
+    mobile: d.mobile,
+    email: d.email,
+    accountActive: d.account_active,
+  };
+}
+
+/** PUT /super-admin/faculty-accounts/<id> — edits name/contact fields only. */
+async function update(id: number, input: UpdateFacultyInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/super-admin/faculty-accounts/${id}`, input);
+  return apiMessage(data);
+}
+
+/** DELETE /super-admin/faculty-accounts/<id> — deactivates the login, not the profile. */
+async function deactivate(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/super-admin/faculty-accounts/${id}`);
+  return apiMessage(data);
+}
+
+/** PATCH /super-admin/faculty-accounts/<id>/restore — reactivates the login. */
+async function reactivate(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/super-admin/faculty-accounts/${id}/restore`);
+  return apiMessage(data);
+}
+
+export const facultyService = { create, list, listDepartmentOptions, get, update, deactivate, reactivate };

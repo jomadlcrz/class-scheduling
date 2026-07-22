@@ -1,10 +1,13 @@
-import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
+  DeletedStudent,
   EnrollStudentInput,
   StudentAcademicRecord,
   StudentAccountRow,
+  StudentAccountStatus,
+  UpdateEnrollmentInput,
 } from "~/types/student";
 
 /**
@@ -168,4 +171,86 @@ async function getEnrollments(studentProfileId: number): Promise<StudentAcademic
   }));
 }
 
-export const studentService = { createRecord, createAccount, listAccounts, enroll, getEnrollments };
+type DeletedStudentResponse = {
+  student_profile_id: number;
+  first_name: string;
+  last_name: string;
+  deactivated_at: string | null;
+}[];
+
+/** GET /students/recycle-bin — soft-deleted student profiles. 404 → empty. */
+async function listDeleted(): Promise<DeletedStudent[]> {
+  let data: DeletedStudentResponse;
+  try {
+    data = await apiGet<DeletedStudentResponse>("/students/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((s) => ({
+    studentProfileId: s.student_profile_id,
+    firstName: s.first_name,
+    lastName: s.last_name,
+    deactivatedAt: s.deactivated_at,
+  }));
+}
+
+/** PATCH /students/<id>/restore */
+async function restore(studentProfileId: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/restore`);
+  return apiMessage(data);
+}
+
+/** DELETE /students/<id> — soft-delete; academic history is left untouched. */
+async function remove(studentProfileId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/students/${studentProfileId}`);
+  return apiMessage(data);
+}
+
+/** PUT /students/enrollments/<id> — corrects a single term's set/year level/status. */
+async function updateEnrollment(studentAcademicId: number, input: UpdateEnrollmentInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/students/enrollments/${studentAcademicId}`, input);
+  return apiMessage(data);
+}
+
+/** DELETE /students/enrollments/<id> — hard delete of a single term's enrollment. */
+async function removeEnrollment(studentAcademicId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/students/enrollments/${studentAcademicId}`);
+  return apiMessage(data);
+}
+
+/** GET /super-admin/student-accounts/<id> */
+async function getAccount(studentProfileId: number): Promise<StudentAccountStatus> {
+  const d = await apiGet<{ student_profile_id: number; has_account: boolean; account_active: boolean | null }>(
+    `/super-admin/student-accounts/${studentProfileId}`,
+  );
+  return { studentProfileId: d.student_profile_id, hasAccount: d.has_account, accountActive: d.account_active };
+}
+
+/** DELETE /super-admin/student-accounts/<id> — deactivates the login, not the profile. */
+async function deactivateAccount(studentProfileId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/super-admin/student-accounts/${studentProfileId}`);
+  return apiMessage(data);
+}
+
+/** PATCH /super-admin/student-accounts/<id>/restore — reactivates the login. */
+async function reactivateAccount(studentProfileId: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/super-admin/student-accounts/${studentProfileId}/restore`);
+  return apiMessage(data);
+}
+
+export const studentService = {
+  createRecord,
+  createAccount,
+  listAccounts,
+  enroll,
+  getEnrollments,
+  listDeleted,
+  restore,
+  remove,
+  updateEnrollment,
+  removeEnrollment,
+  getAccount,
+  deactivateAccount,
+  reactivateAccount,
+};

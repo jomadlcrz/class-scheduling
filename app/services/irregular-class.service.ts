@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost } from "~/lib/api";
 
 /** Irregular students and their enrolled subjects (registrar_admin schedules module). */
 
@@ -258,4 +258,40 @@ async function assign(input: { studentAcademicId: number; regularSchedIds: numbe
   return apiMessage(data);
 }
 
-export const irregularClassService = { listStudents, listPendingSchedule, listAssignedSchedule, assign };
+export type IrregularScheduleDetail = {
+  id: number;
+  studentAcademicId: number;
+  regularSchedId: number;
+  subjectCode: string;
+};
+
+/** GET /irregular_schedule/<id> — a single irregular-student schedule link row. */
+async function getIrregular(id: number): Promise<IrregularScheduleDetail> {
+  const data = await apiGet<{
+    id: number;
+    student_academic_id: number;
+    regular_sched_id: number;
+    subject_code: string;
+  }>(`/irregular_schedule/${id}`);
+  return {
+    id: data.id,
+    studentAcademicId: data.student_academic_id,
+    regularSchedId: data.regular_sched_id,
+    subjectCode: data.subject_code,
+  };
+}
+
+/** DELETE /irregular_schedule/<id> — hard delete (unassigns the schedule from the irregular student). */
+async function removeIrregular(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/irregular_schedule/${id}`);
+  return apiMessage(data);
+}
+
+export const irregularClassService = {
+  listStudents,
+  listPendingSchedule,
+  listAssignedSchedule,
+  assign,
+  getIrregular,
+  removeIrregular,
+};

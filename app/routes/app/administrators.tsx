@@ -10,8 +10,11 @@ import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
+import { ActivateAdministratorDialog } from "~/features/administrators/activate-administrator-dialog";
 import { AdministratorAccountForm } from "~/features/administrators/administrator-account-form";
+import { AdministratorEditForm } from "~/features/administrators/administrator-edit-form";
 import { AdministratorTable } from "~/features/administrators/administrator-table";
+import { DeactivateAdministratorDialog } from "~/features/administrators/deactivate-administrator-dialog";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { administratorService } from "~/services/administrator.service";
@@ -44,6 +47,12 @@ function AdministratorsPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<Administrator | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<Administrator | null>(null);
+  const [reactivateTarget, setReactivateTarget] = useState<Administrator | null>(null);
+  // The list endpoint has no account_active field — fetched per-row (page-bounded
+  // by pagination) so Deactivate/Reactivate can show only the one that applies.
+  const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
 
   function refresh() {
     administratorService
@@ -86,15 +95,55 @@ function AdministratorsPage() {
   }, [administrators, search]);
 
   const pagination = usePagination(visibleAdministrators, search);
+  const pageIds = pagination.pageItems.map((a) => a.id).join(",");
 
-  // No PATCH/DELETE endpoint exists yet for admin accounts, so there's no
-  // reset-password/deactivate/reactivate action here — only create + list,
-  // matching what the backend supports.
+  useEffect(() => {
+    if (!pageIds) return;
+    const ids = pageIds.split(",").map(Number);
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        administratorService
+          .get(id)
+          .then((detail) => [id, detail.accountActive ?? true] as const)
+          .catch(() => [id, true] as const),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      setAccountActiveById((current) => ({ ...current, ...Object.fromEntries(results) }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pageIds]);
+
   async function handleCreate(input: CreateAdministratorAccountInput) {
     const message = await administratorService.create(input);
     if (message) toast.success(message);
     setCreatedEmail(input.email);
     refresh();
+  }
+
+  async function handleEdit(input: { firstName: string; midName?: string; lastName: string; mobile: string; email: string }) {
+    if (!editTarget) return;
+    const message = await administratorService.update(editTarget.id, input);
+    if (message) toast.success(message);
+    setEditTarget(null);
+    refresh();
+  }
+
+  async function handleDeactivate(admin: Administrator) {
+    const message = await administratorService.deactivate(admin.id);
+    if (message) toast.success(message);
+    setAccountActiveById((current) => ({ ...current, [admin.id]: false }));
+    setDeactivateTarget(null);
+  }
+
+  async function handleReactivate(admin: Administrator) {
+    const message = await administratorService.reactivate(admin.id);
+    if (message) toast.success(message);
+    setAccountActiveById((current) => ({ ...current, [admin.id]: true }));
+    setReactivateTarget(null);
   }
 
   function closeCreate() {
@@ -151,7 +200,13 @@ function AdministratorsPage() {
           </EmptyState>
         ) : (
           <>
-            <AdministratorTable administrators={pagination.pageItems} />
+            <AdministratorTable
+              administrators={pagination.pageItems}
+              accountActiveById={accountActiveById}
+              onEdit={setEditTarget}
+              onDeactivate={setDeactivateTarget}
+              onReactivate={setReactivateTarget}
+            />
             <Pagination
               page={pagination.page}
               totalItems={pagination.totalItems}
@@ -177,6 +232,24 @@ function AdministratorsPage() {
           />
         )}
       </Modal>
+
+      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Administrator">
+        {editTarget && (
+          <AdministratorEditForm administrator={editTarget} onSubmit={handleEdit} onCancel={() => setEditTarget(null)} />
+        )}
+      </Modal>
+
+      <DeactivateAdministratorDialog
+        admin={deactivateTarget}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={handleDeactivate}
+      />
+
+      <ActivateAdministratorDialog
+        admin={reactivateTarget}
+        onClose={() => setReactivateTarget(null)}
+        onConfirm={handleReactivate}
+      />
     </div>
   );
 }

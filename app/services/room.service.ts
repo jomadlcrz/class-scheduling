@@ -1,5 +1,5 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
-import type { CreateRoomInput, Room, UpdateRoomInput } from "~/types/room";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import type { CreateRoomInput, Room, RoomDetail, UpdateRoomInput } from "~/types/room";
 
 /** Rooms CRUD against the facilities module (registrar_admin). */
 
@@ -80,4 +80,48 @@ async function remove(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-export const roomService = { list, create, update, remove };
+export type DeletedRoom = { id: number; name: string; deactivatedAt: string | null };
+
+type RoomRecycleBinResponse = { room_id: number; room_name: string; deactivated_at: string | null }[];
+
+/** GET /rooms/recycle-bin — 404 → empty. */
+async function listDeleted(): Promise<DeletedRoom[]> {
+  let data: RoomRecycleBinResponse;
+  try {
+    data = await apiGet<RoomRecycleBinResponse>("/rooms/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((r) => ({ id: r.room_id, name: r.room_name, deactivatedAt: r.deactivated_at }));
+}
+
+/** PATCH /rooms/:id/restore */
+async function restore(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/rooms/${id}/restore`);
+  return apiMessage(data);
+}
+
+/** GET /rooms/:id */
+async function get(id: number): Promise<RoomDetail> {
+  const r = await apiGet<{
+    room_id: number;
+    building_id: number;
+    floor_level: number;
+    room_name: string;
+    room_type: string;
+    room_capacity: number;
+    room_status: string;
+  }>(`/rooms/${id}`);
+  return {
+    id: r.room_id,
+    buildingId: r.building_id,
+    floor: r.floor_level,
+    name: r.room_name,
+    type: r.room_type,
+    capacity: r.room_capacity,
+    status: r.room_status,
+  };
+}
+
+export const roomService = { list, create, update, remove, listDeleted, restore, get };

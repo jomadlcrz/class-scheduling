@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { ClassSet, CreateSetInput } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
@@ -71,9 +71,56 @@ async function remove(id: number): Promise<string> {
   return apiMessage(data);
 }
 
+export type DeletedSet = {
+  id: number;
+  setCode: string;
+  deactivatedAt: string | null;
+};
+
+type SetRecycleBinResponse = {
+  set_id: number;
+  set_code: string;
+  deactivated_at: string | null;
+}[];
+
+/** GET /sets/recycle-bin — 404 → empty. */
+async function listDeleted(): Promise<DeletedSet[]> {
+  let data: SetRecycleBinResponse;
+  try {
+    data = await apiGet<SetRecycleBinResponse>("/sets/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((s) => ({ id: s.set_id, setCode: s.set_code, deactivatedAt: s.deactivated_at }));
+}
+
+/** PATCH /sets/:id/restore */
+async function restore(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/sets/${id}/restore`);
+  return apiMessage(data);
+}
+
+/** GET /sets/:id */
+async function get(id: number): Promise<{ id: number; programId: number; yearLevel: YearLevel; setCode: string; setName: string }> {
+  const s = await apiGet<{ set_id: number; program_id: number; year_level: number; set_code: string; set_name: string }>(
+    `/sets/${id}`,
+  );
+  return {
+    id: s.set_id,
+    programId: s.program_id,
+    yearLevel: s.year_level as YearLevel,
+    setCode: s.set_code,
+    setName: s.set_name,
+  };
+}
+
 export const setService = {
   list,
   create,
   update,
   remove,
+  listDeleted,
+  restore,
+  get,
 };

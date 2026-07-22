@@ -1,5 +1,5 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
-import type { CreateDepartmentInput, Department, UpdateDepartmentInput } from "~/types/department";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import type { CreateDepartmentInput, Department, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
 
@@ -60,4 +60,37 @@ async function remove(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-export const departmentService = { list, create, update, remove };
+export type DeletedDepartment = { id: number; name: string; deactivatedAt: string | null };
+
+type DepartmentRecycleBinResponse = { department_id: number; department_name: string; deactivated_at: string | null }[];
+
+/** GET /departments/recycle-bin — 404 → empty. */
+async function listDeleted(): Promise<DeletedDepartment[]> {
+  let data: DepartmentRecycleBinResponse;
+  try {
+    data = await apiGet<DepartmentRecycleBinResponse>("/departments/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((d) => ({ id: d.department_id, name: d.department_name, deactivatedAt: d.deactivated_at }));
+}
+
+/** PATCH /departments/:id/restore */
+async function restore(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/departments/${id}/restore`);
+  return apiMessage(data);
+}
+
+/** GET /departments/:id */
+async function get(id: number): Promise<DepartmentDetail> {
+  const d = await apiGet<{
+    department_id: number;
+    department_abbrev: string;
+    department_name: string;
+    building_id: number;
+  }>(`/departments/${id}`);
+  return { id: d.department_id, abbrev: d.department_abbrev, name: d.department_name, buildingId: d.building_id };
+}
+
+export const departmentService = { list, create, update, remove, listDeleted, restore, get };

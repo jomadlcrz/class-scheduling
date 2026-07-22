@@ -1,5 +1,5 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
-import type { PermissionSummary, RolePermission } from "~/types/permission";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import type { DeletedPermission, PermissionSummary, RolePermission, UpdatePermissionInput } from "~/types/permission";
 
 /**
  * Roles + permissions (super_admin RBAC module). The backend has no single
@@ -115,10 +115,66 @@ async function revoke(roleId: number, permissionId: number): Promise<string> {
   return apiMessage(data);
 }
 
+/** POST /roles/{roleId}/permissions — idempotent add-only grant, unlike `replace` (PUT) which sets the full grant set. */
+async function grant(roleId: number, permissionIds: number[]): Promise<string> {
+  const data = await apiPost<{ message?: string }>(`/roles/${roleId}/permissions`, { permissionIds });
+  return apiMessage(data);
+}
+
+type PermissionRecycleBinResponse = {
+  permission_id: number;
+  permission_slug: string;
+  deactivated_at: string | null;
+}[];
+
+/** GET /permissions/recycle-bin — 404 → empty. */
+async function listDeleted(): Promise<DeletedPermission[]> {
+  let data: PermissionRecycleBinResponse;
+  try {
+    data = await apiGet<PermissionRecycleBinResponse>("/permissions/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((p) => ({ id: p.permission_id, slug: p.permission_slug, deactivatedAt: p.deactivated_at }));
+}
+
+/** GET /permissions/<id> */
+async function get(id: number): Promise<RolePermission> {
+  const p = await apiGet<{ permission_id: number; permission_slug: string; description: string | null }>(
+    `/permissions/${id}`,
+  );
+  return { id: p.permission_id, slug: p.permission_slug, description: p.description ?? "" };
+}
+
+/** PUT /permissions/<id> */
+async function update(id: number, input: UpdatePermissionInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/permissions/${id}`, input);
+  return apiMessage(data);
+}
+
+/** DELETE /permissions/<id> — soft delete; 409 if still granted to a role. */
+async function remove(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/permissions/${id}`);
+  return apiMessage(data);
+}
+
+/** PATCH /permissions/<id>/restore */
+async function restore(id: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/permissions/${id}/restore`);
+  return apiMessage(data);
+}
+
 export const permissionService = {
   list,
   create,
   listCatalog,
   replace,
   revoke,
+  grant,
+  listDeleted,
+  get,
+  update,
+  remove,
+  restore,
 };

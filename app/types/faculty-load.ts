@@ -89,3 +89,22 @@ export type FacultyLoadingEntry = {
   maxWeeklyHours: number | null;
   subjects: FacultyLoadingSubject[];
 };
+
+/** A term-scoped instructor teaching load, as returned by GET /deans/teaching-terms/<id>. */
+export type TeachingTerm = {
+  id: number;
+  instructorProfileId: number;
+  instructorName: string;
+  syId: number;
+  semId: number;
+  maxWeeklyHours: number;
+  currentWeeklyHours: number;
+};
+
+/** A single subject-assignment link row, as returned by GET /deans/subject-assignments/<id>. */
+export type SubjectAssignment = {
+  id: number;
+  teachingTermId: number;
+  curriculumDetailId: number;
+  subjectCode: string;
+};

@@ -1,10 +1,11 @@
-import { ApiError, apiGet, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import { semesterService } from "~/services/semester.service";
 import {
   DAY_LABELS,
   SCHEDULE_MODES,
   parseTime12h,
   type Day,
+  type RegularScheduleDetail,
   type Schedule,
   type ScheduleMode,
   type ScheduleSemester,
@@ -413,6 +414,59 @@ async function listPrograms(): Promise<ScheduleProgramOption[]> {
   return data.map((p) => ({ id: p.program_id, abbrev: p.program_abbrev, name: p.program_name }));
 }
 
+type RegularScheduleResponse = {
+  id: number;
+  sy_id: number;
+  semester: number;
+  program_id: number;
+  set_id: number;
+  subject_id: number;
+  subject_code: string;
+  mode: string;
+  instructor_id: number | null;
+  room_id: number | null;
+  room_name: string | null;
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+};
+
+/** GET /regular_schedule/<id> — a single saved regular-schedule slot. */
+async function getRegular(id: number): Promise<RegularScheduleDetail> {
+  const r = await apiGet<RegularScheduleResponse>(`/regular_schedule/${id}`);
+  return {
+    id: r.id,
+    syId: r.sy_id,
+    semester: r.semester,
+    programId: r.program_id,
+    setId: r.set_id,
+    subjectId: r.subject_id,
+    subjectCode: r.subject_code,
+    mode: r.mode,
+    instructorId: r.instructor_id,
+    roomId: r.room_id,
+    roomName: r.room_name,
+    dayOfWeek: r.day_of_week,
+    startTime: parseTime12h(r.start_time),
+    endTime: parseTime12h(r.end_time),
+  };
+}
+
+/** PUT /regular_schedule/<id> — reassigns room/instructor only (subject/day/time can't be changed here). 409 on conflict. */
+async function updateRegularSlot(
+  id: number,
+  input: { roomId?: number | null; instructorId?: number | null },
+): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}`, input);
+  return apiMessage(data);
+}
+
+/** DELETE /regular_schedule/<id> — hard delete. */
+async function removeRegular(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/regular_schedule/${id}`);
+  return apiMessage(data);
+}
+
 export const scheduleService = {
   view,
   listScheduleSubjects,
@@ -423,4 +477,7 @@ export const scheduleService = {
   getSubjectTypeOptions,
   getCreationContext,
   listPrograms,
+  getRegular,
+  updateRegularSlot,
+  removeRegular,
 };

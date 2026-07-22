@@ -61,6 +61,24 @@ export type Schedule = {
 export type CreateScheduleInput = Omit<Schedule, "id">;
 export type UpdateScheduleInput = Partial<CreateScheduleInput>;
 
+/** GET /regular_schedule/<id> response, camelCased. */
+export type RegularScheduleDetail = {
+  id: number;
+  syId: number;
+  semester: number;
+  programId: number;
+  setId: number;
+  subjectId: number;
+  subjectCode: string;
+  mode: string;
+  instructorId: number | null;
+  roomId: number | null;
+  roomName: string | null;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+};
+
 /** Returns time slots from 07:00 to 18:00 in 30-minute increments. */
 export function generateTimeSlots(): string[] {
   const slots: string[] = [];

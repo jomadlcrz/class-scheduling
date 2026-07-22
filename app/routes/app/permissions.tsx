@@ -6,6 +6,8 @@ import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
+import { PermissionCatalogTable } from "~/features/permissions/permission-catalog-table";
+import { PermissionEditForm } from "~/features/permissions/permission-edit-form";
 import { PermissionForm } from "~/features/permissions/permission-form";
 import { PermissionMatrix } from "~/features/permissions/permission-matrix";
 import { PermissionTable } from "~/features/permissions/permission-table";
@@ -41,6 +43,8 @@ function PermissionsPage() {
   const [revokeTarget, setRevokeTarget] = useState<{ roleId: number; permissionId: number } | null>(
     null,
   );
+  const [editPermissionTarget, setEditPermissionTarget] = useState<RolePermission | null>(null);
+  const [deletePermissionTarget, setDeletePermissionTarget] = useState<RolePermission | null>(null);
 
   function refresh() {
     permissionService
@@ -97,6 +101,17 @@ function PermissionsPage() {
               onRevoke={(roleId, permissionId) => setRevokeTarget({ roleId, permissionId })}
             />
           </section>
+
+          <section>
+            <h2 className="mb-3 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
+              Permission Catalog
+            </h2>
+            <PermissionCatalogTable
+              catalog={catalog}
+              onEdit={setEditPermissionTarget}
+              onDelete={setDeletePermissionTarget}
+            />
+          </section>
         </div>
       )}
 
@@ -147,6 +162,43 @@ function PermissionsPage() {
       >
         Remove “{revokeTargetPermission?.description || revokeTargetPermission?.slug}” from{" "}
         {revokeTargetRole?.name}?
+      </ConfirmDialog>
+
+      <Modal
+        open={editPermissionTarget !== null}
+        onClose={() => setEditPermissionTarget(null)}
+        title="Edit Permission"
+      >
+        {editPermissionTarget && (
+          <PermissionEditForm
+            permission={editPermissionTarget}
+            onSaved={(message) => {
+              if (message) toast.success(message);
+              refresh();
+              setEditPermissionTarget(null);
+            }}
+            onCancel={() => setEditPermissionTarget(null)}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDialog
+        open={deletePermissionTarget !== null}
+        onClose={() => setDeletePermissionTarget(null)}
+        title="Delete permission"
+        confirmLabel="Delete"
+        loadingLabel="Deleting…"
+        confirmVariant="danger"
+        onConfirm={async () => {
+          if (!deletePermissionTarget) return;
+          const message = await permissionService.remove(deletePermissionTarget.id);
+          if (message) toast.success(message);
+          refresh();
+          setDeletePermissionTarget(null);
+        }}
+      >
+        <span className="font-medium text-navy-700 dark:text-mist-100">{deletePermissionTarget?.slug}</span> will be
+        removed.
       </ConfirmDialog>
     </div>
   );

@@ -25,3 +25,11 @@ export type DepartmentOption = {
   abbrev: string;
   name: string;
 };
+
+/** GET /departments/:id response — a leaner shape than the nested-list `Department` (no buildingName join/programs). */
+export type DepartmentDetail = {
+  id: number;
+  abbrev: string;
+  name: string;
+  buildingId: number;
+};

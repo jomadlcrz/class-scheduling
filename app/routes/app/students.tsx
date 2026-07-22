@@ -7,7 +7,7 @@ import { ResultState } from "~/components/feedback/result-state";
 import { SuccessDone } from "~/components/feedback/success-done";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { StudentAccountForm } from "~/features/students/student-account-form";
@@ -80,6 +80,12 @@ function StudentsPage() {
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
   const [enrollTarget, setEnrollTarget] = useState<StudentAccountRow | null>(null);
   const [enrolled, setEnrolled] = useState(false);
+  const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
+  const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
+  const [deleteStudentTarget, setDeleteStudentTarget] = useState<StudentAccountRow | null>(null);
+  // The list endpoint has no account_active field — fetched per-row (page-bounded
+  // by pagination) so Deactivate/Reactivate can show only the one that applies.
+  const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
 
   useEffect(() => {
     studentService
@@ -121,13 +127,40 @@ function StudentsPage() {
   }, [studentList, search]);
 
   const pagination = usePagination(visibleStudents, resetKey);
+  const pageAccountIds = pagination.pageItems
+    .filter((s) => s.hasAccount)
+    .map((s) => s.studentProfileId)
+    .join(",");
+
+  useEffect(() => {
+    if (!pageAccountIds) return;
+    const ids = pageAccountIds.split(",").map(Number);
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        studentService
+          .getAccount(id)
+          .then((detail) => [id, detail.accountActive ?? true] as const)
+          .catch(() => [id, true] as const),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      setAccountActiveById((current) => ({ ...current, ...Object.fromEntries(results) }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pageAccountIds]);
+
+  function refreshStudentList() {
+    studentService.listAccounts().then(setStudentList).catch(() => {});
+  }
 
   async function handleCreateRecord(input: CreateStudentRecordInput) {
     const message = await studentService.createRecord(input);
     if (message) toast.success(message);
     setCreatedRecord(true);
-    // Refresh the list so the new student appears.
-    studentService.listAccounts().then(setStudentList).catch(() => {});
+    refreshStudentList();
   }
 
   function closeCreate() {
@@ -160,6 +193,24 @@ function StudentsPage() {
   function closeEnrollModal() {
     setEnrollTarget(null);
     setEnrolled(false);
+  }
+
+  async function handleDeactivateAccount(student: StudentAccountRow) {
+    const message = await studentService.deactivateAccount(student.studentProfileId);
+    if (message) toast.success(message);
+    setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: false }));
+  }
+
+  async function handleReactivateAccount(student: StudentAccountRow) {
+    const message = await studentService.reactivateAccount(student.studentProfileId);
+    if (message) toast.success(message);
+    setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: true }));
+  }
+
+  async function handleDeleteStudent(student: StudentAccountRow) {
+    const message = await studentService.remove(student.studentProfileId);
+    if (message) toast.success(message);
+    refreshStudentList();
   }
 
   // Lazy-loaded: only fetched once the Regular Students view is opened.
@@ -255,9 +306,13 @@ function StudentsPage() {
             <>
               <StudentAccountTable
                 students={pagination.pageItems}
+                accountActiveById={accountActiveById}
                 onCreateAccount={setAccountTarget}
                 onView={setViewTarget}
                 onEnroll={setEnrollTarget}
+                onDeactivateAccount={setDeactivateAccountTarget}
+                onReactivateAccount={setReactivateAccountTarget}
+                onDeleteStudent={setDeleteStudentTarget}
               />
               <Pagination
                 page={pagination.page}
@@ -361,7 +416,13 @@ function StudentsPage() {
         title="Student Details"
         wide
       >
-        {viewTarget && <StudentDetailsModal student={viewTarget} />}
+        {viewTarget && (
+          <StudentDetailsModal
+            student={viewTarget}
+            sets={sets}
+            academicStatuses={enumOptions?.academicStatus ?? []}
+          />
+        )}
       </Modal>
 
       <Modal open={enrollTarget !== null} onClose={closeEnrollModal} title="Enroll Student" wide={!enrolled}>
@@ -386,6 +447,50 @@ function StudentsPage() {
           )
         )}
       </Modal>
+
+      <ConfirmDialog
+        open={deactivateAccountTarget !== null}
+        onClose={() => setDeactivateAccountTarget(null)}
+        title="Deactivate account"
+        confirmLabel="Deactivate"
+        loadingLabel="Deactivating…"
+        confirmVariant="danger"
+        onConfirm={() => handleDeactivateAccount(deactivateAccountTarget!)}
+      >
+        <span className="font-medium text-navy-700 dark:text-mist-100">
+          {deactivateAccountTarget?.firstName} {deactivateAccountTarget?.lastName}
+        </span>{" "}
+        will no longer be able to log in. Their student record is kept.
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={reactivateAccountTarget !== null}
+        onClose={() => setReactivateAccountTarget(null)}
+        title="Reactivate account"
+        confirmLabel="Reactivate"
+        loadingLabel="Reactivating…"
+        onConfirm={() => handleReactivateAccount(reactivateAccountTarget!)}
+      >
+        <span className="font-medium text-navy-700 dark:text-mist-100">
+          {reactivateAccountTarget?.firstName} {reactivateAccountTarget?.lastName}
+        </span>{" "}
+        will be able to log in again.
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={deleteStudentTarget !== null}
+        onClose={() => setDeleteStudentTarget(null)}
+        title="Delete student"
+        confirmLabel="Delete"
+        loadingLabel="Deleting…"
+        confirmVariant="danger"
+        onConfirm={() => handleDeleteStudent(deleteStudentTarget!)}
+      >
+        <span className="font-medium text-navy-700 dark:text-mist-100">
+          {deleteStudentTarget?.firstName} {deleteStudentTarget?.lastName}
+        </span>{" "}
+        will be removed from active lists. Their record is kept and can be restored from Recently Deleted.
+      </ConfirmDialog>
     </div>
   );
 }

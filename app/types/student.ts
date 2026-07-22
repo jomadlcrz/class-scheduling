@@ -104,3 +104,25 @@ export type RegularStudentRow = {
   accountStatus: string;
   academics: StudentAcademicRecord[];
 };
+
+/** GET /students/recycle-bin row — soft-deleted student profiles. */
+export type DeletedStudent = {
+  studentProfileId: number;
+  firstName: string;
+  lastName: string;
+  deactivatedAt: string | null;
+};
+
+/** PUT /students/enrollments/<id> body — corrects a single term's set/year level/status; doesn't touch enrolled subjects. */
+export type UpdateEnrollmentInput = {
+  yearLevel?: number;
+  setId?: number;
+  enrolledStatus?: string;
+};
+
+/** GET /super-admin/student-accounts/<id> response, camelCased. */
+export type StudentAccountStatus = {
+  studentProfileId: number;
+  hasAccount: boolean;
+  accountActive: boolean | null;
+};

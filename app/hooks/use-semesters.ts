@@ -6,19 +6,23 @@ type UseSemestersResult = {
   semesters: Semester[];
   semesterLabel: (n: number) => string;
   loading: boolean;
+  refresh: () => Promise<void>;
 };
 
 export function useSemesters(): UseSemestersResult {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const refresh = useCallback(async () => {
+    const data = await semesterService.list();
+    setSemesters(data);
+  }, []);
+
   useEffect(() => {
-    semesterService
-      .list()
-      .then(setSemesters)
+    refresh()
       .catch(() => setSemesters([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [refresh]);
 
   const semesterMap = useMemo(() => {
     const m = new Map<number, string>();
@@ -31,5 +35,5 @@ export function useSemesters(): UseSemestersResult {
     [semesterMap],
   );
 
-  return { semesters, semesterLabel, loading };
+  return { semesters, semesterLabel, loading, refresh };
 }
