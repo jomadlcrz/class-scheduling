@@ -39,12 +39,13 @@ const NAV_GROUPS: NavGroup[] = [
         label: "Scheduling",
         items: [
           { label: "Academic Year", to: "/academic-year", icon: <CalendarIcon />, roles: ["registrar"] },
+          { label: "Classroom Mapping", to: "/classroom-mapping", icon: <CalendarIcon />, roles: ["dean"] },
           {
             label: "Schedules",
             icon: <CalendarIcon />,
-            roles: ["registrar", "dean"],
+            roles: ["registrar"],
             subItems: [
-              { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["registrar", "dean"] },
+              { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["registrar"] },
               { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", roles: ["registrar"] },
               { label: "Regular Class", to: "/schedules/regular-class", roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
               { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["registrar"] },
@@ -60,14 +61,14 @@ const NAV_GROUPS: NavGroup[] = [
       {
         label: "Curriculum & Facilities",
         icon: <BookIcon />,
-        roles: ["registrar", "dean"],
+        roles: ["registrar"],
         subItems: [
           { label: "Buildings", to: "/buildings", roles: ["registrar"] },
           { label: "Rooms", to: "/rooms", roles: ["registrar"] },
           { label: "Departments", to: "/departments", roles: ["registrar"] },
           { label: "Programs", to: "/programs", roles: ["registrar"] },
-          { label: "Curriculum", to: "/curriculum", roles: ["registrar", "dean"] },
-          { label: "Subjects", to: "/subjects", roles: ["registrar", "dean"], matchPrefix: true },
+          { label: "Curriculum", to: "/curriculum", roles: ["registrar"] },
+          { label: "Subjects", to: "/subjects", roles: ["registrar"], matchPrefix: true },
           { label: "Sets", to: "/sets", roles: ["registrar"] },
         ],
       },
@@ -77,9 +78,17 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Academic Community",
     items: [
       { label: "Administrators", to: "/administrators", icon: <UserIcon />, roles: ["admin"] },
+      { label: "Deans", to: "/deans", icon: <UsersIcon />, roles: ["admin", "registrar"] },
       { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin"] },
-      { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
       { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin"] },
+    ],
+  },
+  {
+    label: "My Department",
+    items: [
+      { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
+      { label: "Department Subjects", to: "/dean/subjects", icon: <BookIcon />, roles: ["dean"] },
+      { label: "Department Instructors", to: "/dean/instructors", icon: <UsersIcon />, roles: ["dean"] },
     ],
   },
   {

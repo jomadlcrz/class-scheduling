@@ -1,5 +1,4 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
-import { programService } from "~/services/program.service";
 import type {
   DepartmentFacultyOption,
   DepartmentSubjectProgram,
@@ -40,31 +39,31 @@ type DepartmentInstructorsResponse = {
   roles: string[];
 }[];
 
-/** GET /deans/instructors — the dean's own department roster. */
+/** GET /deans/instructors — the dean's own department roster. 404/403 → empty. */
 async function listDepartmentFaculties(): Promise<DepartmentFacultyOption[]> {
   try {
     return await apiGet<DepartmentInstructorsResponse>("/deans/instructors");
   } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
+    if (err instanceof ApiError && (err.status === 404 || err.status === 403)) return [];
     throw err;
   }
 }
 
 type DepartmentSubjectsResponse = {
-  programName: string;
-  programTotalUnits: number;
-  curriculumDetails: {
-    yearLevel: number;
-    yearTotalUnits: number;
-    semesterDetails: {
+  program_name: string;
+  program_total_units: number;
+  curriculum_details: {
+    year_level: number;
+    year_total_units: number;
+    semester_details: {
       semester: number;
-      semesterTotalUnits: number;
+      semester_total_units: number;
       subjects: {
-        subjectId: number;
-        subjectCode: string;
-        descriptiveTitle: string;
+        subject_id: number;
+        subject_code: string;
+        descriptive_title: string;
         units: number;
-        prerequisites: { subjectCode: string }[];
+        prerequisites: { subject_code: string }[];
       }[];
     }[];
   }[];
@@ -72,43 +71,38 @@ type DepartmentSubjectsResponse = {
 
 /**
  * GET /deans/subjects — the dean's own department curriculum tree.
- * The response only has program names, so program abbrevs are joined in from
- * programService.list() (the same trick curriculumService.getByProgram uses).
+ * Uses program name directly (no /programs call — deans may lack programs:read).
+ * 404/403 → empty.
  */
 async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
   let data: DepartmentSubjectsResponse;
   try {
     data = await apiGet<DepartmentSubjectsResponse>("/deans/subjects");
   } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
+    if (err instanceof ApiError && (err.status === 404 || err.status === 403)) return [];
     throw err;
   }
 
-  const programs = await programService.list();
-
-  return data.map((program) => {
-    const match = programs.find((p) => p.name === program.programName);
-    return {
-      programAbbrev: match?.abbrev ?? "",
-      programName: program.programName,
-      programTotalUnits: program.programTotalUnits,
-      curriculumDetails: program.curriculumDetails.map((year) => ({
-        yearLevel: year.yearLevel,
-        yearTotalUnits: year.yearTotalUnits,
-        semesterDetails: year.semesterDetails.map((sem) => ({
-          semester: sem.semester,
-          semesterTotalUnits: sem.semesterTotalUnits,
-          subjects: sem.subjects.map((s) => ({
-            subjectId: s.subjectId,
-            subjectCode: s.subjectCode,
-            descriptiveTitle: s.descriptiveTitle,
-            units: s.units,
-            prerequisites: s.prerequisites.map((p) => p.subjectCode),
-          })),
+  return data.map((program) => ({
+    programAbbrev: program.program_name,
+    programName: program.program_name,
+    programTotalUnits: Number(program.program_total_units),
+    curriculumDetails: program.curriculum_details.map((year) => ({
+      yearLevel: year.year_level,
+      yearTotalUnits: Number(year.year_total_units),
+      semesterDetails: year.semester_details.map((sem) => ({
+        semester: sem.semester,
+        semesterTotalUnits: Number(sem.semester_total_units),
+        subjects: sem.subjects.map((s) => ({
+          subjectId: s.subject_id,
+          subjectCode: s.subject_code,
+          descriptiveTitle: s.descriptive_title,
+          units: s.units,
+          prerequisites: s.prerequisites.map((p) => p.subject_code),
         })),
       })),
-    };
-  });
+    })),
+  }));
 }
 
 type FacultyLoadingResponse = {

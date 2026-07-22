@@ -108,3 +108,26 @@ export type SubjectAssignment = {
   curriculumDetailId: number;
   subjectCode: string;
 };
+
+/** Raw snake_case response from GET /deans/faculty-loading. */
+export type FacultyLoadingResponse = {
+  instructor_name: string;
+  department: string;
+  semester: string;
+  academic_year: string;
+  max_weekly_hours: number | string | null;
+  subjects: {
+    subject_code: string;
+    descriptive_title: string;
+    units: { total: number; lec_hours: number; lab_hours: number };
+    schedules: {
+      day: string;
+      time: string;
+      number_of_students: number;
+      course: string;
+      year_level: number;
+      set_code: string;
+      room: string | null;
+    }[];
+  }[];
+}[];
