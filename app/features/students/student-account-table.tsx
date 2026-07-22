@@ -1,5 +1,5 @@
 ﻿import { Button } from "~/components/ui/button";
-import { EyeIcon, GraduationCapIcon, TrashIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { EyeIcon, GraduationCapIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -19,7 +19,6 @@ type StudentAccountTableProps = {
   onEnroll: (student: StudentAccountRow) => void;
   onDeactivateAccount: (student: StudentAccountRow) => void;
   onReactivateAccount: (student: StudentAccountRow) => void;
-  onDeleteStudent: (student: StudentAccountRow) => void;
 };
 
 const actionButtonClassName =
@@ -33,7 +32,6 @@ export function StudentAccountTable({
   onEnroll,
   onDeactivateAccount,
   onReactivateAccount,
-  onDeleteStudent,
 }: StudentAccountTableProps) {
   return (
     <Table>
@@ -119,15 +117,6 @@ export function StudentAccountTable({
                     Create Account
                   </Button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => onDeleteStudent(student)}
-                  aria-label={`Delete student record for ${student.firstName} ${student.lastName}`}
-                  title="Delete student"
-                  className={actionButtonClassName}
-                >
-                  <TrashIcon />
-                </button>
               </div>
             </TableCell>
           </TableRow>

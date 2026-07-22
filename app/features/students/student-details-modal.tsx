@@ -102,39 +102,45 @@ export function StudentDetailsModal({ student, sets, academicStatuses }: Student
                       </button>
                     </div>
                   </div>
-
-                  <div className="mt-3">
-                    <Label>Enrolled Subjects</Label>
-                    {a.enrolledSubjects.length === 0 ? (
-                      <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-                        No enrolled subjects found.
-                      </p>
-                    ) : (
-                      <Table>
-                        <TableHead>
-                          <TableHeader>Code</TableHeader>
-                          <TableHeader>Descriptive Title</TableHeader>
-                          <TableHeader className="text-center">Units</TableHeader>
-                        </TableHead>
-                        <TableBody>
-                          {a.enrolledSubjects.map((es) => (
-                            <TableRow key={es.subjectId}>
-                              <TableCell className="text-slate-600 dark:text-slate-300">
-                                {es.subjectCode}
-                              </TableCell>
-                              <TableCell>{es.descriptiveTitle}</TableCell>
-                              <TableCell className="text-center">{es.units}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
                 </div>
               ))}
             </div>
           )}
         </Card>
+
+        {academics && academics.length > 0 && (
+          <div className="mt-3">
+            <Label>Enrolled Subjects</Label>
+            {academics.some((a) => a.enrolledSubjects.length > 0) ? (
+              <div className="mt-1.5">
+                <Table>
+                <TableHead>
+                  <TableHeader>Code</TableHeader>
+                  <TableHeader>Descriptive Title</TableHeader>
+                  <TableHeader className="text-center">Units</TableHeader>
+                </TableHead>
+                <TableBody>
+                  {academics.flatMap((a) =>
+                    a.enrolledSubjects.map((es) => (
+                      <TableRow key={`${a.studentAcademicId}-${es.subjectId}`}>
+                        <TableCell className="text-slate-600 dark:text-slate-300">
+                          {es.subjectCode}
+                        </TableCell>
+                        <TableCell>{es.descriptiveTitle}</TableCell>
+                        <TableCell className="text-center">{es.units}</TableCell>
+                      </TableRow>
+                    )),
+                  )}
+                </TableBody>
+              </Table>
+              </div>
+            ) : (
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                No enrolled subjects found.
+              </p>
+            )}
+          </div>
+        )}
       </section>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Enrollment">

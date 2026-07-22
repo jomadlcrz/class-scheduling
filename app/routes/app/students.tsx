@@ -82,7 +82,6 @@ function StudentsPage() {
   const [enrolled, setEnrolled] = useState(false);
   const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
-  const [deleteStudentTarget, setDeleteStudentTarget] = useState<StudentAccountRow | null>(null);
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
@@ -207,12 +206,6 @@ function StudentsPage() {
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: true }));
   }
 
-  async function handleDeleteStudent(student: StudentAccountRow) {
-    const message = await studentService.remove(student.studentProfileId);
-    if (message) toast.success(message);
-    refreshStudentList();
-  }
-
   // Lazy-loaded: only fetched once the Regular Students view is opened.
   useEffect(() => {
     if (activeView !== "regular" || regularStudents !== null) return;
@@ -312,7 +305,6 @@ function StudentsPage() {
                 onEnroll={setEnrollTarget}
                 onDeactivateAccount={setDeactivateAccountTarget}
                 onReactivateAccount={setReactivateAccountTarget}
-                onDeleteStudent={setDeleteStudentTarget}
               />
               <Pagination
                 page={pagination.page}
@@ -475,21 +467,6 @@ function StudentsPage() {
           {reactivateAccountTarget?.firstName} {reactivateAccountTarget?.lastName}
         </span>{" "}
         will be able to log in again.
-      </ConfirmDialog>
-
-      <ConfirmDialog
-        open={deleteStudentTarget !== null}
-        onClose={() => setDeleteStudentTarget(null)}
-        title="Delete student"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDeleteStudent(deleteStudentTarget!)}
-      >
-        <span className="font-medium text-navy-700 dark:text-mist-100">
-          {deleteStudentTarget?.firstName} {deleteStudentTarget?.lastName}
-        </span>{" "}
-        will be removed from active lists. Their record is kept and can be restored from Recently Deleted.
       </ConfirmDialog>
     </div>
   );
