@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { type ReactNode } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import {
   BlocksIcon,
   BookmarkIcon,
@@ -116,6 +116,7 @@ type SidebarProps = {
 
 export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
   const { user } = useAuth();
+  const location = useLocation();
 
   if (!user) return null;
 
@@ -195,15 +196,18 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                     <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
                       <NavLink
                         to={item.to}
-                        end={!item.matchPrefix}
+                        end={!item.matchPrefix && !item.matchPaths}
                         onClick={onNavigate}
-                        className={({ isActive }) =>
-                          `${itemClassName(isActive)} ${collapsed ? "justify-center px-0" : ""} ${
-                            isActive && !collapsed
+                        className={({ isActive }) => {
+                          const active = item.matchPaths
+                            ? item.matchPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"))
+                            : isActive;
+                          return `${itemClassName(active)} ${collapsed ? "justify-center px-0" : ""} ${
+                            active && !collapsed
                               ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-white"
                               : ""
-                          }`
-                        }
+                          }`;
+                        }}
                       >
                         <span className="grid size-5 shrink-0 place-items-center opacity-90">
                           {item.icon}
