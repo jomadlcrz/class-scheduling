@@ -34,6 +34,10 @@ async function list(): Promise<SchoolYearOption[]> {
         cachedSchoolYears = [];
         return cachedSchoolYears;
       }
+      // Not a "no data yet" 404 (e.g. a transient 500) — don't cache the
+      // failure, so the next call retries instead of returning this same
+      // rejected promise for the rest of the session.
+      cachePromise = null;
       throw err;
     }
     cachedSchoolYears = data
