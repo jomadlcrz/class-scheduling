@@ -1,16 +1,28 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
-import { NavLink, useLocation } from "react-router";
+import { type ReactNode } from "react";
+import { NavLink } from "react-router";
 import {
-  BookIcon,
+  BlocksIcon,
+  BookmarkIcon,
+  BookOpenIcon,
+  Building2Icon,
+  CalendarCheckIcon,
+  CalendarClockIcon,
   CalendarIcon,
-  ChevronRightIcon,
+  CalendarShuffleIcon,
   ClockIcon,
   DashboardIcon,
-  GraduationCapIcon,
+  DoorOpenIcon,
+  FolderOpenIcon,
+  GraduationHatIcon,
+  LayersIcon,
+  MapIcon,
   ShieldIcon,
+  ShieldUserIcon,
+  TableIcon,
   UserIcon,
   UsersIcon,
+  UsersRoundIcon,
 } from "~/components/ui/icons";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useAuth } from "~/hooks/use-auth";
@@ -18,77 +30,52 @@ import type { Role } from "~/types/user";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 
-type NavLeaf = { label: string; to: string; roles: Role[]; matchPrefix?: boolean; matchPaths?: string[] };
-type NavItem = NavLeaf & { icon: ReactNode; subItems?: undefined };
-type NavSubmenu = {
-  label: string;
-  icon: ReactNode;
-  roles: Role[];
-  subItems: NavLeaf[];
-  to?: undefined;
-};
-type NavEntry = NavItem | NavSubmenu;
-type NavGroup = { label: string; items: NavEntry[] };
+type NavItem = { label: string; to: string; icon: ReactNode; roles: Role[]; matchPrefix?: boolean; matchPaths?: string[] };
+type NavGroup = { label: string; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [{ label: "Dashboard", to: "/dashboard", icon: <DashboardIcon />, roles: ALL_ROLES }],
   },
-      {
-        label: "Scheduling",
-        items: [
-          { label: "Academic Year", to: "/academic-year", icon: <CalendarIcon />, roles: ["registrar"] },
-          { label: "Classroom Mapping", to: "/classroom-mapping", icon: <CalendarIcon />, roles: ["dean"] },
-          {
-            label: "Schedules",
-            icon: <CalendarIcon />,
-            roles: ["registrar"],
-            subItems: [
-              { label: "Classroom Mapping", to: "/classroom-mapping", roles: ["registrar"] },
-              { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", roles: ["registrar"] },
-              { label: "Regular Class", to: "/schedules/regular-class", roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
-              { label: "Irregular Class", to: "/schedules/irregular-class", roles: ["registrar"] },
-            ],
-          },
-          { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
-          { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
-        ],
-      },
   {
-    label: "Academics",
+    label: "Scheduling",
     items: [
-      {
-        label: "Curriculum & Facilities",
-        icon: <BookIcon />,
-        roles: ["registrar"],
-        subItems: [
-          { label: "Buildings", to: "/buildings", roles: ["registrar"] },
-          { label: "Rooms", to: "/rooms", roles: ["registrar"] },
-          { label: "Departments", to: "/departments", roles: ["registrar"] },
-          { label: "Programs", to: "/programs", roles: ["registrar"] },
-          { label: "Curriculum", to: "/curriculum", roles: ["registrar"] },
-          { label: "Subjects", to: "/subjects", roles: ["registrar"], matchPrefix: true },
-          { label: "Sets", to: "/sets", roles: ["registrar"] },
-        ],
-      },
+      { label: "Academic Year", to: "/academic-year", icon: <CalendarIcon />, roles: ["registrar"] },
+      { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
+      { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", icon: <CalendarClockIcon />, roles: ["registrar"] },
+      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
+      { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
+      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
+      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
+    ],
+  },
+  {
+    label: "Curriculum & Facilities",
+    items: [
+      { label: "Buildings", to: "/buildings", icon: <Building2Icon />, roles: ["registrar"] },
+      { label: "Rooms", to: "/rooms", icon: <DoorOpenIcon />, roles: ["registrar"] },
+      { label: "Departments", to: "/departments", icon: <FolderOpenIcon />, roles: ["registrar"] },
+      { label: "Programs", to: "/programs", icon: <BookmarkIcon />, roles: ["registrar"] },
+      { label: "Curriculum", to: "/curriculum", icon: <BookOpenIcon />, roles: ["registrar"] },
+      { label: "Subjects", to: "/subjects", icon: <GraduationHatIcon />, roles: ["registrar"], matchPrefix: true },
+      { label: "Sets", to: "/sets", icon: <LayersIcon />, roles: ["registrar"] },
     ],
   },
   {
     label: "Academic Community",
     items: [
-      { label: "Administrators", to: "/administrators", icon: <UserIcon />, roles: ["admin"] },
-      { label: "Deans", to: "/deans", icon: <UsersIcon />, roles: ["admin", "registrar"] },
-      { label: "Faculty", to: "/faculty", icon: <UsersIcon />, roles: ["admin"] },
-      { label: "Students", to: "/students", icon: <GraduationCapIcon />, roles: ["admin"] },
+      { label: "Administrators", to: "/administrators", icon: <ShieldUserIcon />, roles: ["admin"] },
+      { label: "Faculty", to: "/faculty", icon: <UserIcon />, roles: ["admin"] },
+      { label: "Students", to: "/students", icon: <UsersIcon />, roles: ["admin", "registrar"] },
     ],
   },
   {
     label: "My Department",
     items: [
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
-      { label: "Department Subjects", to: "/dean/subjects", icon: <BookIcon />, roles: ["dean"] },
-      { label: "Department Instructors", to: "/dean/instructors", icon: <UsersIcon />, roles: ["dean"] },
+      { label: "Department Subjects", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
+      { label: "Department Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
     ],
   },
   {
@@ -121,29 +108,6 @@ const itemVariants = {
   },
 } as const;
 
-const submenuVariants = {
-  hidden: { height: 0, opacity: 0 },
-  visible: {
-    height: "auto",
-    opacity: 1,
-    transition: { duration: 0.2, ease: "easeOut" },
-  },
-  exit: {
-    height: 0,
-    opacity: 0,
-    transition: { duration: 0.15, ease: "easeIn" },
-  },
-} as const;
-
-const subItemVariants = {
-  hidden: { opacity: 0, x: -8 },
-  visible: (i: number) => ({
-    opacity: 1,
-    x: 0,
-    transition: { delay: i * 0.03, type: "spring", stiffness: 260, damping: 24 } as const,
-  }),
-};
-
 type SidebarProps = {
   collapsed: boolean;
   onExpand: () => void;
@@ -152,28 +116,6 @@ type SidebarProps = {
 
 export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
   const { user } = useAuth();
-  const location = useLocation();
-  const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
-
-  useEffect(() => {
-    for (const group of NAV_GROUPS) {
-      for (const item of group.items) {
-        if (
-          item.subItems?.some((sub) =>
-            sub.matchPaths
-              ? sub.matchPaths.some((p) => location.pathname.startsWith(p))
-              : sub.matchPrefix
-                ? location.pathname.startsWith(sub.to)
-                : sub.to === location.pathname,
-          )
-        ) {
-          setOpenSubmenus((current) =>
-            current.includes(item.label) ? current : [...current, item.label],
-          );
-        }
-      }
-    }
-  }, [location.pathname]);
 
   if (!user) return null;
 
@@ -181,24 +123,8 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
 
   const groups = NAV_GROUPS.map((group) => ({
     ...group,
-    items: group.items
-      .filter((item) => hasRole(item.roles))
-      .map((item) =>
-        item.subItems
-          ? { ...item, subItems: item.subItems.filter((sub) => hasRole(sub.roles)) }
-          : item,
-      )
-      .filter((item) => !item.subItems || item.subItems.length > 0),
+    items: group.items.filter((item) => hasRole(item.roles)),
   })).filter((group) => group.items.length > 0);
-
-  function toggleSubmenu(label: string) {
-    if (collapsed) onExpand();
-    setOpenSubmenus((current) =>
-      current.includes(label) ? current.filter((item) => item !== label) : [...current, label],
-    );
-  }
-
-  const isSubmenuOpen = (label: string) => !collapsed && openSubmenus.includes(label);
 
   return (
     <motion.aside
@@ -260,76 +186,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
               initial="hidden"
               animate="visible"
             >
-              {group.items.map((item) =>
-                item.subItems ? (
-                  <motion.li key={item.label} variants={itemVariants}>
-                    <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
-                      <button
-                        type="button"
-                        aria-expanded={openSubmenus.includes(item.label)}
-                        onClick={() => toggleSubmenu(item.label)}
-                        className={`${itemClassName(false)} ${collapsed ? "justify-center px-0" : ""}`}
-                      >
-                        <span className="grid size-5 shrink-0 place-items-center opacity-90">
-                          {item.icon}
-                        </span>
-                        {!collapsed && (
-                          <>
-                            <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                            <motion.span
-                              aria-hidden="true"
-                              animate={{ rotate: openSubmenus.includes(item.label) ? 90 : 0 }}
-                              transition={{ duration: 0.15 }}
-                              className="shrink-0 opacity-70"
-                            >
-                              <ChevronRightIcon />
-                            </motion.span>
-                          </>
-                        )}
-                      </button>
-                    </Tooltip>
-                    <AnimatePresence initial={false}>
-                      {isSubmenuOpen(item.label) && (
-                        <motion.ul
-                          key="submenu"
-                          variants={submenuVariants}
-                          initial="hidden"
-                          animate="visible"
-                          exit="exit"
-                          className="ml-[1.35rem] mt-0.5 flex flex-col gap-0.5 overflow-hidden border-l border-white/15 pl-2.5"
-                        >
-                          {item.subItems.map((sub, i) => (
-                            <motion.li
-                              key={sub.to}
-                              custom={i}
-                              variants={subItemVariants}
-                              initial="hidden"
-                              animate="visible"
-                            >
-                              <NavLink
-                                to={sub.to}
-                                end={!sub.matchPrefix && !sub.matchPaths}
-                                onClick={onNavigate}
-                                className={({ isActive }) => {
-                                  const active = sub.matchPaths
-                                    ? sub.matchPaths.some((p) => location.pathname.startsWith(p))
-                                    : isActive;
-                                  return `block truncate rounded-md px-2.5 py-1.5 font-body text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
-                                    active
-                                      ? "bg-gwc-blue-bright font-extrabold text-white"
-                                      : "text-white/85 hover:bg-gwc-blue-bright hover:text-white"
-                                  }`;
-                                }}
-                              >
-                                {sub.label}
-                              </NavLink>
-                            </motion.li>
-                          ))}
-                        </motion.ul>
-                      )}
-                    </AnimatePresence>
-                  </motion.li>
-                ) : (
+              {group.items.map((item) => (
                   <motion.li
                     key={`${item.label}-${item.to}`}
                     className="relative"

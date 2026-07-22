@@ -224,15 +224,6 @@ export function BookIcon() {
   );
 }
 
-function BookOpenIcon() {
-  return (
-    <IconBase>
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-    </IconBase>
-  );
-}
-
 export function LayersIcon() {
   return (
     <IconBase>
@@ -269,6 +260,20 @@ function BuildingIcon() {
       <rect x="4" y="2" width="16" height="20" rx="2" />
       <path d="M9 22v-4h6v4" />
       <path d="M9 6h2M13 6h2M9 10h2M13 10h2M9 14h2M13 14h2" />
+    </IconBase>
+  );
+}
+
+export function Building2Icon() {
+  return (
+    <IconBase>
+      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18z" />
+      <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+      <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+      <path d="M10 6h4" />
+      <path d="M10 10h4" />
+      <path d="M10 14h4" />
+      <path d="M10 18h4" />
     </IconBase>
   );
 }
@@ -409,10 +414,163 @@ function DoorIcon() {
   );
 }
 
+export function DoorOpenIcon() {
+  return (
+    <IconBase>
+      <path d="M13 4h3a2 2 0 0 1 2 2v14" />
+      <path d="M2 20h3" />
+      <path d="M13 20h6" />
+      <path d="M10 12v.01" />
+      <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.742a1 1 0 0 1 .758-.97l7-1.875a1 1 0 0 1 1.484.793z" />
+    </IconBase>
+  );
+}
+
 function FolderIcon() {
   return (
     <IconBase>
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </IconBase>
+  );
+}
+
+export function BookOpenIcon() {
+  return (
+    <IconBase>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </IconBase>
+  );
+}
+
+export function BookmarkIcon() {
+  return (
+    <IconBase>
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </IconBase>
+  );
+}
+
+export function LayoutGridIcon() {
+  return (
+    <IconBase>
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+    </IconBase>
+  );
+}
+
+export function ClockIconLarge() {
+  return (
+    <IconBase>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </IconBase>
+  );
+}
+
+export function MapIcon() {
+  return (
+    <IconBase>
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+      <line x1="8" y1="2" x2="8" y2="18" />
+      <line x1="16" y1="6" x2="16" y2="22" />
+    </IconBase>
+  );
+}
+
+export function UsersRoundIcon() {
+  return (
+    <IconBase>
+      <path d="M18 21a8 8 0 0 0-16 0" />
+      <circle cx="10" cy="8" r="5" />
+      <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" />
+    </IconBase>
+  );
+}
+
+export function GraduationHatIcon() {
+  return (
+    <IconBase>
+      <path d="M21.42 10.922l-1.718-.002-8.7-5.074a1.5 1.5 0 0 0-1.434 0L2 10.922" />
+      <path d="M3.42 10.922L12 6l8.58 4.922" />
+      <path d="M12 22V12" />
+      <path d="M19 21.5V12.5L12 8.5 5 12.5V21.5" />
+    </IconBase>
+  );
+}
+
+export function FolderOpenIcon() {
+  return (
+    <IconBase>
+      <path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+    </IconBase>
+  );
+}
+
+export function TableIcon() {
+  return (
+    <IconBase>
+      <path d="M12 3v18" />
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M3 15h18" />
+    </IconBase>
+  );
+}
+
+export function BlocksIcon() {
+  return (
+    <IconBase>
+      <rect width="7" height="7" x="14" y="3" rx="1" />
+      <path d="M10 21V8a4 4 0 0 0-4-4H3" />
+      <path d="M21 3h-4a4 4 0 0 0-4 4v14" />
+    </IconBase>
+  );
+}
+
+export function CalendarClockIcon() {
+  return (
+    <IconBase>
+      <rect x="3" y="4" width="18" height="17" rx="2" />
+      <path d="M16 2v4M8 2v4M3 9h18" />
+      <circle cx="16" cy="16" r="4" />
+      <path d="M16 14v2l1.5 1" />
+    </IconBase>
+  );
+}
+
+export function CalendarCheckIcon() {
+  return (
+    <IconBase>
+      <rect x="3" y="4" width="18" height="17" rx="2" />
+      <path d="M16 2v4M8 2v4M3 9h18" />
+      <path d="m8 15 2 2 4-4" />
+    </IconBase>
+  );
+}
+
+export function CalendarShuffleIcon() {
+  return (
+    <IconBase>
+      <rect x="3" y="4" width="18" height="17" rx="2" />
+      <path d="M16 2v4M8 2v4M3 9h18" />
+      <path d="M7 14h2l3-3h2" />
+      <path d="m12 9 2 2-2 2" />
+      <path d="M7 18h2l3-3h2" />
+      <path d="m12 13 2 2-2 2" />
+    </IconBase>
+  );
+}
+
+export function ShieldUserIcon() {
+  return (
+    <IconBase>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <circle cx="12" cy="9" r="2" />
+      <path d="M8.5 16c.5-2 1.7-3 3.5-3s3 .9 3.5 3" />
     </IconBase>
   );
 }
@@ -529,8 +687,13 @@ export function UserSmallIcon({ size = 14 }: { size?: number }) {
 export function ClockIcon({ size = 14 }: { size?: number }) {
   return (
     <IconBase size={size}>
-      <circle cx="12" cy="12" r="9" />
-      <polyline points="12 7 12 12 15.5 14" />
+      <path d="M9 5H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" />
+      <path d="M9 3h6v4H9z" />
+      <path d="M9 12h4" />
+      <path d="M9 16h3" />
+      <path d="M20 4a4 4 0 1 1-3.5 2" />
+      <path d="M20 2v4h-4" />
+      <path d="M20 4v2l-1.5 1" />
     </IconBase>
   );
 }
