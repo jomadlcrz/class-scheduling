@@ -6,13 +6,14 @@ import { BookIcon, CalendarIcon, PrinterIcon, UserCheckIcon } from "~/components
 import { Spinner } from "~/components/ui/spinner";
 import { Tooltip } from "~/components/ui/tooltip";
 import { MobileWeeklySchedule } from "~/features/schedules/mobile-weekly-schedule";
-import { openSchedulePrint } from "~/features/schedules/print-schedule";
+import { openStudentSchedulePrint } from "~/features/schedules/print-student-schedule";
 import { ScheduleKpiCard } from "~/features/schedules/schedule-kpi-card";
 import { ScheduleTermFilter } from "~/features/schedules/schedule-term-filter";
 import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
 import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { TodayClasses } from "~/features/schedules/today-classes";
 import { useMySchedule } from "~/features/schedules/use-my-schedule";
+import { useAuth } from "~/hooks/use-auth";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 
@@ -32,6 +33,7 @@ export default function StudentScheduleRoute() {
 }
 
 function StudentSchedulePage() {
+  const { user } = useAuth();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
@@ -80,7 +82,12 @@ function StudentSchedulePage() {
               aria-label="Print schedule"
               disabled={visibleSchedules.length === 0}
               onClick={() =>
-                openSchedulePrint(visibleSchedules, { schoolYear, semesterLabel: semesterLabel(semester) })
+                openStudentSchedulePrint(visibleSchedules, {
+                  schoolYear,
+                  semesterLabel: semesterLabel(semester),
+                  studentName: user?.name ?? "",
+                  showSet: isIrregular,
+                })
               }
               className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
             >
