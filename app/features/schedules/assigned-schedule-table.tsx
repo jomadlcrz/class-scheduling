@@ -49,7 +49,7 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
             )}
             {selected.assignedSubjects.map((subject) => (
               <div key={subject.subjectId} className="rounded-lg border border-slate-200 p-3 dark:border-white/10">
-                <h4 className="font-body text-sm font-medium text-navy-800 dark:text-mist-100">
+                <h4 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   {subject.subjectCode} — {subject.descTitle}
                 </h4>
                 <table className="mt-2 w-full text-left font-body text-sm">

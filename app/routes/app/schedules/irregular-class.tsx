@@ -51,18 +51,14 @@ function IrregularClassPage() {
   const [assigned, setAssigned] = useState<StudentAssignedSchedule[] | null>(null);
 
   useEffect(() => {
-    irregularClassService
-      .listStudents()
-      .then(setStudents)
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
-      );
-  }, []);
-
-  useEffect(() => {
     if (schoolYear || schoolYears.length === 0) return;
     setSchoolYear(defaultSchoolYear);
   }, [schoolYear, schoolYears, defaultSchoolYear]);
+
+  useEffect(() => {
+    if (semId || semesters.length === 0) return;
+    setSemId(String(semesters[0].id));
+  }, [semId, semesters]);
 
   const matchedSy = schoolYears.find((sy) => sy.schoolYear === schoolYear);
   const matchedSem = semesters.find((s) => String(s.id) === semId);
@@ -146,10 +142,7 @@ function IrregularClassPage() {
           <Card className="grid grid-cols-2 gap-3 p-4 sm:max-w-md">
             <FieldChrome id="ic-school-year" label="School Year">
               <Select
-                items={[
-                  { value: "", label: "Select a school year" },
-                  ...schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear })),
-                ]}
+                items={schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear }))}
                 value={schoolYear}
                 onValueChange={(v) => setSchoolYear(v as string)}
               >
@@ -157,7 +150,6 @@ function IrregularClassPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Select a school year</SelectItem>
                   {schoolYears.map((sy) => (
                     <SelectItem key={sy.id} value={sy.schoolYear}>
                       {sy.schoolYear}
@@ -168,10 +160,7 @@ function IrregularClassPage() {
             </FieldChrome>
             <FieldChrome id="ic-semester" label="Semester">
               <Select
-                items={[
-                  { value: "", label: "Select a semester" },
-                  ...semesters.map((s) => ({ value: String(s.id), label: s.semester })),
-                ]}
+                items={semesters.map((s) => ({ value: String(s.id), label: s.semester }))}
                 value={semId}
                 onValueChange={(v) => setSemId(v as string)}
               >
@@ -179,7 +168,6 @@ function IrregularClassPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Select a semester</SelectItem>
                   {semesters.map((s) => (
                     <SelectItem key={s.id} value={String(s.id)}>
                       {s.semester}
