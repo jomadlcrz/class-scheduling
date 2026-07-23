@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { ClockIcon } from "~/components/ui/icons";
+import { AlertTriangleIcon, ClockIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { StudentPendingSchedule } from "~/services/irregular-class.service";
 
@@ -14,6 +15,7 @@ type AssignSchedulePanelProps = {
 export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelProps) {
   const [selected, setSelected] = useState<Record<number, string>>({});
   const [assigning, setAssigning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (pending === undefined) {
     return (
@@ -48,10 +50,13 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
       .map((s) => Number(selected[s.subjectId]))
       .filter((id) => id > 0);
     if (schedIds.length === 0) return;
+    setError(null);
     setAssigning(true);
     try {
       await onAssign(pending.studentAcademicId, schedIds);
       setSelected({});
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setAssigning(false);
     }
@@ -59,6 +64,13 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
 
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col">
+      {error && (
+        <Alert variant="destructive" className="mb-3">
+          <AlertTriangleIcon />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <ul className="scrollbar-none flex flex-1 flex-col gap-3 overflow-y-auto">
         {pending.pendingSubjects.map((subject) => {
           const chosen = selected[subject.subjectId] ?? "";

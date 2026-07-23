@@ -88,15 +88,16 @@ function IrregularClassPage() {
     : pending?.find((p) => p.studentProfileId === selectedStudent?.studentProfileId) ?? null;
 
   async function handleAssign(studentAcademicId: number, regularSchedIds: number[]) {
+    if (!matchedSy || !matchedSem) return;
     const message = await irregularClassService.assign({
       studentAcademicId,
       regularSchedIds,
+      syId: matchedSy.id,
+      semId: matchedSem.id,
     });
     if (message) toast.success(message);
-    if (matchedSy && matchedSem) {
-      irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.id).then(setPending).catch(() => {});
-      irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.id).then(setAssigned).catch(() => {});
-    }
+    irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.id).then(setPending).catch(() => {});
+    irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.id).then(setAssigned).catch(() => {});
   }
 
   return (

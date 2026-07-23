@@ -250,11 +250,15 @@ async function listAssignedSchedule(syId: number, semId: number): Promise<Studen
 }
 
 /** POST /regular_schedule/create-irregular-schedule — assigns regular schedule slot(s) to an irregular student's term. */
-async function assign(input: { studentAcademicId: number; regularSchedIds: number[] }): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/regular_schedule/create-irregular-schedule", {
-    studentAcademicId: input.studentAcademicId,
-    regularSchedIds: input.regularSchedIds,
-  });
+async function assign(input: { studentAcademicId: number; regularSchedIds: number[]; syId: number; semId: number }): Promise<string> {
+  const query = new URLSearchParams({ sy_id: String(input.syId), sem_id: String(input.semId) });
+  const data = await apiPost<{ message?: string }>(
+    `/regular_schedule/create-irregular-schedule?${query}`,
+    {
+      studentAcademicId: input.studentAcademicId,
+      regularSchedIds: input.regularSchedIds,
+    },
+  );
   return apiMessage(data);
 }
 
