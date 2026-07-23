@@ -169,27 +169,25 @@ async function listPendingSchedule(syId: number, semId: number): Promise<Student
 }
 
 type AssignedScheduleResponse = {
-  irregular_students: {
+  irregular_schedules: {
     student_academic_id: number;
-    student_profile_id: number;
     student_id: string | null;
     first_name: string;
     mid_name: string | null;
     last_name: string;
-    assigned_subjects: {
+    schedules: {
+      id: number;
+      regular_sched_id: number;
       subject_id: number;
       subject_code: string;
       descriptive_title: string;
       units: number;
-      schedules: {
-        regular_sched_id: number;
-        mode: string;
-        day_of_week: string;
-        start_time: string;
-        end_time: string;
-        room: string | null;
-        instructor: string | null;
-      }[];
+      mode: string;
+      day_of_week: string;
+      start_time: string;
+      end_time: string;
+      room: string | null;
+      instructor: string | null;
     }[];
   }[];
 };
@@ -214,29 +212,32 @@ export type AssignedSubject = {
 
 export type StudentAssignedSchedule = {
   studentAcademicId: number;
-  studentProfileId: number;
   studentId: string | null;
   studentName: string;
   assignedSubjects: AssignedSubject[];
 };
 
-/** GET /regular_schedule/irregular-students-assigned-schedule — irregular students with an existing schedule this term. */
+/** GET /irregular_schedule — irregular students with assigned schedules, optionally filtered by sy_id/sem_id. */
 async function listAssignedSchedule(syId: number, semId: number): Promise<StudentAssignedSchedule[]> {
   const query = new URLSearchParams({ sy_id: String(syId), sem_id: String(semId) });
   const data = await apiGet<AssignedScheduleResponse>(
-    `/regular_schedule/irregular-students-assigned-schedule?${query}`,
+    `/irregular_schedule?${query}`,
   );
-  return data.irregular_students.map((s) => ({
-    studentAcademicId: s.student_academic_id,
-    studentProfileId: s.student_profile_id,
-    studentId: s.student_id,
-    studentName: `${s.last_name}, ${s.first_name}`,
-    assignedSubjects: s.assigned_subjects.map((as) => ({
-      subjectId: as.subject_id,
-      subjectCode: as.subject_code,
-      descTitle: as.descriptive_title,
-      units: as.units,
-      schedules: as.schedules.map((sc) => ({
+  return data.irregular_schedules.map((s) => {
+    const subjectsMap = new Map<number, AssignedSubject>();
+    for (const sc of s.schedules) {
+      let subject = subjectsMap.get(sc.subject_id);
+      if (!subject) {
+        subject = {
+          subjectId: sc.subject_id,
+          subjectCode: sc.subject_code,
+          descTitle: sc.descriptive_title,
+          units: sc.units,
+          schedules: [],
+        };
+        subjectsMap.set(sc.subject_id, subject);
+      }
+      subject.schedules.push({
         regularSchedId: sc.regular_sched_id,
         mode: sc.mode,
         dayOfWeek: sc.day_of_week,
@@ -244,9 +245,15 @@ async function listAssignedSchedule(syId: number, semId: number): Promise<Studen
         endTime: sc.end_time,
         room: sc.room,
         instructor: sc.instructor,
-      })),
-    })),
-  }));
+      });
+    }
+    return {
+      studentAcademicId: s.student_academic_id,
+      studentId: s.student_id,
+      studentName: `${s.last_name}, ${s.first_name}`,
+      assignedSubjects: [...subjectsMap.values()],
+    };
+  });
 }
 
 /** POST /regular_schedule/create-irregular-schedule — assigns regular schedule slot(s) to an irregular student's term. */
