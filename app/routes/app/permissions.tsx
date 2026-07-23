@@ -71,13 +71,13 @@ function PermissionsPage() {
         description="System roles and what each one can do."
         actions={
           <div className="flex gap-2">
-            <Button type="button" variant="outline" block={false} onClick={() => setAddPermissionOpen(true)}>
-              <PlusIcon />
-              Add Permission
-            </Button>
             <Button type="button" block={false} onClick={() => setAddRoleOpen(true)}>
               <PlusIcon />
               Add Role
+            </Button>
+            <Button type="button" variant="outline" block={false} onClick={() => setAddPermissionOpen(true)}>
+              <PlusIcon />
+              Add Permission
             </Button>
           </div>
         }

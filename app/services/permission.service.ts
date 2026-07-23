@@ -162,6 +162,15 @@ async function createPermission(input: { permissionSlug: string; description?: s
   return apiMessage(data);
 }
 
+/** POST /permissions — create multiple permissions in bulk. */
+async function createPermissionBulk(input: { permissionSlug: string; description?: string }[]): Promise<string> {
+  const data = await apiPost<{ message?: string }>(
+    "/permissions",
+    input.map((p) => ({ permissionSlug: p.permissionSlug, description: p.description ?? null })),
+  );
+  return apiMessage(data);
+}
+
 /** DELETE /permissions/<id> — soft delete; 409 if still granted to a role. */
 async function remove(id: number): Promise<string> {
   const data = await apiDelete<{ message?: string }>(`/permissions/${id}`);
@@ -178,6 +187,7 @@ export const permissionService = {
   list,
   create,
   createPermission,
+  createPermissionBulk,
   listCatalog,
   replace,
   revoke,
