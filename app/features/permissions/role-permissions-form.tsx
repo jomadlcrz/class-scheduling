@@ -53,7 +53,17 @@ export function RolePermissionsForm({ role, catalog, onSaved, onCancel }: RolePe
             <Checkbox
               key={permission.id}
               id={`role-permission-${permission.id}`}
-              label={permission.description || permission.slug}
+              ariaLabel={permission.description || permission.slug}
+              label={
+                <span className="flex flex-col">
+                  <span>{permission.description || permission.slug}</span>
+                  {permission.description && (
+                    <span className="text-xs text-slate-400 dark:text-slate-500">
+                      {permission.slug}
+                    </span>
+                  )}
+                </span>
+              }
               checked={selectedIds.has(permission.id)}
               onChange={(checked) => toggle(permission.id, checked)}
             />
