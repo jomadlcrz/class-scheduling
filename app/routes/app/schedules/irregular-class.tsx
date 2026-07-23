@@ -87,10 +87,10 @@ function IrregularClassPage() {
     ? undefined
     : pending?.find((p) => p.studentProfileId === selectedStudent?.studentProfileId) ?? null;
 
-  async function handleAssign(studentAcademicId: number, regularSchedId: number) {
+  async function handleAssign(studentAcademicId: number, regularSchedIds: number[]) {
     const message = await irregularClassService.assign({
       studentAcademicId,
-      regularSchedIds: [regularSchedId],
+      regularSchedIds,
     });
     if (message) toast.success(message);
     if (matchedSy && matchedSem) {
