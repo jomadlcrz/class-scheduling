@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { NavLink, useLocation } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -55,7 +56,8 @@ export default function StudentsRoute() {
   );
 }
 
-function StudentsPage() {
+export function StudentsPage() {
+  const location = useLocation();
   const [studentList, setStudentList] = useState<StudentAccountRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -67,7 +69,13 @@ function StudentsPage() {
   const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
 
   const [search, setSearch] = useState("");
-  const [activeView, setActiveView] = useState<"all" | "regular" | "irregular">("all");
+  const [regularSearch, setRegularSearch] = useState("");
+  const [irregularSearch, setIrregularSearch] = useState("");
+  const activeView = location.pathname.includes("students-regular")
+    ? "regular"
+    : location.pathname.includes("students-irregular")
+      ? "irregular"
+      : "all";
   const [regularStudents, setRegularStudents] = useState<RegularStudentRow[] | null>(null);
   const [regularLoadError, setRegularLoadError] = useState<string | null>(null);
   const [irregularStudents, setIrregularStudents] = useState<IrregularStudent[] | null>(null);
@@ -113,17 +121,52 @@ function StudentsPage() {
       .filter((s) => {
         if (
           query &&
-          !s.firstName.toLowerCase().includes(query) &&
-          !s.lastName.toLowerCase().includes(query) &&
-          !s.studentId.toLowerCase().includes(query) &&
+          !(s.firstName ?? "").toLowerCase().includes(query) &&
+          !(s.lastName ?? "").toLowerCase().includes(query) &&
+          !(s.studentId ?? "").toLowerCase().includes(query) &&
           !(s.email ?? "").toLowerCase().includes(query)
         ) {
           return false;
         }
         return true;
       })
-      .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
+      .sort((a, b) => (a.lastName ?? "").localeCompare(b.lastName ?? "") || (a.firstName ?? "").localeCompare(b.firstName ?? ""));
   }, [studentList, search]);
+
+  const visibleRegularStudents = useMemo(() => {
+    if (!regularStudents) return [];
+    const query = regularSearch.trim().toLowerCase();
+    return regularStudents
+      .filter((s) => {
+        if (
+          query &&
+          !(s.firstName ?? "").toLowerCase().includes(query) &&
+          !(s.lastName ?? "").toLowerCase().includes(query) &&
+          !(s.studentId ?? "").toLowerCase().includes(query)
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => (a.lastName ?? "").localeCompare(b.lastName ?? "") || (a.firstName ?? "").localeCompare(b.firstName ?? ""));
+  }, [regularStudents, regularSearch]);
+
+  const visibleIrregularStudents = useMemo(() => {
+    if (!irregularStudents) return [];
+    const query = irregularSearch.trim().toLowerCase();
+    return irregularStudents
+      .filter((s) => {
+        if (
+          query &&
+          !s.studentName.toLowerCase().includes(query) &&
+          !(s.studentId ?? "").toLowerCase().includes(query)
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => a.studentName.localeCompare(b.studentName));
+  }, [irregularStudents, irregularSearch]);
 
   const pagination = usePagination(visibleStudents, resetKey);
   const pageAccountIds = pagination.pageItems
@@ -244,19 +287,25 @@ function StudentsPage() {
       />
 
       <div className="mt-6 flex gap-2 border-b border-slate-200 dark:border-white/10">
-        {(["all", "regular", "irregular"] as const).map((view) => (
-          <button
-            key={view}
-            type="button"
-            onClick={() => setActiveView(view)}
-            className={`-mb-px border-b-2 px-4 py-2 font-body text-sm font-medium transition-colors duration-150 ${
-              activeView === view
-                ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
-                : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
-            }`}
+        {[
+          { to: "/students", label: "All Students" },
+          { to: "/students-regular", label: "Regular Students" },
+          { to: "/students-irregular", label: "Irregular Students" },
+        ].map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            end
+            className={({ isActive }) =>
+              `-mb-px border-b-2 px-4 py-2 font-body text-sm font-medium transition-colors duration-150 ${
+                isActive
+                  ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
+                  : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`
+            }
           >
-            {view === "all" ? "All Students" : view === "regular" ? "Regular Students" : "Irregular Students"}
-          </button>
+            {tab.label}
+          </NavLink>
         ))}
       </div>
 
@@ -270,10 +319,10 @@ function StudentsPage() {
               <input
                 id="student-search"
                 type="search"
-                placeholder="Name, student ID, or email…"
+                placeholder="Search by name or ID…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                aria-label="Search"
+                aria-label="Search students"
                 className={`${inputClassName} pl-9 pr-4`}
               />
             </div>
@@ -316,7 +365,24 @@ function StudentsPage() {
           )}
         </div>
       ) : activeView === "regular" ? (
-        <div className="mt-6">
+        <div className="mt-6 flex flex-col gap-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="relative ml-auto w-full sm:w-64">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <SearchIcon />
+              </span>
+              <input
+                id="regular-student-search"
+                type="search"
+                placeholder="Search by name or ID…"
+                value={regularSearch}
+                onChange={(e) => setRegularSearch(e.target.value)}
+                aria-label="Search regular students"
+                className={`${inputClassName} pl-9 pr-4`}
+              />
+            </div>
+          </div>
+
           {regularLoadError ? (
             <ResultState tone="error" title="Unable to load">
               {regularLoadError}
@@ -329,16 +395,33 @@ function StudentsPage() {
             >
               <Spinner />
             </div>
-          ) : regularStudents.length === 0 ? (
+          ) : visibleRegularStudents.length === 0 ? (
             <EmptyState title="No regular students">
-              No students are currently flagged as regular.
+              No students match the current filters.
             </EmptyState>
           ) : (
-            <RegularStudentTable students={regularStudents} />
+            <RegularStudentTable students={visibleRegularStudents} />
           )}
         </div>
       ) : (
-        <div className="mt-6">
+        <div className="mt-6 flex flex-col gap-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="relative ml-auto w-full sm:w-64">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <SearchIcon />
+              </span>
+              <input
+                id="irregular-student-search"
+                type="search"
+                placeholder="Search by name or ID…"
+                value={irregularSearch}
+                onChange={(e) => setIrregularSearch(e.target.value)}
+                aria-label="Search irregular students"
+                className={`${inputClassName} pl-9 pr-4`}
+              />
+            </div>
+          </div>
+
           {irregularLoadError ? (
             <ResultState tone="error" title="Unable to load">
               {irregularLoadError}
@@ -351,12 +434,12 @@ function StudentsPage() {
             >
               <Spinner />
             </div>
-          ) : irregularStudents.length === 0 ? (
+          ) : visibleIrregularStudents.length === 0 ? (
             <EmptyState title="No irregular students">
-              No students are currently flagged as irregular.
+              No students match the current filters.
             </EmptyState>
           ) : (
-            <IrregularStudentTable students={irregularStudents} />
+            <IrregularStudentTable students={visibleIrregularStudents} />
           )}
         </div>
       )}
