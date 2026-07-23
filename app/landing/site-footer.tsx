@@ -13,7 +13,7 @@ const COLUMNS: readonly FooterColumn[] = [
 /** Site footer — follows the theme: light surface in light mode, navy in dark. */
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-slate-200 bg-cream-100 text-slate-600 dark:border-white/10 dark:bg-surface dark:text-slate-300">
+    <footer className="relative z-10 border-t border-navy-300/30 bg-navy-400 text-white dark:border-white/10 dark:bg-surface dark:text-slate-300">
       {/* Hairline gold accent along the top edge. */}
       <div className="h-px w-full bg-linear-to-r from-transparent via-gold-400/50 to-transparent" />
 
@@ -45,15 +45,15 @@ export function SiteFooter() {
                 />
               </a>
               <span className="flex flex-col items-center text-center leading-none">
-                <span className="font-display text-3xl tracking-wide text-navy-700 dark:text-mist-100">
+                <span className="font-display text-3xl tracking-wide text-white dark:text-mist-100">
                   GWC
                 </span>
-                <span className="-mt-2 font-body text-sm tracking-wide text-navy-500 dark:text-navy-300">
+                <span className="-mt-2 font-body text-sm tracking-wide text-gwc-blue-soft dark:text-navy-300">
                   Class Scheduling
                 </span>
               </span>
             </div>
-            <p className="mt-5 max-w-xs text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/70 dark:text-slate-400">
               Conflict-free academic timetables for Golden West Colleges, Inc. and
               every department within it.
             </p>
@@ -61,7 +61,7 @@ export function SiteFooter() {
 
           {COLUMNS.map((column) => (
             <nav key={column.heading} aria-label={column.heading}>
-              <h3 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+              <h3 className="font-display text-lg tracking-wide text-white dark:text-mist-100">
                 {column.heading}
               </h3>
               <ul className="mt-4 space-y-2.5">
@@ -69,7 +69,7 @@ export function SiteFooter() {
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-sm text-slate-500 transition-colors duration-200 hover:text-gold-600 focus-visible:text-gold-600 focus-visible:outline-none dark:text-slate-400 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
+                      className="text-sm text-white/70 transition-colors duration-200 hover:text-gold-300 focus-visible:text-gold-300 focus-visible:outline-none dark:text-slate-400 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
                     >
                       {link}
                     </a>
@@ -81,8 +81,8 @@ export function SiteFooter() {
         </div>
       </div>
 
-      {/* Bottom bar — its own container/background, distinct from the main footer above. */}
-      <div className="bg-navy-800 dark:bg-navy-950">
+      {/* Bottom bar — slightly darker than footer, dark navy in dark. */}
+      <div className="bg-navy-500 dark:bg-navy-950">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row sm:px-8 lg:px-10">
           <p className="text-xs text-mist-100/50">
             &copy; {new Date().getFullYear()} GWC Class Scheduling. All rights reserved.
