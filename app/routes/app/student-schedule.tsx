@@ -65,6 +65,8 @@ function StudentSchedulePage() {
 
   // Every visible row carries the same value — the backend attaches it per-row, not once.
   const academicStatus = visibleSchedules[0]?.academicStatus;
+  const isIrregular = academicStatus === "Irregular";
+  const sectionLabel = visibleSchedules[0]?.setCode;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -121,7 +123,7 @@ function StudentSchedulePage() {
             </div>
           ) : (
             <>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <ScheduleKpiCard icon={<BookIcon />} tone="navy" label="Total Units" value={totalUnits} />
                 <ScheduleKpiCard
                   icon={<CalendarIcon />}
@@ -137,6 +139,14 @@ function StudentSchedulePage() {
                     academicStatus ? <Badge tone="emerald">{academicStatus}</Badge> : `${totalSubjects} subjects`
                   }
                 />
+                {!isIrregular && sectionLabel && (
+                  <ScheduleKpiCard
+                    icon={<BookIcon />}
+                    tone="gold"
+                    label="Section"
+                    value={sectionLabel}
+                  />
+                )}
               </div>
 
               <div className="mt-4">
@@ -157,6 +167,7 @@ function StudentSchedulePage() {
               onViewModeChange={setViewMode}
               emptyTitle="No classes scheduled"
               emptyMessage="You have no classes for the selected term."
+              showSet={isIrregular}
             />
           </div>
         </>

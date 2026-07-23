@@ -17,6 +17,8 @@ type ScheduleViewerProps = {
   title?: ReactNode;
   /** Optional controls (e.g. a print button) rendered left of the view toggle. */
   actions?: ReactNode;
+  /** Show the Set (Section) column in table/grid views. */
+  showSet?: boolean;
 };
 
 /** Read-only grid/list schedule view with a toggle — used by the faculty and student pages. */
@@ -29,6 +31,7 @@ export function ScheduleViewer({
   emptyMessage = "There are no classes for the selected term.",
   title,
   actions,
+  showSet,
 }: ScheduleViewerProps) {
   return (
     <>
@@ -59,13 +62,13 @@ export function ScheduleViewer({
         ) : (
           <>
             <div className="sm:hidden">
-              <ScheduleTable schedules={schedules} />
+              <ScheduleTable schedules={schedules} showSet={showSet} />
             </div>
             <div className="hidden sm:block">
               {viewMode === "grid" ? (
-                <ScheduleGrid schedules={schedules} />
+                <ScheduleGrid schedules={schedules} showSet={showSet} />
               ) : (
-                <ScheduleTable schedules={schedules} />
+                <ScheduleTable schedules={schedules} showSet={showSet} />
               )}
             </div>
           </>

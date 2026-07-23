@@ -12,6 +12,8 @@ type ScheduleTableProps = {
   onDelete?: (schedule: Schedule) => void;
   /** Called with the chosen target day from the duplicate popover. */
   onDuplicate?: (schedule: Schedule, day: Day) => void;
+  /** Show the Set (Section) column in the desktop table. */
+  showSet?: boolean;
 };
 
 const actionBtn =
@@ -21,7 +23,7 @@ const th =
   "px-3 py-2 font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 
 /** Schedule table: stacked cards on mobile, a single grouped table on sm and up. */
-export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: ScheduleTableProps) {
+export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSet }: ScheduleTableProps) {
   const { dayLabels } = useDays();
   const showActions = Boolean(onEdit || onDelete || onDuplicate);
 
@@ -70,6 +72,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
               <th className={`${th} text-center`}>Mode</th>
               <th className={th}>Instructor</th>
               <th className={`${th} text-center`}>Room</th>
+              {showSet && <th className={th}>Set</th>}
               {showActions && (
                 <th className={th}>
                   <span className="sr-only">Actions</span>
@@ -113,6 +116,11 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate }: Sche
                   <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
                     {sched.roomName}
                   </td>
+                  {showSet && (
+                    <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
+                      {sched.setCode}
+                    </td>
+                  )}
                   {showActions && (
                     <td className="px-3 py-2.5">
                       <div className="flex justify-end gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
