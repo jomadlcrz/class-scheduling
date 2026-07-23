@@ -6,8 +6,8 @@ import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { AssignedScheduleTable } from "~/features/schedules/assigned-schedule-table";
 import { AssignSchedulePanel } from "~/features/schedules/assign-schedule-panel";
+import { AssignedScheduleTable } from "~/features/schedules/assigned-schedule-table";
 import { IrregularStudentList } from "~/features/schedules/irregular-student-list";
 import { IrregularStudentPanel } from "~/features/schedules/irregular-student-panel";
 import { useSchoolYears } from "~/hooks/use-school-years";
@@ -74,6 +74,10 @@ function IrregularClassPage() {
       return;
     }
     irregularClassService
+      .listPendingStudents(matchedSy.id, matchedSem.id)
+      .then(setStudents)
+      .catch(() => {});
+    irregularClassService
       .listPendingSchedule(matchedSy.id, matchedSem.id)
       .then(setPending)
       .catch(() => setPending([]));
@@ -96,6 +100,7 @@ function IrregularClassPage() {
       semId: matchedSem.id,
     });
     if (message) toast.success(message);
+    irregularClassService.listPendingStudents(matchedSy.id, matchedSem.id).then(setStudents).catch(() => {});
     irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.id).then(setPending).catch(() => {});
     irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.id).then(setAssigned).catch(() => {});
   }

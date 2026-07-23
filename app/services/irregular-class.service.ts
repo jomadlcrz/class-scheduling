@@ -57,15 +57,7 @@ function latestAcademic(academics: IrregularAcademicRecord[]): IrregularAcademic
   )[0];
 }
 
-/** GET /students/irregular — students flagged AcademicStatus.IRREGULAR. 404 → empty. */
-async function listStudents(): Promise<IrregularStudent[]> {
-  let data: IrregularStudentsResponse;
-  try {
-    data = await apiGet<IrregularStudentsResponse>("/students/irregular");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
+function mapIrregularStudents(data: IrregularStudentsResponse): IrregularStudent[] {
   return data.map((s) => {
     const current = latestAcademic(s.academics);
     return {
@@ -82,6 +74,27 @@ async function listStudents(): Promise<IrregularStudent[]> {
       })),
     };
   });
+}
+
+/** GET /students/irregular — students flagged AcademicStatus.IRREGULAR. 404 → empty. */
+async function listStudents(): Promise<IrregularStudent[]> {
+  let data: IrregularStudentsResponse;
+  try {
+    data = await apiGet<IrregularStudentsResponse>("/students/irregular");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return mapIrregularStudents(data);
+}
+
+/** GET /students/irregular/pending-schedule — irregular students who still need scheduling for a term. */
+async function listPendingStudents(syId: number, semId: number): Promise<IrregularStudent[]> {
+  const query = new URLSearchParams({ sy_id: String(syId), sem_id: String(semId) });
+  const data = await apiGet<IrregularStudentsResponse>(
+    `/students/irregular/pending-schedule?${query}`,
+  );
+  return mapIrregularStudents(data);
 }
 
 type PendingScheduleResponse = {
@@ -300,6 +313,7 @@ async function removeIrregular(id: number): Promise<string> {
 
 export const irregularClassService = {
   listStudents,
+  listPendingStudents,
   listPendingSchedule,
   listAssignedSchedule,
   assign,
