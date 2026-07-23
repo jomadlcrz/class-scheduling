@@ -141,12 +141,6 @@ function IrregularClassPage() {
         >
           <Spinner />
         </div>
-      ) : students.length === 0 ? (
-        <div className="mt-6">
-          <EmptyState title="No irregular students">
-            No students are currently flagged as irregular.
-          </EmptyState>
-        </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
           <Card className="grid grid-cols-2 gap-3 p-4 sm:max-w-md">
@@ -197,32 +191,38 @@ function IrregularClassPage() {
           </Card>
 
           {activeTab === "students" ? (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_minmax(0,1fr)]">
-              <Card className="h-144 p-4">
-                <IrregularStudentList
-                  students={students}
-                  selectedStudentProfileId={selectedStudent?.studentProfileId ?? null}
-                  onSelect={setSelectedStudent}
-                />
-              </Card>
+            students.length === 0 ? (
+              <EmptyState title="No irregular students">
+                No students are currently flagged as irregular.
+              </EmptyState>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_minmax(0,1fr)]">
+                <Card className="h-144 p-4">
+                  <IrregularStudentList
+                    students={students}
+                    selectedStudentProfileId={selectedStudent?.studentProfileId ?? null}
+                    onSelect={setSelectedStudent}
+                  />
+                </Card>
 
-              <Card className="h-144 p-4">
-                <IrregularStudentPanel student={selectedStudent} />
-              </Card>
+                <Card className="h-144 p-4">
+                  <IrregularStudentPanel student={selectedStudent} />
+                </Card>
 
-              <Card className="flex h-144 flex-col p-4">
-                <h3 className="shrink-0 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
-                  Assign Regular Class Schedule
-                </h3>
-                {!selectedStudent ? (
-                  <p className="mt-4 flex min-h-0 flex-1 items-center justify-center text-center font-body text-sm text-slate-400 dark:text-slate-500">
-                    Select a student to view assignable schedules.
-                  </p>
-                ) : (
-                  <AssignSchedulePanel pending={selectedPending} onAssign={handleAssign} />
-                )}
-              </Card>
-            </div>
+                <Card className="flex h-144 flex-col p-4">
+                  <h3 className="shrink-0 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
+                    Assign Regular Class Schedule
+                  </h3>
+                  {!selectedStudent ? (
+                    <p className="mt-4 flex min-h-0 flex-1 items-center justify-center text-center font-body text-sm text-slate-400 dark:text-slate-500">
+                      Select a student to view assignable schedules.
+                    </p>
+                  ) : (
+                    <AssignSchedulePanel pending={selectedPending} onAssign={handleAssign} />
+                  )}
+                </Card>
+              </div>
+            )
           ) : !matchedSy || !matchedSem ? (
             <EmptyState title="Select a term">
               Pick a school year and semester to see assigned schedules.
