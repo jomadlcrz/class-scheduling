@@ -14,15 +14,6 @@ type FacultyScheduleViewProps = {
   semesterLabel: (n: number) => string;
 };
 
-const DAY_ORDER: Record<string, number> = {
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
-};
-
 function flattenRows(entry: FacultyLoadingEntry) {
   const rows: {
     subjectCode: string;
@@ -40,12 +31,7 @@ function flattenRows(entry: FacultyLoadingEntry) {
   }[] = [];
 
   for (const subject of entry.subjects) {
-    const sorted = [...subject.schedules].sort(
-      (a, b) =>
-        (DAY_ORDER[a.day] ?? 9) - (DAY_ORDER[b.day] ?? 9) ||
-        a.time.localeCompare(b.time),
-    );
-    sorted.forEach((sched, idx) => {
+    subject.schedules.forEach((sched, idx) => {
       rows.push({
         subjectCode: subject.subjectCode,
         descriptiveTitle: subject.descriptiveTitle,
