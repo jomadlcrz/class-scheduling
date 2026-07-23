@@ -135,7 +135,7 @@ function GridClassCard({
       </p>
       {showSet && (
         <small className="font-body text-[0.68rem] text-slate-500 dark:text-slate-400">
-          Set: {entry.setCode}
+          {entry.setCode}
         </small>
       )}
       <small className="flex items-center gap-1 font-body text-[0.68rem] text-slate-500 dark:text-slate-400">
