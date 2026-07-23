@@ -56,10 +56,10 @@ export function RolePermissionsForm({ role, catalog, onSaved, onCancel }: RolePe
               ariaLabel={permission.description || permission.slug}
               label={
                 <span className="flex flex-col">
-                  <span>{permission.description || permission.slug}</span>
+                  <span>{permission.slug}</span>
                   {permission.description && (
                     <span className="text-xs text-slate-400 dark:text-slate-500">
-                      {permission.slug}
+                      {permission.description}
                     </span>
                   )}
                 </span>

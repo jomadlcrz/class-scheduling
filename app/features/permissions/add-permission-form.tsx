@@ -3,18 +3,16 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { permissionService } from "~/services/permission.service";
-import type { RolePermission } from "~/types/permission";
 
-type PermissionEditFormProps = {
-  permission: RolePermission;
-  onSaved: (message: string) => void;
+type AddPermissionFormProps = {
+  onCreated: (message: string) => void;
   onCancel: () => void;
 };
 
-/** Edits an existing permission's slug/description in place (PUT /permissions/<id>). */
-export function PermissionEditForm({ permission, onSaved, onCancel }: PermissionEditFormProps) {
-  const [slug, setSlug] = useState(permission.slug);
-  const [description, setDescription] = useState(permission.description);
+/** Creates a single permission in the catalog (POST /permissions). */
+export function AddPermissionForm({ onCreated, onCancel }: AddPermissionFormProps) {
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -27,11 +25,11 @@ export function PermissionEditForm({ permission, onSaved, onCancel }: Permission
     setError(null);
     setIsSaving(true);
     try {
-      const message = await permissionService.update(permission.id, {
+      const message = await permissionService.createPermission({
         permissionSlug: slug.trim(),
-        description: description.trim(),
+        description: description.trim() || undefined,
       });
-      onSaved(message);
+      onCreated(message);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setIsSaving(false);
@@ -42,25 +40,27 @@ export function PermissionEditForm({ permission, onSaved, onCancel }: Permission
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
       <Input
-        id="edit-permission-description"
-        label="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        id="add-permission-slug"
+        label="Permission Slug"
+        required
+        placeholder="e.g. schedules:create"
+        value={slug}
+        onChange={(e) => setSlug(e.target.value)}
         autoFocus
       />
       <Input
-        id="edit-permission-slug"
-        label="Permission Slug"
-        required
-        value={slug}
-        onChange={(e) => setSlug(e.target.value)}
+        id="add-permission-description"
+        label="Description"
+        placeholder="What this permission allows"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
       />
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel} disabled={isSaving}>
           Cancel
         </Button>
-        <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Saving…">
-          Save Changes
+        <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Creating…">
+          Add Permission
         </Button>
       </div>
     </form>

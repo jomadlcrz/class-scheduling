@@ -6,9 +6,10 @@ import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
+import { AddPermissionForm } from "~/features/permissions/add-permission-form";
+import { AddRoleForm } from "~/features/permissions/add-role-form";
 import { PermissionCatalogTable } from "~/features/permissions/permission-catalog-table";
 import { PermissionEditForm } from "~/features/permissions/permission-edit-form";
-import { PermissionForm } from "~/features/permissions/permission-form";
 import { PermissionMatrix } from "~/features/permissions/permission-matrix";
 import { PermissionTable } from "~/features/permissions/permission-table";
 import { RolePermissionsForm } from "~/features/permissions/role-permissions-form";
@@ -39,6 +40,8 @@ function PermissionsPage() {
   const [catalog, setCatalog] = useState<RolePermission[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [addRoleOpen, setAddRoleOpen] = useState(false);
+  const [addPermissionOpen, setAddPermissionOpen] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<PermissionSummary | null>(null);
   const [editTarget, setEditTarget] = useState<PermissionSummary | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<{ roleId: number; permissionId: number } | null>(
     null,
@@ -67,10 +70,16 @@ function PermissionsPage() {
         title="Permissions"
         description="System roles and what each one can do."
         actions={
-          <Button type="button" block={false} onClick={() => setAddRoleOpen(true)}>
-            <PlusIcon />
-            Add Role
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" block={false} onClick={() => setAddPermissionOpen(true)}>
+              <PlusIcon />
+              Add Permission
+            </Button>
+            <Button type="button" block={false} onClick={() => setAddRoleOpen(true)}>
+              <PlusIcon />
+              Add Role
+            </Button>
+          </div>
         }
       />
 
@@ -90,7 +99,7 @@ function PermissionsPage() {
         </EmptyState>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
-          <PermissionTable roles={roles} onEdit={setEditTarget} />
+          <PermissionTable roles={roles} onEdit={setEditTarget} onAssign={setAssignTarget} />
           <section>
             <h2 className="mb-3 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               Permission Matrix
@@ -116,7 +125,7 @@ function PermissionsPage() {
       )}
 
       <Modal open={addRoleOpen} onClose={() => setAddRoleOpen(false)} title="Add Role">
-        <PermissionForm
+        <AddRoleForm
           onCreated={(message) => {
             if (message) toast.success(message);
             refresh();
@@ -126,10 +135,40 @@ function PermissionsPage() {
         />
       </Modal>
 
+      <Modal open={addPermissionOpen} onClose={() => setAddPermissionOpen(false)} title="Add Permission">
+        <AddPermissionForm
+          onCreated={(message) => {
+            if (message) toast.success(message);
+            refresh();
+            setAddPermissionOpen(false);
+          }}
+          onCancel={() => setAddPermissionOpen(false)}
+        />
+      </Modal>
+
+      <Modal
+        open={assignTarget !== null}
+        onClose={() => setAssignTarget(null)}
+        title={assignTarget ? `Assign Permissions — ${assignTarget.name}` : "Assign Permissions"}
+      >
+        {assignTarget && (
+          <RolePermissionsForm
+            role={assignTarget}
+            catalog={catalog}
+            onSaved={(message) => {
+              if (message) toast.success(message);
+              refresh();
+              setAssignTarget(null);
+            }}
+            onCancel={() => setAssignTarget(null)}
+          />
+        )}
+      </Modal>
+
       <Modal
         open={editTarget !== null}
         onClose={() => setEditTarget(null)}
-        title={editTarget ? `Edit Permissions — ${editTarget.name}` : "Edit Permissions"}
+        title={editTarget ? `Update Permissions — ${editTarget.name}` : "Update Permissions"}
       >
         {editTarget && (
           <RolePermissionsForm

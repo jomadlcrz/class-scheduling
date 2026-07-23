@@ -119,7 +119,7 @@ function IrregularClassPage() {
                 : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
-            {tab === "students" ? "Irregular Students" : "Assigned Schedules"}
+            {tab === "students" ? "Irregular Students" : "Irregular Schedules"}
           </button>
         ))}
       </div>

@@ -153,6 +153,15 @@ async function update(id: number, input: UpdatePermissionInput): Promise<string>
   return apiMessage(data);
 }
 
+/** POST /permissions — create a single permission. */
+async function createPermission(input: { permissionSlug: string; description?: string }): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/permissions", {
+    permissionSlug: input.permissionSlug,
+    description: input.description ?? null,
+  });
+  return apiMessage(data);
+}
+
 /** DELETE /permissions/<id> — soft delete; 409 if still granted to a role. */
 async function remove(id: number): Promise<string> {
   const data = await apiDelete<{ message?: string }>(`/permissions/${id}`);
@@ -168,6 +177,7 @@ async function restore(id: number): Promise<string> {
 export const permissionService = {
   list,
   create,
+  createPermission,
   listCatalog,
   replace,
   revoke,
