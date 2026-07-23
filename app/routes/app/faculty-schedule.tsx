@@ -1,16 +1,15 @@
-import { useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Spinner } from "~/components/ui/spinner";
+import { FacultyScheduleView } from "~/features/schedules/faculty-schedule-view";
 import { ScheduleTermFilter } from "~/features/schedules/schedule-term-filter";
-import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
-import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
-import { useMySchedule } from "~/features/schedules/use-my-schedule";
+import { useFacultyLoading } from "~/features/schedules/use-faculty-loading";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 
 export function meta() {
   return [
-    { title: "My Schedule — GWC Class Scheduling" },
+    { title: "Faculty Loading — GWC Class Scheduling" },
     { name: "description", content: "Your teaching schedule for the current academic term." },
   ];
 }
@@ -24,10 +23,8 @@ export default function FacultyScheduleRoute() {
 }
 
 function FacultySchedulePage() {
-  const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
+  const { semesters, semesterLabel } = useSemesters();
 
-  // The backend already scopes rows to this instructor via the JWT (RegularSchedule.faculty_id).
   const {
     isLoading,
     loadError,
@@ -36,14 +33,14 @@ function FacultySchedulePage() {
     semester,
     setSemester,
     schoolYears,
-    visibleSchedules,
-  } = useMySchedule();
+    termsLoading,
+    entry,
+  } = useFacultyLoading();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
-        title="My Teaching Schedule"
-        description="The classes you teach this academic term."
+        title="Faculty Loading"
       />
 
       {loadError ? (
@@ -52,25 +49,34 @@ function FacultySchedulePage() {
         <>
           <ScheduleTermFilter
             idPrefix="fs"
-            isLoading={isLoading}
+            isLoading={termsLoading}
             schoolYears={schoolYears}
             schoolYear={schoolYear}
             onSchoolYearChange={setSchoolYear}
-            semestersLoading={semestersLoading}
+            semestersLoading={semesters.length === 0}
             semesters={semesters}
             semester={semester}
             onSemesterChange={setSemester}
             semesterLabel={semesterLabel}
           />
 
-          <ScheduleViewer
-            schedules={visibleSchedules}
-            isLoading={isLoading}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            emptyTitle="No classes scheduled"
-            emptyMessage="You have no classes for the selected term."
-          />
+          {isLoading ? (
+            <div
+              role="status"
+              aria-label="Loading schedule"
+              className="mt-8 grid place-items-center text-navy-700 dark:text-slate-200"
+            >
+              <Spinner />
+            </div>
+          ) : !entry ? (
+            <EmptyState title="No classes scheduled">
+              You have no classes for the selected term.
+            </EmptyState>
+          ) : (
+            <div className="mt-4">
+              <FacultyScheduleView entry={entry} />
+            </div>
+          )}
         </>
       )}
     </div>
