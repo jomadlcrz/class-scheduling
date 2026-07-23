@@ -14,11 +14,11 @@ type StudentAccountTableProps = {
   students: StudentAccountRow[];
   /** Per-row login status fetched from GET /super-admin/student-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
   accountActiveById: Record<number, boolean | undefined>;
-  onCreateAccount: (student: StudentAccountRow) => void;
-  onView: (student: StudentAccountRow) => void;
-  onEnroll: (student: StudentAccountRow) => void;
-  onDeactivateAccount: (student: StudentAccountRow) => void;
-  onReactivateAccount: (student: StudentAccountRow) => void;
+  onCreateAccount: ((student: StudentAccountRow) => void) | null;
+  onView: ((student: StudentAccountRow) => void) | null;
+  onEnroll: ((student: StudentAccountRow) => void) | null;
+  onDeactivateAccount: ((student: StudentAccountRow) => void) | null;
+  onReactivateAccount: ((student: StudentAccountRow) => void) | null;
 };
 
 const actionButtonClassName =
@@ -65,57 +65,65 @@ export function StudentAccountTable({
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => onView(student)}
-                  aria-label={`View ${student.firstName} ${student.lastName}`}
-                  title="View details"
-                  className={actionButtonClassName}
-                >
-                  <EyeIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onEnroll(student)}
-                  aria-label={`Enroll ${student.firstName} ${student.lastName} for a new term`}
-                  title="Enroll for a new term"
-                  className={actionButtonClassName}
-                >
-                  <GraduationCapIcon />
-                </button>
-                {student.hasAccount ? (
-                  isActive === undefined ? (
-                    <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
-                  ) : isActive ? (
-                    <button
-                      type="button"
-                      onClick={() => onDeactivateAccount(student)}
-                      aria-label={`Deactivate account for ${student.firstName} ${student.lastName}`}
-                      title="Deactivate account"
-                      className={actionButtonClassName}
-                    >
-                      <UserOffIcon />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => onReactivateAccount(student)}
-                      aria-label={`Reactivate account for ${student.firstName} ${student.lastName}`}
-                      title="Reactivate account"
-                      className={actionButtonClassName}
-                    >
-                      <UserCheckIcon />
-                    </button>
-                  )
-                ) : (
-                  <Button
+                {onView && (
+                  <button
                     type="button"
-                    variant="outline"
-                    block={false}
-                    onClick={() => onCreateAccount(student)}
+                    onClick={() => onView(student)}
+                    aria-label={`View ${student.firstName} ${student.lastName}`}
+                    title="View details"
+                    className={actionButtonClassName}
                   >
-                    Create Account
-                  </Button>
+                    <EyeIcon />
+                  </button>
+                )}
+                {onEnroll && (
+                  <button
+                    type="button"
+                    onClick={() => onEnroll(student)}
+                    aria-label={`Enroll ${student.firstName} ${student.lastName} for a new term`}
+                    title="Enroll for a new term"
+                    className={actionButtonClassName}
+                  >
+                    <GraduationCapIcon />
+                  </button>
+                )}
+                {onDeactivateAccount && onReactivateAccount && (
+                  student.hasAccount ? (
+                    isActive === undefined ? (
+                      <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
+                    ) : isActive ? (
+                      <button
+                        type="button"
+                        onClick={() => onDeactivateAccount(student)}
+                        aria-label={`Deactivate account for ${student.firstName} ${student.lastName}`}
+                        title="Deactivate account"
+                        className={actionButtonClassName}
+                      >
+                        <UserOffIcon />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onReactivateAccount(student)}
+                        aria-label={`Reactivate account for ${student.firstName} ${student.lastName}`}
+                        title="Reactivate account"
+                        className={actionButtonClassName}
+                      >
+                        <UserCheckIcon />
+                      </button>
+                    )
+                  ) : (
+                    onCreateAccount && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        block={false}
+                        onClick={() => onCreateAccount(student)}
+                      >
+                        Create Account
+                      </Button>
+                    )
+                  )
                 )}
               </div>
             </TableCell>

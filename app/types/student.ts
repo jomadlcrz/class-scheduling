@@ -70,7 +70,7 @@ export type StudentAcademicRecord = {
 
 export type StudentAccountRow = {
   studentProfileId: number;
-  studentId: string;
+  studentId: string | null;
   firstName: string;
   midName: string | null;
   lastName: string;

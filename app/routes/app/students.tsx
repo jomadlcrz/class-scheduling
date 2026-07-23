@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
+import { useAuth } from "~/hooks/use-auth";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
@@ -58,6 +59,9 @@ export default function StudentsRoute() {
 
 export function StudentsPage() {
   const location = useLocation();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
   const [studentList, setStudentList] = useState<StudentAccountRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -94,14 +98,18 @@ export function StudentsPage() {
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
 
+  // Load student lists based on role
   useEffect(() => {
-    studentService
-      .listAccounts()
-      .then(setStudentList)
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load students.");
-        setStudentList([]);
-      });
+    if (isAdmin) {
+      // Admin: use super-admin endpoint with account info
+      studentService
+        .listAccounts()
+        .then(setStudentList)
+        .catch((err) => {
+          setLoadError(err instanceof Error ? err.message : "Unable to load students.");
+          setStudentList([]);
+        });
+    }
     // Dropdown data for the new-student form; failures just leave the
     // dropdowns empty (validation reports the missing selection).
     programService.list().then(setPrograms).catch(() => setPrograms([]));
@@ -110,14 +118,64 @@ export function StudentsPage() {
     schoolYearService.list().then(setSchoolYears).catch(() => setSchoolYears([]));
     semesterService.list().then(setSemesters).catch(() => setSemesters([]));
     enumService.getOptions().then(setEnumOptions).catch(() => setEnumOptions(null));
-  }, []);
+  }, [isAdmin]);
 
   const resetKey = search;
 
+  // For registrar: combine regular + irregular students into a unified list for "All" view
+  const allStudentsForRegistrar = useMemo(() => {
+    if (isAdmin || !regularStudents || !irregularStudents) return null;
+    // Map regular students to a common shape
+    const regularMapped: StudentAccountRow[] = regularStudents.map((s) => ({
+      studentProfileId: s.studentProfileId,
+      studentId: s.studentId,
+      firstName: s.firstName,
+      midName: s.midName,
+      lastName: s.lastName,
+      mobile: s.mobile,
+      email: s.email,
+      hasAccount: false,
+      academics: [],
+    }));
+    // Map irregular students to a common shape (they use studentName instead of firstName/lastName)
+    const irregularMapped: StudentAccountRow[] = irregularStudents.map((s) => ({
+      studentProfileId: s.studentProfileId,
+      studentId: s.studentId,
+      firstName: s.studentName.split(" ").slice(0, -1).join(" ") || s.studentName,
+      midName: null,
+      lastName: s.studentName.split(" ").slice(-1)[0] || "",
+      mobile: null,
+      email: s.email,
+      hasAccount: false,
+      academics: [],
+    }));
+    return [...regularMapped, ...irregularMapped];
+  }, [isAdmin, regularStudents, irregularStudents]);
+
   const visibleStudents = useMemo(() => {
-    if (!studentList) return [];
+    // For admin: use studentList from super-admin endpoint
+    if (isAdmin) {
+      if (!studentList) return [];
+      const query = search.trim().toLowerCase();
+      return studentList
+        .filter((s) => {
+          if (
+            query &&
+            !(s.firstName ?? "").toLowerCase().includes(query) &&
+            !(s.lastName ?? "").toLowerCase().includes(query) &&
+            !(s.studentId ?? "").toLowerCase().includes(query) &&
+            !(s.email ?? "").toLowerCase().includes(query)
+          ) {
+            return false;
+          }
+          return true;
+        })
+        .sort((a, b) => (a.lastName ?? "").localeCompare(b.lastName ?? "") || (a.firstName ?? "").localeCompare(b.firstName ?? ""));
+    }
+    // For registrar: use combined list from regular + irregular endpoints
+    if (!allStudentsForRegistrar) return [];
     const query = search.trim().toLowerCase();
-    return studentList
+    return allStudentsForRegistrar
       .filter((s) => {
         if (
           query &&
@@ -131,7 +189,7 @@ export function StudentsPage() {
         return true;
       })
       .sort((a, b) => (a.lastName ?? "").localeCompare(b.lastName ?? "") || (a.firstName ?? "").localeCompare(b.firstName ?? ""));
-  }, [studentList, search]);
+  }, [isAdmin, studentList, allStudentsForRegistrar, search]) as StudentAccountRow[];
 
   const visibleRegularStudents = useMemo(() => {
     if (!regularStudents) return [];
@@ -273,6 +331,29 @@ export function StudentsPage() {
       });
   }, [activeView, irregularStudents]);
 
+  // For registrar: fetch both regular and irregular on mount for the "All" view.
+  useEffect(() => {
+    if (isAdmin) return;
+    if (regularStudents === null) {
+      regularClassService
+        .listStudents()
+        .then(setRegularStudents)
+        .catch((err) => {
+          setRegularLoadError(err instanceof Error ? err.message : "Unable to load regular students.");
+          setRegularStudents([]);
+        });
+    }
+    if (irregularStudents === null) {
+      irregularClassService
+        .listStudents()
+        .then(setIrregularStudents)
+        .catch((err) => {
+          setIrregularLoadError(err instanceof Error ? err.message : "Unable to load irregular students.");
+          setIrregularStudents([]);
+        });
+    }
+  }, [isAdmin, regularStudents, irregularStudents]);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
@@ -328,40 +409,82 @@ export function StudentsPage() {
             </div>
           </div>
 
-          {loadError ? (
-            <ResultState tone="error" title="Unable to load">
-              {loadError}
-            </ResultState>
-          ) : studentList === null ? (
-            <div
-              role="status"
-              aria-label="Loading students"
-              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-            >
-              <Spinner />
-            </div>
-          ) : visibleStudents.length === 0 ? (
-            <EmptyState title="No students found">
-              No students match the current filters.
-            </EmptyState>
+          {isAdmin ? (
+            // Admin view: uses super-admin endpoint with account info
+            loadError ? (
+              <ResultState tone="error" title="Unable to load">
+                {loadError}
+              </ResultState>
+            ) : studentList === null ? (
+              <div
+                role="status"
+                aria-label="Loading students"
+                className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+              >
+                <Spinner />
+              </div>
+            ) : visibleStudents.length === 0 ? (
+              <EmptyState title="No students found">
+                No students match the current filters.
+              </EmptyState>
+            ) : (
+              <>
+                <StudentAccountTable
+                  students={pagination.pageItems}
+                  accountActiveById={accountActiveById}
+                  onCreateAccount={setAccountTarget}
+                  onView={setViewTarget}
+                  onEnroll={setEnrollTarget}
+                  onDeactivateAccount={setDeactivateAccountTarget}
+                  onReactivateAccount={setReactivateAccountTarget}
+                />
+                <Pagination
+                  page={pagination.page}
+                  totalItems={pagination.totalItems}
+                  pageSize={pagination.pageSize}
+                  onPageChange={pagination.setPage}
+                />
+              </>
+            )
           ) : (
-            <>
+            // Registrar view: combined regular + irregular
+            (regularStudents === null || irregularStudents === null) ? (
+              <div
+                role="status"
+                aria-label="Loading students"
+                className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+              >
+                <Spinner />
+              </div>
+            ) : (regularLoadError || irregularLoadError) ? (
+              <ResultState tone="error" title="Unable to load">
+                {regularLoadError || irregularLoadError}
+              </ResultState>
+            ) : visibleStudents.length === 0 ? (
+              <EmptyState title="No students found">
+                No students match the current filters.
+              </EmptyState>
+            ) : (
               <StudentAccountTable
-                students={pagination.pageItems}
-                accountActiveById={accountActiveById}
-                onCreateAccount={setAccountTarget}
+                students={visibleStudents.map((s) => ({
+                  studentProfileId: s.studentProfileId,
+                  studentId: s.studentId,
+                  firstName: s.firstName,
+                  midName: null,
+                  lastName: s.lastName,
+                  mobile: null,
+                  email: s.email,
+                  hasAccount: false,
+                  academics: [],
+                }))}
+                accountActiveById={{}}
+                onCreateAccount={null}
                 onView={setViewTarget}
                 onEnroll={setEnrollTarget}
-                onDeactivateAccount={setDeactivateAccountTarget}
-                onReactivateAccount={setReactivateAccountTarget}
+                onDeactivateAccount={null}
+                onReactivateAccount={null}
               />
-              <Pagination
-                page={pagination.page}
-                totalItems={pagination.totalItems}
-                pageSize={pagination.pageSize}
-                onPageChange={pagination.setPage}
-              />
-            </>
+            )
           )}
         </div>
       ) : activeView === "regular" ? (
@@ -447,8 +570,9 @@ export function StudentsPage() {
       <Modal open={createOpen} onClose={closeCreate} title="New Student" wide={!createdRecord}>
         {createdRecord ? (
           <SuccessDone title="Student registered" onDone={closeCreate}>
-            The student record was created. Use “Create Account” on the student’s row to set
-            up their login.
+            {isAdmin
+              ? 'The student record was created. Use "Create Account" on the student\'s row to set up their login.'
+              : "The student record was created."}
           </SuccessDone>
         ) : (
           <StudentRecordForm
@@ -465,25 +589,27 @@ export function StudentsPage() {
         )}
       </Modal>
 
-      <Modal
-        open={accountTarget !== null}
-        onClose={closeAccountModal}
-        title="Create Student Account"
-      >
-        {createdEmail ? (
-          <SuccessDone title="Account created" onDone={closeAccountModal}>
-            Login credentials with a temporary password were emailed to {createdEmail}.
-          </SuccessDone>
-        ) : (
-          accountTarget && (
-            <StudentAccountForm
-              student={accountTarget}
-              onSubmit={handleCreateAccount}
-              onCancel={closeAccountModal}
-            />
-          )
-        )}
-      </Modal>
+      {isAdmin && (
+        <Modal
+          open={accountTarget !== null}
+          onClose={closeAccountModal}
+          title="Create Student Account"
+        >
+          {createdEmail ? (
+            <SuccessDone title="Account created" onDone={closeAccountModal}>
+              Login credentials with a temporary password were emailed to {createdEmail}.
+            </SuccessDone>
+          ) : (
+            accountTarget && (
+              <StudentAccountForm
+                student={accountTarget}
+                onSubmit={handleCreateAccount}
+                onCancel={closeAccountModal}
+              />
+            )
+          )}
+        </Modal>
+      )}
 
       <Modal
         open={viewTarget !== null}
@@ -523,34 +649,38 @@ export function StudentsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deactivateAccountTarget !== null}
-        onClose={() => setDeactivateAccountTarget(null)}
-        title="Deactivate account"
-        confirmLabel="Deactivate"
-        loadingLabel="Deactivating…"
-        confirmVariant="danger"
-        onConfirm={() => handleDeactivateAccount(deactivateAccountTarget!)}
-      >
-        <span className="font-medium text-navy-700 dark:text-mist-100">
-          {deactivateAccountTarget?.firstName} {deactivateAccountTarget?.lastName}
-        </span>{" "}
-        will no longer be able to log in. Their student record is kept.
-      </ConfirmDialog>
+      {isAdmin && (
+        <>
+          <ConfirmDialog
+            open={deactivateAccountTarget !== null}
+            onClose={() => setDeactivateAccountTarget(null)}
+            title="Deactivate account"
+            confirmLabel="Deactivate"
+            loadingLabel="Deactivating…"
+            confirmVariant="danger"
+            onConfirm={() => handleDeactivateAccount(deactivateAccountTarget!)}
+          >
+            <span className="font-medium text-navy-700 dark:text-mist-100">
+              {deactivateAccountTarget?.firstName} {deactivateAccountTarget?.lastName}
+            </span>{" "}
+            will no longer be able to log in. Their student record is kept.
+          </ConfirmDialog>
 
-      <ConfirmDialog
-        open={reactivateAccountTarget !== null}
-        onClose={() => setReactivateAccountTarget(null)}
-        title="Reactivate account"
-        confirmLabel="Reactivate"
-        loadingLabel="Reactivating…"
-        onConfirm={() => handleReactivateAccount(reactivateAccountTarget!)}
-      >
-        <span className="font-medium text-navy-700 dark:text-mist-100">
-          {reactivateAccountTarget?.firstName} {reactivateAccountTarget?.lastName}
-        </span>{" "}
-        will be able to log in again.
-      </ConfirmDialog>
+          <ConfirmDialog
+            open={reactivateAccountTarget !== null}
+            onClose={() => setReactivateAccountTarget(null)}
+            title="Reactivate account"
+            confirmLabel="Reactivate"
+            loadingLabel="Reactivating…"
+            onConfirm={() => handleReactivateAccount(reactivateAccountTarget!)}
+          >
+            <span className="font-medium text-navy-700 dark:text-mist-100">
+              {reactivateAccountTarget?.firstName} {reactivateAccountTarget?.lastName}
+            </span>{" "}
+            will be able to log in again.
+          </ConfirmDialog>
+        </>
+      )}
     </div>
   );
 }
