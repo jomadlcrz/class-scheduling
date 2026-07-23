@@ -1,3 +1,4 @@
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { FacultyLoadingEntry } from "~/types/faculty-load";
 import type { ScheduleSemester } from "~/types/schedule";
 import type { Semester } from "~/types/semester";
@@ -51,9 +52,6 @@ function flattenRows(entry: FacultyLoadingEntry) {
 
   return rows;
 }
-
-const selectClassName =
-  "w-full appearance-none border-0 bg-transparent bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%230f1e3c%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_4px_center] bg-no-repeat px-3 py-1.5 pr-6 font-body text-xs text-navy-700 focus:outline-none dark:text-mist-200 dark:stroke-mist-200";
 
 /** Document-style faculty loading view matching the official letterhead layout. */
 export function FacultyScheduleView({
@@ -109,20 +107,27 @@ export function FacultyScheduleView({
             <td className="w-[12%] border border-slate-300 px-3 py-1.5 font-bold text-navy-800 dark:border-white/15 dark:text-mist-100">
               SEMESTER
             </td>
-            <td className="w-[38%] border border-slate-300 p-0 dark:border-white/15">
-              <select
-                className={selectClassName}
-                value={String(semester)}
-                onChange={(e) => onSemesterChange(Number(e.target.value) as ScheduleSemester)}
-              >
-                {semesters
+            <td className="w-[38%] border border-slate-300 px-1 py-0.5 dark:border-white/15">
+              <Select
+                items={semesters
                   .filter((s) => s.semesterNumber !== 3)
-                  .map((s) => (
-                    <option key={s.id} value={String(s.semesterNumber)}>
-                      {semesterLabel(s.semesterNumber)}
-                    </option>
-                  ))}
-              </select>
+                  .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))}
+                value={String(semester)}
+                onValueChange={(v) => onSemesterChange(Number(v) as ScheduleSemester)}
+              >
+                <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {semesters
+                    .filter((s) => s.semesterNumber !== 3)
+                    .map((s) => (
+                      <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                        {semesterLabel(s.semesterNumber)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </td>
           </tr>
           <tr>
@@ -135,18 +140,23 @@ export function FacultyScheduleView({
             <td className="border border-slate-300 px-3 py-1.5 font-bold text-navy-800 dark:border-white/15 dark:text-mist-100">
               ACADEMIC YEAR
             </td>
-            <td className="border border-slate-300 p-0 dark:border-white/15">
-              <select
-                className={selectClassName}
+            <td className="border border-slate-300 px-1 py-0.5 dark:border-white/15">
+              <Select
+                items={schoolYears.map((y) => ({ value: y, label: y }))}
                 value={schoolYear}
-                onChange={(e) => onSchoolYearChange(e.target.value)}
+                onValueChange={(v) => onSchoolYearChange(v as string)}
               >
-                {schoolYears.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {schoolYears.map((y) => (
+                    <SelectItem key={y} value={y}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </td>
           </tr>
         </tbody>
