@@ -183,9 +183,16 @@ async function restore(id: number): Promise<string> {
   return apiMessage(data);
 }
 
+/** POST /roles — create multiple roles in bulk (JSON array body). */
+async function createRoleBulk(input: { roleName: string }[]): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/roles", input);
+  return apiMessage(data);
+}
+
 export const permissionService = {
   list,
   create,
+  createRoleBulk,
   createPermission,
   createPermissionBulk,
   listCatalog,
