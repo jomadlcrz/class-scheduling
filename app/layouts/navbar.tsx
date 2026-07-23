@@ -268,9 +268,6 @@ function firstName(name: string): string {
 
 function initials(name: string): string {
   return name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+    .split(" ")[0]?.[0]
+    ?.toUpperCase() ?? "";
 }

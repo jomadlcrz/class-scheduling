@@ -13,7 +13,7 @@ export function ProfileSettings() {
 
   if (!user) return null;
 
-  const initials = `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase();
+  const initials = `${user.firstName[0] ?? ""}`.toUpperCase();
 
   return (
     <div>
