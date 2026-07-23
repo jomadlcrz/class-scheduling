@@ -684,9 +684,9 @@ export function UserSmallIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-export function ClockIcon({ size = 14 }: { size?: number }) {
+export function AuditLogIcon() {
   return (
-    <IconBase size={size}>
+    <IconBase>
       <path d="M9 5H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" />
       <path d="M9 3h6v4H9z" />
       <path d="M9 12h4" />
@@ -694,6 +694,15 @@ export function ClockIcon({ size = 14 }: { size?: number }) {
       <path d="M20 4a4 4 0 1 1-3.5 2" />
       <path d="M20 2v4h-4" />
       <path d="M20 4v2l-1.5 1" />
+    </IconBase>
+  );
+}
+
+export function ClockIcon({ size = 14 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15.5 14" />
     </IconBase>
   );
 }

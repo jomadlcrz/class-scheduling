@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router";
 import {
+  AuditLogIcon,
   BlocksIcon,
   BookmarkIcon,
   BookOpenIcon,
@@ -82,7 +83,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Administration",
     items: [
       { label: "Roles & Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
-      { label: "Audit Log", to: "/audit", icon: <ClockIcon />, roles: ["admin"] },
+      { label: "Audit Log", to: "/audit", icon: <AuditLogIcon />, roles: ["admin"] },
     ],
   },
 ];
