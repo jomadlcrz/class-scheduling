@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
+import { motion } from "motion/react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { DownloadIcon, UploadIcon } from "~/components/ui/icons";
@@ -63,7 +64,10 @@ export function StudentImportForm({ onSubmit, onCreateAccounts, onCancel }: Stud
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ImportStudentResponse | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isHover, setIsHover] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dragCounter = useRef(0);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -112,6 +116,42 @@ export function StudentImportForm({ onSubmit, onCreateAccounts, onCancel }: Stud
     walk(errors, "");
     return parts.join("; ") || "—";
   }
+
+  function handleDragEnter(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.types.includes("Files")) setIsDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragOver(false);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current = 0;
+    setIsDragOver(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) {
+      const ext = dropped.name.split(".").pop()?.toLowerCase();
+      if (ext === "csv" || ext === "xlsx") {
+        setFile(dropped);
+        setError(null);
+      } else {
+        setError("Only .csv and .xlsx files are accepted.");
+      }
+    }
+  }, []);
 
   if (result) {
     return (
@@ -217,21 +257,60 @@ export function StudentImportForm({ onSubmit, onCreateAccounts, onCancel }: Stud
         Download CSV template
       </button>
 
-      <button
-        type="button"
+      <motion.div
+        role="button"
+        tabIndex={0}
         onClick={() => inputRef.current?.click()}
-        className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-6 transition-colors duration-150 hover:border-navy-400 hover:bg-slate-100 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/30 dark:hover:bg-white/10"
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputRef.current?.click(); } }}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onHoverStart={() => setIsHover(true)}
+        onHoverEnd={() => setIsHover(false)}
+        className={`relative flex cursor-pointer flex-col items-center gap-2 overflow-hidden rounded-lg border-2 border-dotted p-6 transition-colors duration-150 ${
+          isDragOver
+            ? "border-transparent bg-navy-50/50 dark:bg-navy-950/50"
+            : isHover
+              ? "border-navy-400 bg-slate-100 dark:border-white/30 dark:bg-white/10"
+              : "border-slate-300 bg-slate-50 dark:border-white/15 dark:bg-white/5"
+        }`}
       >
-        <UploadIcon size={24} />
-        <span className="font-body text-sm text-slate-600 dark:text-slate-300">
-          {file ? file.name : "Click to select a file"}
+        {isDragOver && (
+          <svg
+            className="pointer-events-none absolute inset-0 size-full"
+            aria-hidden="true"
+          >
+            <motion.rect
+              x="1" y="1"
+              width="calc(100% - 2px)" height="calc(100% - 2px)"
+              rx="7" ry="7"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeDasharray="8 8"
+              className="text-navy-500 dark:text-gold-400"
+              animate={{ strokeDashoffset: [0, -16] }}
+              transition={{ duration: 0.4, repeat: Infinity, ease: "linear" }}
+            />
+          </svg>
+        )}
+        <motion.div
+          animate={isDragOver ? { y: -4, scale: 1.15 } : { y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 500, damping: 20 }}
+          className="relative z-10"
+        >
+          <UploadIcon size={28} />
+        </motion.div>
+        <span className="relative z-10 font-body text-sm text-slate-600 dark:text-slate-300">
+          {file ? file.name : isDragOver ? "Drop file here" : "Click or drag a file here"}
         </span>
         {file && (
-          <span className="font-body text-xs text-slate-400 dark:text-slate-500">
+          <span className="relative z-10 font-body text-xs text-slate-400 dark:text-slate-500">
             {(file.size / 1024).toFixed(1)} KB
           </span>
         )}
-      </button>
+      </motion.div>
       <input
         ref={inputRef}
         type="file"
@@ -239,12 +318,6 @@ export function StudentImportForm({ onSubmit, onCreateAccounts, onCancel }: Stud
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         className="hidden"
       />
-
-      <p className="font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-        Required columns: firstName, lastName, mobile, email, programId, yearLevel, enrolledStatus
-        (REGULAR / IRREGULAR), studentType (NEW_STUDENT / TRANSFEREE / RETURNEE / CONTINUING_STUDENT),
-        syId, semId. Use IDs from the system — see the template for examples.
-      </p>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
