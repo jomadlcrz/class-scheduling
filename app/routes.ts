@@ -28,6 +28,7 @@ export default [
     route("deans", "routes/app/deans.tsx"),
     route("dean/subjects", "routes/app/dean-subjects.tsx"),
     route("dean/instructors", "routes/app/dean-instructors.tsx"),
+    route("dean/subject-assignments", "routes/app/dean-subject-assignments.tsx"),
     route("faculty", "routes/app/faculty.tsx"),
     route("faculty-loads", "routes/app/faculty-loads.tsx"),
     route("schedules", "routes/app/schedules/index.tsx"),

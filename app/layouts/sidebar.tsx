@@ -75,6 +75,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "My Department",
     items: [
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
+      { label: "Subject Assignments", to: "/dean/subject-assignments", icon: <BookmarkIcon />, roles: ["dean"] },
       { label: "Department Subjects", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
       { label: "Department Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
     ],
