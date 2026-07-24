@@ -185,12 +185,13 @@ export function StudentRecordForm({
             id="student-mobile"
             label="Mobile Number"
             type="text"
-            inputMode="tel"
-            maxLength={16}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={11}
             required
             placeholder="Enter mobile number"
             onInput={(e) => {
-              e.currentTarget.value = e.currentTarget.value.replace(/(?!^\+)[^0-9]/g, "").slice(0, 16);
+              e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 11);
             }}
           />
 

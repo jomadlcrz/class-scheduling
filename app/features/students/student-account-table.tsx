@@ -50,7 +50,7 @@ export function StudentAccountTable({
           return (
           <TableRow key={student.studentProfileId}>
             <TableCell className="text-slate-600 dark:text-slate-300">
-              {student.studentId}
+              {student.studentId ?? "—"}
             </TableCell>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">
