@@ -81,14 +81,6 @@ export function DeanSubjectAssignmentForm({
     );
   }
 
-  function addProgram() {
-    setProgramSelections((prev) => [...prev, { programAbbrev: "", subjectCodes: [] }]);
-  }
-
-  function removeProgram(index: number) {
-    setProgramSelections((prev) => prev.filter((_, i) => i !== index));
-  }
-
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -200,10 +192,10 @@ export function DeanSubjectAssignmentForm({
             />
           </div>
 
-          {/* Program sections */}
+          {/* Program section */}
           <div className="flex flex-col gap-3">
             <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
-              Programs &amp; Subjects
+              Program &amp; Subjects
             </p>
 
             {programSelections.map((sel, idx) => {
@@ -222,8 +214,7 @@ export function DeanSubjectAssignmentForm({
                   key={idx}
                   className="rounded-lg border border-slate-200 p-3 dark:border-white/10"
                 >
-                  <div className="flex items-end gap-2">
-                    <div className="flex-1 flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-1.5">
                       <label className="font-body text-xs font-medium text-slate-500 dark:text-slate-400">
                         Program
                       </label>
@@ -247,16 +238,6 @@ export function DeanSubjectAssignmentForm({
                         </SelectContent>
                       </Select>
                     </div>
-                    {programSelections.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeProgram(idx)}
-                        className="mb-0.5 rounded px-2 py-1.5 font-body text-xs text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-red-400/10 dark:hover:text-red-400"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
 
                   {allSubjects.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
@@ -288,14 +269,6 @@ export function DeanSubjectAssignmentForm({
                 </div>
               );
             })}
-
-            <button
-              type="button"
-              onClick={addProgram}
-              className="self-start rounded-lg border border-dashed border-slate-300 px-3 py-1.5 font-body text-xs font-medium text-slate-500 transition-colors hover:border-navy-800 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-400 dark:hover:border-white dark:hover:text-white"
-            >
-              + Add Program
-            </button>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
