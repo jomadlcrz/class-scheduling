@@ -117,6 +117,37 @@ export function apiDelete<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "DELETE", body);
 }
 
+/** POST a FormData (file upload) — lets the browser set the multipart boundary. */
+export async function apiUpload<T>(endpoint: string, formData: FormData): Promise<T> {
+  const token = loadSession()?.token;
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
+  let response: Response;
+  try {
+    response = await fetch(resolveApiUrl(endpoint), {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  } catch {
+    throw new ApiError("Unable to reach the server. Check your connection and try again.", 0);
+  }
+
+  const data = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+
+  if (!response.ok) {
+    if (response.status === 401 && token) clearSession();
+    const message =
+      firstMessage(data?.error) ??
+      firstMessage(data?.errors) ??
+      firstMessage(data?.message) ??
+      "Something went wrong. Please try again.";
+    throw new ApiError(message, response.status, data);
+  }
+
+  return data as T;
+}
+
 const toSnakeKey = (value: string): string =>
   value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 

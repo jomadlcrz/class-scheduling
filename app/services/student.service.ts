@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
@@ -239,6 +239,29 @@ async function reactivateAccount(studentProfileId: number): Promise<string> {
   return apiMessage(data);
 }
 
+export type ImportStudentResult = {
+  row: number;
+  student_id?: string;
+  status: "created" | "error";
+  message?: string;
+  errors?: Record<string, unknown>;
+};
+
+export type ImportStudentResponse = {
+  total: number;
+  created: number;
+  failed: number;
+  message?: string;
+  results: ImportStudentResult[];
+};
+
+/** POST /students/import — uploads a .csv or .xlsx file. */
+async function importRecords(file: File): Promise<ImportStudentResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiUpload<ImportStudentResponse>("/students/import", formData);
+}
+
 export const studentService = {
   createRecord,
   createAccount,
@@ -253,4 +276,5 @@ export const studentService = {
   getAccount,
   deactivateAccount,
   reactivateAccount,
+  importRecords,
 };

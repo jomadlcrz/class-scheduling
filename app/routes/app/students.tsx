@@ -7,7 +7,7 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { SuccessDone } from "~/components/feedback/success-done";
-import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { PlusIcon, SearchIcon, UploadIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
@@ -16,6 +16,7 @@ import { StudentAccountForm } from "~/features/students/student-account-form";
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
 import { StudentEnrollForm } from "~/features/students/student-enroll-form";
+import { StudentImportForm } from "~/features/students/student-import-form";
 import { StudentRecordForm } from "~/features/students/student-record-form";
 import { RegularStudentTable } from "~/features/students/regular-student-table";
 import { IrregularStudentTable } from "~/features/students/irregular-student-table";
@@ -87,6 +88,7 @@ export function StudentsPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdRecord, setCreatedRecord] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [accountTarget, setAccountTarget] = useState<StudentAccountRow | null>(null);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
@@ -268,6 +270,35 @@ export function StudentsPage() {
     setCreatedRecord(false);
   }
 
+  async function handleImport(file: File) {
+    const res = await studentService.importRecords(file);
+    refreshStudentList();
+    return res;
+  }
+
+  async function handleCreateAccounts(studentIds: string[]) {
+    const list = studentList ?? [];
+    const matched = list.filter((s) => s.studentId && studentIds.includes(s.studentId));
+    if (matched.length === 0) {
+      toast.error("No matching student records found. Try refreshing the page.");
+      return;
+    }
+    let created = 0;
+    for (const student of matched) {
+      try {
+        await studentService.createAccount(student.studentProfileId, {
+          email: student.email ?? "",
+          roleName: "Student",
+        });
+        created++;
+      } catch {
+        // skip individual failures
+      }
+    }
+    if (created > 0) toast.success(`Created ${created} account${created > 1 ? "s" : ""}.`);
+    studentService.listAccounts().then(setStudentList).catch(() => {});
+  }
+
   async function handleCreateAccount(input: CreateStudentAccountInput) {
     if (!accountTarget) return;
     const message = await studentService.createAccount(accountTarget.studentProfileId, input);
@@ -360,10 +391,16 @@ export function StudentsPage() {
         title="Students"
         description="Student records and their login accounts."
         actions={
-          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
-            <PlusIcon />
-            New Student
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" block={false} onClick={() => setImportOpen(true)}>
+              <UploadIcon />
+              Import
+            </Button>
+            <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
+              <PlusIcon />
+              New Student
+            </Button>
+          </div>
         }
       />
 
@@ -587,6 +624,14 @@ export function StudentsPage() {
             onCancel={closeCreate}
           />
         )}
+      </Modal>
+
+      <Modal open={importOpen} onClose={() => setImportOpen(false)} title="Import Students" wide>
+        <StudentImportForm
+          onSubmit={handleImport}
+          onCreateAccounts={handleCreateAccounts}
+          onCancel={() => setImportOpen(false)}
+        />
       </Modal>
 
       {isAdmin && (
