@@ -124,6 +124,12 @@ export function StudentsPage() {
 
   const resetKey = search;
 
+  // Admin-only: lookup map from studentProfileId → hasAccount (built from super-admin endpoint)
+  const accountLookup = useMemo(() => {
+    if (!isAdmin || !studentList) return undefined;
+    return Object.fromEntries(studentList.map((s) => [s.studentProfileId, s.hasAccount]));
+  }, [isAdmin, studentList]);
+
   // For registrar: combine regular + irregular students into a unified list for "All" view
   const allStudentsForRegistrar = useMemo(() => {
     if (isAdmin || !regularStudents || !irregularStudents) return null;
@@ -143,10 +149,10 @@ export function StudentsPage() {
     const irregularMapped: StudentAccountRow[] = irregularStudents.map((s) => ({
       studentProfileId: s.studentProfileId,
       studentId: s.studentId,
-      firstName: s.studentName.split(" ").slice(0, -1).join(" ") || s.studentName,
-      midName: null,
-      lastName: s.studentName.split(" ").slice(-1)[0] || "",
-      mobile: null,
+      firstName: s.firstName,
+      midName: s.midName,
+      lastName: s.lastName,
+      mobile: s.mobile,
       email: s.email,
       hasAccount: false,
       academics: [],
@@ -253,6 +259,60 @@ export function StudentsPage() {
       cancelled = true;
     };
   }, [pageAccountIds]);
+
+  // Admin: fetch account-active status for regular students on the regular tab
+  const regularAccountIds = useMemo(() => {
+    if (!isAdmin || activeView !== "regular" || !accountLookup || !visibleRegularStudents) return "";
+    return visibleRegularStudents
+      .filter((s) => accountLookup[s.studentProfileId])
+      .map((s) => s.studentProfileId)
+      .join(",");
+  }, [isAdmin, activeView, accountLookup, visibleRegularStudents]);
+
+  useEffect(() => {
+    if (!regularAccountIds) return;
+    const ids = regularAccountIds.split(",").map(Number);
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        studentService
+          .getAccount(id)
+          .then((detail) => [id, detail.accountActive ?? true] as const)
+          .catch(() => [id, true] as const),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      setAccountActiveById((current) => ({ ...current, ...Object.fromEntries(results) }));
+    });
+    return () => { cancelled = true; };
+  }, [regularAccountIds]);
+
+  // Admin: fetch account-active status for irregular students on the irregular tab
+  const irregularAccountIds = useMemo(() => {
+    if (!isAdmin || activeView !== "irregular" || !accountLookup || !visibleIrregularStudents) return "";
+    return visibleIrregularStudents
+      .filter((s) => accountLookup[s.studentProfileId])
+      .map((s) => s.studentProfileId)
+      .join(",");
+  }, [isAdmin, activeView, accountLookup, visibleIrregularStudents]);
+
+  useEffect(() => {
+    if (!irregularAccountIds) return;
+    const ids = irregularAccountIds.split(",").map(Number);
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        studentService
+          .getAccount(id)
+          .then((detail) => [id, detail.accountActive ?? true] as const)
+          .catch(() => [id, true] as const),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      setAccountActiveById((current) => ({ ...current, ...Object.fromEntries(results) }));
+    });
+    return () => { cancelled = true; };
+  }, [irregularAccountIds]);
 
   function refreshStudentList() {
     studentService.listAccounts().then(setStudentList).catch(() => {});
@@ -560,7 +620,40 @@ export function StudentsPage() {
               No students match the current filters.
             </EmptyState>
           ) : (
-            <RegularStudentTable students={visibleRegularStudents} />
+            <RegularStudentTable
+              students={visibleRegularStudents}
+              onView={(s) =>
+                setViewTarget({
+                  studentProfileId: s.studentProfileId,
+                  studentId: s.studentId,
+                  firstName: s.firstName,
+                  midName: s.midName,
+                  lastName: s.lastName,
+                  mobile: s.mobile,
+                  email: s.email,
+                  hasAccount: false,
+                  academics: s.academics,
+                })
+              }
+              onEnroll={(s) =>
+                setEnrollTarget({
+                  studentProfileId: s.studentProfileId,
+                  studentId: s.studentId,
+                  firstName: s.firstName,
+                  midName: s.midName,
+                  lastName: s.lastName,
+                  mobile: s.mobile,
+                  email: s.email,
+                  hasAccount: false,
+                  academics: s.academics,
+                })
+              }
+              accountLookup={accountLookup}
+              accountActiveById={accountActiveById}
+              onCreateAccount={isAdmin ? setAccountTarget : null}
+              onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
+              onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
+            />
           )}
         </div>
       ) : (
@@ -599,7 +692,40 @@ export function StudentsPage() {
               No students match the current filters.
             </EmptyState>
           ) : (
-            <IrregularStudentTable students={visibleIrregularStudents} />
+            <IrregularStudentTable
+              students={visibleIrregularStudents}
+              onView={(s) =>
+                setViewTarget({
+                  studentProfileId: s.studentProfileId,
+                  studentId: s.studentId,
+                  firstName: s.firstName,
+                  midName: s.midName,
+                  lastName: s.lastName,
+                  mobile: s.mobile,
+                  email: s.email,
+                  hasAccount: false,
+                  academics: [],
+                })
+              }
+              onEnroll={(s) =>
+                setEnrollTarget({
+                  studentProfileId: s.studentProfileId,
+                  studentId: s.studentId,
+                  firstName: s.firstName,
+                  midName: s.midName,
+                  lastName: s.lastName,
+                  mobile: s.mobile,
+                  email: s.email,
+                  hasAccount: false,
+                  academics: [],
+                })
+              }
+              accountLookup={accountLookup}
+              accountActiveById={accountActiveById}
+              onCreateAccount={isAdmin ? setAccountTarget : null}
+              onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
+              onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
+            />
           )}
         </div>
       )}

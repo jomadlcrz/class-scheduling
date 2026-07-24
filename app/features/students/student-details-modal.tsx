@@ -109,11 +109,11 @@ export function StudentDetailsModal({ student, sets, academicStatuses }: Student
         </Card>
 
         {academics && academics.length > 0 && (
-          <div className="mt-3">
-            <Label>Enrolled Subjects</Label>
+          <div className="mt-2">
+            <SectionHeading>Enrolled Subjects</SectionHeading>
             {academics.some((a) => a.enrolledSubjects.length > 0) ? (
-              <div className="mt-1.5">
-                <Table>
+              <div className="mt-2">
+              <Table>
                 <TableHead>
                   <TableHeader>Code</TableHeader>
                   <TableHeader>Descriptive Title</TableHeader>
@@ -135,7 +135,7 @@ export function StudentDetailsModal({ student, sets, academicStatuses }: Student
               </Table>
               </div>
             ) : (
-              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 No enrolled subjects found.
               </p>
             )}
