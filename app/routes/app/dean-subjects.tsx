@@ -46,7 +46,7 @@ function DeanSubjectsPage() {
       .listDepartmentSubjects()
       .then((data) => {
         setSubjects(data);
-        if (data.length > 0) setSelectedProgram(data[0].programAbbrev);
+        if (data.length > 0) setSelectedProgram(data[0].programName);
       })
       .catch((err) => {
         setLoadError(err instanceof Error ? err.message : "Unable to load department subjects.");
@@ -54,12 +54,12 @@ function DeanSubjectsPage() {
       });
   }, []);
 
-  const currentProgram = subjects?.find((p) => p.programAbbrev === selectedProgram) ?? null;
+  const currentProgram = subjects?.find((p) => p.programName === selectedProgram) ?? null;
 
   const curriculum: ProgramCurriculum | null = useMemo(() => {
     if (!currentProgram) return null;
     return {
-      programCode: currentProgram.programAbbrev,
+      programCode: currentProgram.programAbbrev || currentProgram.programName,
       programName: currentProgram.programName,
       departmentCode: "",
       totalUnits: currentProgram.programTotalUnits,
@@ -70,7 +70,7 @@ function DeanSubjectsPage() {
           totalUnits: sem.semesterTotalUnits,
           subjects: sem.subjects.map((s) => ({
             id: s.subjectId,
-            program: currentProgram.programAbbrev,
+            program: currentProgram.programAbbrev || currentProgram.programName,
             yearLevel: year.yearLevel,
             semester: sem.semester,
             code: s.subjectCode,
@@ -123,16 +123,16 @@ function DeanSubjectsPage() {
             <div className="flex flex-wrap gap-2">
               {subjects.map((p) => (
                 <button
-                  key={p.programAbbrev}
+                  key={p.programName}
                   type="button"
-                  onClick={() => setSelectedProgram(p.programAbbrev)}
+                  onClick={() => setSelectedProgram(p.programName)}
                   className={`rounded-lg px-3 py-1.5 font-body text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                    selectedProgram === p.programAbbrev
+                    selectedProgram === p.programName
                       ? "bg-navy-800 text-white dark:bg-white dark:text-navy-900"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15"
                   }`}
                 >
-                  {p.programAbbrev}
+                  {p.programAbbrev || p.programName}
                 </button>
               ))}
             </div>
@@ -141,7 +141,7 @@ function DeanSubjectsPage() {
               <>
                 <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between">
                   <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in {currentProgram.programAbbrev}
+                    {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in {currentProgram.programAbbrev || currentProgram.programName}
                     {" — "}
                     {currentProgram.programTotalUnits} total units
                   </p>

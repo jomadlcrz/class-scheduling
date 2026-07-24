@@ -53,7 +53,7 @@ export type DepartmentSubjectYearGroup = {
   semesterDetails: DepartmentSubjectSemesterGroup[];
 };
 
-/** One program's curriculum tree for the dean's department, with the program abbrev joined in from programService. */
+/** One program's curriculum tree for the dean's department. `programName` comes from GET /deans/subjects; `programAbbrev` is resolved from GET /programs. */
 export type DepartmentSubjectProgram = {
   programAbbrev: string;
   programName: string;

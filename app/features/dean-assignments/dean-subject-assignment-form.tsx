@@ -221,7 +221,7 @@ export function DeanSubjectAssignmentForm({
                       <Select
                         items={availablePrograms.map((p) => ({
                           value: p.programAbbrev,
-                          label: p.programAbbrev,
+                          label: p.programName || p.programAbbrev,
                         }))}
                         value={sel.programAbbrev}
                         onValueChange={(v) => handleProgramChange(idx, v)}
@@ -232,7 +232,7 @@ export function DeanSubjectAssignmentForm({
                         <SelectContent>
                           {availablePrograms.map((p) => (
                             <SelectItem key={p.programAbbrev} value={p.programAbbrev}>
-                              {p.programAbbrev}
+                              {p.programName || p.programAbbrev}
                             </SelectItem>
                           ))}
                         </SelectContent>

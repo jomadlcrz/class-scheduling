@@ -4,6 +4,7 @@ import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { facultyLoadService } from "~/services/faculty-load.service";
+import { programService } from "~/services/program.service";
 import type {
   DepartmentSubjectProgram,
   FacultyLoadingEntry,
@@ -36,17 +37,21 @@ export function useDeanSubjectAssignments() {
     if (first) setSelectedSemesterId(String(first.id));
   }, [semesters, selectedSemesterId]);
 
-  // Fetch instructors + subjects once (term-independent)
+  // Fetch instructors + subjects + programs (term-independent)
   useEffect(() => {
     let cancelled = false;
     Promise.all([
       deanService.listDepartmentInstructors(),
       deanService.listDepartmentSubjects(),
-    ]).then(([inst, subj]) => {
-      if (!cancelled) {
-        setInstructors(inst);
-        setSubjects(subj);
-      }
+      programService.list().catch(() => [] as Awaited<ReturnType<typeof programService.list>>),
+    ]).then(([inst, subj, progs]) => {
+      if (cancelled) return;
+      const nameToAbbrev = new Map(progs.map((p) => [p.name, p.abbrev]));
+      setInstructors(inst);
+      setSubjects(subj.map((s) => ({
+        ...s,
+        programAbbrev: nameToAbbrev.get(s.programName) ?? "",
+      })));
     }).catch((err) => {
       if (!cancelled) {
         setLoadError(err instanceof Error ? err.message : "Unable to load department data.");

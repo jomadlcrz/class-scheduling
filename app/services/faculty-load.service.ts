@@ -84,7 +84,7 @@ async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
   }
 
   return data.map((program) => ({
-    programAbbrev: program.program_name,
+    programAbbrev: "",
     programName: program.program_name,
     programTotalUnits: Number(program.program_total_units),
     curriculumDetails: program.curriculum_details.map((year) => ({
