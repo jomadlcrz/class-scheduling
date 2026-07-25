@@ -75,12 +75,12 @@ function parseConflictSlot(text: string): {
 } | null {
   // "moving CODE (SET) from DAY START to DAY END (ROOM)"
   const moveMatch = text.match(
-    /moving\s+([A-Z]{2,4}\d{3,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s+to\s+\w+\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
+    /moving\s+([A-Z]{2,8}\d{1,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s+to\s+\w+\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
   );
   if (!moveMatch) {
     // Fallback: "moving CODE (SET) from DAY TIME (ROOM)" — no end time
     const simple = text.match(
-      /moving\s+([A-Z]{2,4}\d{3,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
+      /moving\s+([A-Z]{2,8}\d{1,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
     );
     if (!simple) return null;
     const dayKey = DAY_LABEL_TO_KEY[simple[3]];

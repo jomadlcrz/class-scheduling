@@ -5,7 +5,7 @@ import { scheduleService, type SlotDraft } from "~/services/schedule.service";
 import type { ScheduleSemester } from "~/types/schedule";
 import type { YearLevel } from "~/types/subject";
 
-const SUBJECT_CODE_RE = /\b([A-Z]{2,4}\d{3,4})\b/g;
+const SUBJECT_CODE_RE = /\b([A-Z]{2,8}\d{1,4})\b/g;
 
 function highlightSubjectCode(text: string) {
   const parts = text.split(SUBJECT_CODE_RE);

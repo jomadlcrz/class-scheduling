@@ -65,12 +65,14 @@ export function ScheduleContextForm({
         id="sn-school-year"
         label="School Year"
         labelEnd={
-          <Link
-            to="/academic-year"
-            className="font-body text-xs font-medium text-blue-700 hover:underline dark:text-blue-400"
-          >
-            + Add new
-          </Link>
+          schoolYears.length === 0 ? (
+            <Link
+              to="/academic-year"
+              className="font-body text-xs font-medium text-blue-700 hover:underline dark:text-blue-400"
+            >
+              + Add school year
+            </Link>
+          ) : undefined
         }
         hint={lockHint}
       >
