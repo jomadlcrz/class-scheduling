@@ -37,7 +37,7 @@ export function DeanSubjectAssignmentForm({
 }: DeanSubjectAssignmentFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [instructorKey, setInstructorKey] = useState("");
-  const [maxWeeklyHours, setMaxWeeklyHours] = useState("21");
+  const [maxWeeklyHours, setMaxWeeklyHours] = useState("");
   const [programSelections, setProgramSelections] = useState<ProgramSelection[]>([
     { programAbbrev: "", subjectCodes: [] },
   ]);
@@ -45,7 +45,7 @@ export function DeanSubjectAssignmentForm({
   function reset() {
     setError(null);
     setInstructorKey("");
-    setMaxWeeklyHours("21");
+    setMaxWeeklyHours("");
     setProgramSelections([{ programAbbrev: "", subjectCodes: [] }]);
   }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
@@ -6,10 +6,12 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { inputClassName } from "~/components/ui/input";
 import { SearchIcon } from "~/components/ui/icons";
+import { formatInstructorName } from "~/lib/faculty-load";
 import type { DepartmentInstructor } from "~/services/dean.service";
 import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-assignment-toolbar";
 import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
 import { PageHeader } from "~/layouts/page-header";
+import type { FacultyLoadingEntry } from "~/types/faculty-load";
 
 type InstructorState = { hours: string; selected: Set<string> };
 const keyFor = (instructor: DepartmentInstructor) => `${instructor.firstName}|${instructor.lastName}`;
@@ -18,8 +20,51 @@ export function BulkSubjectAssignment() {
   const data = useDeanSubjectAssignments(); const navigate = useNavigate();
   const [search, setSearch] = useState(""); const [states, setStates] = useState<Record<string, InstructorState>>({});
   const [subjectSearch, setSubjectSearch] = useState("");
-  const stateFor = (instructor: DepartmentInstructor) => states[keyFor(instructor)] ?? { hours: "15", selected: new Set<string>() };
-  const update = (instructor: DepartmentInstructor, fn: (value: InstructorState) => InstructorState) => setStates((all) => ({ ...all, [keyFor(instructor)]: fn(all[keyFor(instructor)] ?? { hours: "15", selected: new Set<string>() }) }));
+  const seededTermRef = useRef("");
+
+  // Seed states from existing faculty loading when the term changes.
+  useEffect(() => {
+    const termKey = `${data.selectedSchoolYearId}|${data.selectedSemesterId}`;
+    if (termKey === seededTermRef.current) return;
+    if (!data.entries || !data.instructors || !data.subjects) return;
+    seededTermRef.current = termKey;
+
+    const entryByName = new Map<string, FacultyLoadingEntry>();
+    for (const entry of data.entries) {
+      entryByName.set(entry.instructorName, entry);
+    }
+
+    const next: Record<string, InstructorState> = {};
+    for (const instructor of data.instructors) {
+      const fullName = formatInstructorName(instructor);
+      const entry = entryByName.get(fullName);
+      if (!entry) {
+        next[keyFor(instructor)] = { hours: "", selected: new Set() };
+        continue;
+      }
+
+      const selected = new Set<string>();
+      for (const subject of entry.subjects) {
+        for (const program of data.subjects!) {
+          const allSubjects = program.curriculumDetails.flatMap((y) => y.semesterDetails.flatMap((s) => s.subjects));
+          if (allSubjects.some((s) => s.subjectCode === subject.subjectCode)) {
+            selected.add(`${program.programAbbrev || program.programName}:${subject.subjectCode}`);
+            break;
+          }
+        }
+      }
+
+      next[keyFor(instructor)] = {
+        hours: entry.maxWeeklyHours != null ? String(entry.maxWeeklyHours) : "",
+        selected,
+      };
+    }
+
+    setStates(next);
+  }, [data.entries, data.instructors, data.subjects, data.selectedSchoolYearId, data.selectedSemesterId]);
+
+  const stateFor = (instructor: DepartmentInstructor) => states[keyFor(instructor)] ?? { hours: "", selected: new Set<string>() };
+  const update = (instructor: DepartmentInstructor, fn: (value: InstructorState) => InstructorState) => setStates((all) => ({ ...all, [keyFor(instructor)]: fn(all[keyFor(instructor)] ?? { hours: "", selected: new Set<string>() }) }));
   const instructors = (data.instructors ?? []).filter((instructor) => `${instructor.firstName} ${instructor.lastName} ${instructor.department}`.toLowerCase().includes(search.toLowerCase()));
   async function save() { const instructorLoads = (data.instructors ?? []).flatMap((instructor) => { const state = stateFor(instructor); const programs = (data.subjects ?? []).flatMap((program) => { const prefix = program.programAbbrev || program.programName; const subjects = program.curriculumDetails.flatMap((year) => year.semesterDetails.flatMap((semester) => semester.subjects)).filter((subject) => state.selected.has(`${prefix}:${subject.subjectCode}`)).map((subject) => ({ subjectCode: subject.subjectCode, descriptiveTitle: subject.descriptiveTitle })); return subjects.length ? [{ programAbbrev: program.programAbbrev, subjects }] : []; }); return programs.length && Number(state.hours) > 0 ? [{ firstName: instructor.firstName, lastName: instructor.lastName, maxWeeklyHours: Number(state.hours), programs }] : []; }); if (instructorLoads.length) { await data.createAssignments(instructorLoads); navigate("/dean/subject-assignments"); } }
   const loading = data.termsLoading || data.semestersLoading || data.instructors === null || data.subjects === null;
