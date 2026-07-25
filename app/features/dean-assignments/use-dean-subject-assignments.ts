@@ -4,6 +4,7 @@ import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { facultyLoadService } from "~/services/faculty-load.service";
+import { formatInstructorName } from "~/lib/faculty-load";
 import { programService } from "~/services/program.service";
 import type {
   DepartmentSubjectProgram,
@@ -86,6 +87,25 @@ export function useDeanSubjectAssignments() {
     const cleanup = refresh();
     return cleanup;
   }, [refresh]);
+
+  // Patch instructors' department with full names from entries (entries have department_name, instructors have department_abbrev)
+  useEffect(() => {
+    if (!entries || !instructors) return;
+    const nameToDept = new Map(entries.map((e) => [e.instructorName, e.department]));
+    setInstructors((prev) => {
+      if (!prev) return prev;
+      let changed = false;
+      const next = prev.map((i) => {
+        const full = nameToDept.get(formatInstructorName(i));
+        if (full && full !== i.department) {
+          changed = true;
+          return { ...i, department: full };
+        }
+        return i;
+      });
+      return changed ? next : prev;
+    });
+  }, [entries, instructors]);
 
   async function createAssignments(
     instructorLoads: {
