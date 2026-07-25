@@ -14,13 +14,6 @@ function highlightSubjectCode(text: string) {
   );
 }
 
-function extractSubjectCode(text: string): string | null {
-  const moveMatch = text.match(/\bmoving\s+([A-Z]{2,4}\d{3,4})\b/i);
-  if (moveMatch) return moveMatch[1];
-  const first = text.match(SUBJECT_CODE_RE);
-  return first?.[0] ?? null;
-}
-
 export function AutoGenerateIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -32,37 +25,34 @@ export function AutoGenerateIcon() {
 /** Subject-placement failures from the last auto-generate run. Render only when non-empty. */
 export function GenerationConflictsAlert({
   conflicts,
-  onEditSubject,
+  onEditConflict,
 }: {
   conflicts: string[];
-  onEditSubject?: (subjectCode: string) => void;
+  onEditConflict?: (conflict: string) => void;
 }) {
   return (
     <Alert variant="warning">
       <AlertTriangleIcon />
       <AlertDescription>
         <ul className="list-disc space-y-1 pl-4">
-          {conflicts.map((c, i) => {
-            const code = extractSubjectCode(c);
-            return (
-              <li key={i}>
-                {highlightSubjectCode(c)}
-                {code && onEditSubject && (
-                  <>
-                    {" "}
-                    <button
-                      type="button"
-                      onClick={() => onEditSubject(code)}
-                      className="inline-flex items-center gap-0.5 rounded border border-amber-300 bg-amber-100 px-1.5 py-0 font-body text-[0.6rem] font-semibold text-amber-800 align-baseline transition-colors duration-150 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-gold-400/30 dark:bg-gold-400/15 dark:text-gold-300 dark:hover:bg-gold-400/25"
-                    >
-                      <EditIcon />
-                      Edit
-                    </button>
-                  </>
-                )}
-              </li>
-            );
-          })}
+          {conflicts.map((c, i) => (
+            <li key={i}>
+              {highlightSubjectCode(c)}
+              {onEditConflict && /\bmoving\b/i.test(c) && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    onClick={() => onEditConflict(c)}
+                    className="inline-flex items-center gap-0.5 rounded border border-amber-300 bg-amber-100 px-1.5 py-0 font-body text-[0.6rem] font-semibold text-amber-800 align-baseline transition-colors duration-150 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-gold-400/30 dark:bg-gold-400/15 dark:text-gold-300 dark:hover:bg-gold-400/25"
+                  >
+                    <EditIcon />
+                    Edit
+                  </button>
+                </>
+              )}
+            </li>
+          ))}
         </ul>
       </AlertDescription>
     </Alert>

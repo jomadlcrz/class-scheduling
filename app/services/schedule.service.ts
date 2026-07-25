@@ -127,15 +127,15 @@ type ScheduleSubjectsResponse = {
 async function listScheduleSubjects(params: {
   schoolYear: string;
   programId: number;
-  yearLevel: number;
+  yearLevel?: number;
   semester: ScheduleSemester;
 }): Promise<ScheduleSubjectOption[]> {
   const query = new URLSearchParams({
     school_year: params.schoolYear,
     program_id: String(params.programId),
-    year_level: String(params.yearLevel),
     semester: String(params.semester),
   });
+  if (params.yearLevel != null) query.set("year_level", String(params.yearLevel));
   const data = await apiGet<ScheduleSubjectsResponse | []>(`/schedule/subjects?${query}`);
   if (Array.isArray(data)) return [];
   return data.subjects.map((s) => ({

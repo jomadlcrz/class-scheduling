@@ -79,8 +79,14 @@ type SlotEntryFormProps = {
   existingSlots: PendingSlot[];
   onAdd: (slot: Omit<PendingSlot, "tempId">) => void;
   onCancelEdit?: () => void;
-  /** Pre-select a subject by code when opening (e.g. from a conflict alert). */
-  preselectedSubjectCode?: string;
+  /** Pre-fill fields from a conflict alert (not the same as editing an existing slot). */
+  conflictPrefill?: {
+    subjectCode: string;
+    day: Day;
+    startTime: string;
+    endTime: string;
+    roomName: string;
+  };
 };
 
 const TIME_SLOTS = generateTimeSlots();
@@ -92,22 +98,27 @@ export function SlotEntryForm({
   existingSlots,
   onAdd,
   onCancelEdit,
-  preselectedSubjectCode,
+  conflictPrefill,
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { classModes } = useClassModes();
   const { dayLabels } = useDays();
 
-  const defaultSubjectId = preselectedSubjectCode
-    ? String(subjects.find((s) => s.code === preselectedSubjectCode)?.id ?? subjects[0]?.id ?? "")
+  const defaultSubjectId = conflictPrefill
+    ? String(subjects.find((s) => s.code === conflictPrefill.subjectCode)?.id ?? subjects[0]?.id ?? "")
     : String(initialSlot?.subjectId ?? subjects[0]?.id ?? "");
   const [selectedSubjectId, setSelectedSubjectId] = useState(defaultSubjectId);
-  const [day, setDay] = useState<Day>(initialSlot?.day ?? "M");
-  const [startTime, setStartTime] = useState(initialSlot?.startTime ?? "07:00");
-  const [endTime, setEndTime] = useState(initialSlot?.endTime ?? "10:00");
-  const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? ""));
-  const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? "");
-  const [roomId, setRoomId] = useState(String(initialSlot?.roomId ?? rooms[0]?.id ?? ""));
+  const [day, setDay] = useState<Day>(conflictPrefill?.day ?? initialSlot?.day ?? "M");
+  const [startTime, setStartTime] = useState(conflictPrefill?.startTime ?? initialSlot?.startTime ?? "07:00");
+  const [endTime, setEndTime] = useState(conflictPrefill?.endTime ?? initialSlot?.endTime ?? "10:00");
+  const conflictSubject = conflictPrefill ? subjects.find((s) => s.code === conflictPrefill.subjectCode) : undefined;
+  const defaultFaculty = initialSlot ? undefined : conflictSubject?.faculties[0];
+  const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? defaultFaculty?.id ?? ""));
+  const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? defaultFaculty?.fullName ?? "");
+  const defaultRoomId = conflictPrefill
+    ? String(rooms.find((r) => r.roomName === conflictPrefill.roomName)?.id ?? rooms[0]?.id ?? "")
+    : String(initialSlot?.roomId ?? rooms[0]?.id ?? "");
+  const [roomId, setRoomId] = useState(defaultRoomId);
   const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "F2F");
 
   const isEditing = Boolean(initialSlot);

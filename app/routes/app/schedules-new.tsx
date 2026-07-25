@@ -46,6 +46,7 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
+import { normalizeTime } from "~/lib/time";
 
 
 export function meta() {
@@ -53,6 +54,59 @@ export function meta() {
     { title: "New Schedule — GWC Class Scheduling" },
     { name: "description", content: "Build a week schedule for a set." },
   ];
+}
+
+const DAY_LABEL_TO_KEY: Record<string, Day> = {
+  Monday: "M", Tuesday: "T", Wednesday: "W", Thursday: "Th", Friday: "F", Saturday: "S",
+};
+
+/**
+ * Parse a backend conflict string to extract the slot details for the subject
+ * that should be moved. Returns null if the string doesn't match the expected
+ * pattern (e.g. "moving CC102 (BSIT-1E) from Thursday 3:30 PM to Friday 8:00 AM (COMPUTER LAB 1)").
+ */
+function parseConflictSlot(text: string): {
+  subjectCode: string;
+  setCode: string;
+  day: Day;
+  startTime: string;
+  endTime: string;
+  roomName: string;
+} | null {
+  // "moving CODE (SET) from DAY START to DAY END (ROOM)"
+  const moveMatch = text.match(
+    /moving\s+([A-Z]{2,4}\d{3,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s+to\s+\w+\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
+  );
+  if (!moveMatch) {
+    // Fallback: "moving CODE (SET) from DAY TIME (ROOM)" — no end time
+    const simple = text.match(
+      /moving\s+([A-Z]{2,4}\d{3,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
+    );
+    if (!simple) return null;
+    const dayKey = DAY_LABEL_TO_KEY[simple[3]];
+    if (!dayKey) return null;
+    const start = normalizeTime(simple[4]);
+    const [h, m] = start.split(":").map(Number);
+    const end = `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    return {
+      subjectCode: simple[1],
+      setCode: simple[2],
+      day: dayKey,
+      startTime: start,
+      endTime: end,
+      roomName: simple[5],
+    };
+  }
+  const dayKey = DAY_LABEL_TO_KEY[moveMatch[3]];
+  if (!dayKey) return null;
+  return {
+    subjectCode: moveMatch[1],
+    setCode: moveMatch[2],
+    day: dayKey,
+    startTime: normalizeTime(moveMatch[4]),
+    endTime: normalizeTime(moveMatch[5]),
+    roomName: moveMatch[6],
+  };
 }
 
 export default function SchedulesNew() {
@@ -99,7 +153,14 @@ function SchedulesNewPage() {
   const [slots, setSlots] = useState<PendingSlot[]>([]);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [preselectedSubjectCode, setPreselectedSubjectCode] = useState<string | null>(null);
+  const [conflictPrefill, setConflictPrefill] = useState<{
+    subjectCode: string;
+    day: Day;
+    startTime: string;
+    endTime: string;
+    roomName: string;
+  } | null>(null);
+  const [conflictSubjects, setConflictSubjects] = useState<ScheduleSubjectOption[] | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
@@ -290,20 +351,35 @@ function SchedulesNewPage() {
 
   function openAddDrawer() {
     setEditing(null);
-    setPreselectedSubjectCode(null);
+    setConflictPrefill(null);
     setDrawerOpen(true);
   }
 
-  function openConflictDrawer(subjectCode: string) {
+  function openConflictDrawer(conflictText: string) {
+    const parsed = parseConflictSlot(conflictText);
+    if (!parsed) return;
+
     setEditing(null);
-    setPreselectedSubjectCode(subjectCode);
+    setConflictPrefill(parsed);
+    setConflictSubjects(null);
     setDrawerOpen(true);
+    if (selectedProgram && schoolYearValid) {
+      scheduleService
+        .listScheduleSubjects({
+          schoolYear,
+          programId: selectedProgram.id,
+          semester,
+        })
+        .then(setConflictSubjects)
+        .catch(() => setConflictSubjects([]));
+    }
   }
 
   function closeDrawer() {
     setDrawerOpen(false);
     setEditing(null);
-    setPreselectedSubjectCode(null);
+    setConflictPrefill(null);
+    setConflictSubjects(null);
   }
 
   function handleSubmitSlot(slot: Omit<PendingSlot, "tempId">) {
@@ -438,7 +514,7 @@ function SchedulesNewPage() {
 
           <AnimatePresence>
             {generationConflicts.length > 0 && (
-              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} onEditSubject={openConflictDrawer} />
+              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} onEditConflict={openConflictDrawer} />
             )}
           </AnimatePresence>
 
@@ -541,18 +617,24 @@ function SchedulesNewPage() {
       <Drawer
         open={drawerOpen}
         onClose={closeDrawer}
-        title={editing ? "Edit Slot" : preselectedSubjectCode ? `Add ${preselectedSubjectCode} Slot` : "Add Slot"}
+        title={editing ? "Edit Slot" : conflictPrefill ? `Add ${conflictPrefill.subjectCode} Slot` : "Add Slot"}
       >
-        <SlotEntryForm
-          key={editing?.tempId ?? preselectedSubjectCode ?? "new"}
-          initialSlot={editing ?? undefined}
-          subjects={subjects}
-          preselectedSubjectCode={editing ? undefined : preselectedSubjectCode ?? undefined}
-          rooms={rooms}
-          existingSlots={slots}
-          onAdd={handleSubmitSlot}
-          onCancelEdit={editing ? closeDrawer : undefined}
-        />
+        {conflictPrefill && conflictSubjects === null ? (
+          <div className="grid place-items-center py-8">
+            <Spinner />
+          </div>
+        ) : (
+          <SlotEntryForm
+            key={editing?.tempId ?? conflictPrefill?.subjectCode ?? "new"}
+            initialSlot={editing ?? undefined}
+            subjects={conflictPrefill && conflictSubjects ? conflictSubjects : subjects}
+            conflictPrefill={conflictPrefill ?? undefined}
+            rooms={rooms}
+            existingSlots={slots}
+            onAdd={handleSubmitSlot}
+            onCancelEdit={editing ? closeDrawer : undefined}
+          />
+        )}
       </Drawer>
 
       <ConfirmDialog
