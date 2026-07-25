@@ -634,7 +634,7 @@ function SchedulesNewPage() {
       <Drawer
         open={drawerOpen}
         onClose={closeDrawer}
-        title={editing ? "Edit Slot" : conflictPrefill ? `Add ${conflictPrefill.subjectCode} Slot` : "Add Slot"}
+        title={editing ? "Edit Slot" : conflictPrefill ? `Move ${conflictPrefill.subjectCode}` : "Add Slot"}
       >
         {conflictLoading ? (
           <div className="grid place-items-center py-8">
@@ -646,6 +646,7 @@ function SchedulesNewPage() {
             initialSlot={editing ?? undefined}
             subjects={conflictPrefill && conflictSubjects ? conflictSubjects : subjects}
             conflictPrefill={conflictPrefill ?? undefined}
+            isConflictMove={Boolean(conflictPrefill)}
             rooms={rooms}
             existingSlots={slots}
             onAdd={handleSubmitSlot}

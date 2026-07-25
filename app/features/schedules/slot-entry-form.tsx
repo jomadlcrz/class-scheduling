@@ -88,6 +88,8 @@ type SlotEntryFormProps = {
     roomName: string;
     facultyName?: string;
   };
+  /** True when opening from a conflict suggestion (moving an existing slot). */
+  isConflictMove?: boolean;
 };
 
 const TIME_SLOTS = generateTimeSlots();
@@ -100,6 +102,7 @@ export function SlotEntryForm({
   onAdd,
   onCancelEdit,
   conflictPrefill,
+  isConflictMove,
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { classModes } = useClassModes();
@@ -381,7 +384,7 @@ export function SlotEntryForm({
       <div className="flex flex-col gap-2">
         <Button>
           <PlusIcon />
-          {isEditing ? "Update Slot" : "Add to Schedule"}
+          {isEditing ? "Update Slot" : isConflictMove ? "Move Slot" : "Add to Schedule"}
         </Button>
         {isEditing && onCancelEdit && (
           <Button type="button" variant="outline" onClick={onCancelEdit}>
