@@ -111,10 +111,8 @@ export function SlotEntryForm({
   const [day, setDay] = useState<Day>(conflictPrefill?.day ?? initialSlot?.day ?? "M");
   const [startTime, setStartTime] = useState(conflictPrefill?.startTime ?? initialSlot?.startTime ?? "07:00");
   const [endTime, setEndTime] = useState(conflictPrefill?.endTime ?? initialSlot?.endTime ?? "10:00");
-  const conflictSubject = conflictPrefill ? subjects.find((s) => s.code === conflictPrefill.subjectCode) : undefined;
-  const defaultFaculty = initialSlot ? undefined : conflictSubject?.faculties[0];
-  const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? defaultFaculty?.id ?? ""));
-  const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? defaultFaculty?.fullName ?? "");
+  const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? ""));
+  const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? "");
   const defaultRoomId = conflictPrefill
     ? String(rooms.find((r) => r.roomName === conflictPrefill.roomName)?.id ?? rooms[0]?.id ?? "")
     : String(initialSlot?.roomId ?? rooms[0]?.id ?? "");
