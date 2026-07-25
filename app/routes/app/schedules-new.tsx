@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { ApiError } from "~/lib/api";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
@@ -433,8 +434,9 @@ function SchedulesNewPage() {
           ...current.filter((s) => s.tempId !== conflictPrefill.slotTempId),
           { ...slot, tempId: `tmp-${Date.now()}` },
         ]);
-      } catch {
-        toast.error("Failed to update schedule. Please try again.");
+      } catch (err) {
+        if (err instanceof ApiError) toast.error(err.message);
+        else throw err;
       }
       closeDrawer();
     } else if (conflictPrefill?.slotTempId) {
