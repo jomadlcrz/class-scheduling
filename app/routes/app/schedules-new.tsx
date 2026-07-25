@@ -46,7 +46,7 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
-import { normalizeTime } from "~/lib/time";
+import { normalizeTime, timeToMinutes } from "~/lib/time";
 
 
 export function meta() {
@@ -61,51 +61,34 @@ const DAY_LABEL_TO_KEY: Record<string, Day> = {
 };
 
 /**
- * Parse a backend conflict string to extract the slot details for the subject
- * that should be moved. Returns null if the string doesn't match the expected
- * pattern (e.g. "moving CC102 (BSIT-1E) from Thursday 3:30 PM to Friday 8:00 AM (COMPUTER LAB 1)").
+ * Parse a backend conflict string to extract both the current (from) and
+ * target (to) position of the slot that should be moved.
+ * e.g. "moving CC102 (BSIT-1E) from Thursday 3:30 PM to Friday 8:00 AM (COMPUTER LAB 1)"
  */
 function parseConflictSlot(text: string): {
   subjectCode: string;
   setCode: string;
-  day: Day;
-  startTime: string;
-  endTime: string;
-  roomName: string;
+  fromDay: Day;
+  fromStartTime: string;
+  toDay: Day;
+  toStartTime: string;
+  toRoomName: string;
 } | null {
-  // "moving CODE (SET) from DAY START to DAY END (ROOM)"
   const moveMatch = text.match(
-    /moving\s+([A-Z]{2,8}\d{1,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s+to\s+\w+\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
+    /moving\s+([A-Z]{2,8}\d{1,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s+to\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
   );
-  if (!moveMatch) {
-    // Fallback: "moving CODE (SET) from DAY TIME (ROOM)" — no end time
-    const simple = text.match(
-      /moving\s+([A-Z]{2,8}\d{1,4})\s*\(([^)]+)\)\s+from\s+(\w+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*\(([^)]+)\)/i,
-    );
-    if (!simple) return null;
-    const dayKey = DAY_LABEL_TO_KEY[simple[3]];
-    if (!dayKey) return null;
-    const start = normalizeTime(simple[4]);
-    const [h, m] = start.split(":").map(Number);
-    const end = `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-    return {
-      subjectCode: simple[1],
-      setCode: simple[2],
-      day: dayKey,
-      startTime: start,
-      endTime: end,
-      roomName: simple[5],
-    };
-  }
-  const dayKey = DAY_LABEL_TO_KEY[moveMatch[3]];
-  if (!dayKey) return null;
+  if (!moveMatch) return null;
+  const fromDayKey = DAY_LABEL_TO_KEY[moveMatch[3]];
+  const toDayKey = DAY_LABEL_TO_KEY[moveMatch[5]];
+  if (!fromDayKey || !toDayKey) return null;
   return {
     subjectCode: moveMatch[1],
     setCode: moveMatch[2],
-    day: dayKey,
-    startTime: normalizeTime(moveMatch[4]),
-    endTime: normalizeTime(moveMatch[5]),
-    roomName: moveMatch[6],
+    fromDay: fromDayKey,
+    fromStartTime: normalizeTime(moveMatch[4]),
+    toDay: toDayKey,
+    toStartTime: normalizeTime(moveMatch[6]),
+    toRoomName: moveMatch[7],
   };
 }
 
@@ -160,6 +143,8 @@ function SchedulesNewPage() {
     endTime: string;
     roomName: string;
     facultyName?: string;
+    slotTempId?: string;
+    savedScheduleId?: string;
   } | null>(null);
   const [conflictSubjects, setConflictSubjects] = useState<ScheduleSubjectOption[] | null>(null);
   const [conflictLoading, setConflictLoading] = useState(false);
@@ -361,14 +346,18 @@ function SchedulesNewPage() {
     const parsed = parseConflictSlot(conflictText);
     if (!parsed) return;
 
+    const matchingSlot = slots.find(
+      (s) =>
+        s.subjectCode === parsed.subjectCode &&
+        s.day === parsed.fromDay &&
+        s.startTime === parsed.fromStartTime,
+    );
+
     setEditing(null);
-    setConflictPrefill(null);
     setConflictSubjects(null);
     setConflictLoading(true);
     setDrawerOpen(true);
 
-    // Fetch all subjects (no year-level filter) and saved schedules in parallel,
-    // then resolve the real assigned faculty for this subject+set.
     const subjectsPromise = selectedProgram && schoolYearValid
       ? scheduleService.listScheduleSubjects({ schoolYear, programId: selectedProgram.id, semester })
       : Promise.resolve(null);
@@ -383,9 +372,36 @@ function SchedulesNewPage() {
           s.setCode.startsWith(parsed.setCode),
       );
 
-      setConflictPrefill({ ...parsed, facultyName: savedSlot?.facultyName });
+      const duration = matchingSlot
+        ? timeToMinutes(matchingSlot.endTime) - timeToMinutes(matchingSlot.startTime)
+        : 60;
+      const toEndMinutes = timeToMinutes(parsed.toStartTime) + duration;
+      const toEndTime = `${String(Math.floor(toEndMinutes / 60)).padStart(2, "0")}:${String(toEndMinutes % 60).padStart(2, "0")}`;
+
+      setConflictPrefill({
+        subjectCode: parsed.subjectCode,
+        day: parsed.toDay,
+        startTime: parsed.toStartTime,
+        endTime: toEndTime,
+        roomName: parsed.toRoomName,
+        facultyName: matchingSlot?.facultyName ?? savedSlot?.facultyName,
+        slotTempId: matchingSlot?.tempId,
+        savedScheduleId: savedSlot?.id,
+      });
     }).catch(() => {
-      setConflictPrefill(parsed);
+      const duration = matchingSlot
+        ? timeToMinutes(matchingSlot.endTime) - timeToMinutes(matchingSlot.startTime)
+        : 60;
+      const toEndMinutes = timeToMinutes(parsed.toStartTime) + duration;
+      const toEndTime = `${String(Math.floor(toEndMinutes / 60)).padStart(2, "0")}:${String(toEndMinutes % 60).padStart(2, "0")}`;
+      setConflictPrefill({
+        subjectCode: parsed.subjectCode,
+        day: parsed.toDay,
+        startTime: parsed.toStartTime,
+        endTime: toEndTime,
+        roomName: parsed.toRoomName,
+        slotTempId: matchingSlot?.tempId,
+      });
     }).finally(() => {
       setConflictLoading(false);
     });
@@ -399,16 +415,40 @@ function SchedulesNewPage() {
     setConflictLoading(false);
   }
 
-  function handleSubmitSlot(slot: Omit<PendingSlot, "tempId">) {
+  async function handleSubmitSlot(slot: Omit<PendingSlot, "tempId">) {
     if (editing) {
       setSlots((current) =>
         current.map((s) => (s.tempId === editing.tempId ? { ...slot, tempId: editing.tempId } : s)),
       );
+      closeDrawer();
+    } else if (conflictPrefill?.savedScheduleId) {
+      const savedId = Number(conflictPrefill.savedScheduleId);
+      try {
+        const msg = await scheduleService.updateRegularSlot(savedId, {
+          day: slot.day,
+          startTime: slot.startTime,
+        });
+        if (msg) toast.success(msg);
+        setSlots((current) => [
+          ...current.filter((s) => s.tempId !== conflictPrefill.slotTempId),
+          { ...slot, tempId: `tmp-${Date.now()}` },
+        ]);
+      } catch {
+        toast.error("Failed to update schedule. Please try again.");
+      }
+      closeDrawer();
+    } else if (conflictPrefill?.slotTempId) {
+      setSlots((current) =>
+        current.map((s) =>
+          s.tempId === conflictPrefill.slotTempId ? { ...slot, tempId: conflictPrefill.slotTempId! } : s,
+        ),
+      );
+      closeDrawer();
     } else {
       tempIdCounter.current += 1;
       setSlots((current) => [...current, { ...slot, tempId: `tmp-${tempIdCounter.current}` }]);
+      closeDrawer();
     }
-    closeDrawer();
   }
 
   function handleEditSlot(schedule: Schedule) {

@@ -38,7 +38,7 @@ export function GenerationConflictsAlert({
           {conflicts.map((c, i) => (
             <li key={i}>
               {highlightSubjectCode(c)}
-              {onEditConflict && /\bmoving\b/i.test(c) && (
+              {onEditConflict && /\bmoving\b.*\bfrom\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\bto\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\(/i.test(c) && (
                 <>
                   {" "}
                   <button

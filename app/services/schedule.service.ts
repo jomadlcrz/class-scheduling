@@ -24,6 +24,7 @@ function normalizeMode(mode: string): ScheduleMode {
 }
 
 type ViewScheduleResponse = {
+  sched_id: number;
   school_year: string;
   semester: string;
   subject_type: string;
@@ -68,7 +69,7 @@ async function view(): Promise<Schedule[]> {
     const [programAbbrev, yearAndSet] = r.set_name?.split("-") ?? [];
     const yearLevel = Number(yearAndSet?.charAt(0));
     return {
-      id: String(index),
+      id: String(r.sched_id),
       schoolYear: r.school_year,
       semester: (semByName.get(r.semester) ?? 1) as ScheduleSemester,
       subjectId: "",
@@ -455,7 +456,7 @@ async function getRegular(id: number): Promise<RegularScheduleDetail> {
 /** PUT /regular_schedule/<id> — reassigns room/instructor only (subject/day/time can't be changed here). 409 on conflict. */
 async function updateRegularSlot(
   id: number,
-  input: { roomId?: number | null; instructorId?: number | null },
+  input: { roomId?: number | null; instructorId?: number | null; day?: string; startTime?: string },
 ): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}`, input);
   return apiMessage(data);
