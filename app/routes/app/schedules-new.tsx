@@ -155,6 +155,22 @@ function SchedulesNewPage() {
   const selectedSet = sets.find((s) => String(s.id) === selectedSetId);
   const schoolYearValid = /^\d{4}-\d{4}$/.test(schoolYear);
 
+  type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
+  const facultyLoadMap = useMemo(() => {
+    const m = new Map<string, FacultyLoad>();
+    for (const sub of subjects) {
+      for (const f of sub.faculties) {
+        if (f.maxWeeklyHours != null && f.maxWeeklyHours > 0) {
+          m.set(String(f.id), {
+            maxWeeklyHours: f.maxWeeklyHours,
+            currentWeeklyHours: f.currentWeeklyHours ?? 0,
+          });
+        }
+      }
+    }
+    return m;
+  }, [subjects]);
+
   // Subjects (with their term-assigned faculties) depend on the whole context.
   useEffect(() => {
     if (!selectedProgram || !selectedYearLevel || !schoolYearValid) {
@@ -499,6 +515,7 @@ function SchedulesNewPage() {
               onEdit={handleEditSlot}
               onDelete={handleRemoveSlot}
               onDuplicate={handleDuplicateSlot}
+              facultyLoadMap={facultyLoadMap}
             />
           ) : (
             <ScheduleTable
@@ -506,6 +523,7 @@ function SchedulesNewPage() {
               onEdit={handleEditSlot}
               onDelete={handleRemoveSlot}
               onDuplicate={handleDuplicateSlot}
+              facultyLoadMap={facultyLoadMap}
             />
           )}
         </div>

@@ -1,9 +1,12 @@
 ﻿import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
+import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
 import { ModeBadge } from "~/features/schedules/mode-badge";
+
+type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
 
 type ScheduleTableProps = {
   schedules: Schedule[];
@@ -14,6 +17,8 @@ type ScheduleTableProps = {
   onDuplicate?: (schedule: Schedule, day: Day) => void;
   /** Show the Set (Section) column in the desktop table. */
   showSet?: boolean;
+  /** Map of facultyId → weekly load info for tooltip display. */
+  facultyLoadMap?: Map<string, FacultyLoad>;
 };
 
 const actionBtn =
@@ -23,9 +28,17 @@ const th =
   "px-3 py-2 font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 
 /** Schedule table: stacked cards on mobile, a single grouped table on sm and up. */
-export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSet }: ScheduleTableProps) {
+export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSet, facultyLoadMap }: ScheduleTableProps) {
   const { dayLabels } = useDays();
   const showActions = Boolean(onEdit || onDelete || onDuplicate);
+
+  function loadTooltip(facultyId: string): string | null {
+    if (!facultyLoadMap) return null;
+    const load = facultyLoadMap.get(facultyId);
+    if (!load) return null;
+    const remaining = Math.max(0, load.maxWeeklyHours - load.currentWeeklyHours);
+    return `Weekly teaching load: ${load.currentWeeklyHours} / ${load.maxWeeklyHours} hrs (${remaining} hrs remaining)`;
+  }
 
   // Days the same subject isn't already scheduled on (excluding its current day).
   function availableDays(sched: Schedule): Day[] {
@@ -56,6 +69,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
             onDelete={onDelete}
             onDuplicate={onDuplicate}
             availableDays={availableDays}
+            facultyLoadMap={facultyLoadMap}
           />
         ))}
       </div>
@@ -111,7 +125,13 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                     <ModeBadge mode={sched.mode} />
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-slate-700 dark:text-slate-300">
-                    {sched.facultyName}
+                    {loadTooltip(sched.facultyId) ? (
+                      <Tooltip label={loadTooltip(sched.facultyId)!} direction="top" wrap>
+                        <span>{sched.facultyName}</span>
+                      </Tooltip>
+                    ) : (
+                      sched.facultyName
+                    )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
                     {sched.roomName}
@@ -174,6 +194,7 @@ function MobileDayCard({
   onDelete,
   onDuplicate,
   availableDays,
+  facultyLoadMap,
 }: {
   day: Day;
   slots: Schedule[];
@@ -182,8 +203,17 @@ function MobileDayCard({
   onDelete?: (schedule: Schedule) => void;
   onDuplicate?: (schedule: Schedule, day: Day) => void;
   availableDays: (schedule: Schedule) => Day[];
+  facultyLoadMap?: Map<string, { maxWeeklyHours: number; currentWeeklyHours: number }>;
 }) {
   const accent = DAY_ACCENT[day];
+
+  function loadTooltip(facultyId: string): string | null {
+    if (!facultyLoadMap) return null;
+    const load = facultyLoadMap.get(facultyId);
+    if (!load) return null;
+    const remaining = Math.max(0, load.maxWeeklyHours - load.currentWeeklyHours);
+    return `Weekly teaching load: ${load.currentWeeklyHours} / ${load.maxWeeklyHours} hrs (${remaining} hrs remaining)`;
+  }
   return (
     <div className="overflow-hidden rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
       <div
@@ -242,7 +272,13 @@ function MobileDayCard({
             <div className="flex flex-col gap-1 font-body text-xs text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
                 <UserSmallIcon />
-                {sched.facultyName}
+                {loadTooltip(sched.facultyId) ? (
+                  <Tooltip label={loadTooltip(sched.facultyId)!} direction="top" wrap>
+                    <span>{sched.facultyName}</span>
+                  </Tooltip>
+                ) : (
+                  sched.facultyName
+                )}
               </span>
               <span className="flex items-center gap-1.5">
                 <MapPinIcon />

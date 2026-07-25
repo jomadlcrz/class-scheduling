@@ -1,9 +1,12 @@
 ﻿import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
+import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
 import { ModeBadge } from "~/features/schedules/mode-badge";
+
+type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
 
 type ScheduleGridProps = {
   schedules: Schedule[];
@@ -12,13 +15,15 @@ type ScheduleGridProps = {
   onDuplicate?: (schedule: Schedule, day: Day) => void;
   /** Show the Set (Section) label in each grid card. */
   showSet?: boolean;
+  /** Map of facultyId → weekly load info for tooltip display. */
+  facultyLoadMap?: Map<string, FacultyLoad>;
 };
 
 const GRID_TEMPLATE = "5.75rem repeat(6, minmax(8.25rem, 1fr))";
 const actionBtn =
   "grid size-6 cursor-pointer place-items-center rounded-md text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate, showSet }: ScheduleGridProps) {
+export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate, showSet, facultyLoadMap }: ScheduleGridProps) {
   const { dayLabels } = useDays();
   const timeRows = [...new Map(schedules.map((s) => [`${s.startTime}|${s.endTime}`, s])).values()]
     .map((s) => ({ startTime: s.startTime, endTime: s.endTime }))
@@ -80,6 +85,7 @@ export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate, showSet
                       availableDays={availableDays(entry)}
                       showActions={showActions}
                       showSet={showSet}
+                      facultyLoadMap={facultyLoadMap}
                     />
                   ))}
                 </div>
@@ -109,6 +115,7 @@ function GridClassCard({
   availableDays,
   showActions,
   showSet,
+  facultyLoadMap,
 }: {
   entry: Schedule;
   dayLabels: Record<Day, string>;
@@ -118,8 +125,18 @@ function GridClassCard({
   availableDays: Day[];
   showActions: boolean;
   showSet?: boolean;
+  facultyLoadMap?: Map<string, { maxWeeklyHours: number; currentWeeklyHours: number }>;
 }) {
   const accent = DAY_ACCENT[entry.day as Day];
+
+  let instructorTooltip: string | null = null;
+  if (facultyLoadMap) {
+    const load = facultyLoadMap.get(entry.facultyId);
+    if (load) {
+      const remaining = Math.max(0, load.maxWeeklyHours - load.currentWeeklyHours);
+      instructorTooltip = `Weekly teaching load: ${load.currentWeeklyHours} / ${load.maxWeeklyHours} hrs (${remaining} hrs remaining)`;
+    }
+  }
   return (
     <article
       className={`flex flex-col gap-1 rounded-lg border border-l-4 border-slate-300 p-2 dark:border-white/10 ${accent.borderL} ${accent.cardBg}`}
@@ -140,7 +157,13 @@ function GridClassCard({
       )}
       <small className="flex items-center gap-1 font-body text-[0.68rem] text-slate-500 dark:text-slate-400">
         <UserSmallIcon />
-        {entry.facultyName}
+        {instructorTooltip ? (
+          <Tooltip label={instructorTooltip} direction="top" wrap>
+            <span>{entry.facultyName}</span>
+          </Tooltip>
+        ) : (
+          entry.facultyName
+        )}
       </small>
       <small className="flex items-center gap-1 font-body text-[0.68rem] text-slate-500 dark:text-slate-400">
         <MapPinIcon />
