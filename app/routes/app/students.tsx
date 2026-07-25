@@ -452,13 +452,13 @@ export function StudentsPage() {
         description="Student records and their login accounts."
         actions={
           <div className="flex gap-2">
-            <Button type="button" variant="outline" block={false} onClick={() => setImportOpen(true)}>
-              <UploadIcon />
-              Import
-            </Button>
             <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
               <PlusIcon />
               New Student
+            </Button>
+            <Button type="button" variant="outline" block={false} onClick={() => setImportOpen(true)}>
+              <UploadIcon />
+              Import
             </Button>
           </div>
         }

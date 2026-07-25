@@ -108,23 +108,27 @@ export function DeanFacultyLoadsView({
             <td className="w-[12%] border border-slate-300 px-3 py-1.5 font-bold text-navy-800 dark:border-white/15 dark:text-mist-100">
               NAME
             </td>
-            <td className="w-[38%] border border-slate-300 px-1 py-0.5 dark:border-white/15">
-              <Select
-                items={entries.map((e, i) => ({ value: String(i), label: e.instructorName }))}
-                value={String(selectedIndex)}
-                onValueChange={(v) => onSelectedIndexChange(Number(v))}
-              >
-                <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {entries.map((e, i) => (
-                    <SelectItem key={i} value={String(i)}>
-                      {e.instructorName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <td className="w-[38%] border border-slate-300 px-3 py-1.5 text-navy-700 dark:border-white/15 dark:text-mist-200">
+              {entries.length > 0 ? (
+                <Select
+                  items={entries.map((e, i) => ({ value: String(i), label: e.instructorName }))}
+                  value={String(selectedIndex)}
+                  onValueChange={(v) => onSelectedIndexChange(Number(v))}
+                >
+                  <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {entries.map((e, i) => (
+                      <SelectItem key={i} value={String(i)}>
+                        {e.instructorName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                "—"
+              )}
             </td>
             <td className="w-[12%] border border-slate-300 px-3 py-1.5 font-bold text-navy-800 dark:border-white/15 dark:text-mist-100">
               SEMESTER

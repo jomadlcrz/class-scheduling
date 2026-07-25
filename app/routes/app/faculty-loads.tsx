@@ -54,23 +54,11 @@ function FacultyLoadsPage() {
         >
           <Spinner />
         </div>
-      ) : isLoading ? (
-        <div
-          role="status"
-          aria-label="Loading faculty loads"
-          className="mt-8 grid place-items-center text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
-        </div>
-      ) : !entries || entries.length === 0 ? (
-        <EmptyState title="No faculty loads yet">
-          No faculty have been assigned subjects for this term yet.
-        </EmptyState>
       ) : (
         <DeanFacultyLoadsView
           entry={selectedEntry}
           isLoading={isLoading}
-          entries={entries}
+          entries={entries ?? []}
           selectedIndex={selectedIndex}
           onSelectedIndexChange={setSelectedIndex}
           schoolYearLabel={schoolYearLabel}
