@@ -159,8 +159,10 @@ function SchedulesNewPage() {
     startTime: string;
     endTime: string;
     roomName: string;
+    facultyName?: string;
   } | null>(null);
   const [conflictSubjects, setConflictSubjects] = useState<ScheduleSubjectOption[] | null>(null);
+  const [conflictLoading, setConflictLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
@@ -360,19 +362,33 @@ function SchedulesNewPage() {
     if (!parsed) return;
 
     setEditing(null);
-    setConflictPrefill(parsed);
+    setConflictPrefill(null);
     setConflictSubjects(null);
+    setConflictLoading(true);
     setDrawerOpen(true);
-    if (selectedProgram && schoolYearValid) {
-      scheduleService
-        .listScheduleSubjects({
-          schoolYear,
-          programId: selectedProgram.id,
-          semester,
-        })
-        .then(setConflictSubjects)
-        .catch(() => setConflictSubjects([]));
-    }
+
+    // Fetch all subjects (no year-level filter) and saved schedules in parallel,
+    // then resolve the real assigned faculty for this subject+set.
+    const subjectsPromise = selectedProgram && schoolYearValid
+      ? scheduleService.listScheduleSubjects({ schoolYear, programId: selectedProgram.id, semester })
+      : Promise.resolve(null);
+    const schedulesPromise = scheduleService.view().catch(() => [] as Schedule[]);
+
+    Promise.all([subjectsPromise, schedulesPromise]).then(([allSubjects, savedSchedules]) => {
+      if (allSubjects) setConflictSubjects(allSubjects);
+
+      const savedSlot = savedSchedules.find(
+        (s) =>
+          s.subjectCode === parsed.subjectCode &&
+          s.setCode.startsWith(parsed.setCode),
+      );
+
+      setConflictPrefill({ ...parsed, facultyName: savedSlot?.facultyName });
+    }).catch(() => {
+      setConflictPrefill(parsed);
+    }).finally(() => {
+      setConflictLoading(false);
+    });
   }
 
   function closeDrawer() {
@@ -380,6 +396,7 @@ function SchedulesNewPage() {
     setEditing(null);
     setConflictPrefill(null);
     setConflictSubjects(null);
+    setConflictLoading(false);
   }
 
   function handleSubmitSlot(slot: Omit<PendingSlot, "tempId">) {
@@ -619,7 +636,7 @@ function SchedulesNewPage() {
         onClose={closeDrawer}
         title={editing ? "Edit Slot" : conflictPrefill ? `Add ${conflictPrefill.subjectCode} Slot` : "Add Slot"}
       >
-        {conflictPrefill && conflictSubjects === null ? (
+        {conflictLoading ? (
           <div className="grid place-items-center py-8">
             <Spinner />
           </div>

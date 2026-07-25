@@ -86,6 +86,7 @@ type SlotEntryFormProps = {
     startTime: string;
     endTime: string;
     roomName: string;
+    facultyName?: string;
   };
 };
 
@@ -111,8 +112,13 @@ export function SlotEntryForm({
   const [day, setDay] = useState<Day>(conflictPrefill?.day ?? initialSlot?.day ?? "M");
   const [startTime, setStartTime] = useState(conflictPrefill?.startTime ?? initialSlot?.startTime ?? "07:00");
   const [endTime, setEndTime] = useState(conflictPrefill?.endTime ?? initialSlot?.endTime ?? "10:00");
-  const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? ""));
-  const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? "");
+  // For conflict pre-fill: resolve the faculty ID from the name looked up in saved schedules.
+  const conflictFaculty = conflictPrefill?.facultyName
+    ? subjects.find((s) => s.code === conflictPrefill.subjectCode)
+        ?.faculties.find((f) => f.fullName === conflictPrefill.facultyName)
+    : undefined;
+  const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? conflictFaculty?.id ?? ""));
+  const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? conflictPrefill?.facultyName ?? "");
   const defaultRoomId = conflictPrefill
     ? String(rooms.find((r) => r.roomName === conflictPrefill.roomName)?.id ?? rooms[0]?.id ?? "")
     : String(initialSlot?.roomId ?? rooms[0]?.id ?? "");
