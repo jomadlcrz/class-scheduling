@@ -165,18 +165,6 @@ export function SlotEntryForm({
     if (!selectedFaculty) { setError("Select a faculty member."); return; }
     if (needsRoom && !room) { setError("Select a room."); return; }
 
-    const conflict = existingSlots.find(
-      (s) =>
-        s.tempId !== initialSlot?.tempId &&
-        s.day === day &&
-        s.startTime < endTime &&
-        s.endTime > startTime,
-    );
-    if (conflict) {
-      setError(`A slot already exists on ${dayLabels[day]} at that time.`);
-      return;
-    }
-
     onAdd({
       subjectId: selectedSubject.id,
       subjectCode: selectedSubject.code,
