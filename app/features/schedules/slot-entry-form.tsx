@@ -79,6 +79,8 @@ type SlotEntryFormProps = {
   existingSlots: PendingSlot[];
   onAdd: (slot: Omit<PendingSlot, "tempId">) => void;
   onCancelEdit?: () => void;
+  /** Pre-select a subject by code when opening (e.g. from a conflict alert). */
+  preselectedSubjectCode?: string;
 };
 
 const TIME_SLOTS = generateTimeSlots();
@@ -90,14 +92,16 @@ export function SlotEntryForm({
   existingSlots,
   onAdd,
   onCancelEdit,
+  preselectedSubjectCode,
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { classModes } = useClassModes();
   const { dayLabels } = useDays();
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState(
-    String(initialSlot?.subjectId ?? subjects[0]?.id ?? ""),
-  );
+  const defaultSubjectId = preselectedSubjectCode
+    ? String(subjects.find((s) => s.code === preselectedSubjectCode)?.id ?? subjects[0]?.id ?? "")
+    : String(initialSlot?.subjectId ?? subjects[0]?.id ?? "");
+  const [selectedSubjectId, setSelectedSubjectId] = useState(defaultSubjectId);
   const [day, setDay] = useState<Day>(initialSlot?.day ?? "M");
   const [startTime, setStartTime] = useState(initialSlot?.startTime ?? "07:00");
   const [endTime, setEndTime] = useState(initialSlot?.endTime ?? "10:00");

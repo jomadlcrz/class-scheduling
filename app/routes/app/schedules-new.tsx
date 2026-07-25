@@ -99,6 +99,7 @@ function SchedulesNewPage() {
   const [slots, setSlots] = useState<PendingSlot[]>([]);
   const [editing, setEditing] = useState<PendingSlot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [preselectedSubjectCode, setPreselectedSubjectCode] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
@@ -289,12 +290,20 @@ function SchedulesNewPage() {
 
   function openAddDrawer() {
     setEditing(null);
+    setPreselectedSubjectCode(null);
+    setDrawerOpen(true);
+  }
+
+  function openConflictDrawer(subjectCode: string) {
+    setEditing(null);
+    setPreselectedSubjectCode(subjectCode);
     setDrawerOpen(true);
   }
 
   function closeDrawer() {
     setDrawerOpen(false);
     setEditing(null);
+    setPreselectedSubjectCode(null);
   }
 
   function handleSubmitSlot(slot: Omit<PendingSlot, "tempId">) {
@@ -429,7 +438,7 @@ function SchedulesNewPage() {
 
           <AnimatePresence>
             {generationConflicts.length > 0 && (
-              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} />
+              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} onEditSubject={openConflictDrawer} />
             )}
           </AnimatePresence>
 
@@ -532,12 +541,13 @@ function SchedulesNewPage() {
       <Drawer
         open={drawerOpen}
         onClose={closeDrawer}
-        title={editing ? "Edit Slot" : "Add Slot"}
+        title={editing ? "Edit Slot" : preselectedSubjectCode ? `Add ${preselectedSubjectCode} Slot` : "Add Slot"}
       >
         <SlotEntryForm
-          key={editing?.tempId ?? "new"}
+          key={editing?.tempId ?? preselectedSubjectCode ?? "new"}
           initialSlot={editing ?? undefined}
           subjects={subjects}
+          preselectedSubjectCode={editing ? undefined : preselectedSubjectCode ?? undefined}
           rooms={rooms}
           existingSlots={slots}
           onAdd={handleSubmitSlot}
