@@ -147,7 +147,7 @@ export function StudentRecordForm({
         midName: result.data.midName || undefined,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

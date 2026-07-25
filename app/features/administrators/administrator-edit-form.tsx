@@ -34,7 +34,7 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
     try {
       await onSubmit({ firstName, midName: midName || undefined, lastName, mobile, email });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsSaving(false);
     }
   }

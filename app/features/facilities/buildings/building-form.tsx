@@ -33,7 +33,7 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
     try {
       await onSubmit(result.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

@@ -33,7 +33,7 @@ export function StudentAccountForm({ student, onSubmit, onCancel }: StudentAccou
     try {
       await onSubmit({ email: result.data.email, roleName: "Student" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

@@ -39,7 +39,7 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
     try {
       await onSubmit(result.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

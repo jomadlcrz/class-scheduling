@@ -40,7 +40,7 @@ export function SchoolYearForm({ initialValue, onSubmit, onCancel }: SchoolYearF
     try {
       await onSubmit(result.data.schoolYear);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
     } finally {
       setIsSaving(false);
     }

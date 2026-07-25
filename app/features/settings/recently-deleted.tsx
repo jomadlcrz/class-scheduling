@@ -153,7 +153,7 @@ export function RecentlyDeleted() {
         .list()
         .then(setSubjects)
         .catch((err) =>
-          setError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
+          setError(err instanceof Error ? err.message : ""),
         );
       return;
     }
@@ -162,7 +162,7 @@ export function RecentlyDeleted() {
     activeSimpleTab
       .list()
       .then(setSimpleItems)
-      .catch((err) => setError(err instanceof Error ? err.message : "Something went wrong. Please try again."));
+      .catch((err) => setError(err instanceof Error ? err.message : ""));
   }
 
   useEffect(refresh, [activeTab]);

@@ -504,7 +504,7 @@ function SchedulesNewPage() {
       }
       navigate("/schedules/regular-class");
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setSaveError(err instanceof Error ? err.message : "");
       setIsSaving(false);
     }
   }

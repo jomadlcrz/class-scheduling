@@ -33,7 +33,7 @@ export function PermissionEditForm({ permission, onSaved, onCancel }: Permission
       });
       onSaved(message);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsSaving(false);
     }
   }

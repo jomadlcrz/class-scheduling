@@ -64,7 +64,7 @@ export function ConfirmDialog({
       await onConfirm();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
     } finally {
       setIsLoading(false);
     }

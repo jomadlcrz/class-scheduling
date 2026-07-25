@@ -56,7 +56,7 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
       await onAssign(pending.studentAcademicId, schedIds);
       setSelected({});
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
     } finally {
       setAssigning(false);
     }

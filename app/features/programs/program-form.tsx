@@ -45,7 +45,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
     try {
       await onSubmit(result.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

@@ -54,7 +54,7 @@ function PermissionsPage() {
       .list()
       .then(setRoles)
       .catch((err) =>
-        setError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
+        setError(err instanceof Error ? err.message : ""),
       );
     permissionService.listCatalog().then(setCatalog).catch(() => setCatalog([]));
   }

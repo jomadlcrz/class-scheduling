@@ -103,7 +103,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
       setMeetings("");
       setLabSlots([{ start: "", end: "" }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : "");
     } finally {
       setIsLoading(false);
     }

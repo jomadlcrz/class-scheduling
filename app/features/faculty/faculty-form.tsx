@@ -36,7 +36,7 @@ export function FacultyForm({ member, departments, onSubmit, onCancel }: Faculty
     try {
       await onSubmit({ firstName, lastName, email, departmentId });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

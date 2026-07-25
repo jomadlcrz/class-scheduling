@@ -54,7 +54,7 @@ export function AddPermissionForm({ onCreated, onCancel }: AddPermissionFormProp
       const message = await permissionService.createPermissionBulk(rows);
       onCreated(message);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsSaving(false);
     }
   }

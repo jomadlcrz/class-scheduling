@@ -183,9 +183,7 @@ function SubjectsNewPage() {
       navigate("/subjects");
     } catch (err) {
       setSaveError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.",
+        err instanceof Error ? err.message : "",
       );
       setIsSaving(false);
     }

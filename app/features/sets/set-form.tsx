@@ -56,7 +56,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
     try {
       await onSubmit(inputs);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

@@ -36,7 +36,7 @@ export function RolePermissionsForm({ role, catalog, onSaved, onCancel }: RolePe
       const message = await permissionService.replace(role.id, [...selectedIds]);
       onSaved(message);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsSaving(false);
     }
   }

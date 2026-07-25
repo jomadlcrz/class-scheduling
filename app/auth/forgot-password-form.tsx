@@ -26,7 +26,7 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
       onSent();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again.",
+        err instanceof Error ? err.message : "",
       );
     } finally {
       setIsLoading(false);

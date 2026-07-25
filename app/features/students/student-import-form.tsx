@@ -82,7 +82,7 @@ export function StudentImportForm({ onSubmit, onCreateAccounts, onCancel }: Stud
       const res = await onSubmit(file);
       setResult(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
     } finally {
       setIsLoading(false);
     }

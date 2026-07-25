@@ -41,7 +41,7 @@ export function RoomForm({ room, buildings, roomTypes, onSubmit, onCancel }: Roo
     try {
       await onSubmit(result.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
     }
   }

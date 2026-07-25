@@ -36,7 +36,7 @@ export function EnrollmentEditForm({ record, sets, academicStatuses, onSubmit, o
         enrolledStatus,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
       setIsSaving(false);
     }
   }

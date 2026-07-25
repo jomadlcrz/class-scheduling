@@ -39,7 +39,7 @@ export function LoginForm() {
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again.",
+        err instanceof Error ? err.message : "",
       );
       setIsLoading(false);
     }

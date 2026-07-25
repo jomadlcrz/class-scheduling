@@ -40,7 +40,7 @@ export function SemesterForm({ initialValue, onSubmit, onCancel }: SemesterFormP
     try {
       await onSubmit(result.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "");
     } finally {
       setIsSaving(false);
     }
