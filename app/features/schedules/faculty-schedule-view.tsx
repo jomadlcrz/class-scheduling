@@ -40,7 +40,6 @@ export function FacultyScheduleView({
         entry={entry}
         schoolYearLabel={schoolYearLabel}
         semesterName={semesterName}
-        showPrint={false}
       />
 
       {/* ── Info grid ── */}
