@@ -69,25 +69,27 @@ export function openFacultyLoadingPrint(
     .fl-info td.lbl{font-weight:700;width:12%;background:#f5f5f5}
     .fl-info td.oval{width:38%}
 
-    .fl-table{width:100%;table-layout:fixed;border-collapse:collapse}
+    .fl-table{width:100%;border-collapse:collapse}
     .fl-table th,.fl-table td{border:1px solid #444;padding:0.12rem 0.15rem;font-size:8px;line-height:1.2;vertical-align:middle}
     .fl-table th{background:#f5f5f5;font-weight:700;text-align:center;font-size:8px}
     .fl-table .center{text-align:center}
     .fl-table .bold{font-weight:700}
 
-    .fl-table td:nth-child(1),.fl-table th:nth-child(1){width:8%;text-align:center}
-    .fl-table td:nth-child(2),.fl-table th:nth-child(2){width:22%;text-align:center}
-    .fl-table td:nth-child(3),.fl-table th:nth-child(3){width:4%;text-align:center}
-    .fl-table td:nth-child(4),.fl-table th:nth-child(4){width:4%;text-align:center}
-    .fl-table td:nth-child(5),.fl-table th:nth-child(5){width:9%;text-align:center}
-    .fl-table td:nth-child(6),.fl-table th:nth-child(6){width:14%;text-align:center}
-    .fl-table td:nth-child(7),.fl-table th:nth-child(7){width:5%;text-align:center}
-    .fl-table td:nth-child(8),.fl-table th:nth-child(8){width:8%;text-align:center}
-    .fl-table td:nth-child(9),.fl-table th:nth-child(9){width:5%;text-align:center}
-    .fl-table td:nth-child(10),.fl-table th:nth-child(10){width:9%;text-align:center}
-    .fl-table td:nth-child(11),.fl-table th:nth-child(11){width:12%;text-align:center}
+    .fl-table td:nth-child(1),.fl-table thead tr:last-child th:nth-child(1){width:8%;text-align:center}
+    .fl-table td:nth-child(2),.fl-table thead tr:last-child th:nth-child(2){width:22%;text-align:center}
+    .fl-table td:nth-child(3),.fl-table thead tr:last-child th:nth-child(3){width:4%;text-align:center}
+    .fl-table td:nth-child(4),.fl-table thead tr:last-child th:nth-child(4){width:4%;text-align:center}
+    .fl-table td:nth-child(5),.fl-table thead tr:last-child th:nth-child(5){width:9%;text-align:center}
+    .fl-table td:nth-child(6),.fl-table thead tr:last-child th:nth-child(6){width:14%;text-align:center}
+    .fl-table td:nth-child(7),.fl-table thead tr:last-child th:nth-child(7){width:5%;text-align:center}
+    .fl-table td:nth-child(8),.fl-table thead tr:last-child th:nth-child(8){width:8%;text-align:center}
+    .fl-table td:nth-child(9),.fl-table thead tr:last-child th:nth-child(9){width:5%;text-align:center}
+    .fl-table td:nth-child(10),.fl-table thead tr:last-child th:nth-child(10){width:9%;text-align:center}
+    .fl-table td:nth-child(11),.fl-table thead tr:last-child th:nth-child(11){width:12%;text-align:center}
 
+    .fl-table .group-label{font-size:8px;letter-spacing:0.05em;background:#e5e7eb}
     .fl-empty{text-align:center;padding:1rem;font-size:9px;color:#666}
+
 
     @media print{body{padding:0.35in}}
   </style>
@@ -123,8 +125,13 @@ export function openFacultyLoadingPrint(
   <table class="fl-table">
     <thead>
       <tr>
-        <th>SUBJECT CODE</th>
-        <th>DESCRIPTIVE TITLE</th>
+        <th rowspan="2">SUBJECT CODE</th>
+        <th rowspan="2">DESCRIPTIVE TITLE</th>
+        <th colspan="2" class="group-label">UNITS</th>
+        <th colspan="2" class="group-label">SCHEDULE</th>
+        <th colspan="5" class="group-label">Class Information</th>
+      </tr>
+      <tr>
         <th>LEC</th>
         <th>LAB</th>
         <th>DAY</th>
