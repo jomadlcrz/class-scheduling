@@ -1,22 +1,22 @@
-import type { ReactNode } from "react";
+import type { ReactNode, TextareaHTMLAttributes } from "react";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
 
-type TextareaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "id" | "className"> & {
+type TextareaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "id" | "className"> & {
   id: string;
   label: string;
-  hint?: string;
   labelEnd?: ReactNode;
+  hint?: string;
 };
 
-export function Textarea({ id, label, hint, labelEnd, ...rest }: TextareaProps) {
+export function Textarea({ id, label, labelEnd, hint, required, ...textareaProps }: TextareaProps) {
   return (
-    <FieldChrome id={id} label={label} hint={hint} labelEnd={labelEnd}>
+    <FieldChrome id={id} label={label} labelEnd={labelEnd} hint={hint} required={required}>
       <textarea
         id={id}
         name={id}
         aria-describedby={hint ? `${id}-hint` : undefined}
-        className={`${inputClassName} resize-none`}
-        {...rest}
+        className={`${inputClassName} min-h-32 resize-y`}
+        {...textareaProps}
       />
     </FieldChrome>
   );
