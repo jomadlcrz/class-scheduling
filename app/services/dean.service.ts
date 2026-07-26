@@ -233,9 +233,12 @@ async function getTeachingTerm(id: number): Promise<TeachingTerm> {
   };
 }
 
-/** PUT /deans/teaching-terms/<id> — updates only the max weekly hours cap. */
-async function updateTeachingTerm(id: number, maxWeeklyHours: number): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/deans/teaching-terms/${id}`, { maxWeeklyHours });
+/** PUT /deans/teaching-terms/<id> — updates maxWeeklyHours and/or assigned subjects (curriculumDetailIds). */
+async function updateTeachingTerm(
+  id: number,
+  input: { maxWeeklyHours?: number; curriculumDetailIds?: number[] },
+): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/deans/teaching-terms/${id}`, input);
   return apiMessage(data);
 }
 

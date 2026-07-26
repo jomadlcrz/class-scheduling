@@ -165,7 +165,13 @@ export function useDeanSubjectAssignments() {
   }
 
   async function updateMaxWeeklyHours(teachingTermId: number, hours: number) {
-    const message = await deanService.updateTeachingTerm(teachingTermId, hours);
+    const message = await deanService.updateTeachingTerm(teachingTermId, { maxWeeklyHours: hours });
+    if (message) toast.success(message);
+    refresh();
+  }
+
+  async function updateSubjects(teachingTermId: number, curriculumDetailIds: number[]) {
+    const message = await deanService.updateTeachingTerm(teachingTermId, { curriculumDetailIds });
     if (message) toast.success(message);
     refresh();
   }
@@ -199,6 +205,7 @@ export function useDeanSubjectAssignments() {
     createAssignments,
     deleteAssignment,
     updateMaxWeeklyHours,
+    updateSubjects,
     refresh,
   };
 }
