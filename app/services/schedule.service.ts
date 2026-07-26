@@ -221,6 +221,24 @@ export type SlotDraft = {
   roomChoices?: { id: number; roomName: string }[];
 };
 
+export type ScheduleSuggestion = {
+  type: "subject_hour_override" | "move_existing_session";
+  subjectId?: number;
+  subjectCode?: string;
+  setId?: number;
+  setName?: string;
+  lectureHours?: number;
+  labHours?: number;
+  meetings?: number;
+  totalWeeklyHours?: number;
+  reason?: string;
+  apply?: { method: string; path: string; body: Record<string, unknown> };
+  /** present for move_existing_session */
+  scheduleId?: number;
+  from?: Record<string, unknown>;
+  to?: Record<string, unknown>;
+};
+
 type AutoGenerateResponse = {
   school_year: string;
   semester: string;
@@ -247,12 +265,16 @@ type AutoGenerateResponse = {
   }[];
   /** Human-readable reasons for subjects the algorithm couldn't place at all. */
   conflicts: string[];
+  /** Machine-readable fix suggestions (subject hour overrides, session moves, etc.). */
+  suggestions?: unknown[];
 };
 
 export type AutoGenerateResult = {
   slots: SlotDraft[];
   /** Subjects the algorithm couldn't fit anywhere, with the reason why. */
   conflicts: string[];
+  /** Structured suggestions the UI can render as one-click fixes. */
+  suggestions: ScheduleSuggestion[];
 };
 
 /**
@@ -306,7 +328,11 @@ async function autoGenerate(input: {
     })),
   );
 
-  return { slots, conflicts: data.conflicts ?? [] };
+  return {
+    slots,
+    conflicts: data.conflicts ?? [],
+    suggestions: (data.suggestions ?? []) as ScheduleSuggestion[],
+  };
 }
 
 export type RegularSlotInput = {

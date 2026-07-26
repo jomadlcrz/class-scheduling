@@ -17,6 +17,7 @@ import {
   GenerationConflictsAlert,
   useAutoGenerate,
 } from "~/features/schedules/schedule-generator";
+import type { ScheduleSuggestion } from "~/services/schedule.service";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -158,6 +159,7 @@ function SchedulesNewPage() {
     isGenerating,
     hasGenerated,
     conflicts: generationConflicts,
+    suggestions: generationSuggestions,
     generate,
     reset: resetGeneration,
   } = useAutoGenerate();
@@ -335,6 +337,44 @@ function SchedulesNewPage() {
       );
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Unable to generate a schedule.");
+    }
+  }
+
+  async function handleApplySuggestion(suggestion: ScheduleSuggestion) {
+    if (!suggestion.apply || !selectedSet || !selectedProgram || !selectedYearLevel) return;
+    const body = suggestion.apply.body as Record<string, unknown>;
+    setSaveError(null);
+    try {
+      const result = await scheduleService.upsertSubjectHourOverride({
+        subjectId: body.subjectId as number,
+        syId: body.syId as number,
+        semId: body.semId as number,
+        setId: body.setId != null ? (body.setId as number) : null,
+        lectureHours: body.lectureHours as number,
+        labHours: body.labHours as number,
+        meetings: body.meetings as number,
+        note: typeof body.note === "string" ? body.note : undefined,
+      });
+      toast.success(result.created ? "Override created." : "Override updated.");
+      // Re-generate after applying the override so the schedule reflects the change.
+      const generated = await generate({
+        schoolYear,
+        semester,
+        semesterLabel: semesterLabel(semester),
+        yearLevel: selectedYearLevel,
+        yearLevelLabel: yearLevelLabel(selectedYearLevel),
+        programId: selectedProgram.id,
+        setId: selectedSet.id,
+      });
+      tempIdCounter.current = 0;
+      setSlots(
+        generated.map((slot) => {
+          tempIdCounter.current += 1;
+          return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
+        }),
+      );
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Unable to apply suggestion.");
     }
   }
 
@@ -579,7 +619,7 @@ function SchedulesNewPage() {
 
           <AnimatePresence>
             {generationConflicts.length > 0 && (
-              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} onEditConflict={openConflictDrawer} />
+              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} suggestions={generationSuggestions} onEditConflict={openConflictDrawer} onApplySuggestion={handleApplySuggestion} />
             )}
           </AnimatePresence>
 
