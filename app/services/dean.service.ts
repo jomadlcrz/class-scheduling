@@ -179,6 +179,35 @@ async function createSubjectAssignments(
   return apiMessage(data);
 }
 
+/** GET /deans/teaching-terms — all teaching terms visible to the caller (dean: own department). */
+async function listTeachingTerms(params?: {
+  syId?: number;
+  semId?: number;
+}): Promise<TeachingTerm[]> {
+  const query = new URLSearchParams();
+  if (params?.syId != null) query.set("sy_id", String(params.syId));
+  if (params?.semId != null) query.set("sem_id", String(params.semId));
+  const qs = query.toString();
+  const data = await apiGet<{
+    id: number;
+    instructor_profile_id: number;
+    instructor_name: string;
+    sy_id: number;
+    sem_id: number;
+    max_weekly_hours: number | string;
+    current_weekly_hours: number | string;
+  }[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
+  return data.map((t) => ({
+    id: t.id,
+    instructorProfileId: t.instructor_profile_id,
+    instructorName: t.instructor_name,
+    syId: t.sy_id,
+    semId: t.sem_id,
+    maxWeeklyHours: Number(t.max_weekly_hours),
+    currentWeeklyHours: Number(t.current_weekly_hours),
+  }));
+}
+
 /** GET /deans/teaching-terms/<id> — one instructor's term-scoped load record. */
 async function getTeachingTerm(id: number): Promise<TeachingTerm> {
   const data = await apiGet<{
@@ -242,6 +271,7 @@ export const deanService = {
   listDepartmentSubjects,
   getFacultyLoading,
   createSubjectAssignments,
+  listTeachingTerms,
   getTeachingTerm,
   updateTeachingTerm,
   removeTeachingTerm,

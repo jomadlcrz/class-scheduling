@@ -268,8 +268,12 @@ async function autoGenerate(input: {
   yearLevelLabel: string;
   programId: number;
   setId: number;
+  withRebalance?: boolean;
 }): Promise<AutoGenerateResult> {
-  const data = await apiPost<AutoGenerateResponse>("/regular_schedule/auto-generate-schedule", {
+  const endpoint = input.withRebalance
+    ? "/regular_schedule/auto-generate-schedule/with-rebalance"
+    : "/regular_schedule/auto-generate-schedule";
+  const data = await apiPost<AutoGenerateResponse>(endpoint, {
     schoolYear: input.schoolYear,
     semester: input.semesterLabel,
     yearLevel: input.yearLevelLabel,
@@ -464,9 +468,125 @@ async function updateRegularSlot(
   return apiMessage(data);
 }
 
+/** PUT /regular_schedule/<id> — reassign room/instructor/subject/mode at the same slot (or move if day/time given). */
+async function updateRegular(
+  id: number,
+  input: {
+    subjectId?: number | null;
+    dayOfWeek?: string | null;
+    startTime?: string | null;
+    endTime?: string | null;
+    mode?: string | null;
+    instructorId?: number | null;
+    roomId?: number | null;
+  },
+): Promise<string> {
+  const payload: Record<string, unknown> = {};
+  if (input.subjectId != null) payload.subjectId = input.subjectId;
+  if (input.dayOfWeek != null) payload.dayOfWeek = input.dayOfWeek;
+  if (input.startTime != null) payload.startTime = input.startTime;
+  if (input.endTime != null) payload.endTime = input.endTime;
+  if (input.mode != null) payload.mode = input.mode;
+  if (input.instructorId != null) payload.instructorId = input.instructorId;
+  if (input.roomId != null) payload.roomId = input.roomId;
+  const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}`, payload);
+  return apiMessage(data);
+}
+
 /** DELETE /regular_schedule/<id> — hard delete. */
 async function removeRegular(id: number): Promise<string> {
   const data = await apiDelete<{ message?: string }>(`/regular_schedule/${id}`);
+  return apiMessage(data);
+}
+
+export type SubjectHourOverride = {
+  id: number;
+  subjectId: number;
+  subjectCode: string | null;
+  descriptiveTitle: string | null;
+  setId: number | null;
+  setName: string | null;
+  scope: "set" | "all_sets";
+  syId: number;
+  semId: number;
+  lectureHours: number;
+  labHours: number;
+  meetings: number;
+  totalWeeklyHours: number;
+  note: string | null;
+};
+
+type SubjectHourOverrideResponse = {
+  id: number;
+  subject_id: number;
+  subject_code: string | null;
+  descriptive_title: string | null;
+  set_id: number | null;
+  set_name: string | null;
+  scope: string;
+  sy_id: number;
+  sem_id: number;
+  lecture_hours: number;
+  lab_hours: number;
+  meetings: number;
+  total_weekly_hours: number;
+  note: string | null;
+};
+
+/** GET /schedule/subject-hour-overrides?syId=&semId=[&setId=] — per-subject hour overrides for a term. */
+async function listSubjectHourOverrides(params: {
+  syId: number;
+  semId: number;
+  setId?: number;
+}): Promise<SubjectHourOverride[]> {
+  const query = new URLSearchParams({ syId: String(params.syId), semId: String(params.semId) });
+  if (params.setId != null) query.set("setId", String(params.setId));
+  const data = await apiGet<SubjectHourOverrideResponse[]>(`/schedule/subject-hour-overrides?${query}`);
+  return data.map((r) => ({
+    id: r.id,
+    subjectId: r.subject_id,
+    subjectCode: r.subject_code,
+    descriptiveTitle: r.descriptive_title,
+    setId: r.set_id,
+    setName: r.set_name,
+    scope: r.scope as "set" | "all_sets",
+    syId: r.sy_id,
+    semId: r.sem_id,
+    lectureHours: Number(r.lecture_hours),
+    labHours: Number(r.lab_hours),
+    meetings: r.meetings,
+    totalWeeklyHours: Number(r.total_weekly_hours),
+    note: r.note,
+  }));
+}
+
+/** POST /schedule/subject-hour-overrides — create or update a per-subject hour override. */
+async function upsertSubjectHourOverride(input: {
+  subjectId: number;
+  syId: number;
+  semId: number;
+  setId?: number | null;
+  lectureHours: number;
+  labHours: number;
+  meetings: number;
+  note?: string;
+}): Promise<{ id: number; created: boolean }> {
+  const data = await apiPost<{ id: number; created: boolean }>("/schedule/subject-hour-overrides", {
+    subjectId: input.subjectId,
+    syId: input.syId,
+    semId: input.semId,
+    setId: input.setId,
+    lectureHours: input.lectureHours,
+    labHours: input.labHours,
+    meetings: input.meetings,
+    note: input.note,
+  });
+  return data;
+}
+
+/** DELETE /schedule/subject-hour-overrides/<id> — remove an override (reverts to subject type default). */
+async function deleteSubjectHourOverride(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/schedule/subject-hour-overrides/${id}`);
   return apiMessage(data);
 }
 
@@ -481,6 +601,10 @@ export const scheduleService = {
   getCreationContext,
   listPrograms,
   getRegular,
+  updateRegular,
   updateRegularSlot,
   removeRegular,
+  listSubjectHourOverrides,
+  upsertSubjectHourOverride,
+  deleteSubjectHourOverride,
 };
