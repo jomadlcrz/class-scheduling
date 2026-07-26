@@ -54,14 +54,15 @@ export function openFacultyLoadingPrint(
     *{box-sizing:border-box;margin:0}
     body{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:0.4in}
 
-    .fl-header{display:flex;align-items:center;justify-content:center;gap:0.15in;margin-bottom:0.4rem;line-height:1.12;position:relative}
+    .fl-header{display:flex;align-items:center;justify-content:center;gap:0.15in;padding-bottom:0.3rem;margin-bottom:0;line-height:1.12;border-bottom:2px solid #1e3a5f}
     .fl-header .fl-text{text-align:center}
-    .fl-header strong,.fl-header span,.fl-header small{display:block}
+    .fl-header strong,.fl-header span{display:block}
     .fl-header strong{font-size:15px}
     .fl-header span{font-size:10px}
-    .fl-header small{margin-top:0.25rem;font-size:9px}
 
-    .fl-logo{width:0.62in;height:0.62in;object-fit:contain}
+    .fl-heading{text-align:center;padding:0.25rem 0;font-size:14px;font-weight:700;letter-spacing:0.1em;margin-bottom:0.35rem}
+
+    .fl-logo{width:0.62in;height:0.62in;border-radius:50%;object-fit:contain}
 
     .fl-info{width:100%;border-collapse:collapse;margin-bottom:0.35rem}
     .fl-info td{border:1px solid #444;padding:0.12rem 0.25rem;font-size:9px;vertical-align:middle}
@@ -98,9 +99,10 @@ export function openFacultyLoadingPrint(
       <strong>GOLDEN WEST COLLEGES, INC.</strong>
       <span>San Jose Drive, Alaminos City, Pangasinan *Tel. No. (075) 552-7382</span>
       <span>Email Address: goldenwest.colleges@yahoo.com.ph</span>
-      <small>FACULTY LOADING</small>
     </div>
   </header>
+
+  <div class="fl-heading">FACULTY LOADING</div>
 
   <table class="fl-info">
     <tr>
