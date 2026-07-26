@@ -44,9 +44,11 @@ function FacultySchedulePage() {
           isLoading={isLoading}
           schoolYears={schoolYears}
           schoolYear={schoolYear}
+          schoolYearLabel={schoolYear}
           onSchoolYearChange={setSchoolYear}
           semesters={semesters}
           semester={semester}
+          semesterName={semesterLabel(semester)}
           onSemesterChange={setSemester}
           semesterLabel={semesterLabel}
         />
