@@ -236,14 +236,12 @@ export function SubjectAssignmentView() {
                               setEditingHours(entry.instructorName);
                               setHoursDraft(String(entry.maxWeeklyHours ?? ""));
                             }}
-                            className="group mt-1 flex items-center gap-1.5 font-body text-base font-bold text-navy-800 hover:text-gold-600 dark:text-white dark:hover:text-gold-400"
+                            className="mt-1 flex items-center gap-1.5 font-body text-base font-bold text-navy-800 hover:text-gold-600 dark:text-white dark:hover:text-gold-400"
                           >
                             <span>
                               {entry.maxWeeklyHours == null ? "—" : `${entry.maxWeeklyHours} hrs`}
                             </span>
-                            <span className="opacity-0 transition-opacity group-hover:opacity-100">
-                              <EditIcon />
-                            </span>
+                            <EditIcon />
                           </button>
                         )}
                       </div>
@@ -264,14 +262,10 @@ export function SubjectAssignmentView() {
                             if (entry.teachingTermId) setEditSubjectsTarget(entry);
                           }}
                           disabled={!entry.teachingTermId}
-                          className="group mt-1 flex items-center gap-1.5 font-body text-base font-bold text-navy-800 hover:text-gold-600 disabled:cursor-default disabled:hover:text-navy-800 dark:text-white dark:hover:text-gold-400 dark:disabled:hover:text-white"
+                          className="mt-1 flex items-center gap-1.5 font-body text-base font-bold text-navy-800 hover:text-gold-600 disabled:cursor-default disabled:hover:text-navy-800 dark:text-white dark:hover:text-gold-400 dark:disabled:hover:text-white"
                         >
                           <span>{entry.subjects.length}</span>
-                          {entry.teachingTermId && (
-                            <span className="opacity-0 transition-opacity group-hover:opacity-100">
-                              <EditIcon />
-                            </span>
-                          )}
+                          {entry.teachingTermId && <EditIcon />}
                         </button>
                       </div>
                     </div>

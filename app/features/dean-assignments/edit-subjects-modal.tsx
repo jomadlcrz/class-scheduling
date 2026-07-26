@@ -15,6 +15,12 @@ type EditSubjectsModalProps = {
   onSave: (teachingTermId: number, curriculumDetailIds: number[]) => Promise<void>;
 };
 
+function setsEqual(a: Set<number>, b: Set<number>) {
+  if (a.size !== b.size) return false;
+  for (const v of a) if (!b.has(v)) return false;
+  return true;
+}
+
 /** Build a subjectCode → curriculumDetailId lookup from the curriculum tree. */
 function buildSubjectIdMap(programs: DepartmentSubjectProgram[]): Map<string, number> {
   const map = new Map<string, number>();
@@ -42,27 +48,24 @@ export function EditSubjectsModal({
   const { yearLevelLabel } = useYearLevels();
   const subjectIdMap = useMemo(() => buildSubjectIdMap(programs), [programs]);
 
-  // Initialise selected IDs from the instructor's current subjects
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => {
+  const initialIds = useMemo(() => {
     const ids = new Set<number>();
     for (const s of currentSubjects) {
       const id = subjectIdMap.get(s.subjectCode);
       if (id != null) ids.add(id);
     }
     return ids;
-  });
+  }, [currentSubjects, subjectIdMap]);
+
+  // Initialise selected IDs from the instructor's current subjects
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set(initialIds));
 
   // Reset when modal opens with different data
   const resetKey = `${teachingTermId}-${currentSubjects.map((s) => s.subjectCode).join(",")}`;
   const [prevKey, setPrevKey] = useState(resetKey);
   if (resetKey !== prevKey) {
     setPrevKey(resetKey);
-    const ids = new Set<number>();
-    for (const s of currentSubjects) {
-      const id = subjectIdMap.get(s.subjectCode);
-      if (id != null) ids.add(id);
-    }
-    setSelectedIds(ids);
+    setSelectedIds(new Set(initialIds));
   }
 
   const toggle = (id: number) =>
@@ -87,6 +90,10 @@ export function EditSubjectsModal({
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
+    if (setsEqual(selectedIds, initialIds)) {
+      onClose();
+      return;
+    }
     setSaving(true);
     try {
       await onSave(teachingTermId, [...selectedIds]);
