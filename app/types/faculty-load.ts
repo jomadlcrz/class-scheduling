@@ -87,6 +87,8 @@ export type FacultyLoadingEntry = {
   semester: string;
   academicYear: string;
   maxWeeklyHours: number | null;
+  /** Populated from GET /deans/teaching-terms so maxWeeklyHours can be edited. */
+  teachingTermId: number | null;
   subjects: FacultyLoadingSubject[];
 };
 

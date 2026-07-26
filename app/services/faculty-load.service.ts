@@ -151,6 +151,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
     // Loose null check: the backend currently omits this field entirely rather than
     // sending null, so `undefined` must map to `null` too or Number(undefined) → NaN.
     maxWeeklyHours: entry.max_weekly_hours == null ? null : Number(entry.max_weekly_hours),
+    teachingTermId: null,
     subjects: entry.subjects.map((s) => ({
       subjectCode: s.subject_code,
       descriptiveTitle: s.descriptive_title,

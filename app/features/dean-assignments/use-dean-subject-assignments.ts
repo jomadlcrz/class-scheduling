@@ -69,10 +69,34 @@ export function useDeanSubjectAssignments() {
     setEntries(null);
     setLoadError(null);
 
-    facultyLoadService
-      .getFacultyLoading(Number(selectedSchoolYearId), Number(selectedSemesterId))
-      .then((data) => {
-        if (!cancelled) setEntries(data);
+    const syId = Number(selectedSchoolYearId);
+    const semId = Number(selectedSemesterId);
+
+    Promise.all([
+      facultyLoadService.getFacultyLoading(syId, semId),
+      deanService.listTeachingTerms({ syId, semId }),
+    ])
+      .then(([loadingData, teachingTerms]) => {
+        if (cancelled) return;
+        // Build a name → teaching-term lookup. The faculty-loading endpoint formats
+        // names as "Last, First M." while teaching-terms uses "First Last" — normalise
+        // both to "first last" lowercase for matching.
+        const normalize = (name: string) =>
+          name
+            .replace(/[.,]/g, "")
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .trim();
+        const byName = new Map(teachingTerms.map((t) => [normalize(t.instructorName), t]));
+        const merged = loadingData.map((entry) => {
+          const tt = byName.get(normalize(entry.instructorName));
+          return {
+            ...entry,
+            teachingTermId: tt?.id ?? null,
+            maxWeeklyHours: tt?.maxWeeklyHours ?? entry.maxWeeklyHours,
+          };
+        });
+        setEntries(merged);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -140,6 +164,12 @@ export function useDeanSubjectAssignments() {
     }
   }
 
+  async function updateMaxWeeklyHours(teachingTermId: number, hours: number) {
+    const message = await deanService.updateTeachingTerm(teachingTermId, hours);
+    if (message) toast.success(message);
+    refresh();
+  }
+
   const matchedSy = schoolYears.find((s) => String(s.id) === selectedSchoolYearId);
   const matchedSem = semesters.find((s) => String(s.id) === selectedSemesterId);
   const schoolYearLabel = matchedSy?.schoolYear ?? "";
@@ -168,6 +198,7 @@ export function useDeanSubjectAssignments() {
     // Actions
     createAssignments,
     deleteAssignment,
+    updateMaxWeeklyHours,
     refresh,
   };
 }

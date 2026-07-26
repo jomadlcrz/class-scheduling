@@ -140,6 +140,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
     semester: entry.semester,
     academicYear: entry.academic_year,
     maxWeeklyHours: entry.max_weekly_hours == null ? null : Number(entry.max_weekly_hours),
+    teachingTermId: null,
     subjects: entry.subjects.map((s) => ({
       subjectCode: s.subject_code,
       descriptiveTitle: s.descriptive_title,
@@ -189,22 +190,24 @@ async function listTeachingTerms(params?: {
   if (params?.semId != null) query.set("sem_id", String(params.semId));
   const qs = query.toString();
   const data = await apiGet<{
-    id: number;
-    instructor_profile_id: number;
-    instructor_name: string;
-    sy_id: number;
-    sem_id: number;
-    max_weekly_hours: number | string;
-    current_weekly_hours: number | string;
+    teaching_term_id: number;
+    instructor: {
+      instructor_profile_id: number;
+      full_name: string | null;
+    };
+    hours: {
+      max_weekly_hours: number;
+      current_weekly_hours: number;
+    };
   }[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
   return data.map((t) => ({
-    id: t.id,
-    instructorProfileId: t.instructor_profile_id,
-    instructorName: t.instructor_name,
-    syId: t.sy_id,
-    semId: t.sem_id,
-    maxWeeklyHours: Number(t.max_weekly_hours),
-    currentWeeklyHours: Number(t.current_weekly_hours),
+    id: t.teaching_term_id,
+    instructorProfileId: t.instructor?.instructor_profile_id ?? 0,
+    instructorName: t.instructor?.full_name ?? "",
+    syId: params?.syId ?? 0,
+    semId: params?.semId ?? 0,
+    maxWeeklyHours: t.hours?.max_weekly_hours ?? 0,
+    currentWeeklyHours: t.hours?.current_weekly_hours ?? 0,
   }));
 }
 
