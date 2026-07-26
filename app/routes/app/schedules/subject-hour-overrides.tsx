@@ -4,8 +4,11 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { Modal } from "~/components/ui/modal";
+import { FieldChrome } from "~/components/ui/input";
 import { PlusIcon } from "~/components/ui/icons";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { SubjectHourOverrideForm, type OverrideFormInput } from "~/features/schedules/subject-hour-override-form";
 import { SubjectHourOverrideTable } from "~/features/schedules/subject-hour-override-table";
@@ -34,8 +37,8 @@ export default function SubjectHourOverrides() {
 }
 
 function SubjectHourOverridesPage() {
-  const { schoolYears, defaultSchoolYear } = useSchoolYears();
-  const { semesters, semesterLabel } = useSemesters();
+  const { schoolYears, defaultSchoolYear, loading: syLoading } = useSchoolYears();
+  const { semesters, semesterLabel, loading: semLoading } = useSemesters();
 
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState(1);
@@ -174,39 +177,72 @@ function SubjectHourOverridesPage() {
         }
       />
 
-      {/* Term selector */}
-      <div className="mt-6 flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="sho-sy" className="font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            School Year
-          </label>
-          <select
-            id="sho-sy"
-            value={schoolYear}
-            onChange={(e) => { setSchoolYear(e.target.value); setOverrides(null); }}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-body text-sm text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100"
-          >
-            <option value="">— Select —</option>
-            {schoolYears.map((sy) => (
-              <option key={sy.id} value={sy.schoolYear}>{sy.schoolYear}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="sho-sem" className="font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Semester
-          </label>
-          <select
-            id="sho-sem"
-            value={semester}
-            onChange={(e) => { setSemester(Number(e.target.value)); setOverrides(null); }}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-body text-sm text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100"
-          >
-            {semesters.map((s) => (
-              <option key={s.semesterNumber} value={s.semesterNumber}>{s.semester}</option>
-            ))}
-          </select>
-        </div>
+      {/* Filters */}
+      <div className="mt-4 flex flex-col gap-4">
+        <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-2">
+          <FieldChrome id="sho-school-year" label="School Year">
+            <Select
+              items={
+                syLoading
+                  ? [{ value: "", label: "Loading…" }]
+                  : schoolYears.length === 0
+                    ? [{ value: "", label: "No school year" }]
+                    : schoolYears.map((y) => ({ value: y.schoolYear, label: y.schoolYear }))
+              }
+              value={schoolYear}
+              onValueChange={(v) => { setSchoolYear(v as string); setOverrides(null); }}
+            >
+              <SelectTrigger id="sho-school-year">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {syLoading ? (
+                  <SelectItem value="">Loading…</SelectItem>
+                ) : schoolYears.length === 0 ? (
+                  <SelectItem value="">No school year</SelectItem>
+                ) : (
+                  schoolYears.map((y) => (
+                    <SelectItem key={y.id} value={y.schoolYear}>
+                      {y.schoolYear}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
+          <FieldChrome id="sho-semester" label="Semester">
+            <Select
+              items={
+                semLoading
+                  ? [{ value: "", label: "Loading…" }]
+                  : semesters.length === 0
+                    ? [{ value: "", label: "No semester" }]
+                    : semesters
+                        .filter((s) => s.semesterNumber !== 3)
+                        .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))
+              }
+              value={semLoading ? "" : String(semester)}
+              onValueChange={(v) => { setSemester(Number(v)); setOverrides(null); }}
+            >
+              <SelectTrigger id="sho-semester">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {semLoading ? (
+                  <SelectItem value="">Loading…</SelectItem>
+                ) : semesters.length === 0 ? (
+                  <SelectItem value="">No semester</SelectItem>
+                ) : (
+                  semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
+                    <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>
+                      {semesterLabel(s.semesterNumber)}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
+        </Card>
       </div>
 
       {/* Overrides table */}

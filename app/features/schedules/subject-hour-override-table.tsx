@@ -64,7 +64,7 @@ export function SubjectHourOverrideTable({ overrides, onEdit, onDelete }: Props)
             <TableCell className="text-center tabular-nums">{fmt(o.labHours)}</TableCell>
             <TableCell className="text-center">{o.meetings}</TableCell>
             <TableCell className="text-center tabular-nums">{fmt(o.totalWeeklyHours)}h</TableCell>
-            <TableCell className="hidden lg:table-cell max-w-[12rem] truncate">
+            <TableCell className="hidden lg:table-cell max-w-48 truncate">
               {o.note ? (
                 <span className="font-body text-xs text-slate-500 dark:text-slate-400" title={o.note}>
                   {o.note}
