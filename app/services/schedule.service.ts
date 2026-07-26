@@ -37,7 +37,9 @@ type ViewScheduleResponse = {
   class_time: string;
   class_duration: string;
   dept_abbrev: string | null;
+  instructor_id: number;
   instructor_name: string;
+  room_id: number | null;
   room_name: string | null;
   /** Only present when the viewer is a STUDENT (StudentAcademic.enrolled_status). */
   academic_status?: string;
@@ -81,9 +83,9 @@ async function view(): Promise<Schedule[]> {
       program: programAbbrev ?? r.dept_abbrev ?? "",
       departmentCode: r.dept_abbrev ?? "",
       yearLevel: ([1, 2, 3, 4].includes(yearLevel) ? yearLevel : 1) as YearLevel,
-      facultyId: "",
+      facultyId: String(r.instructor_id),
       facultyName: r.instructor_name,
-      roomId: "",
+      roomId: r.room_id != null ? String(r.room_id) : "",
       roomName: r.room_name ?? "",
       mode: normalizeMode(r.mode),
       day: DAY_BY_LABEL[r.day_of_week] ?? "M",
