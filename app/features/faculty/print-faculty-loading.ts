@@ -28,8 +28,8 @@ export function openFacultyLoadingPrint(
       const borderClass = isFirst ? 'style="border-top:2px solid #1e3a5f"' : "";
       rows.push(`
         <tr ${borderClass}>
-          ${isFirst ? `<td rowspan="${subject.schedules.length}">${safe(subject.subjectCode)}</td>` : ""}
-          ${isFirst ? `<td rowspan="${subject.schedules.length}">${safe(subject.descriptiveTitle)}</td>` : ""}
+          ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${safe(subject.subjectCode)}</td>` : ""}
+          ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${safe(subject.descriptiveTitle)}</td>` : ""}
           ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${subject.units.lecHours}</td>` : ""}
           ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${subject.units.labHours}</td>` : ""}
           <td class="center">${safe(sched.day)}</td>
@@ -69,23 +69,11 @@ export function openFacultyLoadingPrint(
     .fl-info td.lbl{font-weight:700;width:12%;background:#f5f5f5}
     .fl-info td.oval{width:38%}
 
-    .fl-table{width:100%;border-collapse:collapse}
+    .fl-table{width:100%;border-collapse:collapse;table-layout:fixed}
     .fl-table th,.fl-table td{border:1px solid #444;padding:0.12rem 0.15rem;font-size:8px;line-height:1.2;vertical-align:middle}
     .fl-table th{background:#f5f5f5;font-weight:700;text-align:center;font-size:8px}
     .fl-table .center{text-align:center}
     .fl-table .bold{font-weight:700}
-
-    .fl-table td:nth-child(1),.fl-table thead tr:last-child th:nth-child(1){width:8%;text-align:center}
-    .fl-table td:nth-child(2),.fl-table thead tr:last-child th:nth-child(2){width:22%;text-align:center}
-    .fl-table td:nth-child(3),.fl-table thead tr:last-child th:nth-child(3){width:4%;text-align:center}
-    .fl-table td:nth-child(4),.fl-table thead tr:last-child th:nth-child(4){width:4%;text-align:center}
-    .fl-table td:nth-child(5),.fl-table thead tr:last-child th:nth-child(5){width:9%;text-align:center}
-    .fl-table td:nth-child(6),.fl-table thead tr:last-child th:nth-child(6){width:14%;text-align:center}
-    .fl-table td:nth-child(7),.fl-table thead tr:last-child th:nth-child(7){width:5%;text-align:center}
-    .fl-table td:nth-child(8),.fl-table thead tr:last-child th:nth-child(8){width:8%;text-align:center}
-    .fl-table td:nth-child(9),.fl-table thead tr:last-child th:nth-child(9){width:5%;text-align:center}
-    .fl-table td:nth-child(10),.fl-table thead tr:last-child th:nth-child(10){width:9%;text-align:center}
-    .fl-table td:nth-child(11),.fl-table thead tr:last-child th:nth-child(11){width:12%;text-align:center}
 
     .fl-table .group-label{font-size:8px;letter-spacing:0.05em;background:#e5e7eb}
     .fl-empty{text-align:center;padding:1rem;font-size:9px;color:#666}
@@ -123,6 +111,19 @@ export function openFacultyLoadingPrint(
 
   ${rows.length === 0 ? '<p class="fl-empty">No classes scheduled for the selected term.</p>' : `
   <table class="fl-table">
+    <colgroup>
+      <col style="width:8%" />
+      <col style="width:22%" />
+      <col style="width:4%" />
+      <col style="width:4%" />
+      <col style="width:9%" />
+      <col style="width:14%" />
+      <col style="width:5%" />
+      <col style="width:8%" />
+      <col style="width:5%" />
+      <col style="width:9%" />
+      <col style="width:12%" />
+    </colgroup>
     <thead>
       <tr>
         <th rowspan="2">SUBJECT CODE</th>
