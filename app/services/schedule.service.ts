@@ -322,7 +322,7 @@ async function createRegular(input: {
   programId: number;
   setId: number;
   slots: RegularSlotInput[];
-}): Promise<{ message?: string; warnings?: string[] }> {
+}): Promise<{ message?: string; warnings?: string[]; rescheduled?: string[] }> {
   const byDay = new Map<Day, RegularSlotInput[]>();
   for (const slot of input.slots) {
     const slots = byDay.get(slot.day) ?? [];
@@ -330,7 +330,7 @@ async function createRegular(input: {
     slots.push(slot);
   }
 
-  return apiPost<{ message?: string; warnings?: string[] }>("/regular_schedule/create-regular-class-schedules", {
+  return apiPost<{ message?: string; warnings?: string[]; rescheduled?: string[] }>("/regular_schedule/create-regular-class-schedules", {
     schoolYear: input.schoolYear,
     semester: input.semester,
     programId: input.programId,
@@ -453,12 +453,12 @@ async function getRegular(id: number): Promise<RegularScheduleDetail> {
   };
 }
 
-/** PUT /regular_schedule/<id> — reassigns room/instructor only (subject/day/time can't be changed here). 409 on conflict. */
+/** PUT /regular_schedule/<id>/reschedule — moves a saved session to a new day/time/room. 409 on conflict. */
 async function updateRegularSlot(
   id: number,
-  input: { roomId?: number | null; instructorId?: number | null; day?: string; startTime?: string },
+  input: { dayOfWeek: string; startTime: string; endTime: string; roomId?: number | null },
 ): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}`, input);
+  const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}/reschedule`, input);
   return apiMessage(data);
 }
 

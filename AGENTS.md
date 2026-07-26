@@ -23,7 +23,7 @@ The auth slice is live against the backend end-to-end:
 - **Success messages** follow the same rule: mutation service functions return the backend response's `message` verbatim via `apiMessage(data)` (`lib/api.ts`) — typed as `apiPost<{ message?: string }>(…)` — and route handlers surface it with `if (message) toast.success(message);` (sonner). Never write frontend success copy; if the response carries no `message`, show no toast (and fix it backend-side). Errors stay inline via `FormError` — do not toast them.
 - If the backend response is missing something (a filtered value, an absent endpoint), fix or request it backend-side rather than patching values into the frontend.
 
-**Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `FACULTY`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Users + Roles admin pages are live (`/users`, `/roles`).
+**Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `FACULTY`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Administrators + Permissions pages are live (`/administrators`, `/permissions`).
 
 **Stack:** React Router 7 (framework mode, SSR), React 19, TypeScript (strict), Tailwind CSS v4 (CSS-first config in `app/app.css`), `motion` for animation. No state-management or data-fetching library.
 
@@ -57,11 +57,12 @@ app/
 │   └── theme/             # ThemeProvider + ThemeToggle (class-based dark mode)
 ├── features/<domain>/     # Feature-specific components (scheduling, faculty, rooms, ai, …)
 ├── landing/               # Marketing/landing page components (header, hero, footer, legal-layout)
-├── layouts/               # App-shell layouts (EMPTY STUBS)
-├── hooks/                 # Shared hooks (use-theme, use-auth are live; rest are stubs)
-├── lib/                   # Pure utilities (validators, storage, api, session are live)
+├── layouts/               # App-shell layouts (app-shell, sidebar, navbar, breadcrumb, settings-layout, …)
+├── hooks/                 # Shared hooks (use-theme, use-auth, use-pagination, use-modal, use-debounce, …)
+├── lib/                   # Pure utilities (validators, storage, api, session, permissions, time, …)
+├── schemas/               # Zod schemas — required-field checks only; business-rule validation is backend-enforced
 ├── services/              # Data layer — all services talk to the REAL backend
-└── types/                 # Domain types (user, auth, role, subject are live; rest are stubs)
+└── types/                 # Domain types (user, auth, subject, room, schedule, student, …)
 ```
 
 **Where code goes:** generic, reusable UI → `components/ui`; domain-specific UI → `features/<domain>/`; pure logic → `lib/`; route files stay thin (meta + layout + composition — no markup-heavy forms or duplicated chrome inside routes).
@@ -95,7 +96,7 @@ app/
 | Theme context | `ThemeProvider` (`components/theme/theme-provider.tsx`), `useTheme` (`hooks/use-theme.ts`) |
 | Auth state (user, login, logout) | `AuthProvider` (`app/auth/auth-provider.tsx`), `useAuth` (`hooks/use-auth.ts`) — provider is mounted in `root.tsx` |
 | Route protection | `AuthGuard` / `GuestGuard` / `RoleGuard` — `app/auth/auth-guard.tsx`, `guest-guard.tsx`, `role-guard.tsx` |
-| Badges (incl. role/status) | `Badge` (`components/ui/badge.tsx`), `RoleBadge` (`features/users/role-badge.tsx`) |
+| Badges (incl. role/status) | `Badge` (`components/ui/badge.tsx`), `RoleBadge` (`features/administrators/role-badge.tsx`) |
 | Tables | `Table`/`TableHead`/`TableBody`/`TableRow`/`TableHeader`/`TableCell` — `components/ui/table.tsx` |
 | Modals & confirmations | `Modal`, `ConfirmDialog` — `components/ui/modal.tsx` |
 | Select dropdown | `Select` — `components/ui/select.tsx` (shares `FieldChrome`/`inputClassName` from input.tsx) |
@@ -112,7 +113,7 @@ app/
 
 Tokens are defined in `app/app.css` under `@theme` — use the Tailwind names, never hard-code hex values in JSX.
 
-- **Fonts (two only):** `font-display` (Bebas Neue) for the wordmark and headings with `tracking-wide`; `font-sans` (Century Gothic) for everything else. Both served locally from `/public/fonts`.
+- **Fonts (two only):** `font-display` (Bebas Neue) for the wordmark and headings with `tracking-wide`; `font-body` (Century Gothic) for everything else. Both served locally from `/public/fonts`.
 - **Colors:** `navy-300…950` (primary + dark surfaces), `gold-300…600` (accent, focus rings), `cream-50/100` (light surfaces), Tailwind `slate` for neutral text/borders.
 - **Dark mode:** class-based (`.dark` on `<html>`, toggled by `ThemeProvider`, persisted as `localStorage["gwc-theme"]`, pre-paint init script in `root.tsx`). **Every visual class needs a `dark:` counterpart** — light: `bg-cream-50`, borders `slate-300`; dark: `bg-navy-950`, borders `white/10–15`.
 - **Recurring patterns:** primary button = `bg-navy-800 … dark:bg-white dark:text-navy-900`; ambient radial-gradient backdrops; `blueprint-grid` utility for the timetable texture; `rounded-lg` inputs/buttons, `rounded-full` icon buttons; `motion/react` with `AnimatePresence` for enter/exit animation, durations 150–250ms.

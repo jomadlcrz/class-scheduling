@@ -40,6 +40,7 @@ import { setService } from "~/services/set.service";
 
 import type { Program } from "~/types/program";
 import {
+  DAY_LABELS,
   formatTime,
   type Day,
   type Schedule,
@@ -426,8 +427,10 @@ function SchedulesNewPage() {
       const savedId = Number(conflictPrefill.savedScheduleId);
       try {
         const msg = await scheduleService.updateRegularSlot(savedId, {
-          day: slot.day,
+          dayOfWeek: DAY_LABELS[slot.day],
           startTime: slot.startTime,
+          endTime: slot.endTime,
+          roomId: slot.roomId,
         });
         if (msg) toast.success(msg);
         setSlots((current) => [
@@ -501,6 +504,9 @@ function SchedulesNewPage() {
       if (result.message) toast.success(result.message);
       if (result.warnings?.length) {
         for (const w of result.warnings) toast.warning(w);
+      }
+      if (result.rescheduled?.length) {
+        for (const n of result.rescheduled) toast.info(n);
       }
       navigate("/schedules/regular-class");
     } catch (err) {
