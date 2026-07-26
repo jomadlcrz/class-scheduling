@@ -1,4 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { PrinterIcon } from "~/components/ui/icons";
+import { openFacultyLoadingPrint } from "~/features/faculty/print-faculty-loading";
 import type { FacultyLoadingEntry } from "~/types/faculty-load";
 import type { Semester } from "~/types/semester";
 
@@ -64,9 +66,11 @@ export function DeanFacultyLoadsView({
   entries,
   selectedIndex,
   onSelectedIndexChange,
+  schoolYearLabel,
   schoolYears,
   selectedSchoolYearId,
   onSchoolYearChange,
+  semesterName,
   semesters,
   selectedSemesterId,
   onSemesterChange,
@@ -77,7 +81,7 @@ export function DeanFacultyLoadsView({
   return (
     <div className="mx-auto max-w-[960px overflow-hidden border border-slate-300 bg-white dark:border-white/15 dark:bg-navy-950">
       {/* ── Letterhead ── */}
-      <div className="flex items-center justify-center gap-4 border-b-2 border-navy-800 px-4 py-3 dark:border-navy-400">
+      <div className="relative flex items-center justify-center gap-4 border-b-2 border-navy-800 px-4 py-3 dark:border-navy-400">
         <img
           src="/images/logos/gwc-logo.avif"
           alt="GWC logo"
@@ -94,6 +98,18 @@ export function DeanFacultyLoadsView({
             Email Address: goldenwest.colleges@yahoo.com.ph
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (entry) openFacultyLoadingPrint(entry, { schoolYear: schoolYearLabel, semesterLabel: semesterName });
+          }}
+          disabled={!entry}
+          className="no-print absolute right-4 grid size-9 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-navy-100 hover:text-navy-800 disabled:cursor-default disabled:opacity-40 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+          aria-label="Print faculty loading"
+          title="Print"
+        >
+          <PrinterIcon size={18} />
+        </button>
       </div>
 
       {/* ── Title ── */}

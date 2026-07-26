@@ -7,6 +7,7 @@ import type {
   FacultyLoadingResponse,
   SubjectAssignment,
   TeachingTerm,
+  TeachingTermDetail,
 } from "~/types/faculty-load";
 
 type DepartmentInstructorsResponse = {
@@ -199,6 +200,10 @@ async function listTeachingTerms(params?: {
       max_weekly_hours: number;
       current_weekly_hours: number;
     };
+    subject_assignments: {
+      subject_assignment_id: number;
+      subject_code: string | null;
+    }[];
   }[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
   return data.map((t) => ({
     id: t.teaching_term_id,
@@ -208,6 +213,10 @@ async function listTeachingTerms(params?: {
     semId: params?.semId ?? 0,
     maxWeeklyHours: t.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: t.hours?.current_weekly_hours ?? 0,
+    subjectAssignments: (t.subject_assignments ?? []).map((sa) => ({
+      subjectAssignmentId: sa.subject_assignment_id,
+      subjectCode: sa.subject_code ?? "",
+    })),
   }));
 }
 
@@ -264,10 +273,24 @@ async function getSubjectAssignment(id: number): Promise<SubjectAssignment> {
   };
 }
 
-/** DELETE /deans/subject-assignments/<id> — hard delete of the link row. */
-async function removeSubjectAssignment(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/deans/subject-assignments/${id}`);
+/** DELETE /deans/teaching-terms/<tid>/subject-assignments/<aid> — per-row removal. */
+async function removeSubjectAssignment(teachingTermId: number, assignmentId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(
+    `/deans/teaching-terms/${teachingTermId}/subject-assignments/${assignmentId}`,
+  );
   return apiMessage(data);
+}
+
+/** DELETE /deans/teaching-terms/<id>[?cascade=true] — removes term and optionally its assignments. */
+async function deleteTeachingTerm(id: number, cascade = false): Promise<string> {
+  const qs = cascade ? "?cascade=true" : "";
+  const data = await apiDelete<{ message?: string }>(`/deans/teaching-terms/${id}${qs}`);
+  return apiMessage(data);
+}
+
+/** GET /deans/teaching-terms/<id> — full rich payload with daily loads, sessions, utilization. */
+async function getTeachingTermDetail(id: number): Promise<TeachingTermDetail> {
+  return apiGet<TeachingTermDetail>(`/deans/teaching-terms/${id}`);
 }
 
 export const deanService = {
@@ -279,8 +302,10 @@ export const deanService = {
   createSubjectAssignments,
   listTeachingTerms,
   getTeachingTerm,
+  getTeachingTermDetail,
   updateTeachingTerm,
   removeTeachingTerm,
+  deleteTeachingTerm,
   getSubjectAssignment,
   removeSubjectAssignment,
 };

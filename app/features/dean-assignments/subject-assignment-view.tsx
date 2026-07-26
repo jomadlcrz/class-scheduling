@@ -1,15 +1,17 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
-import { BookOpenIcon, CheckIcon, ClockIcon, EditIcon, LayersIcon, PlusIcon } from "~/components/ui/icons";
+import { ConfirmDialog } from "~/components/ui/modal";
+import { BookOpenIcon, CheckIcon, ClockIcon, EditIcon, EyeIcon, LayersIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { Pagination } from "~/components/ui/pagination";
 import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-assignment-toolbar";
 import { EditSubjectsModal } from "~/features/dean-assignments/edit-subjects-modal";
 import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
 import { PageHeader } from "~/layouts/page-header";
-import type { DepartmentSubjectProgram, FacultyLoadingEntry } from "~/types/faculty-load";
+import type { DepartmentSubjectProgram, FacultyLoadingEntry, FacultyLoadingSubject } from "~/types/faculty-load";
 
 const PAGE_SIZE = 5;
 
@@ -35,7 +37,20 @@ function Summary({ icon, label, value }: { icon: ReactNode; label: string; value
   );
 }
 
-function ProgramPanels({ entry, programs }: { entry: FacultyLoadingEntry; programs: DepartmentSubjectProgram[] }) {
+function ProgramPanels({
+  entry,
+  programs,
+  subjectAssignmentIds,
+  onDeleteAssignment,
+}: {
+  entry: FacultyLoadingEntry;
+  programs: DepartmentSubjectProgram[];
+  subjectAssignmentIds?: Map<string, number>;
+  onDeleteAssignment?: (teachingTermId: number, assignmentId: number) => Promise<void>;
+}) {
+  const [removeTarget, setRemoveTarget] = useState<{ assignmentId: number; subjectCode: string } | null>(null);
+  const [removing, setRemoving] = useState(false);
+
   const groups = new Map<string, { program: DepartmentSubjectProgram; rows: FacultyLoadingEntry["subjects"] }>();
   entry.subjects.forEach((subject) => {
     const program = programs.find((item) =>
@@ -48,55 +63,102 @@ function ProgramPanels({ entry, programs }: { entry: FacultyLoadingEntry; progra
   });
   const groupCount = groups.size;
 
+  async function handleRemove() {
+    if (!removeTarget || !entry.teachingTermId || !onDeleteAssignment) return;
+    setRemoving(true);
+    try {
+      await onDeleteAssignment(entry.teachingTermId, removeTarget.assignmentId);
+      setRemoveTarget(null);
+    } finally {
+      setRemoving(false);
+    }
+  }
+
   return (
-    <div className={`grid gap-4 p-4 ${groupCount <= 1 ? "grid-cols-1" : "xl:grid-cols-2"}`}>
-      {[...groups.values()].map(({ program, rows }) => (
-        <section
-          key={program.programAbbrev || program.programName}
-          className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5"
-        >
-          <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
-            <div>
-              <h3 className="font-body text-sm font-bold text-navy-800 dark:text-white">
-                {program.programAbbrev || program.programName}
-              </h3>
-              <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">{program.programName}</p>
-            </div>
-            <span className="rounded-full bg-navy-100 px-2.5 py-1 font-body text-xs font-semibold text-navy-800 dark:bg-white/10 dark:text-white">
-              {rows.length} subject{rows.length === 1 ? "" : "s"}
-            </span>
-          </header>
-          <table className="w-full font-body text-sm">
-            <thead className="text-left text-xs text-slate-500 dark:text-slate-400">
-              <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-3 py-3">Subject Code</th>
-                <th className="px-3 py-3">Descriptive Title</th>
-                <th className="px-4 py-3 text-right">Units</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((subject, index) => (
-                <tr key={subject.subjectCode} className="border-t border-slate-200 dark:border-white/10">
-                  <td className="px-4 py-3">{index + 1}</td>
-                  <td className="px-3 py-3 font-semibold text-navy-800 dark:text-white">{subject.subjectCode}</td>
-                  <td className="px-3 py-3 text-slate-600 dark:text-slate-300">{subject.descriptiveTitle}</td>
-                  <td className="px-4 py-3 text-right font-semibold">{subject.units.total}</td>
+    <>
+      <div className={`grid gap-4 p-4 ${groupCount <= 1 ? "grid-cols-1" : "xl:grid-cols-2"}`}>
+        {[...groups.values()].map(({ program, rows }) => (
+          <section
+            key={program.programAbbrev || program.programName}
+            className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5"
+          >
+            <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
+              <div>
+                <h3 className="font-body text-sm font-bold text-navy-800 dark:text-white">
+                  {program.programAbbrev || program.programName}
+                </h3>
+                <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">{program.programName}</p>
+              </div>
+              <span className="rounded-full bg-navy-100 px-2.5 py-1 font-body text-xs font-semibold text-navy-800 dark:bg-white/10 dark:text-white">
+                {rows.length} subject{rows.length === 1 ? "" : "s"}
+              </span>
+            </header>
+            <table className="w-full font-body text-sm">
+              <thead className="text-left text-xs text-slate-500 dark:text-slate-400">
+                <tr>
+                  <th className="px-4 py-3">#</th>
+                  <th className="px-3 py-3">Subject Code</th>
+                  <th className="px-3 py-3">Descriptive Title</th>
+                  <th className="px-4 py-3 text-right">Units</th>
+                  {subjectAssignmentIds && <th className="px-3 py-3 text-center" />}
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t border-slate-200 dark:border-white/10">
-                <td colSpan={3} className="px-4 py-3 font-semibold text-navy-800 dark:text-white">
-                  Total Subjects
-                </td>
-                <td className="px-4 py-3 text-right font-bold text-navy-800 dark:text-white">{rows.length}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </section>
-      ))}
-    </div>
+              </thead>
+              <tbody>
+                {rows.map((subject, index) => {
+                  const assignmentId = subjectAssignmentIds?.get(subject.subjectCode);
+                  return (
+                    <tr key={subject.subjectCode} className="border-t border-slate-200 dark:border-white/10">
+                      <td className="px-4 py-3">{index + 1}</td>
+                      <td className="px-3 py-3 font-semibold text-navy-800 dark:text-white">{subject.subjectCode}</td>
+                      <td className="px-3 py-3 text-slate-600 dark:text-slate-300">{subject.descriptiveTitle}</td>
+                      <td className="px-4 py-3 text-right font-semibold">{subject.units.total}</td>
+                      {subjectAssignmentIds && (
+                        <td className="px-3 py-3 text-center">
+                          {assignmentId != null && onDeleteAssignment && entry.teachingTermId && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRemoveTarget({ assignmentId, subjectCode: subject.subjectCode });
+                              }}
+                              className="grid size-7 place-items-center rounded text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                              aria-label={`Remove ${subject.subjectCode}`}
+                            >
+                              <TrashIcon />
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-slate-200 dark:border-white/10">
+                  <td colSpan={3} className="px-4 py-3 font-semibold text-navy-800 dark:text-white">
+                    Total Subjects
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold text-navy-800 dark:text-white">{rows.length}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </section>
+        ))}
+      </div>
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        onClose={() => setRemoveTarget(null)}
+        title="Remove Subject Assignment"
+        confirmLabel="Remove"
+        loadingLabel="Removing…"
+        confirmVariant="danger"
+        onConfirm={handleRemove}
+      >
+        Are you sure you want to remove <strong>{removeTarget?.subjectCode}</strong> from this instructor&apos;s term?
+        If this subject has scheduled sessions, the removal will be blocked.
+      </ConfirmDialog>
+    </>
   );
 }
 
@@ -108,6 +170,9 @@ export function SubjectAssignmentView() {
   const [editingHours, setEditingHours] = useState<string | null>(null);
   const [hoursDraft, setHoursDraft] = useState("");
   const [editSubjectsTarget, setEditSubjectsTarget] = useState<FacultyLoadingEntry | null>(null);
+  const [deleteTermTarget, setDeleteTermTarget] = useState<FacultyLoadingEntry | null>(null);
+  const [deleteCascade, setDeleteCascade] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const entries = (data.entries ?? []).filter((entry) =>
     `${entry.instructorName} ${entry.department}`.toLowerCase().includes(search.toLowerCase()),
@@ -116,6 +181,24 @@ export function SubjectAssignmentView() {
   const loading = data.termsLoading || data.semestersLoading || data.entries === null || data.subjects === null;
 
   useEffect(() => setPage(1), [search, data.selectedSchoolYearId, data.selectedSemesterId]);
+
+  async function handleDeleteTerm() {
+    if (!deleteTermTarget?.teachingTermId) return;
+    setDeleting(true);
+    try {
+      await data.deleteTeachingTerm(deleteTermTarget.teachingTermId, deleteCascade);
+      setDeleteTermTarget(null);
+      setDeleteCascade(false);
+    } catch (err) {
+      if (err instanceof Error && (err.message.includes("409") || err.message.includes("subject assignment"))) {
+        setDeleteCascade(true);
+        throw err;
+      }
+      throw err;
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -163,7 +246,7 @@ export function SubjectAssignmentView() {
                 ).size;
 
                 const title = (
-                  <div className="grid gap-5 lg:grid-cols-[1.45fr_repeat(3,.8fr)] lg:items-center">
+                  <div className="grid gap-5 lg:grid-cols-[1.45fr_repeat(3,.8fr)_auto] lg:items-center">
                     <div className="flex items-center gap-3">
                       <span className="grid size-10 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-white dark:bg-white dark:text-navy-900">
                         {initials(entry.instructorName)}
@@ -269,6 +352,39 @@ export function SubjectAssignmentView() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Actions column */}
+                    <div className="flex items-center gap-1.5 border-l border-slate-200 pl-5 dark:border-white/10">
+                      {entry.teachingTermId && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/dean/teaching-terms/${entry.teachingTermId}`);
+                          }}
+                          className="grid size-8 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-navy-100 hover:text-navy-800 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                          aria-label="View schedule detail"
+                          title="View schedule detail"
+                        >
+                          <EyeIcon />
+                        </button>
+                      )}
+                      {entry.teachingTermId && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteCascade(false);
+                            setDeleteTermTarget(entry);
+                          }}
+                          className="grid size-8 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                          aria-label="Delete teaching term"
+                          title="Delete teaching term"
+                        >
+                          <TrashIcon />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
 
@@ -277,7 +393,12 @@ export function SubjectAssignmentView() {
                     key={entry.instructorName}
                     title={title}
                   >
-                    <ProgramPanels entry={entry} programs={data.subjects ?? []} />
+                    <ProgramPanels
+                      entry={entry}
+                      programs={data.subjects ?? []}
+                      subjectAssignmentIds={entry.subjectAssignmentIds}
+                      onDeleteAssignment={data.deleteAssignment}
+                    />
                   </AccordionItem>
                 );
               })}
@@ -303,6 +424,30 @@ export function SubjectAssignmentView() {
           onSave={data.updateSubjects}
         />
       )}
+
+      {/* ── Delete term confirm ── */}
+      <ConfirmDialog
+        open={deleteTermTarget !== null}
+        onClose={() => { setDeleteTermTarget(null); setDeleteCascade(false); }}
+        title={deleteCascade ? "Delete Term with Assignments" : "Delete Teaching Term"}
+        confirmLabel={deleteCascade ? "Delete All" : "Delete Term"}
+        loadingLabel="Deleting…"
+        confirmVariant="danger"
+        onConfirm={handleDeleteTerm}
+      >
+        {deleteCascade ? (
+          <p>
+            This will permanently delete <strong>{deleteTermTarget?.instructorName}</strong>&apos;s teaching term,
+            its daily loads, <strong>and all {deleteTermTarget?.subjects.length ?? 0} subject assignment(s)</strong>.
+            If any subject is already scheduled, the deletion will be blocked.
+          </p>
+        ) : (
+          <p>
+            This will delete <strong>{deleteTermTarget?.instructorName}</strong>&apos;s teaching term and its daily loads.
+            If it still has subject assignments, you&apos;ll be asked to confirm again with cascade enabled.
+          </p>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

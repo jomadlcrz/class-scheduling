@@ -2,13 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
-import { deanService, type DepartmentInstructor } from "~/services/dean.service";
-import { facultyLoadService } from "~/services/faculty-load.service";
 import { formatInstructorName } from "~/lib/faculty-load";
+import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { programService } from "~/services/program.service";
 import type {
   DepartmentSubjectProgram,
   FacultyLoadingEntry,
+  TeachingTermDetail,
 } from "~/types/faculty-load";
 
 export function useDeanSubjectAssignments() {
@@ -73,7 +73,7 @@ export function useDeanSubjectAssignments() {
     const semId = Number(selectedSemesterId);
 
     Promise.all([
-      facultyLoadService.getFacultyLoading(syId, semId),
+      deanService.getFacultyLoading(syId, semId),
       deanService.listTeachingTerms({ syId, semId }),
     ])
       .then(([loadingData, teachingTerms]) => {
@@ -90,10 +90,15 @@ export function useDeanSubjectAssignments() {
         const byName = new Map(teachingTerms.map((t) => [normalize(t.instructorName), t]));
         const merged = loadingData.map((entry) => {
           const tt = byName.get(normalize(entry.instructorName));
+          // Build a subjectCode → subjectAssignmentId lookup from the teaching term
+          const assignmentIdMap = new Map(
+            (tt?.subjectAssignments ?? []).map((sa) => [sa.subjectCode, sa.subjectAssignmentId]),
+          );
           return {
             ...entry,
             teachingTermId: tt?.id ?? null,
             maxWeeklyHours: tt?.maxWeeklyHours ?? entry.maxWeeklyHours,
+            subjectAssignmentIds: assignmentIdMap,
           };
         });
         setEntries(merged);
@@ -153,10 +158,10 @@ export function useDeanSubjectAssignments() {
     }
   }
 
-  async function deleteAssignment(assignmentId: number) {
+  async function deleteAssignment(teachingTermId: number, assignmentId: number) {
     setMutating(true);
     try {
-      const message = await facultyLoadService.removeSubjectAssignment(assignmentId);
+      const message = await deanService.removeSubjectAssignment(teachingTermId, assignmentId);
       if (message) toast.success(message);
       refresh();
     } finally {
@@ -174,6 +179,16 @@ export function useDeanSubjectAssignments() {
     const message = await deanService.updateTeachingTerm(teachingTermId, { curriculumDetailIds });
     if (message) toast.success(message);
     refresh();
+  }
+
+  async function deleteTeachingTerm(teachingTermId: number, cascade: boolean) {
+    const message = await deanService.deleteTeachingTerm(teachingTermId, cascade);
+    if (message) toast.success(message);
+    refresh();
+  }
+
+  async function fetchTeachingTermDetail(id: number): Promise<TeachingTermDetail> {
+    return deanService.getTeachingTermDetail(id);
   }
 
   const matchedSy = schoolYears.find((s) => String(s.id) === selectedSchoolYearId);
@@ -204,6 +219,8 @@ export function useDeanSubjectAssignments() {
     // Actions
     createAssignments,
     deleteAssignment,
+    deleteTeachingTerm,
+    fetchTeachingTermDetail,
     updateMaxWeeklyHours,
     updateSubjects,
     refresh,

@@ -219,9 +219,11 @@ async function getSubjectAssignment(id: number): Promise<SubjectAssignment> {
   };
 }
 
-/** DELETE /deans/subject-assignments/<id> — hard delete of the link row. */
-async function removeSubjectAssignment(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/deans/subject-assignments/${id}`);
+/** DELETE /deans/teaching-terms/<tid>/subject-assignments/<aid> — per-row removal. */
+async function removeSubjectAssignment(teachingTermId: number, assignmentId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(
+    `/deans/teaching-terms/${teachingTermId}/subject-assignments/${assignmentId}`,
+  );
   return apiMessage(data);
 }
 

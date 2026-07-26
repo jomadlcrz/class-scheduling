@@ -89,6 +89,8 @@ export type FacultyLoadingEntry = {
   maxWeeklyHours: number | null;
   /** Populated from GET /deans/teaching-terms so maxWeeklyHours can be edited. */
   teachingTermId: number | null;
+  /** subjectCode → subjectAssignmentId lookup, merged from teaching terms. */
+  subjectAssignmentIds?: Map<string, number>;
   subjects: FacultyLoadingSubject[];
 };
 
@@ -101,6 +103,8 @@ export type TeachingTerm = {
   semId: number;
   maxWeeklyHours: number;
   currentWeeklyHours: number;
+  /** Populated by the list endpoint so the view can reference assignment IDs. */
+  subjectAssignments?: { subjectAssignmentId: number; subjectCode: string }[];
 };
 
 /** A single subject-assignment link row, as returned by GET /deans/subject-assignments/<id>. */
@@ -109,6 +113,103 @@ export type SubjectAssignment = {
   teachingTermId: number;
   curriculumDetailId: number;
   subjectCode: string;
+};
+
+/** One scheduled session within a teaching-term detail subject assignment. */
+export type TeachingTermDetailScheduledSession = {
+  regular_sched_id: number;
+  day: string;
+  start_time: string;
+  end_time: string;
+  hours: number;
+  room: string | null;
+  mode: string | null;
+  program: string | null;
+  year_level: number | null;
+  set_code: string | null;
+};
+
+/** One subject assignment inside the rich teaching-term detail payload. */
+export type TeachingTermDetailSubjectAssignment = {
+  subject_assignment_id: number;
+  curriculum_detail_id: number;
+  subject_id: number | null;
+  subject_code: string | null;
+  descriptive_title: string | null;
+  units: number;
+  subject_type: string | null;
+  lec_hours: number;
+  lab_hours: number;
+  expected_weekly_hours: number;
+  meetings: number | null;
+  program_abbrev: string | null;
+  program_name: string | null;
+  year_level: number | null;
+  semester_category: number | null;
+  scheduled_sessions: TeachingTermDetailScheduledSession[];
+  scheduled_hours: number;
+  is_scheduled: boolean;
+};
+
+/** One daily load entry (always Mon–Sat, 6 rows). */
+export type TeachingTermDetailDailyLoad = {
+  daily_load_id: number | null;
+  day_of_week: number;
+  day_name: string;
+  current_daily_hours: number;
+};
+
+/** An unassigned subject that has scheduled sessions — data-integrity signal. */
+export type TeachingTermDetailUnassignedSubject = {
+  subject_id: number;
+  subject_code: string;
+  descriptive_title: string;
+  scheduled_sessions: TeachingTermDetailScheduledSession[];
+  scheduled_hours: number;
+};
+
+/** Full rich payload from GET /deans/teaching-terms/<id>. */
+export type TeachingTermDetail = {
+  teaching_term_id: number;
+  instructor: {
+    instructor_profile_id: number;
+    first_name: string | null;
+    mid_name: string | null;
+    last_name: string | null;
+    full_name: string | null;
+    gender: string | null;
+    civil_status: string | null;
+    department_id: number | null;
+    department: string | null;
+    department_abbrev: string | null;
+    email: string | null;
+    mobile: string | null;
+  };
+  term: {
+    sy_id: number;
+    school_year: string | null;
+    sem_id: number;
+    semester: string | null;
+    semester_number: number | null;
+  };
+  hours: {
+    max_weekly_hours: number;
+    current_weekly_hours: number;
+    remaining_weekly_hours: number;
+    utilization_rate: number;
+    is_overloaded: boolean;
+    expected_weekly_hours: number;
+    total_daily_hours: number;
+  };
+  totals: {
+    assigned_subjects: number;
+    total_units: number;
+    scheduled_subjects: number;
+    scheduled_sessions: number;
+  };
+  daily_loads: TeachingTermDetailDailyLoad[];
+  subject_assignments: TeachingTermDetailSubjectAssignment[];
+  unassigned_scheduled_subjects: TeachingTermDetailUnassignedSubject[];
 };
 
 /** Raw snake_case response from GET /deans/faculty-loading. */
