@@ -152,7 +152,11 @@ export function ScheduleContextForm({
           items={[
             {
               value: "",
-              label: availableYearLevels.length === 0 ? "Select a program first" : "Select a year level",
+              label: !selectedProgramId
+                ? "Select a program first"
+                : availableYearLevels.length === 0
+                  ? "No year levels available"
+                  : "Select a year level",
             },
             ...availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) })),
           ]}
@@ -165,7 +169,11 @@ export function ScheduleContextForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">
-              {availableYearLevels.length === 0 ? "Select a program first" : "Select a year level"}
+              {!selectedProgramId
+                ? "Select a program first"
+                : availableYearLevels.length === 0
+                  ? "No year levels available"
+                  : "Select a year level"}
             </SelectItem>
             {availableYearLevels.map((yl) => (
               <SelectItem key={yl} value={String(yl)}>
@@ -180,7 +188,11 @@ export function ScheduleContextForm({
           items={[
             {
               value: "",
-              label: availableSets.length === 0 ? "Select a year level first" : "Select a set",
+              label: !selectedYearLevel
+                ? "Select a year level first"
+                : availableSets.length === 0
+                  ? "No available sets"
+                  : "Select a set",
             },
             ...availableSets.map((s) => ({
               value: String(s.id),
@@ -196,7 +208,11 @@ export function ScheduleContextForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">
-              {availableSets.length === 0 ? "Select a year level first" : "Select a set"}
+              {!selectedYearLevel
+                ? "Select a year level first"
+                : availableSets.length === 0
+                  ? "No available sets"
+                  : "Select a set"}
             </SelectItem>
             {availableSets.map((s) => (
               <SelectItem key={s.id} value={String(s.id)}>
