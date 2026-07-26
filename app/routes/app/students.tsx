@@ -143,7 +143,7 @@ export function StudentsPage() {
       mobile: s.mobile,
       email: s.email,
       hasAccount: false,
-      academics: [],
+      academics: s.academics,
     }));
     // Map irregular students to a common shape (they use studentName instead of firstName/lastName)
     const irregularMapped: StudentAccountRow[] = irregularStudents.map((s) => ({
@@ -155,7 +155,9 @@ export function StudentsPage() {
       mobile: s.mobile,
       email: s.email,
       hasAccount: false,
-      academics: [],
+      academics: s.programTaken && s.programTaken !== "—"
+        ? [{ studentAcademicId: 0, yearLevel: 0, program: s.programTaken, set: null, enrolledStatus: "", studentType: "", schoolYear: null, semester: null, enrolledSubjects: [] }]
+        : [],
     }));
     return [...regularMapped, ...irregularMapped];
   }, [isAdmin, regularStudents, irregularStudents]);
@@ -235,6 +237,8 @@ export function StudentsPage() {
   }, [irregularStudents, irregularSearch]);
 
   const pagination = usePagination(visibleStudents, resetKey);
+  const regularPagination = usePagination(visibleRegularStudents, regularSearch);
+  const irregularPagination = usePagination(visibleIrregularStudents, irregularSearch);
   const pageAccountIds = pagination.pageItems
     .filter((s) => s.hasAccount)
     .map((s) => s.studentProfileId)
@@ -262,12 +266,12 @@ export function StudentsPage() {
 
   // Admin: fetch account-active status for regular students on the regular tab
   const regularAccountIds = useMemo(() => {
-    if (!isAdmin || activeView !== "regular" || !accountLookup || !visibleRegularStudents) return "";
-    return visibleRegularStudents
+    if (!isAdmin || activeView !== "regular" || !accountLookup) return "";
+    return regularPagination.pageItems
       .filter((s) => accountLookup[s.studentProfileId])
       .map((s) => s.studentProfileId)
       .join(",");
-  }, [isAdmin, activeView, accountLookup, visibleRegularStudents]);
+  }, [isAdmin, activeView, accountLookup, regularPagination.pageItems]);
 
   useEffect(() => {
     if (!regularAccountIds) return;
@@ -289,12 +293,12 @@ export function StudentsPage() {
 
   // Admin: fetch account-active status for irregular students on the irregular tab
   const irregularAccountIds = useMemo(() => {
-    if (!isAdmin || activeView !== "irregular" || !accountLookup || !visibleIrregularStudents) return "";
-    return visibleIrregularStudents
+    if (!isAdmin || activeView !== "irregular" || !accountLookup) return "";
+    return irregularPagination.pageItems
       .filter((s) => accountLookup[s.studentProfileId])
       .map((s) => s.studentProfileId)
       .join(",");
-  }, [isAdmin, activeView, accountLookup, visibleIrregularStudents]);
+  }, [isAdmin, activeView, accountLookup, irregularPagination.pageItems]);
 
   useEffect(() => {
     if (!irregularAccountIds) return;
@@ -562,25 +566,33 @@ export function StudentsPage() {
                 No students match the current filters.
               </EmptyState>
             ) : (
-              <StudentAccountTable
-                students={visibleStudents.map((s) => ({
-                  studentProfileId: s.studentProfileId,
-                  studentId: s.studentId,
-                  firstName: s.firstName,
-                  midName: null,
-                  lastName: s.lastName,
-                  mobile: null,
-                  email: s.email,
-                  hasAccount: false,
-                  academics: [],
-                }))}
-                accountActiveById={{}}
-                onCreateAccount={null}
-                onView={setViewTarget}
-                onEnroll={setEnrollTarget}
-                onDeactivateAccount={null}
-                onReactivateAccount={null}
-              />
+              <>
+                <StudentAccountTable
+                  students={pagination.pageItems.map((s) => ({
+                    studentProfileId: s.studentProfileId,
+                    studentId: s.studentId,
+                    firstName: s.firstName,
+                    midName: s.midName,
+                    lastName: s.lastName,
+                    mobile: s.mobile,
+                    email: s.email,
+                    hasAccount: s.hasAccount,
+                    academics: s.academics,
+                  }))}
+                  accountActiveById={{}}
+                  onCreateAccount={null}
+                  onView={setViewTarget}
+                  onEnroll={setEnrollTarget}
+                  onDeactivateAccount={null}
+                  onReactivateAccount={null}
+                />
+                <Pagination
+                  page={pagination.page}
+                  totalItems={pagination.totalItems}
+                  pageSize={pagination.pageSize}
+                  onPageChange={pagination.setPage}
+                />
+              </>
             )
           )}
         </div>
@@ -620,40 +632,48 @@ export function StudentsPage() {
               No students match the current filters.
             </EmptyState>
           ) : (
-            <RegularStudentTable
-              students={visibleRegularStudents}
-              onView={(s) =>
-                setViewTarget({
-                  studentProfileId: s.studentProfileId,
-                  studentId: s.studentId,
-                  firstName: s.firstName,
-                  midName: s.midName,
-                  lastName: s.lastName,
-                  mobile: s.mobile,
-                  email: s.email,
-                  hasAccount: false,
-                  academics: s.academics,
-                })
-              }
-              onEnroll={(s) =>
-                setEnrollTarget({
-                  studentProfileId: s.studentProfileId,
-                  studentId: s.studentId,
-                  firstName: s.firstName,
-                  midName: s.midName,
-                  lastName: s.lastName,
-                  mobile: s.mobile,
-                  email: s.email,
-                  hasAccount: false,
-                  academics: s.academics,
-                })
-              }
-              accountLookup={accountLookup}
-              accountActiveById={accountActiveById}
-              onCreateAccount={isAdmin ? setAccountTarget : null}
-              onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
-              onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
-            />
+            <>
+              <RegularStudentTable
+                students={regularPagination.pageItems}
+                onView={(s) =>
+                  setViewTarget({
+                    studentProfileId: s.studentProfileId,
+                    studentId: s.studentId,
+                    firstName: s.firstName,
+                    midName: s.midName,
+                    lastName: s.lastName,
+                    mobile: s.mobile,
+                    email: s.email,
+                    hasAccount: false,
+                    academics: s.academics,
+                  })
+                }
+                onEnroll={(s) =>
+                  setEnrollTarget({
+                    studentProfileId: s.studentProfileId,
+                    studentId: s.studentId,
+                    firstName: s.firstName,
+                    midName: s.midName,
+                    lastName: s.lastName,
+                    mobile: s.mobile,
+                    email: s.email,
+                    hasAccount: false,
+                    academics: s.academics,
+                  })
+                }
+                accountLookup={accountLookup}
+                accountActiveById={accountActiveById}
+                onCreateAccount={isAdmin ? setAccountTarget : null}
+                onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
+                onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
+              />
+              <Pagination
+                page={regularPagination.page}
+                totalItems={regularPagination.totalItems}
+                pageSize={regularPagination.pageSize}
+                onPageChange={regularPagination.setPage}
+              />
+            </>
           )}
         </div>
       ) : (
@@ -692,40 +712,52 @@ export function StudentsPage() {
               No students match the current filters.
             </EmptyState>
           ) : (
-            <IrregularStudentTable
-              students={visibleIrregularStudents}
-              onView={(s) =>
-                setViewTarget({
-                  studentProfileId: s.studentProfileId,
-                  studentId: s.studentId,
-                  firstName: s.firstName,
-                  midName: s.midName,
-                  lastName: s.lastName,
-                  mobile: s.mobile,
-                  email: s.email,
-                  hasAccount: false,
-                  academics: [],
-                })
-              }
-              onEnroll={(s) =>
-                setEnrollTarget({
-                  studentProfileId: s.studentProfileId,
-                  studentId: s.studentId,
-                  firstName: s.firstName,
-                  midName: s.midName,
-                  lastName: s.lastName,
-                  mobile: s.mobile,
-                  email: s.email,
-                  hasAccount: false,
-                  academics: [],
-                })
-              }
-              accountLookup={accountLookup}
-              accountActiveById={accountActiveById}
-              onCreateAccount={isAdmin ? setAccountTarget : null}
-              onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
-              onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
-            />
+            <>
+              <IrregularStudentTable
+                students={irregularPagination.pageItems}
+                onView={(s) =>
+                  setViewTarget({
+                    studentProfileId: s.studentProfileId,
+                    studentId: s.studentId,
+                    firstName: s.firstName,
+                    midName: s.midName,
+                    lastName: s.lastName,
+                    mobile: s.mobile,
+                    email: s.email,
+                    hasAccount: false,
+                    academics: s.programTaken && s.programTaken !== "—"
+                      ? [{ studentAcademicId: 0, yearLevel: 0, program: s.programTaken, set: null, enrolledStatus: "", studentType: "", schoolYear: null, semester: null, enrolledSubjects: [] }]
+                      : [],
+                  })
+                }
+                onEnroll={(s) =>
+                  setEnrollTarget({
+                    studentProfileId: s.studentProfileId,
+                    studentId: s.studentId,
+                    firstName: s.firstName,
+                    midName: s.midName,
+                    lastName: s.lastName,
+                    mobile: s.mobile,
+                    email: s.email,
+                    hasAccount: false,
+                    academics: s.programTaken && s.programTaken !== "—"
+                      ? [{ studentAcademicId: 0, yearLevel: 0, program: s.programTaken, set: null, enrolledStatus: "", studentType: "", schoolYear: null, semester: null, enrolledSubjects: [] }]
+                      : [],
+                  })
+                }
+                accountLookup={accountLookup}
+                accountActiveById={accountActiveById}
+                onCreateAccount={isAdmin ? setAccountTarget : null}
+                onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
+                onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
+              />
+              <Pagination
+                page={irregularPagination.page}
+                totalItems={irregularPagination.totalItems}
+                pageSize={irregularPagination.pageSize}
+                onPageChange={irregularPagination.setPage}
+              />
+            </>
           )}
         </div>
       )}

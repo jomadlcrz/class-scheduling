@@ -38,8 +38,8 @@ export function StudentAccountTable({
       <TableHead>
         <TableHeader>Student ID</TableHeader>
         <TableHeader>Name</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Email</TableHeader>
-        <TableHeader className="hidden lg:table-cell">Mobile</TableHeader>
+        <TableHeader className="hidden sm:table-cell">Program</TableHeader>
+        <TableHeader className="hidden lg:table-cell">Email</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -58,10 +58,10 @@ export function StudentAccountTable({
               </span>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-              {student.email ?? "—"}
+              {student.academics[student.academics.length - 1]?.program ?? "—"}
             </TableCell>
             <TableCell className="hidden lg:table-cell text-slate-500 dark:text-slate-400">
-              {student.mobile ?? "—"}
+              {student.email ?? "—"}
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">
