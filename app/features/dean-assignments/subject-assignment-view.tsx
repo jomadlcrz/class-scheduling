@@ -71,7 +71,7 @@ function ProgramPanels({ entry, programs }: { entry: FacultyLoadingEntry; progra
               <tr>
                 <th className="px-4 py-3">#</th>
                 <th className="px-3 py-3">Subject Code</th>
-                <th className="px-3 py-3">Subject Title</th>
+                <th className="px-3 py-3">Descriptive Title</th>
                 <th className="px-4 py-3 text-right">Units</th>
               </tr>
             </thead>
