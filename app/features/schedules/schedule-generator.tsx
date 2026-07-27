@@ -35,6 +35,7 @@ export function GenerationConflictsAlert({
   onApplySuggestion?: (suggestion: ScheduleSuggestion) => void;
 }) {
   const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
+  const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
   return (
     <Alert variant="warning">
       <AlertTriangleIcon />
@@ -62,8 +63,16 @@ export function GenerationConflictsAlert({
           </ul>
         )}
 
-        {overrideSuggestions.length > 0 && (
+        {moveSuggestions.length > 0 && (
           <div className={`${conflicts.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+            {moveSuggestions.map((s, i) => (
+              <MoveSuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
+            ))}
+          </div>
+        )}
+
+        {overrideSuggestions.length > 0 && (
+          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
             {overrideSuggestions.map((s, i) => (
               <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
             ))}
@@ -71,6 +80,57 @@ export function GenerationConflictsAlert({
         )}
       </AlertDescription>
     </Alert>
+  );
+}
+
+function MoveSuggestionCard({
+  suggestion,
+  onApply,
+}: {
+  suggestion: ScheduleSuggestion;
+  onApply?: (suggestion: ScheduleSuggestion) => void;
+}) {
+  const from = suggestion.from ?? {};
+  const to = suggestion.to ?? {};
+  const enables = suggestion as ScheduleSuggestion & { enables?: { subject_code?: string; at?: string } };
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 dark:border-gold-400/25 dark:bg-gold-400/5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+            {suggestion.subjectCode}
+            {suggestion.setName && (
+              <span className="ml-1.5 inline-block rounded-full border border-blue-200 bg-blue-100 px-1.5 py-0 font-body text-[0.65rem] font-medium text-blue-700 dark:border-navy-300/30 dark:bg-navy-300/10 dark:text-navy-300">
+                {suggestion.setName}
+              </span>
+            )}
+          </p>
+          <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+            Move {String(from.day)} {String(from.start)}–{String(from.end)} ({String(from.room)}) → {String(to.day)} {String(to.start)}–{String(to.end)} ({String(to.room)})
+          </p>
+          {enables.enables && (
+            <p className="mt-0.5 font-body text-[0.7rem] text-slate-400 dark:text-slate-500">
+              Enables {enables.enables.subject_code} at {enables.enables.at}
+            </p>
+          )}
+          {suggestion.reason && (
+            <p className="mt-1 font-body text-[0.7rem] text-slate-400 italic dark:text-slate-500">
+              Why: {suggestion.reason}
+            </p>
+          )}
+        </div>
+        {onApply && suggestion.apply && (
+          <button
+            type="button"
+            onClick={() => onApply(suggestion)}
+            className="shrink-0 rounded-lg border border-emerald-300 bg-emerald-100 px-2.5 py-1 font-body text-[0.7rem] font-semibold text-emerald-800 transition-colors duration-150 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
+          >
+            Apply &amp; regenerate
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 

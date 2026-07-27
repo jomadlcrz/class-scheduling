@@ -35,6 +35,13 @@ export function FacultyLoadingLetterhead({
             Email Address: goldenwest.colleges@yahoo.com.ph
           </p>
         </div>
+      </div>
+
+      {/* ── Title ── */}
+      <div className="relative flex items-center justify-center py-2">
+        <p className="font-display text-lg tracking-widest text-navy-800 dark:text-mist-100">
+          FACULTY LOADING
+        </p>
         {showPrint && (
           <button
             type="button"
@@ -49,11 +56,6 @@ export function FacultyLoadingLetterhead({
             <PrinterIcon size={18} />
           </button>
         )}
-      </div>
-
-      {/* ── Title ── */}
-      <div className="py-2 text-center font-display text-lg tracking-widest text-navy-800 dark:text-mist-100">
-        FACULTY LOADING
       </div>
     </div>
   );

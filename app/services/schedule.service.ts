@@ -331,7 +331,20 @@ async function autoGenerate(input: {
   return {
     slots,
     conflicts: data.conflicts ?? [],
-    suggestions: (data.suggestions ?? []) as ScheduleSuggestion[],
+    suggestions: (data.suggestions ?? []).map((s) => {
+      const r = s as Record<string, unknown>;
+      return {
+        ...r,
+        scheduleId: r.schedule_id,
+        subjectId: r.subject_id,
+        subjectCode: r.subject_code,
+        setId: r.set_id,
+        setName: r.set_name,
+        lectureHours: r.lecture_hours,
+        labHours: r.lab_hours,
+        totalWeeklyHours: r.total_weekly_hours,
+      };
+    }) as ScheduleSuggestion[],
   };
 }
 

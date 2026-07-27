@@ -339,18 +339,28 @@ function SchedulesNewPage() {
     const body = suggestion.apply.body as Record<string, unknown>;
     setSaveError(null);
     try {
-      const result = await scheduleService.upsertSubjectHourOverride({
-        subjectId: body.subjectId as number,
-        syId: body.syId as number,
-        semId: body.semId as number,
-        setId: body.setId != null ? (body.setId as number) : null,
-        lectureHours: body.lectureHours as number,
-        labHours: body.labHours as number,
-        meetings: body.meetings as number,
-        note: typeof body.note === "string" ? body.note : undefined,
-      });
-      toast.success(result.created ? "Override created." : "Override updated.");
-      // Re-generate after applying the override so the schedule reflects the change.
+      if (suggestion.type === "move_existing_session" && suggestion.scheduleId) {
+        await scheduleService.updateRegularSlot(suggestion.scheduleId, {
+          dayOfWeek: body.dayOfWeek as string,
+          startTime: body.startTime as string,
+          endTime: body.endTime as string,
+          roomId: body.roomId as number,
+        });
+        toast.success("Session moved successfully.");
+      } else {
+        const result = await scheduleService.upsertSubjectHourOverride({
+          subjectId: body.subjectId as number,
+          syId: body.syId as number,
+          semId: body.semId as number,
+          setId: body.setId != null ? (body.setId as number) : null,
+          lectureHours: body.lectureHours as number,
+          labHours: body.labHours as number,
+          meetings: body.meetings as number,
+          note: typeof body.note === "string" ? body.note : undefined,
+        });
+        toast.success(result.created ? "Override created." : "Override updated.");
+      }
+      // Re-generate after applying the suggestion so the schedule reflects the change.
       const generated = await generate({
         schoolYear,
         semester,
