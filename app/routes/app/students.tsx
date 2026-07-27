@@ -430,10 +430,12 @@ export function StudentsPage() {
         title="Students"
         description="Student records and their login accounts."
         actions={
-          <Button type="button" block={false} onClick={() => navigate("/students/bulk")}>
-            <PlusIcon />
-            New Student
-          </Button>
+          !isAdmin ? (
+            <Button type="button" block={false} onClick={() => navigate("/students/bulk")}>
+              <PlusIcon />
+              New Student
+            </Button>
+          ) : undefined
         }
       />
 

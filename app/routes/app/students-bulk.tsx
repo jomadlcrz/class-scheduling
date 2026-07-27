@@ -141,7 +141,7 @@ export function meta() {
 
 export default function StudentsBulkRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar"]}>
+    <RoleGuard allow={["registrar"]}>
       <StudentsBulkPage />
     </RoleGuard>
   );
