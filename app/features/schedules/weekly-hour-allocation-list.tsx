@@ -1,4 +1,5 @@
 ﻿import { Badge } from "~/components/ui/badge";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 type Props = {
@@ -39,12 +40,23 @@ export function WeeklyHourAllocationList({ allocations }: Props) {
               <span className="mx-1">·</span>
               <span>{a.meetings} {a.meetings === 1 ? "meeting" : "meetings"} per week</span>
             </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1">
+              <Badge tone="gold">{fmt(a.totalWeeklyHours)} hrs total</Badge>
+              {a.schedulePattern && (
+                <Badge tone="navy">Pattern: {a.schedulePattern}</Badge>
+              )}
+            </div>
             {a.labTimeSlots.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-1">
                 {a.labTimeSlots.map((slot, j) => (
                   <Badge key={j} tone="navy">{slot.start} – {slot.end}</Badge>
                 ))}
               </div>
+            )}
+            {a.meetingsNote && (
+              <Alert variant="default" className="mt-2">
+                <AlertDescription>{a.meetingsNote}</AlertDescription>
+              </Alert>
             )}
           </div>
         </div>

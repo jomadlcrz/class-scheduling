@@ -11,6 +11,11 @@ export type WeeklyHourAllocation = {
   labHours: number;
   meetings: number;
   labTimeSlots: LabSlot[];
+  totalWeeklyHours: number;
+  meetingsPerWeek: number | null;
+  hoursPerMeeting: number | null;
+  schedulePattern: string | null;
+  meetingsNote: string | null;
 };
 
 export type CreateWeeklyHourAllocationInput = {

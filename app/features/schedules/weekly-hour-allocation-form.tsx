@@ -124,6 +124,9 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
             if (!HAS_LAB_TYPES.has(next)) {
               setLabHours("");
               setLabSlots([{ start: "", end: "" }]);
+              setMeetings("");
+            } else {
+              setMeetings("2");
             }
           }}
         >
