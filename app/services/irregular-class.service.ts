@@ -177,6 +177,7 @@ export type AvailableOffering = {
   meetingCount: number;
   days: string;
   instructors: string[];
+  recommended: boolean;
   meetings: MeetingSlot[];
 };
 
@@ -217,7 +218,7 @@ function mapMeeting(m: PendingScheduleResponse["irregular_students"][0]["pending
   };
 }
 
-function mapOffering(o: { set: string | null; set_id: number; regular_sched_ids: number[]; meeting_count: number; days: string; instructors: string[]; meetings: { regular_sched_id: number; mode: string; day_of_week: string; start_time: string; end_time: string; room: string | null; instructor: string | null }[] }): AvailableOffering {
+function mapOffering(o: { set: string | null; set_id: number; regular_sched_ids: number[]; meeting_count: number; days: string; instructors: string[]; recommended?: boolean; meetings: { regular_sched_id: number; mode: string; day_of_week: string; start_time: string; end_time: string; room: string | null; instructor: string | null }[] }): AvailableOffering {
   return {
     set: o.set,
     setId: o.set_id,
@@ -225,6 +226,7 @@ function mapOffering(o: { set: string | null; set_id: number; regular_sched_ids:
     meetingCount: o.meeting_count,
     days: o.days,
     instructors: o.instructors,
+    recommended: o.recommended ?? false,
     meetings: o.meetings.map(mapMeeting),
   };
 }
@@ -288,8 +290,15 @@ type AssignedScheduleResponse = {
 export type AssignedSchedule = {
   id: number;
   regularSchedId: number;
+  subjectId: number;
+  subjectCode: string;
+  descTitle: string;
+  units: number;
   mode: string;
   set: string | null;
+  schoolYear: string | null;
+  semester: number | null;
+  program: string | null;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -335,8 +344,15 @@ async function listAssignedSchedule(syId: number, semId: number): Promise<Studen
       subject.schedules.push({
         id: sc.id,
         regularSchedId: sc.regular_sched_id,
+        subjectId: sc.subject_id,
+        subjectCode: sc.subject_code,
+        descTitle: sc.descriptive_title,
+        units: sc.units,
         mode: sc.mode,
         set: sc.set,
+        schoolYear: sc.school_year,
+        semester: sc.semester,
+        program: sc.program,
         dayOfWeek: sc.day_of_week,
         startTime: sc.start_time,
         endTime: sc.end_time,
@@ -366,29 +382,6 @@ async function assign(input: { studentAcademicId: number; regularSchedIds: numbe
   return apiMessage(data);
 }
 
-export type IrregularScheduleDetail = {
-  id: number;
-  studentAcademicId: number;
-  regularSchedId: number;
-  subjectCode: string;
-};
-
-/** GET /irregular_schedule/<id> — a single irregular-student schedule link row. */
-async function getIrregular(id: number): Promise<IrregularScheduleDetail> {
-  const data = await apiGet<{
-    id: number;
-    student_academic_id: number;
-    regular_sched_id: number;
-    subject_code: string;
-  }>(`/irregular_schedule/${id}`);
-  return {
-    id: data.id,
-    studentAcademicId: data.student_academic_id,
-    regularSchedId: data.regular_sched_id,
-    subjectCode: data.subject_code,
-  };
-}
-
 /** DELETE /irregular_schedule/<id> — hard delete (unassigns the schedule from the irregular student). */
 async function removeIrregular(id: number): Promise<string> {
   const data = await apiDelete<{ message?: string }>(`/irregular_schedule/${id}`);
@@ -401,6 +394,5 @@ export const irregularClassService = {
   listPendingSchedule,
   listAssignedSchedule,
   assign,
-  getIrregular,
   removeIrregular,
 };

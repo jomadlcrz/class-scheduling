@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon, ClockIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -85,8 +86,13 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
               className="rounded-lg border border-slate-200 p-3 dark:border-white/10"
             >
               <div className="flex flex-col">
-                <span className="font-body text-sm font-medium text-navy-800 dark:text-mist-100">
+                <span className="flex items-center gap-2 font-body text-sm font-medium text-navy-800 dark:text-mist-100">
                   {subject.subjectCode}
+                  {(() => {
+                    const chosenIdx = Number(selected[subject.subjectId]);
+                    const chosenOffering = !isNaN(chosenIdx) ? subject.availableOfferings[chosenIdx] : undefined;
+                    return chosenOffering?.recommended ? <Badge tone="emerald">Recommended</Badge> : null;
+                  })()}
                 </span>
                 <span className="font-body text-xs text-slate-500 dark:text-slate-400">
                   {subject.descTitle} · {subject.units} unit{subject.units !== 1 ? "s" : ""}
@@ -120,6 +126,7 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
                       {subject.availableOfferings.map((offering, idx) => (
                         <SelectItem key={idx} value={String(idx)}>
                           {offering.set ?? "—"} · {offering.days} · {offering.instructors.join(", ") || "TBA"}
+                          {offering.recommended ? <span className="text-xs italic text-emerald-600 dark:text-emerald-400"> · Recommended</span> : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
