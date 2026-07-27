@@ -49,7 +49,7 @@ export function WeeklyHourAllocationList({ allocations }: Props) {
             {a.labTimeSlots.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-1">
                 {a.labTimeSlots.map((slot, j) => (
-                  <Badge key={j} tone="navy">{slot.start} – {slot.end}</Badge>
+                  <Badge key={j} tone="emerald">{slot.start} – {slot.end}</Badge>
                 ))}
               </div>
             )}
