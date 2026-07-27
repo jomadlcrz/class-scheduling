@@ -542,7 +542,7 @@ function SchedulesNewPage() {
       if (result.rescheduled?.length) {
         for (const n of result.rescheduled) toast.info(n);
       }
-      navigate("/schedules/regular-class");
+      setIsSaving(false);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "");
       setIsSaving(false);
