@@ -1,7 +1,8 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import Cropper from "react-easy-crop";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { FileChooser } from "~/components/ui/file-chooser";
 import { Modal } from "~/components/ui/modal";
 
 type ProfilePictureModalProps = {
@@ -34,7 +35,7 @@ export function ProfilePictureModal({
   } | null>(null);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fullViewOpen, setFullViewOpen] = useState(false);
 
   const isCropping = cropSrc !== "";
 
@@ -63,11 +64,8 @@ export function ProfilePictureModal({
     onClose();
   }
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function handleFileSelect(file: File) {
     setCropSrc(URL.createObjectURL(file));
-    e.target.value = "";
   }
 
   async function handleSave() {
@@ -109,38 +107,37 @@ export function ProfilePictureModal({
       <Modal open={open && !isCropping} onClose={handleClose} title="Profile Picture">
         <div className="flex flex-col items-center gap-4">
           {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt="Profile"
-              className="size-24 rounded-full object-cover"
-            />
+            <button
+              type="button"
+              onClick={() => setFullViewOpen(true)}
+              className="cursor-pointer rounded-full transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2"
+            >
+              <img
+                src={photoUrl}
+                alt="Profile"
+                className="size-24 rounded-full object-cover"
+              />
+            </button>
           ) : (
             <span className="grid size-24 place-items-center rounded-full bg-navy-800 font-body text-3xl font-medium text-white dark:bg-white dark:text-navy-900">
               {initials}
             </span>
           )}
 
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Click the image to see full view.
+          </p>
+
           <div className="w-full">
             <p className="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
               Upload new custom profile picture:
             </p>
-            <label
-              htmlFor="profile-picture-file"
-              className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 dark:border-white/15 dark:bg-transparent dark:text-slate-300 dark:hover:bg-white/5"
-            >
-              <span className="truncate">No file chosen</span>
-              <input
-                ref={fileInputRef}
-                id="profile-picture-file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-            </label>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-              It is recommended that you use an image that is at least 400x400 pixels.
-            </p>
+            <FileChooser
+              id="profile-picture-file"
+              accept="image/jpeg,image/png,image/webp"
+              hint="It is recommended that you use an image that is at least 400×400 pixels."
+              onChange={handleFileSelect}
+            />
           </div>
 
           <div className="flex w-full items-center justify-between gap-2">
@@ -227,6 +224,27 @@ export function ProfilePictureModal({
               onClick={handleSave}
             >
               Save Photo
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Full view modal ── */}
+      <Modal open={fullViewOpen} onClose={() => setFullViewOpen(false)} title="Profile Picture">
+        <div className="flex flex-col items-center gap-4">
+          <img
+            src={photoUrl ?? undefined}
+            alt="Profile"
+            className="max-h-96 rounded-lg object-contain"
+          />
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => setFullViewOpen(false)}
+            >
+              Close
             </Button>
           </div>
         </div>
