@@ -119,14 +119,16 @@ export function ProfilePictureModal({
               />
             </button>
           ) : (
-            <span className="grid size-24 place-items-center rounded-full bg-navy-800 font-body text-3xl font-medium text-white dark:bg-white dark:text-navy-900">
+            <span className="flex size-24 items-center justify-center rounded-full bg-navy-800 font-body text-3xl font-medium text-white dark:bg-white dark:text-navy-900">
               {initials}
             </span>
           )}
 
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Click the image to see full view.
-          </p>
+          {photoUrl && (
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Click the image to see full view.
+            </p>
+          )}
 
           <div className="w-full">
             <p className="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">

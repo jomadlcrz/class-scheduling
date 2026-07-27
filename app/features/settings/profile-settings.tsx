@@ -34,7 +34,7 @@ export function ProfileSettings() {
 
   if (!user) return null;
 
-  const initials = `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase();
+  const initials = `${user.firstName[0] ?? ""}`.toUpperCase();
 
   async function handleUpload(file: File): Promise<string> {
     if (!user) throw new Error("Not logged in.");
@@ -55,7 +55,7 @@ export function ProfileSettings() {
       <SettingsPageHeader title="Profile" />
 
       <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">
-        <SettingsRow label="Profile Picture" hint="Click the image to change your profile picture.">
+        <SettingsRow label="Profile Picture">
           <button
             type="button"
             aria-label="Change profile picture"
@@ -71,12 +71,15 @@ export function ProfileSettings() {
             ) : (
               <span
                 aria-hidden="true"
-                className="grid size-20 place-items-center rounded-full bg-navy-800 font-body text-2xl font-medium text-white transition-opacity duration-150 group-hover:opacity-90 dark:bg-white dark:text-navy-900"
+                className="flex size-20 items-center justify-center rounded-full bg-navy-800 font-body text-2xl font-medium text-white transition-opacity duration-150 group-hover:opacity-90 dark:bg-white dark:text-navy-900"
               >
                 {photoLoading ? "…" : initials}
               </span>
             )}
           </button>
+          <p className="mt-3 font-body text-xs text-slate-400 dark:text-slate-500">
+            Click the image to change your profile picture.
+          </p>
         </SettingsRow>
 
         <SettingsRow label="First Name" htmlFor="profile-first-name">
