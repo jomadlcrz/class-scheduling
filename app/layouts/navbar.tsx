@@ -24,7 +24,7 @@ const NOTIFICATIONS = [
 ];
 
 const iconButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10";
+  "flex cursor-pointer items-center rounded-lg px-1 py-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8";
 
 const menuItemClassName =
   "flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white [&>svg]:size-3.5";
@@ -71,7 +71,9 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         aria-label="Toggle navigation menu"
         className={`${iconButtonClassName} ${isSettingsRoute ? "lg:hidden" : ""}`}
       >
-        <MenuIcon />
+        <span className="flex size-7 items-center justify-center">
+          <MenuIcon />
+        </span>
       </button>
       {isSettingsRoute && (
         <Link
@@ -103,7 +105,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         <Popover
           label="Open notifications"
           trigger={
-            <span className="relative grid place-items-center">
+            <span className="relative flex size-7 items-center justify-center">
               <BellIcon />
               <span
                 aria-hidden="true"

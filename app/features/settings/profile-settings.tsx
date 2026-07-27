@@ -56,27 +56,29 @@ export function ProfileSettings() {
 
       <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">
         <SettingsRow label="Profile Picture">
-          <button
-            type="button"
-            aria-label="Change profile picture"
-            onClick={() => setProfilePictureModalOpen(true)}
-            className="group relative inline-flex cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-surface"
-          >
-            {photoUrl ? (
-              <img
-                src={photoUrl}
-                alt="Profile"
-                className="size-20 rounded-full object-cover transition-opacity duration-150 group-hover:opacity-90"
-              />
-            ) : (
-              <span
-                aria-hidden="true"
-                className="flex size-20 items-center justify-center rounded-full bg-navy-800 font-body text-2xl font-medium text-white transition-opacity duration-150 group-hover:opacity-90 dark:bg-white dark:text-navy-900"
-              >
-                {photoLoading ? "…" : initials}
-              </span>
-            )}
-          </button>
+          <div className="h-20 w-20">
+            <button
+              type="button"
+              aria-label="Change profile picture"
+              onClick={() => setProfilePictureModalOpen(true)}
+              className="group relative inline-flex size-20 cursor-pointer overflow-hidden rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-surface"
+            >
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt="Profile"
+                  className="size-full rounded-full object-cover transition-opacity duration-150 group-hover:opacity-90"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="flex size-full items-center justify-center rounded-full bg-navy-800 font-body text-2xl font-medium text-white transition-opacity duration-150 group-hover:opacity-90 dark:bg-white dark:text-navy-900"
+                >
+                  {photoLoading ? "…" : initials}
+                </span>
+              )}
+            </button>
+          </div>
           <p className="mt-3 font-body text-xs text-slate-400 dark:text-slate-500">
             Click the image to change your profile picture.
           </p>
