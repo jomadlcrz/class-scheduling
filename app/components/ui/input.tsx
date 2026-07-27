@@ -76,7 +76,7 @@ export function PasswordInput({
   autoComplete,
   labelEnd,
   hint,
-  required = true,
+  required,
   placeholder = "••••••••",
   ...inputProps
 }: PasswordInputProps) {
