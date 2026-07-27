@@ -25,6 +25,7 @@ type IrregularStudentsResponse = {
   student_full_name: string;
   mobile: string | null;
   email: string | null;
+  profile_photo_url: string | null;
   account_status: string;
   academics: IrregularAcademicRecord[];
 }[];
@@ -40,6 +41,7 @@ export type IrregularStudent = {
   studentName: string;
   mobile: string | null;
   email: string | null;
+  profilePhotoUrl: string | null;
   programTaken: string;
   subjectsEnrolled: { subjectId: number; subjectCode: string; descTitle: string; units: number }[];
 };
@@ -71,6 +73,7 @@ function mapIrregularStudents(data: IrregularStudentsResponse): IrregularStudent
       studentName: s.student_full_name,
       mobile: s.mobile,
       email: s.email,
+      profilePhotoUrl: s.profile_photo_url,
       programTaken: current?.program ?? "—",
       subjectsEnrolled: (current?.enrolled_subjects ?? []).map((sub) => ({
         subjectId: sub.subject_id,

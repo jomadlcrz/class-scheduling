@@ -15,9 +15,17 @@ export function IrregularStudentPanel({ student }: IrregularStudentPanelProps) {
       </h3>
 
       <div className="shrink-0 flex items-center gap-3 rounded-xl border border-slate-300 bg-white p-4 dark:border-white/10 dark:bg-white/5">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
-          <UserIcon />
-        </span>
+        {student?.profilePhotoUrl ? (
+          <img
+            src={student.profilePhotoUrl}
+            alt={student.studentName}
+            className="size-10 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
+            <UserIcon />
+          </span>
+        )}
         {student ? (
           <div className="flex flex-col">
             <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
