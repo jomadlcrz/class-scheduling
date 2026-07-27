@@ -1,4 +1,4 @@
-﻿import { useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { EyeIcon, EyeOffIcon } from "~/components/ui/icons";
 import { Label } from "~/components/ui/label";
 
@@ -61,7 +61,7 @@ export function Input({ id, label, labelEnd, hint, required, ...inputProps }: In
   );
 }
 
-type PasswordInputProps = {
+type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "className" | "type"> & {
   id: string;
   label: string;
   autoComplete: "current-password" | "new-password";
@@ -70,21 +70,31 @@ type PasswordInputProps = {
 };
 
 /** Password field with a show/hide visibility toggle. */
-export function PasswordInput({ id, label, autoComplete, labelEnd, hint }: PasswordInputProps) {
+export function PasswordInput({
+  id,
+  label,
+  autoComplete,
+  labelEnd,
+  hint,
+  required = true,
+  placeholder = "••••••••",
+  ...inputProps
+}: PasswordInputProps) {
   const [show, setShow] = useState(false);
 
   return (
-    <FieldChrome id={id} label={label} labelEnd={labelEnd} hint={hint}>
+    <FieldChrome id={id} label={label} labelEnd={labelEnd} hint={hint} required={required}>
       <div className="relative">
         <input
           id={id}
           name={id}
           type={show ? "text" : "password"}
           autoComplete={autoComplete}
-          required
-          placeholder="••••••••"
+          required={required}
+          placeholder={placeholder}
           aria-describedby={hint ? `${id}-hint` : undefined}
           className={`${inputClassName} pr-11`}
+          {...inputProps}
         />
         <button
           type="button"

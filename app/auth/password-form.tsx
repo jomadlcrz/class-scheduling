@@ -1,8 +1,9 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
+import { CheckIcon } from "~/components/ui/icons";
 import { PasswordInput } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { MIN_PASSWORD_LENGTH } from "~/lib/validators";
+import { ApiError } from "~/lib/api";
 import { makeChangePasswordSchema } from "~/schemas/auth.schema";
 
 export type PasswordFormValues = {
@@ -18,11 +19,35 @@ type PasswordFormProps = {
   onSubmit: (values: PasswordFormValues) => Promise<void>;
 };
 
+function RequirementItem({ satisfied, label }: { satisfied: boolean; label: string }) {
+  return (
+    <li
+      className={`flex items-center gap-2 transition-colors duration-150 ${satisfied
+          ? "font-medium text-emerald-700 dark:text-emerald-400"
+          : "text-slate-500 dark:text-slate-400"
+        }`}
+    >
+      <span
+        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-colors ${satisfied
+            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+            : "bg-slate-200 text-slate-400 dark:bg-white/10 dark:text-slate-500"
+          }`}
+      >
+        {satisfied ? (
+          <CheckIcon size={10} strokeWidth={3} />
+        ) : (
+          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+        )}
+      </span>
+      <span>{label}</span>
+    </li>
+  );
+}
+
 /**
  * Shared password form used by both /reset-password (token flow) and
  * /change-password (authenticated flow). Validation, visibility toggles,
- * and loading/error states live here; the routes own page chrome and
- * success states.
+ * requirements indicators, and loading/error states live here.
  */
 export function PasswordForm({
   requireCurrentPassword = false,
@@ -32,16 +57,17 @@ export function PasswordForm({
 }: PasswordFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const currentPassword = String(data.get("current-password") ?? "");
-    const newPassword = String(data.get("new-password") ?? "");
+    const pwd = String(data.get("new-password") ?? "");
     const confirmPassword = String(data.get("confirm-password") ?? "");
 
     const schema = makeChangePasswordSchema(requireCurrentPassword);
-    const result = schema.safeParse({ currentPassword, newPassword, confirmPassword });
+    const result = schema.safeParse({ currentPassword, newPassword: pwd, confirmPassword });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -55,9 +81,13 @@ export function PasswordForm({
         newPassword: result.data.newPassword,
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "",
-      );
+      if (err instanceof ApiError && typeof err.details?.requirements === "string") {
+        setError(`${err.message}\n\n${err.details.requirements.trim()}`);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -79,8 +109,37 @@ export function PasswordForm({
         id="new-password"
         label="New Password"
         autoComplete="new-password"
-        hint={`Must be at least ${MIN_PASSWORD_LENGTH} characters.`}
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.currentTarget.value)}
       />
+
+      <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
+        <p className="font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Password Requirements
+        </p>
+        <ul className="mt-2.5 flex flex-col gap-2 font-body text-xs">
+          <RequirementItem
+            satisfied={newPassword.length >= 8}
+            label="Minimum 8 characters long"
+          />
+          <RequirementItem
+            satisfied={/[a-z]/.test(newPassword)}
+            label="At least one lowercase letter (a-z)"
+          />
+          <RequirementItem
+            satisfied={/[A-Z]/.test(newPassword)}
+            label="At least one uppercase letter (A-Z)"
+          />
+          <RequirementItem
+            satisfied={/\d/.test(newPassword)}
+            label="At least one number (0-9)"
+          />
+          <RequirementItem
+            satisfied={/[@$!%*?&\.]/.test(newPassword)}
+            label="At least one special character (@ $ ! % * ? & .)"
+          />
+        </ul>
+      </div>
 
       <PasswordInput
         id="confirm-password"

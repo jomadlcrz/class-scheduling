@@ -102,15 +102,15 @@ export function HelpCircleIcon() {
   );
 }
 
-export function CheckIcon() {
+export function CheckIcon({ size = 20, strokeWidth = 2.5 }: { size?: number; strokeWidth?: number } = {}) {
   return (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
