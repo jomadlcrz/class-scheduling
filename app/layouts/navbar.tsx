@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
   BellIcon,
@@ -14,6 +14,7 @@ import {
 import { Popover } from "~/components/ui/popover";
 import { useAuth } from "~/hooks/use-auth";
 import { useTheme, type ThemePreference } from "~/hooks/use-theme";
+import { profilePhotoService } from "~/services/profile-photo.service";
 
 /** Static placeholders until a notifications backend exists. */
 const NOTIFICATIONS = [
@@ -33,6 +34,26 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isSettingsRoute = location.pathname.startsWith("/settings");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  const fetchPhoto = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await profilePhotoService.getPhoto(user.role);
+      setPhotoUrl(data.profilePhotoUrl);
+    } catch {
+      // Photo may not exist yet.
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchPhoto();
+    function handlePhotoChanged() {
+      fetchPhoto();
+    }
+    window.addEventListener("profile-photo-changed", handlePhotoChanged);
+    return () => window.removeEventListener("profile-photo-changed", handlePhotoChanged);
+  }, [fetchPhoto]);
 
   function handleLogout() {
     logout();
@@ -131,12 +152,21 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           label="Open user menu"
           trigger={
             <span className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="grid size-7 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xs font-medium text-white dark:bg-white dark:text-navy-900"
-              >
-                {initials(user.name)}
-              </span>
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt=""
+                  aria-hidden="true"
+                  className="size-7 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xs font-medium text-white dark:bg-white dark:text-navy-900"
+                >
+                  {initials(user.name)}
+                </span>
+              )}
               <span className="hidden flex-col items-start leading-tight sm:flex">
                 <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                   {firstName(user.name)}
@@ -156,12 +186,21 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           {(close) => (
             <>
               <div className="mb-1 flex items-center gap-3 border-b border-slate-100 px-2.5 pb-3 pt-2 dark:border-white/10">
-                <span
-                  aria-hidden="true"
-                  className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-white dark:bg-white dark:text-navy-900"
-                >
-                  {initials(user.name)}
-                </span>
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt=""
+                    aria-hidden="true"
+                    className="size-11 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-white dark:bg-white dark:text-navy-900"
+                  >
+                    {initials(user.name)}
+                  </span>
+                )}
                 <div className="min-w-0">
                   <p className="truncate font-body text-sm font-semibold text-slate-800 dark:text-mist-100">
                     {user.name}

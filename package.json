@@ -17,6 +17,7 @@
     "motion": "^12.40.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-easy-crop": "^6.2.3",
     "react-router": "7.16.0",
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
@@ -29,6 +30,7 @@
     "@types/node": "^22",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/react-easy-crop": "^1.16.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
     "vite": "^8.0.3"
