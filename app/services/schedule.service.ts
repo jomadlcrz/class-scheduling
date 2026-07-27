@@ -382,17 +382,6 @@ async function createRegular(input: {
   });
 }
 
-/** GET /schedule/get-set-with-schedules — ids of sets that already have a saved regular schedule. 404 → empty. */
-async function getSetsWithSchedules(): Promise<Set<number>> {
-  let data: { sets: { set_id: number }[] };
-  try {
-    data = await apiGet<{ sets: { set_id: number }[] }>("/schedule/get-set-with-schedules");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return new Set();
-    throw err;
-  }
-  return new Set(data.sets.map((s) => s.set_id));
-}
 
 /**
  * GET /schedule/subject-type-options — subject-type vocabulary scoped to the
@@ -622,7 +611,6 @@ export const scheduleService = {
   listScheduleRooms,
   autoGenerate,
   createRegular,
-  getSetsWithSchedules,
   getSubjectTypeOptions,
   getCreationContext,
   listPrograms,

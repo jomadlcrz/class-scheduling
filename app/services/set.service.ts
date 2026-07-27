@@ -45,6 +45,36 @@ async function list(filters?: { syId?: number; semId?: number; programId?: numbe
 }
 
 /**
+ * GET /sets/unscheduled — returns sets that have no schedule yet for the given term.
+ * sy_id and sem_id are required.
+ */
+async function listUnscheduled(filters: { syId: number; semId: number; programId?: number; yearLevel?: number | string }): Promise<ClassSet[]> {
+  const params = new URLSearchParams({ sy_id: String(filters.syId), sem_id: String(filters.semId) });
+  if (filters.programId) params.set("program_id", String(filters.programId));
+  if (filters.yearLevel) params.set("year_level", String(filters.yearLevel));
+  const qs = params.toString();
+
+  let data: SetsResponse;
+  try {
+    data = await apiGet<SetsResponse>(`/sets/unscheduled?${qs}`);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.flatMap((p) =>
+    p.sets.map((s) => {
+      const [programAbbrev = "", yearAndSet = ""] = s.set_name?.split("-") ?? [];
+      return {
+        id: s.set_id,
+        program: programAbbrev,
+        yearLevel: parseInt(yearAndSet, 10) as YearLevel,
+        setCode: s.set_code,
+      };
+    }),
+  );
+}
+
+/**
  * POST /sets — bulk per program + year level. The form guarantees all inputs
  * share one program and year, so they collapse into a single request.
  * Returns the backend message.
@@ -117,6 +147,7 @@ async function get(id: number): Promise<{ id: number; programId: number; yearLev
 
 export const setService = {
   list,
+  listUnscheduled,
   create,
   update,
   remove,

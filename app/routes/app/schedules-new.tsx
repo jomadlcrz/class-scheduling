@@ -1,4 +1,4 @@
-﻿import { AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -128,7 +128,6 @@ function SchedulesNewPage() {
   const [sets, setSets] = useState<ClassSet[]>([]);
   const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
   const [subjects, setSubjects] = useState<ScheduleSubjectOption[]>([]);
-  const [scheduledSetIds, setScheduledSetIds] = useState<Set<number>>(new Set());
 
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
@@ -173,10 +172,6 @@ function SchedulesNewPage() {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
     scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
     scheduleService
-      .getSetsWithSchedules()
-      .then(setScheduledSetIds)
-      .catch(() => setScheduledSetIds(new Set()));
-    scheduleService
       .getCreationContext()
       .then(({ yearLevels }) => setYearLevels(yearLevels))
       .catch(() => setYearLevels([]));
@@ -195,7 +190,7 @@ function SchedulesNewPage() {
     if (!matchedSy || !matchedSem || !selectedProgramId) return;
     setSets([]);
     setService
-      .list({
+      .listUnscheduled({
         syId: matchedSy.id,
         semId: matchedSem.id,
         programId: Number(selectedProgramId),
@@ -262,10 +257,9 @@ function SchedulesNewPage() {
       sets.filter(
         (s) =>
           s.program === selectedProgram?.abbrev &&
-          s.yearLevel === selectedYearLevel &&
-          !scheduledSetIds.has(s.id),
+          s.yearLevel === selectedYearLevel,
       ),
-    [sets, selectedProgram, selectedYearLevel, scheduledSetIds],
+    [sets, selectedProgram, selectedYearLevel],
   );
 
   const displaySchedules = useMemo<Schedule[]>(
