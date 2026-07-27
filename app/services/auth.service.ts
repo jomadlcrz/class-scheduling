@@ -1,4 +1,4 @@
-import { ApiError, apiPatch, apiPost } from "~/lib/api";
+import { apiPatch, apiPost } from "~/lib/api";
 import {
   clearPending,
   clearSession,
@@ -12,52 +12,24 @@ import {
 import type { AuthSession, LoginCredentials } from "~/types/auth";
 
 /**
- * Auth service backed by the real API. Login is per-role on the backend
- * (five portal endpoints); the frontend keeps a single form by retrying
- * the endpoint named in the 403 wrong-portal response. Other services
+ * Auth service backed by the real API. Every role signs in at universal POST /login;
+ * the response carries user roles to guide dashboard routing. Other services
  * are still mocked — only auth talks to the backend.
  */
-
-/** Backend RoleName enum names → their login endpoints. */
-const LOGIN_ENDPOINTS: Record<string, string> = {
-  SUPER_ADMIN: "/super-admin/login",
-  REGISTRAR_ADMIN: "/registrar-admin/login",
-  DEAN: "/deans/login",
-  INSTRUCTOR: "/instructor/login",
-  STUDENT: "/students/login",
-};
 
 type LoginResponse = {
   access_token?: string;
   user_id?: number;
   temp_password?: boolean;
+  roles?: string[];
+  role_labels?: string[];
 };
 
 export type LoginResult = AuthSession | { requiresPasswordChange: true };
 
-/** The endpoint for the user's actual role, from a 403 wrong-portal response. */
-function endpointFromWrongPortal(err: unknown): string | null {
-  if (!(err instanceof ApiError) || err.status !== 403) return null;
-  const roles = err.details?.role;
-  if (!Array.isArray(roles)) return null;
-  for (const role of roles) {
-    const endpoint = LOGIN_ENDPOINTS[role as string];
-    if (endpoint) return endpoint;
-  }
-  return null;
-}
-
 async function login(credentials: LoginCredentials): Promise<LoginResult> {
   const body = { email: credentials.email, password: credentials.password };
-
-  let data: LoginResponse;
-  try {
-    data = await apiPost<LoginResponse>(LOGIN_ENDPOINTS.STUDENT, body);
-  } catch (err) {
-    const endpoint = endpointFromWrongPortal(err);
-    if (!endpoint) throw err;
-    data = await apiPost<LoginResponse>(endpoint, body);
-  }
+  const data = await apiPost<LoginResponse>("/login", body);
 
   // First login with a temp password: no token is issued — the user must
   // set a new password before a session exists (see changePassword).

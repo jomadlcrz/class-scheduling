@@ -8,7 +8,7 @@ A class-scheduling web app for GWC (builds conflict-free academic timetables). *
 
 The auth slice is live against the backend end-to-end:
 
-- **Login** — single form, but the backend has five per-role endpoints (`/super-admin/login`, `/registrar-admin/login`, `/deans/login`, `/faculty/login`, `/students/login`). The service tries `/students/login` first and silently retries the endpoint named in a 403 wrong-portal response (`{ error, role: ["FACULTY", …] }`). Success returns **only a JWT** — the `User` is decoded from token claims in `lib/session.ts`.
+- **Login** — single universal login endpoint (`POST /login`). Every role signs in here, and the backend returns user roles (`roles`, `role_labels`). Success returns **only a JWT** — the `User` is decoded from token claims in `lib/session.ts`.
 - **Session** — `{ token, user }` persisted under `gwc-session` ("remember me" → localStorage, otherwise sessionStorage); expired tokens are dropped on read. The Bearer token is attached to requests by `lib/api.ts`.
 - **Forced first-login password change** — a temp-password login returns no token, only `{ user_id, temp_password: true }`; the service stores a pending state and the login form routes to `/change-password`, which is **only reachable while that pending state exists** (otherwise it redirects to `/login`). Logged-in users change passwords in Settings → Security instead.
 - **Logout** — fire-and-forget `POST /user/logout` (server-side token revocation), then clears storage.

@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { FormError } from "~/components/forms/form-error";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -17,7 +17,7 @@ export function LoginForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const email = String(data.get("identifier") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim();
     const password = String(data.get("password") ?? "");
     const remember = data.get("remember") === "on";
 
@@ -49,13 +49,13 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5" noValidate>
       <FormError message={error} />
 
-  <Input
-    id="identifier"
-    label="Email Address"
-    type="text"
-    autoComplete="username"
-    placeholder="you@gwc.edu.ph"
-  />
+      <Input
+        id="email"
+        label="Email Address"
+        type="email"
+        autoComplete="username"
+        placeholder="you@gwc.edu.ph"
+      />
 
       <PasswordInput
         id="password"
