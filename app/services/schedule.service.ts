@@ -235,8 +235,10 @@ export type ScheduleSuggestion = {
   apply?: { method: string; path: string; body: Record<string, unknown> };
   /** present for move_existing_session */
   scheduleId?: number;
-  from?: Record<string, unknown>;
-  to?: Record<string, unknown>;
+  instructorName?: string;
+  from?: { day: string; start: string; end: string; room: string };
+  to?: { day: string; start: string; end: string; room: string; room_id: number };
+  enables?: { subject_code: string; at: string };
 };
 
 type AutoGenerateResponse = {
@@ -340,9 +342,13 @@ async function autoGenerate(input: {
         subjectCode: r.subject_code,
         setId: r.set_id,
         setName: r.set_name,
+        instructorName: r.instructor_name,
         lectureHours: r.lecture_hours,
         labHours: r.lab_hours,
         totalWeeklyHours: r.total_weekly_hours,
+        from: r.from as ScheduleSuggestion["from"],
+        to: r.to as ScheduleSuggestion["to"],
+        enables: r.enables as ScheduleSuggestion["enables"],
       };
     }) as ScheduleSuggestion[],
   };

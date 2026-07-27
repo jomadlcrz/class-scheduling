@@ -809,7 +809,7 @@ function SchedulesNewPage() {
           <div className="flex flex-col gap-3">
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
               <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                {pendingMove.setName} · {pendingMove.subjectCode} · {(pendingMove as Record<string, unknown>).instructor_name as string}
+                {pendingMove.setName} · {pendingMove.subjectCode} · {pendingMove.instructorName}
               </p>
               <div className="mt-2 flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
                 <span>{String(pendingMove.from?.day)} {String(pendingMove.from?.start)}–{String(pendingMove.from?.end)}, {String(pendingMove.from?.room)}</span>
@@ -818,7 +818,7 @@ function SchedulesNewPage() {
               </div>
             </div>
             <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-              This frees the slot for {String((pendingMove as Record<string, unknown>).enables && ((pendingMove as Record<string, unknown>).enables as Record<string, unknown>)?.subject_code)}.
+              This frees the slot for {pendingMove.enables?.subject_code}.
               <span className="ml-1 font-semibold">{pendingMove.setName}'s</span> timetable changes immediately.
             </p>
           </div>

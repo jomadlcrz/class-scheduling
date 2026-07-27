@@ -92,9 +92,9 @@ function MoveSuggestionCard({
   suggestion: ScheduleSuggestion;
   onConfirm?: (suggestion: ScheduleSuggestion) => void;
 }) {
-  const from = suggestion.from ?? {};
-  const to = suggestion.to ?? {};
-  const enables = suggestion as ScheduleSuggestion & { enables?: { subject_code?: string; at?: string } };
+  const from = suggestion.from ?? ({} as { day: string; start: string; end: string; room: string });
+  const to = suggestion.to ?? ({} as { day: string; start: string; end: string; room: string; room_id: number });
+  const enables = suggestion;
 
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 dark:border-gold-400/25 dark:bg-gold-400/5">
