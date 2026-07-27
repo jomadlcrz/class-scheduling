@@ -99,6 +99,7 @@ function IrregularClassPage() {
     irregularClassService.listPendingStudents(matchedSy.id, matchedSem.id).then(setStudents).catch(() => {});
     irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.id).then(setPending).catch(() => {});
     irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.id).then(setAssigned).catch(() => {});
+    setSelectedStudent(null);
   }
 
   return (

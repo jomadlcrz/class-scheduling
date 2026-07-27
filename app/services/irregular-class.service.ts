@@ -244,7 +244,7 @@ async function listPendingSchedule(syId: number, semId: number): Promise<Student
     studentAcademicId: s.student_academic_id,
     studentProfileId: s.student_profile_id,
     studentId: s.student_id,
-    studentName: `${s.last_name}, ${s.first_name}`,
+    studentName: `${s.last_name}, ${s.first_name} ${s.mid_name ?? ""}`.trim(),
     pendingSubjects: s.pending_subjects.map((ps) => ({
       subjectId: ps.subject_id,
       subjectCode: ps.subject_code,
@@ -366,7 +366,7 @@ async function listAssignedSchedule(syId: number, semId: number): Promise<Studen
     return {
       studentAcademicId: s.student_academic_id,
       studentId: s.student_id,
-      studentName: `${s.last_name}, ${s.first_name}`,
+      studentName: `${s.last_name}, ${s.first_name} ${s.mid_name ?? ""}`.trim(),
       assignedSubjects: [...subjectsMap.values()],
     };
   });
