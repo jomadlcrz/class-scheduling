@@ -4,7 +4,7 @@ Guidance for AI agents and contributors working in this repo. Follow these conve
 
 ## Project overview
 
-A class-scheduling web app for GWC (builds conflict-free academic timetables). **Connected to the real backend** (Flask, separate repo at `C:\Users\jomadlcrz\Desktop\class-scheduling-backend` — check there for actual endpoints, schemas, enum values, and response messages; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline data in components.
+A class-scheduling web app for GWC (builds conflict-free academic timetables). **Connected to the real backend** (Flask, separate repo at `C:\Users\jomadlcrz\Desktop\class-scheduling\class-scheduling-backend` — check there for actual endpoints, schemas, enum values, and response messages; base URL from `VITE_API_URL` in `.env`, already including `/api/v1`). Data access goes through `app/services/*.service.ts`; components must never know where data comes from: always call the service, never inline data in components.
 
 The auth slice is live against the backend end-to-end:
 

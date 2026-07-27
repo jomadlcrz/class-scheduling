@@ -6,9 +6,7 @@ import type { RegularStudentRow } from "~/types/student";
 type RegularStudentsResponse = {
   student_profile_id: number;
   student_id: string | null;
-  first_name: string;
-  mid_name: string | null;
-  last_name: string;
+  student_full_name: string;
   mobile: string | null;
   email: string | null;
   account_status: string;
@@ -41,9 +39,10 @@ async function listStudents(params?: { syId?: number; semId?: number }): Promise
   return data.map((s) => ({
     studentProfileId: s.student_profile_id,
     studentId: s.student_id,
-    firstName: s.first_name,
-    midName: s.mid_name,
-    lastName: s.last_name,
+    firstName: "",
+    midName: null,
+    lastName: "",
+    studentName: s.student_full_name,
     mobile: s.mobile,
     email: s.email,
     accountStatus: s.account_status,

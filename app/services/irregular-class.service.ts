@@ -22,9 +22,7 @@ type IrregularAcademicRecord = {
 type IrregularStudentsResponse = {
   student_profile_id: number;
   student_id: string | null;
-  first_name: string;
-  mid_name: string | null;
-  last_name: string;
+  student_full_name: string;
   mobile: string | null;
   email: string | null;
   account_status: string;
@@ -67,10 +65,10 @@ function mapIrregularStudents(data: IrregularStudentsResponse): IrregularStudent
     return {
       studentProfileId: s.student_profile_id,
       studentId: s.student_id,
-      firstName: s.first_name,
-      midName: s.mid_name,
-      lastName: s.last_name,
-      studentName: `${s.last_name}, ${s.first_name}`,
+      firstName: "",
+      midName: null,
+      lastName: "",
+      studentName: s.student_full_name,
       mobile: s.mobile,
       email: s.email,
       programTaken: current?.program ?? "—",
@@ -118,24 +116,53 @@ type PendingScheduleResponse = {
       subject_code: string;
       descriptive_title: string;
       units: number;
-      available_schedules: {
-        regular_sched_id: number;
-        mode: string;
+      available_offerings: {
         set: string | null;
-        day_of_week: string;
-        start_time: string;
-        end_time: string;
-        room: string | null;
-        instructor: string | null;
+        set_id: number;
+        regular_sched_ids: number[];
+        meeting_count: number;
+        days: string;
+        instructors: string[];
+        meetings: {
+          regular_sched_id: number;
+          mode: string;
+          day_of_week: string;
+          start_time: string;
+          end_time: string;
+          room: string | null;
+          instructor: string | null;
+        }[];
       }[];
+    }[];
+    scheduled_subjects: {
+      subject_id: number;
+      subject_code: string;
+      descriptive_title: string;
+      units: number;
+      assigned_offering: {
+        set: string | null;
+        set_id: number;
+        regular_sched_ids: number[];
+        meeting_count: number;
+        days: string;
+        instructors: string[];
+        meetings: {
+          regular_sched_id: number;
+          mode: string;
+          day_of_week: string;
+          start_time: string;
+          end_time: string;
+          room: string | null;
+          instructor: string | null;
+        }[];
+      };
     }[];
   }[];
 };
 
-export type AvailableSchedule = {
+export type MeetingSlot = {
   regularSchedId: number;
   mode: string;
-  set: string | null;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -143,12 +170,30 @@ export type AvailableSchedule = {
   instructor: string | null;
 };
 
+export type AvailableOffering = {
+  set: string | null;
+  setId: number;
+  regularSchedIds: number[];
+  meetingCount: number;
+  days: string;
+  instructors: string[];
+  meetings: MeetingSlot[];
+};
+
+export type ScheduledSubject = {
+  subjectId: number;
+  subjectCode: string;
+  descTitle: string;
+  units: number;
+  assignedOffering: AvailableOffering;
+};
+
 export type PendingSubject = {
   subjectId: number;
   subjectCode: string;
   descTitle: string;
   units: number;
-  availableSchedules: AvailableSchedule[];
+  availableOfferings: AvailableOffering[];
 };
 
 export type StudentPendingSchedule = {
@@ -157,7 +202,32 @@ export type StudentPendingSchedule = {
   studentId: string | null;
   studentName: string;
   pendingSubjects: PendingSubject[];
+  scheduledSubjects: ScheduledSubject[];
 };
+
+function mapMeeting(m: PendingScheduleResponse["irregular_students"][0]["pending_subjects"][0]["available_offerings"][0]["meetings"][0]): MeetingSlot {
+  return {
+    regularSchedId: m.regular_sched_id,
+    mode: m.mode,
+    dayOfWeek: m.day_of_week,
+    startTime: m.start_time,
+    endTime: m.end_time,
+    room: m.room,
+    instructor: m.instructor,
+  };
+}
+
+function mapOffering(o: { set: string | null; set_id: number; regular_sched_ids: number[]; meeting_count: number; days: string; instructors: string[]; meetings: { regular_sched_id: number; mode: string; day_of_week: string; start_time: string; end_time: string; room: string | null; instructor: string | null }[] }): AvailableOffering {
+  return {
+    set: o.set,
+    setId: o.set_id,
+    regularSchedIds: o.regular_sched_ids,
+    meetingCount: o.meeting_count,
+    days: o.days,
+    instructors: o.instructors,
+    meetings: o.meetings.map(mapMeeting),
+  };
+}
 
 /** GET /regular_schedule/irregular-students-pending-schedule — irregular students still missing a schedule for this term. */
 async function listPendingSchedule(syId: number, semId: number): Promise<StudentPendingSchedule[]> {
@@ -175,16 +245,14 @@ async function listPendingSchedule(syId: number, semId: number): Promise<Student
       subjectCode: ps.subject_code,
       descTitle: ps.descriptive_title,
       units: ps.units,
-      availableSchedules: ps.available_schedules.map((av) => ({
-        regularSchedId: av.regular_sched_id,
-        mode: av.mode,
-        set: av.set,
-        dayOfWeek: av.day_of_week,
-        startTime: av.start_time,
-        endTime: av.end_time,
-        room: av.room,
-        instructor: av.instructor,
-      })),
+      availableOfferings: ps.available_offerings.map(mapOffering),
+    })),
+    scheduledSubjects: (s.scheduled_subjects ?? []).map((ss) => ({
+      subjectId: ss.subject_id,
+      subjectCode: ss.subject_code,
+      descTitle: ss.descriptive_title,
+      units: ss.units,
+      assignedOffering: mapOffering(ss.assigned_offering),
     })),
   }));
 }
@@ -204,6 +272,10 @@ type AssignedScheduleResponse = {
       descriptive_title: string;
       units: number;
       mode: string;
+      set: string | null;
+      school_year: string | null;
+      semester: number | null;
+      program: string | null;
       day_of_week: string;
       start_time: string;
       end_time: string;
@@ -214,8 +286,10 @@ type AssignedScheduleResponse = {
 };
 
 export type AssignedSchedule = {
+  id: number;
   regularSchedId: number;
   mode: string;
+  set: string | null;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -259,8 +333,10 @@ async function listAssignedSchedule(syId: number, semId: number): Promise<Studen
         subjectsMap.set(sc.subject_id, subject);
       }
       subject.schedules.push({
+        id: sc.id,
         regularSchedId: sc.regular_sched_id,
         mode: sc.mode,
+        set: sc.set,
         dayOfWeek: sc.day_of_week,
         startTime: sc.start_time,
         endTime: sc.end_time,

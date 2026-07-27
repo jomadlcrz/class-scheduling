@@ -74,6 +74,7 @@ export type StudentAccountRow = {
   firstName: string;
   midName: string | null;
   lastName: string;
+  studentName?: string;
   mobile: string | null;
   email: string | null;
   hasAccount: boolean;
@@ -99,6 +100,7 @@ export type RegularStudentRow = {
   firstName: string;
   midName: string | null;
   lastName: string;
+  studentName: string;
   mobile: string | null;
   email: string | null;
   accountStatus: string;

@@ -30,9 +30,10 @@ function toAccountRow(s: IrregularStudent): StudentAccountRow {
   return {
     studentProfileId: s.studentProfileId,
     studentId: s.studentId,
-    firstName: s.firstName,
-    midName: s.midName,
-    lastName: s.lastName,
+    firstName: "",
+    midName: null,
+    lastName: "",
+    studentName: s.studentName,
     mobile: s.mobile,
     email: s.email,
     hasAccount: false,

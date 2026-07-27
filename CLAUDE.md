@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-GWC Class Scheduling frontend — builds conflict-free academic timetables. This repo is **frontend only**: React Router 7 (framework mode, SSR), React 19, TypeScript strict, Tailwind CSS v4. It talks to a **separate Flask backend** in the sibling repo `C:\Users\jomadlcrz\Desktop\class-scheduling-backend` (base URL from `VITE_API_URL` in `.env`, already includes `/api/v1`). There is no database, ORM, or migrations in this repo — the backend owns all of that. The backend is the single source of truth for data, validation, and vocabulary; the frontend never invents business logic or copy on its own (see "Backend-truth convention" below).
+GWC Class Scheduling frontend — builds conflict-free academic timetables. This repo is **frontend only**: React Router 7 (framework mode, SSR), React 19, TypeScript strict, Tailwind CSS v4. It talks to a **separate Flask backend** in the sibling repo `C:\Users\jomadlcrz\Desktop\class-scheduling\class-scheduling-backend` (base URL from `VITE_API_URL` in `.env`, already includes `/api/v1`). There is no database, ORM, or migrations in this repo — the backend owns all of that. The backend is the single source of truth for data, validation, and vocabulary; the frontend never invents business logic or copy on its own (see "Backend-truth convention" below).
 
 ## Commands
 

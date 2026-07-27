@@ -49,9 +49,14 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
             )}
             {selected.assignedSubjects.map((subject) => (
               <div key={subject.subjectId} className="rounded-lg border border-slate-200 p-3 dark:border-white/10">
-                <h4 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                  {subject.subjectCode} — {subject.descTitle}
-                </h4>
+                <div className="flex items-baseline justify-between gap-2">
+                  <h4 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                    {subject.subjectCode} — {subject.descTitle}
+                  </h4>
+                  <span className="shrink-0 font-body text-xs text-slate-500 dark:text-slate-400">
+                    {subject.units} unit{subject.units !== 1 ? "s" : ""}
+                  </span>
+                </div>
                 <table className="mt-2 w-full text-left font-body text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-white/10">
@@ -59,11 +64,12 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
                       <th className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Time</th>
                       <th className="hidden px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:table-cell">Room</th>
                       <th className="hidden px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:table-cell">Instructor</th>
+                      <th className="hidden px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:table-cell">Set</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {subject.schedules.map((sched) => (
-                      <tr key={sched.regularSchedId}>
+                      <tr key={sched.id}>
                         <td className="px-2 py-1.5 text-slate-600 dark:text-slate-300">
                           {sched.dayOfWeek}
                         </td>
@@ -75,6 +81,9 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
                         </td>
                         <td className="hidden px-2 py-1.5 text-slate-500 dark:text-slate-400 sm:table-cell">
                           {sched.instructor ?? "—"}
+                        </td>
+                        <td className="hidden px-2 py-1.5 text-slate-500 dark:text-slate-400 sm:table-cell">
+                          {sched.set ?? "—"}
                         </td>
                       </tr>
                     ))}

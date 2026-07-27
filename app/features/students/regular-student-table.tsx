@@ -32,6 +32,7 @@ function toAccountRow(s: RegularStudentRow): StudentAccountRow {
     firstName: s.firstName,
     midName: s.midName,
     lastName: s.lastName,
+    studentName: s.studentName,
     mobile: s.mobile,
     email: s.email,
     hasAccount: false,
@@ -75,7 +76,7 @@ export function RegularStudentTable({
               </TableCell>
               <TableCell>
                 <span className="font-medium text-navy-700 dark:text-mist-100">
-                  {student.lastName}, {student.firstName}
+                  {student.studentName}
                 </span>
               </TableCell>
               <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
@@ -91,7 +92,7 @@ export function RegularStudentTable({
                       <button
                         type="button"
                         onClick={() => onView(student)}
-                        aria-label={`View ${student.firstName} ${student.lastName}`}
+                        aria-label={`View ${student.studentName}`}
                         title="View details"
                         className={actionButtonClassName}
                       >
@@ -102,7 +103,7 @@ export function RegularStudentTable({
                       <button
                         type="button"
                         onClick={() => onEnroll(student)}
-                        aria-label={`Enroll ${student.firstName} ${student.lastName} for a new term`}
+                        aria-label={`Enroll ${student.studentName} for a new term`}
                         title="Enroll for a new term"
                         className={actionButtonClassName}
                       >
@@ -117,7 +118,7 @@ export function RegularStudentTable({
                           <button
                             type="button"
                             onClick={() => onDeactivateAccount(toAccountRow(student))}
-                            aria-label={`Deactivate account for ${student.firstName} ${student.lastName}`}
+                            aria-label={`Deactivate account for ${student.studentName}`}
                             title="Deactivate account"
                             className={actionButtonClassName}
                           >
@@ -127,7 +128,7 @@ export function RegularStudentTable({
                           <button
                             type="button"
                             onClick={() => onReactivateAccount(toAccountRow(student))}
-                            aria-label={`Reactivate account for ${student.firstName} ${student.lastName}`}
+                            aria-label={`Reactivate account for ${student.studentName}`}
                             title="Reactivate account"
                             className={actionButtonClassName}
                           >

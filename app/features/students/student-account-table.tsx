@@ -10,6 +10,11 @@ import {
 } from "~/components/ui/table";
 import type { StudentAccountRow } from "~/types/student";
 
+function displayName(s: StudentAccountRow) {
+  if (s.studentName) return s.studentName;
+  return [s.firstName, s.midName, s.lastName].filter(Boolean).join(" ");
+}
+
 type StudentAccountTableProps = {
   students: StudentAccountRow[];
   /** Per-row login status fetched from GET /super-admin/student-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
@@ -54,7 +59,7 @@ export function StudentAccountTable({
             </TableCell>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">
-                {student.lastName}, {student.firstName}
+                {displayName(student)}
               </span>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
@@ -69,7 +74,7 @@ export function StudentAccountTable({
                   <button
                     type="button"
                     onClick={() => onView(student)}
-                    aria-label={`View ${student.firstName} ${student.lastName}`}
+                    aria-label={`View ${displayName(student)}`}
                     title="View details"
                     className={actionButtonClassName}
                   >
@@ -80,7 +85,7 @@ export function StudentAccountTable({
                   <button
                     type="button"
                     onClick={() => onEnroll(student)}
-                    aria-label={`Enroll ${student.firstName} ${student.lastName} for a new term`}
+                    aria-label={`Enroll ${displayName(student)} for a new term`}
                     title="Enroll for a new term"
                     className={actionButtonClassName}
                   >
@@ -95,7 +100,7 @@ export function StudentAccountTable({
                       <button
                         type="button"
                         onClick={() => onDeactivateAccount(student)}
-                        aria-label={`Deactivate account for ${student.firstName} ${student.lastName}`}
+                        aria-label={`Deactivate account for ${displayName(student)}`}
                         title="Deactivate account"
                         className={actionButtonClassName}
                       >
@@ -105,7 +110,7 @@ export function StudentAccountTable({
                       <button
                         type="button"
                         onClick={() => onReactivateAccount(student)}
-                        aria-label={`Reactivate account for ${student.firstName} ${student.lastName}`}
+                        aria-label={`Reactivate account for ${displayName(student)}`}
                         title="Reactivate account"
                         className={actionButtonClassName}
                       >

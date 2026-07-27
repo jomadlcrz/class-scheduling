@@ -46,7 +46,7 @@ export function StudentDetailsModal({ student, sets, academicStatuses }: Student
         <Card className="mt-2 p-4">
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Student ID" value={student.studentId || "—"} />
-            <Field label="Name" value={`${student.lastName}, ${student.firstName}${student.midName ? ` ${student.midName}` : ""}`} />
+            <Field label="Name" value={student.studentName || [student.firstName, student.midName, student.lastName].filter(Boolean).join(" ")} />
             <Field label="Email" value={student.email ?? "—"} />
             <Field label="Mobile" value={student.mobile ?? "—"} />
           </dl>

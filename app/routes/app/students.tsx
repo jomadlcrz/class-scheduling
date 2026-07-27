@@ -139,6 +139,7 @@ export function StudentsPage() {
       firstName: s.firstName,
       midName: s.midName,
       lastName: s.lastName,
+      studentName: s.studentName,
       mobile: s.mobile,
       email: s.email,
       hasAccount: false,
@@ -148,9 +149,10 @@ export function StudentsPage() {
     const irregularMapped: StudentAccountRow[] = irregularStudents.map((s) => ({
       studentProfileId: s.studentProfileId,
       studentId: s.studentId,
-      firstName: s.firstName,
-      midName: s.midName,
-      lastName: s.lastName,
+      firstName: "",
+      midName: null,
+      lastName: "",
+      studentName: s.studentName,
       mobile: s.mobile,
       email: s.email,
       hasAccount: false,
@@ -186,10 +188,10 @@ export function StudentsPage() {
     const query = search.trim().toLowerCase();
     return allStudentsForRegistrar
       .filter((s) => {
+        const name = s.studentName ?? `${s.lastName}, ${s.firstName}`;
         if (
           query &&
-          !(s.firstName ?? "").toLowerCase().includes(query) &&
-          !(s.lastName ?? "").toLowerCase().includes(query) &&
+          !name.toLowerCase().includes(query) &&
           !(s.studentId ?? "").toLowerCase().includes(query) &&
           !(s.email ?? "").toLowerCase().includes(query)
         ) {
@@ -197,7 +199,11 @@ export function StudentsPage() {
         }
         return true;
       })
-      .sort((a, b) => (a.lastName ?? "").localeCompare(b.lastName ?? "") || (a.firstName ?? "").localeCompare(b.firstName ?? ""));
+      .sort((a, b) => {
+        const nameA = a.studentName ?? `${a.lastName}, ${a.firstName}`;
+        const nameB = b.studentName ?? `${b.lastName}, ${b.firstName}`;
+        return nameA.localeCompare(nameB);
+      });
   }, [isAdmin, studentList, allStudentsForRegistrar, search]) as StudentAccountRow[];
 
   const visibleRegularStudents = useMemo(() => {
@@ -207,15 +213,14 @@ export function StudentsPage() {
       .filter((s) => {
         if (
           query &&
-          !(s.firstName ?? "").toLowerCase().includes(query) &&
-          !(s.lastName ?? "").toLowerCase().includes(query) &&
+          !s.studentName.toLowerCase().includes(query) &&
           !(s.studentId ?? "").toLowerCase().includes(query)
         ) {
           return false;
         }
         return true;
       })
-      .sort((a, b) => (a.lastName ?? "").localeCompare(b.lastName ?? "") || (a.firstName ?? "").localeCompare(b.firstName ?? ""));
+      .sort((a, b) => a.studentName.localeCompare(b.studentName));
   }, [regularStudents, regularSearch]);
 
   const visibleIrregularStudents = useMemo(() => {
@@ -538,6 +543,7 @@ export function StudentsPage() {
                     firstName: s.firstName,
                     midName: s.midName,
                     lastName: s.lastName,
+                    studentName: s.studentName,
                     mobile: s.mobile,
                     email: s.email,
                     hasAccount: s.hasAccount,
@@ -606,6 +612,7 @@ export function StudentsPage() {
                     firstName: s.firstName,
                     midName: s.midName,
                     lastName: s.lastName,
+                    studentName: s.studentName,
                     mobile: s.mobile,
                     email: s.email,
                     hasAccount: false,
@@ -619,6 +626,7 @@ export function StudentsPage() {
                     firstName: s.firstName,
                     midName: s.midName,
                     lastName: s.lastName,
+                    studentName: s.studentName,
                     mobile: s.mobile,
                     email: s.email,
                     hasAccount: false,
@@ -686,6 +694,7 @@ export function StudentsPage() {
                     firstName: s.firstName,
                     midName: s.midName,
                     lastName: s.lastName,
+                    studentName: s.studentName,
                     mobile: s.mobile,
                     email: s.email,
                     hasAccount: false,
@@ -701,6 +710,7 @@ export function StudentsPage() {
                     firstName: s.firstName,
                     midName: s.midName,
                     lastName: s.lastName,
+                    studentName: s.studentName,
                     mobile: s.mobile,
                     email: s.email,
                     hasAccount: false,
@@ -820,7 +830,7 @@ export function StudentsPage() {
             onConfirm={() => handleDeactivateAccount(deactivateAccountTarget!)}
           >
             <span className="font-medium text-navy-700 dark:text-mist-100">
-              {deactivateAccountTarget?.firstName} {deactivateAccountTarget?.lastName}
+              {deactivateAccountTarget?.studentName || `${deactivateAccountTarget?.firstName} ${deactivateAccountTarget?.lastName}`}
             </span>{" "}
             will no longer be able to log in. Their student record is kept.
           </ConfirmDialog>
@@ -834,7 +844,7 @@ export function StudentsPage() {
             onConfirm={() => handleReactivateAccount(reactivateAccountTarget!)}
           >
             <span className="font-medium text-navy-700 dark:text-mist-100">
-              {reactivateAccountTarget?.firstName} {reactivateAccountTarget?.lastName}
+              {reactivateAccountTarget?.studentName || `${reactivateAccountTarget?.firstName} ${reactivateAccountTarget?.lastName}`}
             </span>{" "}
             will be able to log in again.
           </ConfirmDialog>
