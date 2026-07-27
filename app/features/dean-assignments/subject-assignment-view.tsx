@@ -40,17 +40,12 @@ function Summary({ icon, label, value }: { icon: ReactNode; label: string; value
 function ProgramPanels({
   entry,
   programs,
-  subjectAssignmentIds,
-  onDeleteAssignment,
+  onEditSubjects,
 }: {
   entry: FacultyLoadingEntry;
   programs: DepartmentSubjectProgram[];
-  subjectAssignmentIds?: Map<string, number>;
-  onDeleteAssignment?: (teachingTermId: number, assignmentId: number) => Promise<void>;
+  onEditSubjects?: (entry: FacultyLoadingEntry) => void;
 }) {
-  const [removeTarget, setRemoveTarget] = useState<{ assignmentId: number; subjectCode: string } | null>(null);
-  const [removing, setRemoving] = useState(false);
-
   const groups = new Map<string, { program: DepartmentSubjectProgram; rows: FacultyLoadingEntry["subjects"] }>();
   entry.subjects.forEach((subject) => {
     const program = programs.find((item) =>
@@ -63,102 +58,62 @@ function ProgramPanels({
   });
   const groupCount = groups.size;
 
-  async function handleRemove() {
-    if (!removeTarget || !entry.teachingTermId || !onDeleteAssignment) return;
-    setRemoving(true);
-    try {
-      await onDeleteAssignment(entry.teachingTermId, removeTarget.assignmentId);
-      setRemoveTarget(null);
-    } finally {
-      setRemoving(false);
-    }
-  }
-
   return (
-    <>
-      <div className={`grid gap-4 p-4 ${groupCount <= 1 ? "grid-cols-1" : "xl:grid-cols-2"}`}>
-        {[...groups.values()].map(({ program, rows }) => (
-          <section
-            key={program.programAbbrev || program.programName}
-            className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5"
-          >
-            <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
-              <div>
-                <h3 className="font-body text-sm font-bold text-navy-800 dark:text-white">
-                  {program.programAbbrev || program.programName}
-                </h3>
-                <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">{program.programName}</p>
-              </div>
-              <span className="rounded-full bg-navy-100 px-2.5 py-1 font-body text-xs font-semibold text-navy-800 dark:bg-white/10 dark:text-white">
-                {rows.length} subject{rows.length === 1 ? "" : "s"}
-              </span>
-            </header>
-            <table className="w-full font-body text-sm">
-              <thead className="text-left text-xs text-slate-500 dark:text-slate-400">
-                <tr>
-                  <th className="px-4 py-3">#</th>
-                  <th className="px-3 py-3">Subject Code</th>
-                  <th className="px-3 py-3">Descriptive Title</th>
-                  <th className="px-4 py-3 text-right">Units</th>
-                  {subjectAssignmentIds && <th className="px-3 py-3 text-center" />}
+    <div className={`grid gap-4 p-4 ${groupCount <= 1 ? "grid-cols-1" : "xl:grid-cols-2"}`}>
+      {[...groups.values()].map(({ program, rows }) => (
+        <section
+          key={program.programAbbrev || program.programName}
+          className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5"
+        >
+          <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
+            <div>
+              <h3 className="font-body text-sm font-bold text-navy-800 dark:text-white">
+                {program.programAbbrev || program.programName}
+              </h3>
+              <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">{program.programName}</p>
+            </div>
+            {onEditSubjects && (
+              <button
+                type="button"
+                onClick={() => onEditSubjects(entry)}
+                className="grid size-7 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-navy-700 dark:hover:bg-white/10 dark:hover:text-white"
+                aria-label="Edit assigned subjects"
+              >
+                <EditIcon />
+              </button>
+            )}
+          </header>
+          <table className="w-full font-body text-sm">
+            <thead className="text-left text-xs text-slate-500 dark:text-slate-400">
+              <tr>
+                <th className="px-4 py-3">#</th>
+                <th className="px-3 py-3">Subject Code</th>
+                <th className="px-3 py-3">Descriptive Title</th>
+                <th className="px-4 py-3 text-right">Units</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((subject, index) => (
+                <tr key={subject.subjectCode} className="border-t border-slate-200 dark:border-white/10">
+                  <td className="px-4 py-3">{index + 1}</td>
+                  <td className="px-3 py-3 font-semibold text-navy-800 dark:text-white">{subject.subjectCode}</td>
+                  <td className="px-3 py-3 text-slate-600 dark:text-slate-300">{subject.descriptiveTitle}</td>
+                  <td className="px-4 py-3 text-right font-semibold">{subject.units.total}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {rows.map((subject, index) => {
-                  const assignmentId = subjectAssignmentIds?.get(subject.subjectCode);
-                  return (
-                    <tr key={subject.subjectCode} className="border-t border-slate-200 dark:border-white/10">
-                      <td className="px-4 py-3">{index + 1}</td>
-                      <td className="px-3 py-3 font-semibold text-navy-800 dark:text-white">{subject.subjectCode}</td>
-                      <td className="px-3 py-3 text-slate-600 dark:text-slate-300">{subject.descriptiveTitle}</td>
-                      <td className="px-4 py-3 text-right font-semibold">{subject.units.total}</td>
-                      {subjectAssignmentIds && (
-                        <td className="px-3 py-3 text-center">
-                          {assignmentId != null && onDeleteAssignment && entry.teachingTermId && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setRemoveTarget({ assignmentId, subjectCode: subject.subjectCode });
-                              }}
-                              className="grid size-7 place-items-center rounded text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                              aria-label={`Remove ${subject.subjectCode}`}
-                            >
-                              <TrashIcon />
-                            </button>
-                          )}
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-slate-200 dark:border-white/10">
-                  <td colSpan={3} className="px-4 py-3 font-semibold text-navy-800 dark:text-white">
-                    Total Subjects
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-navy-800 dark:text-white">{rows.length}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </section>
-        ))}
-      </div>
-
-      <ConfirmDialog
-        open={removeTarget !== null}
-        onClose={() => setRemoveTarget(null)}
-        title="Remove Subject Assignment"
-        confirmLabel="Remove"
-        loadingLabel="Removing…"
-        confirmVariant="danger"
-        onConfirm={handleRemove}
-      >
-        Are you sure you want to remove <strong>{removeTarget?.subjectCode}</strong> from this instructor&apos;s term?
-        If this subject has scheduled sessions, the removal will be blocked.
-      </ConfirmDialog>
-    </>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-slate-200 dark:border-white/10">
+                <td colSpan={3} className="px-4 py-3 font-semibold text-navy-800 dark:text-white">
+                  Total Subjects
+                </td>
+                <td className="px-4 py-3 text-right font-bold text-navy-800 dark:text-white">{rows.length}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -167,8 +122,6 @@ export function SubjectAssignmentView() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [editingHours, setEditingHours] = useState<string | null>(null);
-  const [hoursDraft, setHoursDraft] = useState("");
   const [editSubjectsTarget, setEditSubjectsTarget] = useState<FacultyLoadingEntry | null>(null);
   const [deleteTermTarget, setDeleteTermTarget] = useState<FacultyLoadingEntry | null>(null);
   const [deleteCascade, setDeleteCascade] = useState(false);
@@ -269,64 +222,9 @@ export function SubjectAssignmentView() {
                         <p className="font-body text-xs text-slate-500 dark:text-slate-400">
                           Maximum Weekly Hours
                         </p>
-                        {editingHours === entry.instructorName ? (
-                          <div className="mt-1 flex items-center gap-1.5">
-                            <input
-                              type="number"
-                              min={0}
-                              step={0.5}
-                              value={hoursDraft}
-                              onChange={(e) => setHoursDraft(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  const val = parseFloat(hoursDraft);
-                                  if (entry.teachingTermId && !isNaN(val) && val >= 0) {
-                                    if (val !== entry.maxWeeklyHours) data.updateMaxWeeklyHours(entry.teachingTermId, val);
-                                    setEditingHours(null);
-                                  }
-                                }
-                                if (e.key === "Escape") setEditingHours(null);
-                              }}
-                              className="h-7 w-20 rounded border border-gold-400 bg-white px-2 font-body text-sm font-bold text-navy-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-gold-500 dark:bg-navy-900 dark:text-white"
-                              autoFocus
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const val = parseFloat(hoursDraft);
-                                if (entry.teachingTermId && !isNaN(val) && val >= 0) {
-                                  if (val !== entry.maxWeeklyHours) data.updateMaxWeeklyHours(entry.teachingTermId, val);
-                                  setEditingHours(null);
-                                }
-                              }}
-                              className="grid size-6 place-items-center rounded text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30"
-                            >
-                              <CheckIcon />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingHours(null)}
-                              className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingHours(entry.instructorName);
-                              setHoursDraft(String(entry.maxWeeklyHours ?? ""));
-                            }}
-                            className="mt-1 flex items-center gap-1.5 font-body text-base font-bold text-navy-800 hover:text-gold-600 dark:text-white dark:hover:text-gold-400"
-                          >
-                            <span>
-                              {entry.maxWeeklyHours == null ? "—" : `${entry.maxWeeklyHours} hrs`}
-                            </span>
-                            <EditIcon />
-                          </button>
-                        )}
+                        <p className="mt-1 font-body text-base font-bold text-navy-800 dark:text-white">
+                          {entry.maxWeeklyHours == null ? "—" : `${entry.maxWeeklyHours} hrs`}
+                        </p>
                       </div>
                     </div>
 
@@ -338,18 +236,9 @@ export function SubjectAssignmentView() {
                       </span>
                       <div>
                         <p className="font-body text-xs text-slate-500 dark:text-slate-400">Assigned Subjects</p>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (entry.teachingTermId) setEditSubjectsTarget(entry);
-                          }}
-                          disabled={!entry.teachingTermId}
-                          className="mt-1 flex items-center gap-1.5 font-body text-base font-bold text-navy-800 hover:text-gold-600 disabled:cursor-default disabled:hover:text-navy-800 dark:text-white dark:hover:text-gold-400 dark:disabled:hover:text-white"
-                        >
-                          <span>{entry.subjects.length}</span>
-                          {entry.teachingTermId && <EditIcon />}
-                        </button>
+                        <p className="mt-1 font-body text-base font-bold text-navy-800 dark:text-white">
+                          {entry.subjects.length}
+                        </p>
                       </div>
                     </div>
 
@@ -396,8 +285,7 @@ export function SubjectAssignmentView() {
                     <ProgramPanels
                       entry={entry}
                       programs={data.subjects ?? []}
-                      subjectAssignmentIds={entry.subjectAssignmentIds}
-                      onDeleteAssignment={data.deleteAssignment}
+                      onEditSubjects={(e) => setEditSubjectsTarget(e)}
                     />
                   </AccordionItem>
                 );
@@ -413,17 +301,29 @@ export function SubjectAssignmentView() {
         )}
       </div>
 
-      {editSubjectsTarget && (
-        <EditSubjectsModal
-          open
-          onClose={() => setEditSubjectsTarget(null)}
-          instructorName={editSubjectsTarget.instructorName}
-          teachingTermId={editSubjectsTarget.teachingTermId!}
-          currentSubjects={editSubjectsTarget.subjects}
-          programs={data.subjects ?? []}
-          onSave={data.updateSubjects}
-        />
-      )}
+      {editSubjectsTarget && (() => {
+        const curriculumDetailIdMap = new Map<string, number>();
+        for (const entry of data.entries ?? []) {
+          for (const s of entry.subjects) {
+            if (s.curriculumDetailId != null && !curriculumDetailIdMap.has(s.subjectCode)) {
+              curriculumDetailIdMap.set(s.subjectCode, s.curriculumDetailId);
+            }
+          }
+        }
+        return (
+          <EditSubjectsModal
+            open
+            onClose={() => setEditSubjectsTarget(null)}
+            instructorName={editSubjectsTarget.instructorName}
+            teachingTermId={editSubjectsTarget.teachingTermId!}
+            currentSubjects={editSubjectsTarget.subjects}
+            currentMaxWeeklyHours={editSubjectsTarget.maxWeeklyHours ?? null}
+            programs={data.subjects ?? []}
+            curriculumDetailIdMap={curriculumDetailIdMap}
+            onSave={data.updateSubjects}
+          />
+        );
+      })()}
 
       {/* ── Delete term confirm ── */}
       <ConfirmDialog

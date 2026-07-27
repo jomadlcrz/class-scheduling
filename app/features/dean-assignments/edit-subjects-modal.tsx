@@ -11,8 +11,11 @@ type EditSubjectsModalProps = {
   instructorName: string;
   teachingTermId: number;
   currentSubjects: FacultyLoadingSubject[];
+  currentMaxWeeklyHours: number | null;
   programs: DepartmentSubjectProgram[];
-  onSave: (teachingTermId: number, curriculumDetailIds: number[]) => Promise<void>;
+  /** Maps subjectCode → curriculumDetailId from the teaching term's subject assignments. */
+  curriculumDetailIdMap: Map<string, number>;
+  onSave: (teachingTermId: number, payload: { maxWeeklyHours?: number; curriculumDetailIds: number[] }) => Promise<void>;
 };
 
 function setsEqual(a: Set<number>, b: Set<number>) {
@@ -21,44 +24,33 @@ function setsEqual(a: Set<number>, b: Set<number>) {
   return true;
 }
 
-/** Build a subjectCode → curriculumDetailId lookup from the curriculum tree. */
-function buildSubjectIdMap(programs: DepartmentSubjectProgram[]): Map<string, number> {
-  const map = new Map<string, number>();
-  for (const program of programs) {
-    for (const year of program.curriculumDetails) {
-      for (const sem of year.semesterDetails) {
-        for (const subj of sem.subjects) {
-          if (!map.has(subj.subjectCode)) map.set(subj.subjectCode, subj.subjectId);
-        }
-      }
-    }
-  }
-  return map;
-}
-
 export function EditSubjectsModal({
   open,
   onClose,
   instructorName,
   teachingTermId,
   currentSubjects,
+  currentMaxWeeklyHours,
   programs,
+  curriculumDetailIdMap,
   onSave,
 }: EditSubjectsModalProps) {
   const { yearLevelLabel } = useYearLevels();
-  const subjectIdMap = useMemo(() => buildSubjectIdMap(programs), [programs]);
 
   const initialIds = useMemo(() => {
     const ids = new Set<number>();
     for (const s of currentSubjects) {
-      const id = subjectIdMap.get(s.subjectCode);
+      const id = curriculumDetailIdMap.get(s.subjectCode);
       if (id != null) ids.add(id);
     }
     return ids;
-  }, [currentSubjects, subjectIdMap]);
+  }, [currentSubjects, curriculumDetailIdMap]);
 
   // Initialise selected IDs from the instructor's current subjects
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set(initialIds));
+  const [maxWeeklyHours, setMaxWeeklyHours] = useState<string>(
+    currentMaxWeeklyHours != null ? String(currentMaxWeeklyHours) : "",
+  );
 
   // Reset when modal opens with different data
   const resetKey = `${teachingTermId}-${currentSubjects.map((s) => s.subjectCode).join(",")}`;
@@ -66,6 +58,7 @@ export function EditSubjectsModal({
   if (resetKey !== prevKey) {
     setPrevKey(resetKey);
     setSelectedIds(new Set(initialIds));
+    setMaxWeeklyHours(currentMaxWeeklyHours != null ? String(currentMaxWeeklyHours) : "");
   }
 
   const toggle = (id: number) =>
@@ -89,14 +82,25 @@ export function EditSubjectsModal({
 
   const [saving, setSaving] = useState(false);
 
+  const hoursChanged = maxWeeklyHours !== (currentMaxWeeklyHours != null ? String(currentMaxWeeklyHours) : "");
+  const subjectsChanged = !setsEqual(selectedIds, initialIds);
+  const hasChanges = hoursChanged || subjectsChanged;
+
   async function handleSave() {
-    if (setsEqual(selectedIds, initialIds)) {
+    if (!hasChanges) {
       onClose();
       return;
     }
     setSaving(true);
     try {
-      await onSave(teachingTermId, [...selectedIds]);
+      const payload: { maxWeeklyHours?: number; curriculumDetailIds: number[] } = {
+        curriculumDetailIds: [...selectedIds],
+      };
+      if (hoursChanged) {
+        const val = parseFloat(maxWeeklyHours);
+        if (!isNaN(val) && val >= 0) payload.maxWeeklyHours = val;
+      }
+      await onSave(teachingTermId, payload);
       onClose();
     } finally {
       setSaving(false);
@@ -104,8 +108,24 @@ export function EditSubjectsModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`Edit Subjects — ${instructorName}`} wide>
+    <Modal open={open} onClose={onClose} title={`Edit Teaching Term — ${instructorName}`} wide>
       <div className="flex flex-col gap-4">
+        <div>
+          <label htmlFor="edit-max-weekly-hours" className="mb-1.5 block font-body text-sm font-medium text-slate-700 dark:text-slate-300">
+            Maximum Weekly Hours
+          </label>
+          <input
+            id="edit-max-weekly-hours"
+            type="number"
+            min={0}
+            step={0.5}
+            value={maxWeeklyHours}
+            onChange={(e) => setMaxWeeklyHours(e.target.value)}
+            placeholder="e.g. 20"
+            className="h-9 w-32 rounded-lg border border-slate-300 bg-white px-3 font-body text-sm text-navy-800 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100"
+          />
+        </div>
+
         <p className="font-body text-sm text-slate-500 dark:text-slate-400">
           Select the subjects this instructor will handle for the current term.
         </p>
@@ -113,7 +133,7 @@ export function EditSubjectsModal({
         <div className="flex flex-col gap-4 max-h-[50vh] overflow-y-auto pr-1">
           {programs.map((program) => {
             const programIds = program.curriculumDetails.flatMap((y) =>
-              y.semesterDetails.flatMap((s) => s.subjects.map((sub) => subjectIdMap.get(sub.subjectCode)).filter((id): id is number => id != null)),
+              y.semesterDetails.flatMap((s) => s.subjects.map((sub) => curriculumDetailIdMap.get(sub.subjectCode)).filter((id): id is number => id != null)),
             );
             if (programIds.length === 0) return null;
             const programCount = programIds.filter((id) => selectedIds.has(id)).length;
@@ -143,7 +163,7 @@ export function EditSubjectsModal({
                 <div className="flex flex-col gap-3 p-4">
                   {program.curriculumDetails.map((year) =>
                     year.semesterDetails.map((sem) => {
-                      const semIds = sem.subjects.map((s) => subjectIdMap.get(s.subjectCode)).filter((id): id is number => id != null);
+                      const semIds = sem.subjects.map((s) => curriculumDetailIdMap.get(s.subjectCode)).filter((id): id is number => id != null);
                       if (semIds.length === 0) return null;
                       const semCount = semIds.filter((id) => selectedIds.has(id)).length;
 
@@ -159,7 +179,7 @@ export function EditSubjectsModal({
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {sem.subjects.map((subj) => {
-                              const id = subjectIdMap.get(subj.subjectCode);
+                              const id = curriculumDetailIdMap.get(subj.subjectCode);
                               if (id == null) return null;
                               return (
                                 <Checkbox
@@ -187,7 +207,7 @@ export function EditSubjectsModal({
             Cancel
           </Button>
           <Button type="button" block={false} isLoading={saving} loadingLabel="Saving…" onClick={handleSave}>
-            Save Subjects
+            Save Changes
           </Button>
         </div>
       </div>

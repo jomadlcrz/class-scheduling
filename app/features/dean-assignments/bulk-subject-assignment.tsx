@@ -24,22 +24,23 @@ export function BulkSubjectAssignment() {
   const [subjectSearch, setSubjectSearch] = useState("");
   const seededTermRef = useRef("");
 
-  // Seed states from existing faculty loading when the term changes.
+  // Seed states from existing subject assignments when the term changes.
   useEffect(() => {
     const termKey = `${data.selectedSchoolYearId}|${data.selectedSemesterId}`;
     if (termKey === seededTermRef.current) return;
     if (!data.entries || !data.instructors || !data.subjects) return;
     seededTermRef.current = termKey;
 
+    const normalize = (name: string) => name.replace(/[.,]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
     const entryByName = new Map<string, FacultyLoadingEntry>();
     for (const entry of data.entries) {
-      entryByName.set(entry.instructorName, entry);
+      entryByName.set(normalize(entry.instructorName), entry);
     }
 
     const next: Record<string, InstructorState> = {};
     for (const instructor of data.instructors) {
       const fullName = formatInstructorName(instructor);
-      const entry = entryByName.get(fullName);
+      const entry = entryByName.get(normalize(fullName));
       if (!entry) {
         next[keyFor(instructor)] = { hours: "", selected: new Set() };
         continue;

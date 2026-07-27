@@ -195,6 +195,7 @@ async function listTeachingTerms(params?: {
     instructor: {
       instructor_profile_id: number;
       full_name: string | null;
+      department: string | null;
     };
     hours: {
       max_weekly_hours: number;
@@ -202,20 +203,43 @@ async function listTeachingTerms(params?: {
     };
     subject_assignments: {
       subject_assignment_id: number;
+      curriculum_detail_id: number;
       subject_code: string | null;
+      program_abbrev: string | null;
+    }[];
+    programs: {
+      program_abbrev: string | null;
+      program_name: string | null;
+      subjects: {
+        subject_assignment_id: number;
+        curriculum_detail_id: number;
+        subject_code: string | null;
+      }[];
     }[];
   }[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
   return data.map((t) => ({
     id: t.teaching_term_id,
     instructorProfileId: t.instructor?.instructor_profile_id ?? 0,
     instructorName: t.instructor?.full_name ?? "",
+    department: t.instructor?.department ?? "",
     syId: params?.syId ?? 0,
     semId: params?.semId ?? 0,
     maxWeeklyHours: t.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: t.hours?.current_weekly_hours ?? 0,
     subjectAssignments: (t.subject_assignments ?? []).map((sa) => ({
       subjectAssignmentId: sa.subject_assignment_id,
+      curriculumDetailId: sa.curriculum_detail_id,
       subjectCode: sa.subject_code ?? "",
+      programAbbrev: sa.program_abbrev ?? "",
+    })),
+    programs: (t.programs ?? []).map((p) => ({
+      programAbbrev: p.program_abbrev ?? "",
+      programName: p.program_name ?? "",
+      subjects: (p.subjects ?? []).map((s) => ({
+        subjectAssignmentId: s.subject_assignment_id,
+        curriculumDetailId: s.curriculum_detail_id,
+        subjectCode: s.subject_code ?? "",
+      })),
     })),
   }));
 }

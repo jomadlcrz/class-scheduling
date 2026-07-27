@@ -72,45 +72,60 @@ export function useDeanSubjectAssignments() {
     const syId = Number(selectedSchoolYearId);
     const semId = Number(selectedSemesterId);
 
-    Promise.all([
-      deanService.getFacultyLoading(syId, semId),
-      deanService.listTeachingTerms({ syId, semId }),
-    ])
-      .then(([loadingData, teachingTerms]) => {
+    // Build a subjectCode → { descriptiveTitle, units } lookup from the curriculum tree.
+    const subjectLookup = new Map<string, { descriptiveTitle: string; units: { total: number; lecHours: number; labHours: number } }>();
+    for (const program of subjects ?? []) {
+      for (const year of program.curriculumDetails) {
+        for (const sem of year.semesterDetails) {
+          for (const subj of sem.subjects) {
+            if (!subjectLookup.has(subj.subjectCode)) {
+              subjectLookup.set(subj.subjectCode, {
+                descriptiveTitle: subj.descriptiveTitle,
+                units: { total: subj.units, lecHours: 0, labHours: 0 },
+              });
+            }
+          }
+        }
+      }
+    }
+
+    deanService.listTeachingTerms({ syId, semId })
+      .then((teachingTerms) => {
         if (cancelled) return;
-        // Build a name → teaching-term lookup. The faculty-loading endpoint formats
-        // names as "Last, First M." while teaching-terms uses "First Last" — normalise
-        // both to "first last" lowercase for matching.
-        const normalize = (name: string) =>
-          name
-            .replace(/[.,]/g, "")
-            .toLowerCase()
-            .replace(/\s+/g, " ")
-            .trim();
-        const byName = new Map(teachingTerms.map((t) => [normalize(t.instructorName), t]));
-        const merged = loadingData.map((entry) => {
-          const tt = byName.get(normalize(entry.instructorName));
-          // Build a subjectCode → subjectAssignmentId lookup from the teaching term
+        const entries: FacultyLoadingEntry[] = teachingTerms.map((tt) => {
           const assignmentIdMap = new Map(
-            (tt?.subjectAssignments ?? []).map((sa) => [sa.subjectCode, sa.subjectAssignmentId]),
+            (tt.subjectAssignments ?? []).map((sa) => [sa.subjectCode, sa.subjectAssignmentId]),
           );
           return {
-            ...entry,
-            teachingTermId: tt?.id ?? null,
-            maxWeeklyHours: tt?.maxWeeklyHours ?? entry.maxWeeklyHours,
+            instructorName: tt.instructorName,
+            department: tt.department ?? "",
+            semester: "",
+            academicYear: "",
+            maxWeeklyHours: tt.maxWeeklyHours,
+            teachingTermId: tt.id,
             subjectAssignmentIds: assignmentIdMap,
+            subjects: (tt.subjectAssignments ?? []).map((sa) => {
+              const info = subjectLookup.get(sa.subjectCode);
+              return {
+                subjectCode: sa.subjectCode,
+                descriptiveTitle: info?.descriptiveTitle ?? "",
+                units: info?.units ?? { total: 0, lecHours: 0, labHours: 0 },
+                schedules: [],
+                curriculumDetailId: sa.curriculumDetailId,
+              };
+            }),
           };
         });
-        setEntries(merged);
+        setEntries(entries);
       })
       .catch((err) => {
         if (cancelled) return;
-        setLoadError(err instanceof Error ? err.message : "Unable to load faculty loading.");
+        setLoadError(err instanceof Error ? err.message : "Unable to load subject assignments.");
         setEntries([]);
       });
 
     return () => { cancelled = true; };
-  }, [selectedSchoolYearId, selectedSemesterId]);
+  }, [selectedSchoolYearId, selectedSemesterId, subjects]);
 
   useEffect(() => {
     const cleanup = refresh();
@@ -175,8 +190,8 @@ export function useDeanSubjectAssignments() {
     refresh();
   }
 
-  async function updateSubjects(teachingTermId: number, curriculumDetailIds: number[]) {
-    const message = await deanService.updateTeachingTerm(teachingTermId, { curriculumDetailIds });
+  async function updateSubjects(teachingTermId: number, payload: { maxWeeklyHours?: number; curriculumDetailIds: number[] }) {
+    const message = await deanService.updateTeachingTerm(teachingTermId, payload);
     if (message) toast.success(message);
     refresh();
   }

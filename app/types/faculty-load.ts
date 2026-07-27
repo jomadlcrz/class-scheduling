@@ -78,6 +78,8 @@ export type FacultyLoadingSubject = {
   descriptiveTitle: string;
   units: { total: number; lecHours: number; labHours: number };
   schedules: FacultyLoadingSchedule[];
+  /** curriculum_detail_id from the teaching term's subject assignment — needed for PUT updates. */
+  curriculumDetailId?: number;
 };
 
 /** One instructor's loading sheet for a term, as returned by GET /deans/faculty-loading. */
@@ -99,12 +101,15 @@ export type TeachingTerm = {
   id: number;
   instructorProfileId: number;
   instructorName: string;
+  department?: string;
   syId: number;
   semId: number;
   maxWeeklyHours: number;
   currentWeeklyHours: number;
   /** Populated by the list endpoint so the view can reference assignment IDs. */
-  subjectAssignments?: { subjectAssignmentId: number; subjectCode: string }[];
+  subjectAssignments?: { subjectAssignmentId: number; subjectCode: string; curriculumDetailId: number; programAbbrev: string }[];
+  /** Grouped-by-program view from the list endpoint. */
+  programs?: { programAbbrev: string; programName: string; subjects: { subjectAssignmentId: number; curriculumDetailId: number; subjectCode: string }[] }[];
 };
 
 /** A single subject-assignment link row, as returned by GET /deans/subject-assignments/<id>. */
