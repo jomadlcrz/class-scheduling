@@ -28,11 +28,13 @@ export function GenerationConflictsAlert({
   suggestions,
   onEditConflict,
   onApplySuggestion,
+  onConfirmMove,
 }: {
   conflicts: string[];
   suggestions?: ScheduleSuggestion[];
   onEditConflict?: (conflict: string) => void;
   onApplySuggestion?: (suggestion: ScheduleSuggestion) => void;
+  onConfirmMove?: (suggestion: ScheduleSuggestion) => void;
 }) {
   const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
   const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
@@ -66,7 +68,7 @@ export function GenerationConflictsAlert({
         {moveSuggestions.length > 0 && (
           <div className={`${conflicts.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
             {moveSuggestions.map((s, i) => (
-              <MoveSuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
+              <MoveSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
             ))}
           </div>
         )}
@@ -85,10 +87,10 @@ export function GenerationConflictsAlert({
 
 function MoveSuggestionCard({
   suggestion,
-  onApply,
+  onConfirm,
 }: {
   suggestion: ScheduleSuggestion;
-  onApply?: (suggestion: ScheduleSuggestion) => void;
+  onConfirm?: (suggestion: ScheduleSuggestion) => void;
 }) {
   const from = suggestion.from ?? {};
   const to = suggestion.to ?? {};
@@ -120,10 +122,10 @@ function MoveSuggestionCard({
             </p>
           )}
         </div>
-        {onApply && suggestion.apply && (
+        {onConfirm && suggestion.apply && (
           <button
             type="button"
-            onClick={() => onApply(suggestion)}
+            onClick={() => onConfirm(suggestion)}
             className="shrink-0 rounded-lg border border-emerald-300 bg-emerald-100 px-2.5 py-1 font-body text-[0.7rem] font-semibold text-emerald-800 transition-colors duration-150 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
           >
             Apply &amp; regenerate
@@ -150,8 +152,15 @@ function SuggestionCard({
   const durationEach = mtgs > 0 ? total / mtgs : total;
   const fmt = (n: number) => (Number.isInteger(n) ? `${n}.0` : String(Math.round(n * 100) / 100));
 
+  // Distinguish re-split (same total hours, different meeting count) from hours cut.
+  const isResplit = suggestion.reason?.startsWith("Same ") ?? false;
+
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 dark:border-gold-400/25 dark:bg-gold-400/5">
+    <div className={`rounded-lg border p-3 ${
+      isResplit
+        ? "border-emerald-200 bg-emerald-50/80 dark:border-emerald-400/25 dark:bg-emerald-400/5"
+        : "border-amber-200 bg-amber-50/80 dark:border-gold-400/25 dark:bg-gold-400/5"
+    }`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
@@ -181,7 +190,11 @@ function SuggestionCard({
           <button
             type="button"
             onClick={() => onApply(suggestion)}
-            className="shrink-0 rounded-lg border border-emerald-300 bg-emerald-100 px-2.5 py-1 font-body text-[0.7rem] font-semibold text-emerald-800 transition-colors duration-150 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
+            className={`shrink-0 rounded-lg border px-2.5 py-1 font-body text-[0.7rem] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+              isResplit
+                ? "border-emerald-300 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
+                : "border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:border-gold-400/30 dark:bg-gold-400/10 dark:text-gold-300 dark:hover:bg-gold-400/20"
+            }`}
           >
             Apply &amp; regenerate
           </button>

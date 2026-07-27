@@ -5,7 +5,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { Modal } from "~/components/ui/modal";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { FieldChrome } from "~/components/ui/input";
 import { PlusIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -48,6 +48,7 @@ function SubjectHourOverridesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SubjectHourOverride | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SubjectHourOverride | null>(null);
+  const [pendingOverride, setPendingOverride] = useState<OverrideFormInput | null>(null);
 
   // Subject/set pickers for the form
   const [subjects, setSubjects] = useState<{ id: number; code: string; title: string }[]>([]);
@@ -107,6 +108,20 @@ function SubjectHourOverridesPage() {
 
   async function handleCreate(input: OverrideFormInput) {
     if (!matchedSy || !matchedSem) return;
+
+    // Check if an override already exists for this subject and set
+    const existing = overrides?.find(
+      (o) =>
+        o.subjectId === input.subjectId &&
+        ((input.setId == null && o.setId == null) || o.setId === input.setId),
+    );
+
+    if (existing) {
+      // Show confirmation dialog
+      setPendingOverride(input);
+      return;
+    }
+
     try {
       const result = await scheduleService.upsertSubjectHourOverride({
         ...input,
@@ -116,6 +131,24 @@ function SubjectHourOverridesPage() {
       toast.success(result.created ? "Override created." : "Override updated.");
       await refresh();
       setCreateOpen(false);
+    } catch (err) {
+      if (err instanceof ApiError) toast.error(err.message);
+      else throw err;
+    }
+  }
+
+  async function confirmOverwrite() {
+    if (!pendingOverride || !matchedSy || !matchedSem) return;
+    try {
+      const result = await scheduleService.upsertSubjectHourOverride({
+        ...pendingOverride,
+        syId: matchedSy.id,
+        semId: matchedSem.id,
+      });
+      toast.success(result.created ? "Override created." : "Override updated.");
+      await refresh();
+      setCreateOpen(false);
+      setPendingOverride(null);
     } catch (err) {
       if (err instanceof ApiError) toast.error(err.message);
       else throw err;
@@ -334,6 +367,30 @@ function SubjectHourOverridesPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Overwrite confirmation */}
+      <ConfirmDialog
+        open={pendingOverride !== null}
+        onClose={() => setPendingOverride(null)}
+        title="Override already exists"
+        confirmLabel="Replace"
+        loadingLabel="Saving…"
+        onConfirm={confirmOverwrite}
+      >
+        {pendingOverride && (
+          <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+            An override already exists for{" "}
+            <span className="font-medium text-navy-700 dark:text-mist-100">
+              {subjects.find((s) => s.id === pendingOverride.subjectId)?.code}
+            </span>
+            {pendingOverride.setId != null && (
+              <> / {sets.find((s) => s.id === pendingOverride.setId)?.program}-{sets.find((s) => s.id === pendingOverride.setId)?.yearLevel}{sets.find((s) => s.id === pendingOverride.setId)?.setCode}</>
+            )}
+            {pendingOverride.setId == null && " / All sets"}
+            . Saving will replace it.
+          </p>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

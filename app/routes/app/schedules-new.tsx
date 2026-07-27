@@ -151,6 +151,7 @@ function SchedulesNewPage() {
   const [conflictSubjects, setConflictSubjects] = useState<ScheduleSubjectOption[] | null>(null);
   const [conflictLoading, setConflictLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
+  const [pendingMove, setPendingMove] = useState<ScheduleSuggestion | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -339,27 +340,56 @@ function SchedulesNewPage() {
     const body = suggestion.apply.body as Record<string, unknown>;
     setSaveError(null);
     try {
-      if (suggestion.type === "move_existing_session" && suggestion.scheduleId) {
-        await scheduleService.updateRegularSlot(suggestion.scheduleId, {
-          dayOfWeek: body.dayOfWeek as string,
-          startTime: body.startTime as string,
-          endTime: body.endTime as string,
-          roomId: body.roomId as number,
-        });
-        toast.success("Session moved successfully.");
-      } else {
-        const result = await scheduleService.upsertSubjectHourOverride({
-          subjectId: body.subjectId as number,
-          syId: body.syId as number,
-          semId: body.semId as number,
-          setId: body.setId != null ? (body.setId as number) : null,
-          lectureHours: body.lectureHours as number,
-          labHours: body.labHours as number,
-          meetings: body.meetings as number,
-          note: typeof body.note === "string" ? body.note : undefined,
-        });
-        toast.success(result.created ? "Override created." : "Override updated.");
-      }
+      const result = await scheduleService.upsertSubjectHourOverride({
+        subjectId: body.subjectId as number,
+        syId: body.syId as number,
+        semId: body.semId as number,
+        setId: body.setId != null ? (body.setId as number) : null,
+        lectureHours: body.lectureHours as number,
+        labHours: body.labHours as number,
+        meetings: body.meetings as number,
+        note: typeof body.note === "string" ? body.note : undefined,
+      });
+      toast.success(result.created ? "Override created." : "Override updated.");
+      // Re-generate after applying the suggestion so the schedule reflects the change.
+      const generated = await generate({
+        schoolYear,
+        semester,
+        semesterLabel: semesterLabel(semester),
+        yearLevel: selectedYearLevel,
+        yearLevelLabel: yearLevelLabel(selectedYearLevel),
+        programId: selectedProgram.id,
+        setId: selectedSet.id,
+      });
+      tempIdCounter.current = 0;
+      setSlots(
+        generated.map((slot) => {
+          tempIdCounter.current += 1;
+          return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
+        }),
+      );
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Unable to apply suggestion.");
+    }
+  }
+
+  function handleConfirmMove(suggestion: ScheduleSuggestion) {
+    setPendingMove(suggestion);
+  }
+
+  async function executePendingMove() {
+    if (!pendingMove || !pendingMove.apply || !selectedSet || !selectedProgram || !selectedYearLevel) return;
+    const body = pendingMove.apply.body as Record<string, unknown>;
+    setSaveError(null);
+    try {
+      await scheduleService.updateRegularSlot(pendingMove.scheduleId!, {
+        dayOfWeek: body.dayOfWeek as string,
+        startTime: body.startTime as string,
+        endTime: body.endTime as string,
+        roomId: body.roomId as number,
+      });
+      toast.success("Session moved successfully.");
+      setPendingMove(null);
       // Re-generate after applying the suggestion so the schedule reflects the change.
       const generated = await generate({
         schoolYear,
@@ -623,7 +653,7 @@ function SchedulesNewPage() {
 
           <AnimatePresence>
             {generationConflicts.length > 0 && (
-              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} suggestions={generationSuggestions} onEditConflict={openConflictDrawer} onApplySuggestion={handleApplySuggestion} />
+              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} suggestions={generationSuggestions} onEditConflict={openConflictDrawer} onApplySuggestion={handleApplySuggestion} onConfirmMove={handleConfirmMove} />
             )}
           </AnimatePresence>
 
@@ -764,6 +794,34 @@ function SchedulesNewPage() {
             on {dayLabels[deleteTarget.day]} ({formatTime(deleteTarget.startTime)}–
             {formatTime(deleteTarget.endTime)}) will be removed from this schedule.
           </>
+        )}
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={pendingMove !== null}
+        onClose={() => setPendingMove(null)}
+        title="Move another section's class?"
+        confirmLabel="Move the class"
+        loadingLabel="Moving…"
+        onConfirm={executePendingMove}
+      >
+        {pendingMove && (
+          <div className="flex flex-col gap-3">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+              <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                {pendingMove.setName} · {pendingMove.subjectCode} · {(pendingMove as Record<string, unknown>).instructor_name as string}
+              </p>
+              <div className="mt-2 flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
+                <span>{String(pendingMove.from?.day)} {String(pendingMove.from?.start)}–{String(pendingMove.from?.end)}, {String(pendingMove.from?.room)}</span>
+                <span className="text-slate-400">→</span>
+                <span>{String(pendingMove.to?.day)} {String(pendingMove.to?.start)}–{String(pendingMove.to?.end)}, {String(pendingMove.to?.room)}</span>
+              </div>
+            </div>
+            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+              This frees the slot for {String((pendingMove as Record<string, unknown>).enables && ((pendingMove as Record<string, unknown>).enables as Record<string, unknown>)?.subject_code)}.
+              <span className="ml-1 font-semibold">{pendingMove.setName}'s</span> timetable changes immediately.
+            </p>
+          </div>
         )}
       </ConfirmDialog>
 
