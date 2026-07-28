@@ -432,7 +432,7 @@ function StudentsBulkPage() {
             </Button>
             {result.created > 0 && (
               <Button type="button" block={false} isLoading={isCreating} loadingLabel="Creating accounts…" onClick={handleCreateAccounts}>
-                Create Accounts
+                Create Records
               </Button>
             )}
           </div>
@@ -714,7 +714,7 @@ function StudentsBulkPage() {
             Cancel
           </Button>
           <Button type="submit" block={false} isLoading={isLoading} loadingLabel="Creating accounts…" disabled={validRows.length === 0}>
-            Create Accounts
+            Create Records
           </Button>
         </div>
       </form>
