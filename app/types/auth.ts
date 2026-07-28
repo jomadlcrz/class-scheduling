@@ -9,5 +9,7 @@ export type LoginCredentials = {
 
 export type AuthSession = {
   token: string;
+  refreshToken: string;
+  remember_me: boolean;
   user: User;
 };

@@ -3,16 +3,22 @@ import type { AuthSession } from "~/types/auth";
 import type { Role, User } from "~/types/user";
 
 /**
- * Session + JWT helpers for the real backend. Login only returns an access
- * token — the user identity is decoded from its claims, so these helpers
- * own the token → User mapping and the persisted-session lifecycle.
+ * Session + JWT helpers for the real backend. Login returns both an access
+ * token (short-lived, sent on every request) and a refresh token (long-lived,
+ * used only to buy a new access token). The user identity is decoded from the
+ * access token's claims, so these helpers own the token → User mapping and the
+ * persisted-session lifecycle.
+ *
+ * The session survives access-token expiry — only an expired or missing refresh
+ * token truly kills it. That way, a user who returns after 30+ minutes is still
+ * recognised as logged in, and the first API call triggers a transparent refresh.
  */
 
 const SESSION_KEY = "gwc-session";
 const PENDING_KEY = "gwc-pending-password-change";
 
 /** Claims embedded in the backend's access token. */
-type TokenPayload = {
+export type TokenPayload = {
   user_id: number;
   first_name: string;
   last_name: string;
@@ -26,6 +32,13 @@ type TokenPayload = {
   exp: number;
 };
 
+/** Claims embedded in the backend's refresh token (minimal — only used for expiry). */
+type RefreshTokenPayload = {
+  user_id: number;
+  remember: boolean;
+  exp: number;
+};
+
 /** Backend RoleName enum names → frontend roles. */
 const ROLE_MAP: Record<string, Role> = {
   SUPER_ADMIN: "admin",
@@ -35,23 +48,23 @@ const ROLE_MAP: Record<string, Role> = {
   STUDENT: "student",
 };
 
-/** Decodes the JWT payload without verifying it (the backend verifies). */
-function decodeTokenPayload(token: string): TokenPayload | null {
+/** Decodes any JWT payload without verifying it (the backend verifies). */
+function decodeTokenPayload<T>(token: string): T | null {
   try {
     const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(base64)) as TokenPayload;
+    return JSON.parse(atob(base64)) as T;
   } catch {
     return null;
   }
 }
 
-function isExpired(payload: TokenPayload): boolean {
+function isExpired(payload: { exp: number }): boolean {
   return typeof payload.exp === "number" && payload.exp * 1000 <= Date.now();
 }
 
 /** Builds the app User from token claims; null when the token is unreadable. */
 export function userFromToken(token: string): User | null {
-  const payload = decodeTokenPayload(token);
+  const payload = decodeTokenPayload<TokenPayload>(token);
   if (!payload) return null;
   const role = payload.roles?.map((name) => ROLE_MAP[name]).find(Boolean);
   if (!role) return null;
@@ -71,16 +84,20 @@ export function userFromToken(token: string): User | null {
   };
 }
 
-/** Persisted session, or null during SSR, when logged out, or once the token expires. */
+/** Persisted session, or null during SSR, when logged out, or once the REFRESH token expires. */
 export function loadSession(): AuthSession | null {
   const session = loadJson<AuthSession>(SESSION_KEY);
   if (!session) return null;
-  const payload = decodeTokenPayload(session.token);
-  if (!payload || isExpired(payload)) {
+
+  // Check the refresh token — if it's gone, the session is truly dead.
+  // The access token may be expired; the api interceptor will refresh it.
+  const refreshPayload = decodeTokenPayload<RefreshTokenPayload>(session.refreshToken);
+  if (!refreshPayload || isExpired(refreshPayload)) {
     removeJson(SESSION_KEY);
     return null;
   }
-  // Rebuild the user from token claims so sessions persisted before a User
+
+  // Rebuild the user from access-token claims so sessions persisted before a User
   // shape change never surface a stale object.
   const user = userFromToken(session.token);
   return user ? { ...session, user } : session;
@@ -88,6 +105,19 @@ export function loadSession(): AuthSession | null {
 
 export function saveSession(session: AuthSession, remember: boolean) {
   saveJson(SESSION_KEY, session, { session: !remember });
+}
+
+/** Updates the tokens in storage after a successful refresh, keeping the same storage type. */
+export function updateSessionTokens(accessToken: string, refreshToken: string): void {
+  const session = loadJson<AuthSession>(SESSION_KEY);
+  if (!session) return;
+  // Preserve the original storage location (localStorage vs sessionStorage)
+  const remembered = typeof window !== "undefined" && window.localStorage.getItem(SESSION_KEY) !== null;
+  saveJson(
+    SESSION_KEY,
+    { ...session, token: accessToken, refreshToken },
+    { session: !remembered },
+  );
 }
 
 export function clearSession() {
