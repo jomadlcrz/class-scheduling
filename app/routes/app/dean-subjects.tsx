@@ -4,7 +4,8 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Card } from "~/components/ui/card";
-import { SearchIcon } from "~/components/ui/icons";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
+import { GraduationCapIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
@@ -13,8 +14,11 @@ import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
+import { programService } from "~/services/program.service";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import type { DepartmentSubjectProgram } from "~/types/faculty-load";
 import type { ProgramCurriculum } from "~/types/curriculum";
+import type { Program } from "~/types/program";
 
 export function meta() {
   return [
@@ -35,6 +39,7 @@ function DeanSubjectsPage() {
   const { semesterLabel } = useSemesters();
   const { yearLevelLabel } = useYearLevels();
   const [subjects, setSubjects] = useState<DepartmentSubjectProgram[] | null>(null);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedProgram, setSelectedProgram] = useState("");
   const [search, setSearch] = useState("");
@@ -42,10 +47,13 @@ function DeanSubjectsPage() {
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    deanService
-      .listDepartmentSubjects()
-      .then((data) => {
+    Promise.all([
+      deanService.listDepartmentSubjects(),
+      programService.list().catch(() => []),
+    ])
+      .then(([data, progs]) => {
         setSubjects(data);
+        setPrograms(progs);
         if (data.length > 0) setSelectedProgram(data[0].programName);
       })
       .catch((err) => {
@@ -55,6 +63,12 @@ function DeanSubjectsPage() {
   }, []);
 
   const currentProgram = subjects?.find((p) => p.programName === selectedProgram) ?? null;
+
+  const departmentCode = useMemo(() => {
+    if (!currentProgram) return null;
+    const program = programs.find((p) => p.name === currentProgram.programName);
+    return program?.departmentAbbrev || null;
+  }, [currentProgram, programs]);
 
   const curriculum: ProgramCurriculum | null = useMemo(() => {
     if (!currentProgram) return null;
@@ -119,22 +133,74 @@ function DeanSubjectsPage() {
           </EmptyState>
         ) : (
           <>
-            {/* Program tabs */}
-            <div className="flex flex-wrap gap-2">
-              {subjects.map((p) => (
-                <button
-                  key={p.programName}
-                  type="button"
-                  onClick={() => setSelectedProgram(p.programName)}
-                  className={`rounded-lg px-3 py-1.5 font-body text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                    selectedProgram === p.programName
-                      ? "bg-navy-800 text-white dark:bg-white dark:text-navy-900"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15"
-                  }`}
-                >
-                  {p.programAbbrev || p.programName}
-                </button>
-              ))}
+            {/* Program header card — matches curriculum page layout */}
+            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised/80">
+              <div className="flex flex-col gap-5 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-center gap-4">
+                  {departmentCode ? (
+                    <img
+                      src={departmentLogoUrl(departmentCode)}
+                      alt={`${departmentCode} logo`}
+                      onError={onDepartmentLogoError}
+                      className="size-14 shrink-0 rounded-lg object-contain"
+                    />
+                  ) : (
+                    <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500">
+                      <GraduationCapIcon />
+                    </span>
+                  )}
+                  <div className="min-w-0 max-w-xs">
+                    <FilterDropdown
+                      id="dean-subject-program"
+                      label="Program"
+                      allLabel="Select a program…"
+                      allValue=""
+                      options={subjects.map((p) => ({ value: p.programName, label: `${p.programAbbrev || p.programName} — ${p.programName}` }))}
+                      value={selectedProgram}
+                      onChange={setSelectedProgram}
+                    />
+                  </div>
+                </div>
+
+                <div className="relative min-h-16 shrink-0 self-stretch sm:self-auto sm:pl-6 sm:text-right">
+                  {currentProgram && (
+                    <>
+                      <div
+                        aria-hidden="true"
+                        className="blueprint-grid pointer-events-none absolute inset-0 -z-10 text-navy-900/5 dark:text-mist-100/8"
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-6 right-0 -z-10 size-32 opacity-20 dark:opacity-[0.15]"
+                        style={{ background: "radial-gradient(circle, var(--color-gold-400) 0%, transparent 70%)" }}
+                      />
+                    </>
+                  )}
+                  <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Total Units
+                  </p>
+                  {!currentProgram ? (
+                    <p className="mt-0.5 font-display text-2xl tracking-wide text-slate-300 dark:text-slate-600">—</p>
+                  ) : (
+                    <>
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.p
+                          key={currentProgram.programTotalUnits}
+                          initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+                          className="mt-0.5 font-display text-4xl tabular-nums tracking-wide text-navy-700 dark:text-mist-100"
+                        >
+                          {currentProgram.programTotalUnits}
+                        </motion.p>
+                      </AnimatePresence>
+                      <p className="font-body text-xs text-slate-400 dark:text-slate-500">
+                        across {currentProgram.curriculumDetails.reduce((sum, y) => sum + y.semesterDetails.length, 0)} term{currentProgram.curriculumDetails.reduce((sum, y) => sum + y.semesterDetails.length, 0) !== 1 ? "s" : ""}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
 
             {currentProgram && (
