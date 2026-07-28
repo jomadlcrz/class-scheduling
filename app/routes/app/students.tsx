@@ -17,8 +17,6 @@ import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
 import { StudentEnrollForm } from "~/features/students/student-enroll-form";
 import { StudentRecordForm } from "~/features/students/student-record-form";
-import { RegularStudentTable } from "~/features/students/regular-student-table";
-import { IrregularStudentTable } from "~/features/students/irregular-student-table";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
 import { irregularClassService, type IrregularStudent } from "~/services/irregular-class.service";
@@ -163,6 +161,42 @@ export function StudentsPage() {
     return [...regularMapped, ...irregularMapped];
   }, [isAdmin, regularStudents, irregularStudents]);
 
+  // Normalize regular students to StudentAccountRow shape for the unified table
+  const normalizedRegularStudents = useMemo(() => {
+    if (!regularStudents) return null;
+    return regularStudents.map((s) => ({
+      studentProfileId: s.studentProfileId,
+      studentId: s.studentId,
+      firstName: s.firstName,
+      midName: s.midName,
+      lastName: s.lastName,
+      studentName: s.studentName,
+      mobile: s.mobile,
+      email: s.email,
+      hasAccount: accountLookup?.[s.studentProfileId] ?? false,
+      academics: s.academics,
+    }));
+  }, [regularStudents, accountLookup]);
+
+  // Normalize irregular students to StudentAccountRow shape for the unified table
+  const normalizedIrregularStudents = useMemo(() => {
+    if (!irregularStudents) return null;
+    return irregularStudents.map((s) => ({
+      studentProfileId: s.studentProfileId,
+      studentId: s.studentId,
+      firstName: "",
+      midName: null,
+      lastName: "",
+      studentName: s.studentName,
+      mobile: s.mobile,
+      email: s.email,
+      hasAccount: accountLookup?.[s.studentProfileId] ?? false,
+      academics: s.programTaken && s.programTaken !== "—"
+        ? [{ studentAcademicId: 0, yearLevel: 0, program: s.programTaken, set: null, enrolledStatus: "", studentType: "", schoolYear: null, semester: null, enrolledSubjects: [] }]
+        : [],
+    }));
+  }, [irregularStudents, accountLookup]);
+
   const visibleStudents = useMemo(() => {
     // For admin: use studentList from super-admin endpoint
     if (isAdmin) {
@@ -207,38 +241,38 @@ export function StudentsPage() {
   }, [isAdmin, studentList, allStudentsForRegistrar, search]) as StudentAccountRow[];
 
   const visibleRegularStudents = useMemo(() => {
-    if (!regularStudents) return [];
+    if (!normalizedRegularStudents) return [];
     const query = regularSearch.trim().toLowerCase();
-    return regularStudents
+    return normalizedRegularStudents
       .filter((s) => {
         if (
           query &&
-          !s.studentName.toLowerCase().includes(query) &&
+          !(s.studentName ?? "").toLowerCase().includes(query) &&
           !(s.studentId ?? "").toLowerCase().includes(query)
         ) {
           return false;
         }
         return true;
       })
-      .sort((a, b) => a.studentName.localeCompare(b.studentName));
-  }, [regularStudents, regularSearch]);
+      .sort((a, b) => (a.studentName ?? "").localeCompare(b.studentName ?? ""));
+  }, [normalizedRegularStudents, regularSearch]);
 
   const visibleIrregularStudents = useMemo(() => {
-    if (!irregularStudents) return [];
+    if (!normalizedIrregularStudents) return [];
     const query = irregularSearch.trim().toLowerCase();
-    return irregularStudents
+    return normalizedIrregularStudents
       .filter((s) => {
         if (
           query &&
-          !s.studentName.toLowerCase().includes(query) &&
+          !(s.studentName ?? "").toLowerCase().includes(query) &&
           !(s.studentId ?? "").toLowerCase().includes(query)
         ) {
           return false;
         }
         return true;
       })
-      .sort((a, b) => a.studentName.localeCompare(b.studentName));
-  }, [irregularStudents, irregularSearch]);
+      .sort((a, b) => (a.studentName ?? "").localeCompare(b.studentName ?? ""));
+  }, [normalizedIrregularStudents, irregularSearch]);
 
   const pagination = usePagination(visibleStudents, resetKey);
   const regularPagination = usePagination(visibleRegularStudents, regularSearch);
@@ -605,39 +639,12 @@ export function StudentsPage() {
             </EmptyState>
           ) : (
             <>
-              <RegularStudentTable
+              <StudentAccountTable
                 students={regularPagination.pageItems}
-                onView={(s) =>
-                  setViewTarget({
-                    studentProfileId: s.studentProfileId,
-                    studentId: s.studentId,
-                    firstName: s.firstName,
-                    midName: s.midName,
-                    lastName: s.lastName,
-                    studentName: s.studentName,
-                    mobile: s.mobile,
-                    email: s.email,
-                    hasAccount: false,
-                    academics: s.academics,
-                  })
-                }
-                onEnroll={(s) =>
-                  setEnrollTarget({
-                    studentProfileId: s.studentProfileId,
-                    studentId: s.studentId,
-                    firstName: s.firstName,
-                    midName: s.midName,
-                    lastName: s.lastName,
-                    studentName: s.studentName,
-                    mobile: s.mobile,
-                    email: s.email,
-                    hasAccount: false,
-                    academics: s.academics,
-                  })
-                }
-                accountLookup={accountLookup}
                 accountActiveById={accountActiveById}
                 onCreateAccount={isAdmin ? setAccountTarget : null}
+                onView={setViewTarget}
+                onEnroll={setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
               />
@@ -687,43 +694,12 @@ export function StudentsPage() {
             </EmptyState>
           ) : (
             <>
-              <IrregularStudentTable
+              <StudentAccountTable
                 students={irregularPagination.pageItems}
-                onView={(s) =>
-                  setViewTarget({
-                    studentProfileId: s.studentProfileId,
-                    studentId: s.studentId,
-                    firstName: s.firstName,
-                    midName: s.midName,
-                    lastName: s.lastName,
-                    studentName: s.studentName,
-                    mobile: s.mobile,
-                    email: s.email,
-                    hasAccount: false,
-                    academics: s.programTaken && s.programTaken !== "—"
-                      ? [{ studentAcademicId: 0, yearLevel: 0, program: s.programTaken, set: null, enrolledStatus: "", studentType: "", schoolYear: null, semester: null, enrolledSubjects: [] }]
-                      : [],
-                  })
-                }
-                onEnroll={(s) =>
-                  setEnrollTarget({
-                    studentProfileId: s.studentProfileId,
-                    studentId: s.studentId,
-                    firstName: s.firstName,
-                    midName: s.midName,
-                    lastName: s.lastName,
-                    studentName: s.studentName,
-                    mobile: s.mobile,
-                    email: s.email,
-                    hasAccount: false,
-                    academics: s.programTaken && s.programTaken !== "—"
-                      ? [{ studentAcademicId: 0, yearLevel: 0, program: s.programTaken, set: null, enrolledStatus: "", studentType: "", schoolYear: null, semester: null, enrolledSubjects: [] }]
-                      : [],
-                  })
-                }
-                accountLookup={accountLookup}
                 accountActiveById={accountActiveById}
                 onCreateAccount={isAdmin ? setAccountTarget : null}
+                onView={setViewTarget}
+                onEnroll={setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
               />

@@ -193,7 +193,12 @@ function StudentsBulkPage() {
     useUnsavedChangesGuard(isDirty, !isLoading);
 
   const validRows = useMemo(
-    () => rows.filter((r) => r.firstName.trim() && r.lastName.trim() && r.contactNumber.trim() && r.email.trim() && r.subjectCodes.trim()),
+    () => rows.filter((r) => {
+      if (!r.firstName.trim() || !r.lastName.trim() || !r.contactNumber.trim() || !r.email.trim()) return false;
+      if (r.enrolledStatus === "Regular") return !!r.section.trim();
+      if (r.enrolledStatus === "Irregular") return !!r.subjectCodes.trim();
+      return false;
+    }),
     [rows],
   );
 
@@ -515,7 +520,8 @@ function StudentsBulkPage() {
                     </SelectContent>
                   </Select>
                 </FieldChrome>
-                <FieldChrome id={`s${index}-section`} label="Set" required>
+                {row.enrolledStatus !== "Irregular" && (
+                <FieldChrome id={`s${index}-section`} label="Set" required={row.enrolledStatus === "Regular"}>
                   <Select
                     items={[{ value: "", label: "Select a set" }, ...sets.filter((s) => (!row.program || s.program === row.program) && (!row.yearLevel || String(s.yearLevel) === row.yearLevel)).map((s) => ({ value: s.setCode, label: s.setCode }))]}
                     value={row.section}
@@ -535,11 +541,12 @@ function StudentsBulkPage() {
                     </SelectContent>
                   </Select>
                 </FieldChrome>
+                )}
                 <FieldChrome id={`s${index}-enrolledStatus`} label="Enrolled Status" required>
                   <Select
                     items={[{ value: "", label: "Select a status" }, ...(enumOpts?.academicStatus ?? []).map((s) => ({ value: s, label: s }))]}
                     value={row.enrolledStatus}
-                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, enrolledStatus: v as string }))}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, enrolledStatus: v as string, subjectCodes: v === "Regular" ? "" : r.subjectCodes, section: v === "Irregular" ? "" : r.section }))}
                   >
                     <SelectTrigger id={`s${index}-enrolledStatus`}>
                       <SelectValue />
@@ -603,6 +610,7 @@ function StudentsBulkPage() {
                     </SelectContent>
                   </Select>
                 </FieldChrome>
+                {row.enrolledStatus === "Irregular" && (
                 <FieldChrome id={`s${index}-subjectCodes`} label="Subject Codes" required>
                   <input
                     id={`s${index}-subjectCodes`}
@@ -620,6 +628,7 @@ function StudentsBulkPage() {
                     ))}
                   </datalist>
                 </FieldChrome>
+                )}
               </div>
             </Card>
           ))}
