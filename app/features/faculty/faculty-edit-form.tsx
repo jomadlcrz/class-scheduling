@@ -7,7 +7,7 @@ import type { Faculty } from "~/types/faculty";
 
 type FacultyEditFormProps = {
   member: Faculty;
-  onSubmit: (input: { firstName: string; midName?: string; lastName: string; mobile: string; email: string }) => Promise<void>;
+  onSubmit: (input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) => Promise<void>;
   onCancel: () => void;
 };
 
@@ -34,7 +34,7 @@ export function FacultyEditForm({ member, onSubmit, onCancel }: FacultyEditFormP
     setError(null);
     setIsSaving(true);
     try {
-      await onSubmit({ firstName, midName: midName || undefined, lastName, mobile, email });
+      await onSubmit({ firstName, midName: midName || null, lastName, mobile, email });
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
       setIsSaving(false);

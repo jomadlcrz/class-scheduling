@@ -50,7 +50,7 @@ export type FacultyDetail = {
 /** PUT /super-admin/faculty-accounts/<id> body — only name/contact fields are editable. */
 export type UpdateFacultyInput = {
   firstName?: string;
-  midName?: string;
+  midName?: string | null;
   lastName?: string;
   mobile?: string;
   email?: string;

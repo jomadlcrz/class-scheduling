@@ -48,7 +48,7 @@ export type AdministratorDetail = {
 /** PUT /super-admin/admin-accounts/<id> body — only name/contact fields are editable. */
 export type UpdateAdministratorInput = {
   firstName?: string;
-  midName?: string;
+  midName?: string | null;
   lastName?: string;
   mobile?: string;
   email?: string;

@@ -124,7 +124,7 @@ function AdministratorsPage() {
     refresh();
   }
 
-  async function handleEdit(input: { firstName: string; midName?: string; lastName: string; mobile: string; email: string }) {
+  async function handleEdit(input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) {
     if (!editTarget) return;
     const message = await administratorService.update(editTarget.id, input);
     if (message) toast.success(message);
