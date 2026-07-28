@@ -582,6 +582,16 @@ function SchedulesNewPage() {
       if (result.rescheduled?.length) {
         for (const n of result.rescheduled) toast.info(n);
       }
+      setSlots([]);
+      tempIdCounter.current = 0;
+      resetGeneration();
+      setEditing(null);
+      setDrawerOpen(false);
+      setConflictPrefill(null);
+      setConflictSubjects(null);
+      setConflictLoading(false);
+      setDeleteTarget(null);
+      setPendingMove(null);
       setIsSaving(false);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "");
