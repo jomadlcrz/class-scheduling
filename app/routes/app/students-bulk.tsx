@@ -225,12 +225,7 @@ function StudentsBulkPage() {
     useUnsavedChangesGuard(isDirty, !isLoading);
 
   const validRows = useMemo(
-    () => rows.filter((r) => {
-      if (!r.firstName.trim() || !r.lastName.trim() || !r.contactNumber.trim() || !r.email.trim()) return false;
-      if (r.enrolledStatus === "Regular") return !!r.section.trim();
-      if (r.enrolledStatus === "Irregular") return !!r.subjectCodes.trim();
-      return false;
-    }),
+    () => rows.filter((r) => r.firstName.trim() && r.lastName.trim() && r.contactNumber.trim() && r.email.trim()),
     [rows],
   );
 
@@ -313,8 +308,14 @@ function StudentsBulkPage() {
     const parts: string[] = [];
     function walk(obj: Record<string, unknown>, prefix: string) {
       for (const [key, value] of Object.entries(obj)) {
-        if (Array.isArray(value)) parts.push(`${prefix}${key}: ${value.join(", ")}`);
-        else if (value && typeof value === "object") walk(value as Record<string, unknown>, `${prefix}${key}.`);
+        if (key === "_general" && Array.isArray(value)) {
+          parts.push(value.join(". "));
+        } else if (Array.isArray(value)) {
+          const label = prefix ? `${prefix}${key}` : key.replace(/_/g, " ");
+          parts.push(`${label}: ${value.join(". ")}`);
+        } else if (value && typeof value === "object") {
+          walk(value as Record<string, unknown>, prefix ? `${prefix}${key}.` : `${key}.`);
+        }
       }
     }
     walk(errors, "");
