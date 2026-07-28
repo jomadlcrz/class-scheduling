@@ -30,6 +30,7 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
         <TableHeader>Building</TableHeader>
         <TableHeader className="hidden sm:table-cell text-center">Floor</TableHeader>
         <TableHeader className="hidden sm:table-cell">Type</TableHeader>
+        <TableHeader className="hidden md:table-cell">Programs</TableHeader>
         <TableHeader>Status</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -46,6 +47,19 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
             </TableCell>
             <TableCell className="hidden sm:table-cell text-center">{room.floor}</TableCell>
             <TableCell className="hidden sm:table-cell">{room.type}</TableCell>
+            <TableCell className="hidden md:table-cell">
+              <div className="flex flex-wrap gap-1">
+                {room.programs.length === 0 ? (
+                  <Badge tone="slate">General</Badge>
+                ) : (
+                  room.programs.map((p) => (
+                    <Badge key={p.programId} tone="violet">
+                      {p.programAbbrev}
+                    </Badge>
+                  ))
+                )}
+              </div>
+            </TableCell>
             <TableCell>
               <div className="flex items-center gap-1.5">
                 <Badge tone={ROOM_STATUS_TONES[room.status] ?? "slate"}>{room.status}</Badge>

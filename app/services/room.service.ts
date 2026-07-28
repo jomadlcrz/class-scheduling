@@ -16,9 +16,18 @@ type RoomsResponse = {
       room_capacity: number;
       room_status: string;
       time_remaining: string;
+      programs: { program_id: number; program_abbrev: string; program_name: string }[];
     }[];
   }[];
 };
+
+function mapPrograms(programs: { program_id: number; program_abbrev: string; program_name: string }[]) {
+  return programs.map((p) => ({
+    programId: p.program_id,
+    programAbbrev: p.program_abbrev,
+    programName: p.program_name,
+  }));
+}
 
 /** GET /rooms — rooms come nested per building; flattened here. 404 → empty. */
 async function list(): Promise<Room[]> {
@@ -40,6 +49,7 @@ async function list(): Promise<Room[]> {
       type: r.room_type,
       status: r.room_status,
       timeRemaining: r.time_remaining,
+      programs: mapPrograms(r.programs),
     })),
   );
 }
@@ -56,6 +66,7 @@ async function create(input: CreateRoomInput): Promise<string> {
             roomName: input.name,
             roomType: input.type,
             roomCapacity: input.capacity,
+            programIds: input.programIds ?? [],
           },
         ],
       },
@@ -64,12 +75,14 @@ async function create(input: CreateRoomInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** PUT /rooms/:id — only floor, name, and capacity are updatable. Returns the backend message. */
+/** PUT /rooms/:id — floor, name, capacity, and program access (programIds) are updatable.
+ * Omitting programIds leaves access untouched; an empty array hands the room back to its whole building. */
 async function update(id: number, input: UpdateRoomInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/rooms/${id}`, {
     ...(input.floor !== undefined && { floorLevel: input.floor }),
     ...(input.name !== undefined && { roomName: input.name }),
     ...(input.capacity !== undefined && { roomCapacity: input.capacity }),
+    ...(input.programIds !== undefined && { programIds: input.programIds }),
   });
   return apiMessage(data);
 }
@@ -112,6 +125,7 @@ async function get(id: number): Promise<RoomDetail> {
     room_type: string;
     room_capacity: number;
     room_status: string;
+    programs: { program_id: number; program_abbrev: string; program_name: string }[];
   }>(`/rooms/${id}`);
   return {
     id: r.room_id,
@@ -121,6 +135,7 @@ async function get(id: number): Promise<RoomDetail> {
     type: r.room_type,
     capacity: r.room_capacity,
     status: r.room_status,
+    programs: mapPrograms(r.programs),
   };
 }
 

@@ -15,8 +15,10 @@ import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
+import { programService } from "~/services/program.service";
 import { roomService } from "~/services/room.service";
 import type { Building } from "~/types/building";
+import type { Program } from "~/types/program";
 import type { CreateRoomInput, Room } from "~/types/room";
 
 export function meta() {
@@ -37,6 +39,7 @@ export default function Rooms() {
 function RoomsPage() {
   const [rooms, setRooms] = useState<Room[] | null>(null);
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [roomTypes, setRoomTypes] = useState<string[]>([]);
   const [roomStatuses, setRoomStatuses] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -50,6 +53,7 @@ function RoomsPage() {
   useEffect(() => {
     roomService.list().then(setRooms).catch(() => setRooms([]));
     buildingService.list().then(setBuildings).catch(() => setBuildings([]));
+    programService.list().then(setPrograms).catch(() => setPrograms([]));
     // Room type / status vocab comes from the backend enums endpoint.
     enumService
       .getOptions()
@@ -101,6 +105,7 @@ function RoomsPage() {
       floor: input.floor,
       name: input.name,
       capacity: input.capacity,
+      programIds: input.programIds,
     });
     if (message) toast.success(message);
     await refresh();
@@ -201,6 +206,7 @@ function RoomsPage() {
         <RoomForm
           buildings={buildings}
           roomTypes={roomTypes}
+          programs={programs}
           onSubmit={handleCreate}
           onCancel={() => setCreateOpen(false)}
         />
@@ -212,6 +218,7 @@ function RoomsPage() {
             room={editTarget}
             buildings={buildings}
             roomTypes={roomTypes}
+            programs={programs}
             onSubmit={handleEdit}
             onCancel={() => setEditTarget(null)}
           />

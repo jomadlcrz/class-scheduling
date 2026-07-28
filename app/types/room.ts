@@ -11,6 +11,14 @@ export const ROOM_STATUS_TONES: Record<string, BadgeTone> = {
   Archived: "slate",
 };
 
+/** A program allowed into a room. Empty list on a room means general-purpose —
+ * open to every program in the room's own building. */
+export type RoomProgram = {
+  programId: number;
+  programAbbrev: string;
+  programName: string;
+};
+
 export type Room = {
   id: number;
   buildingId: number;
@@ -24,21 +32,26 @@ export type Room = {
   status: string;
   /** Backend-composed countdown string, e.g. "Time Remaining Before: Occupied is 2:30:00". */
   timeRemaining: string;
+  programs: RoomProgram[];
 };
 
-/** Status is backend-managed and buildings are referenced by name on create. */
+/** Status is backend-managed and buildings are referenced by name on create.
+ * programIds is optional; a Laboratory room is rejected by the backend if empty. */
 export type CreateRoomInput = {
   buildingName: string;
   floor: number;
   name: string;
   capacity: number;
   type: string;
+  programIds?: number[];
 };
 
 export type UpdateRoomInput = {
   floor?: number;
   name?: string;
   capacity?: number;
+  /** Omit to leave access untouched; an empty array hands the room back to its whole building. */
+  programIds?: number[];
 };
 
 /** GET /rooms/:id response — a leaner shape than the nested-list `Room` (no buildingName/timeRemaining join). */
@@ -50,4 +63,5 @@ export type RoomDetail = {
   type: string;
   capacity: number;
   status: string;
+  programs: RoomProgram[];
 };
