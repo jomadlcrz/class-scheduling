@@ -113,35 +113,25 @@ export function loadSession(): AuthSession | null {
   return user ? { ...session, user } : session;
 }
 
-export function saveSession(session: AuthSession, remember: boolean) {
-  saveJson(SESSION_KEY, session, { session: !remember });
+export function saveSession(session: AuthSession, _remember: boolean) {
+  saveJson(SESSION_KEY, session);
 }
 
-/** Updates the tokens in storage after a successful refresh, keeping the same storage type. */
+/** Updates the tokens in storage after a successful refresh. */
 export function updateSessionTokens(accessToken: string, refreshToken: string): void {
   const session = loadJson<AuthSession>(SESSION_KEY);
   if (!session) return;
-  // Preserve the original storage location (localStorage vs sessionStorage)
-  const remembered = typeof window !== "undefined" && window.localStorage.getItem(SESSION_KEY) !== null;
-  saveJson(
-    SESSION_KEY,
-    { ...session, token: accessToken, refreshToken },
-    { session: !remembered },
-  );
+  saveJson(SESSION_KEY, { ...session, token: accessToken, refreshToken });
 }
 
 export function clearSession() {
   removeJson(SESSION_KEY);
 }
 
-/** Whether the session lives in localStorage ("remember me") vs sessionStorage. */
+/** Whether the session was stored with "remember me" (based on the backend's flag, not the storage location). */
 export function isRemembered(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.localStorage.getItem(SESSION_KEY) !== null;
-  } catch {
-    return false;
-  }
+  const session = loadJson<AuthSession>(SESSION_KEY);
+  return session?.remember_me ?? false;
 }
 
 /** First-login state: no token is issued until the temp password is changed. */

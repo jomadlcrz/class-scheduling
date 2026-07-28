@@ -38,7 +38,8 @@ type RefreshResponse = {
 export type LoginResult = AuthSession | { requiresPasswordChange: true };
 
 async function login(credentials: LoginCredentials): Promise<LoginResult> {
-  const body = { email: credentials.email, password: credentials.password };
+  const body: Record<string, unknown> = { email: credentials.email, password: credentials.password };
+  if (credentials.remember) body.rememberMe = true;
   const data = await apiPost<LoginResponse>("/login", body);
 
   // First login with a temp password: no token is issued — the user must
