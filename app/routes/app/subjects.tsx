@@ -23,6 +23,7 @@ import {
   type UpdateSubjectInput,
 } from "~/types/subject";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import { useSemesters } from "~/hooks/use-semesters";
 
 export function meta() {
   return [
@@ -45,11 +46,13 @@ export default function Subjects() {
 function SubjectsPage() {
   const navigate = useNavigate();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
+  const { semesters } = useSemesters();
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [program, setProgram] = useState("all");
+  const [semester, setSemester] = useState("all");
   const [yearLevel, setYearLevel] = useState("all");
 
   // Creation lives on /subjects/new; the modal is for editing only.
@@ -65,7 +68,7 @@ function SubjectsPage() {
       .catch(() => {});
   }, []);
 
-  const resetKey = `${search}|${program}|${yearLevel}`;
+  const resetKey = `${search}|${program}|${semester}|${yearLevel}`;
 
   const visibleSubjects = useMemo(() => {
     if (!subjects) return [];
@@ -73,6 +76,7 @@ function SubjectsPage() {
     return subjects
       .filter((subject) => {
         if (program !== "all" && subject.program !== program) return false;
+        if (semester !== "all" && subject.semester !== Number(semester)) return false;
         if (yearLevel !== "all" && subject.yearLevel !== Number(yearLevel)) return false;
         if (
           query &&
@@ -90,7 +94,7 @@ function SubjectsPage() {
           a.semester - b.semester ||
           (a.code ?? "").localeCompare(b.code ?? ""),
       );
-  }, [subjects, search, program, yearLevel]);
+  }, [subjects, search, program, semester, yearLevel]);
 
   const pagination = usePagination(visibleSubjects, resetKey);
 
@@ -150,6 +154,14 @@ function SubjectsPage() {
             options={(programs ?? []).map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
             value={program}
             onChange={setProgram}
+          />
+          <FilterDropdown
+            id="subject-semester-filter"
+            label="Semester"
+            allLabel="All semesters"
+            options={semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester }))}
+            value={semester}
+            onChange={(v) => setSemester(String(v))}
           />
           <FilterDropdown
             id="subject-year-filter"

@@ -540,7 +540,7 @@ export function StudentsPage() {
                   accountActiveById={accountActiveById}
                   onCreateAccount={setAccountTarget}
                   onView={setViewTarget}
-                  onEnroll={setEnrollTarget}
+                  onEnroll={null}
                   onDeactivateAccount={setDeactivateAccountTarget}
                   onReactivateAccount={setReactivateAccountTarget}
                 />
@@ -644,7 +644,7 @@ export function StudentsPage() {
                 accountActiveById={accountActiveById}
                 onCreateAccount={isAdmin ? setAccountTarget : null}
                 onView={setViewTarget}
-                onEnroll={setEnrollTarget}
+                onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
               />
@@ -699,7 +699,7 @@ export function StudentsPage() {
                 accountActiveById={accountActiveById}
                 onCreateAccount={isAdmin ? setAccountTarget : null}
                 onView={setViewTarget}
-                onEnroll={setEnrollTarget}
+                onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
               />

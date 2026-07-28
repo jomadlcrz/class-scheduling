@@ -11,8 +11,8 @@ type ProfilePictureModalProps = {
   photoUrl: string | null;
   initials: string;
   onChanged: () => void;
-  uploadPhoto: (file: File) => Promise<string>;
-  removePhoto: () => Promise<void>;
+  uploadPhoto: (file: File) => Promise<{ url: string; message: string }>;
+  removePhoto: () => Promise<string>;
 };
 
 export function ProfilePictureModal({
@@ -74,10 +74,10 @@ export function ProfilePictureModal({
     try {
       const blob = await getCroppedBlob(cropSrc, croppedAreaPixels);
       const file = new File([blob], "profile-photo.jpg", { type: "image/jpeg" });
-      await uploadPhoto(file);
+      const result = await uploadPhoto(file);
       reset();
       onChanged();
-      toast.success("Profile photo updated.");
+      if (result.message) toast.success(result.message);
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed.");
@@ -89,10 +89,10 @@ export function ProfilePictureModal({
   async function handleDelete() {
     setRemoving(true);
     try {
-      await removePhoto();
+      const message = await removePhoto();
       reset();
       onChanged();
-      toast.success("Profile photo removed.");
+      if (message) toast.success(message);
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Remove failed.");

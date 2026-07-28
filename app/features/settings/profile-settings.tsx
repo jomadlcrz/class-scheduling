@@ -36,17 +36,18 @@ export function ProfileSettings() {
 
   const initials = `${user.firstName[0] ?? ""}`.toUpperCase();
 
-  async function handleUpload(file: File): Promise<string> {
+  async function handleUpload(file: File): Promise<{ url: string; message: string }> {
     if (!user) throw new Error("Not logged in.");
-    const url = await profilePhotoService.uploadPhoto(user.role, file);
-    setPhotoUrl(url);
-    return url;
+    const result = await profilePhotoService.uploadPhoto(user.role, file);
+    setPhotoUrl(result.url);
+    return result;
   }
 
-  async function handleRemove(): Promise<void> {
+  async function handleRemove(): Promise<string> {
     if (!user) throw new Error("Not logged in.");
-    await profilePhotoService.removePhoto(user.role);
+    const message = await profilePhotoService.removePhoto(user.role);
     setPhotoUrl(null);
+    return message;
   }
 
   return (
