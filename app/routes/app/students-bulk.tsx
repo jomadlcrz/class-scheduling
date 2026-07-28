@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import { RoleGuard } from "~/auth/role-guard";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
@@ -237,11 +238,15 @@ function StudentsBulkPage() {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result;
-      if (typeof text === "string") {
-        const parsed = parseCsv(text);
+    const isXlsx = file.name.endsWith(".xlsx");
+    if (isXlsx) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const csv = XLSX.utils.sheet_to_csv(sheet);
+        const parsed = parseCsv(csv);
         if (parsed.length > 0) {
           setRows(parsed);
           setError(null);
@@ -249,9 +254,25 @@ function StudentsBulkPage() {
         } else {
           setError("No valid rows found in the file.");
         }
-      }
-    };
-    reader.readAsText(file);
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result;
+        if (typeof text === "string") {
+          const parsed = parseCsv(text);
+          if (parsed.length > 0) {
+            setRows(parsed);
+            setError(null);
+            toast.success(`Loaded ${parsed.length} row${parsed.length > 1 ? "s" : ""}.`);
+          } else {
+            setError("No valid rows found in the file.");
+          }
+        }
+      };
+      reader.readAsText(file);
+    }
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -443,10 +464,10 @@ function StudentsBulkPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" variant="outline" block={false} onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
             <UploadIcon size={14} />
-            Upload CSV
+            Upload CSV/Excel
           </Button>
           <Button type="button" variant="outline" block={false} onClick={() => setShowPaste((v) => !v)} disabled={isLoading}>
-            {showPaste ? "Hide Paste" : "Paste Data"}
+            {showPaste ? "Hide Paste" : "Paste CSV"}
           </Button>
           <Button type="button" variant="outline" block={false} onClick={() => setRows((prev) => [...prev, { ...EMPTY_ROW }])} disabled={isLoading}>
             <PlusIcon />
