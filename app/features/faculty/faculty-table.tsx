@@ -10,6 +10,11 @@ import {
 import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import type { Faculty } from "~/types/faculty";
 
+function displayName(member: Faculty) {
+  const parts = [member.firstName, member.midName].filter(Boolean).join(" ");
+  return parts ? `${member.lastName}, ${parts}` : member.lastName;
+}
+
 type FacultyTableProps = {
   faculty: Faculty[];
   /** Per-row login status fetched from GET /super-admin/faculty-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
@@ -42,7 +47,7 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
           <TableRow key={member.id}>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">
-                {member.lastName}, {member.firstName}
+                {displayName(member)}
               </span>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">

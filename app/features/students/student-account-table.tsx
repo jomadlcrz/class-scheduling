@@ -12,7 +12,8 @@ import type { StudentAccountRow } from "~/types/student";
 
 function displayName(s: StudentAccountRow) {
   if (s.studentName) return s.studentName;
-  return [s.firstName, s.midName, s.lastName].filter(Boolean).join(" ");
+  const parts = [s.firstName, s.midName].filter(Boolean).join(" ");
+  return parts ? `${s.lastName}, ${parts}` : s.lastName;
 }
 
 type StudentAccountTableProps = {

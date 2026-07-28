@@ -10,6 +10,11 @@ import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { AdministratorRoleBadge } from "~/features/administrators/role-badge";
 import type { Administrator } from "~/types/administrator";
 
+function displayName(admin: Administrator) {
+  const parts = [admin.firstName, admin.midName].filter(Boolean).join(" ");
+  return parts ? `${admin.lastName}, ${parts}` : admin.lastName;
+}
+
 type AdministratorTableProps = {
   administrators: Administrator[];
   /** Per-row login status fetched from GET /super-admin/admin-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
@@ -47,7 +52,7 @@ export function AdministratorTable({
             <TableRow key={admin.id}>
               <TableCell>
                 <span className="font-medium text-navy-700 dark:text-mist-100">
-                  {admin.lastName}, {admin.firstName}
+                  {displayName(admin)}
                 </span>
               </TableCell>
               <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
