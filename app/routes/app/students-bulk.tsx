@@ -1,18 +1,28 @@
-import { useRef, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
+import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
+import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { SectionHeading } from "~/components/ui/section-heading";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
-import { PageHeader } from "~/layouts/page-header";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
+import { PageHeader } from "~/layouts/page-header";
+import { enumService, type EnumOptions } from "~/services/enum.service";
+import { programService } from "~/services/program.service";
+import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
+import { semesterService } from "~/services/semester.service";
+import { setService } from "~/services/set.service";
 import { studentService, type ImportStudentResponse } from "~/services/student.service";
+import { subjectService } from "~/services/subject.service";
+import type { Program } from "~/types/program";
+import type { Semester } from "~/types/semester";
+import type { ClassSet } from "~/types/set";
 
 type StudentRow = {
   studentNumber: string;
@@ -57,7 +67,7 @@ const CSV_HEADERS = [
   "Email",
   "Program",
   "Year Level",
-  "Section",
+  "Set",
   "Enrolled Status",
   "Student Type",
   "School Year",
@@ -116,7 +126,7 @@ function parseCsv(text: string): StudentRow[] {
   for (const line of lines) {
     const cells = line.split(/[\t,]/).map((c) => c.trim());
     const firstCell = (cells[0] || "").toLowerCase();
-    if (["student number", "student_number", "studentid", "student id"].includes(firstCell)) continue;
+    if (["student number", "student_number", "studentid", "student id", "set", "section"].includes(firstCell)) continue;
     const row: StudentRow = { ...EMPTY_ROW };
     CSV_KEYS.forEach((key, i) => { row[key] = cells[i] ?? ""; });
     if (row.firstName || row.lastName) rows.push(row);
@@ -158,6 +168,22 @@ function StudentsBulkPage() {
   const [result, setResult] = useState<ImportStudentResponse | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  const [subjectCodes, setSubjectCodes] = useState<string[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [sets, setSets] = useState<ClassSet[]>([]);
+  const [schoolYears, setSchoolYears] = useState<SchoolYearOption[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [enumOpts, setEnumOpts] = useState<EnumOptions | null>(null);
+
+  useEffect(() => {
+    subjectService.list().then((subjects) => setSubjectCodes([...new Set(subjects.map((s) => s.code))])).catch(() => {});
+    programService.list().then(setPrograms).catch(() => {});
+    setService.list().then(setSets).catch(() => {});
+    schoolYearService.list().then(setSchoolYears).catch(() => {});
+    semesterService.list().then(setSemesters).catch(() => {});
+    enumService.getOptions().then(setEnumOpts).catch(() => {});
+  }, []);
+
   const isDirty = useMemo(
     () => rows.some((r) => Object.values(r).some((v) => v.trim() !== "")),
     [rows],
@@ -167,7 +193,7 @@ function StudentsBulkPage() {
     useUnsavedChangesGuard(isDirty, !isLoading);
 
   const validRows = useMemo(
-    () => rows.filter((r) => r.firstName.trim() && r.lastName.trim()),
+    () => rows.filter((r) => r.firstName.trim() && r.lastName.trim() && r.contactNumber.trim() && r.email.trim() && r.subjectCodes.trim()),
     [rows],
   );
 
@@ -390,7 +416,7 @@ function StudentsBulkPage() {
             id="paste-data"
             label="Paste CSV data"
             onPaste={handlePaste}
-            placeholder={`Student Number,First Name,Middle Name,Last Name,Contact Number,Email,Program,Year Level,Section,Enrolled Status,Student Type,School Year,Semester,Subject Codes\n2024-0001,Juan,Santos,Dela Cruz,09171234567,juan.delacruz@example.com,BSIT,1,A,Regular,New Student,2026-2027,1st Semester,`}
+            placeholder={`Student Number,First Name,Middle Name,Last Name,Contact Number,Email,Program,Year Level,Set,Enrolled Status,Student Type,School Year,Semester,Subject Codes\n2024-0001,Juan,Santos,Dela Cruz,09171234567,juan.delacruz@example.com,BSIT,1,A,Regular,New Student,2026-2027,1st Semester,`}
             disabled={isLoading}
             rows={8}
           />
@@ -437,16 +463,163 @@ function StudentsBulkPage() {
                 <Input id={`s${index}-firstName`} label="First Name" value={row.firstName} disabled={isLoading} placeholder="Enter first name" required onChange={(e) => updateRow(index, (r) => ({ ...r, firstName: e.target.value }))} />
                 <Input id={`s${index}-middleName`} label="Middle Name" value={row.middleName} disabled={isLoading} placeholder="Optional" onChange={(e) => updateRow(index, (r) => ({ ...r, middleName: e.target.value }))} />
                 <Input id={`s${index}-lastName`} label="Last Name" value={row.lastName} disabled={isLoading} placeholder="Enter last name" required onChange={(e) => updateRow(index, (r) => ({ ...r, lastName: e.target.value }))} />
-                <Input id={`s${index}-contactNumber`} label="Contact Number" value={row.contactNumber} disabled={isLoading} placeholder="e.g. 09171234567" onChange={(e) => updateRow(index, (r) => ({ ...r, contactNumber: e.target.value }))} />
-                <Input id={`s${index}-email`} label="Email" type="email" value={row.email} disabled={isLoading} placeholder="student@example.com" onChange={(e) => updateRow(index, (r) => ({ ...r, email: e.target.value }))} />
-                <Input id={`s${index}-program`} label="Program" value={row.program} disabled={isLoading} placeholder="e.g. BSIT" onChange={(e) => updateRow(index, (r) => ({ ...r, program: e.target.value }))} />
-                <Input id={`s${index}-yearLevel`} label="Year Level" value={row.yearLevel} disabled={isLoading} placeholder="e.g. 1" onChange={(e) => updateRow(index, (r) => ({ ...r, yearLevel: e.target.value }))} />
-                <Input id={`s${index}-section`} label="Section" value={row.section} disabled={isLoading} placeholder="e.g. A" onChange={(e) => updateRow(index, (r) => ({ ...r, section: e.target.value }))} />
-                <Input id={`s${index}-enrolledStatus`} label="Enrolled Status" value={row.enrolledStatus} disabled={isLoading} placeholder="e.g. Regular" onChange={(e) => updateRow(index, (r) => ({ ...r, enrolledStatus: e.target.value }))} />
-                <Input id={`s${index}-studentType`} label="Student Type" value={row.studentType} disabled={isLoading} placeholder="e.g. New Student" onChange={(e) => updateRow(index, (r) => ({ ...r, studentType: e.target.value }))} />
-                <Input id={`s${index}-schoolYear`} label="School Year" value={row.schoolYear} disabled={isLoading} placeholder="e.g. 2026-2027" onChange={(e) => updateRow(index, (r) => ({ ...r, schoolYear: e.target.value }))} />
-                <Input id={`s${index}-semester`} label="Semester" value={row.semester} disabled={isLoading} placeholder="e.g. 1st Semester" onChange={(e) => updateRow(index, (r) => ({ ...r, semester: e.target.value }))} />
-                <Input id={`s${index}-subjectCodes`} label="Subject Codes" value={row.subjectCodes} disabled={isLoading} placeholder="e.g. CS101,CS102 (comma-separated)" onChange={(e) => updateRow(index, (r) => ({ ...r, subjectCodes: e.target.value }))} />
+                <Input
+                  id={`s${index}-contactNumber`}
+                  label="Contact Number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={11}
+                  required
+                  value={row.contactNumber}
+                  disabled={isLoading}
+                  placeholder="e.g. 09171234567"
+                  onChange={(e) => {
+                    const cleaned = e.target.value.replace(/\D/g, "").slice(0, 11);
+                    updateRow(index, (r) => ({ ...r, contactNumber: cleaned }));
+                  }}
+                />
+                <Input id={`s${index}-email`} label="Email" type="email" required value={row.email} disabled={isLoading} placeholder="student@example.com" onChange={(e) => updateRow(index, (r) => ({ ...r, email: e.target.value }))} />
+                <FieldChrome id={`s${index}-program`} label="Program" required>
+                  <Select
+                    items={[{ value: "", label: "Select a program" }, ...programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))]}
+                    value={row.program}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, program: v as string, yearLevel: "", section: "" }))}
+                  >
+                    <SelectTrigger id={`s${index}-program`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a program</SelectItem>
+                      {programs.map((p) => (
+                        <SelectItem key={p.id} value={p.abbrev}>{p.abbrev} — {p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <FieldChrome id={`s${index}-yearLevel`} label="Year Level" required>
+                  <Select
+                    items={[{ value: "", label: "Select a year" }, ...(enumOpts?.yearLevels ?? []).map((y) => ({ value: String(y.id), label: y.name }))]}
+                    value={row.yearLevel}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, yearLevel: v as string, section: "" }))}
+                    disabled={!row.program}
+                  >
+                    <SelectTrigger id={`s${index}-yearLevel`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a year</SelectItem>
+                      {(enumOpts?.yearLevels ?? []).map((y) => (
+                        <SelectItem key={y.id} value={String(y.id)}>{y.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <FieldChrome id={`s${index}-section`} label="Set" required>
+                  <Select
+                    items={[{ value: "", label: "Select a set" }, ...sets.filter((s) => (!row.program || s.program === row.program) && (!row.yearLevel || String(s.yearLevel) === row.yearLevel)).map((s) => ({ value: s.setCode, label: s.setCode }))]}
+                    value={row.section}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, section: v as string }))}
+                    disabled={!row.program || !row.yearLevel}
+                  >
+                    <SelectTrigger id={`s${index}-section`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a set</SelectItem>
+                      {sets
+                        .filter((s) => (!row.program || s.program === row.program) && (!row.yearLevel || String(s.yearLevel) === row.yearLevel))
+                        .map((s) => (
+                          <SelectItem key={s.id} value={s.setCode}>{s.setCode}</SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <FieldChrome id={`s${index}-enrolledStatus`} label="Enrolled Status" required>
+                  <Select
+                    items={[{ value: "", label: "Select a status" }, ...(enumOpts?.academicStatus ?? []).map((s) => ({ value: s, label: s }))]}
+                    value={row.enrolledStatus}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, enrolledStatus: v as string }))}
+                  >
+                    <SelectTrigger id={`s${index}-enrolledStatus`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a status</SelectItem>
+                      {(enumOpts?.academicStatus ?? []).map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <FieldChrome id={`s${index}-studentType`} label="Student Type" required>
+                  <Select
+                    items={[{ value: "", label: "Select a type" }, ...(enumOpts?.studentType ?? []).map((t) => ({ value: t, label: t }))]}
+                    value={row.studentType}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, studentType: v as string }))}
+                  >
+                    <SelectTrigger id={`s${index}-studentType`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a type</SelectItem>
+                      {(enumOpts?.studentType ?? []).map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <FieldChrome id={`s${index}-schoolYear`} label="School Year" required>
+                  <Select
+                    items={[{ value: "", label: "Select a school year" }, ...schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear }))]}
+                    value={row.schoolYear}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, schoolYear: v as string }))}
+                  >
+                    <SelectTrigger id={`s${index}-schoolYear`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a school year</SelectItem>
+                      {schoolYears.map((sy) => (
+                        <SelectItem key={sy.id} value={sy.schoolYear}>{sy.schoolYear}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <FieldChrome id={`s${index}-semester`} label="Semester" required>
+                  <Select
+                    items={[{ value: "", label: "Select a semester" }, ...semesters.map((s) => ({ value: s.semester, label: s.semester }))]}
+                    value={row.semester}
+                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, semester: v as string }))}
+                  >
+                    <SelectTrigger id={`s${index}-semester`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a semester</SelectItem>
+                      {semesters.map((s) => (
+                        <SelectItem key={s.id} value={s.semester}>{s.semester}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <FieldChrome id={`s${index}-subjectCodes`} label="Subject Codes" required>
+                  <input
+                    id={`s${index}-subjectCodes`}
+                    name={`s${index}-subjectCodes`}
+                    list={`s${index}-subjectCodes-list`}
+                    className={inputClassName}
+                    value={row.subjectCodes}
+                    disabled={isLoading}
+                    placeholder="e.g. CS101,CS102 (comma-separated)"
+                    onChange={(e) => updateRow(index, (r) => ({ ...r, subjectCodes: e.target.value }))}
+                  />
+                  <datalist id={`s${index}-subjectCodes-list`}>
+                    {subjectCodes.map((code) => (
+                      <option key={code} value={code} />
+                    ))}
+                  </datalist>
+                </FieldChrome>
               </div>
             </Card>
           ))}
