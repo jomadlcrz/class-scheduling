@@ -221,8 +221,39 @@ export type SlotDraft = {
   roomChoices?: { id: number; roomName: string }[];
 };
 
+/** One relocated saved session within a repack_instructor suggestion. */
+export type RepackMove = {
+  scheduleId: number;
+  subjectCode: string;
+  setName: string;
+  from: { day: string; start: string; end: string; room: string };
+  to: { day: string; start: string; end: string; room: string; room_id: number };
+  apply: { method: string; path: string; body: Record<string, unknown> };
+};
+
+/** Where the previously-unplaceable subject lands once the repack's moves are applied. */
+export type RepackPlacement = {
+  day: string;
+  start: string;
+  end: string;
+  room: string;
+  roomId: number;
+  isLab: boolean;
+};
+
+/** A saved session the repack has no legal home for afterwards — the trade-off cost. */
+export type RepackDisplaced = {
+  scheduleId: number;
+  subjectCode: string;
+  setLabel: string;
+  day: string;
+  /** Decimal hours (e.g. 9.5 = 9:30 AM), not a formatted time string. */
+  start: number;
+  end: number;
+};
+
 export type ScheduleSuggestion = {
-  type: "subject_hour_override" | "move_existing_session";
+  type: "subject_hour_override" | "move_existing_session" | "repack_instructor";
   subjectId?: number;
   subjectCode?: string;
   setId?: number;
@@ -232,13 +263,25 @@ export type ScheduleSuggestion = {
   meetings?: number;
   totalWeeklyHours?: number;
   reason?: string;
-  apply?: { method: string; path: string; body: Record<string, unknown> };
+  apply?: {
+    method: string;
+    path?: string;
+    body?: Record<string, unknown>;
+    /** present for repack_instructor — one apply spec per relocated session */
+    moves?: { method: string; path: string; body: Record<string, unknown> }[];
+  };
   /** present for move_existing_session */
   scheduleId?: number;
   instructorName?: string;
   from?: { day: string; start: string; end: string; room: string };
   to?: { day: string; start: string; end: string; room: string; room_id: number };
   enables?: { subject_code: string; at: string };
+  /** present for repack_instructor */
+  instructorId?: number;
+  moves?: RepackMove[];
+  placesAt?: RepackPlacement[];
+  displaces?: RepackDisplaced[];
+  netGain?: number;
 };
 
 type AutoGenerateResponse = {
@@ -342,6 +385,7 @@ async function autoGenerate(input: {
         subjectCode: r.subject_code,
         setId: r.set_id,
         setName: r.set_name,
+        instructorId: r.instructor_id,
         instructorName: r.instructor_name,
         lectureHours: r.lecture_hours,
         labHours: r.lab_hours,
@@ -349,6 +393,31 @@ async function autoGenerate(input: {
         from: r.from as ScheduleSuggestion["from"],
         to: r.to as ScheduleSuggestion["to"],
         enables: r.enables as ScheduleSuggestion["enables"],
+        moves: (r.moves as Record<string, unknown>[] | undefined)?.map((m) => ({
+          scheduleId: m.schedule_id,
+          subjectCode: m.subject_code,
+          setName: m.set_name,
+          from: m.from,
+          to: m.to,
+          apply: m.apply,
+        })) as RepackMove[] | undefined,
+        placesAt: (r.places_at as Record<string, unknown>[] | undefined)?.map((p) => ({
+          day: p.day,
+          start: p.start,
+          end: p.end,
+          room: p.room,
+          roomId: p.room_id,
+          isLab: p.is_lab,
+        })) as RepackPlacement[] | undefined,
+        displaces: (r.displaces as Record<string, unknown>[] | undefined)?.map((d) => ({
+          scheduleId: d.schedule_id,
+          subjectCode: d.subject_code,
+          setLabel: d.set_label,
+          day: d.day,
+          start: d.start,
+          end: d.end,
+        })) as RepackDisplaced[] | undefined,
+        netGain: r.net_gain,
       };
     }) as ScheduleSuggestion[],
   };

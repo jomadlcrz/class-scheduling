@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { AlertTriangleIcon, EditIcon } from "~/components/ui/icons";
 import { scheduleService, type ScheduleSuggestion, type SlotDraft } from "~/services/schedule.service";
+import { formatDecimalHour } from "~/lib/time";
 import type { ScheduleSemester } from "~/types/schedule";
 import type { YearLevel } from "~/types/subject";
 
@@ -38,6 +39,7 @@ export function GenerationConflictsAlert({
 }) {
   const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
   const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
+  const repackSuggestions = (suggestions ?? []).filter((s) => s.type === "repack_instructor");
   return (
     <Alert variant="warning">
       <AlertTriangleIcon />
@@ -73,8 +75,16 @@ export function GenerationConflictsAlert({
           </div>
         )}
 
-        {overrideSuggestions.length > 0 && (
+        {repackSuggestions.length > 0 && (
           <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+            {repackSuggestions.map((s, i) => (
+              <RepackSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
+            ))}
+          </div>
+        )}
+
+        {overrideSuggestions.length > 0 && (
+          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 || repackSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
             {overrideSuggestions.map((s, i) => (
               <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
             ))}
@@ -129,6 +139,71 @@ function MoveSuggestionCard({
             className="shrink-0 rounded-lg border border-emerald-300 bg-emerald-100 px-2.5 py-1 font-body text-[0.7rem] font-semibold text-emerald-800 transition-colors duration-150 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
           >
             Apply &amp; regenerate
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RepackSuggestionCard({
+  suggestion,
+  onConfirm,
+}: {
+  suggestion: ScheduleSuggestion;
+  onConfirm?: (suggestion: ScheduleSuggestion) => void;
+}) {
+  const moves = suggestion.moves ?? [];
+  const displaces = suggestion.displaces ?? [];
+  const hasTradeOff = displaces.length > 0;
+
+  return (
+    <div
+      className={`rounded-lg border p-3 ${
+        hasTradeOff
+          ? "border-red-200 bg-red-50/80 dark:border-red-400/25 dark:bg-red-400/5"
+          : "border-emerald-200 bg-emerald-50/80 dark:border-emerald-400/25 dark:bg-emerald-400/5"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+            {suggestion.subjectCode}
+            {suggestion.setName && (
+              <span className="ml-1.5 inline-block rounded-full border border-blue-200 bg-blue-100 px-1.5 py-0 font-body text-[0.65rem] font-medium text-blue-700 dark:border-navy-300/30 dark:bg-navy-300/10 dark:text-navy-300">
+                {suggestion.setName}
+              </span>
+            )}
+          </p>
+          <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+            Rearrange {moves.length} of {suggestion.instructorName}'s existing session(s) to fit this in — same
+            instructor, same weekly hours, only times and rooms change.
+          </p>
+          {hasTradeOff && (
+            <p className="mt-1 font-body text-[0.7rem] font-semibold text-red-700 dark:text-red-300">
+              Trade-off: {displaces.length} already-saved session(s) become unplaced (
+              {displaces.map((d) => `${d.subjectCode} ${d.day} ${formatDecimalHour(d.start)}`).join(", ")}) — net{" "}
+              {suggestion.netGain != null && suggestion.netGain >= 0 ? "+" : ""}
+              {suggestion.netGain} placed session(s).
+            </p>
+          )}
+          {suggestion.reason && (
+            <p className="mt-1 font-body text-[0.7rem] text-slate-400 italic dark:text-slate-500">
+              Why: {suggestion.reason}
+            </p>
+          )}
+        </div>
+        {onConfirm && suggestion.apply?.moves && (
+          <button
+            type="button"
+            onClick={() => onConfirm(suggestion)}
+            className={`shrink-0 rounded-lg border px-2.5 py-1 font-body text-[0.7rem] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+              hasTradeOff
+                ? "border-red-300 bg-red-100 text-red-800 hover:bg-red-200 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300 dark:hover:bg-red-400/20"
+                : "border-emerald-300 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
+            }`}
+          >
+            Review &amp; apply
           </button>
         )}
       </div>

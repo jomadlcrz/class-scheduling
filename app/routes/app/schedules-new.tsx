@@ -49,7 +49,7 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
-import { normalizeTime, timeToMinutes } from "~/lib/time";
+import { formatDecimalHour, normalizeTime, timeToMinutes } from "~/lib/time";
 
 
 export function meta() {
@@ -379,16 +379,29 @@ function SchedulesNewPage() {
 
   async function executePendingMove() {
     if (!pendingMove || !pendingMove.apply || !selectedSet || !selectedProgram || !selectedYearLevel) return;
-    const body = pendingMove.apply.body as Record<string, unknown>;
     setSaveError(null);
     try {
-      await scheduleService.updateRegularSlot(pendingMove.scheduleId!, {
-        dayOfWeek: body.dayOfWeek as string,
-        startTime: body.startTime as string,
-        endTime: body.endTime as string,
-        roomId: body.roomId as number,
-      });
-      toast.success("Session moved successfully.");
+      if (pendingMove.type === "repack_instructor") {
+        for (const move of pendingMove.moves ?? []) {
+          const body = move.apply.body as Record<string, unknown>;
+          await scheduleService.updateRegularSlot(move.scheduleId, {
+            dayOfWeek: body.dayOfWeek as string,
+            startTime: body.startTime as string,
+            endTime: body.endTime as string,
+            roomId: body.roomId as number,
+          });
+        }
+        toast.success(`${(pendingMove.moves ?? []).length} session(s) rearranged successfully.`);
+      } else {
+        const body = pendingMove.apply.body as Record<string, unknown>;
+        await scheduleService.updateRegularSlot(pendingMove.scheduleId!, {
+          dayOfWeek: body.dayOfWeek as string,
+          startTime: body.startTime as string,
+          endTime: body.endTime as string,
+          roomId: body.roomId as number,
+        });
+        toast.success("Session moved successfully.");
+      }
       setPendingMove(null);
       // Re-generate after applying the suggestion so the schedule reflects the change.
       const generated = await generate({
@@ -812,28 +825,80 @@ function SchedulesNewPage() {
       <ConfirmDialog
         open={pendingMove !== null}
         onClose={() => setPendingMove(null)}
-        title="Move another section's class?"
-        confirmLabel="Move the class"
-        loadingLabel="Moving…"
+        title={
+          pendingMove?.type === "repack_instructor"
+            ? "Rearrange this instructor's week?"
+            : "Move another section's class?"
+        }
+        confirmLabel={pendingMove?.type === "repack_instructor" ? "Rearrange & apply" : "Move the class"}
+        loadingLabel={pendingMove?.type === "repack_instructor" ? "Rearranging…" : "Moving…"}
+        confirmVariant={
+          pendingMove?.type === "repack_instructor" && (pendingMove.displaces ?? []).length > 0
+            ? "danger"
+            : "primary"
+        }
         onConfirm={executePendingMove}
       >
-        {pendingMove && (
+        {pendingMove && pendingMove.type === "repack_instructor" ? (
           <div className="flex flex-col gap-3">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-              <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                {pendingMove.setName} · {pendingMove.subjectCode} · {pendingMove.instructorName}
-              </p>
-              <div className="mt-2 flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
-                <span>{String(pendingMove.from?.day)} {String(pendingMove.from?.start)}–{String(pendingMove.from?.end)}, {String(pendingMove.from?.room)}</span>
-                <span className="text-slate-400">→</span>
-                <span>{String(pendingMove.to?.day)} {String(pendingMove.to?.start)}–{String(pendingMove.to?.end)}, {String(pendingMove.to?.room)}</span>
-              </div>
-            </div>
-            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-              This frees the slot for {pendingMove.enables?.subject_code}.
-              <span className="ml-1 font-semibold">{pendingMove.setName}'s</span> timetable changes immediately.
+            <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+              {pendingMove.setName} · {pendingMove.subjectCode} · {pendingMove.instructorName}
             </p>
+            <div className="flex flex-col gap-1.5">
+              {(pendingMove.moves ?? []).map((m, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-white/10 dark:bg-white/5"
+                >
+                  <p className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
+                    {m.subjectCode} ({m.setName})
+                  </p>
+                  <div className="mt-1 flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
+                    <span>{m.from.day} {m.from.start}–{m.from.end}, {m.from.room}</span>
+                    <span className="text-slate-400">→</span>
+                    <span>{m.to.day} {m.to.start}–{m.to.end}, {m.to.room}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {(pendingMove.placesAt ?? []).length > 0 && (
+              <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+                {pendingMove.subjectCode} then takes{" "}
+                {(pendingMove.placesAt ?? [])
+                  .map((p) => `${p.day} ${p.start}–${p.end} in ${p.room}${p.isLab ? " (lab)" : ""}`)
+                  .join(", ")}
+                .
+              </p>
+            )}
+            {(pendingMove.displaces ?? []).length > 0 && (
+              <p className="font-body text-sm font-semibold text-red-700 dark:text-red-300">
+                Trade-off: {(pendingMove.displaces ?? []).length} already-saved session(s) will become unplaced —{" "}
+                {(pendingMove.displaces ?? [])
+                  .map((d) => `${d.subjectCode} ${d.day} ${formatDecimalHour(d.start)}`)
+                  .join(", ")}
+                .
+              </p>
+            )}
           </div>
+        ) : (
+          pendingMove && (
+            <div className="flex flex-col gap-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+                <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                  {pendingMove.setName} · {pendingMove.subjectCode} · {pendingMove.instructorName}
+                </p>
+                <div className="mt-2 flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
+                  <span>{String(pendingMove.from?.day)} {String(pendingMove.from?.start)}–{String(pendingMove.from?.end)}, {String(pendingMove.from?.room)}</span>
+                  <span className="text-slate-400">→</span>
+                  <span>{String(pendingMove.to?.day)} {String(pendingMove.to?.start)}–{String(pendingMove.to?.end)}, {String(pendingMove.to?.room)}</span>
+                </div>
+              </div>
+              <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+                This frees the slot for {pendingMove.enables?.subject_code}.
+                <span className="ml-1 font-semibold">{pendingMove.setName}'s</span> timetable changes immediately.
+              </p>
+            </div>
+          )
         )}
       </ConfirmDialog>
 

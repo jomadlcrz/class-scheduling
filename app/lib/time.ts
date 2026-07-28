@@ -56,6 +56,16 @@ export function formatTime12h(value: string): string {
   return `${hour12}:${minuteText} ${meridiem}`;
 }
 
+/** Format a decimal-hour value (e.g. 9.5) as 12-hour clock time (e.g. "9:30 AM"). */
+export function formatDecimalHour(value: number): string {
+  const totalMinutes = Math.round(value * 60);
+  const hour = Math.floor(totalMinutes / 60) % 24;
+  const minute = totalMinutes % 60;
+  const meridiem = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${hour12}:${String(minute).padStart(2, "0")} ${meridiem}`;
+}
+
 /** Minutes-since-midnight for a time string ("7:00 AM", "07:00", "13:30"). Useful as a sort key. */
 export function timeToMinutes(time: string): number {
   const [hourText, minuteText = "0"] = normalizeTime(time).split(":");
