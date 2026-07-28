@@ -75,28 +75,30 @@ export function AdministratorTable({
                   >
                     <EditIcon />
                   </button>
-                  {isActive === undefined ? (
-                    <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
-                  ) : isActive ? (
-                    <button
-                      type="button"
-                      onClick={() => onDeactivate(admin)}
-                      aria-label={`Deactivate ${admin.firstName} ${admin.lastName}`}
-                      title="Deactivate"
-                      className={actionButtonClassName}
-                    >
-                      <UserOffIcon />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => onReactivate(admin)}
-                      aria-label={`Reactivate ${admin.firstName} ${admin.lastName}`}
-                      title="Reactivate"
-                      className={actionButtonClassName}
-                    >
-                      <UserCheckIcon />
-                    </button>
+                  {admin.roleName !== "Super Admin" && (
+                    isActive === undefined ? (
+                      <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
+                    ) : isActive ? (
+                      <button
+                        type="button"
+                        onClick={() => onDeactivate(admin)}
+                        aria-label={`Deactivate ${admin.firstName} ${admin.lastName}`}
+                        title="Deactivate"
+                        className={actionButtonClassName}
+                      >
+                        <UserOffIcon />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onReactivate(admin)}
+                        aria-label={`Reactivate ${admin.firstName} ${admin.lastName}`}
+                        title="Reactivate"
+                        className={actionButtonClassName}
+                      >
+                        <UserCheckIcon />
+                      </button>
+                    )
                   )}
                 </div>
               </TableCell>
