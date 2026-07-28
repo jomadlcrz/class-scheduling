@@ -198,6 +198,7 @@ function StudentsBulkPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ImportStudentResponse | null>(null);
+  const [submittedRows, setSubmittedRows] = useState<StudentRow[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
   const [subjectCodes, setSubjectCodes] = useState<string[]>([]);
@@ -281,6 +282,7 @@ function StudentsBulkPage() {
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const file = new File([blob], "students.csv", { type: "text/csv" });
       const res = await studentService.importRecords(file);
+      setSubmittedRows(validRows);
       setResult(res);
       setRows([{ ...EMPTY_ROW }]);
     } catch (err) {
@@ -359,16 +361,27 @@ function StudentsBulkPage() {
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
                       <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-300">Row</th>
+                      <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-300">Name</th>
                       <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-300">Student ID</th>
+                      <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-300 hidden sm:table-cell">Email</th>
                       <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-300">Status</th>
                       <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-300">Message</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {result.results.map((r) => (
+                    {result.results.map((r) => {
+                      const original = submittedRows[r.row - 1];
+                      const name = original
+                        ? [original.lastName, original.firstName].filter(Boolean).join(", ") || "—"
+                        : "—";
+                      const email = original?.email || "—";
+                      const studentId = r.student_id || original?.studentNumber || "—";
+                      return (
                       <tr key={r.row} className="border-b border-slate-100 dark:border-white/5">
                         <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400">{r.row}</td>
-                        <td className="px-3 py-1.5 text-slate-600 dark:text-slate-300">{r.student_id ?? "—"}</td>
+                        <td className="px-3 py-1.5 font-medium text-navy-700 dark:text-mist-100">{name}</td>
+                        <td className="px-3 py-1.5 text-slate-600 dark:text-slate-300">{studentId}</td>
+                        <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">{email}</td>
                         <td className="px-3 py-1.5">
                           <span
                             className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -384,7 +397,8 @@ function StudentsBulkPage() {
                           {r.message ?? flattenErrors(r.errors)}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -392,7 +406,7 @@ function StudentsBulkPage() {
           )}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" block={false} onClick={() => { setResult(null); setRows([{ ...EMPTY_ROW }]); }}>
+            <Button type="button" variant="outline" block={false} onClick={() => { setResult(null); setSubmittedRows([]); setRows([{ ...EMPTY_ROW }]); }}>
               Import Another
             </Button>
             {result.created > 0 && (
