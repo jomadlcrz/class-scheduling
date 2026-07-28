@@ -46,7 +46,7 @@ function ProgramsPage() {
 
   useEffect(() => {
     programService.list().then(setProgramsList).catch(() => setProgramsList([]));
-    departmentService.list().then(setDepartments).catch(() => setDepartments([]));
+    departmentService.listAcademic().then(setDepartments).catch(() => setDepartments([]));
   }, []);
 
   const resetKey = `${search}|${deptFilter}|${typeFilter}`;

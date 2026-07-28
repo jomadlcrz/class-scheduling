@@ -13,15 +13,7 @@ type DepartmentsResponse = {
   }[];
 };
 
-/** GET /departments — the backend answers an empty table with 404. */
-async function list(): Promise<Department[]> {
-  let data: DepartmentsResponse;
-  try {
-    data = await apiGet<DepartmentsResponse>("/departments");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
+function mapDepartments(data: DepartmentsResponse): Department[] {
   return data.departments.map((d) => ({
     id: d.department_id,
     abbrev: d.department_abbrev,
@@ -29,6 +21,29 @@ async function list(): Promise<Department[]> {
     buildingName: d.building_name,
     programs: (d.programs ?? []).map((p) => ({ abbrev: p.program_abbrev, name: p.program_name })),
   }));
+}
+
+/** GET /departments — every active department, administrative offices included.
+ * The backend answers an empty table with 404. */
+async function list(): Promise<Department[]> {
+  try {
+    return mapDepartments(await apiGet<DepartmentsResponse>("/departments"));
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+}
+
+/** GET /departments/academic — same shape as list(), minus administrative offices
+ * (e.g. OCR, MIS) that own no programs. Use this for pickers assigning academic
+ * data (like a program) to a college. */
+async function listAcademic(): Promise<Department[]> {
+  try {
+    return mapDepartments(await apiGet<DepartmentsResponse>("/departments/academic"));
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
 }
 
 /** POST /departments — bulk endpoint; a single create sends a one-item list. Returns the backend message. */
@@ -93,4 +108,4 @@ async function get(id: number): Promise<DepartmentDetail> {
   return { id: d.department_id, abbrev: d.department_abbrev, name: d.department_name, buildingId: d.building_id };
 }
 
-export const departmentService = { list, create, update, remove, listDeleted, restore, get };
+export const departmentService = { list, listAcademic, create, update, remove, listDeleted, restore, get };
