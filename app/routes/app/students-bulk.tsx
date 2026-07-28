@@ -120,11 +120,43 @@ function downloadTemplate() {
   URL.revokeObjectURL(url);
 }
 
+function parseCsvLine(line: string): string[] {
+  const cells: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === "," || ch === "\t") {
+        cells.push(current.trim());
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
 function parseCsv(text: string): StudentRow[] {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const rows: StudentRow[] = [];
   for (const line of lines) {
-    const cells = line.split(/[\t,]/).map((c) => c.trim());
+    const cells = parseCsvLine(line);
     const firstCell = (cells[0] || "").toLowerCase();
     if (["student number", "student_number", "studentid", "student id", "set", "section"].includes(firstCell)) continue;
     const row: StudentRow = { ...EMPTY_ROW };
