@@ -592,6 +592,8 @@ function SchedulesNewPage() {
       setConflictLoading(false);
       setDeleteTarget(null);
       setPendingMove(null);
+      setSets((current) => current.filter((s) => s.id !== selectedSet.id));
+      setSelectedSetId("");
       setIsSaving(false);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "");
