@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Label } from "~/components/ui/label";
 import { Modal } from "~/components/ui/modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import type { StudentAssignedSchedule } from "~/services/irregular-class.service";
@@ -50,9 +51,9 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
             {selected.assignedSubjects.map((subject) => (
               <div key={subject.subjectId} className="rounded-lg border border-slate-200 p-3 dark:border-white/10">
                 <div className="flex items-baseline justify-between gap-2">
-                  <h4 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                  <Label className="text-navy-800 dark:text-mist-100">
                     {subject.subjectCode} — {subject.descTitle}
-                  </h4>
+                  </Label>
                   <span className="shrink-0 font-body text-xs text-slate-500 dark:text-slate-400">
                     {subject.units} unit{subject.units !== 1 ? "s" : ""}
                   </span>

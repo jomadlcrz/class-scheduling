@@ -20,7 +20,7 @@ export function AccordionItem({ title, children, defaultOpen, open, adornment }:
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised/60">
+    <div className="rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
       <div
         role="button"
         tabIndex={0}
