@@ -89,12 +89,22 @@ export function loadSession(): AuthSession | null {
   const session = loadJson<AuthSession>(SESSION_KEY);
   if (!session) return null;
 
-  // Check the refresh token — if it's gone, the session is truly dead.
-  // The access token may be expired; the api interceptor will refresh it.
-  const refreshPayload = decodeTokenPayload<RefreshTokenPayload>(session.refreshToken);
-  if (!refreshPayload || isExpired(refreshPayload)) {
-    removeJson(SESSION_KEY);
-    return null;
+  // Check the refresh token first. New sessions carry one; old sessions don't.
+  if (session.refreshToken) {
+    const refreshPayload = decodeTokenPayload<RefreshTokenPayload>(session.refreshToken);
+    if (!refreshPayload || isExpired(refreshPayload)) {
+      removeJson(SESSION_KEY);
+      return null;
+    }
+  } else {
+    // Backward compat: old sessions stored before the refresh-token change.
+    // Fall back to checking the access token. When it expires, the next API
+    // call gets a 401 and the refresh interceptor finds no refreshToken → logout.
+    const payload = decodeTokenPayload<TokenPayload>(session.token as string);
+    if (!payload || isExpired(payload)) {
+      removeJson(SESSION_KEY);
+      return null;
+    }
   }
 
   // Rebuild the user from access-token claims so sessions persisted before a User
