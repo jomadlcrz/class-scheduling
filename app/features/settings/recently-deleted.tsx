@@ -18,13 +18,11 @@ import { roomService } from "~/services/room.service";
 import { schoolYearService } from "~/services/school-year.service";
 import { semesterService } from "~/services/semester.service";
 import { setService } from "~/services/set.service";
-import { studentService } from "~/services/student.service";
 
 /** A row shape shared by every resource whose recycle bin is just "a label + when it was deleted". */
 type SimpleDeletedItem = { id: number; label: string; deactivatedAt: string | null };
 
 type SimpleTabKey =
-  | "students"
   | "programs"
   | "sets"
   | "buildings"
@@ -38,17 +36,6 @@ type SimpleTabKey =
  * only the field names differ per resource, so their list() results are normalized into SimpleDeletedItem
  * here rather than forcing 9 different response shapes into the service layer's return types. */
 const SIMPLE_TABS: { key: SimpleTabKey; label: string; list: () => Promise<SimpleDeletedItem[]>; restore: (id: number) => Promise<string> }[] = [
-  {
-    key: "students",
-    label: "Students",
-    list: async () =>
-      (await studentService.listDeleted()).map((s) => ({
-        id: s.studentProfileId,
-        label: `${s.lastName}, ${s.firstName}`,
-        deactivatedAt: s.deactivatedAt,
-      })),
-    restore: (id) => studentService.restore(id),
-  },
   {
     key: "programs",
     label: "Programs",

@@ -9,9 +9,12 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import type { SubjectHourOverride } from "~/services/schedule.service";
+import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 type Props = {
   overrides: SubjectHourOverride[];
+  subjects: { id: number; code: string; title: string; subjectType: string }[];
+  allocations: WeeklyHourAllocation[];
   onEdit: (override: SubjectHourOverride) => void;
   onDelete: (override: SubjectHourOverride) => void;
 };
@@ -23,7 +26,7 @@ function fmt(val: number): string {
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function SubjectHourOverrideTable({ overrides, onEdit, onDelete }: Props) {
+export function SubjectHourOverrideTable({ overrides, subjects, allocations, onEdit, onDelete }: Props) {
   return (
     <Table>
       <TableHead>
@@ -33,70 +36,99 @@ export function SubjectHourOverrideTable({ overrides, onEdit, onDelete }: Props)
         <TableHeader className="text-center">Lab</TableHeader>
         <TableHeader className="text-center">Mtgs</TableHeader>
         <TableHeader className="text-center">Total</TableHeader>
+        <TableHeader className="text-center">vs Base</TableHeader>
         <TableHeader className="hidden lg:table-cell">Note</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
       </TableHead>
       <TableBody>
-        {overrides.map((o) => (
-          <TableRow key={o.id}>
-            <TableCell>
-              <div className="min-w-0">
-                <span className="font-medium text-navy-700 dark:text-mist-100">
-                  {o.subjectCode ?? "—"}
-                </span>
-                {o.descriptiveTitle && (
-                  <p className="mt-0.5 truncate font-body text-xs text-slate-400 dark:text-slate-500">
-                    {o.descriptiveTitle}
-                  </p>
+        {overrides.map((o) => {
+          const subject = subjects.find((s) => s.id === o.subjectId);
+          const baseline = subject
+            ? allocations.find((a) => a.subjectType === subject.subjectType) ?? null
+            : null;
+          const baselineTotal = baseline ? baseline.lectureHours + baseline.labHours : 0;
+          const delta = o.totalWeeklyHours - baselineTotal;
+          const isReduced = baseline != null && delta < -0.001;
+
+          return (
+            <TableRow key={o.id}>
+              <TableCell>
+                <div className="min-w-0">
+                  <span className="font-medium text-navy-700 dark:text-mist-100">
+                    {o.subjectCode ?? "—"}
+                  </span>
+                  {o.descriptiveTitle && (
+                    <p className="mt-0.5 truncate font-body text-xs text-slate-400 dark:text-slate-500">
+                      {o.descriptiveTitle}
+                    </p>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell">
+                {o.scope === "all_sets" ? (
+                  <Badge tone="emerald">ALL SETS</Badge>
+                ) : (
+                  <Badge tone="navy">{o.setName ?? "—"}</Badge>
                 )}
-              </div>
-            </TableCell>
-            <TableCell className="hidden md:table-cell">
-              {o.scope === "all_sets" ? (
-                <Badge tone="emerald">All sets</Badge>
-              ) : (
-                <Badge tone="navy">{o.setName ?? "—"}</Badge>
-              )}
-            </TableCell>
-            <TableCell className="text-center tabular-nums">{fmt(o.lectureHours)}</TableCell>
-            <TableCell className="text-center tabular-nums">{fmt(o.labHours)}</TableCell>
-            <TableCell className="text-center">{o.meetings}</TableCell>
-            <TableCell className="text-center tabular-nums">{fmt(o.totalWeeklyHours)}h</TableCell>
-            <TableCell className="hidden lg:table-cell max-w-48 truncate">
-              {o.note ? (
-                <span className="font-body text-xs text-slate-500 dark:text-slate-400" title={o.note}>
-                  {o.note}
-                </span>
-              ) : (
-                <span className="text-slate-300 dark:text-slate-600">—</span>
-              )}
-            </TableCell>
-            <TableCell>
-              <div className="flex justify-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => onEdit(o)}
-                  aria-label={`Edit override for ${o.subjectCode}`}
-                  title="Edit"
-                  className={actionButtonClassName}
-                >
-                  <EditIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(o)}
-                  aria-label={`Delete override for ${o.subjectCode}`}
-                  title="Delete"
-                  className={actionButtonClassName}
-                >
-                  <TrashIcon />
-                </button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+              </TableCell>
+              <TableCell className="text-center tabular-nums">{fmt(o.lectureHours)}</TableCell>
+              <TableCell className="text-center tabular-nums">{fmt(o.labHours)}</TableCell>
+              <TableCell className="text-center">{o.meetings}</TableCell>
+              <TableCell className="text-center tabular-nums">{fmt(o.totalWeeklyHours)}h</TableCell>
+              <TableCell className="text-center">
+                {baseline != null ? (
+                  isReduced ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Badge tone="red">reduced</Badge>
+                      <span className="font-body text-xs tabular-nums text-red-600 dark:text-red-400">
+                        {fmt(delta)}h
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="font-body text-xs tabular-nums text-slate-400 dark:text-slate-500">
+                      {delta > 0.001 ? `+${fmt(delta)}h` : "—"}
+                    </span>
+                  )
+                ) : (
+                  <span className="text-slate-300 dark:text-slate-600">—</span>
+                )}
+              </TableCell>
+              <TableCell className="hidden lg:table-cell max-w-48 truncate">
+                {o.note ? (
+                  <span className="font-body text-xs text-slate-500 dark:text-slate-400" title={o.note}>
+                    {o.note}
+                  </span>
+                ) : (
+                  <span className="text-slate-300 dark:text-slate-600">—</span>
+                )}
+              </TableCell>
+              <TableCell>
+                <div className="flex justify-end gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onEdit(o)}
+                    aria-label={`Edit override for ${o.subjectCode}`}
+                    title="Edit"
+                    className={actionButtonClassName}
+                  >
+                    <EditIcon />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(o)}
+                    aria-label={`Delete override for ${o.subjectCode}`}
+                    title="Delete"
+                    className={actionButtonClassName}
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

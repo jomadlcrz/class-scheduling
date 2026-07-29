@@ -16,7 +16,9 @@ import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { scheduleService, type SubjectHourOverride } from "~/services/schedule.service";
 import { subjectService } from "~/services/subject.service";
+import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
 import { setService } from "~/services/set.service";
+import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import type { ClassSet } from "~/types/set";
@@ -51,8 +53,9 @@ function SubjectHourOverridesPage() {
   const [pendingOverride, setPendingOverride] = useState<OverrideFormInput | null>(null);
 
   // Subject/set pickers for the form
-  const [subjects, setSubjects] = useState<{ id: number; code: string; title: string }[]>([]);
+  const [subjects, setSubjects] = useState<{ id: number; code: string; title: string; subjectType: string }[]>([]);
   const [sets, setSets] = useState<ClassSet[]>([]);
+  const [allocations, setAllocations] = useState<WeeklyHourAllocation[]>([]);
 
   // Resolve syId / semId from labels
   const matchedSy = schoolYears.find((s) => s.schoolYear === schoolYear);
@@ -85,8 +88,12 @@ function SubjectHourOverridesPage() {
   useEffect(() => {
     subjectService
       .list()
-      .then((subs) => setSubjects(subs.map((s) => ({ id: s.id, code: s.code, title: s.title }))))
+      .then((subs) => setSubjects(subs.map((s) => ({ id: s.id, code: s.code, title: s.title, subjectType: s.subjectType }))))
       .catch(() => setSubjects([]));
+  }, []);
+
+  useEffect(() => {
+    weeklyHourService.list().then(setAllocations).catch(() => setAllocations([]));
   }, []);
 
   useEffect(() => {
@@ -303,6 +310,8 @@ function SubjectHourOverridesPage() {
         ) : (
           <SubjectHourOverrideTable
             overrides={overrides}
+            subjects={subjects}
+            allocations={allocations}
             onEdit={setEditTarget}
             onDelete={setDeleteTarget}
           />
@@ -314,6 +323,7 @@ function SubjectHourOverridesPage() {
         <SubjectHourOverrideForm
           subjects={subjects}
           sets={sets}
+          allocations={allocations}
           onSubmit={handleCreate}
           onCancel={() => setCreateOpen(false)}
         />
@@ -325,6 +335,7 @@ function SubjectHourOverridesPage() {
           <SubjectHourOverrideForm
             subjects={subjects}
             sets={sets}
+            allocations={allocations}
             initial={{
               subjectId: editTarget.subjectId,
               subjectCode: editTarget.subjectCode,
