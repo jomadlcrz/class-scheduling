@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -10,6 +10,31 @@ import type {
   FacultyLoadingEntry,
   TeachingTermDetail,
 } from "~/types/faculty-load";
+
+/** Rebuilds one entry from the rich term payload the backend returns on GET/PUT — no refetch needed. */
+function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEntry): FacultyLoadingEntry {
+  const assignments = detail.subject_assignments ?? [];
+  const subjectAssignmentIds = new Map<string, number>();
+  for (const a of assignments) {
+    if (a.subject_code) subjectAssignmentIds.set(a.subject_code, a.subject_assignment_id);
+  }
+  return {
+    instructorName: detail.instructor.full_name ?? prev?.instructorName ?? "",
+    department: detail.instructor.department ?? prev?.department ?? "",
+    semester: prev?.semester ?? "",
+    academicYear: prev?.academicYear ?? "",
+    maxWeeklyHours: detail.hours.max_weekly_hours,
+    teachingTermId: detail.teaching_term_id,
+    subjectAssignmentIds,
+    subjects: assignments.map((a) => ({
+      subjectCode: a.subject_code ?? "",
+      descriptiveTitle: a.descriptive_title ?? "",
+      units: { total: a.units, lecHours: a.lec_hours, labHours: a.lab_hours },
+      schedules: [],
+      curriculumDetailId: a.curriculum_detail_id,
+    })),
+  };
+}
 
 export function useDeanSubjectAssignments() {
   const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
@@ -72,23 +97,6 @@ export function useDeanSubjectAssignments() {
     const syId = Number(selectedSchoolYearId);
     const semId = Number(selectedSemesterId);
 
-    // Build a subjectCode → { descriptiveTitle, units } lookup from the curriculum tree.
-    const subjectLookup = new Map<string, { descriptiveTitle: string; units: { total: number; lecHours: number; labHours: number } }>();
-    for (const program of subjects ?? []) {
-      for (const year of program.curriculumDetails) {
-        for (const sem of year.semesterDetails) {
-          for (const subj of sem.subjects) {
-            if (!subjectLookup.has(subj.subjectCode)) {
-              subjectLookup.set(subj.subjectCode, {
-                descriptiveTitle: subj.descriptiveTitle,
-                units: { total: subj.units, lecHours: 0, labHours: 0 },
-              });
-            }
-          }
-        }
-      }
-    }
-
     deanService.listTeachingTerms({ syId, semId })
       .then((teachingTerms) => {
         if (cancelled) return;
@@ -104,16 +112,13 @@ export function useDeanSubjectAssignments() {
             maxWeeklyHours: tt.maxWeeklyHours,
             teachingTermId: tt.id,
             subjectAssignmentIds: assignmentIdMap,
-            subjects: (tt.subjectAssignments ?? []).map((sa) => {
-              const info = subjectLookup.get(sa.subjectCode);
-              return {
-                subjectCode: sa.subjectCode,
-                descriptiveTitle: info?.descriptiveTitle ?? "",
-                units: info?.units ?? { total: 0, lecHours: 0, labHours: 0 },
-                schedules: [],
-                curriculumDetailId: sa.curriculumDetailId,
-              };
-            }),
+            subjects: (tt.subjectAssignments ?? []).map((sa) => ({
+              subjectCode: sa.subjectCode,
+              descriptiveTitle: sa.descriptiveTitle,
+              units: { total: sa.units, lecHours: sa.lecHours, labHours: sa.labHours },
+              schedules: [],
+              curriculumDetailId: sa.curriculumDetailId,
+            })),
           };
         });
         setEntries(entries);
@@ -125,7 +130,7 @@ export function useDeanSubjectAssignments() {
       });
 
     return () => { cancelled = true; };
-  }, [selectedSchoolYearId, selectedSemesterId, subjects]);
+  }, [selectedSchoolYearId, selectedSemesterId]);
 
   useEffect(() => {
     const cleanup = refresh();
@@ -173,33 +178,84 @@ export function useDeanSubjectAssignments() {
     }
   }
 
+  // Mutations patch local state from the response (or locally, for DELETEs)
+  // instead of refetching, so the list never drops back to a loading state.
+  function patchEntry(term: TeachingTermDetail) {
+    setEntries((prev) =>
+      prev?.map((entry) =>
+        entry.teachingTermId === term.teaching_term_id ? entryFromTermDetail(term, entry) : entry,
+      ) ?? prev,
+    );
+  }
+
   async function deleteAssignment(teachingTermId: number, assignmentId: number) {
     setMutating(true);
     try {
       const message = await deanService.removeSubjectAssignment(teachingTermId, assignmentId);
       if (message) toast.success(message);
-      refresh();
+      setEntries((prev) =>
+        prev?.map((entry) => {
+          if (entry.teachingTermId !== teachingTermId) return entry;
+          const code = [...(entry.subjectAssignmentIds ?? [])].find(([, id]) => id === assignmentId)?.[0];
+          if (!code) return entry;
+          const nextIds = new Map(entry.subjectAssignmentIds ?? []);
+          nextIds.delete(code);
+          return {
+            ...entry,
+            subjectAssignmentIds: nextIds,
+            subjects: entry.subjects.filter((s) => s.subjectCode !== code),
+          };
+        }) ?? prev,
+      );
     } finally {
       setMutating(false);
     }
   }
 
-  async function updateMaxWeeklyHours(teachingTermId: number, hours: number) {
-    const message = await deanService.updateTeachingTerm(teachingTermId, { maxWeeklyHours: hours });
-    if (message) toast.success(message);
-    refresh();
+  // Debounced per term: the hours input fires on every keystroke, but the PUT
+  // goes out only once typing pauses. Local state updates immediately so the
+  // controlled input reflects what's typed.
+  const hoursTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
+  useEffect(() => {
+    const timers = hoursTimers.current;
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, []);
+
+  function updateMaxWeeklyHours(teachingTermId: number, hours: number) {
+    setEntries((prev) =>
+      prev?.map((entry) =>
+        entry.teachingTermId === teachingTermId ? { ...entry, maxWeeklyHours: hours } : entry,
+      ) ?? prev,
+    );
+    const timers = hoursTimers.current;
+    const pending = timers.get(teachingTermId);
+    if (pending) clearTimeout(pending);
+    timers.set(teachingTermId, setTimeout(async () => {
+      timers.delete(teachingTermId);
+      try {
+        const { message, term } = await deanService.updateTeachingTerm(teachingTermId, { maxWeeklyHours: hours });
+        if (term) patchEntry(term);
+        if (message) toast.success(message);
+      } catch (err) {
+        if (err instanceof Error && err.message) toast.error(err.message);
+        // Restore the server's value so the input doesn't keep a rejected edit.
+        try {
+          patchEntry(await deanService.getTeachingTermDetail(teachingTermId));
+        } catch { /* term may be gone — leave local state as-is */ }
+      }
+    }, 600));
   }
 
   async function updateSubjects(teachingTermId: number, payload: { maxWeeklyHours?: number; curriculumDetailIds: number[] }) {
-    const message = await deanService.updateTeachingTerm(teachingTermId, payload);
+    const { message, term } = await deanService.updateTeachingTerm(teachingTermId, payload);
+    if (term) patchEntry(term);
     if (message) toast.success(message);
-    refresh();
   }
 
   async function deleteTeachingTerm(teachingTermId: number, cascade: boolean) {
     const message = await deanService.deleteTeachingTerm(teachingTermId, cascade);
     if (message) toast.success(message);
-    refresh();
+    setEntries((prev) => prev?.filter((entry) => entry.teachingTermId !== teachingTermId) ?? prev);
   }
 
   async function fetchTeachingTermDetail(id: number): Promise<TeachingTermDetail> {

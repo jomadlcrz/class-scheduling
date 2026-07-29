@@ -107,7 +107,16 @@ export type TeachingTerm = {
   maxWeeklyHours: number;
   currentWeeklyHours: number;
   /** Populated by the list endpoint so the view can reference assignment IDs. */
-  subjectAssignments?: { subjectAssignmentId: number; subjectCode: string; curriculumDetailId: number; programAbbrev: string }[];
+  subjectAssignments?: {
+    subjectAssignmentId: number;
+    subjectCode: string;
+    curriculumDetailId: number;
+    programAbbrev: string;
+    descriptiveTitle: string;
+    units: number;
+    lecHours: number;
+    labHours: number;
+  }[];
   /** Grouped-by-program view from the list endpoint. */
   programs?: { programAbbrev: string; programName: string; subjects: { subjectAssignmentId: number; curriculumDetailId: number; subjectCode: string }[] }[];
 };

@@ -2,7 +2,6 @@ import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
-import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
 import {
   BookOpenIcon,
@@ -47,10 +46,12 @@ function ProgramPanels({
   entry,
   programs,
   onEditSubjects,
+  onDeleteSubject,
 }: {
   entry: FacultyLoadingEntry;
   programs: DepartmentSubjectProgram[];
   onEditSubjects?: (entry: FacultyLoadingEntry) => void;
+  onDeleteSubject?: (entry: FacultyLoadingEntry, subject: FacultyLoadingEntry["subjects"][number]) => void;
 }) {
   const groups = new Map<string, { program: DepartmentSubjectProgram; rows: FacultyLoadingEntry["subjects"] }>();
   entry.subjects.forEach((subject) => {
@@ -90,13 +91,6 @@ function ProgramPanels({
                   <PlusIcon />
                   Assign Subject
                 </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 font-body text-xs font-medium text-navy-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
-                >
-                  <BookOpenIcon />
-                  Add Program
-                </button>
               </div>
             </header>
             <table className="w-full font-body text-sm">
@@ -123,7 +117,8 @@ function ProgramPanels({
                     <td className="px-3 py-3 text-right">
                       <button
                         type="button"
-                        className="grid size-7 place-items-center rounded text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                        onClick={() => onDeleteSubject?.(entry, subject)}
+                        className="grid size-7 place-items-center rounded text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                         aria-label={`Remove ${subject.subjectCode}`}
                       >
                         <TrashIcon />
@@ -161,6 +156,10 @@ export function SubjectAssignmentView() {
   const [search, setSearch] = useState("");
   const [editSubjectsTarget, setEditSubjectsTarget] = useState<FacultyLoadingEntry | null>(null);
   const [deleteTermTarget, setDeleteTermTarget] = useState<FacultyLoadingEntry | null>(null);
+  const [deleteSubjectTarget, setDeleteSubjectTarget] = useState<{
+    entry: FacultyLoadingEntry;
+    subject: FacultyLoadingEntry["subjects"][number];
+  } | null>(null);
   const [deleteCascade, setDeleteCascade] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -199,6 +198,15 @@ export function SubjectAssignmentView() {
     } finally {
       setDeleting(false);
     }
+  }
+
+  async function handleDeleteSubject() {
+    if (!deleteSubjectTarget) return;
+    const { entry, subject } = deleteSubjectTarget;
+    const assignmentId = entry.subjectAssignmentIds?.get(subject.subjectCode);
+    if (!entry.teachingTermId || assignmentId == null) return;
+    await data.deleteAssignment(entry.teachingTermId, assignmentId);
+    setDeleteSubjectTarget(null);
   }
 
   return (
@@ -243,7 +251,7 @@ export function SubjectAssignmentView() {
               const title = (
                 <div className="grid gap-5 lg:grid-cols-[1.45fr_repeat(3,.8fr)_auto] lg:items-center">
                   <div className="flex items-center gap-3">
-                    <span className="grid size-11 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-white dark:bg-white dark:text-navy-900">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-white dark:bg-white dark:text-navy-900">
                       {initials(entry.instructorName)}
                     </span>
                     <div>
@@ -339,6 +347,7 @@ export function SubjectAssignmentView() {
                     entry={entry}
                     programs={data.subjects ?? []}
                     onEditSubjects={(e) => setEditSubjectsTarget(e)}
+                    onDeleteSubject={(e, subject) => setDeleteSubjectTarget({ entry: e, subject })}
                   />
                 </AccordionItem>
               );
@@ -348,7 +357,7 @@ export function SubjectAssignmentView() {
       </div>
 
       {entries.length > 0 && (
-        <div className="sticky bottom-0 z-10 mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white/95 px-6 py-3.5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-surface/95">
+        <div className="sticky bottom-0 z-10 mt-6 flex flex-wrap items-center gap-6 rounded-xl border border-slate-200 bg-white/95 px-6 py-3.5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-surface/95">
           <div className="flex flex-wrap items-center gap-6 font-body text-sm">
             <div className="flex items-center gap-2">
               <span className="text-slate-500 dark:text-slate-400">Instructors</span>
@@ -365,9 +374,6 @@ export function SubjectAssignmentView() {
               <span className="font-bold text-navy-800 dark:text-white">{totalSubjects}</span>
             </div>
           </div>
-          <Button type="button" block={false}>
-            Save Assignments
-          </Button>
         </div>
       )}
 
@@ -394,6 +400,25 @@ export function SubjectAssignmentView() {
             />
           );
         })()}
+
+      <ConfirmDialog
+        open={deleteSubjectTarget !== null}
+        onClose={() => setDeleteSubjectTarget(null)}
+        title="Remove Subject Assignment"
+        confirmLabel="Remove Subject"
+        loadingLabel="Removing…"
+        confirmVariant="danger"
+        onConfirm={handleDeleteSubject}
+      >
+        <p>
+          This will remove <strong>{deleteSubjectTarget?.subject.subjectCode}</strong>
+          {deleteSubjectTarget?.subject.descriptiveTitle
+            ? ` — ${deleteSubjectTarget.subject.descriptiveTitle}`
+            : ""}{" "}
+          from <strong>{deleteSubjectTarget?.entry.instructorName}</strong>&apos;s assignments. If the subject is
+          already scheduled, the removal will be blocked.
+        </p>
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={deleteTermTarget !== null}

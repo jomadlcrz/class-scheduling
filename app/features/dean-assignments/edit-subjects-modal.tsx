@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CheckIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
@@ -61,6 +62,7 @@ export function EditSubjectsModal({
     });
 
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const hasChanges = !setsEqual(selectedIds, initialIds);
 
   async function handleSave() {
@@ -69,9 +71,12 @@ export function EditSubjectsModal({
       return;
     }
     setSaving(true);
+    setError(null);
     try {
       await onSave(teachingTermId, { curriculumDetailIds: [...selectedIds] });
       onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "");
     } finally {
       setSaving(false);
     }
@@ -80,6 +85,7 @@ export function EditSubjectsModal({
   return (
     <Modal open={open} onClose={onClose} title={`Assign Subjects — ${instructorName}`} wide>
       <div className="flex flex-col gap-4">
+        <FormError message={error} />
         <p className="font-body text-sm text-slate-500 dark:text-slate-400">
           Click a subject row to toggle assignment.
         </p>

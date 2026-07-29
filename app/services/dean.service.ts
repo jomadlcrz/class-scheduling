@@ -206,6 +206,10 @@ async function listTeachingTerms(params?: {
       curriculum_detail_id: number;
       subject_code: string | null;
       program_abbrev: string | null;
+      descriptive_title: string | null;
+      units: number;
+      lec_hours: number;
+      lab_hours: number;
     }[];
     programs: {
       program_abbrev: string | null;
@@ -231,6 +235,10 @@ async function listTeachingTerms(params?: {
       curriculumDetailId: sa.curriculum_detail_id,
       subjectCode: sa.subject_code ?? "",
       programAbbrev: sa.program_abbrev ?? "",
+      descriptiveTitle: sa.descriptive_title ?? "",
+      units: sa.units ?? 0,
+      lecHours: sa.lec_hours ?? 0,
+      labHours: sa.lab_hours ?? 0,
     })),
     programs: (t.programs ?? []).map((p) => ({
       programAbbrev: p.program_abbrev ?? "",
@@ -266,13 +274,17 @@ async function getTeachingTerm(id: number): Promise<TeachingTerm> {
   };
 }
 
-/** PUT /deans/teaching-terms/<id> — updates maxWeeklyHours and/or assigned subjects (curriculumDetailIds). */
+/** PUT /deans/teaching-terms/<id> — updates maxWeeklyHours and/or assigned subjects (curriculumDetailIds).
+ *  Returns the backend message plus the full updated term so callers can patch local state without a refetch. */
 async function updateTeachingTerm(
   id: number,
   input: { maxWeeklyHours?: number; curriculumDetailIds?: number[] },
-): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/deans/teaching-terms/${id}`, input);
-  return apiMessage(data);
+): Promise<{ message: string; term: TeachingTermDetail | null }> {
+  const data = await apiPut<{ message?: string; teaching_term?: TeachingTermDetail }>(
+    `/deans/teaching-terms/${id}`,
+    input,
+  );
+  return { message: apiMessage(data), term: data.teaching_term ?? null };
 }
 
 /** DELETE /deans/teaching-terms/<id> — 409 if the term still has subject assignments. */
