@@ -788,3 +788,50 @@ export function DownloadIcon({ size = 18 }: { size?: number }) {
     </IconBase>
   );
 }
+
+export function RefreshCwIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <polyline points="23 4 23 10 17 10" />
+      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+    </IconBase>
+  );
+}
+
+export function FilterIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </IconBase>
+  );
+}
+
+export function SendIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </IconBase>
+  );
+}
+
+export function ShieldCheckIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </IconBase>
+  );
+}
+
+export function UserPlusIcon({ size = 16 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+      <line x1="20" y1="8" x2="20" y2="14" />
+      <line x1="17" y1="11" x2="23" y2="11" />
+    </IconBase>
+  );
+}
+
