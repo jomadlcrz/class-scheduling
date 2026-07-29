@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Spinner } from "~/components/ui/spinner";
 import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
@@ -378,6 +379,20 @@ export function SubjectAssignmentView() {
     return assigned > inst.maxWeeklyHours;
   });
 
+  if (apiData.instructors === null) {
+    return (
+      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8">
+        <PageHeader
+          title="Subject Assignments"
+          description="Assign and manage instructors' subject loads for the selected academic term."
+        />
+        <div className="flex items-center justify-center py-20">
+          <Spinner />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8">
       {/* Page Header */}
@@ -451,15 +466,17 @@ export function SubjectAssignmentView() {
       </div>
 
       {/* Sticky Bottom Summary Bar Component */}
-      <AssignmentSummaryFooter
-        totalInstructors={totalInstructors}
-        totalPrograms={totalPrograms}
-        totalSubjectsAssigned={totalSubjectsAssigned}
-        totalWeeklyHours={totalWeeklyHours}
-        exceedingInstructorsCount={exceedingInstructors.length}
-        loading={apiData.mutating}
-        onSubmit={handleSubmit}
-      />
+      {filteredInstructors.length > 0 && (
+        <AssignmentSummaryFooter
+          totalInstructors={totalInstructors}
+          totalPrograms={totalPrograms}
+          totalSubjectsAssigned={totalSubjectsAssigned}
+          totalWeeklyHours={totalWeeklyHours}
+          exceedingInstructorsCount={exceedingInstructors.length}
+          loading={apiData.mutating}
+          onSubmit={handleSubmit}
+        />
+      )}
 
       {/* Feature Modals */}
       <AddInstructorModal
@@ -479,6 +496,7 @@ export function SubjectAssignmentView() {
         open={assignSubjectTarget !== null}
         availableSubjects={assignSubjectTarget ? (availableSubjectsByProgram.get(assignSubjectTarget.programId) ?? []) : []}
         assignedSubjectCodes={assignSubjectTarget?.assignedCodes ?? new Set()}
+        instructorName={assignSubjectTarget ? instructors.find((i) => i.id === assignSubjectTarget.instructorId)?.name : undefined}
         onClose={() => setAssignSubjectTarget(null)}
         onAssign={handleAssignSubject}
       />

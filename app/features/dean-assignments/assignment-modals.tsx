@@ -133,6 +133,7 @@ export type AssignSubjectModalProps = {
   open: boolean;
   availableSubjects: Subject[];
   assignedSubjectCodes: Set<string>;
+  instructorName?: string;
   onClose: () => void;
   onAssign: (subjectCodes: string[]) => void;
 };
@@ -141,6 +142,7 @@ export function AssignSubjectModal({
   open,
   availableSubjects,
   assignedSubjectCodes,
+  instructorName,
   onClose,
   onAssign,
 }: AssignSubjectModalProps) {
@@ -191,7 +193,7 @@ export function AssignSubjectModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Assign Existing Subject" wide>
+    <Modal open={open} onClose={onClose} title={instructorName ? `Assign Existing Subject — ${instructorName}` : "Assign Existing Subject"} wide>
       <div className="mb-3">
         <input
           type="text"
