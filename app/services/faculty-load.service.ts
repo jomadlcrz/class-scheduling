@@ -73,6 +73,7 @@ type DepartmentSubjectsResponse = {
       semester: number;
       semester_total_units: number;
       subjects: {
+        curriculum_detail_id: number;
         subject_id: number;
         subject_code: string;
         descriptive_title: string;
@@ -108,6 +109,7 @@ async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
         semester: sem.semester,
         semesterTotalUnits: Number(sem.semester_total_units),
         subjects: sem.subjects.map((s) => ({
+          curriculumDetailId: s.curriculum_detail_id,
           subjectId: s.subject_id,
           subjectCode: s.subject_code,
           descriptiveTitle: s.descriptive_title,

@@ -17,6 +17,7 @@ import { AssignmentSummaryFooter } from "./assignment-summary-footer";
 import { InstructorCard } from "./instructor-card";
 
 type Subject = {
+  curriculumDetailId?: number;
   subjectCode: string;
   descriptiveTitle: string;
   units: number;
@@ -81,6 +82,7 @@ export function SubjectAssignmentView() {
         if (!abbrev) continue;
         if (!programMap.has(abbrev)) programMap.set(abbrev, []);
         programMap.get(abbrev)!.push({
+          curriculumDetailId: subj.curriculumDetailId,
           subjectCode: subj.subjectCode,
           descriptiveTitle: subj.descriptiveTitle,
           units: subj.units.total,
@@ -127,6 +129,7 @@ export function SubjectAssignmentView() {
     for (const c of choices) {
       const subjects = map.get(c.programAbbrev) ?? [];
       subjects.push({
+        curriculumDetailId: c.curriculumDetailId,
         subjectCode: c.subjectCode,
         descriptiveTitle: c.descriptiveTitle,
         units: c.units,
@@ -304,6 +307,36 @@ export function SubjectAssignmentView() {
     toast.success(`Instructor removed.`);
   };
 
+  const handleUpdateAssignment = async (instructorId: string) => {
+    const inst = instructors.find((i) => i.id === instructorId);
+    if (!inst) return;
+
+    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+    if (!entry?.teachingTermId) {
+      toast.error("No existing teaching term to update.");
+      return;
+    }
+
+    const curriculumDetailIds = inst.programs
+      .flatMap((prog) => prog.subjects)
+      .map((s) => s.curriculumDetailId)
+      .filter((id): id is number => id != null);
+
+    try {
+      await apiData.updateSubjects(entry.teachingTermId, {
+        maxWeeklyHours: inst.maxWeeklyHours ?? undefined,
+        curriculumDetailIds,
+      });
+      apiData.refresh();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(error instanceof Error ? error.message : "Failed to update assignment");
+      }
+    }
+  };
+
   const handleSubmit = async () => {
     const instructorLoads = instructors.map((inst) => ({
       instructorProfileId: inst.instructorProfileId,
@@ -477,6 +510,7 @@ export function SubjectAssignmentView() {
                     assignmentId: entry?.subjectAssignmentIds?.get(subjectCode) ?? null,
                   });
                 }}
+                onUpdateAssignment={() => handleUpdateAssignment(inst.id)}
                 onRemoveInstructor={() => setRemoveInstructorTarget(inst)}
               />
             ))}

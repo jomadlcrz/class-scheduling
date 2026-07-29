@@ -36,6 +36,7 @@ export type DepartmentFacultyOption = {
 };
 
 export type DepartmentSubjectEntry = {
+  curriculumDetailId: number;
   subjectId: number;
   subjectCode: string;
   descriptiveTitle: string;

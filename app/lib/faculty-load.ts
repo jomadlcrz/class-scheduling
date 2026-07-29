@@ -4,6 +4,7 @@ export type SubjectChoice = {
   /** `"PROGRAM CODE"`, e.g. "BSIT IT101" — unique even when a subject is shared across programs. */
   key: string;
   programAbbrev: string;
+  curriculumDetailId: number;
   subjectCode: string;
   descriptiveTitle: string;
   units: number;
@@ -41,6 +42,7 @@ export function flattenDepartmentSubjects(programs: DepartmentSubjectProgram[]):
           result.push({
             key,
             programAbbrev: program.programAbbrev,
+            curriculumDetailId: subject.curriculumDetailId,
             subjectCode: subject.subjectCode,
             descriptiveTitle: subject.descriptiveTitle,
             units: subject.units,

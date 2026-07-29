@@ -4,6 +4,7 @@ import { AccordionItem } from "~/components/ui/accordion";
 import {
   AlertTriangleIcon,
   CheckIcon,
+  EditIcon,
   PlusIcon,
   TrashIcon,
 } from "~/components/ui/icons";
@@ -39,6 +40,7 @@ type InstructorCardProps = {
   onAddProgram: () => void;
   onAssignSubject: (programId: string) => void;
   onRemoveSubject: (programId: string, subjectCode: string) => void;
+  onUpdateAssignment: () => void;
   onRemoveInstructor: () => void;
 };
 
@@ -49,6 +51,7 @@ export function InstructorCard({
   onAddProgram,
   onAssignSubject,
   onRemoveSubject,
+  onUpdateAssignment,
   onRemoveInstructor,
 }: InstructorCardProps) {
   const assignedHours = instructor.programs.reduce(
@@ -202,6 +205,10 @@ export function InstructorCard({
           </Button>
 
           <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" block={false} onClick={onUpdateAssignment}>
+              <EditIcon />
+              Update Assignment
+            </Button>
             <Button type="button" variant="danger" block={false} onClick={onRemoveInstructor}>
               <TrashIcon />
               Remove Instructor
