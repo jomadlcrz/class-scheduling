@@ -15,7 +15,7 @@ type InstructorData = {
   facultyId: string;
   department: string;
   statusBadge: string;
-  maxWeeklyHours: number;
+  maxWeeklyHours: number | null;
   avatarUrl?: string;
   programs: {
     id: string;
@@ -35,7 +35,7 @@ type InstructorData = {
 type InstructorCardProps = {
   instructor: InstructorData;
   defaultOpen?: boolean;
-  onMaxHoursChange: (hours: number) => void;
+  onMaxHoursChange: (hours: number | null) => void;
   onAddProgram: () => void;
   onAssignSubject: (programId: string) => void;
   onRemoveSubject: (programId: string, subjectCode: string) => void;
@@ -55,17 +55,19 @@ export function InstructorCard({
     (sum, p) => sum + p.subjects.reduce((sSum, s) => sSum + s.weeklyHours, 0),
     0,
   );
-  const maxHours = instructor.maxWeeklyHours || 24;
-  const remainingHours = maxHours - assignedHours;
+  const maxHours = instructor.maxWeeklyHours;
+  const remainingHours = maxHours != null ? maxHours - assignedHours : null;
 
   let statusBadgeType: "within" | "approaching" | "exceeds" = "within";
-  if (assignedHours > maxHours) {
-    statusBadgeType = "exceeds";
-  } else if (remainingHours <= 3 && remainingHours >= 0) {
-    statusBadgeType = "approaching";
+  if (maxHours != null) {
+    if (assignedHours > maxHours) {
+      statusBadgeType = "exceeds";
+    } else if (remainingHours != null && remainingHours <= 3 && remainingHours >= 0) {
+      statusBadgeType = "approaching";
+    }
   }
 
-  const progressPercent = Math.min(100, Math.round((assignedHours / maxHours) * 100));
+  const progressPercent = maxHours != null && maxHours > 0 ? Math.min(100, Math.round((assignedHours / maxHours) * 100)) : 0;
 
   return (
     <AccordionItem
@@ -91,7 +93,7 @@ export function InstructorCard({
               <Badge tone="emerald">{instructor.statusBadge}</Badge>
             </div>
             <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-              Faculty ID: <span className="font-medium text-slate-700 dark:text-slate-300">{instructor.facultyId}</span>
+              Employee ID: <span className="font-medium text-slate-700 dark:text-slate-300">{instructor.facultyId}</span>
               <span className="mx-2">•</span>
               Department: <span className="font-medium text-slate-700 dark:text-slate-300">{instructor.department}</span>
             </p>
@@ -107,10 +109,14 @@ export function InstructorCard({
             <div className="flex items-center rounded-lg border border-slate-300 bg-white shadow-xs dark:border-white/15 dark:bg-white/5">
               <input
                 type="number"
-                min="1"
-                value={maxHours}
-                onChange={(e) => onMaxHoursChange(parseInt(e.target.value) || 1)}
-                className="w-12 py-1 text-center font-body text-xs font-bold text-navy-800 focus:outline-none dark:text-white"
+                min="0"
+                placeholder="—"
+                value={maxHours ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  onMaxHoursChange(v === "" ? null : Math.max(0, parseInt(v) || 0));
+                }}
+                className="w-12 py-1 text-center font-body text-xs font-bold text-navy-800 placeholder:text-slate-300 focus:outline-none dark:text-white dark:placeholder:text-slate-600"
               />
               <span className="border-l border-slate-200 px-2 py-1 font-body text-xs text-slate-400 dark:border-white/10">
                 hrs
@@ -122,7 +128,7 @@ export function InstructorCard({
             <div className="flex items-center justify-between font-body text-xs">
               <span className="text-slate-500 dark:text-slate-400">Assigned Hours</span>
               <span className="font-bold text-navy-800 dark:text-white">
-                {assignedHours} / {maxHours} hrs
+                {assignedHours}{maxHours != null ? ` / ${maxHours}` : ""} hrs
               </span>
             </div>
             <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/10">
@@ -143,14 +149,16 @@ export function InstructorCard({
             <span className="text-slate-500 dark:text-slate-400">Remaining Hours</span>
             <span
               className={`mt-0.5 font-bold ${
-                remainingHours < 0
+                remainingHours == null
+                  ? "text-slate-400 dark:text-slate-500"
+                  : remainingHours < 0
                   ? "text-red-600 dark:text-red-400"
                   : remainingHours <= 3
                   ? "text-amber-600 dark:text-amber-400"
                   : "text-emerald-600 dark:text-emerald-400"
               }`}
             >
-              {remainingHours} hrs
+              {remainingHours != null ? `${remainingHours} hrs` : "—"}
             </span>
           </div>
 

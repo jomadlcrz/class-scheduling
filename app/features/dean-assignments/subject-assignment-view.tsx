@@ -11,7 +11,7 @@ import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { facultyKey, flattenDepartmentSubjects, formatInstructorName } from "~/lib/faculty-load";
-import { deanService } from "~/services/dean.service";
+import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
 import { InstructorCard } from "./instructor-card";
@@ -37,10 +37,11 @@ type Instructor = {
   name: string;
   firstName: string;
   lastName: string;
+  instructorProfileId: number;
   facultyId: string;
   department: string;
   statusBadge: string;
-  maxWeeklyHours: number;
+  maxWeeklyHours: number | null;
   avatarUrl?: string;
   programs: ProgramGroup[];
 };
@@ -101,10 +102,12 @@ export function SubjectAssignmentView() {
         name: formatInstructorName(inst),
         firstName: inst.firstName,
         lastName: inst.lastName,
+        instructorProfileId: inst.instructorProfileId,
         facultyId: "--",
         department: inst.department,
         statusBadge: "active",
-        maxWeeklyHours: entry?.maxWeeklyHours ?? 24,
+        maxWeeklyHours: entry?.maxWeeklyHours ?? null,
+        avatarUrl: inst.profilePhotoUrl ?? undefined,
         programs,
       };
     });
@@ -136,6 +139,13 @@ export function SubjectAssignmentView() {
     return map;
   }, [apiData.subjects]);
 
+  // Compute available instructors (exclude already-added ones)
+  const availableInstructors = useMemo(() => {
+    if (!apiData.instructors) return [];
+    const addedIds = new Set(instructors.map((i) => i.id));
+    return apiData.instructors.filter((inst) => !addedIds.has(facultyKey(inst.firstName, inst.lastName)));
+  }, [apiData.instructors, instructors]);
+
   // Modal targets
   const [addInstructorModalOpen, setAddInstructorModalOpen] = useState(false);
   const [addProgramTarget, setAddProgramTarget] = useState<string | null>(null);
@@ -154,27 +164,29 @@ export function SubjectAssignmentView() {
   } | null>(null);
 
   // Handlers
-  const handleMaxHoursChange = (instructorId: string, hours: number) => {
+  const handleMaxHoursChange = (instructorId: string, hours: number | null) => {
     setInstructors((prev) =>
-      prev.map((inst) => (inst.id === instructorId ? { ...inst, maxWeeklyHours: Math.max(1, hours) } : inst)),
+      prev.map((inst) => (inst.id === instructorId ? { ...inst, maxWeeklyHours: hours } : inst)),
     );
   };
 
-  const handleAddInstructor = (name: string, facultyId: string) => {
-    const [last, first] = name.split(",").map((s) => s.trim());
+  const handleAddInstructor = (instructor: DepartmentInstructor) => {
+    const id = facultyKey(instructor.firstName, instructor.lastName);
     const newInst: Instructor = {
-      id: `local-${Date.now()}`,
-      name,
-      firstName: first || name,
-      lastName: last || "",
-      facultyId,
-      department: "",
+      id,
+      name: formatInstructorName(instructor),
+      firstName: instructor.firstName,
+      lastName: instructor.lastName,
+      instructorProfileId: instructor.instructorProfileId,
+      facultyId: "--",
+      department: instructor.department,
       statusBadge: "active",
-      maxWeeklyHours: 24,
+      maxWeeklyHours: null,
+      avatarUrl: instructor.profilePhotoUrl ?? undefined,
       programs: [],
     };
     setInstructors((prev) => [...prev, newInst]);
-    toast.success(`Instructor ${name} added.`);
+    toast.success(`Instructor ${newInst.name} added.`);
   };
 
   const handleAddProgram = (abbrev: string, name: string) => {
@@ -287,9 +299,8 @@ export function SubjectAssignmentView() {
 
   const handleSubmit = async () => {
     const instructorLoads = instructors.map((inst) => ({
-      firstName: inst.firstName,
-      lastName: inst.lastName,
-      maxWeeklyHours: inst.maxWeeklyHours,
+      instructorProfileId: inst.instructorProfileId,
+      ...(inst.maxWeeklyHours != null ? { maxWeeklyHours: inst.maxWeeklyHours } : { maxWeeklyHours: 0 }),
       programs: inst.programs.map((prog) => ({
         programAbbrev: prog.programAbbrev,
         subjects: prog.subjects.map((s) => ({
@@ -372,6 +383,7 @@ export function SubjectAssignmentView() {
   );
 
   const exceedingInstructors = filteredInstructors.filter((inst) => {
+    if (inst.maxWeeklyHours == null) return false;
     const assigned = inst.programs.reduce(
       (pSum, prog) => pSum + prog.subjects.reduce((sSum, subj) => sSum + subj.weeklyHours, 0),
       0,
@@ -482,6 +494,7 @@ export function SubjectAssignmentView() {
       <AddInstructorModal
         open={addInstructorModalOpen}
         onClose={() => setAddInstructorModalOpen(false)}
+        availableInstructors={availableInstructors}
         onAdd={handleAddInstructor}
       />
 

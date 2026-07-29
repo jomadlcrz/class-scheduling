@@ -28,12 +28,14 @@ async function createSubjectAssignments(
 }
 
 type DepartmentInstructorsResponse = {
+  instructor_profile_id: number;
+  profile_photo_url: string | null;
   department: string;
-  firstName: string;
-  midName: string | null;
-  lastName: string;
+  first_name: string;
+  mid_name: string | null;
+  last_name: string;
   gender: string;
-  civilStatus: string;
+  civil_status: string;
   email: string | null;
   mobile: string | null;
   roles: string[];
@@ -42,7 +44,19 @@ type DepartmentInstructorsResponse = {
 /** GET /deans/instructors — the dean's own department roster. 404/403 → empty. */
 async function listDepartmentFaculties(): Promise<DepartmentFacultyOption[]> {
   try {
-    return await apiGet<DepartmentInstructorsResponse>("/deans/instructors");
+    const raw = await apiGet<DepartmentInstructorsResponse>("/deans/instructors");
+    return raw.map((i) => ({
+      instructorProfileId: i.instructor_profile_id,
+      department: i.department,
+      firstName: i.first_name,
+      midName: i.mid_name,
+      lastName: i.last_name,
+      gender: i.gender,
+      civilStatus: i.civil_status,
+      email: i.email,
+      mobile: i.mobile,
+      roles: i.roles,
+    }));
   } catch (err) {
     if (err instanceof ApiError && (err.status === 404 || err.status === 403)) return [];
     throw err;

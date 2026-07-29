@@ -12,16 +12,18 @@ export type ProgramLoadInput = {
   subjects: SubjectLoadInput[];
 };
 
-/** One faculty member's full term load (matched by first+last name on the backend). */
+/** One faculty member's full term load, identified by instructor profile id. */
 export type FacultyLoadInput = {
-  firstName: string;
-  lastName: string;
+  instructorProfileId: number;
+  firstName?: string;
+  lastName?: string;
   maxWeeklyHours: number;
   programs: ProgramLoadInput[];
 };
 
-/** A department faculty roster entry — no id from the backend, so firstName+lastName is the key. */
+/** A department faculty roster entry with instructor profile id. */
 export type DepartmentFacultyOption = {
+  instructorProfileId: number;
   department: string;
   firstName: string;
   midName: string | null;

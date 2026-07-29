@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import type { DepartmentInstructor } from "~/services/dean.service";
+import { formatInstructorName } from "~/lib/faculty-load";
 
 type Subject = {
   subjectCode: string;
@@ -17,18 +19,27 @@ type Subject = {
 export type AddInstructorModalProps = {
   open: boolean;
   onClose: () => void;
-  onAdd: (name: string, facultyId: string) => void;
+  availableInstructors: DepartmentInstructor[];
+  onAdd: (instructor: DepartmentInstructor) => void;
 };
 
-export function AddInstructorModal({ open, onClose, onAdd }: AddInstructorModalProps) {
-  const [name, setName] = useState("");
-  const [facultyId, setFacultyId] = useState("");
+export function AddInstructorModal({ open, onClose, availableInstructors, onAdd }: AddInstructorModalProps) {
+  const [value, setValue] = useState("");
+
+  useEffect(() => {
+    if (!open) {
+      setValue("");
+    }
+  }, [open]);
+
+  const selectedInstructor = value
+    ? availableInstructors.find((inst) => `${inst.firstName}|${inst.lastName}` === value)
+    : undefined;
 
   const handleAdd = () => {
-    if (!name.trim() || !facultyId.trim()) return;
-    onAdd(name, facultyId);
-    setName("");
-    setFacultyId("");
+    if (!selectedInstructor) return;
+    onAdd(selectedInstructor);
+    setValue("");
     onClose();
   };
 
@@ -37,33 +48,40 @@ export function AddInstructorModal({ open, onClose, onAdd }: AddInstructorModalP
       <div className="space-y-4 font-body text-sm">
         <div>
           <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Instructor Full Name
+            Select Instructor
           </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Dela Cruz, Juan"
-            className={inputClassName}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Faculty ID
-          </label>
-          <input
-            type="text"
-            value={facultyId}
-            onChange={(e) => setFacultyId(e.target.value)}
-            placeholder="e.g. 2022-0999"
-            className={inputClassName}
-          />
+          {availableInstructors.length === 0 ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              No available instructors to add
+            </div>
+          ) : (
+            <Select
+              items={availableInstructors.map((inst) => ({
+                value: `${inst.firstName}|${inst.lastName}`,
+                label: formatInstructorName(inst),
+              }))}
+              value={value}
+              onValueChange={(v) => setValue(v ?? "")}
+            >
+              <SelectTrigger id="add-instructor">
+                <SelectValue placeholder="Choose an instructor..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableInstructors.map((inst) => (
+                  <SelectItem key={`${inst.firstName}|${inst.lastName}`} value={`${inst.firstName}|${inst.lastName}`}>
+                    <span className="font-semibold">{formatInstructorName(inst)}</span>
+                    <span className="ml-2 text-slate-500 dark:text-slate-400">{inst.department}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
-          <Button type="button" block={false} onClick={handleAdd}>
+          <Button type="button" block={false} disabled={!selectedInstructor} onClick={handleAdd}>
             Add Instructor
           </Button>
         </div>

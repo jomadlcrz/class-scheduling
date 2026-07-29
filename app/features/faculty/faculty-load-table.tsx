@@ -35,8 +35,8 @@ export function toFacultyLoadRow(entry: FacultyLoadInput, unitsByKey: Map<string
   );
 
   return {
-    key: facultyKey(entry.firstName, entry.lastName),
-    fullName: `${entry.firstName} ${entry.lastName}`,
+    key: facultyKey(entry.firstName ?? "", entry.lastName ?? ""),
+    fullName: `${entry.firstName ?? ""} ${entry.lastName ?? ""}`.trim() || `Instructor #${entry.instructorProfileId}`,
     programs: entry.programs.map((p) => p.programAbbrev),
     subjectCount: subjects.length,
     totalUnits: subjects.reduce((sum, s) => sum + (s.units ?? 0), 0),

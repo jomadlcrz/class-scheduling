@@ -100,7 +100,7 @@ export function BulkAssignPanel({ data, onClose }: BulkAssignPanelProps) {
         return subjects.length ? [{ programAbbrev: program.programAbbrev, subjects }] : [];
       });
       return programs.length && Number(state.hours) > 0
-        ? [{ firstName: instructor.firstName, lastName: instructor.lastName, maxWeeklyHours: Number(state.hours), programs }]
+        ? [{ instructorProfileId: instructor.instructorProfileId, maxWeeklyHours: Number(state.hours), programs }]
         : [];
     });
     if (instructorLoads.length) {

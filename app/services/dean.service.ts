@@ -11,6 +11,8 @@ import type {
 } from "~/types/faculty-load";
 
 type DepartmentInstructorsResponse = {
+  instructor_profile_id: number;
+  profile_photo_url: string | null;
   department: string;
   first_name: string;
   mid_name: string | null;
@@ -23,6 +25,8 @@ type DepartmentInstructorsResponse = {
 }[];
 
 export type DepartmentInstructor = {
+  instructorProfileId: number;
+  profilePhotoUrl: string | null;
   department: string;
   firstName: string;
   midName: string | null;
@@ -77,6 +81,8 @@ async function listDepartmentInstructors(): Promise<DepartmentInstructor[]> {
     throw err;
   }
   return raw.map((i) => ({
+    instructorProfileId: i.instructor_profile_id,
+    profilePhotoUrl: i.profile_photo_url,
     department: i.department,
     firstName: i.first_name,
     midName: i.mid_name,
@@ -164,8 +170,7 @@ async function createSubjectAssignments(
   syId: number,
   semId: number,
   instructorLoads: {
-    firstName: string;
-    lastName: string;
+    instructorProfileId: number;
     maxWeeklyHours: number;
     programs: {
       programAbbrev: string;

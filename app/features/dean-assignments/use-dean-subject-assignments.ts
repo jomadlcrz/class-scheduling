@@ -159,8 +159,7 @@ export function useDeanSubjectAssignments() {
 
   async function createAssignments(
     instructorLoads: {
-      firstName: string;
-      lastName: string;
+      instructorProfileId: number;
       maxWeeklyHours: number;
       programs: { programAbbrev: string; subjects: { subjectCode: string; descriptiveTitle: string }[] }[];
     }[],

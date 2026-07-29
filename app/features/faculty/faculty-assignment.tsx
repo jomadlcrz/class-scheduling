@@ -138,10 +138,10 @@ export function FacultyAssignmentForm({
   const isEditing = Boolean(initialEntry);
 
   const [selectedKey, setSelectedKey] = useState(
-    initialEntry ? facultyKey(initialEntry.firstName, initialEntry.lastName) : "",
+    initialEntry ? facultyKey(initialEntry.firstName ?? "", initialEntry.lastName ?? "") : "",
   );
   const [facultyQuery, setFacultyQuery] = useState(
-    initialEntry ? `${initialEntry.firstName} ${initialEntry.lastName}` : "",
+    initialEntry ? `${initialEntry.firstName ?? ""} ${initialEntry.lastName ?? ""}` : "",
   );
   const [maxWeeklyHours, setMaxWeeklyHours] = useState(String(initialEntry?.maxWeeklyHours ?? ""));
 
@@ -172,6 +172,7 @@ export function FacultyAssignmentForm({
 
     const firstName = selectedFaculty?.firstName ?? initialEntry?.firstName ?? "";
     const lastName = selectedFaculty?.lastName ?? initialEntry?.lastName ?? "";
+    const instructorProfileId = selectedFaculty?.instructorProfileId ?? initialEntry?.instructorProfileId ?? 0;
 
     const result = facultyLoadEntrySchema.safeParse({
       facultyKey: selectedKey,
@@ -185,6 +186,7 @@ export function FacultyAssignmentForm({
 
     setError(null);
     onAdd({
+      instructorProfileId,
       firstName,
       lastName,
       maxWeeklyHours: result.data.maxWeeklyHours,
