@@ -19,14 +19,12 @@ type ProgramData = {
 type ProgramTablePanelProps = {
   program: ProgramData;
   onAssignSubject: () => void;
-  onRemoveProgram: () => void;
   onRemoveSubject: (subjectCode: string) => void;
 };
 
 export function ProgramTablePanel({
   program,
   onAssignSubject,
-  onRemoveProgram,
   onRemoveSubject,
 }: ProgramTablePanelProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -57,15 +55,6 @@ export function ProgramTablePanel({
             <PlusIcon />
             Assign Existing Subject
           </Button>
-
-          <button
-            type="button"
-            onClick={onRemoveProgram}
-            className="grid size-7 place-items-center rounded text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-            title="Remove program"
-          >
-            <TrashIcon />
-          </button>
         </div>
       </div>
 

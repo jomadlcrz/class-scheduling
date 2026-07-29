@@ -38,7 +38,6 @@ type InstructorCardProps = {
   onMaxHoursChange: (hours: number) => void;
   onAddProgram: () => void;
   onAssignSubject: (programId: string) => void;
-  onRemoveProgram: (programId: string) => void;
   onRemoveSubject: (programId: string, subjectCode: string) => void;
   onRemoveInstructor: () => void;
 };
@@ -49,7 +48,6 @@ export function InstructorCard({
   onMaxHoursChange,
   onAddProgram,
   onAssignSubject,
-  onRemoveProgram,
   onRemoveSubject,
   onRemoveInstructor,
 }: InstructorCardProps) {
@@ -185,7 +183,6 @@ export function InstructorCard({
             key={prog.id}
             program={prog}
             onAssignSubject={() => onAssignSubject(prog.id)}
-            onRemoveProgram={() => onRemoveProgram(prog.id)}
             onRemoveSubject={(code) => onRemoveSubject(prog.id, code)}
           />
         ))}

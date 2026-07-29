@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "~/lib/api";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
@@ -283,7 +284,7 @@ export function SubjectAssignmentView() {
     toast.success(`Instructor removed.`);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const instructorLoads = instructors.map((inst) => ({
       firstName: inst.firstName,
       lastName: inst.lastName,
@@ -296,7 +297,51 @@ export function SubjectAssignmentView() {
         })),
       })),
     }));
-    apiData.createAssignments(instructorLoads);
+    
+    try {
+      await apiData.createAssignments(instructorLoads);
+    } catch (error) {
+      // Parse and show validation errors from the backend
+      if (error instanceof ApiError && error.details) {
+        const errors = error.details as any;
+        if (errors?.errors?.instructorLoads) {
+          const messages: string[] = [];
+          const instructorLoadsErrors = errors.errors.instructorLoads;
+          
+          Object.entries(instructorLoadsErrors).forEach(([instIdx, instErrors]) => {
+            const inst = instructors[Number(instIdx)];
+            const instName = inst ? inst.name : `Instructor ${Number(instIdx) + 1}`;
+            
+            if (instErrors && typeof instErrors === 'object') {
+              const instErr = instErrors as any;
+              if (instErr.programs) {
+                Object.entries(instErr.programs).forEach(([progIdx, progErrors]) => {
+                  const prog = inst?.programs[Number(progIdx)];
+                  const progName = prog ? prog.programAbbrev : `Program ${Number(progIdx) + 1}`;
+                  
+                  if (progErrors && typeof progErrors === 'object') {
+                    const progErr = progErrors as any;
+                    if (progErr.subjects && Array.isArray(progErr.subjects)) {
+                      progErr.subjects.forEach((msg: string) => {
+                        messages.push(`${instName} → ${progName}: ${msg}`);
+                      });
+                    }
+                  }
+                });
+              }
+            }
+          });
+          
+          if (messages.length > 0) {
+            messages.forEach((msg) => toast.error(msg));
+            return;
+          }
+        }
+      }
+      
+      // Fallback: show the error message from ApiError
+      toast.error(error instanceof Error ? error.message : 'Failed to create assignments');
+    }
   };
 
   // Filter calculation
@@ -387,11 +432,6 @@ export function SubjectAssignmentView() {
                     assignedCodes: new Set(prog?.subjects.map((s) => s.subjectCode) ?? []),
                   });
                 }}
-                onRemoveProgram={(programId) =>
-                  setInstructors((prev) =>
-                    prev.map((i) => (i.id === inst.id ? { ...i, programs: i.programs.filter((p) => p.id !== programId) } : i)),
-                  )
-                }
                 onRemoveSubject={(programId, subjectCode) => {
                   const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
                   setRemoveSubjectTarget({
