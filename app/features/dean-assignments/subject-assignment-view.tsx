@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
-import { EmptyState } from "~/components/feedback/empty-state";
-import { ConfirmDialog } from "~/components/ui/modal";
 import { PlusIcon } from "~/components/ui/icons";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-assignment-toolbar";
 import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
-import { deanService } from "~/services/dean.service";
 import { PageHeader } from "~/layouts/page-header";
-import { InstructorCard } from "./instructor-card";
-import { AssignmentSummaryFooter } from "./assignment-summary-footer";
-import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { facultyKey, flattenDepartmentSubjects, formatInstructorName } from "~/lib/faculty-load";
+import { deanService } from "~/services/dean.service";
+import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
+import { AssignmentSummaryFooter } from "./assignment-summary-footer";
+import { InstructorCard } from "./instructor-card";
 
 type Subject = {
   subjectCode: string;
@@ -99,7 +99,7 @@ export function SubjectAssignmentView() {
         name: formatInstructorName(inst),
         firstName: inst.firstName,
         lastName: inst.lastName,
-        facultyId: id,
+        facultyId: "--",
         department: inst.department,
         statusBadge: "Faculty",
         maxWeeklyHours: entry?.maxWeeklyHours ?? 24,
@@ -114,18 +114,24 @@ export function SubjectAssignmentView() {
     });
   }, [apiData.instructors, apiData.entries, apiData.subjects]);
 
-  // Compute available subjects from the department curriculum tree
-  const availableSubjects: Subject[] = useMemo(() => {
-    if (!apiData.subjects) return [];
+  // Compute available subjects from the department curriculum tree, grouped by program
+  const availableSubjectsByProgram = useMemo(() => {
+    if (!apiData.subjects) return new Map<string, Subject[]>();
     const choices = flattenDepartmentSubjects(apiData.subjects);
-    return choices.map((c) => ({
-      subjectCode: c.subjectCode,
-      descriptiveTitle: c.descriptiveTitle,
-      units: c.units,
-      lecHours: c.units,
-      labHours: 0,
-      weeklyHours: c.units,
-    }));
+    const map = new Map<string, Subject[]>();
+    for (const c of choices) {
+      const subjects = map.get(c.programAbbrev) ?? [];
+      subjects.push({
+        subjectCode: c.subjectCode,
+        descriptiveTitle: c.descriptiveTitle,
+        units: c.units,
+        lecHours: c.units,
+        labHours: 0,
+        weeklyHours: c.units,
+      });
+      map.set(c.programAbbrev, subjects);
+    }
+    return map;
   }, [apiData.subjects]);
 
   // Modal targets
@@ -141,6 +147,8 @@ export function SubjectAssignmentView() {
     instructorId: string;
     programId: string;
     subjectCode: string;
+    teachingTermId: number | null;
+    assignmentId: number | null;
   } | null>(null);
 
   // Handlers
@@ -189,6 +197,8 @@ export function SubjectAssignmentView() {
   const handleAssignSubject = (subjectCodes: string[]) => {
     if (!assignSubjectTarget) return;
 
+    const programSubjects = availableSubjectsByProgram.get(assignSubjectTarget.programId) ?? [];
+
     setInstructors((prev) =>
       prev.map((inst) => {
         if (inst.id !== assignSubjectTarget.instructorId) return inst;
@@ -198,7 +208,7 @@ export function SubjectAssignmentView() {
             if (prog.id !== assignSubjectTarget.programId) return prog;
 
             const toAdd = subjectCodes
-              .map((code) => availableSubjects.find((s) => s.subjectCode === code))
+              .map((code) => programSubjects.find((s) => s.subjectCode === code))
               .filter((s): s is Subject => {
                 if (!s) return false;
                 if (prog.subjects.some((existing) => existing.subjectCode === s.subjectCode)) {
@@ -220,7 +230,20 @@ export function SubjectAssignmentView() {
 
   const handleConfirmRemoveSubject = async () => {
     if (!removeSubjectTarget) return;
-    const { instructorId, programId, subjectCode } = removeSubjectTarget;
+    const { instructorId, programId, subjectCode, teachingTermId, assignmentId } = removeSubjectTarget;
+    
+    // Call backend API if we have the IDs
+    if (teachingTermId && assignmentId) {
+      try {
+        await apiData.deleteAssignment(teachingTermId, assignmentId);
+      } catch (error) {
+        // Error is already handled by the hook
+        setRemoveSubjectTarget(null);
+        return;
+      }
+    }
+    
+    // Update local state
     setInstructors((prev) =>
       prev.map((inst) => {
         if (inst.id !== instructorId) return inst;
@@ -239,6 +262,22 @@ export function SubjectAssignmentView() {
 
   const handleConfirmRemoveInstructor = async () => {
     if (!removeInstructorTarget) return;
+    
+    // Find the entry for this instructor to get the teachingTermId
+    const entry = apiData.entries?.find((e) => e.instructorName === removeInstructorTarget.name);
+    
+    // Call backend API if we have a teaching term
+    if (entry?.teachingTermId) {
+      try {
+        await apiData.deleteTeachingTerm(entry.teachingTermId, true); // cascade=true to remove all assignments
+      } catch (error) {
+        // Error is already handled by the hook
+        setRemoveInstructorTarget(null);
+        return;
+      }
+    }
+    
+    // Update local state
     setInstructors((prev) => prev.filter((i) => i.id !== removeInstructorTarget.id));
     setRemoveInstructorTarget(null);
     toast.success(`Instructor removed.`);
@@ -353,9 +392,16 @@ export function SubjectAssignmentView() {
                     prev.map((i) => (i.id === inst.id ? { ...i, programs: i.programs.filter((p) => p.id !== programId) } : i)),
                   )
                 }
-                onRemoveSubject={(programId, subjectCode) =>
-                  setRemoveSubjectTarget({ instructorId: inst.id, programId, subjectCode })
-                }
+                onRemoveSubject={(programId, subjectCode) => {
+                  const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+                  setRemoveSubjectTarget({
+                    instructorId: inst.id,
+                    programId,
+                    subjectCode,
+                    teachingTermId: entry?.teachingTermId ?? null,
+                    assignmentId: entry?.subjectAssignmentIds?.get(subjectCode) ?? null,
+                  });
+                }}
                 onRemoveInstructor={() => setRemoveInstructorTarget(inst)}
               />
             ))}
@@ -390,7 +436,7 @@ export function SubjectAssignmentView() {
 
       <AssignSubjectModal
         open={assignSubjectTarget !== null}
-        availableSubjects={availableSubjects}
+        availableSubjects={assignSubjectTarget ? (availableSubjectsByProgram.get(assignSubjectTarget.programId) ?? []) : []}
         assignedSubjectCodes={assignSubjectTarget?.assignedCodes ?? new Set()}
         onClose={() => setAssignSubjectTarget(null)}
         onAssign={handleAssignSubject}
