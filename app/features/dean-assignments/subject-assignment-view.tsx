@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Spinner } from "~/components/ui/spinner";
@@ -49,6 +50,7 @@ type Instructor = {
 
 export function SubjectAssignmentView() {
   const apiData = useDeanSubjectAssignments();
+  const navigate = useNavigate();
   const [programOptions, setProgramOptions] = useState<{ abbrev: string; name: string }[]>([]);
 
   useEffect(() => {
@@ -511,6 +513,12 @@ export function SubjectAssignmentView() {
                   });
                 }}
                 onUpdateAssignment={() => handleUpdateAssignment(inst.id)}
+                onViewTeachingTerm={() => {
+                  const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+                  if (entry?.teachingTermId) {
+                    navigate(`/dean/teaching-terms/${entry.teachingTermId}`);
+                  }
+                }}
                 onRemoveInstructor={() => setRemoveInstructorTarget(inst)}
               />
             ))}

@@ -5,6 +5,7 @@ import {
   AlertTriangleIcon,
   CheckIcon,
   EditIcon,
+  EyeIcon,
   PlusIcon,
   TrashIcon,
 } from "~/components/ui/icons";
@@ -41,6 +42,7 @@ type InstructorCardProps = {
   onAssignSubject: (programId: string) => void;
   onRemoveSubject: (programId: string, subjectCode: string) => void;
   onUpdateAssignment: () => void;
+  onViewTeachingTerm?: () => void;
   onRemoveInstructor: () => void;
 };
 
@@ -52,6 +54,7 @@ export function InstructorCard({
   onAssignSubject,
   onRemoveSubject,
   onUpdateAssignment,
+  onViewTeachingTerm,
   onRemoveInstructor,
 }: InstructorCardProps) {
   const assignedHours = instructor.programs.reduce(
@@ -205,6 +208,12 @@ export function InstructorCard({
           </Button>
 
           <div className="flex items-center gap-2">
+            {onViewTeachingTerm && (
+              <Button type="button" variant="outline" block={false} onClick={onViewTeachingTerm}>
+                <EyeIcon />
+                View Term
+              </Button>
+            )}
             <Button type="button" variant="outline" block={false} onClick={onUpdateAssignment}>
               <EditIcon />
               Update Assignment
