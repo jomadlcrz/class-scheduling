@@ -59,7 +59,7 @@ export function AddInstructorModal({ open, onClose, onAdd }: AddInstructorModalP
             className={inputClassName}
           />
         </div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
@@ -116,7 +116,7 @@ export function AddProgramModal({ open, onClose, onAdd, programOptions }: AddPro
             ))}
           </SelectContent>
         </Select>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
@@ -221,7 +221,7 @@ export function AssignSubjectModal({
                 Descriptive Title
               </th>
               <th className="w-16 px-3 py-2 align-middle text-right text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:text-slate-400">
-                Hrs
+                Units
               </th>
             </tr>
           </thead>
@@ -287,7 +287,7 @@ export function AssignSubjectModal({
           </tbody>
         </table>
       </div>
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" block={false} onClick={onClose}>
           Cancel
         </Button>

@@ -26,25 +26,27 @@ export function AccordionItem({ title, children, defaultOpen, open, adornment }:
         tabIndex={0}
         onClick={toggle}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } }}
-        className="flex w-full items-center gap-3 px-5 py-4 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100"
+        className="flex w-full flex-col gap-2 px-5 py-4 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 sm:flex-row sm:items-center sm:gap-3"
       >
-        <span className="flex-1">{title}</span>
+        <span className="flex flex-1 items-center gap-2">
+          <span className="flex-1">{title}</span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0 text-slate-400 transition-transform duration-200 dark:text-slate-500"
+            style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+            aria-hidden="true"
+          >
+            <polyline points="9 6 15 12 9 18" />
+          </svg>
+        </span>
         {adornment && <span className="shrink-0">{adornment}</span>}
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="shrink-0 text-slate-400 transition-transform duration-200 dark:text-slate-500"
-          style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}
-          aria-hidden="true"
-        >
-          <polyline points="9 6 15 12 9 18" />
-        </svg>
       </div>
       <AnimatePresence initial={false}>
         {isOpen && (

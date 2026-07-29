@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "~/lib/api";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
@@ -9,6 +8,7 @@ import { ConfirmDialog } from "~/components/ui/modal";
 import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-assignment-toolbar";
 import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
 import { PageHeader } from "~/layouts/page-header";
+import { ApiError } from "~/lib/api";
 import { facultyKey, flattenDepartmentSubjects, formatInstructorName } from "~/lib/faculty-load";
 import { deanService } from "~/services/dean.service";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
@@ -102,7 +102,7 @@ export function SubjectAssignmentView() {
         lastName: inst.lastName,
         facultyId: "--",
         department: inst.department,
-        statusBadge: "Faculty",
+        statusBadge: "active",
         maxWeeklyHours: entry?.maxWeeklyHours ?? 24,
         programs,
       };
@@ -168,7 +168,7 @@ export function SubjectAssignmentView() {
       lastName: last || "",
       facultyId,
       department: "",
-      statusBadge: "Faculty",
+      statusBadge: "active",
       maxWeeklyHours: 24,
       programs: [],
     };
@@ -379,7 +379,7 @@ export function SubjectAssignmentView() {
   });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8">
       {/* Page Header */}
       <PageHeader
         title="Subject Assignments"
@@ -400,14 +400,15 @@ export function SubjectAssignmentView() {
       />
 
       {/* Teaching Loads Main Section */}
-      <div className="mt-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-body text-base font-bold text-navy-900 dark:text-white">
+      <div className="mt-4 sm:mt-6">
+        <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+          <h2 className="font-body text-sm font-bold text-navy-900 dark:text-white sm:text-base">
             Instructor Subject Assignments
           </h2>
           <Button type="button" variant="primary" block={false} onClick={() => setAddInstructorModalOpen(true)}>
             <PlusIcon />
-            Add Existing Instructor
+            <span className="hidden sm:inline">Add Existing Instructor</span>
+            <span className="sm:hidden">Add Instructor</span>
           </Button>
         </div>
 

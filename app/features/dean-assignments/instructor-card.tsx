@@ -99,7 +99,7 @@ export function InstructorCard({
         </div>
       }
       adornment={
-        <div className="flex flex-wrap items-center gap-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-2">
             <span className="font-body text-xs font-medium text-slate-500 dark:text-slate-400">
               Max Weekly Hours
@@ -118,7 +118,7 @@ export function InstructorCard({
             </div>
           </div>
 
-          <div className="flex flex-col min-w-36">
+          <div className="flex flex-col min-w-0 sm:min-w-36 sm:flex-1">
             <div className="flex items-center justify-between font-body text-xs">
               <span className="text-slate-500 dark:text-slate-400">Assigned Hours</span>
               <span className="font-bold text-navy-800 dark:text-white">
