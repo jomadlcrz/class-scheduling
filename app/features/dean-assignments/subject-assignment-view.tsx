@@ -251,7 +251,11 @@ export function SubjectAssignmentView() {
       try {
         await apiData.deleteAssignment(teachingTermId, assignmentId);
       } catch (error) {
-        // Error is already handled by the hook
+        if (error instanceof ApiError) {
+          toast.error(error.message);
+        } else {
+          toast.error(error instanceof Error ? error.message : 'Failed to remove subject');
+        }
         setRemoveSubjectTarget(null);
         return;
       }
@@ -285,8 +289,11 @@ export function SubjectAssignmentView() {
       try {
         await apiData.deleteTeachingTerm(entry.teachingTermId, true); // cascade=true to remove all assignments
       } catch (error) {
-        // Error is already handled by the hook
-        setRemoveInstructorTarget(null);
+        if (error instanceof ApiError) {
+          toast.error(error.message);
+        } else {
+          toast.error(error instanceof Error ? error.message : 'Failed to remove instructor');
+        }
         return;
       }
     }
