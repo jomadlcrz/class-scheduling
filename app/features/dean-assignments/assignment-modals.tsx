@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import { inputClassName } from "~/components/ui/input";
+import { FieldChrome, inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 
 type Subject = {
   subjectCode: string;
@@ -15,17 +16,16 @@ type Subject = {
 export type AddInstructorModalProps = {
   open: boolean;
   onClose: () => void;
-  onAdd: (name: string, facultyId: string, department: string) => void;
+  onAdd: (name: string, facultyId: string) => void;
 };
 
 export function AddInstructorModal({ open, onClose, onAdd }: AddInstructorModalProps) {
   const [name, setName] = useState("");
   const [facultyId, setFacultyId] = useState("");
-  const [department, setDepartment] = useState("Computer Studies");
 
   const handleAdd = () => {
     if (!name.trim() || !facultyId.trim()) return;
-    onAdd(name, facultyId, department);
+    onAdd(name, facultyId);
     setName("");
     setFacultyId("");
     onClose();
@@ -58,20 +58,6 @@ export function AddInstructorModal({ open, onClose, onAdd }: AddInstructorModalP
             className={inputClassName}
           />
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Department
-          </label>
-          <select
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            className={inputClassName}
-          >
-            <option value="Computer Studies">Computer Studies</option>
-            <option value="Information Technology">Information Technology</option>
-            <option value="Engineering">Engineering</option>
-          </select>
-        </div>
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
@@ -85,54 +71,54 @@ export function AddInstructorModal({ open, onClose, onAdd }: AddInstructorModalP
   );
 }
 
+type ProgramOption = { abbrev: string; name: string };
+
 export type AddProgramModalProps = {
   open: boolean;
   onClose: () => void;
   onAdd: (abbrev: string, name: string) => void;
+  programOptions: ProgramOption[];
 };
 
-export function AddProgramModal({ open, onClose, onAdd }: AddProgramModalProps) {
-  const [abbrev, setAbbrev] = useState("BSCS");
-  const [name, setName] = useState("Bachelor of Science in Computer Science");
+export function AddProgramModal({ open, onClose, onAdd, programOptions }: AddProgramModalProps) {
+  const [value, setValue] = useState("");
+
+  const selected = programOptions.find((p) => p.abbrev === value);
 
   const handleAdd = () => {
-    if (!abbrev.trim() || !name.trim()) return;
-    onAdd(abbrev, name);
+    if (!selected) return;
+    onAdd(selected.abbrev, selected.name);
+    setValue("");
     onClose();
   };
 
   return (
     <Modal open={open} onClose={onClose} title="Add Existing Program">
       <div className="space-y-4 font-body text-sm">
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Program Code / Abbreviation
-          </label>
-          <input
-            type="text"
-            value={abbrev}
-            onChange={(e) => setAbbrev(e.target.value)}
-            placeholder="e.g. BSCS"
-            className={inputClassName}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Full Program Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Bachelor of Science in Computer Science"
-            className={inputClassName}
-          />
-        </div>
+        <FieldChrome id="add-program" label="Select Program">
+          <Select
+            items={programOptions.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
+            value={value}
+            onValueChange={(v) => setValue(v ?? "")}
+          >
+            <SelectTrigger id="add-program">
+              <SelectValue placeholder="Choose a program..." />
+            </SelectTrigger>
+            <SelectContent>
+              {programOptions.map((prog) => (
+                <SelectItem key={prog.abbrev} value={prog.abbrev}>
+                  <span className="font-semibold">{prog.abbrev}</span>
+                  <span className="ml-2 text-slate-500 dark:text-slate-400">{prog.name}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
-          <Button type="button" block={false} onClick={handleAdd}>
+          <Button type="button" block={false} disabled={!value} onClick={handleAdd}>
             Add Program
           </Button>
         </div>
@@ -165,22 +151,29 @@ export function AssignSubjectModal({
   return (
     <Modal open={open} onClose={onClose} title="Assign Existing Subject">
       <div className="space-y-4 font-body text-sm">
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Select Subject to Assign
-          </label>
-          <select
+        <FieldChrome id="assign-subject" label="Select Subject to Assign">
+          <Select
+            items={availableSubjects.map((s) => ({
+              value: s.subjectCode,
+              label: `${s.subjectCode} — ${s.descriptiveTitle} (${s.weeklyHours} hrs)`,
+            }))}
             value={selectedCode}
-            onChange={(e) => setSelectedCode(e.target.value)}
-            className={inputClassName}
+            onValueChange={(v) => setSelectedCode(v ?? "")}
           >
-            {availableSubjects.map((s) => (
-              <option key={s.subjectCode} value={s.subjectCode}>
-                {s.subjectCode} - {s.descriptiveTitle} ({s.weeklyHours} hrs)
-              </option>
-            ))}
-          </select>
-        </div>
+            <SelectTrigger id="assign-subject">
+              <SelectValue placeholder="Choose a subject..." />
+            </SelectTrigger>
+            <SelectContent>
+              {availableSubjects.map((s) => (
+                <SelectItem key={s.subjectCode} value={s.subjectCode}>
+                  <span className="font-semibold">{s.subjectCode}</span>
+                  <span className="ml-2 mr-2 text-slate-500 dark:text-slate-400">{s.descriptiveTitle}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">({s.weeklyHours} hrs)</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel

@@ -35,11 +35,11 @@ export function ProgramTablePanel({
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xs dark:border-white/10 dark:bg-white/5">
       {/* Program Header */}
-      <div className="flex flex-col gap-2 bg-slate-50/80 px-4 py-3 dark:bg-white/5 sm:flex-row sm:items-center sm:justify-between">
-        <div
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex cursor-pointer items-center gap-2"
-        >
+      <div
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex cursor-pointer select-none flex-col gap-2 bg-slate-50/80 px-4 py-3 dark:bg-white/5 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="flex items-center gap-2">
           <span className="text-slate-400">
             {collapsed ? <ChevronRightIcon /> : <ChevronDownIcon />}
           </span>
@@ -48,7 +48,7 @@ export function ProgramTablePanel({
           </h4>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
           <span className="font-body text-xs font-semibold text-slate-600 dark:text-slate-300">
             Program Total: <span className="font-bold text-navy-800 dark:text-white">{totalHours} hrs</span>
           </span>

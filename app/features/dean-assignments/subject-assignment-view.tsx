@@ -130,6 +130,13 @@ const AVAILABLE_SAMPLE_SUBJECTS: Subject[] = [
   { subjectCode: "CS 420", descriptiveTitle: "Machine Learning Concepts", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
 ];
 
+const MOCK_PROGRAMS = [
+  { abbrev: "BSCS", name: "Bachelor of Science in Computer Science" },
+  { abbrev: "BSIT", name: "Bachelor of Science in Information Technology" },
+  { abbrev: "BSIS", name: "Bachelor of Science in Information Systems" },
+  { abbrev: "BSEMC", name: "Bachelor of Science in Entertainment and Multimedia Computing" },
+];
+
 export function SubjectAssignmentView() {
   const apiData = useDeanSubjectAssignments();
 
@@ -157,12 +164,12 @@ export function SubjectAssignmentView() {
     );
   };
 
-  const handleAddInstructor = (name: string, facultyId: string, department: string) => {
+  const handleAddInstructor = (name: string, facultyId: string) => {
     const newInst: Instructor = {
       id: `inst-${Date.now()}`,
       name,
       facultyId,
-      department,
+      department: "Computer Studies",
       statusBadge: "Regular",
       maxWeeklyHours: 24,
       programs: [],
@@ -357,6 +364,7 @@ export function SubjectAssignmentView() {
         open={addProgramTarget !== null}
         onClose={() => setAddProgramTarget(null)}
         onAdd={handleAddProgram}
+        programOptions={MOCK_PROGRAMS}
       />
 
       <AssignSubjectModal
