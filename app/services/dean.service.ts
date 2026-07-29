@@ -324,6 +324,49 @@ async function deleteTeachingTerm(id: number, cascade = false): Promise<string> 
   return apiMessage(data);
 }
 
+type DepartmentProgramResponse = {
+  department: {
+    department_id: number;
+    department_abbrev: string;
+    department_name: string;
+  };
+  total_programs: number;
+  programs: {
+    program_id: number;
+    program_abbrev: string;
+    program_name: string;
+    program_type: string;
+    program_length: number;
+    total_subjects: number;
+    total_units: number;
+    subjects: {
+      curriculum_detail_id: number;
+      subject_id: number;
+      subject_code: string;
+      descriptive_title: string;
+      units: number;
+      subject_type: string | null;
+      year_level: number;
+      semester_category: number;
+    }[];
+  }[];
+};
+
+/** GET /deans/department/programs — programs under the dean's own department. */
+async function listDepartmentPrograms(): Promise<{
+  abbrev: string;
+  name: string;
+}[]> {
+  let data: DepartmentProgramResponse;
+  try {
+    data = await apiGet<DepartmentProgramResponse>("/deans/department/programs");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.programs.map((p) => ({ abbrev: p.program_abbrev, name: p.program_name }));
+}
+
 /** GET /deans/teaching-terms/<id> — full rich payload with daily loads, sessions, utilization. */
 async function getTeachingTermDetail(id: number): Promise<TeachingTermDetail> {
   return apiGet<TeachingTermDetail>(`/deans/teaching-terms/${id}`);
@@ -334,6 +377,7 @@ export const deanService = {
   create,
   listDepartmentInstructors,
   listDepartmentSubjects,
+  listDepartmentPrograms,
   getFacultyLoading,
   createSubjectAssignments,
   listTeachingTerms,

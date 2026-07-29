@@ -15,6 +15,7 @@ type AssignmentSummaryFooterProps = {
   totalSubjectsAssigned: number;
   totalWeeklyHours: number;
   exceedingInstructorsCount: number;
+  loading?: boolean;
   onSubmit: () => void;
 };
 
@@ -24,6 +25,7 @@ export function AssignmentSummaryFooter({
   totalSubjectsAssigned,
   totalWeeklyHours,
   exceedingInstructorsCount,
+  loading,
   onSubmit,
 }: AssignmentSummaryFooterProps) {
   return (
@@ -85,7 +87,7 @@ export function AssignmentSummaryFooter({
         </div>
       </div>
 
-      <Button type="button" variant="primary" block={false} onClick={onSubmit}>
+      <Button type="button" variant="primary" block={false} isLoading={loading} loadingLabel="Creating…" onClick={onSubmit}>
         <SendIcon size={15} />
         <span className="whitespace-nowrap">Create Assignments</span>
       </Button>

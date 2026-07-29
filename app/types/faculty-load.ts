@@ -80,6 +80,8 @@ export type FacultyLoadingSubject = {
   schedules: FacultyLoadingSchedule[];
   /** curriculum_detail_id from the teaching term's subject assignment — needed for PUT updates. */
   curriculumDetailId?: number;
+  /** program abbreviation from the subject assignment — used to group subjects by program in the dean view. */
+  programAbbrev?: string;
 };
 
 /** One instructor's loading sheet for a term, as returned by GET /deans/faculty-loading. */

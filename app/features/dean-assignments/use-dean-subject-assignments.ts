@@ -118,6 +118,7 @@ export function useDeanSubjectAssignments() {
               units: { total: sa.units, lecHours: sa.lecHours, labHours: sa.labHours },
               schedules: [],
               curriculumDetailId: sa.curriculumDetailId,
+              programAbbrev: sa.programAbbrev,
             })),
           };
         });

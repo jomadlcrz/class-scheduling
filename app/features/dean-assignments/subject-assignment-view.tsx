@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
@@ -7,10 +7,12 @@ import { ConfirmDialog } from "~/components/ui/modal";
 import { PlusIcon } from "~/components/ui/icons";
 import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-assignment-toolbar";
 import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
+import { deanService } from "~/services/dean.service";
 import { PageHeader } from "~/layouts/page-header";
 import { InstructorCard } from "./instructor-card";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
+import { facultyKey, flattenDepartmentSubjects, formatInstructorName } from "~/lib/faculty-load";
 
 type Subject = {
   subjectCode: string;
@@ -31,6 +33,8 @@ type ProgramGroup = {
 type Instructor = {
   id: string;
   name: string;
+  firstName: string;
+  lastName: string;
   facultyId: string;
   department: string;
   statusBadge: string;
@@ -39,117 +43,99 @@ type Instructor = {
   programs: ProgramGroup[];
 };
 
-const INITIAL_MOCK_INSTRUCTORS: Instructor[] = [
-  {
-    id: "inst-1",
-    name: "Garcia, Maria Cristina",
-    facultyId: "2018-0456",
-    department: "Computer Studies",
-    statusBadge: "Regular",
-    maxWeeklyHours: 24,
-    avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-    programs: [
-      {
-        id: "prog-1",
-        programAbbrev: "BSCS",
-        programName: "Bachelor of Science in Computer Science",
-        subjects: [
-          { subjectCode: "CS 201", descriptiveTitle: "Data Structures and Algorithms", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-          { subjectCode: "CS 204", descriptiveTitle: "Database Management Systems", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "CS 206", descriptiveTitle: "Computer Networks", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "CS 210", descriptiveTitle: "Web Programming", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "CS 214", descriptiveTitle: "Software Engineering", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-        ],
-      },
-      {
-        id: "prog-2",
-        programAbbrev: "BSIT",
-        programName: "Bachelor of Science in Information Technology",
-        subjects: [],
-      },
-    ],
-  },
-  {
-    id: "inst-2",
-    name: "Santos, John Michael",
-    facultyId: "2016-0321",
-    department: "Information Technology",
-    statusBadge: "Regular",
-    maxWeeklyHours: 24,
-    avatarUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80",
-    programs: [
-      {
-        id: "prog-3",
-        programAbbrev: "BSIT",
-        programName: "Bachelor of Science in Information Technology",
-        subjects: [
-          { subjectCode: "IT 101", descriptiveTitle: "Introduction to Computing", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "IT 202", descriptiveTitle: "Object-Oriented Programming", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "IT 303", descriptiveTitle: "Information Assurance and Security", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-          { subjectCode: "IT 305", descriptiveTitle: "System Integration and Architecture", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "IT 308", descriptiveTitle: "Human Computer Interaction", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-          { subjectCode: "IT 401", descriptiveTitle: "Capstone Project 1", units: 4, lecHours: 4, labHours: 0, weeklyHours: 4 },
-          { subjectCode: "IT 402", descriptiveTitle: "Capstone Project 2", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-        ],
-      },
-    ],
-  },
-  {
-    id: "inst-3",
-    name: "Reyes, Daniel Antonio",
-    facultyId: "2017-0198",
-    department: "Computer Studies",
-    statusBadge: "Regular",
-    maxWeeklyHours: 24,
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    programs: [
-      {
-        id: "prog-4",
-        programAbbrev: "BSCS",
-        programName: "Bachelor of Science in Computer Science",
-        subjects: [
-          { subjectCode: "CS 301", descriptiveTitle: "Automata Theory and Formal Languages", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-          { subjectCode: "CS 305", descriptiveTitle: "Operating Systems", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "CS 310", descriptiveTitle: "Artificial Intelligence", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-          { subjectCode: "CS 312", descriptiveTitle: "Compiler Design", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-          { subjectCode: "CS 401", descriptiveTitle: "CS Thesis 1", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-          { subjectCode: "CS 402", descriptiveTitle: "CS Thesis 2", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-          { subjectCode: "CS 410", descriptiveTitle: "Cloud Computing", units: 4, lecHours: 3, labHours: 1, weeklyHours: 4 },
-          { subjectCode: "CS 415", descriptiveTitle: "Cybersecurity Fundamentals", units: 4, lecHours: 3, labHours: 1, weeklyHours: 4 },
-        ],
-      },
-    ],
-  },
-];
-
-const AVAILABLE_SAMPLE_SUBJECTS: Subject[] = [
-  { subjectCode: "CS 101", descriptiveTitle: "Programming Fundamentals", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-  { subjectCode: "CS 102", descriptiveTitle: "Discrete Mathematics", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-  { subjectCode: "IT 205", descriptiveTitle: "Web Systems and Technologies", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-  { subjectCode: "IT 310", descriptiveTitle: "Mobile Applications Development", units: 3, lecHours: 2, labHours: 1, weeklyHours: 3 },
-  { subjectCode: "CS 420", descriptiveTitle: "Machine Learning Concepts", units: 3, lecHours: 3, labHours: 0, weeklyHours: 3 },
-];
-
-const MOCK_PROGRAMS = [
-  { abbrev: "BSCS", name: "Bachelor of Science in Computer Science" },
-  { abbrev: "BSIT", name: "Bachelor of Science in Information Technology" },
-  { abbrev: "BSIS", name: "Bachelor of Science in Information Systems" },
-  { abbrev: "BSEMC", name: "Bachelor of Science in Entertainment and Multimedia Computing" },
-];
-
 export function SubjectAssignmentView() {
   const apiData = useDeanSubjectAssignments();
+  const [programOptions, setProgramOptions] = useState<{ abbrev: string; name: string }[]>([]);
+
+  useEffect(() => {
+    deanService.listDepartmentPrograms().then(setProgramOptions).catch(() => {});
+  }, []);
 
   // Search filter
   const [search, setSearch] = useState("");
 
-  // Instructors list
-  const [instructors, setInstructors] = useState<Instructor[]>(INITIAL_MOCK_INSTRUCTORS);
+  // Instructors list — starts empty, populated from API data
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+
+  // Initialize instructors from API data when available
+  useEffect(() => {
+    if (!apiData.instructors) return;
+
+    const programNames = new Map<string, string>();
+    apiData.subjects?.forEach((p) => {
+      if (p.programAbbrev) programNames.set(p.programAbbrev, p.programName);
+    });
+
+    const entriesByName = new Map(apiData.entries?.map((e) => [e.instructorName, e]) ?? []);
+
+    const mapped: Instructor[] = apiData.instructors.map((inst) => {
+      const id = facultyKey(inst.firstName, inst.lastName);
+      const entry = entriesByName.get(formatInstructorName(inst));
+
+      const programMap = new Map<string, Subject[]>();
+      for (const subj of entry?.subjects ?? []) {
+        const abbrev = subj.programAbbrev ?? "";
+        if (!abbrev) continue;
+        if (!programMap.has(abbrev)) programMap.set(abbrev, []);
+        programMap.get(abbrev)!.push({
+          subjectCode: subj.subjectCode,
+          descriptiveTitle: subj.descriptiveTitle,
+          units: subj.units.total,
+          lecHours: subj.units.lecHours,
+          labHours: subj.units.labHours,
+          weeklyHours: subj.units.lecHours + subj.units.labHours,
+        });
+      }
+
+      const programs: ProgramGroup[] = Array.from(programMap.entries()).map(([abbrev, subjects]) => ({
+        id: abbrev,
+        programAbbrev: abbrev,
+        programName: programNames.get(abbrev) ?? abbrev,
+        subjects,
+      }));
+
+      return {
+        id,
+        name: formatInstructorName(inst),
+        firstName: inst.firstName,
+        lastName: inst.lastName,
+        facultyId: id,
+        department: inst.department,
+        statusBadge: "Faculty",
+        maxWeeklyHours: entry?.maxWeeklyHours ?? 24,
+        programs,
+      };
+    });
+
+    setInstructors((prev) => {
+      const apiIds = new Set(mapped.map((i) => i.id));
+      const localOnly = prev.filter((i) => !apiIds.has(i.id));
+      return [...mapped, ...localOnly];
+    });
+  }, [apiData.instructors, apiData.entries, apiData.subjects]);
+
+  // Compute available subjects from the department curriculum tree
+  const availableSubjects: Subject[] = useMemo(() => {
+    if (!apiData.subjects) return [];
+    const choices = flattenDepartmentSubjects(apiData.subjects);
+    return choices.map((c) => ({
+      subjectCode: c.subjectCode,
+      descriptiveTitle: c.descriptiveTitle,
+      units: c.units,
+      lecHours: c.units,
+      labHours: 0,
+      weeklyHours: c.units,
+    }));
+  }, [apiData.subjects]);
 
   // Modal targets
   const [addInstructorModalOpen, setAddInstructorModalOpen] = useState(false);
   const [addProgramTarget, setAddProgramTarget] = useState<string | null>(null);
-  const [assignSubjectTarget, setAssignSubjectTarget] = useState<{ instructorId: string; programId: string } | null>(null);
+  const [assignSubjectTarget, setAssignSubjectTarget] = useState<{
+    instructorId: string;
+    programId: string;
+    assignedCodes: Set<string>;
+  } | null>(null);
   const [removeInstructorTarget, setRemoveInstructorTarget] = useState<Instructor | null>(null);
   const [removeSubjectTarget, setRemoveSubjectTarget] = useState<{
     instructorId: string;
@@ -165,12 +151,15 @@ export function SubjectAssignmentView() {
   };
 
   const handleAddInstructor = (name: string, facultyId: string) => {
+    const [last, first] = name.split(",").map((s) => s.trim());
     const newInst: Instructor = {
-      id: `inst-${Date.now()}`,
+      id: `local-${Date.now()}`,
       name,
+      firstName: first || name,
+      lastName: last || "",
       facultyId,
-      department: "Computer Studies",
-      statusBadge: "Regular",
+      department: "",
+      statusBadge: "Faculty",
       maxWeeklyHours: 24,
       programs: [],
     };
@@ -183,8 +172,9 @@ export function SubjectAssignmentView() {
     setInstructors((prev) =>
       prev.map((inst) => {
         if (inst.id !== addProgramTarget) return inst;
+        if (inst.programs.some((p) => p.programAbbrev === abbrev)) return inst;
         const newProg: ProgramGroup = {
-          id: `prog-${Date.now()}`,
+          id: abbrev,
           programAbbrev: abbrev,
           programName: name,
           subjects: [],
@@ -196,10 +186,8 @@ export function SubjectAssignmentView() {
     toast.success(`Program ${abbrev} added.`);
   };
 
-  const handleAssignSubject = (subjectCode: string) => {
+  const handleAssignSubject = (subjectCodes: string[]) => {
     if (!assignSubjectTarget) return;
-    const sample = AVAILABLE_SAMPLE_SUBJECTS.find((s) => s.subjectCode === subjectCode);
-    if (!sample) return;
 
     setInstructors((prev) =>
       prev.map((inst) => {
@@ -208,17 +196,26 @@ export function SubjectAssignmentView() {
           ...inst,
           programs: inst.programs.map((prog) => {
             if (prog.id !== assignSubjectTarget.programId) return prog;
-            if (prog.subjects.some((s) => s.subjectCode === sample.subjectCode)) {
-              toast.error(`Subject ${sample.subjectCode} is already assigned to this program.`);
-              return prog;
-            }
-            return { ...prog, subjects: [...prog.subjects, { ...sample }] };
+
+            const toAdd = subjectCodes
+              .map((code) => availableSubjects.find((s) => s.subjectCode === code))
+              .filter((s): s is Subject => {
+                if (!s) return false;
+                if (prog.subjects.some((existing) => existing.subjectCode === s.subjectCode)) {
+                  toast.error(`Subject ${s.subjectCode} is already assigned to this program.`);
+                  return false;
+                }
+                return true;
+              });
+
+            if (toAdd.length === 0) return prog;
+            return { ...prog, subjects: [...prog.subjects, ...toAdd] };
           }),
         };
       }),
     );
     setAssignSubjectTarget(null);
-    toast.success(`Assigned ${sample.subjectCode} to program.`);
+    toast.success(`Assigned ${subjectCodes.length} subject${subjectCodes.length !== 1 ? "s" : ""}.`);
   };
 
   const handleConfirmRemoveSubject = async () => {
@@ -237,7 +234,7 @@ export function SubjectAssignmentView() {
       }),
     );
     setRemoveSubjectTarget(null);
-    toast.success(`Removed subject ${subjectCode}`);
+    toast.success(`Removed subject ${subjectCode}.`);
   };
 
   const handleConfirmRemoveInstructor = async () => {
@@ -245,6 +242,22 @@ export function SubjectAssignmentView() {
     setInstructors((prev) => prev.filter((i) => i.id !== removeInstructorTarget.id));
     setRemoveInstructorTarget(null);
     toast.success(`Instructor removed.`);
+  };
+
+  const handleSubmit = () => {
+    const instructorLoads = instructors.map((inst) => ({
+      firstName: inst.firstName,
+      lastName: inst.lastName,
+      maxWeeklyHours: inst.maxWeeklyHours,
+      programs: inst.programs.map((prog) => ({
+        programAbbrev: prog.programAbbrev,
+        subjects: prog.subjects.map((s) => ({
+          subjectCode: s.subjectCode,
+          descriptiveTitle: s.descriptiveTitle,
+        })),
+      })),
+    }));
+    apiData.createAssignments(instructorLoads);
   };
 
   // Filter calculation
@@ -327,7 +340,14 @@ export function SubjectAssignmentView() {
                 defaultOpen={i === 0}
                 onMaxHoursChange={(hours) => handleMaxHoursChange(inst.id, hours)}
                 onAddProgram={() => setAddProgramTarget(inst.id)}
-                onAssignSubject={(programId) => setAssignSubjectTarget({ instructorId: inst.id, programId })}
+                onAssignSubject={(programId) => {
+                  const prog = inst.programs.find((p) => p.id === programId);
+                  setAssignSubjectTarget({
+                    instructorId: inst.id,
+                    programId,
+                    assignedCodes: new Set(prog?.subjects.map((s) => s.subjectCode) ?? []),
+                  });
+                }}
                 onRemoveProgram={(programId) =>
                   setInstructors((prev) =>
                     prev.map((i) => (i.id === inst.id ? { ...i, programs: i.programs.filter((p) => p.id !== programId) } : i)),
@@ -350,7 +370,8 @@ export function SubjectAssignmentView() {
         totalSubjectsAssigned={totalSubjectsAssigned}
         totalWeeklyHours={totalWeeklyHours}
         exceedingInstructorsCount={exceedingInstructors.length}
-        onSubmit={() => toast.success("Assignments submitted for term schedule generation.")}
+        loading={apiData.mutating}
+        onSubmit={handleSubmit}
       />
 
       {/* Feature Modals */}
@@ -364,12 +385,13 @@ export function SubjectAssignmentView() {
         open={addProgramTarget !== null}
         onClose={() => setAddProgramTarget(null)}
         onAdd={handleAddProgram}
-        programOptions={MOCK_PROGRAMS}
+        programOptions={programOptions}
       />
 
       <AssignSubjectModal
         open={assignSubjectTarget !== null}
-        availableSubjects={AVAILABLE_SAMPLE_SUBJECTS}
+        availableSubjects={availableSubjects}
+        assignedSubjectCodes={assignSubjectTarget?.assignedCodes ?? new Set()}
         onClose={() => setAssignSubjectTarget(null)}
         onAssign={handleAssignSubject}
       />
