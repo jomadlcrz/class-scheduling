@@ -450,7 +450,7 @@ export function SubjectAssignmentView() {
     return assigned > inst.maxWeeklyHours;
   });
 
-  if (apiData.instructors === null) {
+  if (apiData.instructors === null || apiData.entries === null || (apiData.entries.length > 0 && instructors.length === 0)) {
     return (
       <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8">
         <PageHeader
@@ -502,7 +502,7 @@ export function SubjectAssignmentView() {
           <EmptyState title="No instructors found">
             {apiData.entries && apiData.entries.length > 0
               ? "No instructors match your current search criteria."
-              : "No instructors are assigned subjects for this term. Click <strong>Add Existing Instructor</strong> to assign one."}
+              : <>No instructors are assigned subjects for this term. Click <strong>Add Existing Instructor</strong> to assign one.</>}
           </EmptyState>
         ) : (
           <Accordion>
