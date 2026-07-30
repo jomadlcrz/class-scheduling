@@ -98,6 +98,20 @@ export type FacultyLoadingEntry = {
   teachingTermId: number | null;
   /** subjectCode → subjectAssignmentId lookup, merged from teaching terms. */
   subjectAssignmentIds?: Map<string, number>;
+  /** Programs grouped from the teaching term response — matches the grouped view on /dean/teaching-terms/<id>. */
+  programs?: {
+    programAbbrev: string;
+    programName: string;
+    subjects: {
+      subjectAssignmentId: number;
+      curriculumDetailId: number;
+      subjectCode: string;
+      descriptiveTitle: string;
+      units: number;
+      lecHours: number;
+      labHours: number;
+    }[];
+  }[];
   subjects: FacultyLoadingSubject[];
 };
 

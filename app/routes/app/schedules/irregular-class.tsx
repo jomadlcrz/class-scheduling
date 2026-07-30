@@ -29,7 +29,7 @@ export function meta() {
 
 export default function IrregularClassRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar", "dean"]}>
+    <RoleGuard allow={["registrar"]}>
       <IrregularClassPage />
     </RoleGuard>
   );

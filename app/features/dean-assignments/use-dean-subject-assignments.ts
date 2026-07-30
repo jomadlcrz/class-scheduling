@@ -106,6 +106,7 @@ export function useDeanSubjectAssignments() {
           const assignmentIdMap = new Map(
             (tt.subjectAssignments ?? []).map((sa) => [sa.subjectCode, sa.subjectAssignmentId]),
           );
+          const saByCode = new Map(tt.subjectAssignments?.map((sa) => [sa.subjectCode, sa]) ?? []);
           return {
             instructorName: tt.instructorName,
             department: tt.department ?? "",
@@ -114,6 +115,22 @@ export function useDeanSubjectAssignments() {
             maxWeeklyHours: tt.maxWeeklyHours,
             teachingTermId: tt.id,
             subjectAssignmentIds: assignmentIdMap,
+            programs: (tt.programs ?? []).map((p) => ({
+              programAbbrev: p.programAbbrev,
+              programName: p.programName,
+              subjects: p.subjects.map((s) => {
+                const full = saByCode.get(s.subjectCode);
+                return {
+                  subjectAssignmentId: s.subjectAssignmentId,
+                  curriculumDetailId: s.curriculumDetailId,
+                  subjectCode: s.subjectCode,
+                  descriptiveTitle: full?.descriptiveTitle ?? "",
+                  units: full?.units ?? 0,
+                  lecHours: full?.lecHours ?? 0,
+                  labHours: full?.labHours ?? 0,
+                };
+              }),
+            })),
             subjects: (tt.subjectAssignments ?? []).map((sa) => ({
               subjectCode: sa.subjectCode,
               descriptiveTitle: sa.descriptiveTitle,

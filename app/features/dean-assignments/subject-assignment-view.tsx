@@ -80,65 +80,14 @@ export function SubjectAssignmentView() {
   // Instructors list — starts empty, populated from API data
   const [instructors, setInstructors] = useState<Instructor[]>([]);
 
-  // Initialize instructors from API data when available
-  useEffect(() => {
-    if (!apiData.instructors) return;
-
-    const programNames = new Map<string, string>();
+  // Track program names from the subjects data for lookup when adding instructors
+  const programNames = useMemo(() => {
+    const map = new Map<string, string>();
     apiData.subjects?.forEach((p) => {
-      if (p.programAbbrev) programNames.set(p.programAbbrev, p.programName);
+      if (p.programAbbrev) map.set(p.programAbbrev, p.programName);
     });
-
-    const entriesByName = new Map(apiData.entries?.map((e) => [e.instructorName, e]) ?? []);
-
-    const mapped: Instructor[] = apiData.instructors.map((inst) => {
-      const id = facultyKey(inst.firstName, inst.lastName);
-      const entry = entriesByName.get(formatInstructorName(inst));
-
-      const programMap = new Map<string, Subject[]>();
-      for (const subj of entry?.subjects ?? []) {
-        const abbrev = subj.programAbbrev ?? "";
-        if (!abbrev) continue;
-        if (!programMap.has(abbrev)) programMap.set(abbrev, []);
-        programMap.get(abbrev)!.push({
-          curriculumDetailId: subj.curriculumDetailId,
-          subjectCode: subj.subjectCode,
-          descriptiveTitle: subj.descriptiveTitle,
-          units: subj.units.total,
-          lecHours: subj.units.lecHours,
-          labHours: subj.units.labHours,
-          weeklyHours: subj.units.lecHours + subj.units.labHours,
-        });
-      }
-
-      const programs: ProgramGroup[] = Array.from(programMap.entries()).map(([abbrev, subjects]) => ({
-        id: abbrev,
-        programAbbrev: abbrev,
-        programName: programNames.get(abbrev) ?? abbrev,
-        subjects,
-      }));
-
-      return {
-        id,
-        name: formatInstructorName(inst),
-        firstName: inst.firstName,
-        lastName: inst.lastName,
-        instructorProfileId: inst.instructorProfileId,
-        facultyId: "--",
-        department: inst.department,
-        statusBadge: "active",
-        maxWeeklyHours: entry?.maxWeeklyHours ?? null,
-        avatarUrl: inst.profilePhotoUrl ?? undefined,
-        programs,
-      };
-    });
-
-    setInstructors((prev) => {
-      const apiIds = new Set(mapped.map((i) => i.id));
-      const localOnly = prev.filter((i) => !apiIds.has(i.id));
-      return [...mapped, ...localOnly];
-    });
-  }, [apiData.instructors, apiData.entries, apiData.subjects]);
+    return map;
+  }, [apiData.subjects]);
 
   // Compute available subjects from the department curriculum tree, grouped by program
   const availableSubjectsByProgram = useMemo(() => {
@@ -168,7 +117,54 @@ export function SubjectAssignmentView() {
     return apiData.instructors.filter((inst) => !addedIds.has(facultyKey(inst.firstName, inst.lastName)));
   }, [apiData.instructors, instructors]);
 
-  // Modal targets
+  // Initialize instructors from existing entries (instructors with teaching terms this term)
+  useEffect(() => {
+    if (!apiData.entries || !apiData.instructors) return;
+
+    const entriesByName = new Map(apiData.entries.map((e) => [e.instructorName, e]));
+
+    const mapped: Instructor[] = apiData.instructors.flatMap((inst) => {
+      const id = facultyKey(inst.firstName, inst.lastName);
+      const entry = entriesByName.get(formatInstructorName(inst));
+      if (!entry) return [];
+
+      const programs: ProgramGroup[] = (entry.programs ?? []).map((p) => ({
+        id: p.programAbbrev,
+        programAbbrev: p.programAbbrev,
+        programName: p.programName ?? programNames.get(p.programAbbrev) ?? p.programAbbrev,
+        subjects: p.subjects.map((s) => ({
+          curriculumDetailId: s.curriculumDetailId,
+          subjectCode: s.subjectCode,
+          descriptiveTitle: s.descriptiveTitle,
+          units: s.units,
+          lecHours: s.lecHours,
+          labHours: s.labHours,
+          weeklyHours: s.lecHours + s.labHours,
+        })),
+      }));
+
+      return {
+        id,
+        name: formatInstructorName(inst),
+        firstName: inst.firstName,
+        lastName: inst.lastName,
+        instructorProfileId: inst.instructorProfileId,
+        facultyId: "--",
+        department: inst.department,
+        statusBadge: "active",
+        maxWeeklyHours: entry.maxWeeklyHours,
+        avatarUrl: inst.profilePhotoUrl ?? undefined,
+        programs,
+      };
+    });
+
+    setInstructors((prev) => {
+      const apiIds = new Set(mapped.map((i) => i.id));
+      const localOnly = prev.filter((i) => !apiIds.has(i.id));
+      return [...mapped, ...localOnly];
+    });
+  }, [apiData.entries, apiData.instructors, programNames]);
+
   const [addInstructorModalOpen, setAddInstructorModalOpen] = useState(false);
   const [addProgramTarget, setAddProgramTarget] = useState<string | null>(null);
   const [assignSubjectTarget, setAssignSubjectTarget] = useState<{
@@ -195,6 +191,23 @@ export function SubjectAssignmentView() {
 
   const handleAddInstructor = (instructor: DepartmentInstructor) => {
     const id = facultyKey(instructor.firstName, instructor.lastName);
+    const entry = apiData.entries?.find((e) => e.instructorName === formatInstructorName(instructor));
+
+    const programs: ProgramGroup[] = (entry?.programs ?? []).map((p) => ({
+      id: p.programAbbrev,
+      programAbbrev: p.programAbbrev,
+      programName: p.programName ?? programNames.get(p.programAbbrev) ?? p.programAbbrev,
+      subjects: p.subjects.map((s) => ({
+        curriculumDetailId: s.curriculumDetailId,
+        subjectCode: s.subjectCode,
+        descriptiveTitle: s.descriptiveTitle,
+        units: s.units,
+        lecHours: s.lecHours,
+        labHours: s.labHours,
+        weeklyHours: s.lecHours + s.labHours,
+      })),
+    }));
+
     const newInst: Instructor = {
       id,
       name: formatInstructorName(instructor),
@@ -204,9 +217,9 @@ export function SubjectAssignmentView() {
       facultyId: "--",
       department: instructor.department,
       statusBadge: "active",
-      maxWeeklyHours: null,
+      maxWeeklyHours: entry?.maxWeeklyHours ?? null,
       avatarUrl: instructor.profilePhotoUrl ?? undefined,
-      programs: [],
+      programs,
     };
     setInstructors((prev) => [...prev, newInst]);
     toast.success(`Instructor ${newInst.name} added.`);
@@ -486,8 +499,10 @@ export function SubjectAssignmentView() {
         </div>
 
         {filteredInstructors.length === 0 ? (
-          <EmptyState title="No assignments found">
-            No instructors match your current search criteria.
+          <EmptyState title="No instructors found">
+            {apiData.entries && apiData.entries.length > 0
+              ? "No instructors match your current search criteria."
+              : "No instructors are assigned subjects for this term. Click <strong>Add Existing Instructor</strong> to assign one."}
           </EmptyState>
         ) : (
           <Accordion>
