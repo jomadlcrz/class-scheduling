@@ -29,14 +29,19 @@ export function formatInstructorName(person: {
   return `${person.lastName}, ${person.firstName}${midInitial}`;
 }
 
-/** Flattens the department curriculum tree into a deduped, pickable subject list. */
-export function flattenDepartmentSubjects(programs: DepartmentSubjectProgram[]): SubjectChoice[] {
+/** Flattens the department curriculum tree into a deduped, pickable subject list.
+ *  Pass `semesterCategory` (1 or 2) to only include subjects from that semester. */
+export function flattenDepartmentSubjects(
+  programs: DepartmentSubjectProgram[],
+  semesterCategory?: number,
+): SubjectChoice[] {
   const seen = new Set<string>();
   const result: SubjectChoice[] = [];
   for (const program of programs) {
     if (!program.programAbbrev || !program.programId) continue;
     for (const year of program.curriculumDetails) {
       for (const sem of year.semesterDetails) {
+        if (semesterCategory != null && sem.semester !== semesterCategory) continue;
         for (const subject of sem.subjects) {
           const key = `${program.programAbbrev} ${subject.subjectCode}`;
           if (seen.has(key)) continue;

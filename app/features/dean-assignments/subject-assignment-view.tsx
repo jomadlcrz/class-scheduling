@@ -91,7 +91,9 @@ export function SubjectAssignmentView() {
   // Compute available subjects from the department curriculum tree, grouped by program
   const availableSubjectsByProgram = useMemo(() => {
     if (!apiData.subjects) return new Map<string, Subject[]>();
-    const choices = flattenDepartmentSubjects(apiData.subjects);
+    const selectedSem = apiData.semesters.find((s) => String(s.id) === apiData.selectedSemesterId);
+    const semesterCat = selectedSem?.semesterNumber;
+    const choices = flattenDepartmentSubjects(apiData.subjects, semesterCat);
     const map = new Map<string, Subject[]>();
     for (const c of choices) {
       const subjects = map.get(c.programAbbrev) ?? [];
@@ -107,7 +109,7 @@ export function SubjectAssignmentView() {
       map.set(c.programAbbrev, subjects);
     }
     return map;
-  }, [apiData.subjects]);
+  }, [apiData.subjects, apiData.semesters, apiData.selectedSemesterId]);
 
   // Compute available instructors (exclude already-added ones)
   const availableInstructors = useMemo(() => {
