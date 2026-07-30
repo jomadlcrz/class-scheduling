@@ -36,6 +36,7 @@ type InstructorData = {
 
 type InstructorCardProps = {
   instructor: InstructorData;
+  hasChanges: boolean;
   onMaxHoursChange: (hours: number | null) => void;
   onAddProgram: () => void;
   onAssignSubject: (programId: string) => void;
@@ -47,6 +48,7 @@ type InstructorCardProps = {
 
 export function InstructorCard({
   instructor,
+  hasChanges,
   onMaxHoursChange,
   onAddProgram,
   onAssignSubject,
@@ -210,7 +212,7 @@ export function InstructorCard({
                 View Term
               </Button>
             )}
-            <Button type="button" variant="outline" block={false} onClick={onUpdateAssignment}>
+            <Button type="button" variant="outline" block={false} disabled={!hasChanges} onClick={onUpdateAssignment}>
               <EditIcon />
               Update Assignment
             </Button>

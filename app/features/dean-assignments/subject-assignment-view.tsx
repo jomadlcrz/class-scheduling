@@ -13,10 +13,8 @@ import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { facultyKey, flattenDepartmentSubjects, formatInstructorName } from "~/lib/faculty-load";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
-import type { FacultyLoadingSubject } from "~/types/faculty-load";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
-import { EditSubjectsModal } from "./edit-subjects-modal";
 import { InstructorCard } from "./instructor-card";
 
 type Subject = {
@@ -180,8 +178,6 @@ export function SubjectAssignmentView() {
     teachingTermId: number | null;
     assignmentId: number | null;
   } | null>(null);
-  const [editAssignmentTarget, setEditAssignmentTarget] = useState<string | null>(null);
-
   // Handlers
   const handleMaxHoursChange = (instructorId: string, hours: number | null) => {
     setInstructors((prev) =>
@@ -340,14 +336,49 @@ export function SubjectAssignmentView() {
     toast.success(`Instructor removed.`);
   };
 
-  const handleUpdateAssignment = (instructorId: string) => {
-    setEditAssignmentTarget(instructorId);
+  const handleUpdateAssignment = async (instructorId: string) => {
+    const inst = instructors.find((i) => i.id === instructorId);
+    if (!inst) return;
+    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+    if (!entry?.teachingTermId) return;
+
+    const curriculumDetailIds = inst.programs
+      .flatMap((p) => p.subjects.map((s) => s.curriculumDetailId))
+      .filter((id): id is number => id != null);
+
+    try {
+      await apiData.updateSubjects(entry.teachingTermId, {
+        maxWeeklyHours: inst.maxWeeklyHours ?? undefined,
+        curriculumDetailIds,
+      });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(error instanceof Error ? error.message : 'Failed to update assignment');
+      }
+    }
   };
 
-  const handleSaveEditAssignment = async (teachingTermId: number, payload: { maxWeeklyHours?: number; curriculumDetailIds: number[] }) => {
-    await apiData.updateSubjects(teachingTermId, payload);
-    apiData.refresh();
-  };
+  function hasAssignmentChanges(inst: Instructor): boolean {
+    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+    if (!entry) return false;
+
+    if (inst.maxWeeklyHours !== entry.maxWeeklyHours) return true;
+
+    const originalIds = new Set(
+      entry.subjects.map((s) => s.curriculumDetailId).filter((id): id is number => id != null),
+    );
+    const currentIds = new Set(
+      inst.programs.flatMap((p) => p.subjects.map((s) => s.curriculumDetailId)).filter((id): id is number => id != null),
+    );
+
+    if (originalIds.size !== currentIds.size) return true;
+    for (const id of currentIds) {
+      if (!originalIds.has(id)) return true;
+    }
+    return false;
+  }
 
   const handleSubmit = async () => {
     const instructorLoads = instructors.map((inst) => ({
@@ -510,6 +541,7 @@ export function SubjectAssignmentView() {
               <InstructorCard
                 key={inst.id}
                 instructor={inst}
+                hasChanges={hasAssignmentChanges(inst)}
                 onMaxHoursChange={(hours) => handleMaxHoursChange(inst.id, hours)}
                 onAddProgram={() => setAddProgramTarget(inst.id)}
                 onAssignSubject={(programId) => {
@@ -610,33 +642,7 @@ export function SubjectAssignmentView() {
         </p>
       </ConfirmDialog>
 
-      {editAssignmentTarget && (() => {
-        const inst = instructors.find((i) => i.id === editAssignmentTarget);
-        const entry = apiData.entries?.find((e) => e.instructorName === inst?.name);
-        if (!inst || !entry?.teachingTermId) return null;
 
-        const currentSubjects: FacultyLoadingSubject[] = entry.subjects.map((s) => ({
-          subjectCode: s.subjectCode,
-          descriptiveTitle: s.descriptiveTitle,
-          units: s.units,
-          schedules: [],
-          curriculumDetailId: s.curriculumDetailId,
-          programAbbrev: s.programAbbrev,
-        }));
-
-        return (
-          <EditSubjectsModal
-            open={editAssignmentTarget !== null}
-            onClose={() => setEditAssignmentTarget(null)}
-            instructorName={inst.name}
-            teachingTermId={entry.teachingTermId}
-            maxWeeklyHours={entry.maxWeeklyHours}
-            currentSubjects={currentSubjects}
-            programs={programOptions}
-            onSave={handleSaveEditAssignment}
-          />
-        );
-      })()}
     </div>
   );
 }
