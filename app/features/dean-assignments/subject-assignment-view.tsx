@@ -342,9 +342,15 @@ export function SubjectAssignmentView() {
     const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
     if (!entry?.teachingTermId) return;
 
-    const curriculumDetailIds = inst.programs
-      .flatMap((p) => p.subjects.map((s) => s.curriculumDetailId))
-      .filter((id): id is number => id != null);
+    const subjectToDetailId = new Map<string, number>();
+    for (const prog of inst.programs) {
+      for (const subj of prog.subjects) {
+        if (subj.curriculumDetailId != null && !subjectToDetailId.has(subj.subjectCode)) {
+          subjectToDetailId.set(subj.subjectCode, subj.curriculumDetailId);
+        }
+      }
+    }
+    const curriculumDetailIds = [...subjectToDetailId.values()];
 
     try {
       await apiData.updateSubjects(entry.teachingTermId, {
@@ -366,16 +372,14 @@ export function SubjectAssignmentView() {
 
     if (inst.maxWeeklyHours !== entry.maxWeeklyHours) return true;
 
-    const originalIds = new Set(
-      entry.subjects.map((s) => s.curriculumDetailId).filter((id): id is number => id != null),
-    );
-    const currentIds = new Set(
-      inst.programs.flatMap((p) => p.subjects.map((s) => s.curriculumDetailId)).filter((id): id is number => id != null),
+    const originalCodes = new Set(entry.subjects.map((s) => s.subjectCode));
+    const currentCodes = new Set(
+      inst.programs.flatMap((p) => p.subjects.map((s) => s.subjectCode)),
     );
 
-    if (originalIds.size !== currentIds.size) return true;
-    for (const id of currentIds) {
-      if (!originalIds.has(id)) return true;
+    if (originalCodes.size !== currentCodes.size) return true;
+    for (const code of currentCodes) {
+      if (!originalCodes.has(code)) return true;
     }
     return false;
   }
