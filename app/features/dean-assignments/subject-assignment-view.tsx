@@ -173,6 +173,16 @@ export function SubjectAssignmentView() {
 
   const [addInstructorModalOpen, setAddInstructorModalOpen] = useState(false);
   const [addProgramTarget, setAddProgramTarget] = useState<string | null>(null);
+
+  // Compute available programs for "Add Existing Program" (exclude already-assigned ones)
+  const availableProgramOptions = useMemo(() => {
+    if (!addProgramTarget) return programOptions;
+    const instructor = instructors.find((i) => i.id === addProgramTarget);
+    if (!instructor) return programOptions;
+    const assignedAbbrevs = new Set(instructor.programs.map((p) => p.programAbbrev));
+    return programOptions.filter((p) => !assignedAbbrevs.has(p.abbrev));
+  }, [addProgramTarget, instructors, programOptions]);
+
   const [assignSubjectTarget, setAssignSubjectTarget] = useState<{
     instructorId: string;
     programId: string;
@@ -590,7 +600,7 @@ export function SubjectAssignmentView() {
         open={addProgramTarget !== null}
         onClose={() => setAddProgramTarget(null)}
         onAdd={handleAddProgram}
-        programOptions={programOptions}
+        programOptions={availableProgramOptions}
       />
 
       <AssignSubjectModal
