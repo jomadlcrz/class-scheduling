@@ -1,6 +1,7 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPost } from "~/lib/api";
 import { facultyService } from "~/services/faculty.service";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
+import type { DeanAnalyticsResponse } from "~/types/dean-analytics";
 import type {
   DepartmentSubjectProgram,
   FacultyLoadingEntry,
@@ -382,6 +383,11 @@ async function updateMaxWeeklyHours(
   return apiMessage(data);
 }
 
+/** GET /deans/analytics — the staffing dashboard for one term, render-ready. */
+async function getAnalytics(syId: number, semId: number): Promise<DeanAnalyticsResponse> {
+  return apiGet<DeanAnalyticsResponse>(`/deans/analytics?sy_id=${syId}&sem_id=${semId}`);
+}
+
 export const deanService = {
   list,
   create,
@@ -396,4 +402,5 @@ export const deanService = {
   updateMaxWeeklyHours,
   deleteTeachingTerm,
   removeSubjectAssignment,
+  getAnalytics,
 };
