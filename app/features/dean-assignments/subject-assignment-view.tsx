@@ -344,47 +344,54 @@ export function SubjectAssignmentView() {
   const handleUpdateAssignment = async (instructorId: string) => {
     const inst = instructors.find((i) => i.id === instructorId);
     if (!inst) return;
-    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
-    if (!entry?.teachingTermId) return;
 
-    // POST cap-only update — the backend re-applies max_weekly_hours on every POST.
-    // Subject changes must be done individually via add/remove buttons.
-    if (inst.maxWeeklyHours != null && inst.maxWeeklyHours !== entry.maxWeeklyHours) {
-      try {
-        await apiData.createAssignments([{
-          instructorProfileId: inst.instructorProfileId,
-          maxWeeklyHours: inst.maxWeeklyHours,
-          programs: [],
-        }]);
-        toast.success("Weekly hours updated.");
-      } catch (error) {
-        if (error instanceof ApiError) {
-          toast.error(error.message);
-        } else {
-          toast.error(error instanceof Error ? error.message : 'Failed to update hours');
-        }
-        return;
+    const payload = {
+      instructorProfileId: inst.instructorProfileId,
+      maxWeeklyHours: inst.maxWeeklyHours ?? 0,
+      programs: inst.programs.map((prog) => {
+        const programOption = programOptions.find((p) => p.abbrev === prog.programAbbrev);
+        const programId = programOption?.id ?? 0;
+        return {
+          programId,
+          subjects: prog.subjects.map((s) => {
+            const subjectOption = programOption?.subjects.find((subj) => subj.code === s.subjectCode);
+            return { subjectId: subjectOption?.id ?? 0 };
+          }),
+        };
+      }),
+    };
+
+    try {
+      await apiData.createAssignments([payload]);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(error instanceof Error ? error.message : "Failed to save assignments.");
       }
     }
-
-    // Reload entries to reflect backend state
-    apiData.refresh();
   };
 
   function hasAssignmentChanges(inst: Instructor): boolean {
     const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
-    if (!entry) return false;
+    if (!entry) return inst.programs.some((p) => p.subjects.length > 0);
 
     if (inst.maxWeeklyHours !== entry.maxWeeklyHours) return true;
 
-    const originalCodes = new Set(entry.subjects.map((s) => s.subjectCode));
-    const currentCodes = new Set(
-      inst.programs.flatMap((p) => p.subjects.map((s) => s.subjectCode)),
+    const originalKeys = new Set(
+      (entry.programs ?? []).flatMap((p) =>
+        p.subjects.map((s) => `${p.programAbbrev}|${s.subjectCode}`),
+      ),
+    );
+    const currentKeys = new Set(
+      inst.programs.flatMap((p) =>
+        p.subjects.map((s) => `${p.programAbbrev}|${s.subjectCode}`),
+      ),
     );
 
-    if (originalCodes.size !== currentCodes.size) return true;
-    for (const code of currentCodes) {
-      if (!originalCodes.has(code)) return true;
+    if (originalKeys.size !== currentKeys.size) return true;
+    for (const key of currentKeys) {
+      if (!originalKeys.has(key)) return true;
     }
     return false;
   }

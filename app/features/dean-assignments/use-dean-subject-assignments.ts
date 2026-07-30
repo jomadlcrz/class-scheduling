@@ -212,7 +212,6 @@ export function useDeanSubjectAssignments() {
         instructorLoads,
       );
       if (message) toast.success(message);
-      refresh();
     } finally {
       setMutating(false);
     }
