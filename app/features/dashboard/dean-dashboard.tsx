@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
+import { Skeleton } from "~/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { deanService } from "~/services/dean.service";
 import type { BarChart, DeanAnalyticsResponse, MeterList, Section, StackedBar, StatTile, TableWidget, Widget } from "~/types/dean-analytics";
@@ -89,42 +90,6 @@ function ordinalColor(role: string | undefined): string {
   }
 }
 
-const shimmerSlide = {
-  initial: { x: "-100%" },
-  animate: { x: "200%", transition: { repeat: Infinity, duration: 1.5, ease: "easeInOut" as const } },
-};
-
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div className={`relative overflow-hidden rounded-md bg-slate-200 dark:bg-white/8 ${className ?? ""}`}>
-      <motion.div
-        variants={shimmerSlide}
-        initial="initial"
-        animate="animate"
-        className="absolute inset-y-0 w-full"
-        style={{
-          background: "linear-gradient(90deg, transparent 20%, rgba(255,255,255,0.45) 50%, transparent 80%)",
-        }}
-      />
-    </div>
-  );
-}
-
-function SkeletonLine({ className }: { className?: string }) {
-  return <Skeleton className={`h-3 ${className ?? ""}`} />;
-}
-
-function SkeletonCard({ className }: { className?: string }) {
-  return (
-    <div className={`rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900 ${className ?? ""}`}>
-      <Skeleton className="mb-3 h-3 w-1/3" />
-      <Skeleton className="mb-2 h-8 w-1/2" />
-      <Skeleton className="mb-3 h-3 w-1/4" />
-      <Skeleton className="h-1.5 w-full" />
-    </div>
-  );
-}
-
 function LoadingSkeleton() {
   return (
     <div className="space-y-8">
@@ -140,7 +105,12 @@ function LoadingSkeleton() {
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <SkeletonCard key={i} />
+          <div key={i} className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
+            <Skeleton className="mb-3 h-3 w-1/3" />
+            <Skeleton className="mb-2 h-8 w-1/2" />
+            <Skeleton className="mb-3 h-3 w-1/4" />
+            <Skeleton className="h-1.5 w-full" />
+          </div>
         ))}
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
