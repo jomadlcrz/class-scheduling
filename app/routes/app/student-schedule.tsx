@@ -66,6 +66,8 @@ function StudentSchedulePage() {
   );
 
   const academicStatus = visibleSchedules[0]?.academicStatus;
+  const isRegular = academicStatus === "Regular";
+  const studentSetCode = visibleSchedules[0]?.setCode ?? "";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -83,7 +85,7 @@ function StudentSchedulePage() {
                   schoolYear,
                   semesterLabel: semesterLabel(semester),
                   studentName: user?.name ?? "",
-                  showSet: true,
+                  showSet: !isRegular,
                 })
               }
               className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
@@ -126,11 +128,11 @@ function StudentSchedulePage() {
                   label="Status"
                   value={academicStatus ?? totalSubjects}
                 />
-                <ScheduleKpiCard
-                  icon={<UsersIcon />}
-                  label="Sets"
-                  value={totalSets}
-                />
+                {isRegular ? (
+                  <ScheduleKpiCard icon={<UsersIcon />} label="SET" value={studentSetCode} />
+                ) : (
+                  <ScheduleKpiCard icon={<UsersIcon />} label="Sets" value={totalSets} />
+                )}
               </div>
 
               <div className="mt-4">
@@ -138,7 +140,7 @@ function StudentSchedulePage() {
               </div>
 
               <div className="mt-4 sm:hidden">
-                <MobileWeeklySchedule schedules={visibleSchedules} />
+                <MobileWeeklySchedule schedules={visibleSchedules} showSet={!isRegular} />
               </div>
             </>
           )}
@@ -151,7 +153,7 @@ function StudentSchedulePage() {
               onViewModeChange={setViewMode}
               emptyTitle="No classes scheduled"
               emptyMessage="You have no classes scheduled."
-                  showSet
+                  showSet={!isRegular}
             />
           </div>
         </>

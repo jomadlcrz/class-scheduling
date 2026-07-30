@@ -7,6 +7,8 @@ type MobileWeeklyScheduleProps = {
   schedules: Schedule[];
   /** Hide the instructor name (for the instructor's own view). */
   hideInstructor?: boolean;
+  /** Show the Set column; defaults to true. */
+  showSet?: boolean;
 };
 
 type SubjectGroup = {
@@ -55,7 +57,7 @@ function groupBySubject(schedules: Schedule[]): SubjectGroup[] {
 }
 
 /** Mobile-only "View weekly schedule" disclosure with subject-grouped cards, mirroring the production student portal's mobile layout. */
-export function MobileWeeklySchedule({ schedules, hideInstructor }: MobileWeeklyScheduleProps) {
+export function MobileWeeklySchedule({ schedules, hideInstructor, showSet = true }: MobileWeeklyScheduleProps) {
   const [expanded, setExpanded] = useState(false);
   const groups = groupBySubject(schedules);
 
@@ -91,7 +93,7 @@ export function MobileWeeklySchedule({ schedules, hideInstructor }: MobileWeekly
                 <DetailRow icon={<CalendarIcon />}>{group.dayPattern}</DetailRow>
                 <DetailRow icon={<ClockIcon />}>{group.timeLabel}</DetailRow>
                 <DetailRow icon={<MapPinIcon />}>{group.roomLabel}</DetailRow>
-                <DetailRow icon={<BriefcaseIcon />}>Set: {group.setCode}</DetailRow>
+                {showSet && <DetailRow icon={<BriefcaseIcon />}>Set: {group.setCode}</DetailRow>}
               </div>
             </Card>
           ))}
