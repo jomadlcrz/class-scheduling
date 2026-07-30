@@ -1,133 +1,161 @@
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { deanService } from "~/services/dean.service";
-import type { DeanAnalyticsResponse, Section, Widget, StatTile, MeterList, BarChart, StackedBar, TableWidget, Insight } from "~/types/dean-analytics";
+import type { BarChart, DeanAnalyticsResponse, MeterList, Section, StackedBar, StatTile, TableWidget, Widget } from "~/types/dean-analytics";
 
-function StatTileWidget({ widget }: { widget: StatTile }) {
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
+const EASE_BOUNCE = [0.34, 1.56, 0.64, 1] as const;
+
+const staggerSections = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const staggerInsights = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05 } },
+};
+
+const staggerWidgets = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.04 } },
+};
+
+const staggerTableRows = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.02 } },
+};
+
+const fadeSlideUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
+};
+
+const popCard = {
+  hidden: { opacity: 0, scale: 0.94 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: EASE_OUT } },
+};
+
+const slideLeft = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: EASE_OUT } },
+};
+
+const insightVariant = {
+  hidden: { opacity: 0, y: 12, scale: 0.97 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: EASE_OUT } },
+};
+
+function toneBg(tone: string): string {
+  switch (tone) {
+    case "good": return "rgba(12,163,12,0.1)";
+    case "warning": return "rgba(250,178,25,0.15)";
+    case "critical": return "rgba(208,59,59,0.1)";
+    case "serious": return "rgba(236,131,90,0.1)";
+    default: return "rgba(137,135,129,0.1)";
+  }
+}
+
+function toneText(tone: string): string {
+  switch (tone) {
+    case "good": return "#0ca30c";
+    case "warning": return "#b8890f";
+    case "critical": return "#d03b3b";
+    case "serious": return "#d06a3b";
+    default: return "#898781";
+  }
+}
+
+function toneBar(tone: string): string {
+  switch (tone) {
+    case "good": return "#0ca30c";
+    case "warning": return "#fab219";
+    case "critical": return "#d03b3b";
+    case "serious": return "#ec835a";
+    default: return "#2a78d6";
+  }
+}
+
+function ordinalColor(role: string | undefined): string {
+  switch (role) {
+    case "ordinal_1": return "#86b6ef";
+    case "ordinal_2": return "#5598e7";
+    case "ordinal_3": return "#2a78d6";
+    case "ordinal_4": return "#1c5cab";
+    case "ordinal_5": return "#104281";
+    default: return "#2a78d6";
+  }
+}
+
+const shimmerSlide = {
+  initial: { x: "-100%" },
+  animate: { x: "200%", transition: { repeat: Infinity, duration: 1.5, ease: "easeInOut" as const } },
+};
+
+function Skeleton({ className }: { className?: string }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{widget.title}</span>
-        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-          style={{
-            backgroundColor: widget.status.tone === "good" ? "rgba(12,163,12,0.1)" :
-              widget.status.tone === "warning" ? "rgba(250,178,25,0.15)" :
-              widget.status.tone === "critical" ? "rgba(208,59,59,0.1)" :
-              widget.status.tone === "serious" ? "rgba(236,131,90,0.1)" : "rgba(137,135,129,0.1)",
-            color: widget.status.tone === "good" ? "#0ca30c" :
-              widget.status.tone === "warning" ? "#b8890f" :
-              widget.status.tone === "critical" ? "#d03b3b" :
-              widget.status.tone === "serious" ? "#d06a3b" : "#898781",
-          }}
-        >
-          {widget.status.label}
-        </span>
-      </div>
-      <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-        {widget.display_value}
-      </span>
-      <span className="text-xs text-slate-500 dark:text-slate-400">{widget.unit}</span>
-      {widget.meter && (
-        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${Math.min(widget.meter.percent, 100)}%`,
-              backgroundColor: widget.meter.percent > 100 ? "#d03b3b" :
-                widget.meter.percent >= 90 ? "#ec835a" :
-                widget.meter.percent >= 50 ? "#2a78d6" : "#86b6ef",
-            }}
-          />
+    <div className={`relative overflow-hidden rounded-md bg-slate-200 dark:bg-white/8 ${className ?? ""}`}>
+      <motion.div
+        variants={shimmerSlide}
+        initial="initial"
+        animate="animate"
+        className="absolute inset-y-0 w-full"
+        style={{
+          background: "linear-gradient(90deg, transparent 20%, rgba(255,255,255,0.45) 50%, transparent 80%)",
+        }}
+      />
+    </div>
+  );
+}
+
+function SkeletonLine({ className }: { className?: string }) {
+  return <Skeleton className={`h-3 ${className ?? ""}`} />;
+}
+
+function SkeletonCard({ className }: { className?: string }) {
+  return (
+    <div className={`rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900 ${className ?? ""}`}>
+      <Skeleton className="mb-3 h-3 w-1/3" />
+      <Skeleton className="mb-2 h-8 w-1/2" />
+      <Skeleton className="mb-3 h-3 w-1/4" />
+      <Skeleton className="h-1.5 w-full" />
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-56" />
+          <Skeleton className="h-4 w-80" />
         </div>
-      )}
-      {widget.hint && (
-        <p className="text-[11px] leading-tight text-slate-400 dark:text-slate-500">{widget.hint}</p>
-      )}
-    </div>
-  );
-}
-
-function MeterListWidget({ widget }: { widget: MeterList }) {
-  if (widget.rows.length === 0) {
-    return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
-        {widget.empty_state.message}
+        <div className="flex gap-3">
+          <Skeleton className="h-9 w-44 rounded-lg" />
+          <Skeleton className="h-9 w-44 rounded-lg" />
+        </div>
       </div>
-    );
-  }
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
-      <h3 className="mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{widget.title}</h3>
-      {widget.subtitle && <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{widget.subtitle}</p>}
-      <div className="space-y-3">
-        {widget.rows.map((row) => {
-          const pct = Math.min(row.percent, 100);
-          const barColor = row.status.tone === "good" ? "#0ca30c" :
-            row.status.tone === "warning" ? "#fab219" :
-            row.status.tone === "critical" ? "#d03b3b" :
-            row.status.tone === "serious" ? "#ec835a" : "#2a78d6";
-          return (
-            <div key={row.id}>
-              <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="font-medium text-slate-700 dark:text-slate-300">{row.label}</span>
-                <span className="text-slate-500 dark:text-slate-400">{row.display_value}</span>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
+            <div className="mb-3 flex items-center gap-2">
+              <Skeleton className="size-8 rounded-full" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3 w-2/5" />
+                <Skeleton className="h-2.5 w-1/5" />
               </div>
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: barColor }} />
-                {row.overflow && (
-                  <div className="absolute right-0 top-1/2 h-3 w-0.5 -translate-y-1/2 rounded bg-red-500" />
-                )}
-              </div>
-              <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{row.secondary}</p>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function BarChartWidget({ widget }: { widget: BarChart }) {
-  const data = widget.series[0]?.points ?? [];
-  if (data.length === 0) {
-    return (
-      <div className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
-        {widget.empty_state.message}
-      </div>
-    );
-  }
-  const maxVal = Math.max(...data.map((p) => p.value), 1);
-  const isHoriz = widget.orientation === "horizontal";
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
-      <h3 className="mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{widget.title}</h3>
-      {widget.subtitle && <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{widget.subtitle}</p>}
-      <div className={`space-y-2 ${isHoriz ? "" : "flex items-end gap-3"}`} style={isHoriz ? {} : { minHeight: 120 }}>
-        {data.map((point) => (
-          <div key={point.label} className={isHoriz ? "flex items-center gap-2" : "flex flex-1 flex-col items-center"}>
-            <div className={isHoriz ? "flex-1" : "flex w-full flex-col items-center"}>
-              <div
-                className={isHoriz ? "h-5 rounded-r" : "w-full rounded-t"}
-                style={{
-                  [isHoriz ? "width" : "height"]: `${(point.value / maxVal) * 100}%`,
-                  backgroundColor: point.color_role === "ordinal_1" ? "#86b6ef" :
-                    point.color_role === "ordinal_2" ? "#5598e7" :
-                    point.color_role === "ordinal_3" ? "#2a78d6" :
-                    point.color_role === "ordinal_4" ? "#1c5cab" :
-                    point.color_role === "ordinal_5" ? "#104281" : "#2a78d6",
-                  minWidth: isHoriz ? 4 : undefined,
-                  minHeight: isHoriz ? undefined : 4,
-                }}
-              />
-              {point.direct_label && (
-                <span className="mt-0.5 text-[10px] font-medium text-slate-600 dark:text-slate-400">
-                  {point.display_value}
-                </span>
-              )}
-            </div>
-            <span className={`text-[10px] text-slate-500 dark:text-slate-400 ${isHoriz ? "w-16 text-right" : ""}`}>
-              {isHoriz ? point.display_value : point.label}
-            </span>
+            <Skeleton className="mb-2 h-2.5 w-full" />
+            <Skeleton className="mb-2 h-2.5 w-5/6" />
+            <Skeleton className="h-2.5 w-2/3" />
           </div>
         ))}
       </div>
@@ -135,25 +163,295 @@ function BarChartWidget({ widget }: { widget: BarChart }) {
   );
 }
 
+function UpdateIndicator({ visible }: { visible: boolean }) {
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-navy-800 px-3 py-1.5 text-xs text-white shadow-lg dark:bg-navy-600"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
+            className="size-3 rounded-full border-2 border-white border-t-transparent"
+          />
+          Updating…
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function StatTileWidget({ widget, index }: { widget: StatTile; index: number }) {
+  return (
+    <motion.div
+      variants={popCard}
+      whileHover={{ y: -3, boxShadow: "0 8px 25px -8px rgba(0,0,0,0.12)", transition: { duration: 0.2 } }}
+      className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{widget.title}</span>
+        <motion.span
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.15 + index * 0.03, duration: 0.3, ease: EASE_OUT }}
+          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+          style={{ backgroundColor: toneBg(widget.status.tone), color: toneText(widget.status.tone) }}
+        >
+          {widget.status.label}
+        </motion.span>
+      </div>
+      <motion.span
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 + index * 0.03, duration: 0.5, ease: EASE_BOUNCE }}
+        className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white"
+      >
+        {widget.display_value}
+      </motion.span>
+      <span className="text-xs text-slate-500 dark:text-slate-400">{widget.unit}</span>
+      {widget.meter && (
+        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(widget.meter.percent, 100)}%` }}
+            transition={{ delay: 0.2 + index * 0.03, duration: 0.8, ease: EASE_OUT }}
+            className="h-full rounded-full"
+            style={{ backgroundColor: widget.meter.percent > 100 ? "#d03b3b" : widget.meter.percent >= 90 ? "#ec835a" : widget.meter.percent >= 50 ? "#2a78d6" : "#86b6ef" }}
+          />
+        </div>
+      )}
+      {widget.hint && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 + index * 0.03, duration: 0.4 }}
+          className="text-[11px] leading-tight text-slate-400 dark:text-slate-500"
+        >
+          {widget.hint}
+        </motion.p>
+      )}
+    </motion.div>
+  );
+}
+
+function MeterListWidget({ widget }: { widget: MeterList }) {
+  if (widget.rows.length === 0) {
+    return (
+      <motion.div variants={popCard} className="rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
+        {widget.empty_state.message}
+      </motion.div>
+    );
+  }
+  return (
+    <motion.div
+      variants={popCard}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
+    >
+      <motion.h3
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: EASE_OUT }}
+        className="mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200"
+      >
+        {widget.title}
+      </motion.h3>
+      {widget.subtitle && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.06, duration: 0.3 }}
+          className="mb-3 text-xs text-slate-500 dark:text-slate-400"
+        >
+          {widget.subtitle}
+        </motion.p>
+      )}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.05 } },
+        }}
+        className="space-y-3"
+      >
+        {widget.rows.map((row) => {
+          const pct = Math.min(row.percent, 100);
+          return (
+            <motion.div
+              key={row.id}
+              variants={slideLeft}
+              whileHover={{ x: 3, transition: { duration: 0.15 } }}
+            >
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <span className="font-medium text-slate-700 dark:text-slate-300">{row.label}</span>
+                <span className="text-slate-500 dark:text-slate-400">{row.display_value}</span>
+              </div>
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ delay: 0.06, duration: 0.6, ease: EASE_OUT }}
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: toneBar(row.status.tone) }}
+                />
+                {row.overflow && (
+                  <div className="absolute right-0 top-1/2 h-3 w-0.5 -translate-y-1/2 rounded bg-red-500" />
+                )}
+              </div>
+              <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{row.secondary}</p>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function BarChartWidget({ widget }: { widget: BarChart }) {
+  const data = widget.series[0]?.points ?? [];
+  if (data.length === 0) {
+    return (
+      <motion.div variants={popCard} className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
+        {widget.empty_state.message}
+      </motion.div>
+    );
+  }
+  const maxVal = Math.max(...data.map((p) => p.value), 1);
+  const isHoriz = widget.orientation === "horizontal";
+  return (
+    <motion.div
+      variants={popCard}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
+    >
+      <motion.h3
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: EASE_OUT }}
+        className="mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200"
+      >
+        {widget.title}
+      </motion.h3>
+      {widget.subtitle && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.06, duration: 0.3 }}
+          className="mb-3 text-xs text-slate-500 dark:text-slate-400"
+        >
+          {widget.subtitle}
+        </motion.p>
+      )}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.04 } },
+        }}
+        className={`space-y-2 ${isHoriz ? "" : "flex items-end gap-3"}`}
+        style={isHoriz ? {} : { minHeight: 120 }}
+      >
+        {data.map((point) => (
+          <motion.div
+            key={point.label}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { duration: 0.3 } },
+            }}
+            className={isHoriz ? "flex items-center gap-2" : "flex flex-1 flex-col items-center"}
+          >
+            <div className={isHoriz ? "flex-1" : "flex w-full flex-col items-center"}>
+              <motion.div
+                initial={isHoriz ? { width: 0 } : { height: 0 }}
+                animate={isHoriz ? { width: `${(point.value / maxVal) * 100}%` } : { height: `${(point.value / maxVal) * 100}%` }}
+                transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.1 }}
+                className={isHoriz ? "h-5 rounded-r" : "w-full rounded-t"}
+                style={{ backgroundColor: ordinalColor(point.color_role), minWidth: isHoriz ? 4 : undefined, minHeight: isHoriz ? undefined : 4 }}
+              />
+              {point.direct_label && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.2 }}
+                  className="mt-0.5 text-[10px] font-medium text-slate-600 dark:text-slate-400"
+                >
+                  {point.display_value}
+                </motion.span>
+              )}
+            </div>
+            <span className={`text-[10px] text-slate-500 dark:text-slate-400 ${isHoriz ? "w-16 shrink-0 text-right" : ""}`}>
+              {isHoriz ? point.display_value : point.label}
+            </span>
+          </motion.div>
+        ))}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function StackedBarWidget({ widget }: { widget: StackedBar }) {
   if (widget.categories.length === 0) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
+      <motion.div variants={popCard} className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
         {widget.empty_state.message}
-      </div>
+      </motion.div>
     );
   }
   const keys = widget.series.map((s) => s.key);
-  const colorMap = Object.fromEntries(widget.series.map((s) => [s.key, s.color_role === "series_1" ? "#2a78d6" : "#eb6834"]));
+  const colorMap: Record<string, string> = {};
+  for (const s of widget.series) {
+    colorMap[s.key] = s.color_role === "series_1" ? "#2a78d6" :
+      s.color_role === "series_2" ? "#eb6834" :
+      s.color_role === "series_3" ? "#86b6ef" :
+      s.color_role === "series_4" ? "#d9a05b" : "#5598e7";
+  }
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
-      <h3 className="mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{widget.title}</h3>
-      {widget.subtitle && <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{widget.subtitle}</p>}
-      <div className="space-y-3">
+    <motion.div
+      variants={popCard}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
+    >
+      <motion.h3
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: EASE_OUT }}
+        className="mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200"
+      >
+        {widget.title}
+      </motion.h3>
+      {widget.subtitle && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.06, duration: 0.3 }}
+          className="mb-3 text-xs text-slate-500 dark:text-slate-400"
+        >
+          {widget.subtitle}
+        </motion.p>
+      )}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.05 } },
+        }}
+        className="space-y-3"
+      >
         {widget.categories.map((cat) => {
           const total = keys.reduce((s, k) => s + (cat.values[k] ?? 0), 0) || 1;
           return (
-            <div key={cat.label}>
+            <motion.div
+              key={cat.label}
+              variants={slideLeft}
+              whileHover={{ x: 3, transition: { duration: 0.15 } }}
+            >
               <div className="mb-1 flex items-center justify-between text-xs">
                 <span className="font-medium text-slate-700 dark:text-slate-300">{cat.label}</span>
                 <span className="text-slate-500 dark:text-slate-400">{cat.display_value}</span>
@@ -162,46 +460,70 @@ function StackedBarWidget({ widget }: { widget: StackedBar }) {
                 {keys.map((key) => {
                   const w = (cat.values[key] ?? 0) / total * 100;
                   return w > 0 ? (
-                    <div key={key} style={{ width: `${w}%`, backgroundColor: colorMap[key], minWidth: 4 }} />
+                    <motion.div
+                      key={key}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${w}%` }}
+                      transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.08 }}
+                      style={{ backgroundColor: colorMap[key] ?? "#2a78d6", minWidth: 4 }}
+                    />
                   ) : null;
                 })}
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
 function TableWidgetRenderer({ widget }: { widget: TableWidget }) {
   if (widget.rows.length === 0) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
+      <motion.div variants={popCard} className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500">
         {widget.empty_state.message}
-      </div>
+      </motion.div>
     );
   }
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900">
-      <div className="border-b border-slate-200 px-4 py-3 dark:border-white/10">
+    <motion.div
+      variants={popCard}
+      whileHover={{ y: -1, transition: { duration: 0.2 } }}
+      className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: EASE_OUT }}
+        className="border-b border-slate-200 px-4 py-3 dark:border-white/10"
+      >
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{widget.title}</h3>
         <p className="text-xs text-slate-500 dark:text-slate-400">{widget.subtitle}</p>
-      </div>
+      </motion.div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
             <tr>
               {widget.columns.map((col) => (
-                <th key={col.key} className={`px-4 py-2 font-semibold text-slate-600 dark:text-slate-400 ${col.align === "right" ? "text-right" : ""}`}>
+                <th key={col.key} className={`px-4 py-2 font-semibold text-slate-600 dark:text-slate-400 ${col.align === "right" ? "text-right" : ""} ${col.key === "status" ? "text-center" : ""}`}>
                   {col.label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+          <motion.tbody
+            initial="hidden"
+            animate="visible"
+            variants={staggerTableRows}
+            className="divide-y divide-slate-100 dark:divide-white/5"
+          >
             {widget.rows.map((row, i) => (
-              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5">
+              <motion.tr
+                key={i}
+                variants={{ hidden: { opacity: 0, x: -6 }, visible: { opacity: 1, x: 0, transition: { duration: 0.2, ease: EASE_OUT } } }}
+                className="transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/5"
+              >
                 {widget.columns.map((col) => {
                   const val = row[col.key];
                   const cell = val != null ? String(val) : "";
@@ -211,14 +533,15 @@ function TableWidgetRenderer({ widget }: { widget: TableWidget }) {
                       {isStatusCol ? (
                         <span className="inline-flex items-center gap-1">
                           {row.status && (
-                            <span className="text-[10px] font-medium" style={{
-                              color: row.status.tone === "good" ? "#0ca30c" :
-                                row.status.tone === "warning" ? "#b8890f" :
-                                row.status.tone === "critical" ? "#d03b3b" :
-                                row.status.tone === "serious" ? "#d06a3b" : "#898781",
-                            }}>
+                            <motion.span
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: i * 0.02, duration: 0.2 }}
+                              className="text-[10px] font-medium"
+                              style={{ color: toneText(row.status.tone) }}
+                            >
                               {row.status.label}
-                            </span>
+                            </motion.span>
                           )}
                         </span>
                       ) : (
@@ -227,19 +550,19 @@ function TableWidgetRenderer({ widget }: { widget: TableWidget }) {
                     </td>
                   );
                 })}
-              </tr>
+              </motion.tr>
             ))}
-          </tbody>
+          </motion.tbody>
         </table>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function WidgetRenderer({ widget }: { widget: Widget }) {
+function WidgetRenderer({ widget, index }: { widget: Widget; index: number }) {
   switch (widget.kind) {
     case "stat_tile":
-      return <StatTileWidget widget={widget} />;
+      return <StatTileWidget widget={widget} index={index} />;
     case "meter_list":
       return <MeterListWidget widget={widget} />;
     case "bar":
@@ -256,32 +579,50 @@ function WidgetRenderer({ widget }: { widget: Widget }) {
 function SectionRenderer({ section }: { section: Section }) {
   if (section.layout === "kpi_row") {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {section.widgets.map((w) => <WidgetRenderer key={w.id} widget={w} />)}
-      </div>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={staggerWidgets}
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        {section.widgets.map((w, i) => <WidgetRenderer key={w.id} widget={w} index={i} />)}
+      </motion.div>
     );
   }
   if (section.layout === "full") {
     return (
-      <div className="space-y-4">
-        {section.widgets.map((w) => <WidgetRenderer key={w.id} widget={w} />)}
-      </div>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={staggerWidgets}
+        className="space-y-4"
+      >
+        {section.widgets.map((w, i) => <WidgetRenderer key={w.id} widget={w} index={i} />)}
+      </motion.div>
     );
   }
   const cols = section.columns === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
   return (
-    <div className={`grid grid-cols-1 gap-4 ${cols}`}>
-      {section.widgets.map((w) => <WidgetRenderer key={w.id} widget={w} />)}
-    </div>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerWidgets}
+      className={`grid grid-cols-1 gap-4 ${cols}`}
+    >
+      {section.widgets.map((w, i) => <WidgetRenderer key={w.id} widget={w} index={i} />)}
+    </motion.div>
   );
 }
 
 export function DeanDashboard() {
   const [data, setData] = useState<DeanAnalyticsResponse | null>(null);
+  const [prevSy, setPrevSy] = useState<number>(0);
+  const [prevSem, setPrevSem] = useState<number>(0);
   const [syId, setSyId] = useState<number>(0);
   const [semId, setSemId] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [years, setYears] = useState<{ id: number; schoolYear: string }[]>([]);
   const [sems, setSems] = useState<{ id: number; semester: string; semesterNumber: number }[]>([]);
 
@@ -312,111 +653,182 @@ export function DeanDashboard() {
   useEffect(() => {
     if (!syId || !semId) return;
     let cancelled = false;
-    setLoading(true);
+    const isInitial = !data;
+    if (!isInitial) setRefreshing(true);
+    if (isInitial) setLoading(true);
     setError(null);
     deanService.getAnalytics(syId, semId)
-      .then((d) => { if (!cancelled) setData(d); })
+      .then((d) => {
+        if (!cancelled) {
+          setPrevSy(syId);
+          setPrevSem(semId);
+          setData(d);
+        }
+      })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load dashboard data."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .finally(() => {
+        if (!cancelled) { setLoading(false); setRefreshing(false); }
+      });
     return () => { cancelled = true; };
   }, [syId, semId]);
 
-  if (data) {
-    const matchedSy = years.find((y) => y.id === syId);
-    const matchedSem = sems.find((s) => s.id === semId);
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{data.meta.title}</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{data.meta.subtitle}</p>
-          </div>
-          <div className="flex shrink-0 gap-3">
-            <div className="w-44">
-              <Select
-                items={years.map((y) => ({ value: String(y.id), label: y.schoolYear }))}
-                value={syId ? String(syId) : ""}
-                onValueChange={(v) => { if (v) setSyId(Number(v)); }}
-              >
-                <SelectTrigger id="dashboard-sy">
-                  <SelectValue placeholder="School year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((y) => (
-                    <SelectItem key={y.id} value={String(y.id)}>{y.schoolYear}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-44">
-              <Select
-                items={sems.map((s) => ({ value: String(s.id), label: s.semester }))}
-                value={semId ? String(semId) : ""}
-                onValueChange={(v) => { if (v) setSemId(Number(v)); }}
-              >
-                <SelectTrigger id="dashboard-sem">
-                  <SelectValue placeholder="Semester" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sems.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>{s.semester}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
+  const isSwitching = !loading && !refreshing && prevSy !== syId && prevSem !== semId;
 
-        {data.insights.length > 0 && (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {data.insights.map((insight, i) => (
-              <div key={i} className="rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-navy-900">
-                <span className="text-[10px] font-semibold uppercase tracking-wider"
-                  style={{
-                    color: insight.severity === "critical" ? "#d03b3b" :
-                      insight.severity === "warning" ? "#b8890f" :
-                      insight.severity === "info" ? "#2a78d6" : "#0ca30c",
-                  }}
+  return (
+    <div className="space-y-6">
+      <UpdateIndicator visible={refreshing} />
+
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+          >
+            <LoadingSkeleton />
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
+          >
+            {error}
+          </motion.div>
+        ) : data ? (
+          <motion.div
+            key="data"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <motion.div
+              variants={staggerSections}
+              initial="hidden"
+              animate="visible"
+              className="space-y-6"
+            >
+              {/* ─── Header + term selects ─── */}
+              <motion.div
+                variants={fadeSlideUp}
+                className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+              >
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">{data.meta.title}</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{data.meta.subtitle}</p>
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.3 }}
+                  className="flex shrink-0 gap-3"
                 >
-                  {insight.severity}
-                </span>
-                <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-200">{insight.title}</p>
-                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{insight.message}</p>
-                {insight.action && (
-                  <p className="mt-1 text-[11px] font-medium text-navy-600 dark:text-navy-400">{insight.action}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="w-44">
+                    <Select
+                      items={years.map((y) => ({ value: String(y.id), label: y.schoolYear }))}
+                      value={syId ? String(syId) : ""}
+                      onValueChange={(v) => { if (v) setSyId(Number(v)); }}
+                    >
+                      <SelectTrigger id="dashboard-sy">
+                        <SelectValue placeholder="School year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {years.map((y) => (
+                          <SelectItem key={y.id} value={String(y.id)}>{y.schoolYear}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-44">
+                    <Select
+                      items={sems.map((s) => ({ value: String(s.id), label: s.semester }))}
+                      value={semId ? String(semId) : ""}
+                      onValueChange={(v) => { if (v) setSemId(Number(v)); }}
+                    >
+                      <SelectTrigger id="dashboard-sem">
+                        <SelectValue placeholder="Semester" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sems.map((s) => (
+                          <SelectItem key={s.id} value={String(s.id)}>{s.semester}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </motion.div>
+              </motion.div>
 
-        {data.sections.map((section) => (
-          <section key={section.id}>
-            {section.layout !== "kpi_row" && (
-              <h3 className="mb-3 text-base font-bold text-slate-800 dark:text-slate-200">{section.title}</h3>
-            )}
-            <SectionRenderer section={section} />
-          </section>
-        ))}
-      </div>
-    );
-  }
+              {/* ─── Insights ─── */}
+              {data.insights.length > 0 && (
+                <motion.div variants={fadeSlideUp}>
+                  <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={staggerInsights}
+                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                  >
+                  {data.insights.map((insight, i) => (
+                    <motion.div
+                      key={i}
+                      variants={insightVariant}
+                      whileHover={{ y: -3, boxShadow: "0 8px 20px -8px rgba(0,0,0,0.1)", transition: { duration: 0.2 } }}
+                      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
+                    >
+                      <motion.span
+                        initial={{ opacity: 0, x: -4 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.08 + i * 0.03, duration: 0.3 }}
+                        className="text-[10px] font-semibold uppercase tracking-wider"
+                        style={{
+                          color: insight.severity === "critical" ? "#d03b3b" :
+                            insight.severity === "warning" ? "#b8890f" :
+                            insight.severity === "info" ? "#2a78d6" : "#0ca30c",
+                        }}
+                      >
+                        {insight.severity}
+                      </motion.span>
+                      <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-200">{insight.title}</p>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{insight.message}</p>
+                      {insight.action && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.15 + i * 0.03, duration: 0.3 }}
+                          className="mt-1 text-[11px] font-medium text-navy-600 dark:text-navy-400"
+                        >
+                          {insight.action}
+                        </motion.p>
+                      )}
+                    </motion.div>
+                  ))}
+                </motion.div>
+                </motion.div>
+              )}
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-navy-600 dark:border-white/10 dark:border-t-navy-300" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
-        {error}
-      </div>
-    );
-  }
-
-  return null;
+              {/* ─── Sections ─── */}
+              {data.sections.map((section) => (
+                <motion.section key={section.id} variants={fadeSlideUp}>
+                  {section.layout !== "kpi_row" && (
+                    <motion.h3
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, ease: EASE_OUT }}
+                      className="mb-3 text-base font-bold text-slate-800 dark:text-slate-200"
+                    >
+                      {section.title}
+                    </motion.h3>
+                  )}
+                  <SectionRenderer section={section} />
+                </motion.section>
+              ))}
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
 }

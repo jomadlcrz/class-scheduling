@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "~/hooks/use-auth";
 import { fadeUp, staggerContainer } from "~/landing/motion";
-import { PageHeader } from "~/layouts/page-header";
 import { fetchDashboardGreeting, type DashboardGreeting } from "~/services/dashboard.service";
 import { DeanDashboard } from "~/features/dashboard/dean-dashboard";
 
@@ -48,16 +47,7 @@ export default function Dashboard() {
         )}
       </motion.div>
 
-      {user?.role === "dean" ? (
-        <DeanDashboard />
-      ) : (
-        <motion.div variants={fadeUp}>
-          <PageHeader
-            title="Dashboard"
-            description="Overview of the current academic term."
-          />
-        </motion.div>
-      )}
+      {user?.role === "dean" && <DeanDashboard />}
     </motion.div>
   );
 }
