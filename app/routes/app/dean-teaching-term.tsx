@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { RoleGuard } from "~/auth/role-guard";
 import { deanService } from "~/services/dean.service";
 import type {
@@ -14,7 +13,6 @@ import { PageHeader } from "~/layouts/page-header";
 import {
   ArrowLeftIcon,
   AlertTriangleIcon,
-  TrashIcon,
   ClockIcon,
   BookOpenIcon,
   LayersIcon,
@@ -31,10 +29,6 @@ function TermSkeleton() {
         <div className="space-y-2">
           <Skeleton className="h-7 w-72" />
           <Skeleton className="h-4 w-48" />
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-9 w-20 rounded-lg" />
-          <Skeleton className="h-9 w-28 rounded-lg" />
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -72,19 +66,15 @@ function TermSkeleton() {
             <TableHeader className="text-center">LAB</TableHeader>
             <TableHeader className="text-center">Mtgs</TableHeader>
             <TableHeader className="text-center">Status</TableHeader>
-            <TableHeader className="text-center"><span className="sr-only">Remove</span></TableHeader>
           </TableHead>
           <TableBody>
             {[1, 2, 3, 4].map((r) => (
               <tr key={r}>
                 {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((c) => (
                   <td key={c} className="px-4 py-3.5">
-                    <Skeleton className={`h-4 ${c === 1 ? "w-44" : c <= 3 ? "w-12" : c <= 7 ? "w-6" : "w-14"}`} />
+                    <Skeleton className={`h-4 ${c === 1 ? "w-44" : c <= 3 ? "w-12" : "w-6"}`} />
                   </td>
                 ))}
-                <td className="px-4 py-3.5 text-center">
-                  <Skeleton className="mx-auto size-6 rounded" />
-                </td>
               </tr>
             ))}
           </TableBody>
@@ -199,9 +189,6 @@ function SessionModal({
             key={sess.regular_sched_id}
             className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5"
           >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-navy-100 font-body text-sm font-bold text-navy-800 dark:bg-white/10 dark:text-white">
-              {sess.day.slice(0, 2)}
-            </span>
             <div className="flex-1">
               <p className="font-body text-sm font-semibold text-navy-800 dark:text-white">
                 {sess.day} · {sess.start_time}–{sess.end_time}
@@ -231,10 +218,8 @@ function ordinalSuffix(n: number): string {
 
 function SubjectAssignmentRow({
   assignment,
-  onRemove,
 }: {
   assignment: TeachingTermDetailSubjectAssignment;
-  onRemove: (assignmentId: number, subjectCode: string) => void;
 }) {
   const [showSessions, setShowSessions] = useState(false);
   const sessions = assignment.is_scheduled ? assignment.scheduled_sessions : [];
@@ -343,7 +328,6 @@ function DeanTeachingTermPage() {
   const [detail, setDetail] = useState<TeachingTermDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [removeTarget, setRemoveTarget] = useState<{ assignmentId: number; subjectCode: string } | null>(null);
 
   const teachingTermId = Number(id);
 
@@ -365,23 +349,6 @@ function DeanTeachingTermPage() {
       });
     return () => { cancelled = true; };
   }, [teachingTermId]);
-
-  async function handleRemoveAssignment() {
-    if (!removeTarget) return;
-    try {
-      const result = await deanService.removeSubjectAssignment(teachingTermId, removeTarget.assignmentId);
-      toast.success(result.message);
-      setRemoveTarget(null);
-      if (result.teaching_term_deleted) {
-        navigate("/dean/subject-assignments");
-        return;
-      }
-      const data = await deanService.getTeachingTermDetail(teachingTermId);
-      setDetail(data);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove assignment.");
-    }
-  }
 
   if (loading) {
     return <TermSkeleton />;
@@ -564,7 +531,6 @@ function DeanTeachingTermPage() {
               <TableHeader className="text-center">LAB</TableHeader>
               <TableHeader className="text-center">Mtgs</TableHeader>
               <TableHeader className="text-center">Status</TableHeader>
-              <TableHeader className="text-center"><span className="sr-only">Remove</span></TableHeader>
             </TableHead>
             <TableBody>
               <AnimatePresence>
@@ -572,7 +538,6 @@ function DeanTeachingTermPage() {
                   <SubjectAssignmentRow
                     key={a.subject_assignment_id}
                     assignment={a}
-                    onRemove={(id, code) => setRemoveTarget({ assignmentId: id, subjectCode: code })}
                   />
                 ))}
               </AnimatePresence>
@@ -580,21 +545,6 @@ function DeanTeachingTermPage() {
           </Table>
         )}
       </motion.div>
-
-      {/* ── Remove assignment confirm ── */}
-      <ConfirmDialog
-        open={removeTarget !== null}
-        onClose={() => setRemoveTarget(null)}
-        title="Remove Subject Assignment"
-        confirmLabel="Remove"
-        loadingLabel="Removing…"
-        confirmVariant="danger"
-        onConfirm={handleRemoveAssignment}
-      >
-        <p>
-          Are you sure you want to remove <strong>{removeTarget?.subjectCode}</strong> from this instructor&apos;s term?
-        </p>
-      </ConfirmDialog>
     </div>
   );
 }
