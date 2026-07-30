@@ -561,6 +561,15 @@ export function SubjectAssignmentView() {
                     assignmentId: entry?.subjectAssignmentIds?.get(subjectCode) ?? null,
                   });
                 }}
+                onRemoveProgram={(programId) => {
+                  setInstructors((prev) =>
+                    prev.map((i) =>
+                      i.id === inst.id
+                        ? { ...i, programs: i.programs.filter((p) => p.id !== programId) }
+                        : i,
+                    ),
+                  );
+                }}
                 onUpdateAssignment={() => handleUpdateAssignment(inst.id)}
                 onViewTeachingTerm={() => {
                   const entry = apiData.entries?.find((e) => e.instructorName === inst.name);

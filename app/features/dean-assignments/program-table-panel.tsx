@@ -20,12 +20,14 @@ type ProgramTablePanelProps = {
   program: ProgramData;
   onAssignSubject: () => void;
   onRemoveSubject: (subjectCode: string) => void;
+  onRemoveProgram: () => void;
 };
 
 export function ProgramTablePanel({
   program,
   onAssignSubject,
   onRemoveSubject,
+  onRemoveProgram,
 }: ProgramTablePanelProps) {
   const [collapsed, setCollapsed] = useState(false);
   const totalHours = program.subjects.reduce((sum, s) => sum + s.weeklyHours, 0);
@@ -56,6 +58,15 @@ export function ProgramTablePanel({
             <span className="hidden sm:inline">Assign Subject</span>
             <span className="sm:hidden">Add</span>
           </Button>
+
+          <button
+            type="button"
+            onClick={onRemoveProgram}
+            className="inline-grid size-7 place-items-center rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
+            title="Remove program"
+          >
+            <TrashIcon />
+          </button>
         </div>
       </div>
 

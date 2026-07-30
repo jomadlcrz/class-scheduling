@@ -41,6 +41,7 @@ type InstructorCardProps = {
   onAddProgram: () => void;
   onAssignSubject: (programId: string) => void;
   onRemoveSubject: (programId: string, subjectCode: string) => void;
+  onRemoveProgram: (programId: string) => void;
   onUpdateAssignment: () => void;
   onViewTeachingTerm?: () => void;
   onRemoveInstructor: () => void;
@@ -53,6 +54,7 @@ export function InstructorCard({
   onAddProgram,
   onAssignSubject,
   onRemoveSubject,
+  onRemoveProgram,
   onUpdateAssignment,
   onViewTeachingTerm,
   onRemoveInstructor,
@@ -204,6 +206,7 @@ export function InstructorCard({
             program={prog}
             onAssignSubject={() => onAssignSubject(prog.id)}
             onRemoveSubject={(code) => onRemoveSubject(prog.id, code)}
+            onRemoveProgram={() => onRemoveProgram(prog.id)}
           />
         ))}
 
