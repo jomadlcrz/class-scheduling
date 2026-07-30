@@ -111,22 +111,19 @@ function FacultySchedulePage() {
           ) : (
             <>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <ScheduleKpiCard icon={<BookIcon />} tone="navy" label="Total Units" value={totalUnits} />
+                <ScheduleKpiCard icon={<BookIcon />} label="Total Units" value={totalUnits} />
                 <ScheduleKpiCard
                   icon={<CalendarIcon />}
-                  tone="blue"
                   label="Weekly Classes"
                   value={visibleSchedules.length}
                 />
                 <ScheduleKpiCard
                   icon={<BookIcon />}
-                  tone="emerald"
                   label="Subjects"
                   value={totalSubjects}
                 />
                 <ScheduleKpiCard
                   icon={<UsersIcon />}
-                  tone="gold"
                   label="Sets"
                   value={totalSets}
                 />

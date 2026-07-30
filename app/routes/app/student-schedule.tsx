@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Badge } from "~/components/ui/badge";
 import { BookIcon, CalendarIcon, PrinterIcon, UserCheckIcon, UsersIcon } from "~/components/ui/icons";
 import { Spinner } from "~/components/ui/spinner";
 import { Tooltip } from "~/components/ui/tooltip";
@@ -66,7 +65,6 @@ function StudentSchedulePage() {
     [visibleSchedules],
   );
 
-  // Every visible row carries the same value — the backend attaches it per-row, not once.
   const academicStatus = visibleSchedules[0]?.academicStatus;
 
   return (
@@ -117,24 +115,19 @@ function StudentSchedulePage() {
           ) : (
             <>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <ScheduleKpiCard icon={<BookIcon />} tone="navy" label="Total Units" value={totalUnits} />
+                <ScheduleKpiCard icon={<BookIcon />} label="Total Units" value={totalUnits} />
                 <ScheduleKpiCard
                   icon={<CalendarIcon />}
-                  tone="blue"
                   label="Weekly Classes"
                   value={visibleSchedules.length}
                 />
                 <ScheduleKpiCard
                   icon={<UserCheckIcon />}
-                  tone="emerald"
                   label="Status"
-                  value={
-                    academicStatus ? <Badge tone="emerald">{academicStatus}</Badge> : `${totalSubjects} subjects`
-                  }
+                  value={academicStatus ?? totalSubjects}
                 />
                 <ScheduleKpiCard
                   icon={<UsersIcon />}
-                  tone="gold"
                   label="Sets"
                   value={totalSets}
                 />
