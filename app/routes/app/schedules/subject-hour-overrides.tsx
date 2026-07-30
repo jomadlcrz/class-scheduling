@@ -5,23 +5,23 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
-import { FieldChrome } from "~/components/ui/input";
 import { PlusIcon } from "~/components/ui/icons";
+import { FieldChrome } from "~/components/ui/input";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { SubjectHourOverrideForm, type OverrideFormInput } from "~/features/schedules/subject-hour-override-form";
 import { SubjectHourOverrideTable } from "~/features/schedules/subject-hour-override-table";
+import { useSchoolYears } from "~/hooks/use-school-years";
+import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { scheduleService, type SubjectHourOverride } from "~/services/schedule.service";
+import { setService } from "~/services/set.service";
 import { subjectService } from "~/services/subject.service";
 import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
-import { setService } from "~/services/set.service";
-import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
-import { useSchoolYears } from "~/hooks/use-school-years";
-import { useSemesters } from "~/hooks/use-semesters";
 import type { ClassSet } from "~/types/set";
+import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 export function meta() {
   return [
@@ -32,7 +32,7 @@ export function meta() {
 
 export default function SubjectHourOverrides() {
   return (
-    <RoleGuard allow={["admin", "registrar"]}>
+    <RoleGuard allow={["registrar"]}>
       <SubjectHourOverridesPage />
     </RoleGuard>
   );

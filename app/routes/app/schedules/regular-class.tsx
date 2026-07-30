@@ -2,21 +2,22 @@ import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { EmptyState } from "~/components/feedback/empty-state";
 import { AlertIcon, PlusIcon, PrinterIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { openSchedulePrint } from "~/features/schedules/print-schedule";
+import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
   ScheduleViewToggle,
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
+import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import { scheduleService } from "~/services/schedule.service";
 import {
@@ -24,7 +25,6 @@ import {
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
-import { useSemesters } from "~/hooks/use-semesters";
 
 export function meta() {
   return [
@@ -35,7 +35,7 @@ export function meta() {
 
 export default function RegularClassRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar", "dean"]}>
+    <RoleGuard allow={["registrar"]}>
       <RegularClassPage />
     </RoleGuard>
   );

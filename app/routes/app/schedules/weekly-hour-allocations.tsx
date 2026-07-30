@@ -20,7 +20,7 @@ export function meta() {
 
 export default function WeeklyHoursRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar", "dean"]}>
+    <RoleGuard allow={["registrar"]}>
       <WeeklyHoursPage />
     </RoleGuard>
   );
