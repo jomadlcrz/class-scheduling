@@ -2,13 +2,12 @@ import { useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Badge } from "~/components/ui/badge";
-import { BookIcon, CalendarIcon, PrinterIcon, UserCheckIcon } from "~/components/ui/icons";
+import { BookIcon, CalendarIcon, PrinterIcon, UserCheckIcon, UsersIcon } from "~/components/ui/icons";
 import { Spinner } from "~/components/ui/spinner";
 import { Tooltip } from "~/components/ui/tooltip";
 import { MobileWeeklySchedule } from "~/features/schedules/mobile-weekly-schedule";
 import { openStudentSchedulePrint } from "~/features/schedules/print-student-schedule";
 import { ScheduleKpiCard } from "~/features/schedules/schedule-kpi-card";
-import { ScheduleTermFilter } from "~/features/schedules/schedule-term-filter";
 import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
 import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { TodayClasses } from "~/features/schedules/today-classes";
@@ -34,7 +33,7 @@ export default function StudentScheduleRoute() {
 
 function StudentSchedulePage() {
   const { user } = useAuth();
-  const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
+  const { semesterLabel } = useSemesters();
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
   // The backend already scopes rows to this student via the JWT (StudentProfile.user_id).
@@ -42,10 +41,7 @@ function StudentSchedulePage() {
     isLoading,
     loadError,
     schoolYear,
-    setSchoolYear,
     semester,
-    setSemester,
-    schoolYears,
     visibleSchedules,
   } = useMySchedule();
 
@@ -65,10 +61,13 @@ function StudentSchedulePage() {
     [visibleSchedules],
   );
 
+  const totalSets = useMemo(
+    () => new Set(visibleSchedules.map((s) => s.setCode)).size,
+    [visibleSchedules],
+  );
+
   // Every visible row carries the same value — the backend attaches it per-row, not once.
   const academicStatus = visibleSchedules[0]?.academicStatus;
-  const isIrregular = academicStatus === "Irregular";
-  const sectionLabel = visibleSchedules[0]?.setCode;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -86,7 +85,7 @@ function StudentSchedulePage() {
                   schoolYear,
                   semesterLabel: semesterLabel(semester),
                   studentName: user?.name ?? "",
-                  showSet: isIrregular,
+                  showSet: true,
                 })
               }
               className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
@@ -101,19 +100,6 @@ function StudentSchedulePage() {
         <EmptyState title="Couldn't load your schedule">{loadError}</EmptyState>
       ) : (
         <>
-          <ScheduleTermFilter
-            idPrefix="ss"
-            isLoading={isLoading}
-            schoolYears={schoolYears}
-            schoolYear={schoolYear}
-            onSchoolYearChange={setSchoolYear}
-            semestersLoading={semestersLoading}
-            semesters={semesters}
-            semester={semester}
-            onSemesterChange={setSemester}
-            semesterLabel={semesterLabel}
-          />
-
           {isLoading ? (
             <div
               role="status"
@@ -125,7 +111,7 @@ function StudentSchedulePage() {
           ) : visibleSchedules.length === 0 ? (
             <div className="mt-6 sm:hidden">
               <EmptyState title="No classes scheduled">
-                You have no classes for the selected term.
+                You have no classes scheduled.
               </EmptyState>
             </div>
           ) : (
@@ -146,14 +132,12 @@ function StudentSchedulePage() {
                     academicStatus ? <Badge tone="emerald">{academicStatus}</Badge> : `${totalSubjects} subjects`
                   }
                 />
-                {!isIrregular && sectionLabel && (
-                  <ScheduleKpiCard
-                    icon={<BookIcon />}
-                    tone="gold"
-                    label="Section"
-                    value={sectionLabel}
-                  />
-                )}
+                <ScheduleKpiCard
+                  icon={<UsersIcon />}
+                  tone="gold"
+                  label="Sets"
+                  value={totalSets}
+                />
               </div>
 
               <div className="mt-4">
@@ -173,8 +157,8 @@ function StudentSchedulePage() {
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               emptyTitle="No classes scheduled"
-              emptyMessage="You have no classes for the selected term."
-              showSet={isIrregular}
+              emptyMessage="You have no classes scheduled."
+                  showSet
             />
           </div>
         </>

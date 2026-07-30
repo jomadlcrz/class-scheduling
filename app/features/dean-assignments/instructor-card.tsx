@@ -36,7 +36,6 @@ type InstructorData = {
 
 type InstructorCardProps = {
   instructor: InstructorData;
-  defaultOpen?: boolean;
   onMaxHoursChange: (hours: number | null) => void;
   onAddProgram: () => void;
   onAssignSubject: (programId: string) => void;
@@ -48,7 +47,6 @@ type InstructorCardProps = {
 
 export function InstructorCard({
   instructor,
-  defaultOpen,
   onMaxHoursChange,
   onAddProgram,
   onAssignSubject,
@@ -76,9 +74,7 @@ export function InstructorCard({
   const progressPercent = maxHours != null && maxHours > 0 ? Math.min(100, Math.round((assignedHours / maxHours) * 100)) : 0;
 
   return (
-    <AccordionItem
-      defaultOpen={defaultOpen}
-      title={
+    <AccordionItem title={
         <div className="flex items-center gap-3.5">
           {instructor.avatarUrl ? (
             <img

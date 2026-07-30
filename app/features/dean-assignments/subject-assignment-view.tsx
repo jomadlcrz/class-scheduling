@@ -510,7 +510,6 @@ export function SubjectAssignmentView() {
               <InstructorCard
                 key={inst.id}
                 instructor={inst}
-                defaultOpen={i === 0}
                 onMaxHoursChange={(hours) => handleMaxHoursChange(inst.id, hours)}
                 onAddProgram={() => setAddProgramTarget(inst.id)}
                 onAssignSubject={(programId) => {
