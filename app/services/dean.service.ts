@@ -147,6 +147,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
   }
   return data.map((entry) => ({
     instructorName: entry.instructor_name,
+    employeeId: null,
     department: entry.department,
     semester: entry.semester,
     academicYear: entry.academic_year,
@@ -211,6 +212,7 @@ async function listTeachingTerms(params?: {
     id: t.teaching_term_id,
     instructorProfileId: t.instructor?.instructor_profile_id ?? 0,
     instructorName: t.instructor?.full_name ?? "",
+    employeeId: t.instructor?.employee_id ?? null,
     department: t.instructor?.department ?? "",
     syId: t.term?.sy_id ?? 0,
     semId: t.term?.sem_id ?? 0,
@@ -246,6 +248,7 @@ async function getTeachingTerm(id: number): Promise<TeachingTerm> {
     id: data.teaching_term_id,
     instructorProfileId: data.instructor?.instructor_profile_id ?? 0,
     instructorName: data.instructor?.full_name ?? "",
+    employeeId: data.instructor?.employee_id ?? null,
     department: data.instructor?.department ?? "",
     syId: data.term?.sy_id ?? 0,
     semId: data.term?.sem_id ?? 0,

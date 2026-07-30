@@ -152,7 +152,7 @@ export function SubjectAssignmentView() {
         firstName: inst.firstName,
         lastName: inst.lastName,
         instructorProfileId: inst.instructorProfileId,
-        facultyId: inst.employeeId ?? "--",
+        facultyId: entry.employeeId ?? "--",
         department: inst.department,
         statusBadge: "active",
         maxWeeklyHours: entry.maxWeeklyHours,

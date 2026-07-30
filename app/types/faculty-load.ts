@@ -90,6 +90,7 @@ export type FacultyLoadingSubject = {
 /** One instructor's loading sheet for a term, as returned by GET /deans/faculty-loading. */
 export type FacultyLoadingEntry = {
   instructorName: string;
+  employeeId: string | null;
   department: string;
   semester: string;
   academicYear: string;
@@ -124,6 +125,7 @@ export type TeachingTerm = {
   id: number;
   instructorProfileId: number;
   instructorName: string;
+  employeeId: string | null;
   department?: string;
   syId: number;
   semId: number;

@@ -20,6 +20,7 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
   }
   return {
     instructorName: detail.instructor.full_name ?? prev?.instructorName ?? "",
+    employeeId: detail.instructor.employee_id ?? prev?.employeeId ?? null,
     instructorProfileId: detail.instructor.instructor_profile_id ?? prev?.instructorProfileId,
     department: detail.instructor.department ?? prev?.department ?? "",
     semester: prev?.semester ?? "",
@@ -126,6 +127,7 @@ export function useDeanSubjectAssignments() {
           const saByCode = new Map(tt.subjectAssignments?.map((sa) => [sa.subjectCode, sa]) ?? []);
           return {
             instructorName: tt.instructorName,
+            employeeId: tt.employeeId,
             instructorProfileId: tt.instructorProfileId,
             department: tt.department ?? "",
             semester: "",
