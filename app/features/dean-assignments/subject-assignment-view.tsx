@@ -459,30 +459,39 @@ export function SubjectAssignmentView() {
       inst.department.toLowerCase().includes(search.toLowerCase()),
   );
 
+  function uniqueAssignedHours(inst: Instructor): number {
+    const seen = new Set<string>();
+    let total = 0;
+    for (const prog of inst.programs) {
+      for (const subj of prog.subjects) {
+        if (!seen.has(subj.subjectCode)) {
+          seen.add(subj.subjectCode);
+          total += subj.weeklyHours;
+        }
+      }
+    }
+    return total;
+  }
+
+  function uniqueSubjectCount(inst: Instructor): number {
+    return new Set(inst.programs.flatMap((p) => p.subjects.map((s) => s.subjectCode))).size;
+  }
+
   // Summary statistics
   const totalInstructors = filteredInstructors.length;
   const totalPrograms = new Set(filteredInstructors.flatMap((i) => i.programs.map((p) => p.programAbbrev))).size;
   const totalSubjectsAssigned = filteredInstructors.reduce(
-    (sum, inst) => sum + inst.programs.reduce((pSum, prog) => pSum + prog.subjects.length, 0),
+    (sum, inst) => sum + uniqueSubjectCount(inst),
     0,
   );
   const totalWeeklyHours = filteredInstructors.reduce(
-    (sum, inst) =>
-      sum +
-      inst.programs.reduce(
-        (pSum, prog) => pSum + prog.subjects.reduce((sSum, subj) => sSum + subj.weeklyHours, 0),
-        0,
-      ),
+    (sum, inst) => sum + uniqueAssignedHours(inst),
     0,
   );
 
   const exceedingInstructors = filteredInstructors.filter((inst) => {
     if (inst.maxWeeklyHours == null) return false;
-    const assigned = inst.programs.reduce(
-      (pSum, prog) => pSum + prog.subjects.reduce((sSum, subj) => sSum + subj.weeklyHours, 0),
-      0,
-    );
-    return assigned > inst.maxWeeklyHours;
+    return uniqueAssignedHours(inst) > inst.maxWeeklyHours;
   });
 
   if (apiData.instructors === null || apiData.entries === null || (apiData.entries.length > 0 && instructors.length === 0)) {

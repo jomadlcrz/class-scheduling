@@ -33,6 +33,19 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
       schedules: [],
       curriculumDetailId: a.curriculum_detail_id,
     })),
+    programs: (detail.programs ?? []).map((p) => ({
+      programAbbrev: p.program_abbrev ?? "",
+      programName: p.program_name ?? "",
+      subjects: p.subjects.map((s) => ({
+        subjectCode: s.subject_code ?? "",
+        descriptiveTitle: s.descriptive_title ?? "",
+        units: s.units,
+        lecHours: s.lec_hours,
+        labHours: s.lab_hours,
+        curriculumDetailId: s.curriculum_detail_id,
+        subjectAssignmentId: s.subject_assignment_id,
+      })),
+    })),
   };
 }
 

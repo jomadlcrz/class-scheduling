@@ -57,10 +57,15 @@ export function InstructorCard({
   onViewTeachingTerm,
   onRemoveInstructor,
 }: InstructorCardProps) {
-  const assignedHours = instructor.programs.reduce(
-    (sum, p) => sum + p.subjects.reduce((sSum, s) => sSum + s.weeklyHours, 0),
-    0,
-  );
+  const subjectHours = new Map<string, number>();
+  for (const prog of instructor.programs) {
+    for (const subj of prog.subjects) {
+      if (!subjectHours.has(subj.subjectCode)) {
+        subjectHours.set(subj.subjectCode, subj.weeklyHours);
+      }
+    }
+  }
+  const assignedHours = [...subjectHours.values()].reduce((sum, h) => sum + h, 0);
   const maxHours = instructor.maxWeeklyHours;
   const remainingHours = maxHours != null ? maxHours - assignedHours : null;
 
