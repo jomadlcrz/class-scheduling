@@ -101,10 +101,13 @@ export function InstructorCard({
               </h3>
               <Badge tone="emerald">{instructor.statusBadge}</Badge>
             </div>
-            <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-              Employee ID: <span className="font-medium text-slate-700 dark:text-slate-300">{instructor.facultyId}</span>
-              <span className="mx-2">•</span>
-              Department: <span className="font-medium text-slate-700 dark:text-slate-300">{instructor.department}</span>
+            <p className="mt-0.5 space-y-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+              <span className="block">
+                Employee ID: <span className="font-medium text-slate-700 dark:text-slate-300">{instructor.facultyId}</span>
+              </span>
+              <span className="block">
+                Department: <span className="font-medium text-slate-700 dark:text-slate-300">{instructor.department}</span>
+              </span>
             </p>
           </div>
         </div>

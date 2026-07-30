@@ -11,6 +11,7 @@ import type {
 
 type DepartmentInstructorsResponse = {
   instructor_profile_id: number;
+  employee_id: string | null;
   profile_photo_url: string | null;
   department: string;
   first_name: string;
@@ -25,6 +26,7 @@ type DepartmentInstructorsResponse = {
 
 export type DepartmentInstructor = {
   instructorProfileId: number;
+  employeeId: string | null;
   profilePhotoUrl: string | null;
   department: string;
   firstName: string;
@@ -82,6 +84,7 @@ async function listDepartmentInstructors(): Promise<DepartmentInstructor[]> {
   }
   return raw.map((i) => ({
     instructorProfileId: i.instructor_profile_id,
+    employeeId: i.employee_id,
     profilePhotoUrl: i.profile_photo_url,
     department: i.department,
     firstName: i.first_name,
