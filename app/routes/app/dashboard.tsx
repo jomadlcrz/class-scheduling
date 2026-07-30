@@ -1,9 +1,10 @@
 ﻿import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useAuth } from "~/hooks/use-auth";
-import { fadeUp, staggerContainer } from "~/landing/motion";
+import { staggerContainer } from "~/landing/motion";
 import { fetchDashboardGreeting, type DashboardGreeting } from "~/services/dashboard.service";
 import { DeanDashboard } from "~/features/dashboard/dean-dashboard";
+import { GreetingsCard } from "~/features/dashboard/greetings-card";
 
 export function meta() {
   return [
@@ -31,21 +32,9 @@ export default function Dashboard() {
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={fadeUp}>
-        {greeting && user && (
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {greeting.userName}
-            </h1>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {greeting.dateTime}
-            </p>
-            <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">
-              {greeting.message}
-            </p>
-          </div>
-        )}
-      </motion.div>
+      {greeting && user && (
+        <GreetingsCard greeting={greeting} />
+      )}
 
       {user?.role === "dean" && <DeanDashboard />}
     </motion.div>
