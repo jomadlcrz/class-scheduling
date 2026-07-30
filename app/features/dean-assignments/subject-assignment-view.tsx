@@ -13,12 +13,15 @@ import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { facultyKey, flattenDepartmentSubjects, formatInstructorName } from "~/lib/faculty-load";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
+import type { FacultyLoadingSubject } from "~/types/faculty-load";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
+import { EditSubjectsModal } from "./edit-subjects-modal";
 import { InstructorCard } from "./instructor-card";
 
 type Subject = {
   curriculumDetailId?: number;
+  subjectId?: number;
   subjectCode: string;
   descriptiveTitle: string;
   units: number;
@@ -29,6 +32,7 @@ type Subject = {
 
 type ProgramGroup = {
   id: string;
+  programId?: number;
   programAbbrev: string;
   programName: string;
   subjects: Subject[];
@@ -51,7 +55,20 @@ type Instructor = {
 export function SubjectAssignmentView() {
   const apiData = useDeanSubjectAssignments();
   const navigate = useNavigate();
-  const [programOptions, setProgramOptions] = useState<{ abbrev: string; name: string }[]>([]);
+  const [programOptions, setProgramOptions] = useState<{
+    id: number;
+    abbrev: string;
+    name: string;
+    subjects: {
+      id: number;
+      curriculumDetailId: number;
+      code: string;
+      title: string;
+      units: number;
+      yearLevel: number;
+      semesterCategory: number;
+    }[];
+  }[]>([]);
 
   useEffect(() => {
     deanService.listDepartmentPrograms().then(setProgramOptions).catch(() => {});
@@ -167,6 +184,7 @@ export function SubjectAssignmentView() {
     teachingTermId: number | null;
     assignmentId: number | null;
   } | null>(null);
+  const [editAssignmentTarget, setEditAssignmentTarget] = useState<string | null>(null);
 
   // Handlers
   const handleMaxHoursChange = (instructorId: string, hours: number | null) => {
@@ -309,47 +327,33 @@ export function SubjectAssignmentView() {
     toast.success(`Instructor removed.`);
   };
 
-  const handleUpdateAssignment = async (instructorId: string) => {
-    const inst = instructors.find((i) => i.id === instructorId);
-    if (!inst) return;
+  const handleUpdateAssignment = (instructorId: string) => {
+    setEditAssignmentTarget(instructorId);
+  };
 
-    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
-    if (!entry?.teachingTermId) {
-      toast.error("No existing teaching term to update.");
-      return;
-    }
-
-    const curriculumDetailIds = inst.programs
-      .flatMap((prog) => prog.subjects)
-      .map((s) => s.curriculumDetailId)
-      .filter((id): id is number => id != null);
-
-    try {
-      await apiData.updateSubjects(entry.teachingTermId, {
-        maxWeeklyHours: inst.maxWeeklyHours ?? undefined,
-        curriculumDetailIds,
-      });
-      apiData.refresh();
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message);
-      } else {
-        toast.error(error instanceof Error ? error.message : "Failed to update assignment");
-      }
-    }
+  const handleSaveEditAssignment = async (teachingTermId: number, payload: { maxWeeklyHours?: number; curriculumDetailIds: number[] }) => {
+    await apiData.updateSubjects(teachingTermId, payload);
+    apiData.refresh();
   };
 
   const handleSubmit = async () => {
     const instructorLoads = instructors.map((inst) => ({
       instructorProfileId: inst.instructorProfileId,
       ...(inst.maxWeeklyHours != null ? { maxWeeklyHours: inst.maxWeeklyHours } : { maxWeeklyHours: 0 }),
-      programs: inst.programs.map((prog) => ({
-        programAbbrev: prog.programAbbrev,
-        subjects: prog.subjects.map((s) => ({
-          subjectCode: s.subjectCode,
-          descriptiveTitle: s.descriptiveTitle,
-        })),
-      })),
+      programs: inst.programs.map((prog) => {
+        const programOption = programOptions.find((p) => p.abbrev === prog.programAbbrev);
+        const programId = programOption?.id ?? 0;
+        
+        return {
+          programId,
+          subjects: prog.subjects.map((s) => {
+            const subjectOption = programOption?.subjects.find((subj) => subj.code === s.subjectCode);
+            return {
+              subjectId: subjectOption?.id ?? 0,
+            };
+          }),
+        };
+      }),
     }));
     
     try {
@@ -591,6 +595,34 @@ export function SubjectAssignmentView() {
           Are you sure you want to remove <strong>{removeInstructorTarget?.name}</strong> from teaching loads?
         </p>
       </ConfirmDialog>
+
+      {editAssignmentTarget && (() => {
+        const inst = instructors.find((i) => i.id === editAssignmentTarget);
+        const entry = apiData.entries?.find((e) => e.instructorName === inst?.name);
+        if (!inst || !entry?.teachingTermId) return null;
+
+        const currentSubjects: FacultyLoadingSubject[] = entry.subjects.map((s) => ({
+          subjectCode: s.subjectCode,
+          descriptiveTitle: s.descriptiveTitle,
+          units: s.units,
+          schedules: [],
+          curriculumDetailId: s.curriculumDetailId,
+          programAbbrev: s.programAbbrev,
+        }));
+
+        return (
+          <EditSubjectsModal
+            open={editAssignmentTarget !== null}
+            onClose={() => setEditAssignmentTarget(null)}
+            instructorName={inst.name}
+            teachingTermId={entry.teachingTermId}
+            maxWeeklyHours={entry.maxWeeklyHours}
+            currentSubjects={currentSubjects}
+            programs={programOptions}
+            onSave={handleSaveEditAssignment}
+          />
+        );
+      })()}
     </div>
   );
 }

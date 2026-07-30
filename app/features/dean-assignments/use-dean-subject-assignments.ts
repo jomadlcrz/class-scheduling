@@ -73,9 +73,11 @@ export function useDeanSubjectAssignments() {
     ]).then(([inst, subj, progs]) => {
       if (cancelled) return;
       const nameToAbbrev = new Map(progs.map((p) => [p.name, p.abbrev]));
+      const nameToId = new Map(progs.map((p) => [p.name, p.id]));
       setInstructors(inst);
       setSubjects(subj.map((s) => ({
         ...s,
+        programId: nameToId.get(s.programName),
         programAbbrev: nameToAbbrev.get(s.programName) ?? "",
       })));
     }).catch((err) => {
@@ -161,7 +163,7 @@ export function useDeanSubjectAssignments() {
     instructorLoads: {
       instructorProfileId: number;
       maxWeeklyHours: number;
-      programs: { programAbbrev: string; subjects: { subjectCode: string; descriptiveTitle: string }[] }[];
+      programs: { programId: number; subjects: { subjectId: number }[] }[];
     }[],
   ) {
     setMutating(true);

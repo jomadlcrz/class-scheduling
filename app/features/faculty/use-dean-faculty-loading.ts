@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
-import { facultyLoadService } from "~/services/faculty-load.service";
+import { deanService } from "~/services/dean.service";
 import type { FacultyLoadingEntry } from "~/types/faculty-load";
 
 /**
@@ -42,7 +42,7 @@ export function useDeanFacultyLoading() {
     setLoadError(null);
     setSelectedIndex(0);
 
-    facultyLoadService
+    deanService
       .getFacultyLoading(Number(selectedSchoolYearId), Number(selectedSemesterId))
       .then((data) => {
         if (!cancelled) setEntries(data);

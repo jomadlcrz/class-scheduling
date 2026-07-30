@@ -1,14 +1,13 @@
 import type { Semester, YearLevel } from "~/types/subject";
 
-/** One subject to assign within a program (matched by code + title on the backend). */
+/** One subject to assign within a program (matched by id on the backend). */
 export type SubjectLoadInput = {
-  subjectCode: string;
-  descriptiveTitle: string;
+  subjectId: number;
 };
 
-/** Subjects to assign for a single program (matched by abbrev on the backend). */
+/** Subjects to assign for a single program (matched by id on the backend). */
 export type ProgramLoadInput = {
-  programAbbrev: string;
+  programId: number;
   subjects: SubjectLoadInput[];
 };
 
@@ -58,6 +57,7 @@ export type DepartmentSubjectYearGroup = {
 
 /** One program's curriculum tree for the dean's department. `programName` comes from GET /deans/subjects; `programAbbrev` is resolved from GET /programs. */
 export type DepartmentSubjectProgram = {
+  programId?: number;
   programAbbrev: string;
   programName: string;
   programTotalUnits: number;
@@ -126,14 +126,6 @@ export type TeachingTerm = {
   programs?: { programAbbrev: string; programName: string; subjects: { subjectAssignmentId: number; curriculumDetailId: number; subjectCode: string }[] }[];
 };
 
-/** A single subject-assignment link row, as returned by GET /deans/subject-assignments/<id>. */
-export type SubjectAssignment = {
-  id: number;
-  teachingTermId: number;
-  curriculumDetailId: number;
-  subjectCode: string;
-};
-
 /** One scheduled session within a teaching-term detail subject assignment. */
 export type TeachingTermDetailScheduledSession = {
   regular_sched_id: number;
@@ -192,6 +184,8 @@ export type TeachingTermDetail = {
   teaching_term_id: number;
   instructor: {
     instructor_profile_id: number;
+    employee_id: string | null;
+    profile_photo_url: string | null;
     first_name: string | null;
     mid_name: string | null;
     last_name: string | null;
@@ -203,6 +197,8 @@ export type TeachingTermDetail = {
     department_abbrev: string | null;
     email: string | null;
     mobile: string | null;
+    account_active: boolean | null;
+    account_status: string | null;
   };
   term: {
     sy_id: number;
@@ -225,8 +221,16 @@ export type TeachingTermDetail = {
     total_units: number;
     scheduled_subjects: number;
     scheduled_sessions: number;
+    programs: number;
   };
   daily_loads: TeachingTermDetailDailyLoad[];
+  programs: {
+    program_id: number;
+    program_abbrev: string | null;
+    program_name: string | null;
+    subjects: TeachingTermDetailSubjectAssignment[];
+    totals: { assigned_subjects: number; total_units: number; scheduled_subjects: number };
+  }[];
   subject_assignments: TeachingTermDetailSubjectAssignment[];
   unassigned_scheduled_subjects: TeachingTermDetailUnassignedSubject[];
 };
@@ -237,7 +241,6 @@ export type FacultyLoadingResponse = {
   department: string;
   semester: string;
   academic_year: string;
-  max_weekly_hours: number | string | null;
   subjects: {
     subject_code: string;
     descriptive_title: string;

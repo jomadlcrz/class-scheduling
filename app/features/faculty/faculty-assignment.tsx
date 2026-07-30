@@ -147,7 +147,12 @@ export function FacultyAssignmentForm({
 
   const allSubjects = flattenDepartmentSubjects(subjectPrograms);
   const initialSubjectKeys = initialEntry
-    ? initialEntry.programs.flatMap((p) => p.subjects.map((s) => `${p.programAbbrev} ${s.subjectCode}`))
+    ? initialEntry.programs.flatMap((p) => 
+        p.subjects.map((s) => {
+          const match = allSubjects.find((sub) => sub.programId === p.programId && sub.subjectId === s.subjectId);
+          return match?.key ?? "";
+        }).filter(Boolean)
+      )
     : [];
   const [selectedSubjectKeys, setSelectedSubjectKeys] = useState<string[]>(initialSubjectKeys);
   const selectedSubjects = selectedSubjectKeys

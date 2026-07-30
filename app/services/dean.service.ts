@@ -5,7 +5,6 @@ import type {
   DepartmentSubjectProgram,
   FacultyLoadingEntry,
   FacultyLoadingResponse,
-  SubjectAssignment,
   TeachingTerm,
   TeachingTermDetail,
 } from "~/types/faculty-load";
@@ -148,7 +147,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
     department: entry.department,
     semester: entry.semester,
     academicYear: entry.academic_year,
-    maxWeeklyHours: entry.max_weekly_hours == null ? null : Number(entry.max_weekly_hours),
+    maxWeeklyHours: null,
     teachingTermId: null,
     subjects: entry.subjects.map((s) => ({
       subjectCode: s.subject_code,
@@ -175,8 +174,8 @@ async function createSubjectAssignments(
     instructorProfileId: number;
     maxWeeklyHours: number;
     programs: {
-      programAbbrev: string;
-      subjects: { subjectCode: string; descriptiveTitle: string }[];
+      programId: number;
+      subjects: { subjectId: number }[];
     }[];
   }[],
 ): Promise<string> {
@@ -197,44 +196,14 @@ async function listTeachingTerms(params?: {
   if (params?.syId != null) query.set("sy_id", String(params.syId));
   if (params?.semId != null) query.set("sem_id", String(params.semId));
   const qs = query.toString();
-  const data = await apiGet<{
-    teaching_term_id: number;
-    instructor: {
-      instructor_profile_id: number;
-      full_name: string | null;
-      department: string | null;
-    };
-    hours: {
-      max_weekly_hours: number;
-      current_weekly_hours: number;
-    };
-    subject_assignments: {
-      subject_assignment_id: number;
-      curriculum_detail_id: number;
-      subject_code: string | null;
-      program_abbrev: string | null;
-      descriptive_title: string | null;
-      units: number;
-      lec_hours: number;
-      lab_hours: number;
-    }[];
-    programs: {
-      program_abbrev: string | null;
-      program_name: string | null;
-      subjects: {
-        subject_assignment_id: number;
-        curriculum_detail_id: number;
-        subject_code: string | null;
-      }[];
-    }[];
-  }[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
+  const data = await apiGet<TeachingTermDetail[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
   return data.map((t) => ({
     id: t.teaching_term_id,
     instructorProfileId: t.instructor?.instructor_profile_id ?? 0,
     instructorName: t.instructor?.full_name ?? "",
     department: t.instructor?.department ?? "",
-    syId: params?.syId ?? 0,
-    semId: params?.semId ?? 0,
+    syId: t.term?.sy_id ?? 0,
+    semId: t.term?.sem_id ?? 0,
     maxWeeklyHours: t.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: t.hours?.current_weekly_hours ?? 0,
     subjectAssignments: (t.subject_assignments ?? []).map((sa) => ({
@@ -261,23 +230,35 @@ async function listTeachingTerms(params?: {
 
 /** GET /deans/teaching-terms/<id> — one instructor's term-scoped load record. */
 async function getTeachingTerm(id: number): Promise<TeachingTerm> {
-  const data = await apiGet<{
-    id: number;
-    instructor_profile_id: number;
-    instructor_name: string;
-    sy_id: number;
-    sem_id: number;
-    max_weekly_hours: number | string;
-    current_weekly_hours: number | string;
-  }>(`/deans/teaching-terms/${id}`);
+  const data = await apiGet<TeachingTermDetail>(`/deans/teaching-terms/${id}`);
   return {
-    id: data.id,
-    instructorProfileId: data.instructor_profile_id,
-    instructorName: data.instructor_name,
-    syId: data.sy_id,
-    semId: data.sem_id,
-    maxWeeklyHours: Number(data.max_weekly_hours),
-    currentWeeklyHours: Number(data.current_weekly_hours),
+    id: data.teaching_term_id,
+    instructorProfileId: data.instructor?.instructor_profile_id ?? 0,
+    instructorName: data.instructor?.full_name ?? "",
+    department: data.instructor?.department ?? "",
+    syId: data.term?.sy_id ?? 0,
+    semId: data.term?.sem_id ?? 0,
+    maxWeeklyHours: data.hours?.max_weekly_hours ?? 0,
+    currentWeeklyHours: data.hours?.current_weekly_hours ?? 0,
+    subjectAssignments: (data.subject_assignments ?? []).map((sa) => ({
+      subjectAssignmentId: sa.subject_assignment_id,
+      curriculumDetailId: sa.curriculum_detail_id,
+      subjectCode: sa.subject_code ?? "",
+      programAbbrev: sa.program_abbrev ?? "",
+      descriptiveTitle: sa.descriptive_title ?? "",
+      units: sa.units ?? 0,
+      lecHours: sa.lec_hours ?? 0,
+      labHours: sa.lab_hours ?? 0,
+    })),
+    programs: (data.programs ?? []).map((p) => ({
+      programAbbrev: p.program_abbrev ?? "",
+      programName: p.program_name ?? "",
+      subjects: (p.subjects ?? []).map((s) => ({
+        subjectAssignmentId: s.subject_assignment_id,
+        curriculumDetailId: s.curriculum_detail_id,
+        subjectCode: s.subject_code ?? "",
+      })),
+    })),
   };
 }
 
@@ -294,26 +275,11 @@ async function updateTeachingTerm(
   return { message: apiMessage(data), term: data.teaching_term ?? null };
 }
 
-/** DELETE /deans/teaching-terms/<id> — 409 if the term still has subject assignments. */
-async function removeTeachingTerm(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/deans/teaching-terms/${id}`);
+/** DELETE /deans/teaching-terms/<id>[?cascade=true] — removes term and optionally its assignments. */
+async function deleteTeachingTerm(id: number, cascade = false): Promise<string> {
+  const qs = cascade ? "?cascade=true" : "";
+  const data = await apiDelete<{ message?: string }>(`/deans/teaching-terms/${id}${qs}`);
   return apiMessage(data);
-}
-
-/** GET /deans/subject-assignments/<id> — one subject-assignment link row. */
-async function getSubjectAssignment(id: number): Promise<SubjectAssignment> {
-  const data = await apiGet<{
-    id: number;
-    teaching_term_id: number;
-    curriculum_detail_id: number;
-    subject_code: string;
-  }>(`/deans/subject-assignments/${id}`);
-  return {
-    id: data.id,
-    teachingTermId: data.teaching_term_id,
-    curriculumDetailId: data.curriculum_detail_id,
-    subjectCode: data.subject_code,
-  };
 }
 
 /** DELETE /deans/teaching-terms/<tid>/subject-assignments/<aid> — per-row removal. */
@@ -321,13 +287,6 @@ async function removeSubjectAssignment(teachingTermId: number, assignmentId: num
   const data = await apiDelete<{ message?: string }>(
     `/deans/teaching-terms/${teachingTermId}/subject-assignments/${assignmentId}`,
   );
-  return apiMessage(data);
-}
-
-/** DELETE /deans/teaching-terms/<id>[?cascade=true] — removes term and optionally its assignments. */
-async function deleteTeachingTerm(id: number, cascade = false): Promise<string> {
-  const qs = cascade ? "?cascade=true" : "";
-  const data = await apiDelete<{ message?: string }>(`/deans/teaching-terms/${id}${qs}`);
   return apiMessage(data);
 }
 
@@ -361,8 +320,18 @@ type DepartmentProgramResponse = {
 
 /** GET /deans/department/programs — programs under the dean's own department. */
 async function listDepartmentPrograms(): Promise<{
+  id: number;
   abbrev: string;
   name: string;
+  subjects: {
+    id: number;
+    curriculumDetailId: number;
+    code: string;
+    title: string;
+    units: number;
+    yearLevel: number;
+    semesterCategory: number;
+  }[];
 }[]> {
   let data: DepartmentProgramResponse;
   try {
@@ -371,7 +340,20 @@ async function listDepartmentPrograms(): Promise<{
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.programs.map((p) => ({ abbrev: p.program_abbrev, name: p.program_name }));
+  return data.programs.map((p) => ({
+    id: p.program_id,
+    abbrev: p.program_abbrev,
+    name: p.program_name,
+    subjects: p.subjects.map((s) => ({
+      id: s.subject_id,
+      curriculumDetailId: s.curriculum_detail_id,
+      code: s.subject_code,
+      title: s.descriptive_title,
+      units: s.units,
+      yearLevel: s.year_level,
+      semesterCategory: s.semester_category,
+    })),
+  }));
 }
 
 /** GET /deans/teaching-terms/<id> — full rich payload with daily loads, sessions, utilization. */
@@ -391,8 +373,6 @@ export const deanService = {
   getTeachingTerm,
   getTeachingTermDetail,
   updateTeachingTerm,
-  removeTeachingTerm,
   deleteTeachingTerm,
-  getSubjectAssignment,
   removeSubjectAssignment,
 };

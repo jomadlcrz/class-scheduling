@@ -24,20 +24,27 @@ export type FacultyLoadRow = {
 };
 
 /** Shapes one staged (not-yet-saved) assignment for display, resolving unit counts by "PROGRAM CODE" key. */
-export function toFacultyLoadRow(entry: FacultyLoadInput, unitsByKey: Map<string, number>): FacultyLoadRow {
+export function toFacultyLoadRow(
+  entry: FacultyLoadInput,
+  unitsByKey: Map<string, number>,
+  subjectDetailsByKey: Map<string, { code: string; title: string; abbrev: string }>,
+): FacultyLoadRow {
   const subjects: FacultyLoadSubjectDetail[] = entry.programs.flatMap((p) =>
-    p.subjects.map((s) => ({
-      subjectCode: s.subjectCode,
-      descriptiveTitle: s.descriptiveTitle,
-      units: unitsByKey.get(`${p.programAbbrev} ${s.subjectCode}`) ?? null,
-      programAbbrev: p.programAbbrev,
-    })),
+    p.subjects.map((s) => {
+      const detail = subjectDetailsByKey.get(`${p.programId}:${s.subjectId}`);
+      return {
+        subjectCode: detail?.code ?? "",
+        descriptiveTitle: detail?.title ?? "",
+        units: unitsByKey.get(`${p.programId}:${s.subjectId}`) ?? null,
+        programAbbrev: detail?.abbrev,
+      };
+    }),
   );
 
   return {
     key: facultyKey(entry.firstName ?? "", entry.lastName ?? ""),
     fullName: `${entry.firstName ?? ""} ${entry.lastName ?? ""}`.trim() || `Instructor #${entry.instructorProfileId}`,
-    programs: entry.programs.map((p) => p.programAbbrev),
+    programs: entry.programs.map((p) => subjectDetailsByKey.get(`${p.programId}:${p.subjects[0]?.subjectId}`)?.abbrev ?? ""),
     subjectCount: subjects.length,
     totalUnits: subjects.reduce((sum, s) => sum + (s.units ?? 0), 0),
     maxWeeklyHours: entry.maxWeeklyHours,

@@ -92,12 +92,13 @@ export function BulkAssignPanel({ data, onClose }: BulkAssignPanelProps) {
     const instructorLoads = instructors.flatMap((instructor) => {
       const state = stateFor(instructor);
       const programs = (data.subjects ?? []).flatMap((program) => {
+        if (!program.programId) return [];
         const prefix = program.programAbbrev || program.programName;
         const subjects = program.curriculumDetails
           .flatMap((year) => year.semesterDetails.flatMap((semester) => semester.subjects))
           .filter((subject) => state.selected.has(`${prefix}:${subject.subjectCode}`))
-          .map((subject) => ({ subjectCode: subject.subjectCode, descriptiveTitle: subject.descriptiveTitle }));
-        return subjects.length ? [{ programAbbrev: program.programAbbrev, subjects }] : [];
+          .map((subject) => ({ subjectId: subject.subjectId }));
+        return subjects.length ? [{ programId: program.programId, subjects }] : [];
       });
       return programs.length && Number(state.hours) > 0
         ? [{ instructorProfileId: instructor.instructorProfileId, maxWeeklyHours: Number(state.hours), programs }]

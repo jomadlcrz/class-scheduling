@@ -3,8 +3,10 @@ import type { DepartmentSubjectProgram, ProgramLoadInput } from "~/types/faculty
 export type SubjectChoice = {
   /** `"PROGRAM CODE"`, e.g. "BSIT IT101" — unique even when a subject is shared across programs. */
   key: string;
+  programId: number;
   programAbbrev: string;
   curriculumDetailId: number;
+  subjectId: number;
   subjectCode: string;
   descriptiveTitle: string;
   units: number;
@@ -32,7 +34,7 @@ export function flattenDepartmentSubjects(programs: DepartmentSubjectProgram[]):
   const seen = new Set<string>();
   const result: SubjectChoice[] = [];
   for (const program of programs) {
-    if (!program.programAbbrev) continue;
+    if (!program.programAbbrev || !program.programId) continue;
     for (const year of program.curriculumDetails) {
       for (const sem of year.semesterDetails) {
         for (const subject of sem.subjects) {
@@ -41,8 +43,10 @@ export function flattenDepartmentSubjects(programs: DepartmentSubjectProgram[]):
           seen.add(key);
           result.push({
             key,
+            programId: program.programId,
             programAbbrev: program.programAbbrev,
             curriculumDetailId: subject.curriculumDetailId,
+            subjectId: subject.subjectId,
             subjectCode: subject.subjectCode,
             descriptiveTitle: subject.descriptiveTitle,
             units: subject.units,
@@ -56,14 +60,14 @@ export function flattenDepartmentSubjects(programs: DepartmentSubjectProgram[]):
 
 /** Regroups a flat list of picked subjects back into the backend's programs[] shape. */
 export function groupSubjectsByProgram(subjects: SubjectChoice[]): ProgramLoadInput[] {
-  const byProgram = new Map<string, ProgramLoadInput>();
+  const byProgram = new Map<number, ProgramLoadInput>();
   for (const s of subjects) {
-    let entry = byProgram.get(s.programAbbrev);
+    let entry = byProgram.get(s.programId);
     if (!entry) {
-      entry = { programAbbrev: s.programAbbrev, subjects: [] };
-      byProgram.set(s.programAbbrev, entry);
+      entry = { programId: s.programId, subjects: [] };
+      byProgram.set(s.programId, entry);
     }
-    entry.subjects.push({ subjectCode: s.subjectCode, descriptiveTitle: s.descriptiveTitle });
+    entry.subjects.push({ subjectId: s.subjectId });
   }
   return [...byProgram.values()];
 }

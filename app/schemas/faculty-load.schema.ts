@@ -6,9 +6,9 @@ export const facultyLoadEntrySchema = z.object({
   programs: z
     .array(
       z.object({
-        programAbbrev: z.string().min(1),
+        programId: z.number().int().positive(),
         subjects: z
-          .array(z.object({ subjectCode: z.string().min(1), descriptiveTitle: z.string().min(1) }))
+          .array(z.object({ subjectId: z.number().int().positive() }))
           .min(1),
       }),
     )
