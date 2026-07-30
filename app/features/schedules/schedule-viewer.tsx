@@ -19,6 +19,8 @@ type ScheduleViewerProps = {
   actions?: ReactNode;
   /** Show the Set (Section) column in table/grid views. */
   showSet?: boolean;
+  /** Hide the instructor name (for the instructor's own view). */
+  hideInstructor?: boolean;
 };
 
 /** Read-only grid/list schedule view with a toggle — used by the faculty and student pages. */
@@ -32,6 +34,7 @@ export function ScheduleViewer({
   title,
   actions,
   showSet,
+  hideInstructor,
 }: ScheduleViewerProps) {
   return (
     <>
@@ -62,13 +65,13 @@ export function ScheduleViewer({
         ) : (
           <>
             <div className="sm:hidden">
-              <ScheduleTable schedules={schedules} showSet={showSet} />
+              <ScheduleTable schedules={schedules} showSet={showSet} hideInstructor={hideInstructor} />
             </div>
             <div className="hidden sm:block">
               {viewMode === "grid" ? (
-                <ScheduleGrid schedules={schedules} showSet={showSet} />
+                <ScheduleGrid schedules={schedules} showSet={showSet} hideInstructor={hideInstructor} />
               ) : (
-                <ScheduleTable schedules={schedules} showSet={showSet} />
+                <ScheduleTable schedules={schedules} showSet={showSet} hideInstructor={hideInstructor} />
               )}
             </div>
           </>

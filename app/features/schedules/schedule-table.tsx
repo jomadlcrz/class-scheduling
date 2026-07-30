@@ -17,6 +17,8 @@ type ScheduleTableProps = {
   onDuplicate?: (schedule: Schedule, day: Day) => void;
   /** Show the Set (Section) column in the desktop table. */
   showSet?: boolean;
+  /** Hide the Instructor column (for the instructor's own view). */
+  hideInstructor?: boolean;
   /** Map of facultyId → weekly load info for tooltip display. */
   facultyLoadMap?: Map<string, FacultyLoad>;
 };
@@ -28,7 +30,7 @@ const th =
   "px-3 py-2 font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 
 /** Schedule table: stacked cards on mobile, a single grouped table on sm and up. */
-export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSet, facultyLoadMap }: ScheduleTableProps) {
+export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSet, hideInstructor, facultyLoadMap }: ScheduleTableProps) {
   const { dayLabels } = useDays();
   const showActions = Boolean(onEdit || onDelete || onDuplicate);
 
@@ -69,6 +71,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
             onDelete={onDelete}
             onDuplicate={onDuplicate}
             availableDays={availableDays}
+            hideInstructor={hideInstructor}
             facultyLoadMap={facultyLoadMap}
           />
         ))}
@@ -84,7 +87,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
               <th className={`${th} text-center`}>Subject Code</th>
               <th className={th}>Descriptive Title</th>
               <th className={`${th} text-center`}>Mode</th>
-              <th className={th}>Instructor</th>
+              {!hideInstructor && <th className={th}>Instructor</th>}
               <th className={`${th} text-center`}>Room</th>
               {showSet && <th className={th}>Set</th>}
               {showActions && (
@@ -124,15 +127,17 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                   <td className="px-3 py-2.5 text-center">
                     <ModeBadge mode={sched.mode} />
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-slate-700 dark:text-slate-300">
-                    {loadTooltip(sched.facultyId) ? (
-                      <Tooltip label={loadTooltip(sched.facultyId)!} direction="top" wrap>
-                        <span>{sched.facultyName}</span>
-                      </Tooltip>
-                    ) : (
-                      sched.facultyName
-                    )}
-                  </td>
+                  {!hideInstructor && (
+                    <td className="whitespace-nowrap px-3 py-2.5 text-slate-700 dark:text-slate-300">
+                      {loadTooltip(sched.facultyId) ? (
+                        <Tooltip label={loadTooltip(sched.facultyId)!} direction="top" wrap>
+                          <span>{sched.facultyName}</span>
+                        </Tooltip>
+                      ) : (
+                        sched.facultyName
+                      )}
+                    </td>
+                  )}
                   <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
                     {sched.roomName}
                   </td>
@@ -194,6 +199,7 @@ function MobileDayCard({
   onDelete,
   onDuplicate,
   availableDays,
+  hideInstructor,
   facultyLoadMap,
 }: {
   day: Day;
@@ -203,6 +209,7 @@ function MobileDayCard({
   onDelete?: (schedule: Schedule) => void;
   onDuplicate?: (schedule: Schedule, day: Day) => void;
   availableDays: (schedule: Schedule) => Day[];
+  hideInstructor?: boolean;
   facultyLoadMap?: Map<string, { maxWeeklyHours: number; currentWeeklyHours: number }>;
 }) {
   const accent = DAY_ACCENT[day];
@@ -270,16 +277,18 @@ function MobileDayCard({
               </span>
             </div>
             <div className="flex flex-col gap-1 font-body text-xs text-slate-500 dark:text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <UserSmallIcon />
-                {loadTooltip(sched.facultyId) ? (
-                  <Tooltip label={loadTooltip(sched.facultyId)!} direction="top" wrap>
-                    <span>{sched.facultyName}</span>
-                  </Tooltip>
-                ) : (
-                  sched.facultyName
-                )}
-              </span>
+              {!hideInstructor && (
+                <span className="flex items-center gap-1.5">
+                  <UserSmallIcon />
+                  {loadTooltip(sched.facultyId) ? (
+                    <Tooltip label={loadTooltip(sched.facultyId)!} direction="top" wrap>
+                      <span>{sched.facultyName}</span>
+                    </Tooltip>
+                  ) : (
+                    sched.facultyName
+                  )}
+                </span>
+              )}
               <span className="flex items-center gap-1.5">
                 <MapPinIcon />
                 {sched.roomName}

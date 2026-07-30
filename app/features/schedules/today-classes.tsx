@@ -8,6 +8,8 @@ import { DAYS, DAY_LABELS, type Day, type Schedule } from "~/types/schedule";
 type TodayClassesProps = {
   /** Schedules already filtered to the selected school year + semester. */
   schedules: Schedule[];
+  /** Hide the instructor name (for the instructor's own view). */
+  hideInstructor?: boolean;
 };
 
 type Occurrence = {
@@ -49,7 +51,7 @@ function formatStartsIn(startMinutes: number, nowMinutes: number): string {
 }
 
 /** Current/next class highlight for today, with a mobile timeline fallback. */
-export function TodayClasses({ schedules }: TodayClassesProps) {
+export function TodayClasses({ schedules, hideInstructor }: TodayClassesProps) {
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
@@ -72,12 +74,14 @@ export function TodayClasses({ schedules }: TodayClassesProps) {
           occurrence={current}
           emptyMessage="No class is ongoing."
           nowMinutes={nowMinutes}
+          hideInstructor={hideInstructor}
         />
         <TodayCard
           kind="next"
           occurrence={next}
           emptyMessage="No upcoming class today."
           nowMinutes={nowMinutes}
+          hideInstructor={hideInstructor}
         />
       </div>
 
@@ -124,11 +128,13 @@ function TodayCard({
   occurrence,
   emptyMessage,
   nowMinutes,
+  hideInstructor,
 }: {
   kind: "current" | "next";
   occurrence: Occurrence | undefined;
   emptyMessage: string;
   nowMinutes: number;
+  hideInstructor?: boolean;
 }) {
   if (!occurrence) {
     return (
@@ -165,7 +171,7 @@ function TodayCard({
       <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
         {formatTime12h(schedule.startTime)}–{formatTime12h(schedule.endTime)} · {schedule.roomName}
       </p>
-      {kind === "current" && (
+      {kind === "current" && !hideInstructor && (
         <p className="mt-0.5 font-body text-sm text-slate-500 dark:text-slate-400">
           {schedule.facultyName}
         </p>

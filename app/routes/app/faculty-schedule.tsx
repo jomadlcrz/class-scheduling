@@ -1,13 +1,23 @@
+import { useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { BookIcon, CalendarIcon, PrinterIcon, UsersIcon } from "~/components/ui/icons";
 import { Spinner } from "~/components/ui/spinner";
-import { FacultyScheduleView } from "~/features/schedules/faculty-schedule-view";
-import { useFacultyLoading } from "~/features/schedules/use-faculty-loading";
+import { Tooltip } from "~/components/ui/tooltip";
+import { MobileWeeklySchedule } from "~/features/schedules/mobile-weekly-schedule";
+import { openInstructorSchedulePrint } from "~/features/schedules/print-instructor-schedule";
+import { ScheduleKpiCard } from "~/features/schedules/schedule-kpi-card";
+import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
+import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
+import { TodayClasses } from "~/features/schedules/today-classes";
+import { useMySchedule } from "~/features/schedules/use-my-schedule";
+import { useAuth } from "~/hooks/use-auth";
 import { useSemesters } from "~/hooks/use-semesters";
+import { PageHeader } from "~/layouts/page-header";
 
 export function meta() {
   return [
-    { title: "Faculty Loading — GWC Class Scheduling" },
+    { title: "My Schedule — GWC Class Scheduling" },
     { name: "description", content: "Your teaching schedule for the current academic term." },
   ];
 }
@@ -21,37 +31,130 @@ export default function FacultyScheduleRoute() {
 }
 
 function FacultySchedulePage() {
-  const { semesters, semesterLabel } = useSemesters();
+  const { user } = useAuth();
+  const { semesterLabel } = useSemesters();
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
   const {
     isLoading,
     loadError,
     schoolYear,
-    setSchoolYear,
     semester,
-    setSemester,
-    schoolYears,
-    entry,
-  } = useFacultyLoading();
+    visibleSchedules,
+  } = useMySchedule();
+
+  const totalUnits = useMemo(() => {
+    const seen = new Set<string>();
+    let sum = 0;
+    for (const s of visibleSchedules) {
+      if (seen.has(s.subjectCode)) continue;
+      seen.add(s.subjectCode);
+      sum += s.units ?? 0;
+    }
+    return sum;
+  }, [visibleSchedules]);
+
+  const totalSubjects = useMemo(
+    () => new Set(visibleSchedules.map((s) => s.subjectCode)).size,
+    [visibleSchedules],
+  );
+
+  const totalSets = useMemo(
+    () => new Set(visibleSchedules.map((s) => s.setCode)).size,
+    [visibleSchedules],
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <PageHeader
+        title="My Teaching Schedule"
+        description="Your assigned subjects and weekly class times."
+        actions={
+          <Tooltip label="Print schedule">
+            <button
+              type="button"
+              aria-label="Print schedule"
+              disabled={visibleSchedules.length === 0}
+              onClick={() =>
+                openInstructorSchedulePrint(visibleSchedules, {
+                  schoolYear,
+                  semesterLabel: semesterLabel(semester),
+                  instructorName: user?.name ?? "",
+                })
+              }
+              className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              <PrinterIcon />
+            </button>
+          </Tooltip>
+        }
+      />
+
       {loadError ? (
         <EmptyState title="Couldn't load your schedule">{loadError}</EmptyState>
       ) : (
-        <FacultyScheduleView
-          entry={entry}
-          isLoading={isLoading}
-          schoolYears={schoolYears}
-          schoolYear={schoolYear}
-          schoolYearLabel={schoolYear}
-          onSchoolYearChange={setSchoolYear}
-          semesters={semesters}
-          semester={semester}
-          semesterName={semesterLabel(semester)}
-          onSemesterChange={setSemester}
-          semesterLabel={semesterLabel}
-        />
+        <>
+          {isLoading ? (
+            <div
+              role="status"
+              aria-label="Loading schedule"
+              className="mt-8 grid place-items-center text-navy-700 sm:hidden dark:text-slate-200"
+            >
+              <Spinner />
+            </div>
+          ) : visibleSchedules.length === 0 ? (
+            <div className="mt-6 sm:hidden">
+              <EmptyState title="No classes scheduled">
+                You have no classes for the selected term.
+              </EmptyState>
+            </div>
+          ) : (
+            <>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <ScheduleKpiCard icon={<BookIcon />} tone="navy" label="Total Units" value={totalUnits} />
+                <ScheduleKpiCard
+                  icon={<CalendarIcon />}
+                  tone="blue"
+                  label="Weekly Classes"
+                  value={visibleSchedules.length}
+                />
+                <ScheduleKpiCard
+                  icon={<BookIcon />}
+                  tone="emerald"
+                  label="Subjects"
+                  value={totalSubjects}
+                />
+                <ScheduleKpiCard
+                  icon={<UsersIcon />}
+                  tone="gold"
+                  label="Sets"
+                  value={totalSets}
+                />
+              </div>
+
+              <div className="mt-4">
+                <TodayClasses schedules={visibleSchedules} hideInstructor />
+              </div>
+
+              <div className="mt-4 sm:hidden">
+                <MobileWeeklySchedule schedules={visibleSchedules} hideInstructor />
+              </div>
+            </>
+          )}
+
+          <div className="hidden sm:block">
+            <ScheduleViewer
+              schedules={visibleSchedules}
+              isLoading={isLoading}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              emptyTitle="No classes scheduled"
+              emptyMessage="You have no classes for the selected term."
+              showSet
+              hideInstructor
+            />
+          </div>
+        </>
       )}
     </div>
   );
