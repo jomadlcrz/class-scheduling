@@ -232,22 +232,26 @@ export function useDeanSubjectAssignments() {
   async function deleteAssignment(teachingTermId: number, assignmentId: number) {
     setMutating(true);
     try {
-      const message = await deanService.removeSubjectAssignment(teachingTermId, assignmentId);
-      if (message) toast.success(message);
-      setEntries((prev) =>
-        prev?.map((entry) => {
-          if (entry.teachingTermId !== teachingTermId) return entry;
-          const code = [...(entry.subjectAssignmentIds ?? [])].find(([, id]) => id === assignmentId)?.[0];
-          if (!code) return entry;
-          const nextIds = new Map(entry.subjectAssignmentIds ?? []);
-          nextIds.delete(code);
-          return {
-            ...entry,
-            subjectAssignmentIds: nextIds,
-            subjects: entry.subjects.filter((s) => s.subjectCode !== code),
-          };
-        }) ?? prev,
-      );
+      const result = await deanService.removeSubjectAssignment(teachingTermId, assignmentId);
+      if (result.message) toast.success(result.message);
+      if (result.teaching_term_deleted) {
+        setEntries((prev) => prev?.filter((e) => e.teachingTermId !== teachingTermId) ?? prev);
+      } else {
+        setEntries((prev) =>
+          prev?.map((entry) => {
+            if (entry.teachingTermId !== teachingTermId) return entry;
+            const code = [...(entry.subjectAssignmentIds ?? [])].find(([, id]) => id === assignmentId)?.[0];
+            if (!code) return entry;
+            const nextIds = new Map(entry.subjectAssignmentIds ?? []);
+            nextIds.delete(code);
+            return {
+              ...entry,
+              subjectAssignmentIds: nextIds,
+              subjects: entry.subjects.filter((s) => s.subjectCode !== code),
+            };
+          }) ?? prev,
+        );
+      }
     } finally {
       setMutating(false);
     }

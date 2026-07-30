@@ -285,12 +285,19 @@ async function deleteTeachingTerm(id: number, cascade = false): Promise<string> 
   return apiMessage(data);
 }
 
+type RemoveSubjectAssignmentResponse = {
+  message: string;
+  teaching_term_deleted: boolean;
+};
+
 /** DELETE /deans/teaching-terms/<tid>/subject-assignments/<aid> — per-row removal. */
-async function removeSubjectAssignment(teachingTermId: number, assignmentId: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(
+async function removeSubjectAssignment(
+  teachingTermId: number,
+  assignmentId: number,
+): Promise<RemoveSubjectAssignmentResponse> {
+  return apiDelete<RemoveSubjectAssignmentResponse>(
     `/deans/teaching-terms/${teachingTermId}/subject-assignments/${assignmentId}`,
   );
-  return apiMessage(data);
 }
 
 type DepartmentProgramResponse = {

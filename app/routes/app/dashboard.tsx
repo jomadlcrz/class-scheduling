@@ -5,27 +5,6 @@ import { fadeUp, staggerContainer } from "~/landing/motion";
 import { PageHeader } from "~/layouts/page-header";
 import { fetchDashboardGreeting, type DashboardGreeting } from "~/services/dashboard.service";
 import { DeanDashboard } from "~/features/dashboard/dean-dashboard";
-import type { Role } from "~/types/user";
-
-const ROLE_LABELS: Record<Role, string> = {
-  admin: "Admin",
-  registrar: "Registrar",
-  dean: "Dean",
-  faculty: "Faculty",
-  student: "Student",
-};
-
-const ROLE_PORTAL: Record<Role, string> = {
-  admin: "administrator",
-  registrar: "registrar",
-  dean: "dean",
-  faculty: "faculty",
-  student: "student",
-};
-
-function portalMessage(role: Role): string {
-  return `Welcome back! Here's what's happening in your ${ROLE_PORTAL[role]} portal today.`;
-}
 
 export function meta() {
   return [
@@ -63,7 +42,7 @@ export default function Dashboard() {
               {greeting.dateTime}
             </p>
             <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">
-              {portalMessage(user.role)}
+              {greeting.message}
             </p>
           </div>
         )}

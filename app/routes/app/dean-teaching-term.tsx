@@ -236,12 +236,19 @@ function DeanTeachingTermPage() {
 
   async function handleRemoveAssignment() {
     if (!removeTarget) return;
-    await deanService.removeSubjectAssignment(teachingTermId, removeTarget.assignmentId);
-    toast.success("Subject assignment removed.");
-    setRemoveTarget(null);
-    // Reload
-    const data = await deanService.getTeachingTermDetail(teachingTermId);
-    setDetail(data);
+    try {
+      const result = await deanService.removeSubjectAssignment(teachingTermId, removeTarget.assignmentId);
+      toast.success(result.message);
+      setRemoveTarget(null);
+      if (result.teaching_term_deleted) {
+        navigate("/dean/subject-assignments");
+        return;
+      }
+      const data = await deanService.getTeachingTermDetail(teachingTermId);
+      setDetail(data);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to remove assignment.");
+    }
   }
 
   async function handleDeleteTerm() {
