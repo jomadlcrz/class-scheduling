@@ -321,7 +321,7 @@ type DepartmentProgramResponse = {
 };
 
 /** GET /deans/department/programs — programs under the dean's own department. */
-async function listDepartmentPrograms(): Promise<{
+async function listDepartmentPrograms(semId?: number): Promise<{
   id: number;
   abbrev: string;
   name: string;
@@ -337,7 +337,8 @@ async function listDepartmentPrograms(): Promise<{
 }[]> {
   let data: DepartmentProgramResponse;
   try {
-    data = await apiGet<DepartmentProgramResponse>("/deans/department/programs");
+    const query = semId != null ? `?sem_id=${semId}` : "";
+    data = await apiGet<DepartmentProgramResponse>(`/deans/department/programs${query}`);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
