@@ -11,7 +11,7 @@ import type {
   TeachingTermDetail,
 } from "~/types/faculty-load";
 
-/** Rebuilds one entry from the rich term payload the backend returns on GET/PUT — no refetch needed. */
+/** Rebuilds one entry from the rich term payload the backend returns — no refetch needed. */
 function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEntry): FacultyLoadingEntry {
   const assignments = detail.subject_assignments ?? [];
   const subjectAssignmentIds = new Map<string, number>();
@@ -20,9 +20,12 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
   }
   return {
     instructorName: detail.instructor.full_name ?? prev?.instructorName ?? "",
+    instructorProfileId: detail.instructor.instructor_profile_id ?? prev?.instructorProfileId,
     department: detail.instructor.department ?? prev?.department ?? "",
     semester: prev?.semester ?? "",
     academicYear: prev?.academicYear ?? "",
+    syId: detail.term.sy_id ?? prev?.syId,
+    semId: detail.term.sem_id ?? prev?.semId,
     maxWeeklyHours: detail.hours.max_weekly_hours,
     teachingTermId: detail.teaching_term_id,
     subjectAssignmentIds,
@@ -34,6 +37,7 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
       curriculumDetailId: a.curriculum_detail_id,
     })),
     programs: (detail.programs ?? []).map((p) => ({
+      programId: p.program_id,
       programAbbrev: p.program_abbrev ?? "",
       programName: p.program_name ?? "",
       subjects: p.subjects.map((s) => ({
@@ -122,13 +126,17 @@ export function useDeanSubjectAssignments() {
           const saByCode = new Map(tt.subjectAssignments?.map((sa) => [sa.subjectCode, sa]) ?? []);
           return {
             instructorName: tt.instructorName,
+            instructorProfileId: tt.instructorProfileId,
             department: tt.department ?? "",
             semester: "",
             academicYear: "",
+            syId: tt.syId,
+            semId: tt.semId,
             maxWeeklyHours: tt.maxWeeklyHours,
             teachingTermId: tt.id,
             subjectAssignmentIds: assignmentIdMap,
             programs: (tt.programs ?? []).map((p) => ({
+              programId: p.programId,
               programAbbrev: p.programAbbrev,
               programName: p.programName,
               subjects: p.subjects.map((s) => {
@@ -244,7 +252,7 @@ export function useDeanSubjectAssignments() {
     }
   }
 
-  // Debounced per term: the hours input fires on every keystroke, but the PUT
+  // Debounced per term: the hours input fires on every keystroke, but the POST
   // goes out only once typing pauses. Local state updates immediately so the
   // controlled input reflects what's typed.
   const hoursTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
@@ -264,10 +272,15 @@ export function useDeanSubjectAssignments() {
     if (pending) clearTimeout(pending);
     timers.set(teachingTermId, setTimeout(async () => {
       timers.delete(teachingTermId);
+      const entry = entries?.find((e) => e.teachingTermId === teachingTermId);
+      if (!entry || entry.syId == null || entry.semId == null || entry.instructorProfileId == null) return;
       try {
-        const { message, term } = await deanService.updateTeachingTerm(teachingTermId, { maxWeeklyHours: hours });
-        if (term) patchEntry(term);
+        const message = await deanService.updateMaxWeeklyHours(
+          entry.syId, entry.semId, entry.instructorProfileId, hours,
+        );
         if (message) toast.success(message);
+        const term = await deanService.getTeachingTermDetail(teachingTermId);
+        if (term) patchEntry(term);
       } catch (err) {
         if (err instanceof Error && err.message) toast.error(err.message);
         // Restore the server's value so the input doesn't keep a rejected edit.
@@ -278,20 +291,10 @@ export function useDeanSubjectAssignments() {
     }, 600));
   }
 
-  async function updateSubjects(teachingTermId: number, payload: { maxWeeklyHours?: number; curriculumDetailIds: number[] }) {
-    const { message, term } = await deanService.updateTeachingTerm(teachingTermId, payload);
-    if (term) patchEntry(term);
-    if (message) toast.success(message);
-  }
-
   async function deleteTeachingTerm(teachingTermId: number, cascade: boolean) {
     const message = await deanService.deleteTeachingTerm(teachingTermId, cascade);
     if (message) toast.success(message);
     setEntries((prev) => prev?.filter((entry) => entry.teachingTermId !== teachingTermId) ?? prev);
-  }
-
-  async function fetchTeachingTermDetail(id: number): Promise<TeachingTermDetail> {
-    return deanService.getTeachingTermDetail(id);
   }
 
   const matchedSy = schoolYears.find((s) => String(s.id) === selectedSchoolYearId);
@@ -323,9 +326,7 @@ export function useDeanSubjectAssignments() {
     createAssignments,
     deleteAssignment,
     deleteTeachingTerm,
-    fetchTeachingTermDetail,
     updateMaxWeeklyHours,
-    updateSubjects,
     refresh,
   };
 }

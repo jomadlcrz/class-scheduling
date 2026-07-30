@@ -78,11 +78,6 @@ export function AssignmentSummaryFooter({
           )}
         </div>
       </div>
-
-      <Button type="button" variant="primary" block={false} isLoading={loading} loadingLabel="Creating…" onClick={onSubmit}>
-        <SendIcon size={15} />
-        <span className="whitespace-nowrap">Create Assignments</span>
-      </Button>
     </div>
   );
 }

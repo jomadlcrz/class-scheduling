@@ -96,12 +96,16 @@ export type FacultyLoadingEntry = {
   maxWeeklyHours: number | null;
   /** Populated from GET /deans/teaching-terms so maxWeeklyHours can be edited. */
   teachingTermId: number | null;
+  instructorProfileId?: number;
+  syId?: number;
+  semId?: number;
   /** subjectCode → subjectAssignmentId lookup, merged from teaching terms. */
   subjectAssignmentIds?: Map<string, number>;
   /** Programs grouped from the teaching term response — matches the grouped view on /dean/teaching-terms/<id>. */
   programs?: {
     programAbbrev: string;
     programName: string;
+    programId: number;
     subjects: {
       subjectAssignmentId: number;
       curriculumDetailId: number;
@@ -137,7 +141,7 @@ export type TeachingTerm = {
     labHours: number;
   }[];
   /** Grouped-by-program view from the list endpoint. */
-  programs?: { programAbbrev: string; programName: string; subjects: { subjectAssignmentId: number; curriculumDetailId: number; subjectCode: string }[] }[];
+  programs?: { programId: number; programAbbrev: string; programName: string; subjects: { subjectAssignmentId: number; curriculumDetailId: number; subjectCode: string }[] }[];
 };
 
 /** One scheduled session within a teaching-term detail subject assignment. */
@@ -167,10 +171,28 @@ export type TeachingTermDetailSubjectAssignment = {
   lab_hours: number;
   expected_weekly_hours: number;
   meetings: number | null;
+  program_id: number | null;
   program_abbrev: string | null;
   program_name: string | null;
   year_level: number | null;
   semester_category: number | null;
+  is_shared: boolean;
+  programs_covered: {
+    curriculum_detail_id: number;
+    program_id: number;
+    program_abbrev: string | null;
+    program_name: string | null;
+    year_level: number | null;
+    semester_category: number | null;
+  }[];
+  also_carried_by: {
+    curriculum_detail_id: number;
+    program_id: number;
+    program_abbrev: string | null;
+    program_name: string | null;
+    year_level: number | null;
+    semester_category: number | null;
+  }[];
   scheduled_sessions: TeachingTermDetailScheduledSession[];
   scheduled_hours: number;
   is_scheduled: boolean;

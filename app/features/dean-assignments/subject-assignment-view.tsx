@@ -115,6 +115,11 @@ export function SubjectAssignmentView() {
     return apiData.instructors.filter((inst) => !addedIds.has(facultyKey(inst.firstName, inst.lastName)));
   }, [apiData.instructors, instructors]);
 
+  // Reset instructors when term filter changes
+  useEffect(() => {
+    setInstructors([]);
+  }, [apiData.selectedSchoolYearId, apiData.selectedSemesterId]);
+
   // Initialize instructors from existing entries (instructors with teaching terms this term)
   useEffect(() => {
     if (!apiData.entries || !apiData.instructors) return;
@@ -342,28 +347,28 @@ export function SubjectAssignmentView() {
     const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
     if (!entry?.teachingTermId) return;
 
-    const subjectToDetailId = new Map<string, number>();
-    for (const prog of inst.programs) {
-      for (const subj of prog.subjects) {
-        if (subj.curriculumDetailId != null && !subjectToDetailId.has(subj.subjectCode)) {
-          subjectToDetailId.set(subj.subjectCode, subj.curriculumDetailId);
+    // POST cap-only update — the backend re-applies max_weekly_hours on every POST.
+    // Subject changes must be done individually via add/remove buttons.
+    if (inst.maxWeeklyHours != null && inst.maxWeeklyHours !== entry.maxWeeklyHours) {
+      try {
+        await apiData.createAssignments([{
+          instructorProfileId: inst.instructorProfileId,
+          maxWeeklyHours: inst.maxWeeklyHours,
+          programs: [],
+        }]);
+        toast.success("Weekly hours updated.");
+      } catch (error) {
+        if (error instanceof ApiError) {
+          toast.error(error.message);
+        } else {
+          toast.error(error instanceof Error ? error.message : 'Failed to update hours');
         }
+        return;
       }
     }
-    const curriculumDetailIds = [...subjectToDetailId.values()];
 
-    try {
-      await apiData.updateSubjects(entry.teachingTermId, {
-        maxWeeklyHours: inst.maxWeeklyHours ?? undefined,
-        curriculumDetailIds,
-      });
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message);
-      } else {
-        toast.error(error instanceof Error ? error.message : 'Failed to update assignment');
-      }
-    }
+    // Reload entries to reflect backend state
+    apiData.refresh();
   };
 
   function hasAssignmentChanges(inst: Instructor): boolean {
@@ -407,45 +412,6 @@ export function SubjectAssignmentView() {
     try {
       await apiData.createAssignments(instructorLoads);
     } catch (error) {
-      // Parse and show validation errors from the backend
-      if (error instanceof ApiError && error.details) {
-        const errors = error.details as any;
-        if (errors?.errors?.instructorLoads) {
-          const messages: string[] = [];
-          const instructorLoadsErrors = errors.errors.instructorLoads;
-          
-          Object.entries(instructorLoadsErrors).forEach(([instIdx, instErrors]) => {
-            const inst = instructors[Number(instIdx)];
-            const instName = inst ? inst.name : `Instructor ${Number(instIdx) + 1}`;
-            
-            if (instErrors && typeof instErrors === 'object') {
-              const instErr = instErrors as any;
-              if (instErr.programs) {
-                Object.entries(instErr.programs).forEach(([progIdx, progErrors]) => {
-                  const prog = inst?.programs[Number(progIdx)];
-                  const progName = prog ? prog.programAbbrev : `Program ${Number(progIdx) + 1}`;
-                  
-                  if (progErrors && typeof progErrors === 'object') {
-                    const progErr = progErrors as any;
-                    if (progErr.subjects && Array.isArray(progErr.subjects)) {
-                      progErr.subjects.forEach((msg: string) => {
-                        messages.push(`${instName} → ${progName}: ${msg}`);
-                      });
-                    }
-                  }
-                });
-              }
-            }
-          });
-          
-          if (messages.length > 0) {
-            messages.forEach((msg) => toast.error(msg));
-            return;
-          }
-        }
-      }
-      
-      // Fallback: show the error message from ApiError
       toast.error(error instanceof Error ? error.message : 'Failed to create assignments');
     }
   };

@@ -217,9 +217,9 @@ export function InstructorCard({
                 View Term
               </Button>
             )}
-            <Button type="button" variant="outline" block={false} disabled={!hasChanges} onClick={onUpdateAssignment}>
+              <Button type="button" variant="outline" block={false} disabled={!hasChanges} onClick={onUpdateAssignment}>
               <EditIcon />
-              Update Assignment
+              Assign
             </Button>
             <Button type="button" variant="danger" block={false} onClick={onRemoveInstructor}>
               <TrashIcon />

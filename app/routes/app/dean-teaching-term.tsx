@@ -106,7 +106,14 @@ function SubjectAssignmentRow({
         {assignment.descriptive_title}
       </td>
       <td className="px-4 py-3 text-center">
-        <Badge tone="navy">{assignment.program_abbrev}</Badge>
+        <div className="flex flex-col items-center gap-1">
+          <Badge tone="navy">{assignment.program_abbrev}</Badge>
+          {assignment.is_shared && assignment.also_carried_by.length > 0 && (
+            <span className="font-body text-[10px] text-slate-400 dark:text-slate-500">
+              +{assignment.also_carried_by.map((p) => p.program_abbrev).join(", ")}
+            </span>
+          )}
+        </div>
       </td>
       <td className="px-4 py-3 text-center font-body text-sm text-slate-600 dark:text-slate-300">
         {assignment.year_level ? `${assignment.year_level}${ordinalSuffix(assignment.year_level)} Yr` : "—"}
@@ -245,13 +252,17 @@ function DeanTeachingTermPage() {
     } catch (err) {
       if (err instanceof Error) {
         const msg = err.message;
-        if (msg.includes("409") || msg.includes("subject assignment")) {
-          // Has assignments — switch to cascade confirm
+        if (msg.includes("still has") && msg.includes("subject assignment")) {
+          // Has assignments — switch to cascade confirm without throwing
           setDeleteCascade(true);
+          return;
         }
-        throw err;
+        if (msg.includes("scheduled subjects") || msg.includes("can't be deleted")) {
+          toast.error(msg);
+          return;
+        }
       }
-      throw err;
+      toast.error(err instanceof Error ? err.message : "Failed to delete teaching term.");
     }
   }
 

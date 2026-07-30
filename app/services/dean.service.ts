@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost } from "~/lib/api";
 import { facultyService } from "~/services/faculty.service";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 import type {
@@ -166,7 +166,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
   }));
 }
 
-/** POST /deans/subject-assignments — bulk save for one semester + school year. */
+/** POST /deans/subject-assignments — one POST per instructor. */
 async function createSubjectAssignments(
   syId: number,
   semId: number,
@@ -179,12 +179,19 @@ async function createSubjectAssignments(
     }[];
   }[],
 ): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/deans/subject-assignments", {
-    instructorLoads,
-    syId,
-    semId,
-  });
-  return apiMessage(data);
+  const messages: string[] = [];
+  for (const load of instructorLoads) {
+    const data = await apiPost<{ message?: string }>("/deans/subject-assignments", {
+      instructorProfileId: load.instructorProfileId,
+      maxWeeklyHours: load.maxWeeklyHours,
+      programs: load.programs,
+      syId,
+      semId,
+    });
+    const msg = apiMessage(data);
+    if (msg) messages.push(msg);
+  }
+  return messages.join(" ") || "Assignments saved.";
 }
 
 /** GET /deans/teaching-terms — all teaching terms visible to the caller (dean: own department). */
@@ -217,6 +224,7 @@ async function listTeachingTerms(params?: {
       labHours: sa.lab_hours ?? 0,
     })),
     programs: (t.programs ?? []).map((p) => ({
+      programId: p.program_id,
       programAbbrev: p.program_abbrev ?? "",
       programName: p.program_name ?? "",
       subjects: (p.subjects ?? []).map((s) => ({
@@ -251,6 +259,7 @@ async function getTeachingTerm(id: number): Promise<TeachingTerm> {
       labHours: sa.lab_hours ?? 0,
     })),
     programs: (data.programs ?? []).map((p) => ({
+      programId: p.program_id,
       programAbbrev: p.program_abbrev ?? "",
       programName: p.program_name ?? "",
       subjects: (p.subjects ?? []).map((s) => ({
@@ -260,19 +269,6 @@ async function getTeachingTerm(id: number): Promise<TeachingTerm> {
       })),
     })),
   };
-}
-
-/** PUT /deans/teaching-terms/<id> — updates maxWeeklyHours and/or assigned subjects (curriculumDetailIds).
- *  Returns the backend message plus the full updated term so callers can patch local state without a refetch. */
-async function updateTeachingTerm(
-  id: number,
-  input: { maxWeeklyHours?: number; curriculumDetailIds?: number[] },
-): Promise<{ message: string; term: TeachingTermDetail | null }> {
-  const data = await apiPut<{ message?: string; teaching_term?: TeachingTermDetail }>(
-    `/deans/teaching-terms/${id}`,
-    input,
-  );
-  return { message: apiMessage(data), term: data.teaching_term ?? null };
 }
 
 /** DELETE /deans/teaching-terms/<id>[?cascade=true] — removes term and optionally its assignments. */
@@ -361,6 +357,24 @@ async function getTeachingTermDetail(id: number): Promise<TeachingTermDetail> {
   return apiGet<TeachingTermDetail>(`/deans/teaching-terms/${id}`);
 }
 
+/** POST /deans/subject-assignments — update cap for an existing teaching term.
+ *  The backend re-applies max_weekly_hours on every POST to this endpoint. */
+async function updateMaxWeeklyHours(
+  syId: number,
+  semId: number,
+  instructorProfileId: number,
+  maxWeeklyHours: number,
+): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/deans/subject-assignments", {
+    instructorProfileId,
+    maxWeeklyHours: maxWeeklyHours,
+    programs: [],
+    syId,
+    semId,
+  });
+  return apiMessage(data);
+}
+
 export const deanService = {
   list,
   create,
@@ -372,7 +386,7 @@ export const deanService = {
   listTeachingTerms,
   getTeachingTerm,
   getTeachingTermDetail,
-  updateTeachingTerm,
+  updateMaxWeeklyHours,
   deleteTeachingTerm,
   removeSubjectAssignment,
 };
