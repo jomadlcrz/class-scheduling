@@ -6,14 +6,12 @@ import { Breadcrumb } from "~/layouts/breadcrumb";
 type NotificationPrefs = {
   scheduleReminders: boolean;
   conflictAlerts: boolean;
-  systemAnnouncements: boolean;
 };
 
 export function NotificationSettings() {
   const [prefs, setPrefs] = useState<NotificationPrefs>({
     scheduleReminders: true,
     conflictAlerts: true,
-    systemAnnouncements: false,
   });
 
   function toggle(key: keyof NotificationPrefs) {
@@ -42,15 +40,6 @@ export function NotificationSettings() {
             description="Be alerted when scheduling conflicts are detected."
             checked={prefs.conflictAlerts}
             onChange={() => toggle("conflictAlerts")}
-          />
-        </div>
-        <div className="py-4 first:pt-0 last:pb-0">
-          <Switch
-            id="notif-system"
-            label="System announcements"
-            description="Receive general system and maintenance notifications."
-            checked={prefs.systemAnnouncements}
-            onChange={() => toggle("systemAnnouncements")}
           />
         </div>
       </div>

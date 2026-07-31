@@ -1,7 +1,5 @@
 ﻿import { useState, type ReactNode } from "react";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { CheckIcon, ChevronRightIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
@@ -53,65 +51,9 @@ function SecurityRow({ label, description, trailing, onClick }: SecurityRowProps
   );
 }
 
-/** No backend for 2FA exists — this toggle is local UI state only, with a brief fake delay for feel. */
-function TwoFactorModalContent({ enabled, onToggle }: { enabled: boolean; onToggle: () => Promise<void> }) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function handleToggle() {
-    setIsLoading(true);
-    await onToggle();
-    setIsLoading(false);
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-        {enabled
-          ? "Two-factor authentication is currently enabled for your account."
-          : "Add an extra layer of security by requiring a verification code in addition to your password when you sign in."}
-      </p>
-      <Button
-        type="button"
-        variant={enabled ? "danger" : "primary"}
-        block={false}
-        isLoading={isLoading}
-        loadingLabel={enabled ? "Disabling…" : "Enabling…"}
-        onClick={handleToggle}
-      >
-        {enabled ? "Disable Two-Factor Authentication" : "Enable Two-Factor Authentication"}
-      </Button>
-    </div>
-  );
-}
-
-/** No session-management backend exists — shows only the real, honest fact: you're signed in here. */
-function ActiveSessionsModalContent() {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4 dark:border-white/10">
-        <div>
-          <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">This device</p>
-          <p className="mt-1.5 font-body text-xs text-slate-400 dark:text-slate-500">
-            You're currently signed in from this browser.
-          </p>
-        </div>
-        <Badge tone="emerald">Active now</Badge>
-      </div>
-      <p className="font-body text-xs text-slate-400 dark:text-slate-500">
-        Viewing and signing out of sessions on other devices isn't available yet.
-      </p>
-    </div>
-  );
-}
-
 export function SecuritySettings() {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [done, setDone] = useState(false);
-
-  const [twoFactorModalOpen, setTwoFactorModalOpen] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-
-  const [sessionsModalOpen, setSessionsModalOpen] = useState(false);
 
   async function handleSubmit({ currentPassword, newPassword }: PasswordFormValues) {
     await authService.changePassword(newPassword, currentPassword);
@@ -121,11 +63,6 @@ export function SecuritySettings() {
   function closePasswordModal() {
     setPasswordModalOpen(false);
     setDone(false);
-  }
-
-  async function handleTwoFactorToggle() {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setTwoFactorEnabled((current) => !current);
   }
 
   return (
@@ -143,22 +80,6 @@ export function SecuritySettings() {
             </span>
           }
           onClick={() => setPasswordModalOpen(true)}
-        />
-        <SecurityRow
-          label="Two-Factor Authentication"
-          description="Add an extra layer of security when you sign in."
-          trailing={
-            <Badge tone={twoFactorEnabled ? "emerald" : "slate"}>
-              {twoFactorEnabled ? "Enabled" : "Disabled"}
-            </Badge>
-          }
-          onClick={() => setTwoFactorModalOpen(true)}
-        />
-        <SecurityRow
-          label="Active Sessions"
-          description="See where you're signed in."
-          trailing={<Badge tone="slate">1 active</Badge>}
-          onClick={() => setSessionsModalOpen(true)}
         />
       </div>
 
@@ -196,18 +117,6 @@ export function SecuritySettings() {
             />
           </div>
         )}
-      </Modal>
-
-      <Modal
-        open={twoFactorModalOpen}
-        onClose={() => setTwoFactorModalOpen(false)}
-        title="Two-Factor Authentication"
-      >
-        <TwoFactorModalContent enabled={twoFactorEnabled} onToggle={handleTwoFactorToggle} />
-      </Modal>
-
-      <Modal open={sessionsModalOpen} onClose={() => setSessionsModalOpen(false)} title="Active Sessions">
-        <ActiveSessionsModalContent />
       </Modal>
     </div>
   );
