@@ -86,14 +86,12 @@ export type Staffing = {
 
 export type RegistrarAnalyticsResponse = {
   meta: {
-    generated_at: string;
     sy_id: number;
     school_year: string;
     sem_id: number;
     semester: string;
     semester_number: number;
   };
-  definitions: Record<string, string>;
   schedule_completion: ScheduleCompletion;
   lab_capacity: LabCapacity;
   enrollment: Enrollment;

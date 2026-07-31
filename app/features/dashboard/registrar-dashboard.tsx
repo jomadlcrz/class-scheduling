@@ -41,7 +41,6 @@ type Tile = {
 };
 
 function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
-  const d = data.definitions;
   const sc = data.schedule_completion;
   const lab = data.lab_capacity;
   const en = data.enrollment;
@@ -51,7 +50,6 @@ function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
       title: "Sets scheduled",
       displayValue: `${sc.scheduled_percent}%`,
       unit: `${sc.scheduled_sets} of ${sc.total_sets} active sets`,
-      hint: d["schedule_completion.scheduled_percent"],
       tone: ratioTone(sc.scheduled_percent),
       badge: sc.unscheduled_sets_count > 0 ? `${sc.unscheduled_sets_count} unscheduled` : "All scheduled",
       meterPercent: sc.scheduled_percent,
@@ -60,7 +58,6 @@ function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
       title: "Lab hours used",
       displayValue: `${lab.hour_utilization_percent}%`,
       unit: `${lab.booked_hours} h of ${lab.window_capacity_hours} h window`,
-      hint: d["lab_capacity.hour_utilization_percent"],
       tone: loadBandTone(lab.hour_utilization_percent),
       badge:
         lab.fully_booked_laboratories > 0
@@ -72,7 +69,6 @@ function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
       title: "Students enrolled",
       displayValue: String(en.total_students),
       unit: `${en.regular_count} regular · ${en.irregular_count} irregular`,
-      hint: d["enrollment.irregular_pending_count"],
       tone:
         en.irregular_pending_count > 0
           ? en.irregular_pending_count >= en.irregular_count
@@ -88,7 +84,6 @@ function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
       title: "Teaching capacity used",
       displayValue: `${st.capacity_used_percent}%`,
       unit: `${st.capacity_booked_hours} h of ${st.capacity_total_hours} h cap`,
-      hint: d["staffing.capacity_used_percent"],
       tone: loadBandTone(st.capacity_used_percent),
       badge: st.instructors_over_cap > 0 ? `${st.instructors_over_cap} over cap` : "Within caps",
       meterPercent: st.capacity_used_percent,

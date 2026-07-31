@@ -89,7 +89,6 @@ export type Insight = {
 
 export type DeanAnalyticsResponse = {
   meta: {
-    generated_at: string;
     department: string | null;
     department_id: number;
     sy_id: number;
@@ -119,7 +118,6 @@ export type DeanAnalyticsResponse = {
     assignments_scheduled_percent: number;
     instructors_over_cap: number;
   };
-  definitions: Record<string, string>;
   instructor_loads: InstructorLoad[];
   load_bands: LoadBand[];
   daily_load_hours: DailyLoadHour[];

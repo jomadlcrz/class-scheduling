@@ -56,18 +56,13 @@ type Tile = {
   meterPercent?: number;
 };
 
-function buildTiles(
-  summary: DeanAnalyticsResponse["summary"],
-  definitions: Record<string, string>,
-): Tile[] {
+function buildTiles(summary: DeanAnalyticsResponse["summary"]): Tile[] {
   const s = summary;
-  const d = definitions;
   return [
     {
       title: "Instructors staffed",
       displayValue: `${s.instructors_staffed} of ${s.roster_size}`,
       unit: "carry at least one subject",
-      hint: d.instructors_staffed,
       tone:
         s.roster_size > 0 && s.instructors_staffed === s.roster_size
           ? "good"
@@ -81,7 +76,6 @@ function buildTiles(
       title: "Curriculum covered",
       displayValue: `${s.curriculum_staffed_percent}%`,
       unit: `${s.curriculum_subjects_staffed} of ${s.curriculum_subjects_total} subjects`,
-      hint: d.curriculum_staffed_percent,
       tone: ratioTone(s.curriculum_staffed_percent),
       badge:
         s.curriculum_subjects_unstaffed > 0
@@ -93,7 +87,6 @@ function buildTiles(
       title: "Capacity used",
       displayValue: `${s.capacity_used_percent}%`,
       unit: `${s.capacity_booked_hours} h of ${s.capacity_total_hours} h cap`,
-      hint: d.capacity_used_percent,
       tone: loadBandTone(s.capacity_used_percent),
       badge: s.instructors_over_cap > 0 ? `${s.instructors_over_cap} over cap` : "Within caps",
       meterPercent: s.capacity_used_percent,
@@ -102,14 +95,12 @@ function buildTiles(
       title: "Curriculum hours assigned",
       displayValue: `${s.curriculum_hours_assigned} h`,
       unit: "one section per subject",
-      hint: d.curriculum_hours_assigned,
       tone: "neutral",
     },
     {
       title: "Assignments scheduled",
       displayValue: `${s.assignments_scheduled_percent}%`,
       unit: `${s.assignments_scheduled} of ${s.assignments_total} on the board`,
-      hint: d.assignments_scheduled_percent,
       tone: ratioTone(s.assignments_scheduled_percent),
       badge:
         s.assignments_total > 0 && s.assignments_scheduled_percent < 100
@@ -121,7 +112,6 @@ function buildTiles(
       title: "Instructors over cap",
       displayValue: String(s.instructors_over_cap),
       unit: "booked past weekly cap",
-      hint: d.instructors_over_cap,
       tone: s.instructors_over_cap > 0 ? "critical" : "good",
       badge: s.instructors_over_cap > 0 ? "Needs attention" : "None",
     },
@@ -255,7 +245,7 @@ export function DeanDashboard() {
     sems,
   } = useTermData<DeanAnalyticsResponse>((sy, sem) => deanService.getAnalytics(sy, sem));
 
-  const tiles = data ? buildTiles(data.summary, data.definitions) : [];
+  const tiles = data ? buildTiles(data.summary) : [];
 
   return (
     <div className="space-y-6">
