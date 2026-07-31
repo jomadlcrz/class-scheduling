@@ -7,19 +7,29 @@ export type Semester = number;
 /**
  * Subject type vocabulary lives in the backend (app/enums.py SubjectTypeName)
  * and is fetched via enumService — only display tones are mapped here, by value.
+ * Keep the keys in sync with mapping-model.ts SUBJECT_TYPES.
  */
-/** Mirrors the classroom-mapping legend (~/features/classroom-mapping/mapping-model.ts TYPE_STYLES). */
 export const SUBJECT_TYPE_TONES: Record<string, BadgeTone> = {
-  GenEd: "violet",
-  "Major with Lab": "blue",
+  "GenEd Core": "violet",
+  "GenEd Elective": "sky",
+  "Mandated Rizal": "gold",
+  "Major with Lab": "slate",
   "Major without Lab": "green",
+  "Physical Education": "pink",
+  "National Service Training Program": "red",
+  "Research/Thesis": "navy",
 };
 
 /** Display labels matching classroom-mapping TYPE_LABELS. */
 export const SUBJECT_TYPE_LABELS: Record<string, string> = {
-  GenEd: "GenEd",
+  "GenEd Core": "GenEd Core",
+  "GenEd Elective": "GenEd Elective",
+  "Mandated Rizal": "Mandated Rizal",
   "Major with Lab": "Major (Lab)",
   "Major without Lab": "Major (w/o Lab)",
+  "Physical Education": "PE",
+  "National Service Training Program": "NSTP",
+  "Research/Thesis": "Research/Thesis",
 };
 
 /** A curriculum entry: a subject offered by one program at a year/semester slot. */

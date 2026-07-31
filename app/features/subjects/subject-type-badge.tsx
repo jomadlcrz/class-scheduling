@@ -16,6 +16,7 @@ const TYPE_TEXT_CLASS: Record<BadgeTone, string> = {
   emerald: "text-green-700 dark:text-emerald-300",
   blue: "text-blue-700 dark:text-blue-300",
   green: "text-green-700 dark:text-green-300",
+  pink: "text-pink-700 dark:text-pink-300",
   red: "text-red-700 dark:text-red-300",
   sky: "text-sky-700 dark:text-sky-300",
   violet: "text-violet-700 dark:text-violet-300",

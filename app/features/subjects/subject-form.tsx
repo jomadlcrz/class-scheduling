@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { Subject, UpdateSubjectInput } from "~/types/subject";
+import { SUBJECT_TYPE_LABELS } from "~/types/subject";
 import { subjectSchema } from "~/schemas/subject.schema";
 import { PrerequisitePicker } from "~/features/subjects/prerequisite-picker";
 
@@ -99,7 +100,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
         />
         <FieldChrome id="subject-type" label="Subject Type">
           <Select
-            items={subjectTypes.map((type) => ({ value: type, label: type }))}
+            items={subjectTypes.map((type) => ({ value: type, label: SUBJECT_TYPE_LABELS[type] ?? type }))}
             name="subject-type"
             defaultValue={subject.subjectType}
           >
@@ -109,7 +110,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
             <SelectContent>
               {subjectTypes.map((type) => (
                 <SelectItem key={type} value={type}>
-                  {type}
+                  {SUBJECT_TYPE_LABELS[type] ?? type}
                 </SelectItem>
               ))}
             </SelectContent>

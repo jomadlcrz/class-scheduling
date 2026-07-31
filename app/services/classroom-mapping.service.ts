@@ -6,7 +6,7 @@ import type {
   DayOfWeek,
   SubjectType,
 } from "~/features/classroom-mapping/mapping-model";
-import { DAYS } from "~/features/classroom-mapping/mapping-model";
+import { DAYS, SUBJECT_TYPES } from "~/features/classroom-mapping/mapping-model";
 
 type MappingDayEntry = {
   day: string;
@@ -35,14 +35,8 @@ type MappingResult = {
 };
 
 function toSubjectType(raw: string | null | undefined): SubjectType {
-  switch ((raw ?? "").trim().toLowerCase()) {
-    case "major with lab":
-      return "major_lab";
-    case "gened":
-      return "gen_ed";
-    default:
-      return "major_no_lab";
-  }
+  const value = (raw ?? "").trim();
+  return SUBJECT_TYPES.includes(value as SubjectType) ? (value as SubjectType) : "Major without Lab";
 }
 
 async function list(filters?: MappingFilters): Promise<MappingResult> {

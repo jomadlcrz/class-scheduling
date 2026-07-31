@@ -1,7 +1,19 @@
 import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, getScheduleDayKey, type ScheduleDay } from "~/lib/schedule-days";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
 
-export type SubjectType = "major_lab" | "major_no_lab" | "gen_ed";
+/** Backend SubjectTypeName values (app/enums.py) — single source for the legend and styles. */
+export const SUBJECT_TYPES = [
+  "GenEd Core",
+  "GenEd Elective",
+  "Mandated Rizal",
+  "Major with Lab",
+  "Major without Lab",
+  "Physical Education",
+  "National Service Training Program",
+  "Research/Thesis",
+] as const;
+
+export type SubjectType = (typeof SUBJECT_TYPES)[number];
 export type DayOfWeek = (typeof SCHEDULE_DAY_NAMES)[number];
 
 export interface ClassEntry {
@@ -88,15 +100,25 @@ function dayOfWeekToScheduleDay(day: DayOfWeek): ScheduleDay | null {
 }
 
 export const TYPE_STYLES: Record<SubjectType, { card: string; border: string; code: string; tableCode: string; dot: string }> = {
-  major_lab:    { card: "bg-blue-100 dark:bg-blue-950/60",    border: "border-l-blue-500",    code: "text-blue-800 dark:text-blue-300",    tableCode: "text-blue-600 dark:text-blue-400",    dot: "bg-blue-500"    },
-  major_no_lab: { card: "bg-green-100 dark:bg-green-950/60",  border: "border-l-green-500",   code: "text-green-800 dark:text-green-300",  tableCode: "text-green-600 dark:text-green-400",  dot: "bg-green-500"   },
-  gen_ed:       { card: "bg-violet-100 dark:bg-violet-950/60", border: "border-l-violet-600", code: "text-violet-800 dark:text-violet-300", tableCode: "text-violet-600 dark:text-violet-400", dot: "bg-violet-600"  },
+  "GenEd Core":                   { card: "bg-violet-100 dark:bg-violet-950/60",     border: "border-l-violet-600",   code: "text-violet-800 dark:text-violet-300",   tableCode: "text-violet-600 dark:text-violet-400",   dot: "bg-violet-600"    },
+  "GenEd Elective":               { card: "bg-sky-100 dark:bg-sky-950/60",          border: "border-l-sky-500",      code: "text-sky-800 dark:text-sky-300",          tableCode: "text-sky-600 dark:text-sky-400",          dot: "bg-sky-500"       },
+  "Mandated Rizal":               { card: "bg-amber-100 dark:bg-amber-950/60",     border: "border-l-amber-500",    code: "text-amber-800 dark:text-amber-300",      tableCode: "text-amber-600 dark:text-amber-400",      dot: "bg-amber-500"     },
+  "Major with Lab":               { card: "bg-slate-100 dark:bg-slate-800/50",    border: "border-l-slate-500",    code: "text-slate-700 dark:text-slate-300",      tableCode: "text-slate-600 dark:text-slate-400",      dot: "bg-slate-500"     },
+  "Major without Lab":            { card: "bg-green-100 dark:bg-green-950/60",     border: "border-l-green-500",    code: "text-green-800 dark:text-green-300",      tableCode: "text-green-600 dark:text-green-400",      dot: "bg-green-500"     },
+  "Physical Education":           { card: "bg-pink-100 dark:bg-pink-950/60",       border: "border-l-pink-500",     code: "text-pink-800 dark:text-pink-300",        tableCode: "text-pink-600 dark:text-pink-400",        dot: "bg-pink-500"      },
+  "National Service Training Program": { card: "bg-red-100 dark:bg-red-950/60",    border: "border-l-red-500",      code: "text-red-800 dark:text-red-300",          tableCode: "text-red-600 dark:text-red-400",          dot: "bg-red-500"       },
+  "Research/Thesis":              { card: "bg-blue-100 dark:bg-navy-300/10",       border: "border-l-blue-800 dark:border-l-navy-300", code: "text-blue-800 dark:text-navy-300",        tableCode: "text-blue-700 dark:text-navy-300",        dot: "bg-blue-800 dark:bg-navy-400" },
 };
 
 export const TYPE_LABELS: Record<SubjectType, string> = {
-  major_lab: "Major (Lab)",
-  major_no_lab: "Major (w/o Lab)",
-  gen_ed: "GenEd",
+  "GenEd Core": "GenEd Core",
+  "GenEd Elective": "GenEd Elective",
+  "Mandated Rizal": "Mandated Rizal",
+  "Major with Lab": "Major (Lab)",
+  "Major without Lab": "Major (w/o Lab)",
+  "Physical Education": "PE",
+  "National Service Training Program": "NSTP",
+  "Research/Thesis": "Research/Thesis",
 };
 
 export const ROOM_COL_W = 110;
