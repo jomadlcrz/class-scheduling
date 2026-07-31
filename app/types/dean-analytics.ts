@@ -79,14 +79,6 @@ export type Spread = {
   evenness: string;
 };
 
-export type Insight = {
-  severity: "critical" | "warning" | "info" | "good";
-  title: string;
-  message: string;
-  action: string | null;
-  related_to: string | null;
-};
-
 export type DeanAnalyticsResponse = {
   meta: {
     department: string | null;
@@ -127,5 +119,4 @@ export type DeanAnalyticsResponse = {
   };
   attention: AttentionItem[];
   spread: Spread;
-  insights: Insight[];
 };

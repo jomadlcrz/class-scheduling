@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { deanService } from "~/services/dean.service";
-import type { AttentionItem, DeanAnalyticsResponse, Insight } from "~/types/dean-analytics";
+import type { AttentionItem, DeanAnalyticsResponse } from "~/types/dean-analytics";
 import {
   ChartCard,
   CoverageStackedChart,
@@ -22,7 +22,6 @@ import {
   ratioTone,
 } from "~/features/dashboard/dashboard-charts";
 import {
-  EASE_OUT,
   LoadingSkeleton,
   TermSelectors,
   UpdateIndicator,
@@ -32,11 +31,6 @@ import {
   staggerWidgets,
   useTermData,
 } from "~/features/dashboard/dashboard-shared";
-
-const insightVariant = {
-  hidden: { opacity: 0, y: 12, scale: 0.97 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: EASE_OUT } },
-};
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: chartStatusColor("critical"),
@@ -116,54 +110,6 @@ function buildTiles(summary: DeanAnalyticsResponse["summary"]): Tile[] {
       badge: s.instructors_over_cap > 0 ? "Needs attention" : "None",
     },
   ];
-}
-
-function InsightCards({ insights }: { insights: Insight[] }) {
-  return (
-    <motion.div
-      variants={staggerWidgets}
-      initial="hidden"
-      animate="visible"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-    >
-      {insights.map((insight, i) => (
-        <motion.div
-          key={i}
-          variants={insightVariant}
-          whileHover={{
-            y: -3,
-            boxShadow: "0 8px 20px -8px rgba(0,0,0,0.1)",
-            transition: { duration: 0.2 },
-          }}
-          className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
-        >
-          <motion.span
-            initial={{ opacity: 0, x: -4 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.08 + i * 0.03, duration: 0.3 }}
-            className="text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: SEVERITY_COLORS[insight.severity] ?? SEVERITY_COLORS.info }}
-          >
-            {insight.severity}
-          </motion.span>
-          <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-200">
-            {insight.title}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{insight.message}</p>
-          {insight.action && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15 + i * 0.03, duration: 0.3 }}
-              className="mt-1 text-[11px] font-medium text-navy-600 dark:text-navy-400"
-            >
-              {insight.action}
-            </motion.p>
-          )}
-        </motion.div>
-      ))}
-    </motion.div>
-  );
 }
 
 function AttentionTable({ items }: { items: AttentionItem[] }) {
@@ -304,13 +250,6 @@ export function DeanDashboard() {
                   onSemId={setSemId}
                 />
               </motion.div>
-
-              {/* ─── Insights ─── */}
-              {data.insights.length > 0 && (
-                <motion.section variants={fadeSlideUp}>
-                  <InsightCards insights={data.insights} />
-                </motion.section>
-              )}
 
               {/* ─── Headline numbers ─── */}
               <motion.section variants={fadeSlideUp}>
