@@ -1,4 +1,4 @@
-import { apiPatch, apiPost } from "~/lib/api";
+import { apiMessage, apiPatch, apiPost } from "~/lib/api";
 import {
   clearPending,
   clearSession,
@@ -106,27 +106,15 @@ function getStoredSession(): AuthSession | null {
   return loadSession();
 }
 
-// TODO: endpoint not implemented on the backend yet — confirm the path once
-// it lands. Follows the gwc-portal convention (POST /auth/forgot-password).
-async function requestPasswordReset(email: string): Promise<void> {
-  await apiPost("/auth/forgot-password", { email });
+/** POST /forgot-password — always 200 with the same generic message (anti-enumeration). */
+async function requestPasswordReset(email: string): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/forgot-password", { email });
+  return apiMessage(data);
 }
 
-// TODO: endpoint not implemented on the backend yet — confirm the path once
-// it lands. Gates the reset-password form: any failure (invalid, expired,
-// already-used token, or a network error) is treated as "can't proceed".
-async function verifyResetToken(token: string): Promise<boolean> {
-  try {
-    await apiPost("/auth/verify-reset-token", { token });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// TODO: endpoint not implemented on the backend yet — confirm the path once it lands.
+/** POST /reset-password — consumes the one-time link; 401 for any token problem. */
 async function resetPassword(token: string, newPassword: string): Promise<void> {
-  await apiPost("/auth/reset-password", { token, newPassword });
+  await apiPost("/reset-password", { token, newPassword });
 }
 
 async function changePassword(newPassword: string, _currentPassword?: string): Promise<void> {
@@ -166,7 +154,6 @@ export const authService = {
   refreshToken,
   getStoredSession,
   requestPasswordReset,
-  verifyResetToken,
   resetPassword,
   changePassword,
 };

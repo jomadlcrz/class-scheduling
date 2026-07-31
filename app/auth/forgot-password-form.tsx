@@ -5,7 +5,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { forgotPasswordSchema } from "~/schemas/auth.schema";
 import { authService } from "~/services/auth.service";
 
-export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
+export function ForgotPasswordForm({ onSent }: { onSent: (message: string) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,8 +22,8 @@ export function ForgotPasswordForm({ onSent }: { onSent: () => void }) {
     setError(null);
     setIsLoading(true);
     try {
-      await authService.requestPasswordReset(result.data.email);
-      onSent();
+      const message = await authService.requestPasswordReset(result.data.email);
+      onSent(message);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "",

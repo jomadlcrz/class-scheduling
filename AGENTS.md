@@ -13,7 +13,7 @@ The auth slice is live against the backend end-to-end:
 - **Forced first-login password change** — a temp-password login returns no token, only `{ user_id, temp_password: true }`; the service stores a pending state and the login form routes to `/change-password`, which is **only reachable while that pending state exists** (otherwise it redirects to `/login`). Logged-in users change passwords in Settings → Security instead.
 - **Logout** — fire-and-forget `POST /user/logout` (server-side token revocation), then clears storage.
 - **Error messages come verbatim from backend responses** (`{ error }` or `{ message }`) via `ApiError` — never write frontend copy for API failures; a generic fallback exists only for network failures/bodyless responses.
-- `requestPasswordReset` targets `POST /auth/forgot-password`, which the backend does **not implement yet** — confirm the path when it lands.
+- `requestPasswordReset` hits `POST /forgot-password` (live). The reset flow: forgot-password posts the email and shows the backend's generic message; `/reset-password?token=…` posts to `POST /reset-password`, which validates the one-time link itself (401 expired/invalid/used surfaced verbatim). There is no verify-token endpoint — do not add one frontend-side. Note the auth blueprint's routes are `/api/v1/login`, `/api/v1/forgot-password`, … — the blueprint name (`auth`) is not a URL segment, so do not prefix endpoints with `/auth`.
 
 **Backend is the single source of truth — never hardcode its vocabulary in the frontend:**
 

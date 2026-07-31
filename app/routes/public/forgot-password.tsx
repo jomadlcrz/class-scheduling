@@ -25,13 +25,12 @@ export default function ForgotPassword() {
 }
 
 function ForgotPasswordContent() {
-  const [sent, setSent] = useState(false);
+  const [sentMessage, setSentMessage] = useState<string | null>(null);
 
-  if (sent) {
+  if (sentMessage !== null) {
     return (
       <ResultState tone="success" title="Check your inbox">
-        If that email is registered, a reset link is on its way. Check your spam folder if it
-        doesn't arrive within a few minutes.
+        {sentMessage}
       </ResultState>
     );
   }
@@ -41,7 +40,7 @@ function ForgotPasswordContent() {
       <AuthHeading title="Reset password">
         Enter your email and we'll send a reset link.
       </AuthHeading>
-      <ForgotPasswordForm onSent={() => setSent(true)} />
+      <ForgotPasswordForm onSent={setSentMessage} />
     </>
   );
 }

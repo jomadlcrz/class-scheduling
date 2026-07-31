@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { AuthHeading, AuthSplitLayout } from "~/auth/auth-layout";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
-import { LoadingState } from "~/components/feedback/loading-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { authService } from "~/services/auth.service";
 
@@ -20,33 +19,19 @@ export function meta() {
  * Public route reached via the emailed reset link (?token=...). Unlike the
  * authenticated area, access here is gated by the token itself rather than
  * a login session — a session redirect would strip the token and lock the
- * user out. The token is verified against the backend before the form is
- * ever shown.
+ * user out. The token is validated by POST /auth/reset-password on submit;
+ * any problem (expired, invalid, already used) surfaces as the backend's
+ * message inline via the form.
  */
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"checking" | "valid" | "invalid">("checking");
 
-  useEffect(() => {
-    if (!token) {
-      setStatus("invalid");
-      return;
-    }
-    let cancelled = false;
-    authService.verifyResetToken(token).then((valid) => {
-      if (!cancelled) setStatus(valid ? "valid" : "invalid");
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [token]);
-
-  if (status === "checking") return <LoadingState label="Verifying link…" />;
+  if (!token) return <InvalidLinkState />;
 
   return (
     <AuthSplitLayout label="ACCOUNT SECURITY" backHref="/login" backLabel="Back to log in">
-      {status === "invalid" ? <InvalidLinkState /> : <ResetPasswordContent token={token as string} />}
+      <ResetPasswordContent token={token} />
     </AuthSplitLayout>
   );
 }
