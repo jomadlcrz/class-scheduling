@@ -47,9 +47,12 @@ export type CreateRoomInput = {
 };
 
 export type UpdateRoomInput = {
+  buildingName?: string;
   floor?: number;
   name?: string;
   capacity?: number;
+  /** Backend RoomType value, e.g. "Lecture Room". */
+  type?: string;
   /** Omit to leave access untouched; an empty array hands the room back to its whole building. */
   programIds?: number[];
 };

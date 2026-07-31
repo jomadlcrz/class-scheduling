@@ -102,9 +102,11 @@ function RoomsPage() {
   async function handleEdit(input: CreateRoomInput) {
     if (!editTarget) return;
     const message = await roomService.update(editTarget.id, {
+      buildingName: input.buildingName,
       floor: input.floor,
       name: input.name,
       capacity: input.capacity,
+      type: input.type,
       programIds: input.programIds,
     });
     if (message) toast.success(message);

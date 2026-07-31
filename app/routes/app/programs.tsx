@@ -89,6 +89,7 @@ function ProgramsPage() {
       name: input.name,
       type: input.type,
       lengthYears: input.lengthYears,
+      departmentName: input.departmentName,
     });
     if (message) toast.success(message);
     await refresh();

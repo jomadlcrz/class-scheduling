@@ -20,7 +20,7 @@ export type Program = {
   lengthYears: number;
 };
 
-/** Programs are linked to departments by name on create; not updatable afterwards. */
+/** Programs are linked to departments by name on create and update. */
 export type CreateProgramInput = {
   departmentName: string;
   abbrev: string;
@@ -29,4 +29,4 @@ export type CreateProgramInput = {
   lengthYears: number;
 };
 
-export type UpdateProgramInput = Partial<Omit<CreateProgramInput, "departmentName">>;
+export type UpdateProgramInput = Partial<CreateProgramInput>;

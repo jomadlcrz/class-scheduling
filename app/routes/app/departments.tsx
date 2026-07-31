@@ -83,7 +83,11 @@ function DepartmentsPage() {
 
   async function handleEdit(input: CreateDepartmentInput) {
     if (!editTarget) return;
-    const message = await departmentService.update(editTarget.id, { abbrev: input.abbrev, name: input.name });
+    const message = await departmentService.update(editTarget.id, {
+      abbrev: input.abbrev,
+      name: input.name,
+      buildingName: input.buildingName,
+    });
     if (message) toast.success(message);
     await refresh();
     setEditTarget(null);

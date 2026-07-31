@@ -49,13 +49,14 @@ async function create(input: CreateProgramInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** PUT /programs/:id — the department link is not updatable. Returns the backend message. */
+/** PUT /programs/:id — abbrev, name, type, length, and department are updatable. Returns the backend message. */
 async function update(id: number, input: UpdateProgramInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/programs/${id}`, {
     ...(input.abbrev !== undefined && { programAbbrev: input.abbrev }),
     ...(input.name !== undefined && { programName: input.name }),
     ...(input.type !== undefined && { programType: input.type }),
     ...(input.lengthYears !== undefined && { programLength: input.lengthYears }),
+    ...(input.departmentName !== undefined && { departmentName: input.departmentName }),
   });
   return apiMessage(data);
 }

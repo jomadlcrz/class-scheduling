@@ -7,7 +7,7 @@ export type Department = {
   programs: { abbrev: string; name: string }[];
 };
 
-/** Buildings are referenced by name on create; not updatable afterwards. */
+/** Buildings are referenced by name on create and update. */
 export type CreateDepartmentInput = {
   abbrev: string;
   name: string;
@@ -17,6 +17,7 @@ export type CreateDepartmentInput = {
 export type UpdateDepartmentInput = {
   abbrev?: string;
   name?: string;
+  buildingName?: string;
 };
 
 /** Real backend department (integer id) — used where the API needs one. */

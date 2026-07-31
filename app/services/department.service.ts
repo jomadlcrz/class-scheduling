@@ -60,11 +60,12 @@ async function create(input: CreateDepartmentInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** PUT /departments/:id — only the abbrev and name are updatable. Returns the backend message. */
+/** PUT /departments/:id — abbrev, name, and building are updatable. Returns the backend message. */
 async function update(id: number, input: UpdateDepartmentInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/departments/${id}`, {
     ...(input.abbrev !== undefined && { departmentAbbrev: input.abbrev }),
     ...(input.name !== undefined && { departmentName: input.name }),
+    ...(input.buildingName !== undefined && { buildingName: input.buildingName }),
   });
   return apiMessage(data);
 }

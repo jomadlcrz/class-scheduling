@@ -75,13 +75,15 @@ async function create(input: CreateRoomInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** PUT /rooms/:id — floor, name, capacity, and program access (programIds) are updatable.
+/** PUT /rooms/:id — building, floor, name, capacity, type, and program access (programIds) are updatable.
  * Omitting programIds leaves access untouched; an empty array hands the room back to its whole building. */
 async function update(id: number, input: UpdateRoomInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/rooms/${id}`, {
+    ...(input.buildingName !== undefined && { buildingName: input.buildingName }),
     ...(input.floor !== undefined && { floorLevel: input.floor }),
     ...(input.name !== undefined && { roomName: input.name }),
     ...(input.capacity !== undefined && { roomCapacity: input.capacity }),
+    ...(input.type !== undefined && { roomType: input.type }),
     ...(input.programIds !== undefined && { programIds: input.programIds }),
   });
   return apiMessage(data);
