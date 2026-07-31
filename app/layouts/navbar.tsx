@@ -177,7 +177,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 className={menuItemClassName}
                 onClick={() => {
                   close();
-                  navigate("/settings");
+                  navigate("/settings/profile");
                 }}
               >
                 Settings <SettingsIcon />

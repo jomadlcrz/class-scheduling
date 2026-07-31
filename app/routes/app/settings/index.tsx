@@ -1,12 +1,11 @@
-import { SettingsHome } from "~/features/settings/settings-home";
+import { redirect } from "react-router";
 
-export function meta() {
-  return [
-    { title: "Settings — GWC Class Scheduling" },
-    { name: "description", content: "Manage your account, preferences, and system options." },
-  ];
+/** The /settings hub was removed — desktop navigates via the settings sidebar
+ * and mobile via "Your account". Land visitors on the first section. */
+export function loader() {
+  return redirect("/settings/profile");
 }
 
 export default function SettingsIndexRoute() {
-  return <SettingsHome />;
+  return null;
 }

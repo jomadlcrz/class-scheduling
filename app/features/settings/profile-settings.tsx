@@ -6,7 +6,6 @@ import { SettingsRow } from "~/components/ui/settings-row";
 import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { useAuth } from "~/hooks/use-auth";
-import { Breadcrumb } from "~/layouts/breadcrumb";
 import { profilePhotoService } from "~/services/profile-photo.service";
 
 export function ProfileSettings() {
@@ -52,7 +51,6 @@ export function ProfileSettings() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Profile" }]} />
       <SettingsPageHeader title="Profile" />
 
       <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">

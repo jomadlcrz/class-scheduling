@@ -39,6 +39,7 @@ export function SettingsMobileNav() {
               </p>
               <div className="flex flex-col gap-0.5">
                 {group.sections.map((section) => {
+                  const Icon = section.icon;
                   const active = location.pathname === section.href;
                   return (
                     <button
@@ -48,12 +49,15 @@ export function SettingsMobileNav() {
                         setOpen(false);
                         navigate(section.href);
                       }}
-                      className={`block w-full rounded-md px-2.5 py-2.5 text-left font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                      className={`flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2.5 text-left font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                         active
                           ? "bg-slate-200/70 font-semibold text-navy-700 dark:bg-white/10 dark:text-mist-100"
                           : "text-slate-600 hover:bg-slate-100 hover:text-navy-700 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100"
                       }`}
                     >
+                      <span className="grid size-4 shrink-0 place-items-center opacity-90">
+                        <Icon />
+                      </span>
                       {section.label}
                     </button>
                   );

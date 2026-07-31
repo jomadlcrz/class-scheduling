@@ -8,7 +8,6 @@ import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
-import { Breadcrumb } from "~/layouts/breadcrumb";
 import { buildingService } from "~/services/building.service";
 import { departmentService } from "~/services/department.service";
 import { permissionService } from "~/services/permission.service";
@@ -178,7 +177,6 @@ export function RecentlyDeleted() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Recently Deleted" }]} />
       <SettingsPageHeader title="Recently Deleted" />
 
       <div role="tablist" aria-label="Recently deleted resource" className="mt-6 flex flex-wrap gap-2">

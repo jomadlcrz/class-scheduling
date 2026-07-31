@@ -3,7 +3,6 @@ import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { CheckIcon, ChevronRightIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
-import { Breadcrumb } from "~/layouts/breadcrumb";
 import { authService } from "~/services/auth.service";
 
 type SecurityRowProps = {
@@ -67,7 +66,6 @@ export function SecuritySettings() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Settings", href: "/settings" }, { label: "Account & Security" }]} />
       <SettingsPageHeader title="Account & Security" />
 
       <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">
