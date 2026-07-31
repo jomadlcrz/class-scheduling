@@ -1,18 +1,20 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Modal } from "~/components/ui/modal";
 import { RoleGuard } from "~/auth/role-guard";
 import { deanService } from "~/services/dean.service";
 import type {
   TeachingTermDetail,
   TeachingTermDetailSubjectAssignment,
+  TeachingTermDetailScheduledSession,
   TeachingTermDetailUnassignedSubject,
 } from "~/types/faculty-load";
 import { PageHeader } from "~/layouts/page-header";
 import {
   ArrowLeftIcon,
   AlertTriangleIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   ClockIcon,
   BookOpenIcon,
   LayersIcon,
@@ -97,6 +99,12 @@ function meta() {
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
+const DAY_ORDER: Record<string, number> = Object.fromEntries(DAYS.map((d, i) => [d, i]));
+
+/** Stable-sorts sessions Mon → Sat; the API doesn't guarantee day order. */
+function sortSessionsByDay(sessions: TeachingTermDetailScheduledSession[]) {
+  return [...sessions].sort((a, b) => (DAY_ORDER[a.day] ?? 99) - (DAY_ORDER[b.day] ?? 99));
+}
 
 const barColors = {
   green: "bg-emerald-500 dark:bg-emerald-400",
@@ -171,37 +179,39 @@ function DailyLoadStrip({ dailyLoads }: { dailyLoads: TeachingTermDetail["daily_
   );
 }
 
-function SessionModal({
-  open,
-  onClose,
-  assignment,
-}: {
-  open: boolean;
-  onClose: () => void;
-  assignment: TeachingTermDetailSubjectAssignment;
-}) {
-  const sessions = assignment.is_scheduled ? assignment.scheduled_sessions : [];
+function SessionsDropdown({ sessions }: { sessions: TeachingTermDetailScheduledSession[] }) {
+  const sorted = sortSessionsByDay(sessions);
+  const reduceMotion = useReducedMotion();
   return (
-    <Modal open={open} onClose={onClose} title={`Sessions — ${assignment.subject_code}`} wide>
-      <div className="space-y-2">
-        {sessions.map((sess) => (
-          <div
-            key={sess.regular_sched_id}
-            className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5"
-          >
-            <div className="flex-1">
-              <p className="font-body text-sm font-semibold text-navy-800 dark:text-white">
-                {sess.day} · {sess.start_time}–{sess.end_time}
-              </p>
-              <div className="mt-0.5 flex flex-wrap items-center gap-2 font-body text-xs text-slate-500 dark:text-slate-400">
-                {sess.room && <span>Room {sess.room}</span>}
-                {sess.set_code && <span className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-white/10">{sess.set_code}</span>}
+    <tr>
+      <td colSpan={9} className="bg-slate-50/70 p-0 dark:bg-white/[0.03]">
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeInOut" }}
+          className="overflow-hidden"
+        >
+          <div className="grid gap-2 px-4 py-3 sm:grid-cols-2 lg:grid-cols-3">
+            {sorted.map((sess) => (
+              <div
+                key={sess.regular_sched_id}
+                className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-white/5"
+              >
+                <p className="font-body text-sm font-semibold text-navy-800 dark:text-white">
+                  {sess.day} · {sess.start_time}–{sess.end_time}
+                </p>
+                <div className="mt-0.5 flex flex-wrap items-center gap-2 font-body text-xs text-slate-500 dark:text-slate-400">
+                  {sess.room && <span>Room {sess.room}</span>}
+                  {sess.set_code && <span className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-white/10">{sess.set_code}</span>}
+                  {sess.mode && <span>{sess.mode}</span>}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </Modal>
+        </motion.div>
+      </td>
+    </tr>
   );
 }
 
@@ -221,26 +231,28 @@ function SubjectAssignmentRow({
 }: {
   assignment: TeachingTermDetailSubjectAssignment;
 }) {
-  const [showSessions, setShowSessions] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const sessions = assignment.is_scheduled ? assignment.scheduled_sessions : [];
+  const hasSessions = sessions.length > 0;
   const yr = assignment.year_level ? `${assignment.year_level}${ordinalSuffix(assignment.year_level)} Yr` : null;
   const sem = assignment.semester_category ? `${assignment.semester_category}${ordinalSuffix(assignment.semester_category)} Sem` : null;
 
   return (
     <>
-      <SessionModal
-        open={showSessions}
-        onClose={() => setShowSessions(false)}
-        assignment={assignment}
-      />
       <motion.tr
         layout
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="group/row transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+        onClick={() => hasSessions && setExpanded((v) => !v)}
+        className={`group/row transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${hasSessions ? "cursor-pointer" : ""}`}
       >
         <TableCell className="py-3.5">
-          <span className="font-body text-sm font-semibold text-navy-800 dark:text-white">
+          <span className="flex items-center gap-1.5 font-body text-sm font-semibold text-navy-800 dark:text-white">
+            {hasSessions && (
+              <span className="shrink-0 text-slate-400">
+                {expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
+              </span>
+            )}
             {assignment.subject_code}
           </span>
         </TableCell>
@@ -271,19 +283,18 @@ function SubjectAssignmentRow({
           {assignment.meetings ?? "—"}
         </TableCell>
         <TableCell className="py-3.5 text-center">
-          {sessions.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => setShowSessions(true)}
-              className="inline-flex items-center gap-1 font-body text-xs font-medium text-emerald-600 underline decoration-dotted underline-offset-2 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
-            >
+          {hasSessions ? (
+            <span className="font-body text-xs font-medium text-emerald-600 dark:text-emerald-400">
               {sessions.length} session{sessions.length > 1 ? "s" : ""}
-            </button>
+            </span>
           ) : (
             <span className="font-body text-xs text-slate-400 dark:text-slate-500">Not scheduled</span>
           )}
         </TableCell>
       </motion.tr>
+      <AnimatePresence initial={false}>
+        {expanded && hasSessions && <SessionsDropdown key="dropdown" sessions={sessions} />}
+      </AnimatePresence>
     </>
   );
 }
