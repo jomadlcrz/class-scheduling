@@ -10,10 +10,6 @@ export function LabAnalysisLegend() {
           <span className="font-body text-xs text-slate-500 dark:text-slate-400">Year {year}</span>
         </div>
       ))}
-      <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-        <span className="inline-block h-3 w-3 rounded-full border border-dashed border-slate-400 dark:border-white/20" />
-        <span className="font-body text-xs text-slate-500 dark:text-slate-400">Free</span>
-      </div>
     </Card>
   );
 }

@@ -510,6 +510,16 @@ export function FolderOpenIcon() {
   );
 }
 
+export function FlaskConicalIcon() {
+  return (
+    <IconBase>
+      <path d="M10 2v6.5L3.5 19a2 2 0 0 0 1.75 3h13.5a2 2 0 0 0 1.75-3L14 8.5V2" />
+      <path d="M8.5 2h7" />
+      <line x1="8" y1="16" x2="16" y2="16" />
+    </IconBase>
+  );
+}
+
 export function TableIcon() {
   return (
     <IconBase>

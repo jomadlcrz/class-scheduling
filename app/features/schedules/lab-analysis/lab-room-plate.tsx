@@ -4,10 +4,19 @@ import { Tooltip } from "~/components/ui/tooltip";
 import type { LabRoom, LabSession } from "~/types/lab-analysis";
 import { yearLevelStyle } from "./year-level-styles";
 
+function programSetLabel(
+  programAbbrev: string | null,
+  yearLevel: number | null,
+  setCode: string | null,
+): string | null {
+  const parts = [programAbbrev, [yearLevel, setCode].filter((v) => v != null).join("")].filter(Boolean);
+  return parts.length > 0 ? parts.join("-") : null;
+}
+
 function sessionTooltip(session: LabSession): string {
   const parts = [
     session.subjectCode,
-    [session.programAbbrev, session.setCode].filter(Boolean).join("-") || null,
+    programSetLabel(session.programAbbrev, session.yearLevel, session.setCode),
     session.instructor,
     session.mode,
   ].filter(Boolean);
@@ -31,7 +40,7 @@ function SlotCell({ occupiedBy }: { occupiedBy: LabSession[] }) {
       <div className={`flex h-14 flex-col justify-center gap-0.5 rounded-lg px-2 py-1 ${style.chip}`}>
         <span className="truncate font-body text-xs font-semibold">{primary.subjectCode ?? "—"}</span>
         <span className="truncate font-body text-[11px] opacity-85">
-          {[primary.programAbbrev, primary.setCode].filter(Boolean).join("-")}
+          {programSetLabel(primary.programAbbrev, primary.yearLevel, primary.setCode)}
           {rest.length > 0 ? ` +${rest.length}` : ""}
         </span>
       </div>
