@@ -34,6 +34,7 @@ type ProgramGroup = {
   programAbbrev: string;
   programName: string;
   subjects: Subject[];
+  isNew?: boolean;
 };
 
 type Instructor = {
@@ -250,6 +251,7 @@ export function SubjectAssignmentView() {
           programAbbrev: abbrev,
           programName: name,
           subjects: [],
+          isNew: true,
         };
         return { ...inst, programs: [...inst.programs, newProg] };
       }),

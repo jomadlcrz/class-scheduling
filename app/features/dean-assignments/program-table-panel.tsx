@@ -20,7 +20,7 @@ type ProgramTablePanelProps = {
   program: ProgramData;
   onAssignSubject: () => void;
   onRemoveSubject: (subjectCode: string) => void;
-  onRemoveProgram: () => void;
+  onRemoveProgram?: () => void;
 };
 
 export function ProgramTablePanel({
@@ -59,14 +59,16 @@ export function ProgramTablePanel({
             <span className="sm:hidden">Add</span>
           </Button>
 
-          <button
-            type="button"
-            onClick={onRemoveProgram}
-            className="inline-grid size-7 place-items-center rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
-            title="Remove program"
-          >
-            <TrashIcon />
-          </button>
+          {onRemoveProgram && (
+            <button
+              type="button"
+              onClick={onRemoveProgram}
+              className="inline-grid size-7 place-items-center rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
+              title="Remove program"
+            >
+              <TrashIcon />
+            </button>
+          )}
         </div>
       </div>
 

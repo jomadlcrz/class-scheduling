@@ -23,6 +23,7 @@ type InstructorData = {
     id: string;
     programAbbrev: string;
     programName: string;
+    isNew?: boolean;
     subjects: {
       subjectCode: string;
       descriptiveTitle: string;
@@ -206,7 +207,7 @@ export function InstructorCard({
             program={prog}
             onAssignSubject={() => onAssignSubject(prog.id)}
             onRemoveSubject={(code) => onRemoveSubject(prog.id, code)}
-            onRemoveProgram={() => onRemoveProgram(prog.id)}
+            onRemoveProgram={prog.isNew ? () => onRemoveProgram(prog.id) : undefined}
           />
         ))}
 
