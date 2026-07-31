@@ -655,27 +655,29 @@ function SchedulesNewPage() {
         title="New Schedule"
         description="Select a set, add time slots for its subjects, then save the whole week at once."
         actions={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              disabled={isSaving || isGenerating}
-              onClick={() => navigate("/schedules/regular-class")}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              block={false}
-              disabled={slots.length === 0 || !selectedSet || isGenerating}
-              isLoading={isSaving}
-              loadingLabel="Saving…"
-              onClick={handleSave}
-            >
-              Save Schedule{slots.length > 0 ? ` (${slots.length})` : ""}
-            </Button>
-          </>
+          noAcademicYear ? undefined : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                disabled={isSaving || isGenerating}
+                onClick={() => navigate("/schedules/regular-class")}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                block={false}
+                disabled={slots.length === 0 || !selectedSet || isGenerating}
+                isLoading={isSaving}
+                loadingLabel="Saving…"
+                onClick={handleSave}
+              >
+                Save Schedule{slots.length > 0 ? ` (${slots.length})` : ""}
+              </Button>
+            </>
+          )
         }
       />
 

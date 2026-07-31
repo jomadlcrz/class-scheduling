@@ -206,16 +206,16 @@ function SubjectsNewPage() {
         title="New Subjects"
         description="Add subjects one at a time and review the curriculum structure before saving."
         actions={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              onClick={() => navigate("/subjects")}
-            >
-              Cancel
-            </Button>
-            {!noAcademicYear && (
+          noAcademicYear ? undefined : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                onClick={() => navigate("/subjects")}
+              >
+                Cancel
+              </Button>
               <Button
                 type="button"
                 block={false}
@@ -226,8 +226,8 @@ function SubjectsNewPage() {
               >
                 Save Curriculum{pending.length > 0 ? ` (${pending.length})` : ""}
               </Button>
-            )}
-          </>
+            </>
+          )
         }
       />
 
