@@ -2,7 +2,6 @@ import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { ApiError } from "~/lib/api";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
@@ -17,7 +16,6 @@ import {
   GenerationConflictsAlert,
   useAutoGenerate,
 } from "~/features/schedules/schedule-generator";
-import type { ScheduleSuggestion } from "~/services/schedule.service";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -30,7 +28,9 @@ import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
+import { ApiError } from "~/lib/api";
 import { programService } from "~/services/program.service";
+import type { ScheduleSuggestion } from "~/services/schedule.service";
 import {
   scheduleService,
   type ScheduleRoomOption,
@@ -38,7 +38,9 @@ import {
   type ScheduleYearLevelOption,
 } from "~/services/schedule.service";
 import { setService } from "~/services/set.service";
+import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
 
+import { formatDecimalHour, normalizeTime, timeToMinutes } from "~/lib/time";
 import type { Program } from "~/types/program";
 import {
   DAY_LABELS,
@@ -49,7 +51,7 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
-import { formatDecimalHour, normalizeTime, timeToMinutes } from "~/lib/time";
+import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 
 export function meta() {
@@ -106,7 +108,7 @@ export default function SchedulesNew() {
 function SchedulesNewPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel } = useSemesters();
-  const { schoolYears, defaultSchoolYear } = useSchoolYears();
+  const { schoolYears, defaultSchoolYear, loading: schoolYearsLoading } = useSchoolYears();
   const { dayLabels } = useDays();
 
   // Sourced from the schedule-scoped GET /regular_schedule/create-regular-class-schedules
@@ -128,6 +130,7 @@ function SchedulesNewPage() {
   const [sets, setSets] = useState<ClassSet[]>([]);
   const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
   const [subjects, setSubjects] = useState<ScheduleSubjectOption[]>([]);
+  const [allocations, setAllocations] = useState<WeeklyHourAllocation[] | null>(null);
 
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
@@ -176,6 +179,7 @@ function SchedulesNewPage() {
       .getCreationContext()
       .then(({ yearLevels }) => setYearLevels(yearLevels))
       .catch(() => setYearLevels([]));
+    weeklyHourService.list().then(setAllocations).catch(() => setAllocations([]));
   }, []);
 
   // Default to the most recent school year once the list loads; a manual pick isn't overridden.
@@ -245,6 +249,15 @@ function SchedulesNewPage() {
     };
   }, [selectedProgram, selectedYearLevel, semester, schoolYear, schoolYearValid]);
 
+  // Subject types the selected subjects need but no weekly hour allocation
+  // covers — the backend silently drops those subjects when auto-generating
+  // and refuses to save them, so warn before the user even tries.
+  const missingAllocationTypes = useMemo(() => {
+    if (allocations === null) return [];
+    const allocated = new Set(allocations.map((a) => a.subjectType));
+    return [...new Set(subjects.map((s) => s.subjectType))].filter((t) => !allocated.has(t));
+  }, [subjects, allocations]);
+
   const availableYearLevels = useMemo(
     () =>
       yearLevelIds.filter((yl) =>
@@ -311,6 +324,13 @@ function SchedulesNewPage() {
 
   async function handleAutoGenerate() {
     if (!selectedSet || !selectedProgram || !selectedYearLevel) return;
+
+    if (missingAllocationTypes.length > 0) {
+      setSaveError(
+        `No weekly hour allocation configured for subject type ${missingAllocationTypes.join(", ")}.`,
+      );
+      return;
+    }
 
     setSaveError(null);
     try {
@@ -625,7 +645,9 @@ function SchedulesNewPage() {
       : contextLocked
         ? "Remove all slots to change."
         : undefined;
-  const isLoading = programs === null;
+  const isLoading = programs === null || schoolYearsLoading;
+  /** Without at least one academic year there's nothing to schedule. */
+  const noAcademicYear = !schoolYearsLoading && schoolYears.length === 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -665,6 +687,19 @@ function SchedulesNewPage() {
         >
           <Spinner />
         </div>
+      ) : noAcademicYear ? (
+        <div className="mt-6">
+          <EmptyState
+            title="No school years yet"
+            action={
+              <Button type="button" block={false} onClick={() => navigate("/academic-year")}>
+                Create academic year
+              </Button>
+            }
+          >
+            Create the first academic year before scheduling classes.
+          </EmptyState>
+        </div>
       ) : (
         <div className="mt-4 flex flex-col gap-4">
           <AnimatePresence>
@@ -675,6 +710,31 @@ function SchedulesNewPage() {
               </Alert>
             )}
           </AnimatePresence>
+
+          {missingAllocationTypes.length > 0 && (
+            <Alert variant="destructive">
+              <AlertIcon />
+              <AlertDescription>
+                <div className="flex flex-col gap-3">
+                  <span>
+                    No weekly hour allocation configured for subject type{" "}
+                    <span className="font-semibold">{missingAllocationTypes.join(", ")}</span>.
+                    Auto-generation needs the weekly hours and meetings for every subject type first.
+                  </span>
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      block={false}
+                      onClick={() => navigate("/schedules/weekly-hour-allocations")}
+                    >
+                      Set weekly hour allocations
+                    </Button>
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <AnimatePresence>
             {generationConflicts.length > 0 && (

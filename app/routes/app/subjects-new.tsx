@@ -1,7 +1,9 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { useAuth } from "~/auth/auth-provider";
 import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { FieldChrome } from "~/components/ui/input";
@@ -17,6 +19,7 @@ import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
+import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
 import { subjectService } from "~/services/subject.service";
 import type { Program } from "~/types/program";
 import type { CreateSubjectInput, Subject } from "~/types/subject";
@@ -41,6 +44,8 @@ export default function SubjectsNew() {
 
 function SubjectsNewPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canManageAcademicYear = user?.role === "admin" || user?.role === "registrar";
   const formCardObserver = useRef<ResizeObserver | null>(null);
   /** Live height of the form card, so the structure card can cap itself to match and scroll internally. */
   const [formCardHeight, setFormCardHeight] = useState<number>();
@@ -61,6 +66,7 @@ function SubjectsNewPage() {
   const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
+  const [schoolYears, setSchoolYears] = useState<SchoolYearOption[] | null>(null);
   const [program, setProgram] = useState("");
   const [pending, setPending] = useState<PendingEntry[]>([]);
   /** Pending entry pulled back into the form for changes. */
@@ -86,6 +92,7 @@ function SubjectsNewPage() {
       .getOptions()
       .then((options) => setSubjectTypes(options.subjectType))
       .catch(() => {});
+    schoolYearService.list().then(setSchoolYears).catch(() => setSchoolYears([]));
   }, []);
 
   /** Unsaved work: staged entries or one being edited in the form. */
@@ -189,7 +196,9 @@ function SubjectsNewPage() {
     }
   }
 
-  const isLoading = allSubjects === null || programs === null;
+  const isLoading = allSubjects === null || programs === null || schoolYears === null;
+  /** Without at least one academic year the curriculum is missing its term context. */
+  const noAcademicYear = schoolYears !== null && schoolYears.length === 0;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -206,21 +215,40 @@ function SubjectsNewPage() {
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              block={false}
-              disabled={pending.length === 0}
-              isLoading={isSaving}
-              loadingLabel="Saving…"
-              onClick={handleSave}
-            >
-              Save Curriculum{pending.length > 0 ? ` (${pending.length})` : ""}
-            </Button>
+            {!noAcademicYear && (
+              <Button
+                type="button"
+                block={false}
+                disabled={pending.length === 0}
+                isLoading={isSaving}
+                loadingLabel="Saving…"
+                onClick={handleSave}
+              >
+                Save Curriculum{pending.length > 0 ? ` (${pending.length})` : ""}
+              </Button>
+            )}
           </>
         }
       />
 
-      {isLoading ? (
+      {noAcademicYear ? (
+        <div className="mt-6">
+          <EmptyState
+            title="No school years yet"
+            action={
+              canManageAcademicYear ? (
+                <Button type="button" block={false} onClick={() => navigate("/academic-year")}>
+                  Create academic year
+                </Button>
+              ) : undefined
+            }
+          >
+            {canManageAcademicYear
+              ? "Create the first academic year before adding subjects to a curriculum."
+              : "Ask an administrator or registrar to create the first academic year."}
+          </EmptyState>
+        </div>
+      ) : isLoading ? (
         <div
           role="status"
           aria-label="Loading curriculum"
