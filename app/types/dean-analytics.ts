@@ -1,182 +1,90 @@
-export type Status = {
-  tone: "neutral" | "good" | "warning" | "serious" | "critical";
-  icon: string;
-  label: string;
+/** The raw analytics payload `GET /deans/analytics` returns. The backend
+ * computes the numbers and ships no colours, chart types or layout — every
+ * presentational decision is made here. */
+
+export type LoadBand = {
+  band: string;
+  range_low_percent: number;
+  range_high_percent: number | null;
+  description: string;
+  count: number;
 };
 
-export type ThemeColors = {
-  surface: string;
-  page: string;
-  text_primary: string;
-  text_secondary: string;
-  text_muted: string;
-  gridline: string;
-  axis: string;
-  border: string;
-  track: string;
-  series_1: string;
-  series_2: string;
-  ordinal: string[];
-  status: Record<string, string>;
+export type InstructorLoad = {
+  teaching_term_id: number;
+  instructor_profile_id: number;
+  instructor_name: string;
+  employee_id: string | null;
+  account_active: boolean;
+  max_weekly_hours: number;
+  booked_hours: number;
+  remaining_hours: number;
+  load_percent: number;
+  load_band: string;
+  over_cap: boolean;
+  assigned_subjects: number;
+  scheduled_subjects: number;
+  sessions: number;
+  units: number;
+  programs: number;
 };
 
-export type Theme = {
-  light: ThemeColors;
-  dark: ThemeColors;
-  rules: Record<string, unknown>;
+export type DailyLoadHour = {
+  day_of_week: number;
+  day_name: string;
+  hours: number;
 };
 
-export type FilterDef = {
-  key: string;
-  label: string;
-  kind: string;
-  value: number;
-  display_value: string;
+export type CoverageByProgram = {
+  program_id: number;
+  program_abbrev: string;
+  program_name: string;
+  total_subjects: number;
+  staffed_subjects: number;
+  unstaffed_subjects: number;
+  staffed_percent: number;
+};
+
+export type CoverageSubject = {
+  program_id: number;
+  program_abbrev: string;
+  year_level: number;
+  subject_id: number;
+  subject_code: string;
+  descriptive_title: string;
+  subject_type: string | null;
+  units: number;
+  is_staffed: boolean;
+};
+
+export type AttentionItem = {
+  severity: "critical" | "warning" | "serious";
+  instructor_profile_id?: number;
+  teaching_term_id?: number;
+  instructor_name?: string;
+  program_id?: number;
+  program_abbrev?: string;
+  subject_id?: number;
+  subject_code?: string;
+  issue: string;
+  detail: string;
+  action: string;
 };
 
 export type Spread = {
   instructors: number;
-  median_percent: number;
-  p90_percent: number;
-  spread_percent: number;
-  balance: Status;
-  hint: string;
+  median_load_percent: number;
+  p90_load_percent: number;
+  coefficient_of_variation_percent: number;
+  evenness: string;
 };
 
 export type Insight = {
-  severity: string;
+  severity: "critical" | "warning" | "info" | "good";
   title: string;
   message: string;
   action: string | null;
-  widget_id: string | null;
-};
-
-export type StatTile = {
-  id: string;
-  kind: "stat_tile";
-  title: string;
-  value: number;
-  display_value: string;
-  unit: string;
-  meter?: { value: number; max: number; percent: number };
-  status: Status;
-  hint: string;
-};
-
-export type MeterRow = {
-  id: number;
-  instructor_profile_id: number;
-  label: string;
-  value: number;
-  max: number;
-  percent: number;
-  display_value: string;
-  secondary: string;
-  status: Status;
-  overflow: boolean;
-};
-
-export type MeterList = {
-  id: string;
-  kind: "meter_list";
-  title: string;
-  subtitle: string;
-  value_suffix: string;
-  track_color_role: string;
-  fill_color_by: string;
-  rows: MeterRow[];
-  empty_state: { title: string; message: string; icon: string };
-  table: { columns: { key: string; label: string; align: string; suffix?: string }[]; rows: Record<string, unknown>[] };
-};
-
-export type BarPoint = {
-  label: string;
-  full_label?: string;
-  value: number;
-  display_value: string;
-  direct_label: boolean;
-  color_role?: string;
-  range_label?: string;
-  description?: string;
-  tone?: string;
-};
-
-export type BarSeries = {
-  key: string;
-  label: string;
-  points: BarPoint[];
-};
-
-export type BarChart = {
-  id: string;
-  kind: "bar";
-  orientation: "horizontal" | "vertical";
-  title: string;
-  subtitle: string;
-  color_role: string;
-  series: BarSeries[];
-  legend: { show: boolean; reason?: string; position?: string };
-  axis: { x: { label: string; suffix?: string; begin_at_zero?: boolean }; y: { label: string } };
-  empty_state: { title: string; message: string; icon: string };
-  table: { columns: { key: string; label: string; align: string; suffix?: string }[]; rows: Record<string, unknown>[] };
-};
-
-export type StackedBarCategory = {
-  label: string;
-  full_label: string;
-  program_id: number;
-  values: Record<string, number>;
-  total: number;
-  percent: number;
-  display_value: string;
-  status: Status;
-};
-
-export type StackedBar = {
-  id: string;
-  kind: "stacked_bar";
-  orientation: "horizontal" | "vertical";
-  title: string;
-  subtitle: string;
-  series: { key: string; label: string; color_role: string }[];
-  categories: StackedBarCategory[];
-  legend: { show: boolean; position: string };
-  axis: { x: { label: string; begin_at_zero?: boolean }; y: { label: string } };
-  segment_gap_px: number;
-  empty_state: { title: string; message: string; icon: string };
-  table: { columns: { key: string; label: string; align: string; suffix?: string }[]; rows: Record<string, unknown>[] };
-};
-
-export type TableColumn = {
-  key: string;
-  label: string;
-  align: string;
-  wrap?: boolean;
-  suffix?: string;
-};
-
-export type TableRow = Record<string, unknown> & { status?: Status };
-
-export type TableWidget = {
-  id: string;
-  kind: "table";
-  title: string;
-  subtitle: string;
-  columns: TableColumn[];
-  rows: TableRow[];
-  total_rows?: number;
-  truncated?: boolean;
-  empty_state: { title: string; message: string; icon: string };
-};
-
-export type Widget = StatTile | MeterList | BarChart | StackedBar | TableWidget;
-
-export type Section = {
-  id: string;
-  title: string;
-  layout: "kpi_row" | "grid" | "full";
-  columns: number;
-  widgets: Widget[];
+  related_to: string | null;
 };
 
 export type DeanAnalyticsResponse = {
@@ -184,25 +92,42 @@ export type DeanAnalyticsResponse = {
     generated_at: string;
     department: string | null;
     department_id: number;
-    term: {
-      sy_id: number;
-      school_year: string;
-      sem_id: number;
-      semester: string;
-      semester_number: number;
-    };
-    title: string;
-    subtitle: string;
-    counts: {
-      instructors: number;
-      teaching_terms: number;
-      assignments: number;
-      curriculum_subjects: number;
-    };
+    sy_id: number;
+    school_year: string;
+    sem_id: number;
+    semester: string;
+    semester_number: number;
+    teaching_terms: number;
+    assignments: number;
+    curriculum_subjects: number;
   };
-  theme: Theme;
-  filters: FilterDef[];
-  insights: Insight[];
+  summary: {
+    roster_size: number;
+    instructors_staffed: number;
+    instructors_idle: number;
+    curriculum_subjects_total: number;
+    curriculum_subjects_staffed: number;
+    curriculum_subjects_unstaffed: number;
+    curriculum_staffed_percent: number;
+    capacity_total_hours: number;
+    capacity_booked_hours: number;
+    capacity_remaining_hours: number;
+    capacity_used_percent: number;
+    curriculum_hours_assigned: number;
+    assignments_total: number;
+    assignments_scheduled: number;
+    assignments_scheduled_percent: number;
+    instructors_over_cap: number;
+  };
+  definitions: Record<string, string>;
+  instructor_loads: InstructorLoad[];
+  load_bands: LoadBand[];
+  daily_load_hours: DailyLoadHour[];
+  curriculum_coverage: {
+    by_program: CoverageByProgram[];
+    subjects: CoverageSubject[];
+  };
+  attention: AttentionItem[];
   spread: Spread;
-  sections: Section[];
+  insights: Insight[];
 };
