@@ -106,7 +106,11 @@ function getStoredSession(): AuthSession | null {
   return loadSession();
 }
 
-/** POST /forgot-password — always 200 with the same generic message (anti-enumeration). */
+/**
+ * POST /forgot-password — 200 with the same generic message (anti-enumeration),
+ * or 429 when the backend's per-email/per-IP rate limit is exceeded (message
+ * surfaced verbatim like any other ApiError).
+ */
 async function requestPasswordReset(email: string): Promise<string> {
   const data = await apiPost<{ message?: string }>("/forgot-password", { email });
   return apiMessage(data);

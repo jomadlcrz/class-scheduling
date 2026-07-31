@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "~/hooks/use-auth";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Badge } from "~/components/ui/badge";
 import { RotateIcon } from "~/components/ui/icons";
@@ -122,7 +123,10 @@ function formatDate(value: string | null): string {
 }
 
 export function RecentlyDeleted() {
-  const [activeTab, setActiveTab] = useState<TabKey>("subjects");
+  const { user } = useAuth();
+  // AuthGuard only mounts this once the session is loaded, so the user's role
+  // is always known here. Super admin only gets Permissions, so start there.
+  const [activeTab, setActiveTab] = useState<TabKey>(() => (user?.role === "admin" ? "permissions" : "subjects"));
   const [subjects, setSubjects] = useState<DeletedSubject[] | null>(null);
   const [simpleItems, setSimpleItems] = useState<SimpleDeletedItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -130,6 +134,19 @@ export function RecentlyDeleted() {
   const [simpleRestoreTarget, setSimpleRestoreTarget] = useState<SimpleDeletedItem | null>(null);
 
   const activeSimpleTab = SIMPLE_TABS.find((t) => t.key === activeTab);
+
+  /** Role-based access to the recycle bins: super admin (admin) restores only
+   * Permissions; registrars never restore Permissions. Everyone else sees all. */
+  const visibleSimpleTabs = SIMPLE_TABS.filter((t) => {
+    if (user?.role === "admin") return t.key === "permissions";
+    if (user?.role === "registrar") return t.key !== "permissions";
+    return true;
+  });
+
+  const tabs: { key: TabKey; label: string }[] =
+    user?.role === "admin"
+      ? visibleSimpleTabs.map((t) => ({ key: t.key, label: t.label }))
+      : [{ key: "subjects", label: "Subjects" }, ...visibleSimpleTabs.map((t) => ({ key: t.key, label: t.label }))];
 
   function refresh() {
     setError(null);
@@ -166,11 +183,6 @@ export function RecentlyDeleted() {
     if (message) toast.success(message);
     refresh();
   }
-
-  const tabs: { key: TabKey; label: string }[] = [
-    { key: "subjects", label: "Subjects" },
-    ...SIMPLE_TABS.map((t) => ({ key: t.key, label: t.label })),
-  ];
 
   const isLoading = activeTab === "subjects" ? subjects === null : simpleItems === null;
   const isEmpty = activeTab === "subjects" ? subjects?.length === 0 : simpleItems?.length === 0;
