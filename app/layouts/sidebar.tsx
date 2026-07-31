@@ -17,6 +17,7 @@ import {
   FolderOpenIcon,
   GraduationHatIcon,
   LayersIcon,
+  LayoutGridIcon,
   MapIcon,
   ShieldIcon,
   ShieldUserIcon,
@@ -44,6 +45,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Academic Year", to: "/academic-year", icon: <CalendarIcon />, roles: ["registrar"] },
       { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
+      { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <LayoutGridIcon />, roles: ["dean", "registrar"] },
       { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", icon: <CalendarClockIcon />, roles: ["registrar"] },
       { label: "Subject Hour Overrides", to: "/schedules/subject-hour-overrides", icon: <ClockIcon />, roles: ["registrar"] },
       { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
