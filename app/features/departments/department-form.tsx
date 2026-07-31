@@ -24,9 +24,7 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
     const data = new FormData(e.currentTarget);
     const abbrev = String(data.get("dept-abbrev") ?? "").trim();
     const name = String(data.get("dept-name") ?? "").trim();
-    const buildingName = isEdit
-      ? department!.buildingName
-      : String(data.get("dept-building") ?? "");
+    const buildingName = String(data.get("dept-building") ?? "");
 
     const result = departmentSchema.safeParse({ abbrev, name, buildingName });
     if (!result.success) {
@@ -64,16 +62,11 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
         placeholder="College of Information Technology Education"
         defaultValue={department?.name ?? ""}
       />
-      <FieldChrome
-        id="dept-building"
-        label="Building"
-        hint={isEdit ? "The building can't be changed after creation." : undefined}
-      >
+      <FieldChrome id="dept-building" label="Building">
         <Select
           items={buildings.map((b) => ({ value: b.name, label: b.name }))}
           name="dept-building"
           defaultValue={defaultBuildingName}
-          disabled={isEdit}
         >
           <SelectTrigger id="dept-building">
             <SelectValue />

@@ -68,16 +68,11 @@ export function RoomForm({ room, buildings, roomTypes, programs, onSubmit, onCan
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
-      <FieldChrome
-        id="room-building"
-        label="Building"
-        hint={isEdit ? "The building can't be changed after creation." : undefined}
-      >
+      <FieldChrome id="room-building" label="Building">
         <Select
           items={buildings.map((b) => ({ value: b.name, label: b.name }))}
           name="room-building"
           defaultValue={defaultBuildingName}
-          disabled={isEdit}
         >
           <SelectTrigger id="room-building">
             <SelectValue />
@@ -118,17 +113,12 @@ export function RoomForm({ room, buildings, roomTypes, programs, onSubmit, onCan
         placeholder="Room 101"
         defaultValue={room?.name ?? ""}
       />
-      <FieldChrome
-        id="room-type"
-        label="Type"
-        hint={isEdit ? "The room type can't be changed after creation." : undefined}
-      >
+      <FieldChrome id="room-type" label="Type">
         <Select
           items={roomTypes.map((t) => ({ value: t, label: t }))}
           name="room-type"
           value={type}
           onValueChange={(v) => setType(v as string)}
-          disabled={isEdit}
         >
           <SelectTrigger id="room-type">
             <SelectValue />

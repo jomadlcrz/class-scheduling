@@ -25,10 +25,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    // The backend links programs to departments by name; not updatable afterwards.
-    const departmentName = isEdit
-      ? departments.find((d) => d.abbrev === program!.departmentAbbrev)?.name ?? "unchanged"
-      : String(data.get("prog-department") ?? "");
+    const departmentName = String(data.get("prog-department") ?? "");
     const abbrev = String(data.get("prog-abbrev") ?? "").trim().toUpperCase();
     const name = String(data.get("prog-name") ?? "").trim();
     const type = String(data.get("prog-type") ?? "");
@@ -58,16 +55,11 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
-      <FieldChrome
-        id="prog-department"
-        label="Department"
-        hint={isEdit ? "The department can't be changed after creation." : undefined}
-      >
+      <FieldChrome id="prog-department" label="Department">
         <Select
           items={departments.map((d) => ({ value: d.name, label: `${d.abbrev} — ${d.name}` }))}
           name="prog-department"
           defaultValue={defaultDeptName}
-          disabled={isEdit}
         >
           <SelectTrigger id="prog-department">
             <SelectValue />
