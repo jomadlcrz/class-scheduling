@@ -1,6 +1,4 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
-import { Skeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -9,16 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { deanService } from "~/services/dean.service";
-import { schoolYearService } from "~/services/school-year.service";
-import { semesterService } from "~/services/semester.service";
 import type { AttentionItem, DeanAnalyticsResponse, Insight } from "~/types/dean-analytics";
 import {
   ChartCard,
@@ -29,29 +18,21 @@ import {
   SpreadCard,
   StatTile,
   chartStatusColor,
+  loadBandTone,
+  ratioTone,
 } from "~/features/dashboard/dashboard-charts";
-
-const EASE_OUT = [0.22, 1, 0.36, 1] as const;
-
-const staggerSections = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
-
-const staggerWidgets = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
-};
-
-const fadeSlideUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
-};
-
-const popCard = {
-  hidden: { opacity: 0, scale: 0.96 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: EASE_OUT } },
-};
+import {
+  EASE_OUT,
+  LoadingSkeleton,
+  TermSelectors,
+  UpdateIndicator,
+  fadeSlideUp,
+  formatGeneratedAt,
+  popCard,
+  staggerSections,
+  staggerWidgets,
+  useTermData,
+} from "~/features/dashboard/dashboard-shared";
 
 const insightVariant = {
   hidden: { opacity: 0, y: 12, scale: 0.97 },
@@ -65,27 +46,6 @@ const SEVERITY_COLORS: Record<string, string> = {
   info: "var(--color-navy-500)",
   good: chartStatusColor("good"),
 };
-
-/** Load band ladder: the same thresholds the backend uses for its bands. */
-function bandTone(pct: number): string {
-  if (pct > 100) return "critical";
-  if (pct >= 90) return "serious";
-  if (pct >= 50) return "good";
-  if (pct > 0) return "warning";
-  return "neutral";
-}
-
-function ratioTone(pct: number): string {
-  if (pct >= 90) return "good";
-  if (pct >= 50) return "warning";
-  return "serious";
-}
-
-function formatGeneratedAt(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-}
 
 type Tile = {
   title: string;
@@ -135,7 +95,7 @@ function buildTiles(
       displayValue: `${s.capacity_used_percent}%`,
       unit: `${s.capacity_booked_hours} h of ${s.capacity_total_hours} h cap`,
       hint: d.capacity_used_percent,
-      tone: bandTone(s.capacity_used_percent),
+      tone: loadBandTone(s.capacity_used_percent),
       badge: s.instructors_over_cap > 0 ? `${s.instructors_over_cap} over cap` : "Within caps",
       meterPercent: s.capacity_used_percent,
     },
@@ -167,60 +127,6 @@ function buildTiles(
       badge: s.instructors_over_cap > 0 ? "Needs attention" : "None",
     },
   ];
-}
-
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-56" />
-          <Skeleton className="h-4 w-80" />
-        </div>
-        <div className="flex gap-3">
-          <Skeleton className="h-9 w-44 rounded-lg" />
-          <Skeleton className="h-9 w-44 rounded-lg" />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
-            <Skeleton className="mb-3 h-3 w-1/3" />
-            <Skeleton className="mb-2 h-8 w-1/2" />
-            <Skeleton className="mb-3 h-3 w-1/4" />
-            <Skeleton className="h-1.5 w-full" />
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Skeleton className="h-64 rounded-lg" />
-        <Skeleton className="h-64 rounded-lg" />
-        <Skeleton className="h-64 rounded-lg" />
-      </div>
-    </div>
-  );
-}
-
-function UpdateIndicator({ visible }: { visible: boolean }) {
-  return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-navy-800 px-3 py-1.5 text-xs text-white shadow-lg dark:bg-navy-600"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
-            className="size-3 rounded-full border-2 border-white border-t-transparent"
-          />
-          Updating…
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
 }
 
 function InsightCards({ insights }: { insights: Insight[] }) {
@@ -339,62 +245,18 @@ function AttentionTable({ items }: { items: AttentionItem[] }) {
 }
 
 export function DeanDashboard() {
-  const [data, setData] = useState<DeanAnalyticsResponse | null>(null);
-  const [syId, setSyId] = useState<number>(0);
-  const [semId, setSemId] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [years, setYears] = useState<{ id: number; schoolYear: string }[]>([]);
-  const [sems, setSems] = useState<{ id: number; semester: string; semesterNumber: number }[]>([]);
-
-  const fetchTerms = useCallback(async () => {
-    try {
-      const [y, s] = await Promise.all([
-        schoolYearService.list(),
-        semesterService.list(),
-      ]);
-      setYears(y);
-      setSems(s);
-      const current = y.at(0);
-      const first = s.find((s) => s.semesterNumber !== 3) ?? s.at(0);
-      if (current) setSyId(current.id);
-      if (first) setSemId(first.id);
-    } catch {
-      setYears([]);
-      setSems([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTerms();
-  }, [fetchTerms]);
-
-  useEffect(() => {
-    if (!syId || !semId) return;
-    let cancelled = false;
-    const isInitial = !data;
-    if (!isInitial) setRefreshing(true);
-    if (isInitial) setLoading(true);
-    setError(null);
-    deanService
-      .getAnalytics(syId, semId)
-      .then((d) => {
-        if (!cancelled) setData(d);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load dashboard data.");
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-          setRefreshing(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [syId, semId]);
+  const {
+    data,
+    syId,
+    semId,
+    setSyId,
+    setSemId,
+    loading,
+    error,
+    refreshing,
+    years,
+    sems,
+  } = useTermData<DeanAnalyticsResponse>((sy, sem) => deanService.getAnalytics(sy, sem));
 
   const tiles = data ? buildTiles(data.summary, data.definitions) : [];
 
@@ -450,53 +312,14 @@ export function DeanDashboard() {
                     {formatGeneratedAt(data.meta.generated_at)}
                   </p>
                 </div>
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.3 }}
-                  className="flex shrink-0 gap-3"
-                >
-                  <div className="w-44">
-                    <Select
-                      items={years.map((y) => ({ value: String(y.id), label: y.schoolYear }))}
-                      value={syId ? String(syId) : ""}
-                      onValueChange={(v) => {
-                        if (v) setSyId(Number(v));
-                      }}
-                    >
-                      <SelectTrigger id="dashboard-sy">
-                        <SelectValue placeholder="School year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {years.map((y) => (
-                          <SelectItem key={y.id} value={String(y.id)}>
-                            {y.schoolYear}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="w-44">
-                    <Select
-                      items={sems.map((s) => ({ value: String(s.id), label: s.semester }))}
-                      value={semId ? String(semId) : ""}
-                      onValueChange={(v) => {
-                        if (v) setSemId(Number(v));
-                      }}
-                    >
-                      <SelectTrigger id="dashboard-sem">
-                        <SelectValue placeholder="Semester" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sems.map((s) => (
-                          <SelectItem key={s.id} value={String(s.id)}>
-                            {s.semester}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </motion.div>
+                <TermSelectors
+                  years={years}
+                  sems={sems}
+                  syId={syId}
+                  semId={semId}
+                  onSyId={setSyId}
+                  onSemId={setSemId}
+                />
               </motion.div>
 
               {/* ─── Insights ─── */}

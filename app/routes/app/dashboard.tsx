@@ -5,6 +5,7 @@ import { staggerContainer } from "~/landing/motion";
 import { fetchDashboardGreeting, type DashboardGreeting } from "~/services/dashboard.service";
 import { DeanDashboard } from "~/features/dashboard/dean-dashboard";
 import { GreetingsCard } from "~/features/dashboard/greetings-card";
+import { RegistrarDashboard } from "~/features/dashboard/registrar-dashboard";
 
 export function meta() {
   return [
@@ -37,6 +38,7 @@ export default function Dashboard() {
       )}
 
       {user?.role === "dean" && <DeanDashboard />}
+      {user?.role === "registrar" && <RegistrarDashboard />}
     </motion.div>
   );
 }

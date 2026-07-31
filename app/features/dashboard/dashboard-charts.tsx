@@ -7,12 +7,15 @@ import {
   Cell,
   LabelList,
   Legend,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import { useTheme } from "~/hooks/use-theme";
+import { EASE_OUT } from "~/features/dashboard/dashboard-shared";
 import type {
   CoverageByProgram,
   DailyLoadHour,
@@ -20,8 +23,12 @@ import type {
   LoadBand,
   Spread,
 } from "~/types/dean-analytics";
-
-const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+import type {
+  DepartmentStaffing,
+  Enrollment,
+  LabSummary,
+  ScheduleCompletionProgram,
+} from "~/types/registrar-analytics";
 
 /** Status tones — the same four status meanings everywhere (tiles, meters,
  * table severity), always accompanied by a label in the UI. */
@@ -44,6 +51,22 @@ const BAND_FILLS: Record<string, string> = {
 
 export function chartStatusColor(tone: string): string {
   return STATUS_COLORS[tone] ?? STATUS_COLORS.neutral;
+}
+
+/** Load band ladder — the same thresholds the backend uses for its bands. */
+export function loadBandTone(pct: number): string {
+  if (pct > 100) return "critical";
+  if (pct >= 90) return "serious";
+  if (pct >= 50) return "good";
+  if (pct > 0) return "warning";
+  return "neutral";
+}
+
+/** A higher-is-better ratio: >=90 on track, >=50 watch, below needs attention. */
+export function ratioTone(pct: number): string {
+  if (pct >= 90) return "good";
+  if (pct >= 50) return "warning";
+  return "serious";
 }
 
 function useChartColors() {
@@ -288,17 +311,26 @@ export function DailyHoursChart({ days }: { days: DailyLoadHour[] }) {
   );
 }
 
-// ── Curriculum coverage by program (horizontal stacked) ─────────────────────
+// ── Horizontal stacked bar rows (generic, used by both dashboards) ──────────
 
-export function CoverageStackedChart({ rows }: { rows: CoverageByProgram[] }) {
+export type StackedBarSeries = { key: string; label: string; color: string };
+
+export function StackedBarRows({
+  data,
+  yKey,
+  categoryWidth = 64,
+  series,
+  valueFormatter,
+}: {
+  data: Record<string, string | number>[];
+  yKey: string;
+  categoryWidth?: number;
+  series: StackedBarSeries[];
+  valueFormatter?: (v: number) => string;
+}) {
   const c = useChartColors();
-  const data = rows.map((r) => ({
-    program: r.program_abbrev,
-    Staffed: r.staffed_subjects,
-    Unstaffed: r.unstaffed_subjects,
-  }));
   if (data.length === 0) {
-    return <ChartEmpty message="No active programs in this department." />;
+    return <ChartEmpty message="No data for this term." />;
   }
   const height = Math.max(180, data.length * 44);
   return (
@@ -306,13 +338,222 @@ export function CoverageStackedChart({ rows }: { rows: CoverageByProgram[] }) {
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16, top: 4, bottom: 4 }} barSize={20}>
         <CartesianGrid horizontal={false} stroke={c.grid} />
         <XAxis type="number" tick={{ fill: c.tick, fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-        <YAxis type="category" dataKey="program" width={64} tick={{ fill: c.tick, fontSize: 11 }} axisLine={false} tickLine={false} />
-        <Tooltip cursor={{ fill: c.cursor }} content={<ChartTip formatter={(v) => `${v} subject${v === 1 ? "" : "s"}`} />} />
+        <YAxis type="category" dataKey={yKey} width={categoryWidth} tick={{ fill: c.tick, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <Tooltip cursor={{ fill: c.cursor }} content={<ChartTip formatter={valueFormatter} />} />
         <Legend
           formatter={(value) => <span className="text-xs text-slate-500 dark:text-slate-400">{value}</span>}
         />
-        <Bar dataKey="Staffed" stackId="cov" fill={STATUS_COLORS.good} radius={[4, 0, 0, 4]} animationDuration={600} />
-        <Bar dataKey="Unstaffed" stackId="cov" fill={STATUS_COLORS.serious} radius={[0, 4, 4, 0]} animationDuration={600} />
+        {series.map((s, i) => (
+          <Bar
+            key={s.key}
+            dataKey={s.key}
+            name={s.label}
+            stackId="stack"
+            fill={s.color}
+            radius={series.length === 1 ? [4, 4, 4, 4] : i === 0 ? [4, 0, 0, 4] : i === series.length - 1 ? [0, 4, 4, 0] : 0}
+            animationDuration={600}
+          />
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function CoverageStackedChart({ rows }: { rows: CoverageByProgram[] }) {
+  const data = rows.map((r) => ({
+    program: r.program_abbrev,
+    Staffed: r.staffed_subjects,
+    Unstaffed: r.unstaffed_subjects,
+  }));
+  return (
+    <StackedBarRows
+      data={data}
+      yKey="program"
+      series={[
+        { key: "Staffed", label: "Staffed", color: STATUS_COLORS.good },
+        { key: "Unstaffed", label: "Unstaffed", color: STATUS_COLORS.serious },
+      ]}
+      valueFormatter={(v) => `${v} subject${v === 1 ? "" : "s"}`}
+    />
+  );
+}
+
+export function ScheduleCompletionChart({ programs }: { programs: ScheduleCompletionProgram[] }) {
+  const data = programs.map((p) => ({
+    program: p.program_abbrev,
+    Scheduled: p.scheduled_sets,
+    Unscheduled: p.unscheduled_sets,
+  }));
+  return (
+    <StackedBarRows
+      data={data}
+      yKey="program"
+      series={[
+        { key: "Scheduled", label: "Scheduled", color: STATUS_COLORS.good },
+        { key: "Unscheduled", label: "Unscheduled", color: STATUS_COLORS.serious },
+      ]}
+      valueFormatter={(v) => `${v} set${v === 1 ? "" : "s"}`}
+    />
+  );
+}
+
+// ── Enrollment donut ─────────────────────────────────────────────────────────
+
+export function EnrollmentDonut({ enrollment }: { enrollment: Enrollment }) {
+  const c = useChartColors();
+  const data = [
+    { name: "Regular", value: enrollment.regular_count, color: STATUS_COLORS.good },
+    { name: "Irregular", value: enrollment.irregular_count, color: "var(--color-navy-500)" },
+  ];
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+  if (total === 0) {
+    return <ChartEmpty message="No students enrolled this term." />;
+  }
+  return (
+    <div className="flex flex-col items-center justify-center gap-5 sm:flex-row">
+      <div className="relative h-44 w-44 shrink-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={54}
+              outerRadius={76}
+              paddingAngle={3}
+              cornerRadius={6}
+              strokeWidth={0}
+              animationDuration={600}
+            >
+              {data.map((d) => (
+                <Cell key={d.name} fill={d.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<ChartTip formatter={(v) => `${v} student${v === 1 ? "" : "s"}`} />} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white">{total}</span>
+          <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            enrolled
+          </span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {data.map((d) => (
+          <div key={d.name} className="flex items-center gap-2 text-xs">
+            <span className="size-2.5 shrink-0 rounded-full" style={{ background: d.color }} />
+            <span className="text-slate-600 dark:text-slate-400">{d.name}</span>
+            <span className={`ml-4 font-medium tabular-nums ${c.label}`}>{d.value}</span>
+          </div>
+        ))}
+        {enrollment.irregular_pending_count > 0 && (
+          <p className={`pt-1 text-[11px] ${c.muted}`}>
+            {enrollment.irregular_pending_count} irregular student
+            {enrollment.irregular_pending_count === 1 ? "" : "s"} still need a seat
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Lab capacity meters ──────────────────────────────────────────────────────
+
+export function LabCapacityMeters({
+  laboratories,
+  limit = 8,
+}: {
+  laboratories: LabSummary[];
+  limit?: number;
+}) {
+  if (laboratories.length === 0) {
+    return <ChartEmpty message="No lab rooms configured for this term." />;
+  }
+  const shown = laboratories.slice(0, limit);
+  const overflow = laboratories.length - shown.length;
+  return (
+    <div className="space-y-3">
+      {shown.map((lab, i) => {
+        const pct = Math.min(lab.hour_utilization_percent, 100);
+        const color = chartStatusColor(loadBandTone(lab.hour_utilization_percent));
+        return (
+          <motion.div
+            key={lab.room_id}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.04 * i, duration: 0.3, ease: EASE_OUT }}
+            whileHover={{ x: 3, transition: { duration: 0.15 } }}
+          >
+            <div className="mb-1 flex items-center justify-between gap-2 text-xs">
+              <span className="truncate font-medium text-slate-700 dark:text-slate-300">
+                {lab.room_name}
+              </span>
+              <span className="shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
+                {lab.hour_utilization_percent}% · {lab.booked_hours} h
+              </span>
+            </div>
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ delay: 0.05 * i, duration: 0.6, ease: EASE_OUT }}
+                className="h-full rounded-full"
+                style={{ backgroundColor: color }}
+              />
+              {lab.is_fully_booked && (
+                <div className="absolute right-0 top-1/2 h-3 w-0.5 -translate-y-1/2 rounded bg-red-500" />
+              )}
+            </div>
+            <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">
+              {lab.building}
+              {lab.is_fully_booked
+                ? " · fully booked"
+                : ` · ${Math.max(lab.window_capacity_hours - lab.booked_hours, 0)} h free`}
+            </p>
+          </motion.div>
+        );
+      })}
+      {overflow > 0 && (
+        <p className="pt-1 text-center text-[11px] text-slate-400 dark:text-slate-500">
+          +{overflow} more labs.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Teaching capacity by department ──────────────────────────────────────────
+
+export function StaffingByDepartmentChart({ departments }: { departments: DepartmentStaffing[] }) {
+  const c = useChartColors();
+  const data = departments.map((d) => ({
+    name: d.department_abbrev,
+    pct: d.capacity_used_percent,
+    fill: chartStatusColor(loadBandTone(d.capacity_used_percent)),
+  }));
+  if (data.length === 0) {
+    return <ChartEmpty message="No active departments configured." />;
+  }
+  const height = Math.max(180, data.length * 44);
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data} layout="vertical" margin={{ left: 8, right: 44, top: 4, bottom: 4 }} barSize={20}>
+        <CartesianGrid horizontal={false} stroke={c.grid} />
+        <XAxis type="number" unit="%" tick={{ fill: c.tick, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" width={64} tick={{ fill: c.tick, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <Tooltip cursor={{ fill: c.cursor }} content={<ChartTip formatter={(v) => `${v}%`} />} />
+        <Bar dataKey="pct" name="Capacity used" radius={[0, 4, 4, 0]} animationDuration={600}>
+          {data.map((d) => (
+            <Cell key={d.name} fill={d.fill} />
+          ))}
+          <LabelList
+            dataKey="pct"
+            position="right"
+            style={{ fill: c.tick, fontSize: 11, fontWeight: 600 }}
+            formatter={(v) => `${v}%`}
+          />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
