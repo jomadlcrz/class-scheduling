@@ -24,7 +24,6 @@ import {
   TermSelectors,
   UpdateIndicator,
   fadeSlideUp,
-  formatGeneratedAt,
   popCard,
   staggerSections,
   staggerWidgets,
@@ -226,10 +225,6 @@ export function RegistrarDashboard() {
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                     Registration overview
                   </h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {data.meta.school_year} · {data.meta.semester} · updated{" "}
-                    {formatGeneratedAt(data.meta.generated_at)}
-                  </p>
                 </div>
                 <TermSelectors
                   years={years}
