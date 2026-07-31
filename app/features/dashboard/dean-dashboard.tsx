@@ -194,11 +194,9 @@ function AttentionTable({ items }: { items: AttentionItem[] }) {
     <motion.div variants={popCard}>
       <Table>
         <TableHead>
-          <TableRow>
-            <TableHeader>Who</TableHeader>
-            <TableHeader>Issue</TableHeader>
-            <TableHeader className="hidden md:table-cell">Action</TableHeader>
-          </TableRow>
+          <TableHeader>Who</TableHeader>
+          <TableHeader>Issue</TableHeader>
+          <TableHeader className="hidden md:table-cell">Action</TableHeader>
         </TableHead>
         <TableBody>
           {shown.map((item, i) => (

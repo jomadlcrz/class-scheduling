@@ -134,11 +134,9 @@ function UnscheduledSetsTable({ sets }: { sets: RegistrarAnalyticsResponse["sche
     <motion.div variants={popCard}>
       <Table>
         <TableHead>
-          <TableRow>
-            <TableHeader>Set</TableHeader>
-            <TableHeader>Program</TableHeader>
-            <TableHeader>Year</TableHeader>
-          </TableRow>
+          <TableHeader>Set</TableHeader>
+          <TableHeader>Program</TableHeader>
+          <TableHeader>Year</TableHeader>
         </TableHead>
         <TableBody>
           {shown.map((set) => (
