@@ -1,17 +1,9 @@
 import { AccordionItem } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
 import { Tooltip } from "~/components/ui/tooltip";
+import { programSetLabel } from "~/lib/section-label";
 import type { LabRoom, LabSession } from "~/types/lab-analysis";
 import { yearLevelStyle } from "./year-level-styles";
-
-function programSetLabel(
-  programAbbrev: string | null,
-  yearLevel: number | null,
-  setCode: string | null,
-): string | null {
-  const parts = [programAbbrev, [yearLevel, setCode].filter((v) => v != null).join("")].filter(Boolean);
-  return parts.length > 0 ? parts.join("-") : null;
-}
 
 function sessionTooltip(session: LabSession): string {
   const parts = [

@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, type ReactNode } from "react";
+﻿import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 type PopoverProps = {
@@ -12,6 +12,8 @@ type PopoverProps = {
   className?: string;
   /** Panel contents; receives a `close` helper to dismiss after a selection. */
   children: (close: () => void) => ReactNode;
+  /** Called with the new state whenever the popover opens or closes. */
+  onOpenChange?: (open: boolean) => void;
 };
 
 const panelBase =
@@ -22,11 +24,23 @@ const panelBase =
  * Positions under the trigger, flips above when there isn't room below, and
  * clamps inside the viewport — recomputing on scroll/resize.
  */
-export function Popover({ label, trigger, triggerClassName, className, children }: PopoverProps) {
+export function Popover({ label, trigger, triggerClassName, className, children, onOpenChange }: PopoverProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    onOpenChange?.(false);
+  }, [onOpenChange]);
+
+  const toggle = useCallback(() => {
+    setOpen((value) => {
+      onOpenChange?.(!value);
+      return !value;
+    });
+  }, [onOpenChange]);
 
   useEffect(() => {
     if (!open) {
@@ -55,10 +69,10 @@ export function Popover({ label, trigger, triggerClassName, className, children 
     place();
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
-      if (!btnRef.current?.contains(t) && !menuRef.current?.contains(t)) setOpen(false);
+      if (!btnRef.current?.contains(t) && !menuRef.current?.contains(t)) close();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") close();
     };
     document.addEventListener("pointerdown", onDown);
     window.addEventListener("keydown", onKey);
@@ -70,14 +84,14 @@ export function Popover({ label, trigger, triggerClassName, className, children 
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
     };
-  }, [open]);
+  }, [open, close]);
 
   return (
     <>
       <button
         ref={btnRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={label}

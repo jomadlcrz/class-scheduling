@@ -1,7 +1,6 @@
 ﻿import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
-  BellIcon,
   ChevronDownIcon,
   LogoutIcon,
   MenuIcon,
@@ -12,16 +11,11 @@ import {
   UserIcon,
 } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
+import { NotificationBell } from "~/features/notifications/notification-bell";
 import { useAuth } from "~/hooks/use-auth";
 import { useTheme, type ThemePreference } from "~/hooks/use-theme";
 import { profilePhotoService } from "~/services/profile-photo.service";
-
-/** Static placeholders until a notifications backend exists. */
-const NOTIFICATIONS = [
-  { title: "New schedule published", time: "5 minutes ago", date: "13 JUL" },
-  { title: "Room conflict detected", time: "18 minutes ago", date: "13 JUL" },
-  { title: "Faculty load report ready", time: "1 hour ago", date: "12 JUL" },
-];
+import { NOTIFICATION_RECIPIENT_ROLES } from "~/types/notification";
 
 const iconButtonClassName =
   "flex cursor-pointer items-center rounded-lg px-1 py-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8";
@@ -101,53 +95,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
       <div className="flex-1" />
 
-      {user && (
-        <Popover
-          label="Open notifications"
-          trigger={
-            <span className="relative flex size-7 items-center justify-center">
-              <BellIcon />
-              <span
-                aria-hidden="true"
-                className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-red-600 font-body text-[0.6rem] font-bold text-white"
-              >
-                {NOTIFICATIONS.length}
-              </span>
-            </span>
-          }
-          triggerClassName={iconButtonClassName}
-          className="w-80 px-1.5"
-        >
-          {(close) => (
-            <>
-              <div className="mb-1 border-b border-slate-100 px-2.5 py-2.5 font-body text-sm font-semibold text-slate-800 dark:border-white/10 dark:text-mist-100">
-                Notifications
-              </div>
-              {NOTIFICATIONS.map((notification) => (
-                <button
-                  key={notification.title}
-                  type="button"
-                  role="menuitem"
-                  onClick={close}
-                  className={`${menuItemClassName} justify-between gap-3`}
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium text-slate-800 dark:text-slate-100">
-                      {notification.title}
-                    </span>
-                    <span className="block text-xs text-slate-500 dark:text-slate-400">
-                      {notification.time}
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-[0.65rem] font-semibold text-slate-400 dark:text-slate-500">
-                    {notification.date}
-                  </span>
-                </button>
-              ))}
-            </>
-          )}
-        </Popover>
-      )}
+      {user && NOTIFICATION_RECIPIENT_ROLES.includes(user.role) && <NotificationBell />}
 
       {user && (
         <Popover
