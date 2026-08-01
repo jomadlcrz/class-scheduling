@@ -9,7 +9,7 @@ type RecycleBinResponse = {
   desc_title: string;
   units: number;
   subject_type: string;
-  prerequisites: { required: string }[];
+  prerequisites?: { subject_code: string }[];
 }[];
 
 export type DeletedSubject = {
@@ -38,7 +38,7 @@ async function list(): Promise<DeletedSubject[]> {
     descTitle: d.desc_title,
     units: d.units,
     subjectType: d.subject_type,
-    prerequisites: d.prerequisites.map((p) => p.required),
+    prerequisites: (d.prerequisites ?? []).map((p) => p.subject_code),
   }));
 }
 
