@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import { AuthHeading, AuthSplitLayout } from "~/auth/auth-layout";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { ResultState } from "~/components/feedback/result-state";
+import { isJwtExpired } from "~/lib/session";
 import { authService } from "~/services/auth.service";
 
 export function meta() {
@@ -19,19 +20,20 @@ export function meta() {
  * Public route reached via the emailed reset link (?token=...). Unlike the
  * authenticated area, access here is gated by the token itself rather than
  * a login session — a session redirect would strip the token and lock the
- * user out. The token is validated by POST /auth/reset-password on submit;
- * any problem (expired, invalid, already used) surfaces as the backend's
- * message inline via the form.
+ * user out. The token's exp claim is checked up front so an expired link
+ * shows the expired state instead of a doomed form; the token is then
+ * validated by POST /reset-password on submit (already-used or otherwise
+ * invalid tokens surface their backend message inline via the form).
  */
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
-  if (!token) return <InvalidLinkState />;
+  const invalid = !token || isJwtExpired(token);
 
   return (
     <AuthSplitLayout label="ACCOUNT SECURITY" backHref="/login" backLabel="Back to log in">
-      <ResetPasswordContent token={token} />
+      {invalid ? <InvalidLinkState /> : <ResetPasswordContent token={token} />}
     </AuthSplitLayout>
   );
 }

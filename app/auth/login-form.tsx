@@ -85,11 +85,11 @@ export function LoginForm() {
 
       {/* OR divider */}
       <div className="my-1 flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
-        <span className="font-body text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <div className="h-px flex-1 bg-slate-300 dark:bg-white/20" />
+        <span className="font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           OR
         </span>
-        <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+        <div className="h-px flex-1 bg-slate-300 dark:bg-white/20" />
       </div>
 
       {/* Forgot Password link below OR divider */}
@@ -103,21 +103,21 @@ export function LoginForm() {
       </div>
 
       {/* Border / separator line */}
-      <div className="my-1 border-t border-slate-200 dark:border-white/10" />
+      <div className="my-1 border-t border-slate-300 dark:border-white/20" />
 
       {/* Legal agreement footer */}
-      <p className="text-center font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+      <p className="text-center font-body text-xs leading-relaxed text-slate-600 dark:text-slate-300">
         By logging in, you agree to our{" "}
         <a
           href="/terms-of-use"
-          className="font-semibold text-blue-600 hover:underline focus-visible:outline-none focus-visible:underline dark:text-blue-400"
+          className="font-semibold text-blue-600 hover:text-blue-700 hover:underline focus-visible:outline-none focus-visible:underline dark:text-blue-400 dark:hover:text-blue-300"
         >
           Terms of Use
         </a>{" "}
         and{" "}
         <a
           href="/privacy-policy"
-          className="font-semibold text-blue-600 hover:underline focus-visible:outline-none focus-visible:underline dark:text-blue-400"
+          className="font-semibold text-blue-600 hover:text-blue-700 hover:underline focus-visible:outline-none focus-visible:underline dark:text-blue-400 dark:hover:text-blue-300"
         >
           Privacy Policy
         </a>

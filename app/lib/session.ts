@@ -62,6 +62,12 @@ function isExpired(payload: { exp: number }): boolean {
   return typeof payload.exp === "number" && payload.exp * 1000 <= Date.now();
 }
 
+/** Whether a JWT is already past its exp claim; true when unreadable or exp missing. */
+export function isJwtExpired(token: string): boolean {
+  const payload = decodeTokenPayload<{ exp: number }>(token);
+  return !payload || isExpired(payload);
+}
+
 /** Builds the app User from token claims; null when the token is unreadable. */
 export function userFromToken(token: string): User | null {
   const payload = decodeTokenPayload<TokenPayload>(token);
