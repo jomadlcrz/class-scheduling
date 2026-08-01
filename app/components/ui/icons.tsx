@@ -320,14 +320,24 @@ export function ChevronRightIcon() {
   );
 }
 
-export function MailIcon() {
+export function MailIcon({ size = 20 }: { size?: number } = {}) {
   return (
-    <IconBase size={20}>
+    <IconBase size={size}>
       <rect x="2" y="4" width="20" height="16" rx="2" />
       <polyline points="22 6 12 13 2 6" />
     </IconBase>
   );
 }
+
+export function LockIcon({ size = 18 }: { size?: number } = {}) {
+  return (
+    <IconBase size={size}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </IconBase>
+  );
+}
+
 
 export function EditIcon() {
   return (

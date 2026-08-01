@@ -45,18 +45,26 @@ type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "clas
   label: string;
   labelEnd?: ReactNode;
   hint?: string;
+  icon?: ReactNode;
 };
 
-export function Input({ id, label, labelEnd, hint, required, ...inputProps }: InputProps) {
+export function Input({ id, label, labelEnd, hint, required, icon, ...inputProps }: InputProps) {
   return (
     <FieldChrome id={id} label={label} labelEnd={labelEnd} hint={hint} required={required}>
-      <input
-        id={id}
-        name={id}
-        aria-describedby={hint ? `${id}-hint` : undefined}
-        className={inputClassName}
-        {...inputProps}
-      />
+      <div className="relative">
+        {icon && (
+          <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400">
+            {icon}
+          </div>
+        )}
+        <input
+          id={id}
+          name={id}
+          aria-describedby={hint ? `${id}-hint` : undefined}
+          className={`${inputClassName} ${icon ? "pl-10" : ""}`}
+          {...inputProps}
+        />
+      </div>
     </FieldChrome>
   );
 }
@@ -67,6 +75,7 @@ type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id"
   autoComplete: "current-password" | "new-password";
   labelEnd?: ReactNode;
   hint?: string;
+  icon?: ReactNode;
 };
 
 /** Password field with a show/hide visibility toggle. */
@@ -77,6 +86,7 @@ export function PasswordInput({
   labelEnd,
   hint,
   required,
+  icon,
   placeholder = "••••••••",
   ...inputProps
 }: PasswordInputProps) {
@@ -85,6 +95,11 @@ export function PasswordInput({
   return (
     <FieldChrome id={id} label={label} labelEnd={labelEnd} hint={hint} required={required}>
       <div className="relative">
+        {icon && (
+          <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400">
+            {icon}
+          </div>
+        )}
         <input
           id={id}
           name={id}
@@ -93,14 +108,14 @@ export function PasswordInput({
           required={required}
           placeholder={placeholder}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          className={`${inputClassName} pr-11`}
+          className={`${inputClassName} ${icon ? "pl-10" : ""} pr-11`}
           {...inputProps}
         />
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
-          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 transition-colors duration-150 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:text-slate-300"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 transition-colors duration-150 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-slate-200"
         >
           {show ? <EyeOffIcon /> : <EyeIcon />}
         </button>

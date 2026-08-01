@@ -1,4 +1,4 @@
-﻿import { AuthSplitLayout } from "~/auth/auth-layout";
+import { AuthSplitLayout } from "~/auth/auth-layout";
 import { GuestGuard } from "~/auth/guest-guard";
 import { LoginForm } from "~/auth/login-form";
 
@@ -21,25 +21,6 @@ export default function Login() {
         </h1>
 
         <LoginForm />
-
-        {/* Legal consent */}
-        <p className="mt-5 text-center font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-          By logging in, you agree to our{" "}
-          <a
-            href="/terms-of-use"
-            className="font-semibold hover:underline hover:underline-offset-2 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-2"
-          >
-            Terms of Use
-          </a>{" "}
-          and{" "}
-          <a
-            href="/privacy-policy"
-            className="font-semibold hover:underline hover:underline-offset-2 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-2"
-          >
-            Privacy Policy
-          </a>
-          .
-        </p>
       </AuthSplitLayout>
     </GuestGuard>
   );
