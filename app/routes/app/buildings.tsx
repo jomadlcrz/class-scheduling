@@ -5,10 +5,11 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { BuildingForm } from "~/features/facilities/buildings/building-form";
+import { BuildingDeleteDialog } from "~/features/facilities/buildings/building-delete-dialog";
 import { BuildingTable } from "~/features/facilities/buildings/building-table";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
@@ -72,9 +73,10 @@ function BuildingsPage() {
   }
 
   async function handleDelete(target: Building) {
-    const message = await buildingService.remove(target.id);
+    const message = await buildingService.remove(target.id, target.name);
     if (message) toast.success(message);
     await refresh();
+    setDeleteTarget(null);
   }
 
   return (
@@ -149,20 +151,11 @@ function BuildingsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
+      <BuildingDeleteDialog
+        building={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Delete building"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        Building{" "}
-        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.name}</span>{" "}
-        and its rooms/departments will be removed from active lists. They can be restored together from Recently
-        Deleted.
-      </ConfirmDialog>
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

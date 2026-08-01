@@ -1,5 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import type { CreateRoomInput, Room, RoomDetail, UpdateRoomInput } from "~/types/room";
+import type { CreateRoomInput, Room, RoomDeletePreview, RoomDetail, UpdateRoomInput } from "~/types/room";
 
 /** Rooms CRUD against the facilities module (registrar_admin). */
 
@@ -89,10 +89,15 @@ async function update(id: number, input: UpdateRoomInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /rooms/:id — returns the backend message. */
-async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/rooms/${id}`);
+/** DELETE /rooms/:id — soft delete; the backend requires the room's own name (case-sensitively) as confirmation. Returns the backend message. */
+async function remove(id: number, confirmText: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/rooms/${id}`, { confirm: confirmText });
   return apiMessage(data);
+}
+
+/** GET /rooms/:id/delete-preview — read-only: whether the room is deletable and what (if anything) blocks it. */
+async function getDeletePreview(id: number): Promise<RoomDeletePreview> {
+  return apiGet<RoomDeletePreview>(`/rooms/${id}/delete-preview`);
 }
 
 export type DeletedRoom = { id: number; name: string; deactivatedAt: string | null };
@@ -141,4 +146,4 @@ async function get(id: number): Promise<RoomDetail> {
   };
 }
 
-export const roomService = { list, create, update, remove, listDeleted, restore, get };
+export const roomService = { list, create, update, remove, getDeletePreview, listDeleted, restore, get };

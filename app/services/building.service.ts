@@ -1,5 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import type { Building, CreateBuildingInput, UpdateBuildingInput } from "~/types/building";
+import type { Building, BuildingDeletePreview, CreateBuildingInput, UpdateBuildingInput } from "~/types/building";
 
 /** Buildings CRUD against the facilities module (registrar_admin). */
 
@@ -44,10 +44,15 @@ async function update(id: number, input: UpdateBuildingInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /buildings/:id — returns the backend message. */
-async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/buildings/${id}`);
+/** DELETE /buildings/:id — cascades through its departments' programs and soft-deletes its rooms/departments after the caller echoes the building's own name (case-sensitively). Returns the backend message. */
+async function remove(id: number, confirmText: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/buildings/${id}`, { confirm: confirmText });
   return apiMessage(data);
+}
+
+/** GET /buildings/:id/delete-preview — read-only breakdown of what the delete would affect, and what (if anything) blocks it. */
+async function getDeletePreview(id: number): Promise<BuildingDeletePreview> {
+  return apiGet<BuildingDeletePreview>(`/buildings/${id}/delete-preview`);
 }
 
 export type DeletedBuilding = { id: number; name: string; deactivatedAt: string | null };
@@ -78,4 +83,4 @@ async function get(id: number): Promise<Building> {
   return { id: b.building_id, name: b.building_name, floorCount: b.floor_count };
 }
 
-export const buildingService = { list, create, update, remove, listDeleted, restore, get };
+export const buildingService = { list, create, update, remove, getDeletePreview, listDeleted, restore, get };

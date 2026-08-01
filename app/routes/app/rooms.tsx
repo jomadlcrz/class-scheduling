@@ -6,10 +6,11 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { RoomForm } from "~/features/facilities/rooms/room-form";
+import { RoomDeleteDialog } from "~/features/facilities/rooms/room-delete-dialog";
 import { RoomTable } from "~/features/facilities/rooms/room-table";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
@@ -115,9 +116,10 @@ function RoomsPage() {
   }
 
   async function handleDelete(target: Room) {
-    const message = await roomService.remove(target.id);
+    const message = await roomService.remove(target.id, target.name);
     if (message) toast.success(message);
     await refresh();
+    setDeleteTarget(null);
   }
 
   return (
@@ -227,19 +229,11 @@ function RoomsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
+      <RoomDeleteDialog
+        room={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Delete room"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        Room{" "}
-        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.name}</span>{" "}
-        will be removed from active lists. It can be restored from Recently Deleted.
-      </ConfirmDialog>
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

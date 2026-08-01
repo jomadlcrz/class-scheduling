@@ -1,5 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import type { CreateDepartmentInput, Department, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
+import type { CreateDepartmentInput, Department, DepartmentDeletePreview, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
 
@@ -8,6 +8,7 @@ type DepartmentsResponse = {
     department_id: number;
     department_abbrev: string;
     department_name: string;
+    department_type: string;
     building_name: string;
     programs: { program_abbrev: string; program_name: string }[];
   }[];
@@ -19,6 +20,7 @@ function mapDepartments(data: DepartmentsResponse): Department[] {
     abbrev: d.department_abbrev,
     name: d.department_name,
     buildingName: d.building_name,
+    departmentType: d.department_type,
     programs: (d.programs ?? []).map((p) => ({ abbrev: p.program_abbrev, name: p.program_name })),
   }));
 }
@@ -54,26 +56,33 @@ async function create(input: CreateDepartmentInput): Promise<string> {
         buildingName: input.buildingName,
         departmentAbbrev: input.abbrev,
         departmentName: input.name,
+        ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
       },
     ],
   });
   return apiMessage(data);
 }
 
-/** PUT /departments/:id — abbrev, name, and building are updatable. Returns the backend message. */
+/** PUT /departments/:id — abbrev, name, building, and type are updatable. Returns the backend message. */
 async function update(id: number, input: UpdateDepartmentInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/departments/${id}`, {
     ...(input.abbrev !== undefined && { departmentAbbrev: input.abbrev }),
     ...(input.name !== undefined && { departmentName: input.name }),
     ...(input.buildingName !== undefined && { buildingName: input.buildingName }),
+    ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
   });
   return apiMessage(data);
 }
 
-/** DELETE /departments/:id — returns the backend message. */
-async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/departments/${id}`);
+/** DELETE /departments/:id — cascades through its programs after the caller echoes the department's abbreviation (uppercase-normalized). Returns the backend message. */
+async function remove(id: number, confirmCode: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/departments/${id}`, { confirm: confirmCode });
   return apiMessage(data);
+}
+
+/** GET /departments/:id/delete-preview — read-only breakdown of what the delete would affect. */
+async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
+  return apiGet<DepartmentDeletePreview>(`/departments/${id}/delete-preview`);
 }
 
 export type DeletedDepartment = { id: number; name: string; deactivatedAt: string | null };
@@ -104,9 +113,16 @@ async function get(id: number): Promise<DepartmentDetail> {
     department_id: number;
     department_abbrev: string;
     department_name: string;
+    department_type: string;
     building_id: number;
   }>(`/departments/${id}`);
-  return { id: d.department_id, abbrev: d.department_abbrev, name: d.department_name, buildingId: d.building_id };
+  return {
+    id: d.department_id,
+    abbrev: d.department_abbrev,
+    name: d.department_name,
+    buildingId: d.building_id,
+    departmentType: d.department_type,
+  };
 }
 
-export const departmentService = { list, listAcademic, create, update, remove, listDeleted, restore, get };
+export const departmentService = { list, listAcademic, create, update, remove, getDeletePreview, listDeleted, restore, get };

@@ -9,9 +9,10 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { SubjectForm } from "~/features/subjects/subject-form";
+import { SubjectDeleteDialog } from "~/features/subjects/subject-delete-dialog";
 import { SubjectTable } from "~/features/subjects/subject-table";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
@@ -112,10 +113,10 @@ function SubjectsPage() {
   }
 
   async function handleDelete(target: Subject) {
-    // The backend asks for the subject code as the deletion confirmation.
     const message = await subjectService.remove(target.id, target.code);
     if (message) toast.success(message);
     await refresh();
+    setDeleteTarget(null);
   }
 
   return (
@@ -215,20 +216,11 @@ function SubjectsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
+      <SubjectDeleteDialog
+        subject={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Delete subject"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        <span className="font-medium text-navy-700 dark:text-mist-100">
-          {deleteTarget?.code} — {deleteTarget?.title}
-        </span>{" "}
-        will be removed from {deleteTarget?.program}. It can be restored from the recycle bin.
-      </ConfirmDialog>
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

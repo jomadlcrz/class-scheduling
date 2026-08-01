@@ -68,3 +68,19 @@ export type RoomDetail = {
   status: string;
   programs: RoomProgram[];
 };
+
+/** Shape of GET /rooms/:id/delete-preview and the DELETE /rooms/:id payload.
+ * Unlike Program/Set/Subject, a room delete STILL blocks: deleting a room doesn't
+ * remove the curriculum requirement, so a schedule that depends on it can't be
+ * cascaded away. The type-to-confirm is the only other guard. */
+export type RoomDeletePreview = {
+  room: {
+    room_id: number;
+    room_name: string;
+  };
+  /** False when a real schedule still uses this room (blockers.regular_schedules > 0). */
+  deletable: boolean;
+  blockers: {
+    regular_schedules: number;
+  };
+};

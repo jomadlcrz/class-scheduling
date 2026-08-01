@@ -7,10 +7,11 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { DepartmentForm } from "~/features/departments/department-form";
+import { DepartmentDeleteDialog } from "~/features/departments/department-delete-dialog";
 import { DepartmentGridView } from "~/features/departments/department-grid-view";
 import { DepartmentTable } from "~/features/departments/department-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
@@ -18,6 +19,7 @@ import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { departmentService } from "~/services/department.service";
+import { enumService } from "~/services/enum.service";
 import type { Building } from "~/types/building";
 import type { CreateDepartmentInput, Department } from "~/types/department";
 
@@ -39,6 +41,7 @@ export default function Departments() {
 function DepartmentsPage() {
   const [depts, setDepts] = useState<Department[] | null>(null);
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [departmentTypes, setDepartmentTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
@@ -49,6 +52,11 @@ function DepartmentsPage() {
   useEffect(() => {
     departmentService.list().then(setDepts).catch(() => setDepts([]));
     buildingService.list().then(setBuildings).catch(() => setBuildings([]));
+    // Department type vocab comes from the backend enums endpoint.
+    enumService
+      .getOptions()
+      .then((options) => setDepartmentTypes(options.departmentType))
+      .catch(() => {});
   }, []);
 
   const resetKey = `${search}|${buildingFilter}`;
@@ -87,6 +95,7 @@ function DepartmentsPage() {
       abbrev: input.abbrev,
       name: input.name,
       buildingName: input.buildingName,
+      departmentType: input.departmentType,
     });
     if (message) toast.success(message);
     await refresh();
@@ -94,9 +103,10 @@ function DepartmentsPage() {
   }
 
   async function handleDelete(target: Department) {
-    const message = await departmentService.remove(target.id);
+    const message = await departmentService.remove(target.id, target.abbrev);
     if (message) toast.success(message);
     await refresh();
+    setDeleteTarget(null);
   }
 
   return (
@@ -198,6 +208,7 @@ function DepartmentsPage() {
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Department">
         <DepartmentForm
           buildings={buildings}
+          departmentTypes={departmentTypes}
           onSubmit={handleCreate}
           onCancel={() => setCreateOpen(false)}
         />
@@ -208,25 +219,18 @@ function DepartmentsPage() {
           <DepartmentForm
             department={editTarget}
             buildings={buildings}
+            departmentTypes={departmentTypes}
             onSubmit={handleEdit}
             onCancel={() => setEditTarget(null)}
           />
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
+      <DepartmentDeleteDialog
+        department={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Delete department"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        Department{" "}
-        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.abbrev}</span>{" "}
-        ({deleteTarget?.name}) will be removed from active lists. It can be restored from Recently Deleted.
-      </ConfirmDialog>
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

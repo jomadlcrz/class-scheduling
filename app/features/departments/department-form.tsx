@@ -10,14 +10,23 @@ import type { CreateDepartmentInput, Department } from "~/types/department";
 type DepartmentFormProps = {
   department?: Department;
   buildings: Building[];
+  /** Backend DepartmentType values (enumService). */
+  departmentTypes: string[];
   onSubmit: (input: CreateDepartmentInput) => Promise<void>;
   onCancel: () => void;
 };
 
-export function DepartmentForm({ department, buildings, onSubmit, onCancel }: DepartmentFormProps) {
+export function DepartmentForm({
+  department,
+  buildings,
+  departmentTypes,
+  onSubmit,
+  onCancel,
+}: DepartmentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isEdit = Boolean(department);
+  const [type, setType] = useState(department?.departmentType ?? departmentTypes[0] ?? "");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,7 +35,7 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
     const name = String(data.get("dept-name") ?? "").trim();
     const buildingName = String(data.get("dept-building") ?? "");
 
-    const result = departmentSchema.safeParse({ abbrev, name, buildingName });
+    const result = departmentSchema.safeParse({ abbrev, name, buildingName, departmentType: type });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -75,6 +84,25 @@ export function DepartmentForm({ department, buildings, onSubmit, onCancel }: De
             {buildings.map((b) => (
               <SelectItem key={b.id} value={b.name}>
                 {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
+      <FieldChrome id="dept-type" label="Department Type" hint="Administrative offices own no programs.">
+        <Select
+          items={departmentTypes.map((t) => ({ value: t, label: t }))}
+          name="dept-type"
+          value={type}
+          onValueChange={(v) => setType(v as string)}
+        >
+          <SelectTrigger id="dept-type">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {departmentTypes.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
               </SelectItem>
             ))}
           </SelectContent>

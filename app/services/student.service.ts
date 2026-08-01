@@ -7,6 +7,7 @@ import type {
   StudentAcademicRecord,
   StudentAccountRow,
   StudentAccountStatus,
+  StudentDeletePreview,
   UpdateEnrollmentInput,
 } from "~/types/student";
 
@@ -201,10 +202,15 @@ async function restore(studentProfileId: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /students/<id> — soft-delete; academic history is left untouched. */
-async function remove(studentProfileId: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/students/${studentProfileId}`);
+/** DELETE /students/<id> — soft-deletes the profile and deactivates the login account after the caller echoes the student's full name (case-sensitively). Academic history is left untouched. */
+async function remove(studentProfileId: number, confirmText: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/students/${studentProfileId}`, { confirm: confirmText });
   return apiMessage(data);
+}
+
+/** GET /students/<id>/delete-preview — read-only breakdown of what deleting the profile would affect. */
+async function getDeletePreview(studentProfileId: number): Promise<StudentDeletePreview> {
+  return apiGet<StudentDeletePreview>(`/students/${studentProfileId}/delete-preview`);
 }
 
 /** PUT /students/enrollments/<id> — corrects a single term's set/year level/status. */
@@ -271,6 +277,7 @@ export const studentService = {
   listDeleted,
   restore,
   remove,
+  getDeletePreview,
   updateEnrollment,
   removeEnrollment,
   getAccount,

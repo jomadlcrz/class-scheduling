@@ -60,3 +60,27 @@ export type UpdateSubjectInput = {
   subjectType: string;
   prerequisites: string[];
 };
+
+/** Shape of GET /subjects/:id/delete-preview and the DELETE /subjects/:id payload.
+ * A subject can sit on more than one program's curriculum, so every list here
+ * spans ALL programs that use it. Nothing data-driven blocks the delete. */
+export type SubjectDeletePreview = {
+  subject: {
+    subject_id: number;
+    subject_code: string;
+    descriptive_title: string;
+  };
+  will_delete: {
+    /** Every program whose curriculum this subject sits on. */
+    programs: string[];
+    curriculum_links: number;
+    /** Instructor subject assignments for this subject, hard-deleted per program. */
+    faculty_assignments: { instructor_name: string; program_abbrev: string }[];
+    /** Only this subject's own schedule sessions are cleared; the rest of each set's schedule is untouched. */
+    regular_schedules: number;
+    /** Irregular students' enrolled-subject rows naming this subject, hard-deleted. */
+    enrolled_subjects: number;
+    /** Prerequisite rows naming this subject in either direction, hard-deleted. */
+    prerequisite_links: number;
+  };
+};

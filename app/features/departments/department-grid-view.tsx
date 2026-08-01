@@ -5,6 +5,7 @@ import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import { actionButtonClassName } from "~/features/departments/department-table";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { getBuildingTone } from "~/types/building";
+import { DEPARTMENT_TYPE_TONES } from "~/types/department";
 import type { Department } from "~/types/department";
 
 type DepartmentGridViewProps = {
@@ -85,6 +86,9 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
                 </div>
 
                 <div className="flex flex-wrap gap-1.5">
+                  <Badge tone={DEPARTMENT_TYPE_TONES[dept.departmentType] ?? "slate"}>
+                    {dept.departmentType}
+                  </Badge>
                   <Badge tone={getBuildingTone(dept.buildingName)}>{dept.buildingName}</Badge>
                   <Badge tone={programCount > 0 ? "emerald" : "slate"}>
                     {programCount} {programCount === 1 ? "Program" : "Programs"}

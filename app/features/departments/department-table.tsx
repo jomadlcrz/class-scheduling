@@ -10,6 +10,7 @@ import {
 } from "~/components/ui/table";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { getBuildingTone } from "~/types/building";
+import { DEPARTMENT_TYPE_TONES } from "~/types/department";
 import type { Department } from "~/types/department";
 
 type DepartmentTableProps = {
@@ -27,6 +28,7 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
       <TableHead>
         <TableHeader>Logo &amp; Abbrev</TableHeader>
         <TableHeader>Department Name</TableHeader>
+        <TableHeader className="hidden sm:table-cell">Type</TableHeader>
         <TableHeader className="hidden sm:table-cell">Building</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -49,6 +51,11 @@ export function DepartmentTable({ departments, onEdit, onDelete }: DepartmentTab
               </div>
             </TableCell>
             <TableCell>{dept.name}</TableCell>
+            <TableCell className="hidden sm:table-cell">
+              <Badge tone={DEPARTMENT_TYPE_TONES[dept.departmentType] ?? "slate"}>
+                {dept.departmentType}
+              </Badge>
+            </TableCell>
             <TableCell className="hidden sm:table-cell">
               <Badge tone={getBuildingTone(dept.buildingName)}>{dept.buildingName}</Badge>
             </TableCell>

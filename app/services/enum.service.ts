@@ -26,6 +26,7 @@ export type EnumOptions = {
   personnelType: string[];
   roomType: string[];
   subjectType: string[];
+  departmentType: string[];
   dayOfWeek: DayOfWeekOption[];
   yearLevels: YearLevelOption[];
 };
@@ -41,6 +42,7 @@ type EnumOptionsResponse = {
   personnel_type: string[];
   room_type: string[];
   subject_type: string[];
+  department_type: string[];
   day_of_week: DayOfWeekOption[];
   year_level: string[];
 };
@@ -61,6 +63,7 @@ function getOptions(): Promise<EnumOptions> {
       personnelType: data.personnel_type,
       roomType: data.room_type,
       subjectType: data.subject_type,
+      departmentType: data.department_type,
       dayOfWeek: data.day_of_week,
       // Backend sends ordered YearLevelEnum labels; the level number is the position.
       yearLevels: data.year_level.map((name, i) => ({ id: i + 1, name })),

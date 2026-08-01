@@ -14,6 +14,7 @@ import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { StudentAccountForm } from "~/features/students/student-account-form";
 import { StudentAccountTable } from "~/features/students/student-account-table";
+import { StudentDeleteDialog } from "~/features/students/student-delete-dialog";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
 import { StudentEnrollForm } from "~/features/students/student-enroll-form";
 import { StudentRecordForm } from "~/features/students/student-record-form";
@@ -93,6 +94,7 @@ export function StudentsPage() {
   const [enrolled, setEnrolled] = useState(false);
   const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<StudentAccountRow | null>(null);
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
@@ -411,6 +413,13 @@ export function StudentsPage() {
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: true }));
   }
 
+  async function handleDelete(student: StudentAccountRow, confirmText: string) {
+    const message = await studentService.remove(student.studentProfileId, confirmText);
+    if (message) toast.success(message);
+    await refreshStudentList();
+    setDeleteTarget(null);
+  }
+
   // Lazy-loaded: only fetched once the Regular Students view is opened.
   useEffect(() => {
     if (activeView !== "regular" || regularStudents !== null) return;
@@ -549,6 +558,7 @@ export function StudentsPage() {
                   onEnroll={null}
                   onDeactivateAccount={setDeactivateAccountTarget}
                   onReactivateAccount={setReactivateAccountTarget}
+                  onDelete={setDeleteTarget}
                 />
                 <Pagination
                   page={pagination.page}
@@ -597,6 +607,7 @@ export function StudentsPage() {
                   onEnroll={setEnrollTarget}
                   onDeactivateAccount={null}
                   onReactivateAccount={null}
+                  onDelete={setDeleteTarget}
                 />
                 <Pagination
                   page={pagination.page}
@@ -653,6 +664,7 @@ export function StudentsPage() {
                 onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
+                onDelete={setDeleteTarget}
               />
               <Pagination
                 page={regularPagination.page}
@@ -708,6 +720,7 @@ export function StudentsPage() {
                 onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
+                onDelete={setDeleteTarget}
               />
               <Pagination
                 page={irregularPagination.page}
@@ -834,6 +847,12 @@ export function StudentsPage() {
           </ConfirmDialog>
         </>
       )}
+
+      <StudentDeleteDialog
+        student={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

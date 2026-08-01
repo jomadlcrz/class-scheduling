@@ -1,6 +1,6 @@
 import { apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import { programService } from "~/services/program.service";
-import type { Semester, Subject, UpdateSubjectInput, YearLevel } from "~/types/subject";
+import type { Semester, Subject, SubjectDeletePreview, UpdateSubjectInput, YearLevel } from "~/types/subject";
 
 /** Curriculum subjects against the curriculums module (registrar_admin). */
 
@@ -195,10 +195,16 @@ async function remove(id: number, confirmCode: string): Promise<string> {
   return apiMessage(data);
 }
 
+/** GET /subjects/:id/delete-preview — read-only breakdown of what the delete would affect, across every program it sits on. */
+async function getDeletePreview(id: number): Promise<SubjectDeletePreview> {
+  return apiGet<SubjectDeletePreview>(`/subjects/${id}/delete-preview`);
+}
+
 export const subjectService = {
   list,
   listPaginated,
   createCurriculum,
   update,
   remove,
+  getDeletePreview,
 };
