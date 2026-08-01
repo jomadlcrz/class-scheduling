@@ -3,7 +3,7 @@ import { SUBJECT_TYPES, TYPE_LABELS, TYPE_STYLES } from "./mapping-model";
 
 export function MappingLegend() {
   return (
-    <Card className="mx-auto flex w-fit max-w-full flex-nowrap items-center justify-center gap-4 overflow-x-auto px-5 py-2">
+    <Card className="mx-auto flex w-full flex-nowrap items-center justify-start gap-4 overflow-x-auto px-5 py-2 sm:justify-center">
       {SUBJECT_TYPES.map((type) => (
         <div key={type} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           <span className={`inline-block h-1 w-7 rounded-full ${TYPE_STYLES[type].dot}`} />
