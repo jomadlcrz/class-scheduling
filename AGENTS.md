@@ -23,7 +23,7 @@ The auth slice is live against the backend end-to-end:
 - **Success messages** follow the same rule: mutation service functions return the backend response's `message` verbatim via `apiMessage(data)` (`lib/api.ts`) — typed as `apiPost<{ message?: string }>(…)` — and route handlers surface it with `if (message) toast.success(message);` (sonner). Never write frontend success copy; if the response carries no `message`, show no toast (and fix it backend-side). Errors stay inline via `FormError` — do not toast them.
 - If the backend response is missing something (a filtered value, an absent endpoint), fix or request it backend-side rather than patching values into the frontend.
 
-**Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `FACULTY`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Administrators + Permissions pages are live (`/administrators`, `/permissions`).
+**Roles:** `admin | registrar | dean | faculty | student` (`app/types/user.ts`). The backend's enum names (`SUPER_ADMIN`, `REGISTRAR_ADMIN`, `DEAN`, `INSTRUCTOR`, `STUDENT`) are mapped to these at the auth boundary in `lib/session.ts`. Sidebar items declare `roles` for visibility; pages enforce access with `RoleGuard`. Administrators + Permissions pages are live (`/administrators`, `/permissions`).
 
 **Stack:** React Router 7 (framework mode, SSR), React 19, TypeScript (strict), Tailwind CSS v4 (CSS-first config in `app/app.css`), `motion` for animation. No state-management or data-fetching library.
 

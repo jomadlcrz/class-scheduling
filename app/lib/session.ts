@@ -48,6 +48,19 @@ const ROLE_MAP: Record<string, Role> = {
   STUDENT: "student",
 };
 
+/**
+ * Landing-page precedence for multi-role accounts. The backend reports every
+ * role a user holds with no privileged ordering (its login docstring warns
+ * against assuming roles[0]); pick the most privileged one present.
+ */
+const ROLE_PRIORITY: Record<Role, number> = {
+  admin: 4,
+  registrar: 3,
+  dean: 2,
+  faculty: 1,
+  student: 0,
+};
+
 /** Decodes any JWT payload without verifying it (the backend verifies). */
 function decodeTokenPayload<T>(token: string): T | null {
   try {
@@ -72,7 +85,10 @@ export function isJwtExpired(token: string): boolean {
 export function userFromToken(token: string): User | null {
   const payload = decodeTokenPayload<TokenPayload>(token);
   if (!payload) return null;
-  const role = payload.roles?.map((name) => ROLE_MAP[name]).find(Boolean);
+  const role = payload.roles
+    ?.map((name) => ROLE_MAP[name])
+    .filter((r): r is Role => Boolean(r))
+    .sort((a, b) => ROLE_PRIORITY[b] - ROLE_PRIORITY[a])[0];
   if (!role) return null;
   return {
     id: String(payload.user_id),

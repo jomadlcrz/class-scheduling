@@ -156,11 +156,26 @@ async function request<T>(
   if (response.status === 401 && token && !isRefreshCall) {
     const result = await attemptRefresh();
     if (result.ok) {
+      // The refresh rotated the refresh token. If this body names one (logout),
+      // point it at the live token — otherwise the server revokes the rotated-away
+      // copy and the replacement escapes.
+      let retryBody = body;
+      if (
+        body !== null &&
+        typeof body === "object" &&
+        !Array.isArray(body) &&
+        "refreshToken" in body
+      ) {
+        const liveRefresh = loadSession()?.refreshToken;
+        if (liveRefresh) {
+          retryBody = { ...(body as Record<string, unknown>), refreshToken: liveRefresh };
+        }
+      }
       // Retry the original request with the new token.
       const newToken = loadSession()?.token;
       const retryHeaders: Record<string, string> = {
         ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(retryBody !== undefined ? { "Content-Type": "application/json" } : {}),
         ...headers,
       };
 
@@ -169,7 +184,7 @@ async function request<T>(
         retryResponse = await fetch(resolveApiUrl(endpoint), {
           method,
           headers: retryHeaders,
-          body: body !== undefined ? JSON.stringify(body) : undefined,
+          body: retryBody !== undefined ? JSON.stringify(retryBody) : undefined,
         });
       } catch {
         throw new ApiError("Unable to reach the server. Check your connection and try again.", 0);
