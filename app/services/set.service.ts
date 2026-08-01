@@ -1,5 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import type { ClassSet, CreateSetInput } from "~/types/set";
+import type { ClassSet, CreateSetInput, SetDeletePreview } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
 /** Class sets CRUD against the curriculums module (registrar_admin). */
@@ -95,10 +95,20 @@ async function update(id: number, setCode: string): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /sets/:id — returns the backend message. */
-async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/sets/${id}`);
+/**
+ * DELETE /sets/:id — cascades through every regular schedule this set ever had
+ * (any school year/semester) only after the caller echoes the set's own code.
+ * Returns the backend message (the response also carries the same breakdown
+ * the preview endpoint returns).
+ */
+async function remove(id: number, confirmCode: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/sets/${id}`, { confirm: confirmCode });
   return apiMessage(data);
+}
+
+/** GET /sets/:id/delete-preview — read-only breakdown of what the delete would affect. */
+async function getDeletePreview(id: number): Promise<SetDeletePreview> {
+  return apiGet<SetDeletePreview>(`/sets/${id}/delete-preview`);
 }
 
 export type DeletedSet = {
@@ -151,6 +161,7 @@ export const setService = {
   create,
   update,
   remove,
+  getDeletePreview,
   listDeleted,
   restore,
   get,

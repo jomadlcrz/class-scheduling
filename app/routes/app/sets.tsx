@@ -6,9 +6,10 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
+import { SetDeleteDialog } from "~/features/sets/set-delete-dialog";
 import { SetForm } from "~/features/sets/set-form";
 import { SetTable } from "~/features/sets/set-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -95,7 +96,8 @@ function SetsPage() {
   }
 
   async function handleDelete(target: ClassSet) {
-    const message = await setService.remove(target.id);
+    // The backend asks for the set's own code as the deletion confirmation.
+    const message = await setService.remove(target.id, target.setCode);
     if (message) toast.success(message);
     await refresh();
   }
@@ -192,22 +194,11 @@ function SetsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
+      <SetDeleteDialog
+        set={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Delete set"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        Set{" "}
-        <span className="font-medium text-navy-700 dark:text-mist-100">
-          {deleteTarget?.setCode}
-        </span>{" "}
-        ({deleteTarget?.program}, {deleteTarget ? yearLevelLabel(deleteTarget.yearLevel) : ""}){" "}
-        will be removed from active lists. It can be restored from Recently Deleted.
-      </ConfirmDialog>
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }
