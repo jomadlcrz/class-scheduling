@@ -27,13 +27,14 @@ export type ProgramDeletePreview = {
     program_abbrev: string;
     program_name: string;
   };
-  /** False when real students or assigned instructors block the delete. */
-  deletable: boolean;
-  blockers: {
-    students: number;
-    faculty_assignments: { instructor_name: string; subject_code: string }[];
-  };
+  /** Everything the cascade will touch; nothing data-driven blocks the delete. */
   will_delete: {
+    /** REGULAR students are not deleted — their academic records just end up pointing at the inactive program. */
+    regular_students_affected: number;
+    /** Instructor subject assignments for this program's curriculum, hard-deleted. */
+    faculty_assignments: { instructor_name: string; subject_code: string }[];
+    /** IRREGULAR students' enrolled-subject rows for this program, hard-deleted. */
+    enrolled_subjects: number;
     curriculum_links: number;
     /** A subject with `shared: true` is unlinked from this program, not deleted. */
     subjects: { subject_id: number; subject_code: string; shared: boolean }[];
