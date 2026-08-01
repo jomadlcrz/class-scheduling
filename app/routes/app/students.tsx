@@ -465,7 +465,13 @@ export function StudentsPage() {
         description="Student records and their login accounts."
         actions={
           !isAdmin ? (
-            <Button type="button" block={false} onClick={() => navigate("/students/bulk")}>
+            <Button
+              type="button"
+              block={false}
+              onClick={() =>
+                navigate(activeView === "irregular" ? "/students-irregular/bulk" : "/students-regular/bulk")
+              }
+            >
               <PlusIcon />
               New Student
             </Button>

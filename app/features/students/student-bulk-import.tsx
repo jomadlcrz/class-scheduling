@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { RoleGuard } from "~/auth/role-guard";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -25,6 +24,13 @@ import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
 import type { ClassSet } from "~/types/set";
 
+export type BulkEnrolledStatus = "Regular" | "Irregular";
+
+type StudentBulkImportProps = {
+  /** The enrollment kind this bulk import creates — fixed per route, never selectable. */
+  enrolledStatus: BulkEnrolledStatus;
+};
+
 type StudentRow = {
   studentNumber: string;
   firstName: string;
@@ -35,7 +41,6 @@ type StudentRow = {
   program: string;
   yearLevel: string;
   section: string;
-  enrolledStatus: string;
   studentType: string;
   schoolYear: string;
   semester: string;
@@ -52,7 +57,6 @@ const EMPTY_ROW: StudentRow = {
   program: "",
   yearLevel: "",
   section: "",
-  enrolledStatus: "",
   studentType: "",
   schoolYear: "",
   semester: "",
@@ -69,7 +73,6 @@ const CSV_HEADERS = [
   "Program",
   "Year Level",
   "Set",
-  "Enrolled Status",
   "Student Type",
   "School Year",
   "Semester",
@@ -86,7 +89,6 @@ const TEMPLATE_ROW = [
   "BSIT",
   "1",
   "A",
-  "Regular",
   "New Student",
   "2026-2027",
   "1st Semester",
@@ -103,20 +105,19 @@ const CSV_KEYS: (keyof StudentRow)[] = [
   "program",
   "yearLevel",
   "section",
-  "enrolledStatus",
   "studentType",
   "schoolYear",
   "semester",
   "subjectCodes",
 ];
 
-function downloadTemplate() {
+function downloadTemplate(filename: string) {
   const csv = [CSV_HEADERS.join(","), TEMPLATE_ROW.join(",")].join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "student-import-template.csv";
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -167,31 +168,57 @@ function parseCsv(text: string): StudentRow[] {
   return rows;
 }
 
-function toCsv(rows: StudentRow[]): string {
-  const lines = [CSV_HEADERS.join(",")];
+/**
+ * The uploaded CSV always carries an "Enrolled Status" column (the backend
+ * requires it); the value is this route's fixed status, so sheet users never
+ * fill it in.
+ */
+function toCsv(rows: StudentRow[], enrolledStatus: BulkEnrolledStatus): string {
+  const lines = [[...CSV_HEADERS, "Enrolled Status"].join(",")];
   for (const row of rows) {
-    lines.push(CSV_KEYS.map((k) => row[k]).join(","));
+    lines.push([...CSV_KEYS.map((k) => row[k]), enrolledStatus].join(","));
   }
   return lines.join("\n");
 }
 
-export function meta() {
-  return [
-    { title: "Bulk Import Students — GWC Class Scheduling" },
-    { name: "description", content: "Import student records from a CSV file or pasted data." },
-  ];
-}
-
-export default function StudentsBulkRoute() {
+export function BulkStatusTabs() {
   return (
-    <RoleGuard allow={["registrar"]}>
-      <StudentsBulkPage />
-    </RoleGuard>
+    <div className="flex gap-2 border-b border-slate-200 dark:border-white/10">
+      {[
+        { to: "/students-regular/bulk", label: "Regular Students" },
+        { to: "/students-irregular/bulk", label: "Irregular Students" },
+      ].map((tab) => (
+        <NavLink
+          key={tab.to}
+          to={tab.to}
+          end
+          className={({ isActive }) =>
+            `-mb-px border-b-2 px-4 py-2 font-body text-sm font-medium transition-colors duration-150 ${
+              isActive
+                ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
+                : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
+            }`
+          }
+        >
+          {tab.label}
+        </NavLink>
+      ))}
+    </div>
   );
 }
 
-function StudentsBulkPage() {
+export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
   const navigate = useNavigate();
+  const isIrregular = enrolledStatus === "Irregular";
+  const listRoute = isIrregular ? "/students-irregular" : "/students-regular";
+  const pageTitle = `Bulk Import ${enrolledStatus} Students`;
+  const pageDescription = isIrregular
+    ? "Import irregular students with their own subject list from a CSV file or pasted data."
+    : "Import regular students into a class set from a CSV file or pasted data.";
+  const templateFilename = isIrregular
+    ? "irregular-student-import-template.csv"
+    : "regular-student-import-template.csv";
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [rows, setRows] = useState<StudentRow[]>([{ ...EMPTY_ROW }]);
@@ -299,7 +326,7 @@ function StudentsBulkPage() {
     setError(null);
     setIsLoading(true);
     try {
-      const csv = toCsv(validRows);
+      const csv = toCsv(validRows, enrolledStatus);
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const file = new File([blob], "students.csv", { type: "text/csv" });
       const res = await studentService.importRecords(file);
@@ -350,9 +377,13 @@ function StudentsBulkPage() {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
         <PageHeader
-          title="Bulk Import Students"
-          description="Import student records from a CSV file or pasted data."
+          title={pageTitle}
+          description={pageDescription}
         />
+
+        <div className="mt-6">
+          <BulkStatusTabs />
+        </div>
 
         <div className="mt-6 flex flex-col gap-4">
           <Card className="p-4">
@@ -431,7 +462,7 @@ function StudentsBulkPage() {
               Import Another
             </Button>
             {result.created > 0 && (
-              <Button type="button" block={false} isLoading={isCreating} loadingLabel="Creating accounts…" onClick={handleCreateAccounts}>
+              <Button type="button" block={false} isLoading={isCreating} loadingLabel="Creating records…" onClick={handleCreateAccounts}>
                 Create Records
               </Button>
             )}
@@ -445,9 +476,13 @@ function StudentsBulkPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
-        title="Bulk Import Students"
-        description="Same student fields as create student, but repeated as bulk cards."
+        title={pageTitle}
+        description={pageDescription}
       />
+
+      <div className="mt-6">
+        <BulkStatusTabs />
+      </div>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4" noValidate>
         <FormError message={error} />
@@ -475,7 +510,7 @@ function StudentsBulkPage() {
           </Button>
           <button
             type="button"
-            onClick={downloadTemplate}
+            onClick={() => downloadTemplate(templateFilename)}
             className="ml-auto flex items-center gap-1.5 font-body text-xs text-navy-700 underline decoration-navy-300 underline-offset-2 hover:text-navy-900 dark:text-mist-100 dark:decoration-white/30 dark:hover:text-white"
           >
             <DownloadIcon size={14} />
@@ -489,7 +524,7 @@ function StudentsBulkPage() {
             id="paste-data"
             label="Paste CSV data"
             onPaste={handlePaste}
-            placeholder={`Student Number,First Name,Middle Name,Last Name,Contact Number,Email,Program,Year Level,Set,Enrolled Status,Student Type,School Year,Semester,Subject Codes\n2024-0001,Juan,Santos,Dela Cruz,09171234567,juan.delacruz@example.com,BSIT,1,A,Regular,New Student,2026-2027,1st Semester,`}
+            placeholder={`Student Number,First Name,Middle Name,Last Name,Contact Number,Email,Program,Year Level,Set,Student Type,School Year,Semester,Subject Codes\n2024-0001,Juan,Santos,Dela Cruz,09171234567,juan.delacruz@example.com,BSIT,1,A,New Student,2026-2027,1st Semester,`}
             disabled={isLoading}
             rows={8}
           />
@@ -588,8 +623,8 @@ function StudentsBulkPage() {
                     </SelectContent>
                   </Select>
                 </FieldChrome>
-                {row.enrolledStatus !== "Irregular" && (
-                <FieldChrome id={`s${index}-section`} label="Set" required={row.enrolledStatus === "Regular"}>
+                {!isIrregular && (
+                <FieldChrome id={`s${index}-section`} label="Set" required>
                   <Select
                     items={[{ value: "", label: "Select a set" }, ...sets.filter((s) => (!row.program || s.program === row.program) && (!row.yearLevel || String(s.yearLevel) === row.yearLevel)).map((s) => ({ value: s.setCode, label: s.setCode }))]}
                     value={row.section}
@@ -610,23 +645,6 @@ function StudentsBulkPage() {
                   </Select>
                 </FieldChrome>
                 )}
-                <FieldChrome id={`s${index}-enrolledStatus`} label="Enrolled Status" required>
-                  <Select
-                    items={[{ value: "", label: "Select a status" }, ...(enumOpts?.academicStatus ?? []).map((s) => ({ value: s, label: s }))]}
-                    value={row.enrolledStatus}
-                    onValueChange={(v) => updateRow(index, (r) => ({ ...r, enrolledStatus: v as string, subjectCodes: v === "Regular" ? "" : r.subjectCodes, section: v === "Irregular" ? "" : r.section }))}
-                  >
-                    <SelectTrigger id={`s${index}-enrolledStatus`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Select a status</SelectItem>
-                      {(enumOpts?.academicStatus ?? []).map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FieldChrome>
                 <FieldChrome id={`s${index}-studentType`} label="Student Type" required>
                   <Select
                     items={[{ value: "", label: "Select a type" }, ...(enumOpts?.studentType ?? []).map((t) => ({ value: t, label: t }))]}
@@ -678,7 +696,7 @@ function StudentsBulkPage() {
                     </SelectContent>
                   </Select>
                 </FieldChrome>
-                {row.enrolledStatus === "Irregular" && (
+                {isIrregular && (
                 <FieldChrome id={`s${index}-subjectCodes`} label="Subject Codes" required>
                   <input
                     id={`s${index}-subjectCodes`}
@@ -710,10 +728,10 @@ function StudentsBulkPage() {
         </Card>
 
         <div className="sticky bottom-0 flex justify-between border-t border-slate-200 bg-slate-50/95 py-4 backdrop-blur dark:border-white/10 dark:bg-surface/95">
-          <Button type="button" variant="outline" block={false} onClick={() => navigate("/students")} disabled={isLoading}>
+          <Button type="button" variant="outline" block={false} onClick={() => navigate(listRoute)} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" block={false} isLoading={isLoading} loadingLabel="Creating accounts…" disabled={validRows.length === 0}>
+          <Button type="submit" block={false} isLoading={isLoading} loadingLabel="Creating records…" disabled={validRows.length === 0}>
             Create Records
           </Button>
         </div>
