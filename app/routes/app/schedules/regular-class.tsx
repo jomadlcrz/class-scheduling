@@ -109,6 +109,8 @@ function RegularClassPage() {
   }, [availableSets, setName]);
 
   const isLoading = schedules === null;
+  // Filters only make sense once there's at least one schedule to show.
+  const showContent = !loadError && !isLoading && visibleSchedules.length > 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -116,16 +118,19 @@ function RegularClassPage() {
         title="Regular Schedule Builder"
         description="Class schedules for the current academic term."
         actions={
-          <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
-            <PlusIcon />
-            Create Schedule
-          </Button>
+          showContent ? (
+            <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
+              <PlusIcon />
+              Create Schedule
+            </Button>
+          ) : undefined
         }
       />
 
       {/* Filters */}
-      <div className="mt-4 flex flex-col gap-4">
-        <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
+      {showContent && (
+        <div className="mt-4 flex flex-col gap-4">
+          <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
           <FieldChrome id="rc-school-year" label="School Year">
             <Select
               items={
@@ -216,29 +221,32 @@ function RegularClassPage() {
             </Select>
           </FieldChrome>
         </Card>
-      </div>
+        </div>
+      )}
 
       {/* View toggle + print */}
-      <div className="mt-4 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
-        <div className="hidden sm:block" />
-        <div className="flex justify-center">
-          <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+      {showContent && (
+        <div className="mt-4 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+          <div className="hidden sm:block" />
+          <div className="flex justify-center">
+            <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
+          </div>
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              disabled={visibleSchedules.length === 0}
+              onClick={() =>
+                openSchedulePrint(visibleSchedules, { schoolYear, semesterLabel: semesterLabel(semester) })
+              }
+            >
+              <PrinterIcon />
+              Print
+            </Button>
+          </div>
         </div>
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            disabled={visibleSchedules.length === 0}
-            onClick={() =>
-              openSchedulePrint(visibleSchedules, { schoolYear, semesterLabel: semesterLabel(semester) })
-            }
-          >
-            <PrinterIcon />
-            Print
-          </Button>
-        </div>
-      </div>
+      )}
 
       <div className="mt-4">
         <AnimatePresence>
