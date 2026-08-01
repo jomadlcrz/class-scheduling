@@ -1,3 +1,4 @@
+import { AUTH_STATE_CHANGED_EVENT } from "~/lib/cross-tab-sync";
 import { clearSession, loadSession, updateSessionTokens } from "~/lib/session";
 
 /**
@@ -31,6 +32,15 @@ export class ApiError extends Error {
 function resolveApiUrl(endpoint: string): string {
   if (/^https?:\/\//i.test(endpoint)) return endpoint;
   return `${API_BASE}${endpoint}`;
+}
+
+/**
+ * Notifies the auth provider that the persisted session may have changed
+ * (e.g. it was replaced by another tab) so it can re-read and re-render.
+ */
+function notifyAuthStateChange() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(AUTH_STATE_CHANGED_EVENT));
 }
 
 /** Digs the first human-readable string out of a backend error payload. */
@@ -152,6 +162,8 @@ async function request<T>(
 
   const data = (await response.json().catch(() => null)) as Record<string, unknown> | null;
 
+  notifyAuthStateChange();
+
   // ── 401 → attempt refresh and retry once ──
   if (response.status === 401 && token && !isRefreshCall) {
     const result = await attemptRefresh();
@@ -208,6 +220,7 @@ async function request<T>(
 
     // Refresh failed — session is dead. Use the refresh endpoint's own message.
     clearSession();
+    notifyAuthStateChange();
     throw new ApiError(
       result.backendMessage ?? "Something went wrong. Please try again.",
       response.status,
@@ -274,6 +287,8 @@ export async function apiUpload<T>(endpoint: string, formData: FormData): Promis
 
   const data = (await response.json().catch(() => null)) as Record<string, unknown> | null;
 
+  notifyAuthStateChange();
+
   // ── 401 → attempt refresh and retry once ──
   if (response.status === 401 && token) {
     const result = await attemptRefresh();
@@ -309,6 +324,7 @@ export async function apiUpload<T>(endpoint: string, formData: FormData): Promis
 
     // Refresh failed — use the refresh endpoint's own message.
     clearSession();
+    notifyAuthStateChange();
     throw new ApiError(
       result.backendMessage ?? "Something went wrong. Please try again.",
       response.status,

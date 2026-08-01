@@ -14,7 +14,7 @@ import type { Role, User } from "~/types/user";
  * recognised as logged in, and the first API call triggers a transparent refresh.
  */
 
-const SESSION_KEY = "gwc-session";
+export const SESSION_KEY = "gwc-session";
 const PENDING_KEY = "gwc-pending-password-change";
 
 /** Claims embedded in the backend's access token. */
