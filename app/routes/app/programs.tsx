@@ -6,9 +6,10 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
+import { ProgramDeleteDialog } from "~/features/programs/program-delete-dialog";
 import { ProgramForm } from "~/features/programs/program-form";
 import { ProgramTable } from "~/features/programs/program-table";
 import { usePagination } from "~/hooks/use-pagination";
@@ -97,7 +98,8 @@ function ProgramsPage() {
   }
 
   async function handleDelete(target: Program) {
-    const message = await programService.remove(target.id);
+    // The backend asks for the program's abbreviation as the deletion confirmation.
+    const message = await programService.remove(target.id, target.abbrev);
     if (message) toast.success(message);
     await refresh();
   }
@@ -197,19 +199,11 @@ function ProgramsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
+      <ProgramDeleteDialog
+        program={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Delete program"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={() => handleDelete(deleteTarget!)}
-      >
-        Program{" "}
-        <span className="font-medium text-navy-700 dark:text-mist-100">{deleteTarget?.abbrev}</span>{" "}
-        ({deleteTarget?.name}) will be removed from active lists. It can be restored from Recently Deleted.
-      </ConfirmDialog>
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

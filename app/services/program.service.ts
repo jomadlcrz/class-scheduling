@@ -1,5 +1,10 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import type { CreateProgramInput, Program, UpdateProgramInput } from "~/types/program";
+import type {
+  CreateProgramInput,
+  Program,
+  ProgramDeletePreview,
+  UpdateProgramInput,
+} from "~/types/program";
 
 /** Programs CRUD against the curriculums module (registrar_admin). */
 
@@ -61,10 +66,20 @@ async function update(id: number, input: UpdateProgramInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /programs/:id — returns the backend message. */
-async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/programs/${id}`);
+/**
+ * DELETE /programs/:id — cascades through the program's curriculum, sets and
+ * schedules only after the caller echoes the program's abbreviation. Returns
+ * the backend message (the response also carries the same breakdown the
+ * preview endpoint returns).
+ */
+async function remove(id: number, confirmCode: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/programs/${id}`, { confirm: confirmCode });
   return apiMessage(data);
+}
+
+/** GET /programs/:id/delete-preview — read-only breakdown of what the delete would affect. */
+async function getDeletePreview(id: number): Promise<ProgramDeletePreview> {
+  return apiGet<ProgramDeletePreview>(`/programs/${id}/delete-preview`);
 }
 
 export type DeletedProgram = {
@@ -124,4 +139,4 @@ async function get(id: number): Promise<Program> {
   };
 }
 
-export const programService = { list, create, update, remove, listDeleted, restore, get };
+export const programService = { list, create, update, remove, getDeletePreview, listDeleted, restore, get };
