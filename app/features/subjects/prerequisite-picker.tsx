@@ -1,5 +1,6 @@
-﻿import { useId, useRef, useState } from "react";
-import { FieldChrome } from "~/components/ui/input";
+﻿import { useId, useMemo, useState } from "react";
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
+import { FieldChrome, inputClassName } from "~/components/ui/input";
 
 export type PrerequisiteOption = {
   /** Real id for saved subjects, temp id for pending entries. */
@@ -18,15 +19,12 @@ type PrerequisitePickerProps = {
 };
 
 /**
- * Tag input backed by a datalist: type or pick a subject code and it becomes
- * a chip inside the field. Matching is by exact code (case-insensitive);
- * Backspace on an empty input removes the last chip.
+ * Multi-select tag field backed by Command: search or pick a subject and it
+ * becomes a chip. Backspace on an empty query removes the last chip.
  */
 export function PrerequisitePicker({ options, value, onChange, compact = false }: PrerequisitePickerProps) {
   const [query, setQuery] = useState("");
-  const listId = useId();
   const inputId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const selected = value
     .map((id) => options.find((o) => o.id === id))
@@ -34,21 +32,38 @@ export function PrerequisitePicker({ options, value, onChange, compact = false }
   const available = options.filter((o) => !value.includes(o.id));
   const disabled = options.length === 0;
 
-  function tryAdd(raw: string): boolean {
-    const match = available.find((o) => o.code.toLowerCase() === raw.trim().toLowerCase());
-    if (!match) return false;
-    onChange([...value, match.id]);
-    setQuery("");
-    return true;
-  }
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return available;
+    return available.filter(
+      (o) => o.code.toLowerCase().includes(q) || o.title.toLowerCase().includes(q),
+    );
+  }, [available, query]);
 
-  const field = (
-    <div
-      onClick={() => inputRef.current?.focus()}
-      className={`flex cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
-        compact ? "min-h-9 px-2 py-1" : "min-h-10.5 px-3 py-2"
-      } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+  const placeholder =
+    selected.length === 0 ? (compact ? "None" : "Search subjects…") : compact ? "Add…" : "Add prerequisite…";
+
+  const picker = disabled ? (
+    <div className={`${inputClassName} text-slate-400 dark:text-slate-500`}>No subjects available</div>
+  ) : (
+    <Command
+      value=""
+      onValueChange={(next) => {
+        const id = next as string;
+        if (id && !value.includes(id)) {
+          onChange([...value, id]);
+          setQuery("");
+        }
+      }}
+      inputValue={query}
+      onInputValueChange={setQuery}
+      itemToStringLabel={(id) => options.find((o) => o.id === id)?.code ?? ""}
     >
+      <div
+        className={`flex cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
+          compact ? "min-h-9 px-2 py-1" : "min-h-10.5 px-3 py-2"
+        }`}
+      >
         {selected.map((option) => (
           <span
             key={option.id}
@@ -66,63 +81,42 @@ export function PrerequisitePicker({ options, value, onChange, compact = false }
           </span>
         ))}
 
-        <input
-          ref={inputRef}
+        <CommandInput
+          embedded
           id={inputId}
-          type="text"
-          list={listId}
-          value={query}
-          disabled={disabled}
-          placeholder={
-            disabled
-              ? "No subjects available"
-              : selected.length === 0
-                ? compact
-                  ? "None"
-                  : "Type a subject code…"
-                : ""
-          }
-          autoComplete="off"
-          onChange={(e) => {
-            const next = e.target.value;
-            if (!tryAdd(next)) setQuery(next);
-          }}
+          placeholder={placeholder}
+          focusPlaceholder="Search subjects…"
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              tryAdd(query);
-            } else if (e.key === "Backspace" && query === "" && value.length > 0) {
+            if (e.key === "Backspace" && query === "" && value.length > 0) {
               onChange(value.slice(0, -1));
             }
           }}
-          className="min-w-24 flex-1 bg-transparent text-sm text-inherit placeholder-slate-400 outline-none disabled:cursor-not-allowed dark:placeholder-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
         />
-    </div>
-  );
+      </div>
 
-  const datalist = (
-    <datalist id={listId}>
-      {available.map((option) => (
-        <option key={option.id} value={option.code}>
-          {option.title}
-        </option>
-      ))}
-    </datalist>
+      <CommandList>
+        {filtered.length === 0 ? (
+          <CommandEmpty>No subjects found.</CommandEmpty>
+        ) : (
+          filtered.map((option) => (
+            <CommandItem key={option.id} value={option.id}>
+              {option.code} — {option.title}
+            </CommandItem>
+          ))
+        )}
+      </CommandList>
+    </Command>
   );
 
   return compact ? (
-    <>
-      {field}
-      {datalist}
-    </>
+    picker
   ) : (
     <FieldChrome
       id={inputId}
       label="Prerequisites"
       labelEnd={<span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>}
     >
-      {field}
-      {datalist}
+      {picker}
     </FieldChrome>
   );
 }

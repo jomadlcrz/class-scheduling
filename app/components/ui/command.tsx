@@ -7,15 +7,29 @@ const Command = ComboboxPrimitive.Root;
 type CommandInputProps = ComboboxPrimitive.Input.Props & {
   /** Shown while focused, in place of `placeholder` (e.g. "Search faculty…"). */
   focusPlaceholder?: string;
+  /** Render without outer border — for embedding inside a custom field shell (e.g. tag inputs). */
+  embedded?: boolean;
 };
 
-function CommandInput({ className = "", placeholder, focusPlaceholder, onFocus, onBlur, ...props }: CommandInputProps) {
+function CommandInput({
+  className = "",
+  placeholder,
+  focusPlaceholder,
+  embedded = false,
+  onFocus,
+  onBlur,
+  ...props
+}: CommandInputProps) {
   const [focused, setFocused] = useState(false);
 
   return (
     <ComboboxPrimitive.InputGroup
       data-slot="command-input-group"
-      className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 transition-colors duration-150 has-focus-visible:border-blue-700 has-focus-visible:ring-2 has-focus-visible:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:has-focus-visible:border-blue-400 dark:has-focus-visible:ring-blue-400/20"
+      className={
+        embedded
+          ? "flex min-w-0 flex-1 items-center gap-2 bg-transparent"
+          : "flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 transition-colors duration-150 has-focus-visible:border-blue-700 has-focus-visible:ring-2 has-focus-visible:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:has-focus-visible:border-blue-400 dark:has-focus-visible:ring-blue-400/20"
+      }
     >
       <ComboboxPrimitive.Input
         data-slot="command-input"
