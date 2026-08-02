@@ -4,7 +4,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { TableCell, TableRow } from "~/components/ui/table";
 import { TableInput } from "~/components/ui/table-input";
 import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
-import { PrerequisiteBadges } from "~/features/subjects/prerequisite-badges";
 import {
   PrerequisitePicker,
   type PrerequisiteOption,
@@ -50,6 +49,7 @@ export function CurriculumSubjectRow({
 }: CurriculumSubjectRowProps) {
   const isPending = Boolean(row.tempId);
   const isEditable = isPending && mode === "edit";
+  const prerequisiteText = row.prerequisites.join(", ");
 
   return (
     <TableRow className={isPending ? "bg-amber-50/40 dark:bg-gold-400/5" : undefined}>
@@ -165,7 +165,12 @@ export function CurriculumSubjectRow({
             }
           />
         ) : row.prerequisites.length > 0 ? (
-          <PrerequisiteBadges codes={row.prerequisites} maxVisible={2} />
+          <span
+            className="block min-w-0 whitespace-normal wrap-break-word leading-5 text-slate-600 dark:text-slate-300"
+            title={prerequisiteText}
+          >
+            {prerequisiteText}
+          </span>
         ) : (
           <span className="text-slate-400 dark:text-slate-500">None</span>
         )}
