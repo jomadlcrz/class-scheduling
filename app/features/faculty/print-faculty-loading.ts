@@ -104,7 +104,7 @@ export function openFacultyLoadingPrint(
     <tr>
       <td class="lbl">DEPARTMENT</td>
       <td class="oval">${safe(entry.department)}</td>
-      <td class="lbl">ACADEMIC YEAR</td>
+      <td class="lbl">ACADEMIC TERM</td>
       <td class="oval">${safe(context.schoolYear)}</td>
     </tr>
   </table>

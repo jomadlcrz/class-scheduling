@@ -8,17 +8,17 @@ import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { PageHeader } from "~/layouts/page-header";
-import { SchoolYearForm } from "~/features/academic-year/school-year-form";
-import { SchoolYearTable } from "~/features/academic-year/school-year-table";
-import { SemesterForm, type SemesterFormValue } from "~/features/academic-year/semester-form";
-import { SemesterTable } from "~/features/academic-year/semester-table";
+import { SchoolYearForm } from "~/features/academic-term/school-year-form";
+import { SchoolYearTable } from "~/features/academic-term/school-year-table";
+import { SemesterForm, type SemesterFormValue } from "~/features/academic-term/semester-form";
+import { SemesterTable } from "~/features/academic-term/semester-table";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
 import { semesterService } from "~/services/semester.service";
 import type { Semester } from "~/types/semester";
 
-export function AcademicYearPage() {
+export function AcademicTermPage() {
   const { schoolYears, loading: loadingSchoolYears, refresh: refreshSchoolYears } = useSchoolYears();
   const { semesters, loading: loadingSemesters, refresh: refreshSemesters } = useSemesters();
 
@@ -79,7 +79,7 @@ export function AcademicYearPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <PageHeader title="Academic Years" description="Manage school years and their semesters." />
+      <PageHeader title="Academic Terms" description="Manage school years and their semesters." />
 
       <Card className="mt-6 flex flex-wrap items-center justify-between gap-3 p-5">
         <div>

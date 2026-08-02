@@ -41,7 +41,7 @@ function SubjectsNewPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const canManageAcademicYear = user?.role === "admin" || user?.role === "registrar";
+  const canManageAcademicTerm = user?.role === "admin" || user?.role === "registrar";
   const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
@@ -220,7 +220,7 @@ function SubjectsNewPage() {
   }
 
   const isLoading = allSubjects === null || programs === null || schoolYears === null;
-  const noAcademicYear = schoolYears !== null && schoolYears.length === 0;
+  const noAcademicTerm = schoolYears !== null && schoolYears.length === 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -229,21 +229,21 @@ function SubjectsNewPage() {
         description="Build or edit a program curriculum by year level and semester."
       />
 
-      {noAcademicYear ? (
+      {noAcademicTerm ? (
         <div className="mt-6">
           <EmptyState
             title="No school years yet"
             action={
-              canManageAcademicYear ? (
-                <Button type="button" block={false} onClick={() => navigate("/academic-year")}>
-                  Create academic year
+              canManageAcademicTerm ? (
+                <Button type="button" block={false} onClick={() => navigate("/academic-term")}>
+                  Create academic term
                 </Button>
               ) : undefined
             }
           >
-            {canManageAcademicYear
-              ? "Create the first academic year before adding subjects to a curriculum."
-              : "Ask an administrator or registrar to create the first academic year."}
+            {canManageAcademicTerm
+              ? "Create the first academic term before adding subjects to a curriculum."
+              : "Ask an administrator or registrar to create the first academic term."}
           </EmptyState>
         </div>
       ) : isLoading ? (

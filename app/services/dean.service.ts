@@ -151,7 +151,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
     employeeId: null,
     department: entry.department,
     semester: entry.semester,
-    academicYear: entry.academic_year,
+    academicTerm: entry.academic_year,
     maxWeeklyHours: null,
     teachingTermId: null,
     subjects: entry.subjects.map((s) => ({

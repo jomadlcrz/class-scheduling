@@ -646,8 +646,8 @@ function SchedulesNewPage() {
         ? "Remove all slots to change."
         : undefined;
   const isLoading = programs === null || schoolYearsLoading;
-  /** Without at least one academic year there's nothing to schedule. */
-  const noAcademicYear = !schoolYearsLoading && schoolYears.length === 0;
+  /** Without at least one academic term there's nothing to schedule. */
+  const noAcademicTerm = !schoolYearsLoading && schoolYears.length === 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -655,7 +655,7 @@ function SchedulesNewPage() {
         title="New Schedule"
         description="Select a set, add time slots for its subjects, then save the whole week at once."
         actions={
-          noAcademicYear ? undefined : (
+          noAcademicTerm ? undefined : (
             <>
               <Button
                 type="button"
@@ -689,17 +689,17 @@ function SchedulesNewPage() {
         >
           <Spinner />
         </div>
-      ) : noAcademicYear ? (
+      ) : noAcademicTerm ? (
         <div className="mt-6">
           <EmptyState
             title="No school years yet"
             action={
-              <Button type="button" block={false} onClick={() => navigate("/academic-year")}>
-                Create academic year
+              <Button type="button" block={false} onClick={() => navigate("/academic-term")}>
+                Create academic term
               </Button>
             }
           >
-            Create the first academic year before scheduling classes.
+            Create the first academic term before scheduling classes.
           </EmptyState>
         </div>
       ) : (

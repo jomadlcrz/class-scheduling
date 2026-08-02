@@ -93,7 +93,7 @@ export type FacultyLoadingEntry = {
   employeeId: string | null;
   department: string;
   semester: string;
-  academicYear: string;
+  academicTerm: string;
   maxWeeklyHours: number | null;
   /** Populated from GET /deans/teaching-terms so maxWeeklyHours can be edited. */
   teachingTermId: number | null;

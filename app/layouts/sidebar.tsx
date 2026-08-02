@@ -43,7 +43,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Scheduling",
     items: [
-      { label: "Academic Year", to: "/academic-year", icon: <CalendarIcon />, roles: ["registrar"] },
+      { label: "Academic Term", to: "/academic-term", icon: <CalendarIcon />, roles: ["registrar"] },
       { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
       { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["dean", "registrar"] },
       { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", icon: <CalendarClockIcon />, roles: ["registrar"] },

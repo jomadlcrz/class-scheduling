@@ -111,7 +111,7 @@ export function DeanFacultyLoadsView({
                 {entry?.department ?? "—"}
               </td>
               <td className="border border-slate-300 px-3 py-1.5 font-bold text-navy-800 dark:border-white/15 dark:text-mist-100">
-                ACADEMIC YEAR
+                ACADEMIC TERM
               </td>
               <td className="border border-slate-300 px-1 py-0.5 dark:border-white/15">
                 <Select
