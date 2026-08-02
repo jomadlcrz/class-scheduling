@@ -1,20 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import { TabList } from "~/components/ui/tabs";
-import { BuildingViewWorkspace } from "~/features/facilities/building-view-workspace";
-import { RoomsViewWorkspace } from "~/features/facilities/rooms-view-workspace";
 import { PlusIcon } from "~/components/ui/icons";
+import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
 import type { FacilityBuildingDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
-
-type FacilitiesTab = "buildings" | "rooms";
 
 export function meta() {
   return [
@@ -33,19 +29,11 @@ export default function Facilities() {
 
 function FacilitiesPage() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tab: FacilitiesTab = searchParams.get("tab") === "rooms" ? "rooms" : "buildings";
-
+  const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
   const [buildings, setBuildings] = useState<FacilityBuildingDetail[] | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [roomTypes, setRoomTypes] = useState<string[]>([]);
   const [roomStatuses, setRoomStatuses] = useState<string[]>([]);
-
-  const selectedBuildingId = useMemo(() => {
-    const raw = searchParams.get("buildingId");
-    const parsed = raw ? Number(raw) : NaN;
-    return Number.isFinite(parsed) ? parsed : null;
-  }, [searchParams]);
 
   useEffect(() => {
     facilityService.list().then(setBuildings).catch(() => setBuildings([]));
@@ -60,39 +48,9 @@ function FacilitiesPage() {
   }, []);
 
   useEffect(() => {
-    if (!buildings?.length || selectedBuildingId) return;
-    setSearchParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        next.set("buildingId", String(buildings[0].id));
-        return next;
-      },
-      { replace: true },
-    );
-  }, [buildings, selectedBuildingId, setSearchParams]);
-
-  function setTab(nextTab: FacilitiesTab) {
-    setSearchParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        if (nextTab === "buildings") next.delete("tab");
-        else next.set("tab", nextTab);
-        return next;
-      },
-      { replace: true },
-    );
-  }
-
-  function setSelectedBuildingId(buildingId: number) {
-    setSearchParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        next.set("buildingId", String(buildingId));
-        return next;
-      },
-      { replace: true },
-    );
-  }
+    if (!buildings?.length || selectedBuildingId !== null) return;
+    setSelectedBuildingId(buildings[0].id);
+  }, [buildings, selectedBuildingId]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -100,26 +58,14 @@ function FacilitiesPage() {
         title="Facilities"
         description="Browse campus buildings and rooms by floor."
         actions={
-          tab === "buildings" ? (
-            <Button type="button" block={false} onClick={() => navigate("/facilities/new")}>
-              <PlusIcon />
-              New Building
-            </Button>
-          ) : undefined
+          <Button type="button" block={false} onClick={() => navigate("/facilities/new")}>
+            <PlusIcon />
+            New Facility
+          </Button>
         }
       />
 
-      <div className="mt-6 flex flex-col gap-6">
-        <TabList
-          ariaLabel="Facilities views"
-          tabs={[
-            { value: "buildings", label: "Buildings" },
-            { value: "rooms", label: "Rooms" },
-          ]}
-          value={tab}
-          onChange={setTab}
-        />
-
+      <div className="mt-6">
         {buildings === null ? (
           <div
             role="status"
@@ -128,15 +74,8 @@ function FacilitiesPage() {
           >
             <Spinner />
           </div>
-        ) : tab === "buildings" ? (
-          <BuildingViewWorkspace
-            buildings={buildings}
-            programs={programs}
-            selectedBuildingId={selectedBuildingId}
-            onBuildingChange={setSelectedBuildingId}
-          />
         ) : (
-          <RoomsViewWorkspace
+          <FacilitiesViewWorkspace
             buildings={buildings}
             programs={programs}
             roomTypes={roomTypes}

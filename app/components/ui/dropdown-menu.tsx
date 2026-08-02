@@ -12,6 +12,8 @@ type FilterDropdownProps = {
   options: FilterOption[];
   value: string;
   onChange: (value: string) => void;
+  /** When false, hides the inline clear button. Defaults to true. */
+  clearable?: boolean;
 };
 
 const itemClassName =
@@ -40,6 +42,7 @@ export function FilterDropdown({
   options,
   value,
   onChange,
+  clearable = true,
 }: FilterDropdownProps) {
   const isActive = value !== allValue;
   const selected = options.find((o) => o.value === value);
@@ -51,7 +54,7 @@ export function FilterDropdown({
           id={id}
           aria-label={isActive ? `${label}: ${selected?.label}` : label}
           className={`flex min-w-0 cursor-pointer items-center gap-1.5 rounded-lg border font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-            isActive ? "py-2 pl-3 pr-7" : "px-3 py-2"
+            isActive && clearable ? "py-2 pl-3 pr-7" : "px-3 py-2"
           } ${
             isActive
               ? "border-blue-700 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-400/40 dark:bg-blue-400/10 dark:text-blue-300 dark:hover:bg-blue-400/15"
@@ -80,7 +83,7 @@ export function FilterDropdown({
         </Menu.Portal>
       </Menu.Root>
 
-      {isActive && (
+      {clearable && isActive && (
         <button
           type="button"
           aria-label={`Clear ${label} filter`}

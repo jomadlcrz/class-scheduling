@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
+import { Button } from "~/components/ui/button";
+import { ArrowLeftIcon } from "~/components/ui/icons";
 import { CreateBuildingWorkspace } from "~/features/facilities/create-building-workspace";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
@@ -12,20 +14,20 @@ import type { Program } from "~/types/program";
 
 export function meta() {
   return [
-    { title: "Create Building — GWC Class Scheduling" },
-    { name: "description", content: "Create a building with floors and rooms in one submission." },
+    { title: "New Facility — GWC Class Scheduling" },
+    { name: "description", content: "Create a facility with its building and rooms in one submission." },
   ];
 }
 
-export default function CreateBuilding() {
+export default function CreateFacility() {
   return (
     <RoleGuard allow={["admin", "registrar"]}>
-      <CreateBuildingPage />
+      <CreateFacilityPage />
     </RoleGuard>
   );
 }
 
-function CreateBuildingPage() {
+function CreateFacilityPage() {
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [roomTypes, setRoomTypes] = useState<string[]>([]);
@@ -39,7 +41,7 @@ function CreateBuildingPage() {
   }, []);
 
   async function handleCreate(input: CreateFacilitiesInput) {
-    const message = await facilityService.create(input);
+    const { message } = await facilityService.create(input);
     if (message) toast.success(message);
     navigate("/facilities");
   }
@@ -47,8 +49,14 @@ function CreateBuildingPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
-        title="Create Building"
-        description="Create a new building and define all floors and facility rooms in one submission."
+        title="New Facility"
+        description="Create a facility with its building and rooms in one submission."
+        actions={
+          <Button type="button" variant="outline" block={false} onClick={() => navigate("/facilities")}>
+            <ArrowLeftIcon />
+            Back
+          </Button>
+        }
       />
 
       <div className="mt-6">

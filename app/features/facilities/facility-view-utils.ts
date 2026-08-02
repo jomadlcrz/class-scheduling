@@ -2,10 +2,17 @@ import type { BuildingSummaryData } from "~/features/facilities/building-summary
 import type { FacilityBuildingDetail } from "~/types/facility";
 
 export function computeBuildingSummary(building: FacilityBuildingDetail): BuildingSummaryData {
+  return computeFilteredSummary(building, building.rooms);
+}
+
+export function computeFilteredSummary(
+  building: FacilityBuildingDetail,
+  rooms: FacilityBuildingDetail["rooms"],
+): BuildingSummaryData {
   const roomTypeCounts: Record<string, number> = {};
   const labProgramIds = new Set<number>();
 
-  for (const room of building.rooms) {
+  for (const room of rooms) {
     roomTypeCounts[room.type] = (roomTypeCounts[room.type] ?? 0) + 1;
     if (room.type === "Laboratory") {
       room.programIds.forEach((id) => labProgramIds.add(id));
@@ -15,7 +22,7 @@ export function computeBuildingSummary(building: FacilityBuildingDetail): Buildi
   return {
     buildingName: building.name,
     floorCount: building.floorCount,
-    totalRooms: building.rooms.length,
+    totalRooms: rooms.length,
     roomTypeCounts,
     labProgramIds: [...labProgramIds],
   };

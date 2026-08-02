@@ -75,9 +75,15 @@ async function getById(buildingId: number): Promise<FacilityBuildingDetail | nul
 }
 
 /** POST /create-facilities — atomically creates one building and all nested rooms. */
-async function create(input: CreateFacilitiesInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/create-facilities", input);
-  return apiMessage(data);
+async function create(input: CreateFacilitiesInput): Promise<{ message: string; buildingId: number }> {
+  const data = await apiPost<{
+    message?: string;
+    building?: { buildingId: number };
+  }>("/create-facilities", input);
+  return {
+    message: apiMessage(data),
+    buildingId: data.building?.buildingId ?? 0,
+  };
 }
 
 export const facilityService = { list, getById, create };

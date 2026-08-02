@@ -2,22 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Card } from "~/components/ui/card";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
-import { inputClassName } from "~/components/ui/input";
 import { SearchIcon } from "~/components/ui/icons";
-import {
-  BuildingSummaryPanel,
-  type BuildingSummaryData,
-} from "~/features/facilities/building-summary-panel";
+import { inputClassName } from "~/components/ui/input";
+import { BuildingSummaryPanel } from "~/features/facilities/building-summary-panel";
 import { FacilityRoomViewCard } from "~/features/facilities/facility-room-view-card";
 import {
   buildFloorBuckets,
+  computeFilteredSummary,
   floorButtonClassName,
   statCardClassName,
 } from "~/features/facilities/facility-view-utils";
 import type { FacilityBuildingDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
 
-type RoomsViewWorkspaceProps = {
+type FacilitiesViewWorkspaceProps = {
   buildings: FacilityBuildingDetail[];
   programs: Program[];
   roomTypes: string[];
@@ -26,37 +24,14 @@ type RoomsViewWorkspaceProps = {
   onBuildingChange: (buildingId: number) => void;
 };
 
-function computeFilteredSummary(
-  building: FacilityBuildingDetail,
-  rooms: FacilityBuildingDetail["rooms"],
-): BuildingSummaryData {
-  const roomTypeCounts: Record<string, number> = {};
-  const labProgramIds = new Set<number>();
-
-  for (const room of rooms) {
-    roomTypeCounts[room.type] = (roomTypeCounts[room.type] ?? 0) + 1;
-    if (room.type === "Laboratory") {
-      room.programIds.forEach((id) => labProgramIds.add(id));
-    }
-  }
-
-  return {
-    buildingName: building.name,
-    floorCount: building.floorCount,
-    totalRooms: rooms.length,
-    roomTypeCounts,
-    labProgramIds: [...labProgramIds],
-  };
-}
-
-export function RoomsViewWorkspace({
+export function FacilitiesViewWorkspace({
   buildings,
   programs,
   roomTypes,
   roomStatuses,
   selectedBuildingId,
   onBuildingChange,
-}: RoomsViewWorkspaceProps) {
+}: FacilitiesViewWorkspaceProps) {
   const building =
     buildings.find((entry) => entry.id === selectedBuildingId) ?? buildings[0] ?? null;
 
@@ -67,6 +42,9 @@ export function RoomsViewWorkspace({
 
   useEffect(() => {
     setSelectedFloor("all");
+    setSearch("");
+    setTypeFilter("all");
+    setStatusFilter("all");
   }, [building?.id]);
 
   const filteredRooms = useMemo(() => {
@@ -92,10 +70,13 @@ export function RoomsViewWorkspace({
     [filteredRooms],
   );
 
+  const hasActiveFilters =
+    search.trim() !== "" || typeFilter !== "all" || statusFilter !== "all" || selectedFloor !== "all";
+
   if (buildings.length === 0) {
     return (
-      <EmptyState title="No rooms found">
-        Rooms appear here once buildings have been created.
+      <EmptyState title="No facilities found">
+        Create a facility to start managing campus buildings and rooms.
       </EmptyState>
     );
   }
@@ -106,19 +87,20 @@ export function RoomsViewWorkspace({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end gap-3">
         <FilterDropdown
-          id="rooms-building-select"
+          id="facilities-building-select"
           label="Building"
           allLabel="Select building"
           options={buildings.map((entry) => ({ value: String(entry.id), label: entry.name }))}
           value={String(building.id)}
           onChange={(value) => onBuildingChange(Number(value))}
+          clearable={false}
         />
         <div className="relative w-full sm:w-64">
           <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
             <SearchIcon />
           </span>
           <input
-            id="rooms-view-search"
+            id="facilities-room-search"
             type="search"
             placeholder="Room name…"
             value={search}
@@ -128,7 +110,7 @@ export function RoomsViewWorkspace({
           />
         </div>
         <FilterDropdown
-          id="rooms-view-type-filter"
+          id="facilities-type-filter"
           label="Type"
           allLabel="All types"
           options={roomTypes.map((type) => ({ value: type, label: type }))}
@@ -136,7 +118,7 @@ export function RoomsViewWorkspace({
           onChange={setTypeFilter}
         />
         <FilterDropdown
-          id="rooms-view-status-filter"
+          id="facilities-status-filter"
           label="Status"
           allLabel="All statuses"
           options={roomStatuses.map((status) => ({ value: status, label: status }))}
@@ -146,16 +128,22 @@ export function RoomsViewWorkspace({
       </div>
 
       <Card className="p-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className={statCardClassName}>
             <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Building
+              Building Name
             </p>
             <p className="mt-1 font-medium text-navy-700 dark:text-mist-100">{building.name}</p>
           </div>
           <div className={statCardClassName}>
             <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Matching Rooms
+              Total Floors
+            </p>
+            <p className="mt-1 font-medium text-navy-700 dark:text-mist-100">{building.floorCount}</p>
+          </div>
+          <div className={statCardClassName}>
+            <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              {hasActiveFilters ? "Matching Rooms" : "Total Rooms"}
             </p>
             <p className="mt-1 font-medium text-navy-700 dark:text-mist-100">{summary.totalRooms}</p>
           </div>
@@ -189,7 +177,9 @@ export function RoomsViewWorkspace({
                 onClick={() => setSelectedFloor("all")}
               >
                 <span>All Floors</span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">{building.rooms.length} rooms</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {building.rooms.length} rooms
+                </span>
               </button>
             </li>
             {floors.map((floor) => (
@@ -222,7 +212,9 @@ export function RoomsViewWorkspace({
           {visibleRooms.length === 0 ? (
             <Card className="p-8">
               <EmptyState title="No rooms found">
-                No rooms match the current filters. Adjust the search or filters.
+                {hasActiveFilters
+                  ? "No rooms match the current filters. Adjust the search or filters."
+                  : "This building has no rooms assigned yet."}
               </EmptyState>
             </Card>
           ) : (
