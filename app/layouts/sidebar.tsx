@@ -3,7 +3,6 @@ import { type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router";
 import {
   AuditLogIcon,
-  BlocksIcon,
   BookmarkIcon,
   BookOpenIcon,
   Building2Icon,
@@ -13,7 +12,6 @@ import {
   CalendarShuffleIcon,
   ClockIcon,
   DashboardIcon,
-  DoorOpenIcon,
   FlaskConicalIcon,
   FolderOpenIcon,
   GraduationHatIcon,
@@ -21,7 +19,6 @@ import {
   MapIcon,
   ShieldIcon,
   ShieldUserIcon,
-  TableIcon,
   UserIcon,
   UsersIcon,
   UsersRoundIcon,
@@ -32,7 +29,14 @@ import type { Role } from "~/types/user";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 
-type NavItem = { label: string; to: string; icon: ReactNode; roles: Role[]; matchPrefix?: boolean; matchPaths?: string[] };
+type NavItem = {
+  label: string;
+  to: string;
+  icon: ReactNode;
+  roles: Role[];
+  matchPrefix?: boolean;
+  matchPaths?: string[];
+};
 type NavGroup = { label: string; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
@@ -58,8 +62,13 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Curriculum & Facilities",
     items: [
-      { label: "Buildings", to: "/buildings", icon: <Building2Icon />, roles: ["registrar"] },
-      { label: "Rooms", to: "/rooms", icon: <DoorOpenIcon />, roles: ["registrar"] },
+      {
+        label: "Facilities",
+        to: "/facilities",
+        icon: <Building2Icon />,
+        roles: ["registrar"],
+        matchPaths: ["/facilities"],
+      },
       { label: "Departments", to: "/departments", icon: <FolderOpenIcon />, roles: ["registrar"] },
       { label: "Programs", to: "/programs", icon: <BookmarkIcon />, roles: ["registrar"] },
       { label: "Curriculum", to: "/curriculum", icon: <BookOpenIcon />, roles: ["registrar"] },
@@ -200,36 +209,39 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
               animate="visible"
             >
               {group.items.map((item) => (
-                  <motion.li
-                    key={`${item.label}-${item.to}`}
-                    className="relative"
-                    variants={itemVariants}
-                  >
-                    <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
-                      <NavLink
-                        to={item.to}
-                        end={!item.matchPrefix && !item.matchPaths}
-                        onClick={onNavigate}
-                        className={({ isActive }) => {
-                          const active = item.matchPaths
-                            ? item.matchPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"))
+                <motion.li
+                  key={`${item.label}-${item.to}`}
+                  className="relative"
+                  variants={itemVariants}
+                >
+                  <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
+                    <NavLink
+                      to={item.to}
+                      end={!item.matchPrefix && !item.matchPaths}
+                      onClick={onNavigate}
+                      className={({ isActive }) => {
+                        const active = item.matchPaths
+                          ? item.matchPaths.some(
+                              (p) => location.pathname === p || location.pathname.startsWith(`${p}/`),
+                            )
+                          : item.matchPrefix
+                            ? location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
                             : isActive;
-                          return `${itemClassName(active)} ${collapsed ? "justify-center px-0" : ""} ${
-                            active && !collapsed
-                              ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-white"
-                              : ""
-                          }`;
-                        }}
-                      >
-                        <span className="grid size-5 shrink-0 place-items-center opacity-90">
-                          {item.icon}
-                        </span>
-                        {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
-                      </NavLink>
-                    </Tooltip>
-                  </motion.li>
-                ),
-              )}
+                        return `${itemClassName(active)} ${collapsed ? "justify-center px-0" : ""} ${
+                          active && !collapsed
+                            ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-white"
+                            : ""
+                        }`;
+                      }}
+                    >
+                      <span className="grid size-5 shrink-0 place-items-center opacity-90">
+                        {item.icon}
+                      </span>
+                      {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+                    </NavLink>
+                  </Tooltip>
+                </motion.li>
+              ))}
             </motion.ul>
           </div>
         ))}

@@ -9,6 +9,7 @@ export const ROOM_STATUS_TONES: Record<string, BadgeTone> = {
   Occupied: "red",
   Maintenance: "gold",
   Archived: "slate",
+  "Non-Schedulable": "slate",
 };
 
 /** A program allowed into a room. Empty list on a room means general-purpose —
@@ -35,52 +36,17 @@ export type Room = {
   programs: RoomProgram[];
 };
 
-/** Status is backend-managed and buildings are referenced by name on create.
- * programIds is optional; a Laboratory room is rejected by the backend if empty. */
-export type CreateRoomInput = {
-  buildingName: string;
-  floor: number;
-  name: string;
-  capacity: number;
-  type: string;
-  programIds?: number[];
-};
-
-export type UpdateRoomInput = {
-  buildingName?: string;
-  floor?: number;
-  name?: string;
-  capacity?: number;
-  /** Backend RoomType value, e.g. "Lecture Room". */
-  type?: string;
-  /** Omit to leave access untouched; an empty array hands the room back to its whole building. */
-  programIds?: number[];
-};
-
-/** GET /rooms/:id response — a leaner shape than the nested-list `Room` (no buildingName/timeRemaining join). */
-export type RoomDetail = {
-  id: number;
-  buildingId: number;
-  floor: number;
-  name: string;
-  type: string;
-  capacity: number;
-  status: string;
-  programs: RoomProgram[];
-};
-
-/** Shape of GET /rooms/:id/delete-preview and the DELETE /rooms/:id payload.
- * Unlike Program/Set/Subject, a room delete STILL blocks: deleting a room doesn't
- * remove the curriculum requirement, so a schedule that depends on it can't be
- * cascaded away. The type-to-confirm is the only other guard. */
-export type RoomDeletePreview = {
+/** Shape of GET /rooms/:id/archive-preview and the PATCH /rooms/:id/archive payload.
+ * A room still blocks while a real schedule uses it — the type-to-confirm on the
+ * room's own name is the only other guard. */
+export type RoomArchivePreview = {
   room: {
-    room_id: number;
-    room_name: string;
+    roomId: number;
+    roomName: string;
   };
-  /** False when a real schedule still uses this room (blockers.regular_schedules > 0). */
-  deletable: boolean;
+  /** False when blockers.regularSchedules > 0. */
+  archivable: boolean;
   blockers: {
-    regular_schedules: number;
+    regularSchedules: number;
   };
 };

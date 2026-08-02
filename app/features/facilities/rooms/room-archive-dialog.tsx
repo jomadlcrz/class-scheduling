@@ -7,51 +7,51 @@ import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { roomService } from "~/services/room.service";
-import type { Room, RoomDeletePreview } from "~/types/room";
+import type { Room, RoomArchivePreview } from "~/types/room";
 
-type RoomDeleteDialogProps = {
+type RoomArchiveDialogProps = {
   room: Room | null;
   onClose: () => void;
   onConfirm: (room: Room) => Promise<void>;
 };
 
-/** Confirm-preview dialog for deleting a room: fetches GET /rooms/:id/delete-preview.
- * Unlike Program/Set/Subject, a room still blocks while a real schedule uses it —
- * the type-to-confirm on the room's own name is the only other guard. */
-export function RoomDeleteDialog({ room, onClose, onConfirm }: RoomDeleteDialogProps) {
-  const [preview, setPreview] = useState<RoomDeletePreview | null>(null);
+/** Confirm-preview dialog for archiving a room: fetches GET /rooms/:id/archive-preview.
+ * A room still blocks while a real schedule uses it — the type-to-confirm on the room's
+ * own name is the only other guard. */
+export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialogProps) {
+  const [preview, setPreview] = useState<RoomArchivePreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmValue, setConfirmValue] = useState("");
-  const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
     if (!room) return;
     setPreview(null);
     setError(null);
     setConfirmValue("");
-    setDeleting(false);
+    setArchiving(false);
     setLoading(true);
     roomService
-      .getDeletePreview(room.id)
+      .getArchivePreview(room.id)
       .then(setPreview)
       .catch((err) => setError(err instanceof Error ? err.message : ""))
       .finally(() => setLoading(false));
   }, [room]);
 
-  const confirmed = preview !== null && confirmValue.trim() === preview.room.room_name;
+  const confirmed = preview !== null && confirmValue.trim() === preview.room.roomName;
 
-  async function handleDelete() {
+  async function handleArchive() {
     if (!room) return;
     setError(null);
-    setDeleting(true);
+    setArchiving(true);
     try {
       await onConfirm(room);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
     } finally {
-      setDeleting(false);
+      setArchiving(false);
     }
   }
 
@@ -60,7 +60,7 @@ export function RoomDeleteDialog({ room, onClose, onConfirm }: RoomDeleteDialogP
       return (
         <div
           role="status"
-          aria-label="Loading delete preview"
+          aria-label="Loading archive preview"
           className="grid place-items-center py-10 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
@@ -83,7 +83,7 @@ export function RoomDeleteDialog({ room, onClose, onConfirm }: RoomDeleteDialogP
 
     if (!preview) return null;
 
-    if (!preview.deletable) {
+    if (!preview.archivable) {
       return (
         <div className="flex flex-col gap-4">
           <Alert variant="destructive">
@@ -92,17 +92,14 @@ export function RoomDeleteDialog({ room, onClose, onConfirm }: RoomDeleteDialogP
             <AlertDescription>
               <span className="flex items-center gap-2">
                 <CalendarIcon />
-                {preview.blockers.regular_schedules}{" "}
-                {preview.blockers.regular_schedules === 1 ? "schedule session" : "schedule sessions"}{" "}
+                {preview.blockers.regularSchedules}{" "}
+                {preview.blockers.regularSchedules === 1 ? "schedule session" : "schedule sessions"}{" "}
                 still use this room.
               </span>
             </AlertDescription>
           </Alert>
           <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Deleting a room never touches the curriculum, so a schedule that
-            depends on it can't be cascaded away — that would leave a set
-            half-scheduled with no room to reassign to. Move those classes to
-            another room first, then retry.
+            Move those classes to another room first, then retry.
           </p>
           <div className="flex justify-end">
             <Button type="button" variant="outline" block={false} onClick={onClose}>
@@ -116,34 +113,33 @@ export function RoomDeleteDialog({ room, onClose, onConfirm }: RoomDeleteDialogP
     return (
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          Deleting{" "}
+          Archiving{" "}
           <span className="font-medium text-navy-700 dark:text-mist-100">
-            {preview.room.room_name}
+            {preview.room.roomName}
           </span>{" "}
-          only soft-deletes the room — no curriculum or schedule is touched. It
-          can be restored from Recently Deleted until it is purged after the
-          standard 30-day window.
+          only soft-deletes the room — no curriculum or schedule is touched. It can be restored
+          from Recently Deleted until it is purged after the standard 30-day window.
         </p>
 
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="room-delete-confirm"
+            htmlFor="room-archive-confirm"
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
             <span className="font-semibold text-navy-700 dark:text-mist-100">
-              {preview.room.room_name}
+              {preview.room.roomName}
             </span>{" "}
-            to confirm deletion
+            to confirm archival
           </label>
           <input
-            id="room-delete-confirm"
+            id="room-archive-confirm"
             type="text"
             autoComplete="off"
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            placeholder={preview.room.room_name}
+            placeholder={preview.room.roomName}
             className={inputClassName}
           />
         </div>
@@ -157,11 +153,11 @@ export function RoomDeleteDialog({ room, onClose, onConfirm }: RoomDeleteDialogP
             variant="danger"
             block={false}
             disabled={!confirmed}
-            isLoading={deleting}
-            loadingLabel="Deleting…"
-            onClick={handleDelete}
+            isLoading={archiving}
+            loadingLabel="Archiving…"
+            onClick={handleArchive}
           >
-            Delete room
+            Archive room
           </Button>
         </div>
       </div>
@@ -169,7 +165,7 @@ export function RoomDeleteDialog({ room, onClose, onConfirm }: RoomDeleteDialogP
   }
 
   return (
-    <Modal open={room !== null} onClose={onClose} title="Delete room" wide>
+    <Modal open={room !== null} onClose={onClose} title="Archive room" wide>
       {renderBody()}
     </Modal>
   );

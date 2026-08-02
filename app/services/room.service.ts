@@ -1,9 +1,9 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import type { CreateRoomInput, Room, RoomDeletePreview, RoomDetail, UpdateRoomInput } from "~/types/room";
+import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
+import type { Room, RoomArchivePreview, RoomProgram } from "~/types/room";
 
-/** Rooms CRUD against the facilities module (registrar_admin). */
+/** Rooms read + archive against the facilities module (registrar_admin). */
 
-type RoomsResponse = {
+type FacilitiesResponse = {
   buildings: {
     building_id: number;
     building_name: string;
@@ -21,7 +21,7 @@ type RoomsResponse = {
   }[];
 };
 
-function mapPrograms(programs: { program_id: number; program_abbrev: string; program_name: string }[]) {
+function mapPrograms(programs: { program_id: number; program_abbrev: string; program_name: string }[]): RoomProgram[] {
   return programs.map((p) => ({
     programId: p.program_id,
     programAbbrev: p.program_abbrev,
@@ -29,11 +29,11 @@ function mapPrograms(programs: { program_id: number; program_abbrev: string; pro
   }));
 }
 
-/** GET /rooms — rooms come nested per building; flattened here. 404 → empty. */
+/** GET /get-facilities — rooms come nested per building; flattened here. 404 → empty. */
 async function list(): Promise<Room[]> {
-  let data: RoomsResponse;
+  let data: FacilitiesResponse;
   try {
-    data = await apiGet<RoomsResponse>("/rooms");
+    data = await apiGet<FacilitiesResponse>("/get-facilities");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -54,50 +54,16 @@ async function list(): Promise<Room[]> {
   );
 }
 
-/** POST /rooms — bulk floors-per-building endpoint; a single create sends one floor with one room. Returns the backend message. */
-async function create(input: CreateRoomInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/rooms", {
-    buildingName: input.buildingName,
-    floors: [
-      {
-        floorLevel: input.floor,
-        rooms: [
-          {
-            roomName: input.name,
-            roomType: input.type,
-            roomCapacity: input.capacity,
-            programIds: input.programIds ?? [],
-          },
-        ],
-      },
-    ],
-  });
+/** PATCH /rooms/:id/archive — soft delete; the backend requires the room's own name
+ * (case-sensitively) as confirmation. Returns the backend message. */
+async function archive(id: number, confirmText: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/rooms/${id}/archive`, { confirm: confirmText });
   return apiMessage(data);
 }
 
-/** PUT /rooms/:id — building, floor, name, capacity, type, and program access (programIds) are updatable.
- * Omitting programIds leaves access untouched; an empty array hands the room back to its whole building. */
-async function update(id: number, input: UpdateRoomInput): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/rooms/${id}`, {
-    ...(input.buildingName !== undefined && { buildingName: input.buildingName }),
-    ...(input.floor !== undefined && { floorLevel: input.floor }),
-    ...(input.name !== undefined && { roomName: input.name }),
-    ...(input.capacity !== undefined && { roomCapacity: input.capacity }),
-    ...(input.type !== undefined && { roomType: input.type }),
-    ...(input.programIds !== undefined && { programIds: input.programIds }),
-  });
-  return apiMessage(data);
-}
-
-/** DELETE /rooms/:id — soft delete; the backend requires the room's own name (case-sensitively) as confirmation. Returns the backend message. */
-async function remove(id: number, confirmText: string): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/rooms/${id}`, { confirm: confirmText });
-  return apiMessage(data);
-}
-
-/** GET /rooms/:id/delete-preview — read-only: whether the room is deletable and what (if anything) blocks it. */
-async function getDeletePreview(id: number): Promise<RoomDeletePreview> {
-  return apiGet<RoomDeletePreview>(`/rooms/${id}/delete-preview`);
+/** GET /rooms/:id/archive-preview — read-only: whether the room is archivable and what blocks it. */
+async function getArchivePreview(id: number): Promise<RoomArchivePreview> {
+  return apiGet<RoomArchivePreview>(`/rooms/${id}/archive-preview`);
 }
 
 export type DeletedRoom = { id: number; name: string; deactivatedAt: string | null };
@@ -122,28 +88,4 @@ async function restore(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** GET /rooms/:id */
-async function get(id: number): Promise<RoomDetail> {
-  const r = await apiGet<{
-    room_id: number;
-    building_id: number;
-    floor_level: number;
-    room_name: string;
-    room_type: string;
-    room_capacity: number;
-    room_status: string;
-    programs: { program_id: number; program_abbrev: string; program_name: string }[];
-  }>(`/rooms/${id}`);
-  return {
-    id: r.room_id,
-    buildingId: r.building_id,
-    floor: r.floor_level,
-    name: r.room_name,
-    type: r.room_type,
-    capacity: r.room_capacity,
-    status: r.room_status,
-    programs: mapPrograms(r.programs),
-  };
-}
-
-export const roomService = { list, create, update, remove, getDeletePreview, listDeleted, restore, get };
+export const roomService = { list, archive, getArchivePreview, listDeleted, restore };

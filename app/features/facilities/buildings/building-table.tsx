@@ -1,4 +1,4 @@
-﻿import { EditIcon, TrashIcon } from "~/components/ui/icons";
+﻿import { ArchiveIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -11,14 +11,13 @@ import type { Building } from "~/types/building";
 
 type BuildingTableProps = {
   buildings: Building[];
-  onEdit: (building: Building) => void;
-  onDelete: (building: Building) => void;
+  onArchive: (building: Building) => void;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProps) {
+export function BuildingTable({ buildings, onArchive }: BuildingTableProps) {
   return (
     <Table>
       <TableHead>
@@ -39,21 +38,12 @@ export function BuildingTable({ buildings, onEdit, onDelete }: BuildingTableProp
               <div className="flex justify-end gap-1">
                 <button
                   type="button"
-                  onClick={() => onEdit(building)}
-                  aria-label={`Edit ${building.name}`}
-                  title="Edit"
+                  onClick={() => onArchive(building)}
+                  aria-label={`Archive ${building.name}`}
+                  title="Archive"
                   className={actionButtonClassName}
                 >
-                  <EditIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(building)}
-                  aria-label={`Delete ${building.name}`}
-                  title="Delete"
-                  className={actionButtonClassName}
-                >
-                  <TrashIcon />
+                  <ArchiveIcon />
                 </button>
               </div>
             </TableCell>

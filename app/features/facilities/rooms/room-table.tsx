@@ -1,5 +1,5 @@
 ﻿import { Badge } from "~/components/ui/badge";
-import { ClockIcon, EditIcon, TrashIcon } from "~/components/ui/icons";
+import { ArchiveIcon, ClockIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -15,14 +15,13 @@ import { ROOM_STATUS_TONES } from "~/types/room";
 
 type RoomTableProps = {
   rooms: Room[];
-  onEdit: (room: Room) => void;
-  onDelete: (room: Room) => void;
+  onArchive: (room: Room) => void;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
+export function RoomTable({ rooms, onArchive }: RoomTableProps) {
   return (
     <Table>
       <TableHead>
@@ -80,21 +79,12 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
               <div className="flex justify-end gap-1">
                 <button
                   type="button"
-                  onClick={() => onEdit(room)}
-                  aria-label={`Edit ${room.name}`}
-                  title="Edit"
+                  onClick={() => onArchive(room)}
+                  aria-label={`Archive ${room.name}`}
+                  title="Archive"
                   className={actionButtonClassName}
                 >
-                  <EditIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(room)}
-                  aria-label={`Delete ${room.name}`}
-                  title="Delete"
-                  className={actionButtonClassName}
-                >
-                  <TrashIcon />
+                  <ArchiveIcon />
                 </button>
               </div>
             </TableCell>
