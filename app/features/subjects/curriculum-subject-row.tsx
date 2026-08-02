@@ -35,9 +35,6 @@ type CurriculumSubjectRowProps = {
 const deleteButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400";
 
-const unitsInputClassName =
-  "box-border w-12 rounded-lg border border-slate-300 bg-white px-1 py-1.5 text-center font-body text-sm tabular-nums text-gray-900 outline-none transition-colors duration-150 focus:border-blue-700 focus:ring-2 focus:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
-
 export function CurriculumSubjectRow({
   row,
   index,
@@ -101,20 +98,22 @@ export function CurriculumSubjectRow({
           </span>
         )}
       </TableCell>
-      <TableCell className="px-1 align-middle text-center whitespace-nowrap">
+      <TableCell className="w-24 min-w-24 px-1 align-middle text-center whitespace-nowrap">
         {isEditable && row.tempId ? (
-          <input
-            type="number"
-            min={1}
-            max={6}
-            step={1}
-            value={row.units}
-            onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
-            aria-label={`Units for ${row.code || "new subject"}`}
-            className={unitsInputClassName}
-          />
+          <div className="mx-auto w-20">
+            <TableInput
+              type="number"
+              min={1}
+              max={6}
+              step={1}
+              value={row.units}
+              onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
+              aria-label={`Units for ${row.code || "new subject"}`}
+              className="px-1 text-center tabular-nums"
+            />
+          </div>
         ) : (
-          <span className="inline-block min-w-12 tabular-nums">{row.units}</span>
+          <span className="inline-block tabular-nums">{row.units}</span>
         )}
       </TableCell>
       <TableCell className="min-w-0 align-middle">
