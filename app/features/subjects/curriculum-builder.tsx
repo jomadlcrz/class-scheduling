@@ -64,7 +64,8 @@ export function CurriculumBuilder({
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [activeYear, setActiveYear] = useState<number>(yearLevelIds[0] ?? 1);
   const [search, setSearch] = useState("");
-  const [autoSort, setAutoSort] = useState(false);
+  /** Auto-sort enabled per year/semester section key. */
+  const [autoSortSections, setAutoSortSections] = useState<ReadonlySet<string>>(new Set());
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
 
   const query = search.trim().toLowerCase();
@@ -103,10 +104,13 @@ export function CurriculumBuilder({
               r.title.toLowerCase().includes(query),
           )
         : semesterRows;
-      map.set(semesterNumber, sortRows(filtered, autoSort));
+      map.set(
+        semesterNumber,
+        sortRows(filtered, autoSortSections.has(sectionKey(activeYear, semesterNumber))),
+      );
     }
     return map;
-  }, [saved, pending, activeYear, semesters, query, autoSort]);
+  }, [saved, pending, activeYear, semesters, query, autoSortSections]);
 
   function toggleSelected(key: string) {
     setSelected((current) => {
@@ -140,6 +144,15 @@ export function CurriculumBuilder({
   function duplicateSelected() {
     const first = [...selected].find((k) => !k.startsWith("saved-"));
     if (first) onDuplicatePending(first);
+  }
+
+  function setAutoSortForSection(section: string, enabled: boolean) {
+    setAutoSortSections((current) => {
+      const next = new Set(current);
+      if (enabled) next.add(section);
+      else next.delete(section);
+      return next;
+    });
   }
 
   return (
@@ -200,8 +213,8 @@ export function CurriculumBuilder({
               onToggleSelected={toggleSelected}
               search={search}
               onSearchChange={setSearch}
-              autoSort={autoSort}
-              onAutoSortChange={setAutoSort}
+              autoSort={autoSortSections.has(key)}
+              onAutoSortChange={(enabled) => setAutoSortForSection(key, enabled)}
               selectedCount={selectedInSemester}
               onAddRow={() => onAddPending(activeYear, semester)}
               onDuplicateSelected={duplicateSelected}

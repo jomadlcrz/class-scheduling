@@ -1,6 +1,5 @@
 import { Badge } from "~/components/ui/badge";
-import { DropdownMenu } from "~/components/ui/dropdown";
-import { CopyIcon, TrashIcon } from "~/components/ui/icons";
+import { TrashIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { TableCell, TableRow } from "~/components/ui/table";
 import { TableInput } from "~/components/ui/table-input";
@@ -31,8 +30,10 @@ type CurriculumSubjectRowProps = {
   prerequisiteOptions: PrerequisiteOption[];
   onUpdatePending: (tempId: string, patch: Partial<Omit<CreateSubjectInput, "program">>) => void;
   onRemovePending: (tempId: string) => void;
-  onDuplicatePending: (tempId: string) => void;
 };
+
+const deleteButtonClassName =
+  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400";
 
 export function CurriculumSubjectRow({
   row,
@@ -43,7 +44,6 @@ export function CurriculumSubjectRow({
   prerequisiteOptions,
   onUpdatePending,
   onRemovePending,
-  onDuplicatePending,
 }: CurriculumSubjectRowProps) {
   const isEditable = Boolean(row.tempId);
 
@@ -85,16 +85,17 @@ export function CurriculumSubjectRow({
           row.title
         )}
       </TableCell>
-      <TableCell className="w-20 min-w-20 align-middle text-center">
+      <TableCell className="w-24 min-w-24 align-middle text-center">
         {isEditable && row.tempId ? (
-          <div className="mx-auto w-14">
+          <div className="mx-auto w-20">
             <TableInput
               type="number"
               min={1}
               max={6}
+              step={1}
               value={row.units}
               onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
-              className="px-2 text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="px-1 text-center tabular-nums"
             />
           </div>
         ) : (
@@ -158,22 +159,17 @@ export function CurriculumSubjectRow({
       </TableCell>
       <TableCell className="align-top">
         {isEditable && row.tempId ? (
-          <DropdownMenu
-            label={`Actions for ${row.code || "new subject"}`}
-            items={[
-              {
-                label: "Duplicate",
-                icon: <CopyIcon />,
-                onSelect: () => onDuplicatePending(row.tempId!),
-              },
-              {
-                label: "Delete",
-                icon: <TrashIcon />,
-                tone: "danger",
-                onSelect: () => onRemovePending(row.tempId!),
-              },
-            ]}
-          />
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => onRemovePending(row.tempId!)}
+              aria-label={`Delete ${row.code || "new subject"}`}
+              title="Delete"
+              className={deleteButtonClassName}
+            >
+              <TrashIcon />
+            </button>
+          </div>
         ) : null}
       </TableCell>
     </TableRow>

@@ -98,7 +98,7 @@ export function CurriculumSemesterPanel({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="danger"
               block={false}
               disabled={selectedCount === 0}
               onClick={onDeleteSelected}
@@ -164,7 +164,6 @@ export function CurriculumSemesterPanel({
                     prerequisiteOptions={prerequisiteOptions}
                     onUpdatePending={onUpdatePending}
                     onRemovePending={onRemovePending}
-                    onDuplicatePending={onDuplicatePending}
                   />
                 ))}
               </TableBody>
