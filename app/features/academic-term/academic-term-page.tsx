@@ -5,11 +5,12 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { PageHeader } from "~/layouts/page-header";
 import { SchoolYearForm } from "~/features/academic-term/school-year-form";
 import { SchoolYearTable } from "~/features/academic-term/school-year-table";
+import { SchoolYearArchiveDialog } from "~/features/academic-term/school-year-archive-dialog";
 import { SemesterForm, type SemesterFormValue } from "~/features/academic-term/semester-form";
 import { SemesterTable } from "~/features/academic-term/semester-table";
 import { useSchoolYears } from "~/hooks/use-school-years";
@@ -44,9 +45,8 @@ export function AcademicTermPage() {
     await refreshSchoolYears();
   }
 
-  async function handleArchiveSchoolYear() {
-    if (!archiveSchoolYear) return;
-    const message = await schoolYearService.archive(archiveSchoolYear.id, archiveSchoolYear.schoolYear);
+  async function handleArchiveSchoolYear(schoolYear: SchoolYearOption) {
+    const message = await schoolYearService.archive(schoolYear.id, schoolYear.schoolYear);
     if (message) toast.success(message);
     setArchiveSchoolYear(null);
     await refreshSchoolYears();
@@ -138,18 +138,11 @@ export function AcademicTermPage() {
           />
         )}
       </Modal>
-      <ConfirmDialog
-        open={archiveSchoolYear !== null}
+      <SchoolYearArchiveDialog
+        schoolYear={archiveSchoolYear}
         onClose={() => setArchiveSchoolYear(null)}
-        title="Archive school year"
-        confirmLabel="Archive"
-        loadingLabel="Archiving…"
-        confirmVariant="danger"
         onConfirm={handleArchiveSchoolYear}
-      >
-        <span className="font-medium text-navy-700 dark:text-white">{archiveSchoolYear?.schoolYear}</span> will
-        be archived.
-      </ConfirmDialog>
+      />
 
       <Modal open={addSemesterOpen} onClose={() => setAddSemesterOpen(false)} title="Add Semester">
         <SemesterForm onSubmit={handleAddSemester} onCancel={() => setAddSemesterOpen(false)} />

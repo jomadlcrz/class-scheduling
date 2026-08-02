@@ -4,12 +4,13 @@ import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/u
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { HelpCircleIcon, PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
-import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
 import { Spinner } from "~/components/ui/spinner";
 import { SchoolYearForm } from "~/features/academic-term/school-year-form";
 import { SchoolYearTable } from "~/features/academic-term/school-year-table";
+import { SchoolYearArchiveDialog } from "~/features/academic-term/school-year-archive-dialog";
 import { usePagination } from "~/hooks/use-pagination";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { PageHeader } from "~/layouts/page-header";
@@ -45,9 +46,8 @@ export function SchoolYearsPage() {
     await refresh();
   }
 
-  async function handleArchive() {
-    if (!archiveTarget) return;
-    const message = await schoolYearService.archive(archiveTarget.id, archiveTarget.schoolYear);
+  async function handleArchive(schoolYear: SchoolYearOption) {
+    const message = await schoolYearService.archive(schoolYear.id, schoolYear.schoolYear);
     if (message) toast.success(message);
     setArchiveTarget(null);
     await refresh();
@@ -156,18 +156,11 @@ export function SchoolYearsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={archiveTarget !== null}
+      <SchoolYearArchiveDialog
+        schoolYear={archiveTarget}
         onClose={() => setArchiveTarget(null)}
-        title="Archive school year"
-        confirmLabel="Archive"
-        loadingLabel="Archiving…"
-        confirmVariant="danger"
         onConfirm={handleArchive}
-      >
-        <span className="font-medium text-navy-700 dark:text-white">{archiveTarget?.schoolYear}</span> will
-        be archived and hidden from active dropdowns.
-      </ConfirmDialog>
+      />
     </div>
   );
 }

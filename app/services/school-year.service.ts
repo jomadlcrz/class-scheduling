@@ -22,6 +22,18 @@ export type DeletedSchoolYear = SchoolYearOption & {
   createdAt?: string | null;
 };
 
+export type SchoolYearArchivePreview = {
+  schoolYear: { id: number; schoolYear: string };
+  archivable: boolean;
+  blockers: {
+    references: number;
+    studentAcademics: number;
+    regularSchedules: number;
+    instructorTeachingTerms: number;
+    items: { key: string; label: string; count: number }[];
+  };
+};
+
 let cachedSchoolYears: SchoolYearOption[] | null = null;
 let cachePromise: Promise<SchoolYearOption[]> | null = null;
 
@@ -37,6 +49,18 @@ function mapSchoolYear(entry: SchoolYearEntry): SchoolYearOption {
     status: entry.status ?? null,
     isCurrent: entry.is_current ?? false,
     createdAt: entry.created_at ?? null,
+  };
+}
+
+function mapArchivePreview(data: {
+  school_year: { id: number; school_year: string };
+  archivable: boolean;
+  blockers: SchoolYearArchivePreview["blockers"];
+}): SchoolYearArchivePreview {
+  return {
+    schoolYear: { id: data.school_year.id, schoolYear: data.school_year.school_year },
+    archivable: data.archivable,
+    blockers: data.blockers,
   };
 }
 
@@ -85,6 +109,16 @@ async function archive(id: number, confirm: string): Promise<string> {
   return apiMessage(data);
 }
 
+/** GET /school-years/:id/archive-preview — checks whether archival is safe. */
+async function getArchivePreview(id: number): Promise<SchoolYearArchivePreview> {
+  const data = await apiGet<{
+    school_year: { id: number; school_year: string };
+    archivable: boolean;
+    blockers: SchoolYearArchivePreview["blockers"];
+  }>(`/school-years/${id}/archive-preview`);
+  return mapArchivePreview(data);
+}
+
 /** @deprecated Prefer archive — kept for legacy callers. */
 async function remove(id: number): Promise<string> {
   const data = await apiDelete<{ message?: string }>(`/school-years/${id}`);
@@ -123,4 +157,4 @@ async function get(id: number): Promise<SchoolYearOption> {
   return mapSchoolYear(s);
 }
 
-export const schoolYearService = { list, create, update, archive, remove, listDeleted, restore, get };
+export const schoolYearService = { list, create, update, archive, getArchivePreview, remove, listDeleted, restore, get };

@@ -7,13 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import type { MockTermClosure } from "~/features/academic-terms/mock-data";
 import { closedReasonTone, StatusBadge, termStatusTone } from "~/features/academic-terms/status-badges";
+import type { TermClosureItem } from "~/types/term-closure";
 
 type TermClosureTableProps = {
-  terms: MockTermClosure[];
-  onViewDetails: (term: MockTermClosure) => void;
-  onReopen: (term: MockTermClosure) => void;
+  terms: TermClosureItem[];
+  onViewDetails: (term: TermClosureItem) => void;
+  onReopen: (term: TermClosureItem) => void;
 };
 
 const actionButtonClassName =
@@ -35,23 +35,23 @@ export function TermClosureTable({ terms, onViewDetails, onReopen }: TermClosure
       </TableHead>
       <TableBody>
         {terms.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow key={`${row.syId}-${row.semId}`}>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">{row.schoolYear}</span>
             </TableCell>
-            <TableCell>{row.semester}</TableCell>
+            <TableCell>{row.semesterDisplayName}</TableCell>
             <TableCell>
               <StatusBadge tone={termStatusTone(row.status)}>{row.status}</StatusBadge>
             </TableCell>
             <TableCell className="hidden md:table-cell">
-              {row.closedReason ? (
-                <StatusBadge tone={closedReasonTone(row.closedReason)}>{row.closedReason}</StatusBadge>
+              {row.closedReasonLabel ? (
+                <StatusBadge tone={closedReasonTone(row.closedReason)}>{row.closedReasonLabel}</StatusBadge>
               ) : (
                 "—"
               )}
             </TableCell>
-            <TableCell className="hidden lg:table-cell">{row.closedAt ?? "—"}</TableCell>
-            <TableCell className="hidden lg:table-cell">{row.closedBy ?? "—"}</TableCell>
+            <TableCell className="hidden lg:table-cell">{row.closedAtDisplay ?? "—"}</TableCell>
+            <TableCell className="hidden lg:table-cell">{row.closedBy?.display ?? "—"}</TableCell>
             <TableCell>
               <div className="flex justify-end gap-2">
                 <button
@@ -63,9 +63,9 @@ export function TermClosureTable({ terms, onViewDetails, onReopen }: TermClosure
                 </button>
                 <button
                   type="button"
-                  disabled={!row.reopenable}
+                  disabled={!row.actions.canReopen}
                   title={
-                    !row.reopenable
+                    !row.actions.canReopen
                       ? row.status === "Open"
                         ? "Term is already open"
                         : "Terms closed due to school year end cannot be reopened"

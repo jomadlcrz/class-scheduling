@@ -1,21 +1,13 @@
 import { Button } from "~/components/ui/button";
 import { CheckIcon, LockIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
-import type { MockTermClosure } from "~/features/academic-terms/mock-data";
 import { StatusBadge, termStatusTone } from "~/features/academic-terms/status-badges";
+import type { TermClosureItem } from "~/types/term-closure";
 
 type TermClosureDetailsModalProps = {
-  term: MockTermClosure | null;
+  term: TermClosureItem | null;
   onClose: () => void;
 };
-
-const closedEffects = [
-  "Grades are locked and cannot be edited.",
-  "Enrollment records are protected from destructive changes.",
-  "Schedules and faculty loads are locked.",
-  "Reports will reflect this term as closed.",
-  "Only viewing and printing are allowed.",
-];
 
 const sectionTitleClassName =
   "font-display text-sm tracking-wide text-navy-700 dark:text-mist-100";
@@ -26,11 +18,12 @@ const fieldLabelClassName =
 export function TermClosureDetailsModal({ term, onClose }: TermClosureDetailsModalProps) {
   if (!term) return null;
 
+  const info = term.termInformation;
   const isClosed = term.status === "Closed";
+  const history = term.closureHistory[0];
 
   return (
     <Modal open={term !== null} onClose={onClose} title="Term Closure Details" wide>
-      {/* Summary highlight */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <span className="grid size-11 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-amber-600 shadow-sm dark:border-white/10 dark:bg-surface-raised dark:text-gold-400">
@@ -42,61 +35,58 @@ export function TermClosureDetailsModal({ term, onClose }: TermClosureDetailsMod
               <dt className={fieldLabelClassName}>Status</dt>
               <dd className="mt-1.5">
                 <StatusBadge tone={termStatusTone(term.status)}>{term.status}</StatusBadge>
-                {term.closedReason && (
+                {term.closedReasonLabel && (
                   <p className="mt-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                    {term.closedReason}
+                    {term.closedReasonLabel}
                   </p>
                 )}
               </dd>
             </div>
             <SummaryItem label="School Year" value={term.schoolYear} />
-            <SummaryItem label="Semester" value={term.semester} />
-            <SummaryItem label="Closed At" value={term.closedAt ?? "—"} />
+            <SummaryItem label="Semester" value={term.semesterDisplayName} />
+            <SummaryItem label="Closed At" value={term.closedAtDisplay ?? "—"} />
           </dl>
         </div>
       </div>
 
-      {/* Term information */}
       <section className="mt-6">
         <h3 className={sectionTitleClassName}>Term Information</h3>
         <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4">
-          <InfoItem label="School Year" value={term.schoolYear} />
-          <InfoItem label="Semester" value={term.semester} />
-          <InfoItem label="Semester Number" value={String(term.semesterNumber)} />
+          <InfoItem label="School Year" value={info.schoolYear} />
+          <InfoItem label="Semester" value={info.semester} />
+          <InfoItem label="Semester Number" value={String(info.semesterNumber)} />
           <div>
             <dt className={fieldLabelClassName}>Status</dt>
             <dd className="mt-1.5">
-              <StatusBadge tone={termStatusTone(term.status)}>{term.status}</StatusBadge>
+              <StatusBadge tone={termStatusTone(info.status)}>{info.status}</StatusBadge>
             </dd>
           </div>
-          <InfoItem label="Closed Reason" value={term.closedReason ?? "—"} />
-          <InfoItem label="Closed By" value={term.closedBy ?? "—"} />
-          <InfoItem label="Closed At" value={term.closedAt ?? "—"} className="md:col-span-2" />
+          <InfoItem label="Closed Reason" value={info.closedReasonLabel ?? "—"} />
+          <InfoItem label="Closed By" value={info.closedBy?.display ?? "—"} />
+          <InfoItem label="Closed At" value={info.closedAtDisplay ?? "—"} className="md:col-span-2" />
         </dl>
       </section>
 
-      {/* Closed-term effects */}
-      {isClosed && (
+      {isClosed && term.closureEffects.length > 0 && (
         <section className="mt-6">
           <h3 className={sectionTitleClassName}>What Happens When This Term Is Closed</h3>
           <ul className="mt-3 space-y-2.5">
-            {closedEffects.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 font-body text-sm text-slate-600 dark:text-slate-300">
+            {term.closureEffects.map((item) => (
+              <li key={item.label} className="flex items-start gap-2.5 font-body text-sm text-slate-600 dark:text-slate-300">
                 <span
                   className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-400"
                   aria-hidden="true"
                 >
                   <CheckIcon size={12} strokeWidth={3} />
                 </span>
-                {item}
+                {item.label}
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      {/* Closure history */}
-      {term.closedAt && (
+      {history && (
         <section className="mt-6">
           <h3 className={sectionTitleClassName}>Closure History</h3>
           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:gap-8">
@@ -105,22 +95,26 @@ export function TermClosureDetailsModal({ term, onClose }: TermClosureDetailsMod
                 className="absolute -left-1.5 top-0.5 size-3 rounded-full bg-gwc-blue-bright"
                 aria-hidden="true"
               />
-              <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">{term.closedAt}</p>
-              <p className="mt-0.5 font-body text-sm text-slate-600 dark:text-slate-300">{term.closedBy ?? "—"}</p>
+              <p className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
+                {history.closedAtDisplay ?? "—"}
+              </p>
+              <p className="mt-0.5 font-body text-sm text-slate-600 dark:text-slate-300">
+                {history.closedBy?.display ?? "—"}
+              </p>
             </div>
 
             <div className="min-w-0 flex-1 sm:border-l sm:border-slate-100 sm:pl-8 dark:sm:border-white/10">
-              <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">Term was closed</p>
-              {term.closedReason && (
+              <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">{history.headline}</p>
+              {history.closedReasonLabel && (
                 <p className="mt-2 font-body text-sm text-slate-600 dark:text-slate-300">
                   <span className="text-slate-400 dark:text-slate-500">Reason: </span>
-                  {term.closedReason}
+                  {history.closedReasonLabel}
                 </p>
               )}
-              {term.closedNotes && (
+              {history.notes && (
                 <p className="mt-1 font-body text-sm text-slate-600 dark:text-slate-300">
                   <span className="text-slate-400 dark:text-slate-500">Notes: </span>
-                  {term.closedNotes}
+                  {history.notes}
                 </p>
               )}
             </div>

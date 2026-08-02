@@ -1,12 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertAction, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { HelpCircleIcon, LockIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
+import { Spinner } from "~/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -15,25 +17,28 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { MOCK_AUDIT_LOG, type AuditAction, type MockAuditEntry } from "~/features/academic-terms/mock-data";
+import { termClosureService } from "~/services/term-closure.service";
+import type { TermAuditLogEntry, TermAuditLogFilters } from "~/types/term-closure";
 
 type TermClosureAuditLogModalProps = {
   open: boolean;
   onClose: () => void;
 };
 
-function auditActionTone(action: AuditAction) {
-  switch (action) {
-    case "Closed":
-      return "gold" as const;
-    case "Reopened":
-      return "emerald" as const;
-    case "Auto-Closed":
-      return "slate" as const;
-  }
+function auditActionTone(action: string) {
+  if (action === "term_closed") return "gold" as const;
+  if (action === "term_reopened") return "emerald" as const;
+  return "slate" as const;
 }
 
 export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogModalProps) {
+  const [filters, setFilters] = useState<TermAuditLogFilters | null>(null);
+  const [entries, setEntries] = useState<TermAuditLogEntry[]>([]);
+  const [total, setTotal] = useState(0);
+  const [pages, setPages] = useState(1);
+  const [loadingFilters, setLoadingFilters] = useState(false);
+  const [loadingEntries, setLoadingEntries] = useState(false);
+
   const [schoolYear, setSchoolYear] = useState("all");
   const [semester, setSemester] = useState("all");
   const [action, setAction] = useState("all");
@@ -41,18 +46,64 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const filtered = useMemo(() => {
-    return MOCK_AUDIT_LOG.filter((entry) => {
-      if (schoolYear !== "all" && entry.schoolYear !== schoolYear) return false;
-      if (semester !== "all" && entry.semester !== semester) return false;
-      if (action !== "all" && entry.action !== action) return false;
-      if (performedBy !== "all" && entry.performedBy !== performedBy) return false;
-      return true;
-    });
-  }, [schoolYear, semester, action, performedBy]);
+  useEffect(() => {
+    if (!open) return;
+    setLoadingFilters(true);
+    termClosureService
+      .auditLogFilters()
+      .then(setFilters)
+      .catch(() => setFilters(null))
+      .finally(() => setLoadingFilters(false));
+  }, [open]);
 
-  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  useEffect(() => {
+    if (!open) return;
+    setLoadingEntries(true);
+    termClosureService
+      .listAuditLog({
+        syId: schoolYear !== "all" ? Number(schoolYear) : undefined,
+        semesterNumber: semester !== "all" ? Number(semester) : undefined,
+        action: action !== "all" ? action : undefined,
+        performedBy: performedBy !== "all" ? Number(performedBy) : undefined,
+        page,
+        perPage: pageSize,
+      })
+      .then((result) => {
+        setEntries(result.items);
+        setTotal(result.total);
+        setPages(result.pages);
+      })
+      .catch(() => {
+        setEntries([]);
+        setTotal(0);
+        setPages(1);
+      })
+      .finally(() => setLoadingEntries(false));
+  }, [open, schoolYear, semester, action, performedBy, page]);
+
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, total);
+
+  const schoolYearOptions = useMemo(
+    () => filters?.schoolYears.map((row) => ({ value: String(row.id), label: row.schoolYear })) ?? [],
+    [filters],
+  );
+
+  const semesterOptions = useMemo(
+    () =>
+      filters?.semesters.map((row) => ({
+        value: String(row.semesterNumber),
+        label: row.displayName,
+      })) ?? [],
+    [filters],
+  );
+
+  const actionOptions = useMemo(() => filters?.actions ?? [], [filters]);
+
+  const performerOptions = useMemo(
+    () => filters?.performers.map((row) => ({ value: String(row.userId), label: row.display })) ?? [],
+    [filters],
+  );
 
   function resetFilters() {
     setSchoolYear("all");
@@ -68,73 +119,65 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         Complete history of actions performed on term closures.
       </p>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <FilterDropdown
-          label="School Year"
-          allLabel="All School Years"
-          options={[
-            { value: "2026-2027", label: "2026-2027" },
-            { value: "2025-2026", label: "2025-2026" },
-            { value: "2024-2025", label: "2024-2025" },
-          ]}
-          value={schoolYear}
-          onChange={(value) => {
-            setSchoolYear(value);
-            setPage(1);
-          }}
-        />
-        <FilterDropdown
-          label="Semester"
-          allLabel="All Semesters"
-          options={[
-            { value: "1st Semester", label: "1st Semester" },
-            { value: "2nd Semester", label: "2nd Semester" },
-          ]}
-          value={semester}
-          onChange={(value) => {
-            setSemester(value);
-            setPage(1);
-          }}
-        />
-        <FilterDropdown
-          label="Action"
-          allLabel="All Actions"
-          options={[
-            { value: "Closed", label: "Closed" },
-            { value: "Reopened", label: "Reopened" },
-            { value: "Auto-Closed", label: "Auto-Closed" },
-          ]}
-          value={action}
-          onChange={(value) => {
-            setAction(value);
-            setPage(1);
-          }}
-        />
-        <FilterDropdown
-          label="Performed By"
-          allLabel="All Users"
-          options={[
-            { value: "Maria Santos", label: "Maria Santos" },
-            { value: "System (Auto)", label: "System (Auto)" },
-          ]}
-          value={performedBy}
-          onChange={(value) => {
-            setPerformedBy(value);
-            setPage(1);
-          }}
-        />
-        <button
-          type="button"
-          className="rounded-lg border border-slate-300 px-3 py-2 font-body text-sm text-slate-500 dark:border-white/15 dark:text-slate-400"
-          disabled
-          title="Mock only"
-        >
-          Select date range
-        </button>
-        <Button type="button" variant="outline" block={false} onClick={resetFilters}>
-          Reset
-        </Button>
-      </div>
+      {loadingFilters ? (
+        <div role="status" aria-label="Loading audit log filters" className="mt-4 grid place-items-center py-8">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <FilterDropdown
+            label="School Year"
+            allLabel="All School Years"
+            options={schoolYearOptions}
+            value={schoolYear}
+            onChange={(value) => {
+              setSchoolYear(value);
+              setPage(1);
+            }}
+          />
+          <FilterDropdown
+            label="Semester"
+            allLabel="All Semesters"
+            options={semesterOptions}
+            value={semester}
+            onChange={(value) => {
+              setSemester(value);
+              setPage(1);
+            }}
+          />
+          <FilterDropdown
+            label="Action"
+            allLabel="All Actions"
+            options={actionOptions}
+            value={action}
+            onChange={(value) => {
+              setAction(value);
+              setPage(1);
+            }}
+          />
+          <FilterDropdown
+            label="Performed By"
+            allLabel="All Users"
+            options={performerOptions}
+            value={performedBy}
+            onChange={(value) => {
+              setPerformedBy(value);
+              setPage(1);
+            }}
+          />
+          <button
+            type="button"
+            className="rounded-lg border border-slate-300 px-3 py-2 font-body text-sm text-slate-500 dark:border-white/15 dark:text-slate-400"
+            disabled
+            title="Date range — coming soon"
+          >
+            Select date range
+          </button>
+          <Button type="button" variant="outline" block={false} onClick={resetFilters}>
+            Reset
+          </Button>
+        </div>
+      )}
 
       <Alert
         variant="default"
@@ -142,107 +185,102 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
       >
         <HelpCircleIcon />
         <AlertDescription>
-          Showing {Math.min((page - 1) * pageSize + 1, filtered.length)} to{" "}
-          {Math.min(page * pageSize, filtered.length)} of {filtered.length} audit log entries
+          Showing {rangeStart} to {rangeEnd} of {total} audit log entries
         </AlertDescription>
-        <AlertAction className="w-full sm:w-auto">
-          <div className="w-full sm:w-auto">
-            <Button type="button" variant="outline" block={false} onClick={() => toast.info("Export CSV — mock only.")}>
-              Export CSV
-            </Button>
-          </div>
+        <AlertAction>
+          <Button type="button" variant="outline" block={false} onClick={() => toast.info("Export CSV — coming soon.")}>
+            Export CSV
+          </Button>
         </AlertAction>
       </Alert>
 
-      <div className="mt-4 flex flex-col gap-3 sm:hidden">
-        {pageItems.map((entry) => (
-          <AuditLogMobileCard key={entry.id} entry={entry} />
-        ))}
-      </div>
-
-      <div className="mt-4 hidden sm:block">
-        <Table>
-          <TableHead>
-            <TableHeader>Date &amp; Time</TableHeader>
-            <TableHeader>Action</TableHeader>
-            <TableHeader>Term (School Year / Semester)</TableHeader>
-            <TableHeader>Performed By</TableHeader>
-            <TableHeader className="hidden lg:table-cell">Role</TableHeader>
-            <TableHeader className="hidden md:table-cell">IP Address</TableHeader>
-            <TableHeader>Details</TableHeader>
-          </TableHead>
-          <TableBody>
-            {pageItems.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell className="whitespace-nowrap">{entry.dateTime}</TableCell>
-                <TableCell>
-                  <AuditActionBadge action={entry.action} />
-                </TableCell>
-                <TableCell>
-                  {entry.schoolYear} / {entry.semester}
-                </TableCell>
-                <TableCell>{entry.performedBy}</TableCell>
-                <TableCell className="hidden lg:table-cell">{entry.role}</TableCell>
-                <TableCell className="hidden md:table-cell">{entry.ipAddress ?? "—"}</TableCell>
-                <TableCell>
-                  <span className="inline-flex items-start gap-1">
-                    {entry.details}
-                    <HelpCircleIcon />
-                  </span>
-                </TableCell>
-              </TableRow>
+      {loadingEntries ? (
+        <div role="status" aria-label="Loading audit log" className="mt-4 grid place-items-center py-12">
+          <Spinner />
+        </div>
+      ) : entries.length === 0 ? (
+        <EmptyState title="No audit log entries">No entries match the current filters.</EmptyState>
+      ) : (
+        <>
+          <div className="mt-4 flex flex-col gap-3 sm:hidden">
+            {entries.map((entry) => (
+              <AuditLogMobileCard key={entry.id} entry={entry} />
             ))}
-          </TableBody>
-        </Table>
-      </div>
+          </div>
 
-      {totalPages > 1 && (
-        <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
+          <div className="mt-4 hidden sm:block">
+            <Table>
+              <TableHead>
+                <TableHeader>Date &amp; Time</TableHeader>
+                <TableHeader>Action</TableHeader>
+                <TableHeader>Term (School Year / Semester)</TableHeader>
+                <TableHeader>Performed By</TableHeader>
+                <TableHeader className="hidden lg:table-cell">Role</TableHeader>
+                <TableHeader className="hidden md:table-cell">IP Address</TableHeader>
+                <TableHeader>Details</TableHeader>
+              </TableHead>
+              <TableBody>
+                {entries.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="whitespace-nowrap">{entry.occurredAtDisplay ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge tone={auditActionTone(entry.action)}>
+                        <span className="inline-flex items-center gap-1">
+                          {entry.action === "term_closed" ? <LockIcon size={14} /> : null}
+                          {entry.actionLabel}
+                        </span>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{entry.termDisplay ?? "—"}</TableCell>
+                    <TableCell>{entry.performedByDisplay ?? "—"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{entry.role ?? "—"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{entry.ipAddress ?? "—"}</TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-start gap-1">
+                        {entry.details ?? "—"}
+                        <HelpCircleIcon />
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {pages > 1 && (
+            <Pagination page={page} totalItems={total} pageSize={pageSize} onPageChange={setPage} />
+          )}
+        </>
       )}
 
       <div className="mt-4 flex justify-end border-t border-slate-200 pt-4 dark:border-white/10">
-        <div className="w-full sm:w-auto">
-          <Button type="button" variant="outline" block={false} onClick={onClose}>
-            Close
-          </Button>
-        </div>
+        <Button type="button" variant="outline" block={false} onClick={onClose}>
+          Close
+        </Button>
       </div>
     </Modal>
   );
 }
 
-function AuditActionBadge({ action }: { action: AuditAction }) {
-  return (
-    <Badge tone={auditActionTone(action)}>
-      <span className="inline-flex items-center gap-1">
-        {action === "Closed" || action === "Auto-Closed" ? <LockIcon size={14} /> : null}
-        {action}
-      </span>
-    </Badge>
-  );
-}
-
-function AuditLogMobileCard({ entry }: { entry: MockAuditEntry }) {
+function AuditLogMobileCard({ entry }: { entry: TermAuditLogEntry }) {
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <AuditActionBadge action={entry.action} />
-        <time className="font-body text-xs text-slate-500 dark:text-slate-400">{entry.dateTime}</time>
+        <Badge tone={auditActionTone(entry.action)}>{entry.actionLabel}</Badge>
+        <time className="font-body text-xs text-slate-500 dark:text-slate-400">{entry.occurredAtDisplay ?? "—"}</time>
       </div>
-
-      <p className="mt-3 font-body text-sm font-medium text-navy-700 dark:text-mist-100">
-        {entry.schoolYear} / {entry.semester}
-      </p>
-
+      <p className="mt-3 font-body text-sm font-medium text-navy-700 dark:text-mist-100">{entry.termDisplay ?? "—"}</p>
       <dl className="mt-3 space-y-2 font-body text-sm text-slate-600 dark:text-slate-300">
         <div>
           <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Performed By</dt>
-          <dd className="mt-0.5">{entry.performedBy}</dd>
+          <dd className="mt-0.5">{entry.performedByDisplay ?? "—"}</dd>
         </div>
-        <div>
-          <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Role</dt>
-          <dd className="mt-0.5">{entry.role}</dd>
-        </div>
+        {entry.role && (
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Role</dt>
+            <dd className="mt-0.5">{entry.role}</dd>
+          </div>
+        )}
         {entry.ipAddress && (
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">IP Address</dt>
@@ -251,10 +289,7 @@ function AuditLogMobileCard({ entry }: { entry: MockAuditEntry }) {
         )}
         <div>
           <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Details</dt>
-          <dd className="mt-0.5 inline-flex items-start gap-1">
-            {entry.details}
-            <HelpCircleIcon />
-          </dd>
+          <dd className="mt-0.5">{entry.details ?? "—"}</dd>
         </div>
       </dl>
     </article>

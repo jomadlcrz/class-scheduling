@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
-import type { CalendarStatus, ClosedReason, TermStatus } from "~/features/academic-terms/mock-data";
+
+export type CalendarStatus = "Ongoing" | "Ended" | "Upcoming";
+export type TermStatus = "Open" | "Closed";
 
 export function calendarStatusTone(status: CalendarStatus | string | null | undefined): BadgeTone {
   switch (status) {
@@ -15,13 +17,15 @@ export function calendarStatusTone(status: CalendarStatus | string | null | unde
   }
 }
 
-export function termStatusTone(status: TermStatus): BadgeTone {
+export function termStatusTone(status: TermStatus | string): BadgeTone {
   return status === "Open" ? "emerald" : "gold";
 }
 
-export function closedReasonTone(reason: ClosedReason): BadgeTone {
+/** Accepts API reason code or display label. */
+export function closedReasonTone(reason: string | null | undefined): BadgeTone {
   if (!reason) return "slate";
-  if (reason === "School Year Ended") return "slate";
+  const normalized = reason.toLowerCase();
+  if (normalized.includes("year ended") || normalized === "school_year_ended") return "slate";
   return "gold";
 }
 

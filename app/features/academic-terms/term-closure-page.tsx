@@ -6,38 +6,60 @@ import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { AuditLogIcon, FilterIcon, HelpCircleIcon } from "~/components/ui/icons";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
-import { MOCK_TERM_CLOSURES, type MockTermClosure } from "~/features/academic-terms/mock-data";
+import { Spinner } from "~/components/ui/spinner";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermClosureAuditLogModal } from "~/features/academic-terms/term-closure-audit-log-modal";
 import { TermClosureDetailsModal } from "~/features/academic-terms/term-closure-details-modal";
 import { TermClosureTable } from "~/features/academic-terms/term-closure-table";
 import { usePagination } from "~/hooks/use-pagination";
+import { useTermClosures } from "~/hooks/use-term-closures";
 import { PageHeader } from "~/layouts/page-header";
+import { termClosureService } from "~/services/term-closure.service";
+import type { TermClosureItem } from "~/types/term-closure";
 
 export function TermClosurePage() {
+  const { closures, loading, refresh } = useTermClosures();
   const [search, setSearch] = useState("");
   const [schoolYear, setSchoolYear] = useState("all");
   const [semester, setSemester] = useState("all");
-  const [status, setStatus] = useState("all");
-  const [detailsTerm, setDetailsTerm] = useState<MockTermClosure | null>(null);
+  const [detailsTerm, setDetailsTerm] = useState<TermClosureItem | null>(null);
+  const [reopenTarget, setReopenTarget] = useState<TermClosureItem | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
 
-  const resetKey = `${search}|${schoolYear}|${semester}|${status}`;
+  const schoolYearOptions = useMemo(() => {
+    const values = [...new Set(closures.map((row) => row.schoolYear))].sort().reverse();
+    return values.map((value) => ({ value, label: value }));
+  }, [closures]);
+
+  const semesterOptions = useMemo(() => {
+    const values = [...new Set(closures.map((row) => row.semesterDisplayName))];
+    return values.map((value) => ({ value, label: value }));
+  }, [closures]);
+
+  const resetKey = `${search}|${schoolYear}|${semester}`;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return MOCK_TERM_CLOSURES.filter((row) => {
+    return closures.filter((row) => {
       if (schoolYear !== "all" && row.schoolYear !== schoolYear) return false;
-      if (semester !== "all" && row.semester !== semester) return false;
-      if (status !== "all" && row.status !== status) return false;
-      if (q && !`${row.schoolYear} ${row.semester}`.toLowerCase().includes(q)) return false;
+      if (semester !== "all" && row.semesterDisplayName !== semester) return false;
+      if (q && !`${row.schoolYear} ${row.semesterDisplayName}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [search, schoolYear, semester, status]);
+  }, [closures, search, schoolYear, semester]);
 
   const pagination = usePagination(filtered, resetKey);
+
+  async function handleReopen() {
+    if (!reopenTarget) return;
+    const message = await termClosureService.reopen(reopenTarget.syId, reopenTarget.semesterNumber);
+    if (message) toast.success(message);
+    setReopenTarget(null);
+    await refresh();
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -55,8 +77,7 @@ export function TermClosurePage() {
       <Alert variant="default" className="mt-6 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200">
         <HelpCircleIcon />
         <AlertDescription>
-          Only the registrar can close or reopen a term. Choose a term below to see its current status and
-          available actions.
+          Only the registrar can close or reopen a term. This list shows terms posted by the registrar.
         </AlertDescription>
       </Alert>
 
@@ -64,33 +85,16 @@ export function TermClosurePage() {
         <FilterDropdown
           label="School Year"
           allLabel="All School Years"
-          options={[
-            { value: "2026-2027", label: "2026-2027" },
-            { value: "2025-2026", label: "2025-2026" },
-            { value: "2024-2025", label: "2024-2025" },
-          ]}
+          options={schoolYearOptions}
           value={schoolYear}
           onChange={setSchoolYear}
         />
         <FilterDropdown
           label="Semester"
           allLabel="All Semesters"
-          options={[
-            { value: "1st Semester", label: "1st Semester" },
-            { value: "2nd Semester", label: "2nd Semester" },
-          ]}
+          options={semesterOptions}
           value={semester}
           onChange={setSemester}
-        />
-        <FilterDropdown
-          label="Status"
-          allLabel="All Statuses"
-          options={[
-            { value: "Open", label: "Open" },
-            { value: "Closed", label: "Closed" },
-          ]}
-          value={status}
-          onChange={setStatus}
         />
         <SearchInput
           value={search}
@@ -98,21 +102,29 @@ export function TermClosurePage() {
           placeholder="Search term…"
           className="min-w-40 flex-1 sm:max-w-xs"
         />
-        <Button type="button" variant="outline" block={false} onClick={() => toast.info("Filters — mock only.")}>
+        <Button type="button" variant="outline" block={false} onClick={() => toast.info("Advanced filters — coming soon.")}>
           <FilterIcon />
           Filters
         </Button>
       </div>
 
       <div className="mt-4">
-        {filtered.length === 0 ? (
-          <EmptyState title="No terms found">No terms match the current filters.</EmptyState>
+        {loading ? (
+          <div role="status" aria-label="Loading term closures" className="grid place-items-center py-12">
+            <Spinner />
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState title={closures.length === 0 ? "No terms have been posted yet" : "No terms found"}>
+            {closures.length === 0
+              ? "Posted terms will appear here after a registrar closes a term."
+              : "No terms match the current filters."}
+          </EmptyState>
         ) : (
           <>
             <TermClosureTable
               terms={pagination.pageItems}
               onViewDetails={setDetailsTerm}
-              onReopen={() => toast.info("Reopen — mock only.")}
+              onReopen={setReopenTarget}
             />
             {pagination.totalPages > 1 && (
               <Pagination
@@ -136,7 +148,7 @@ export function TermClosurePage() {
             <StatusBadge tone="gold">Closed</StatusBadge> — Term is protected from destructive changes.
           </li>
           <li>
-            <StatusBadge tone="slate">Closed (Year Ended)</StatusBadge> — Auto-closed on June 1; not reopenable.
+            <StatusBadge tone="slate">School Year Ended</StatusBadge> — Auto-closed on June 1; not reopenable.
           </li>
         </ul>
 
@@ -152,6 +164,19 @@ export function TermClosurePage() {
       </Card>
 
       <TermClosureDetailsModal term={detailsTerm} onClose={() => setDetailsTerm(null)} />
+
+      <ConfirmDialog
+        open={reopenTarget !== null}
+        onClose={() => setReopenTarget(null)}
+        title="Reopen term"
+        confirmLabel="Reopen term"
+        loadingLabel="Reopening…"
+        onConfirm={handleReopen}
+      >
+        Reopen {reopenTarget?.semesterDisplayName}, S.Y. {reopenTarget?.schoolYear}? Destructive deletes will work
+        again until you post the term.
+      </ConfirmDialog>
+
       <TermClosureAuditLogModal open={auditOpen} onClose={() => setAuditOpen(false)} />
     </div>
   );
