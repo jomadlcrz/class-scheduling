@@ -141,10 +141,11 @@ export function CurriculumSubjectRow({
           <SubjectTypeBadge type={row.subjectType} />
         )}
       </TableCell>
-      <TableCell className="min-w-0 align-middle">
+      <TableCell className="w-40 max-w-40 align-middle">
         {isEditable && row.tempId ? (
           <PrerequisitePicker
             compact
+            ariaLabel={`Choose prerequisites for ${row.code || "new subject"}`}
             options={prerequisiteOptions.filter(
               (o) => o.code.toLowerCase() !== row.code.trim().toLowerCase(),
             )}
