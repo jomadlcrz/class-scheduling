@@ -49,6 +49,7 @@ export function CurriculumSubjectRow({
 }: CurriculumSubjectRowProps) {
   const isPending = Boolean(row.tempId);
   const isEditable = isPending && mode === "edit";
+  const isViewMode = mode === "view";
   const prerequisiteText = row.prerequisites.join(", ");
 
   return (
@@ -72,7 +73,7 @@ export function CurriculumSubjectRow({
           </span>
         )}
       </TableCell>
-      <TableCell className="w-36 min-w-0 align-middle">
+      <TableCell className={`${isViewMode ? "min-w-0" : "w-36 min-w-0"} align-middle`}>
         {isEditable && row.tempId ? (
           <TableInput
             value={row.code}
@@ -120,7 +121,7 @@ export function CurriculumSubjectRow({
           <span className="inline-block tabular-nums">{row.units}</span>
         )}
       </TableCell>
-      <TableCell className="min-w-0 align-middle">
+      <TableCell className={`${isViewMode ? "min-w-0" : "w-32 min-w-0"} align-middle`}>
         {isEditable && row.tempId ? (
           <Select
             items={subjectTypes.map((type) => ({
