@@ -10,14 +10,16 @@ type ModalProps = {
   title: string;
   /** Wider panel for content that needs room (e.g. side-by-side layouts). */
   wide?: boolean;
+  /** Full-width panel for data tables (e.g. audit logs). */
+  xl?: boolean;
   children: ReactNode;
 };
 
-export function Modal({ open, onClose, title, wide, children }: ModalProps) {
+export function Modal({ open, onClose, title, wide, xl, children }: ModalProps) {
   return (
     <AnimatePresence>
       {open && (
-        <ModalContent key="modal" onClose={onClose} title={title} wide={wide}>
+        <ModalContent key="modal" onClose={onClose} title={title} wide={wide} xl={xl}>
           {children}
         </ModalContent>
       )}
@@ -101,11 +103,13 @@ function ModalContent({
   onClose,
   title,
   wide,
+  xl,
   children,
 }: {
   onClose: () => void;
   title: string;
   wide?: boolean;
+  xl?: boolean;
   children: ReactNode;
 }) {
   // Freeze body scroll while the modal is open; tall content scrolls
@@ -153,7 +157,9 @@ function ModalContent({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-surface-raised ${wide ? "max-w-3xl" : "max-w-md"}`}
+          className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-surface-raised ${
+            xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
+          }`}
         >
           <div className="flex shrink-0 items-start justify-between gap-4">
             <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router";
 import {
   AuditLogIcon,
@@ -10,6 +10,7 @@ import {
   CalendarClockIcon,
   CalendarIcon,
   CalendarShuffleIcon,
+  ChevronRightIcon,
   ClockIcon,
   DashboardIcon,
   FlaskConicalIcon,
@@ -29,15 +30,24 @@ import type { Role } from "~/types/user";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 
-type NavItem = {
+type NavLeaf = {
   label: string;
   to: string;
-  icon: ReactNode;
   roles: Role[];
   matchPrefix?: boolean;
   matchPaths?: string[];
 };
-type NavGroup = { label: string; items: NavItem[] };
+
+type NavItem = NavLeaf & { icon: ReactNode; subItems?: undefined };
+type NavSubmenu = {
+  label: string;
+  icon: ReactNode;
+  roles: Role[];
+  subItems: NavLeaf[];
+  to?: undefined;
+};
+type NavEntry = NavItem | NavSubmenu;
+type NavGroup = { label: string; items: NavEntry[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -47,7 +57,21 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Scheduling",
     items: [
-      { label: "Academic Term", to: "/academic-term", icon: <CalendarIcon />, roles: ["registrar"] },
+      {
+        label: "Academic Terms",
+        icon: <CalendarIcon />,
+        roles: ["registrar", "admin"],
+        subItems: [
+          {
+            label: "School Years",
+            to: "/academic-terms/school-years",
+            roles: ["registrar", "admin"],
+            matchPaths: ["/academic-term", "/academic-terms"],
+          },
+          { label: "Semesters", to: "/academic-terms/semesters", roles: ["registrar", "admin"] },
+          { label: "Term Closure", to: "/academic-terms/term-closure", roles: ["registrar", "admin"] },
+        ],
+      },
       { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
       { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["dean", "registrar"] },
       { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", icon: <CalendarClockIcon />, roles: ["registrar"] },
@@ -129,6 +153,45 @@ const itemVariants = {
   },
 } as const;
 
+const submenuVariants = {
+  hidden: { height: 0, opacity: 0 },
+  visible: {
+    height: "auto",
+    opacity: 1,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+  exit: {
+    height: 0,
+    opacity: 0,
+    transition: { duration: 0.15, ease: "easeIn" },
+  },
+} as const;
+
+const subItemVariants = {
+  hidden: { opacity: 0, x: -8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.03, type: "spring", stiffness: 260, damping: 24 } as const,
+  }),
+};
+
+function isLeafActive(pathname: string, leaf: NavLeaf): boolean {
+  if (leaf.matchPaths) {
+    return leaf.matchPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  }
+  if (leaf.matchPrefix) {
+    return pathname === leaf.to || pathname.startsWith(`${leaf.to}/`);
+  }
+  return pathname === leaf.to;
+}
+
+/** Submenu leaves use exact matching so sibling routes don't all light up. */
+function isSubItemActive(pathname: string, sub: NavLeaf): boolean {
+  if (pathname === sub.to || pathname.startsWith(`${sub.to}/`)) return true;
+  return sub.matchPaths?.some((p) => pathname === p) ?? false;
+}
+
 type SidebarProps = {
   collapsed: boolean;
   onExpand: () => void;
@@ -138,6 +201,19 @@ type SidebarProps = {
 export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
+  const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
+
+  useEffect(() => {
+    for (const group of NAV_GROUPS) {
+      for (const item of group.items) {
+        if (item.subItems?.some((sub) => isSubItemActive(location.pathname, sub))) {
+          setOpenSubmenus((current) =>
+            current.includes(item.label) ? current : [...current, item.label],
+          );
+        }
+      }
+    }
+  }, [location.pathname]);
 
   if (!user) return null;
 
@@ -145,8 +221,24 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
 
   const groups = NAV_GROUPS.map((group) => ({
     ...group,
-    items: group.items.filter((item) => hasRole(item.roles)),
+    items: group.items
+      .filter((item) => hasRole(item.roles))
+      .map((item) =>
+        item.subItems
+          ? { ...item, subItems: item.subItems.filter((sub) => hasRole(sub.roles)) }
+          : item,
+      )
+      .filter((item) => !item.subItems || item.subItems.length > 0),
   })).filter((group) => group.items.length > 0);
+
+  function toggleSubmenu(label: string) {
+    if (collapsed) onExpand();
+    setOpenSubmenus((current) =>
+      current.includes(label) ? current.filter((item) => item !== label) : [...current, label],
+    );
+  }
+
+  const isSubmenuOpen = (label: string) => !collapsed && openSubmenus.includes(label);
 
   return (
     <motion.aside
@@ -208,40 +300,104 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
               initial="hidden"
               animate="visible"
             >
-              {group.items.map((item) => (
-                <motion.li
-                  key={`${item.label}-${item.to}`}
-                  className="relative"
-                  variants={itemVariants}
-                >
-                  <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
-                    <NavLink
-                      to={item.to}
-                      end={!item.matchPrefix && !item.matchPaths}
-                      onClick={onNavigate}
-                      className={({ isActive }) => {
-                        const active = item.matchPaths
-                          ? item.matchPaths.some(
-                              (p) => location.pathname === p || location.pathname.startsWith(`${p}/`),
-                            )
-                          : item.matchPrefix
-                            ? location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
-                            : isActive;
-                        return `${itemClassName(active)} ${collapsed ? "justify-center px-0" : ""} ${
-                          active && !collapsed
-                            ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-white"
-                            : ""
-                        }`;
-                      }}
-                    >
-                      <span className="grid size-5 shrink-0 place-items-center opacity-90">
-                        {item.icon}
-                      </span>
-                      {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
-                    </NavLink>
-                  </Tooltip>
-                </motion.li>
-              ))}
+              {group.items.map((item) =>
+                item.subItems ? (
+                  <motion.li key={item.label} variants={itemVariants}>
+                    <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
+                      <button
+                        type="button"
+                        aria-expanded={openSubmenus.includes(item.label)}
+                        onClick={() => toggleSubmenu(item.label)}
+                        className={`${itemClassName(
+                          item.subItems.some((sub) => isSubItemActive(location.pathname, sub)),
+                        )} ${collapsed ? "justify-center px-0" : ""}`}
+                      >
+                        <span className="grid size-5 shrink-0 place-items-center opacity-90">
+                          {item.icon}
+                        </span>
+                        {!collapsed && (
+                          <>
+                            <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
+                            <motion.span
+                              aria-hidden="true"
+                              animate={{ rotate: openSubmenus.includes(item.label) ? 90 : 0 }}
+                              transition={{ duration: 0.15 }}
+                              className="shrink-0 opacity-70"
+                            >
+                              <ChevronRightIcon />
+                            </motion.span>
+                          </>
+                        )}
+                      </button>
+                    </Tooltip>
+                    <AnimatePresence initial={false}>
+                      {isSubmenuOpen(item.label) && (
+                        <motion.ul
+                          key="submenu"
+                          variants={submenuVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          className="ml-[1.35rem] mt-0.5 flex flex-col gap-0.5 overflow-hidden border-l border-white/15 pl-2.5"
+                        >
+                          {item.subItems.map((sub, i) => {
+                            const active = isSubItemActive(location.pathname, sub);
+                            return (
+                              <motion.li
+                                key={sub.to}
+                                custom={i}
+                                variants={subItemVariants}
+                                initial="hidden"
+                                animate="visible"
+                              >
+                                <NavLink
+                                  to={sub.to}
+                                  end
+                                  onClick={onNavigate}
+                                  className={`relative block truncate rounded-md px-2.5 py-1.5 font-body text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                                    active
+                                      ? "bg-gwc-blue-bright font-extrabold text-white before:absolute before:left-[-0.85rem] before:top-1/2 before:size-1.5 before:-translate-y-1/2 before:rounded-full before:bg-white"
+                                      : "text-white/85 hover:bg-gwc-blue-bright hover:text-white"
+                                  }`}
+                                >
+                                  {sub.label}
+                                </NavLink>
+                              </motion.li>
+                            );
+                          })}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </motion.li>
+                ) : (
+                  <motion.li
+                    key={`${item.label}-${item.to}`}
+                    className="relative"
+                    variants={itemVariants}
+                  >
+                    <Tooltip label={item.label} direction="right" gap={10} disabled={!collapsed}>
+                      <NavLink
+                        to={item.to}
+                        end={!item.matchPrefix && !item.matchPaths}
+                        onClick={onNavigate}
+                        className={() => {
+                          const active = isLeafActive(location.pathname, item);
+                          return `${itemClassName(active)} ${collapsed ? "justify-center px-0" : ""} ${
+                            active && !collapsed
+                              ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-white"
+                              : ""
+                          }`;
+                        }}
+                      >
+                        <span className="grid size-5 shrink-0 place-items-center opacity-90">
+                          {item.icon}
+                        </span>
+                        {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+                      </NavLink>
+                    </Tooltip>
+                  </motion.li>
+                ),
+              )}
             </motion.ul>
           </div>
         ))}

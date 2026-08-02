@@ -31,7 +31,7 @@ export function Alert({ variant = "default", className, children }: AlertProps) 
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ duration: 0.25, ease: EASE_OUT }}
-      className={`relative grid w-full grid-cols-[0_1fr] has-[>svg]:grid-cols-[20px_1fr] items-start gap-x-3 gap-y-1 rounded-lg border px-4 py-3 font-body [&>svg]:size-5 [&>svg]:translate-y-0.5 ${variants[variant]} ${className ?? ""}`.trim()}
+      className={`relative grid w-full grid-cols-[0_1fr] has-[>svg]:grid-cols-[20px_1fr] has-[>[data-alert-action]]:grid-cols-[0_1fr_auto] has-[>svg]:has-[>[data-alert-action]]:grid-cols-[20px_1fr_auto] items-start gap-x-3 gap-y-2 rounded-lg border px-4 py-3 font-body [&>svg]:size-5 [&>svg]:translate-y-0.5 ${variants[variant]} ${className ?? ""}`.trim()}
     >
       {children}
     </motion.div>
@@ -46,7 +46,7 @@ type AlertPartProps = {
 export function AlertTitle({ className, children }: AlertPartProps) {
   return (
     <h5
-      className={`col-start-2 text-sm font-semibold leading-none tracking-wide ${className ?? ""}`.trim()}
+      className={`col-start-2 min-w-0 text-sm font-semibold leading-none tracking-wide ${className ?? ""}`.trim()}
     >
       {children}
     </h5>
@@ -55,15 +55,20 @@ export function AlertTitle({ className, children }: AlertPartProps) {
 
 export function AlertDescription({ className, children }: AlertPartProps) {
   return (
-    <div className={`col-start-2 text-sm leading-relaxed opacity-90 ${className ?? ""}`.trim()}>
+    <div className={`col-start-2 min-w-0 text-sm leading-relaxed opacity-90 ${className ?? ""}`.trim()}>
       {children}
     </div>
   );
 }
 
-/** Action element (e.g. a button) pinned to the alert's top-right corner. */
+/** Action aligned to the alert's trailing edge; stacks below copy on narrow screens. */
 export function AlertAction({ className, children }: AlertPartProps) {
   return (
-    <div className={`absolute right-3 top-3 ${className ?? ""}`.trim()}>{children}</div>
+    <div
+      data-alert-action
+      className={`col-start-2 flex shrink-0 justify-start sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:self-center sm:justify-end ${className ?? ""}`.trim()}
+    >
+      {children}
+    </div>
   );
 }

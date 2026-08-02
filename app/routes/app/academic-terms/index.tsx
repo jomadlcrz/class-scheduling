@@ -1,6 +1,5 @@
 import { Navigate } from "react-router";
 
-/** Legacy route — redirects to School Years sub-page. */
-export default function AcademicTermRedirect() {
+export default function AcademicTermsIndex() {
   return <Navigate to="/academic-terms/school-years" replace />;
 }
