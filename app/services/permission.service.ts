@@ -173,7 +173,7 @@ async function createPermissionBulk(input: { permissionSlug: string; description
 
 /** DELETE /permissions/<id> — soft delete; 409 if still granted to a role. */
 async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/permissions/${id}`);
+  const data = await apiPatch<{ message?: string }>(`/permissions/${id}/archive`);
   return apiMessage(data);
 }
 

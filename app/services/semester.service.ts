@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { CreateSemesterInput, Semester } from "~/types/semester";
 
 type SemesterResponse = {
@@ -78,10 +78,15 @@ async function update(id: number, input: CreateSemesterInput): Promise<string> {
 }
 
 /** DELETE /semesters/:id — soft-delete; 409 if still referenced by academic records/teaching terms. */
-async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/semesters/${id}`);
+async function remove(id: number, confirm: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/semesters/${id}/archive`, { confirm });
   invalidateCache();
   return apiMessage(data);
+}
+
+/** GET /semesters/:id/archive-preview — checks whether archival is safe. */
+async function getArchivePreview(id: number): Promise<unknown> {
+  return apiGet(`/semesters/${id}/archive-preview`);
 }
 
 /** GET /semesters/recycle-bin — always fresh, not cached. 404 → empty. */
@@ -112,4 +117,4 @@ async function get(id: number): Promise<Semester> {
   return mapSemester(s);
 }
 
-export const semesterService = { list, create, update, remove, listDeleted, restore, get };
+export const semesterService = { list, create, update, remove, getArchivePreview, listDeleted, restore, get };

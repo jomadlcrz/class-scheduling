@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 
 /** Irregular students and their enrolled subjects (registrar_admin schedules module). */
 
@@ -391,6 +391,12 @@ async function removeIrregular(id: number): Promise<string> {
   return apiMessage(data);
 }
 
+/** PUT /irregular_schedule/:id — updates an existing irregular assignment. */
+async function updateIrregular(id: number, payload: Record<string, unknown>): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/irregular_schedule/${id}`, payload);
+  return apiMessage(data);
+}
+
 export const irregularClassService = {
   listStudents,
   listPendingStudents,
@@ -398,4 +404,5 @@ export const irregularClassService = {
   listAssignedSchedule,
   assign,
   removeIrregular,
+  updateIrregular,
 };

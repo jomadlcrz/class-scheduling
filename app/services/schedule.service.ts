@@ -693,6 +693,29 @@ async function deleteSubjectHourOverride(id: number): Promise<string> {
   return apiMessage(data);
 }
 
+/** Advanced scheduler endpoints retained for operator tools and conflict-resolution UIs. */
+async function resolveGeneratedSchedule(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return apiPost<Record<string, unknown>>("/regular_schedule/auto-generate-schedule/resolve", payload);
+}
+
+async function generateGreedySchedule(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return apiPost<Record<string, unknown>>("/regular_schedule/auto-generate-schedule/greedy", payload);
+}
+
+async function removeSetSchedules(setId: number): Promise<string> {
+  return apiMessage(await apiDelete<{ message?: string }>(`/regular_schedule/set/${setId}`));
+}
+
+async function getSetWithSchedules(params: { syId: number; semId: number; programId?: number }): Promise<Record<string, unknown>> {
+  const query = new URLSearchParams({ sy_id: String(params.syId), sem_id: String(params.semId) });
+  if (params.programId != null) query.set("program_id", String(params.programId));
+  return apiGet<Record<string, unknown>>(`/schedule/get-set-with-schedules?${query}`);
+}
+
+async function reconcileInstructorLedgers(payload?: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return apiPost<Record<string, unknown>>("/regular_schedule/instructor-ledgers/reconcile", payload ?? {});
+}
+
 export const scheduleService = {
   view,
   listScheduleSubjects,
@@ -709,4 +732,9 @@ export const scheduleService = {
   listSubjectHourOverrides,
   upsertSubjectHourOverride,
   deleteSubjectHourOverride,
+  resolveGeneratedSchedule,
+  generateGreedySchedule,
+  removeSetSchedules,
+  getSetWithSchedules,
+  reconcileInstructorLedgers,
 };

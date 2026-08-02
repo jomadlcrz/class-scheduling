@@ -212,13 +212,13 @@ async function restore(studentProfileId: number): Promise<string> {
 
 /** DELETE /students/<id> — soft-deletes the profile and deactivates the login account after the caller echoes the student's full name (case-sensitively). Academic history is left untouched. */
 async function remove(studentProfileId: number, confirmText: string): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/students/${studentProfileId}`, { confirm: confirmText });
+  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/archive`, { confirm: confirmText });
   return apiMessage(data);
 }
 
 /** GET /students/<id>/delete-preview — read-only breakdown of what deleting the profile would affect. */
 async function getDeletePreview(studentProfileId: number): Promise<StudentDeletePreview> {
-  return apiGet<StudentDeletePreview>(`/students/${studentProfileId}/delete-preview`);
+  return apiGet<StudentDeletePreview>(`/students/${studentProfileId}/archive-preview`);
 }
 
 /** PUT /students/enrollments/<id> — corrects a single term's set/year level/status. */
@@ -230,6 +230,15 @@ async function updateEnrollment(studentAcademicId: number, input: UpdateEnrollme
 /** DELETE /students/enrollments/<id> — hard delete of a single term's enrollment. */
 async function removeEnrollment(studentAcademicId: number): Promise<string> {
   const data = await apiDelete<{ message?: string }>(`/students/enrollments/${studentAcademicId}`);
+  return apiMessage(data);
+}
+
+/** PATCH /students/enrollments/:id/state — changes enrollment state without deleting history. */
+async function setEnrollmentState(studentAcademicId: number, state: string, reason?: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/students/enrollments/${studentAcademicId}/state`, {
+    state,
+    ...(reason ? { reason } : {}),
+  });
   return apiMessage(data);
 }
 
@@ -288,6 +297,7 @@ export const studentService = {
   getDeletePreview,
   updateEnrollment,
   removeEnrollment,
+  setEnrollmentState,
   getAccount,
   deactivateAccount,
   reactivateAccount,

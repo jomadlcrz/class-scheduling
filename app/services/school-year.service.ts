@@ -157,4 +157,10 @@ async function get(id: number): Promise<SchoolYearOption> {
   return mapSchoolYear(s);
 }
 
-export const schoolYearService = { list, create, update, archive, getArchivePreview, remove, listDeleted, restore, get };
+/** GET /school-years/current — calendar-derived default school year. */
+async function getCurrent(): Promise<SchoolYearOption & { existsForToday?: boolean; expectedSchoolYear?: string | null }> {
+  const entry = await apiGet<SchoolYearEntry & { exists_for_today?: boolean; expected_school_year?: string | null }>("/school-years/current");
+  return { ...mapSchoolYear(entry), existsForToday: entry.exists_for_today, expectedSchoolYear: entry.expected_school_year };
+}
+
+export const schoolYearService = { list, create, update, archive, getArchivePreview, remove, listDeleted, restore, get, getCurrent };

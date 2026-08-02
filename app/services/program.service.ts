@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type {
   CreateProgramInput,
   Program,
@@ -73,13 +73,13 @@ async function update(id: number, input: UpdateProgramInput): Promise<string> {
  * preview endpoint returns).
  */
 async function remove(id: number, confirmCode: string): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/programs/${id}`, { confirm: confirmCode });
+  const data = await apiPatch<{ message?: string }>(`/programs/${id}/archive`, { confirm: confirmCode });
   return apiMessage(data);
 }
 
 /** GET /programs/:id/delete-preview — read-only breakdown of what the delete would affect. */
 async function getDeletePreview(id: number): Promise<ProgramDeletePreview> {
-  return apiGet<ProgramDeletePreview>(`/programs/${id}/delete-preview`);
+  return apiGet<ProgramDeletePreview>(`/programs/${id}/archive-preview`);
 }
 
 export type DeletedProgram = {

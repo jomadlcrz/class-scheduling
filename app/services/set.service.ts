@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { ClassSet, CreateSetInput, SetDeletePreview } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
@@ -102,13 +102,13 @@ async function update(id: number, setCode: string): Promise<string> {
  * the preview endpoint returns).
  */
 async function remove(id: number, confirmCode: string): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/sets/${id}`, { confirm: confirmCode });
+  const data = await apiPatch<{ message?: string }>(`/sets/${id}/archive`, { confirm: confirmCode });
   return apiMessage(data);
 }
 
 /** GET /sets/:id/delete-preview — read-only breakdown of what the delete would affect. */
 async function getDeletePreview(id: number): Promise<SetDeletePreview> {
-  return apiGet<SetDeletePreview>(`/sets/${id}/delete-preview`);
+  return apiGet<SetDeletePreview>(`/sets/${id}/archive-preview`);
 }
 
 export type DeletedSet = {

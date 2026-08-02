@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { CreateDepartmentInput, Department, DepartmentDeletePreview, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
@@ -76,13 +76,13 @@ async function update(id: number, input: UpdateDepartmentInput): Promise<string>
 
 /** DELETE /departments/:id — cascades through its programs after the caller echoes the department's abbreviation (uppercase-normalized). Returns the backend message. */
 async function remove(id: number, confirmCode: string): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/departments/${id}`, { confirm: confirmCode });
+  const data = await apiPatch<{ message?: string }>(`/departments/${id}/archive`, { confirm: confirmCode });
   return apiMessage(data);
 }
 
 /** GET /departments/:id/delete-preview — read-only breakdown of what the delete would affect. */
 async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
-  return apiGet<DepartmentDeletePreview>(`/departments/${id}/delete-preview`);
+  return apiGet<DepartmentDeletePreview>(`/departments/${id}/archive-preview`);
 }
 
 export type DeletedDepartment = {

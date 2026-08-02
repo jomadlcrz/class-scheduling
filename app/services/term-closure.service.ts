@@ -146,6 +146,47 @@ function mapAuditEntry(raw: ApiAuditEntry): TermAuditLogEntry {
   };
 }
 
+export type TermContext = {
+  schoolYears: { id: number; schoolYear: string }[];
+  semesters: { semesterNumber: number; label: string }[];
+  selection: { syId: number | null; semId: number | null; semesterNumber: number | null; schoolYear: string | null };
+  term: TermClosureItem | null;
+  calendar: { academicYearStartMonth: number; currentSchoolYear: string | null; currentSemesterNumber: number | null; existsForToday: boolean | null; expectedSchoolYear: string | null };
+};
+
+/** GET /terms/context — bootstrap payload for term selectors and closure screens. */
+async function getContext(params: { syId?: number; semesterNumber?: number } = {}): Promise<TermContext> {
+  const query = new URLSearchParams();
+  if (params.syId != null) query.set("sy_id", String(params.syId));
+  if (params.semesterNumber != null) query.set("semester_number", String(params.semesterNumber));
+  const raw = await apiGet<{
+    school_years: { id: number; school_year: string }[];
+    semesters: { semester_number: number; display_name: string }[];
+    selection: { sy_id: number | null; sem_id: number | null; semester_number: number | null; school_year: string | null };
+    term: ApiTermClosureItem | null;
+    calendar: { academic_year_start_month: number; current_school_year: string | null; current_semester_number: number | null; exists_for_today: boolean | null; expected_school_year: string | null };
+  }>(`/terms/context${query.size ? `?${query}` : ""}`);
+  return {
+    schoolYears: raw.school_years.map((row) => ({ id: row.id, schoolYear: row.school_year })),
+    semesters: raw.semesters.map((row) => ({ semesterNumber: row.semester_number, label: row.display_name })),
+    selection: { syId: raw.selection.sy_id, semId: raw.selection.sem_id, semesterNumber: raw.selection.semester_number, schoolYear: raw.selection.school_year },
+    term: raw.term ? mapClosureItem(raw.term) : null,
+    calendar: { academicYearStartMonth: raw.calendar.academic_year_start_month, currentSchoolYear: raw.calendar.current_school_year, currentSemesterNumber: raw.calendar.current_semester_number, existsForToday: raw.calendar.exists_for_today, expectedSchoolYear: raw.calendar.expected_school_year },
+  };
+}
+
+/** GET /terms/status — closure status and reason for one school-year/semester pair. */
+async function getStatus(syId: number, semId: number): Promise<TermClosureItem> {
+  const raw = await apiGet<ApiTermClosureItem>(`/terms/status?sy_id=${syId}&sem_id=${semId}`);
+  return mapClosureItem(raw);
+}
+
+/** POST /terms/close — locks a term against further scheduling and record changes. */
+async function close(syId: number, semId: number, reason?: string): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/terms/close", { syId, semId, ...(reason ? { reason } : {}) });
+  return apiMessage(data);
+}
+
 /** GET /terms/closures — registrar-posted closures, newest first. */
 async function listClosures(): Promise<TermClosureItem[]> {
   const data = await apiGet<{ items: ApiTermClosureItem[] }>("/terms/closures");
@@ -220,4 +261,4 @@ async function listAuditLog(query: AuditLogQuery = {}): Promise<TermAuditLogResu
   };
 }
 
-export const termClosureService = { listClosures, reopen, auditLogFilters, listAuditLog };
+export const termClosureService = { getContext, getStatus, close, listClosures, reopen, auditLogFilters, listAuditLog };

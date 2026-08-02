@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { programService } from "~/services/program.service";
 import type { Semester, Subject, SubjectDeletePreview, UpdateSubjectInput, YearLevel } from "~/types/subject";
 
@@ -191,13 +191,13 @@ async function update(id: number, input: UpdateSubjectInput): Promise<string> {
 
 /** DELETE /subjects/:id — soft delete; the backend requires the code as confirmation. Returns the backend message. */
 async function remove(id: number, confirmCode: string): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/subjects/${id}`, { confirm: confirmCode });
+  const data = await apiPatch<{ message?: string }>(`/subjects/${id}/archive`, { confirm: confirmCode });
   return apiMessage(data);
 }
 
 /** GET /subjects/:id/delete-preview — read-only breakdown of what the delete would affect, across every program it sits on. */
 async function getDeletePreview(id: number): Promise<SubjectDeletePreview> {
-  return apiGet<SubjectDeletePreview>(`/subjects/${id}/delete-preview`);
+  return apiGet<SubjectDeletePreview>(`/subjects/${id}/archive-preview`);
 }
 
 export const subjectService = {
