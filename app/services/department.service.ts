@@ -48,17 +48,13 @@ async function listAcademic(): Promise<Department[]> {
   }
 }
 
-/** POST /departments — bulk endpoint; a single create sends a one-item list. Returns the backend message. */
+/** POST /departments/ — create one department. Returns the backend message. */
 async function create(input: CreateDepartmentInput): Promise<string> {
   const data = await apiPost<{ message?: string }>("/departments/", {
-    departments: [
-      {
-        buildingName: input.buildingName,
-        departmentAbbrev: input.abbrev,
-        departmentName: input.name,
-        ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
-      },
-    ],
+    departmentAbbrev: input.abbrev,
+    departmentName: input.name,
+    buildingId: input.buildingId,
+    ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
   });
   return apiMessage(data);
 }
@@ -68,7 +64,7 @@ async function update(id: number, input: UpdateDepartmentInput): Promise<string>
   const data = await apiPut<{ message?: string }>(`/departments/${id}`, {
     ...(input.abbrev !== undefined && { departmentAbbrev: input.abbrev }),
     ...(input.name !== undefined && { departmentName: input.name }),
-    ...(input.buildingName !== undefined && { buildingName: input.buildingName }),
+    ...(input.buildingId !== undefined && { buildingId: input.buildingId }),
     ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
   });
   return apiMessage(data);

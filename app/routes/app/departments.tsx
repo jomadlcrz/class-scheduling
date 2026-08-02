@@ -94,7 +94,7 @@ function DepartmentsPage() {
     const message = await departmentService.update(editTarget.id, {
       abbrev: input.abbrev,
       name: input.name,
-      buildingName: input.buildingName,
+      buildingId: input.buildingId,
       departmentType: input.departmentType,
     });
     if (message) toast.success(message);

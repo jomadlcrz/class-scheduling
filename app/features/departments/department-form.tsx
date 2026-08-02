@@ -33,9 +33,9 @@ export function DepartmentForm({
     const data = new FormData(e.currentTarget);
     const abbrev = String(data.get("dept-abbrev") ?? "").trim();
     const name = String(data.get("dept-name") ?? "").trim();
-    const buildingName = String(data.get("dept-building") ?? "");
+    const buildingId = Number(data.get("dept-building"));
 
-    const result = departmentSchema.safeParse({ abbrev, name, buildingName, departmentType: type });
+    const result = departmentSchema.safeParse({ abbrev, name, buildingId, departmentType: type });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -51,7 +51,10 @@ export function DepartmentForm({
     }
   }
 
-  const defaultBuildingName = department?.buildingName ?? buildings[0]?.name ?? "";
+  const defaultBuildingId =
+    (department && buildings.find((b) => b.name === department.buildingName)?.id) ??
+    buildings[0]?.id ??
+    0;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
@@ -73,16 +76,16 @@ export function DepartmentForm({
       />
       <FieldChrome id="dept-building" label="Building">
         <Select
-          items={buildings.map((b) => ({ value: b.name, label: b.name }))}
+          items={buildings.map((b) => ({ value: String(b.id), label: b.name }))}
           name="dept-building"
-          defaultValue={defaultBuildingName}
+          defaultValue={String(defaultBuildingId)}
         >
           <SelectTrigger id="dept-building">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {buildings.map((b) => (
-              <SelectItem key={b.id} value={b.name}>
+              <SelectItem key={b.id} value={String(b.id)}>
                 {b.name}
               </SelectItem>
             ))}

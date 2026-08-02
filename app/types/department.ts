@@ -20,11 +20,11 @@ export type Department = {
   programs: { abbrev: string; name: string }[];
 };
 
-/** Buildings are referenced by name on create and update. */
+/** Buildings are referenced by id on create and update (backend expects buildingId). */
 export type CreateDepartmentInput = {
   abbrev: string;
   name: string;
-  buildingName: string;
+  buildingId: number;
   /** Backend DepartmentType value; omit to let the backend default to Academic. */
   departmentType?: string;
 };
@@ -32,7 +32,7 @@ export type CreateDepartmentInput = {
 export type UpdateDepartmentInput = {
   abbrev?: string;
   name?: string;
-  buildingName?: string;
+  buildingId?: number;
   departmentType?: string;
 };
 
