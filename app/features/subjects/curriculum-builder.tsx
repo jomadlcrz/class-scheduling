@@ -3,6 +3,7 @@ import { Accordion } from "~/components/ui/accordion";
 import { TabList } from "~/components/ui/tabs";
 import { CurriculumBuilderActionsBar } from "~/features/subjects/curriculum-builder-actions-bar";
 import { CurriculumBuilderHeader } from "~/features/subjects/curriculum-builder-header";
+import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
 import { CurriculumSemesterPanel } from "~/features/subjects/curriculum-semester-panel";
 import type { CurriculumSubjectRowData } from "~/features/subjects/curriculum-subject-row";
 import type { PendingEntry } from "~/features/subjects/curriculum-structure";
@@ -62,6 +63,7 @@ export function CurriculumBuilder({
 }: CurriculumBuilderProps) {
   const { semesters, semesterLabel } = useSemesters();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
+  const [mode, setMode] = useState<CurriculumBuilderMode>("edit");
   const [activeYear, setActiveYear] = useState<number>(yearLevelIds[0] ?? 1);
   const [search, setSearch] = useState("");
   /** Auto-sort enabled per year/semester section key. */
@@ -158,6 +160,7 @@ export function CurriculumBuilder({
   return (
     <div className="flex flex-col gap-5">
       <CurriculumBuilderHeader
+        mode={mode}
         program={program}
         programs={programs}
         onProgramChange={onProgramChange}
@@ -177,6 +180,11 @@ export function CurriculumBuilder({
       />
 
       <CurriculumBuilderActionsBar
+        mode={mode}
+        onModeChange={(nextMode) => {
+          setMode(nextMode);
+          setSelected(new Set());
+        }}
         pendingCount={pendingCount}
         isSaving={isSaving}
         onSave={onSave}
@@ -199,6 +207,7 @@ export function CurriculumBuilder({
             <CurriculumSemesterPanel
               key={semester}
               semesterNumber={semester}
+              mode={mode}
               semesterLabel={semesterLabel(semester)}
               yearLabel={yearLevelLabel(activeYear)}
               isOpen={isOpen}

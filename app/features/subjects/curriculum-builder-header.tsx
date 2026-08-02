@@ -3,15 +3,18 @@ import { Card } from "~/components/ui/card";
 import { HelpCircleIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
 import type { Program } from "~/types/program";
 
 type CurriculumBuilderHeaderProps = {
+  mode: CurriculumBuilderMode;
   program: string;
   programs: Program[];
   onProgramChange: (abbrev: string) => void;
 };
 
 export function CurriculumBuilderHeader({
+  mode,
   program,
   programs,
   onProgramChange,
@@ -42,7 +45,9 @@ export function CurriculumBuilderHeader({
         <Alert className="lg:max-w-md">
           <HelpCircleIcon />
           <AlertDescription>
-            Select a program and year level, then expand a semester to build or edit the curriculum.
+            {mode === "edit"
+              ? "Select a program and year level, then expand a semester to build or edit the curriculum."
+              : "Review saved and unsaved subjects by year level and semester before saving."}
           </AlertDescription>
         </Alert>
       </div>

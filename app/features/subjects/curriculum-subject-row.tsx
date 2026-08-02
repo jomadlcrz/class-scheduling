@@ -1,14 +1,15 @@
+import { Checkbox } from "~/components/ui/checkbox";
 import { TrashIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { TableCell, TableRow } from "~/components/ui/table";
 import { TableInput } from "~/components/ui/table-input";
-import { Checkbox } from "~/components/ui/checkbox";
-import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
+import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
+import { PrerequisiteBadges } from "~/features/subjects/prerequisite-badges";
 import {
   PrerequisitePicker,
   type PrerequisiteOption,
 } from "~/features/subjects/prerequisite-picker";
-import { PrerequisiteBadges } from "~/features/subjects/prerequisite-badges";
+import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import { SUBJECT_TYPE_LABELS, type CreateSubjectInput } from "~/types/subject";
 
 export type CurriculumSubjectRowData = {
@@ -22,6 +23,7 @@ export type CurriculumSubjectRowData = {
 };
 
 type CurriculumSubjectRowProps = {
+  mode: CurriculumBuilderMode;
   row: CurriculumSubjectRowData;
   index: number;
   selected: boolean;
@@ -36,6 +38,7 @@ const deleteButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400";
 
 export function CurriculumSubjectRow({
+  mode,
   row,
   index,
   selected,
@@ -45,10 +48,11 @@ export function CurriculumSubjectRow({
   onUpdatePending,
   onRemovePending,
 }: CurriculumSubjectRowProps) {
-  const isEditable = Boolean(row.tempId);
+  const isPending = Boolean(row.tempId);
+  const isEditable = isPending && mode === "edit";
 
   return (
-    <TableRow className={isEditable ? "bg-amber-50/40 dark:bg-gold-400/5" : undefined}>
+    <TableRow className={isPending ? "bg-amber-50/40 dark:bg-gold-400/5" : undefined}>
       <TableCell className="px-2 text-center align-middle">
         {isEditable ? (
           <Checkbox
@@ -166,21 +170,23 @@ export function CurriculumSubjectRow({
           <span className="text-slate-400 dark:text-slate-500">None</span>
         )}
       </TableCell>
-      <TableCell className="px-2 align-middle">
-        {isEditable && row.tempId ? (
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={() => onRemovePending(row.tempId!)}
-              aria-label={`Delete ${row.code || "new subject"}`}
-              title="Delete"
-              className={deleteButtonClassName}
-            >
-              <TrashIcon />
-            </button>
-          </div>
-        ) : null}
-      </TableCell>
+      {mode === "edit" && (
+        <TableCell className="px-2 align-middle">
+          {isEditable && row.tempId ? (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => onRemovePending(row.tempId!)}
+                aria-label={`Delete ${row.code || "new subject"}`}
+                title="Delete"
+                className={deleteButtonClassName}
+              >
+                <TrashIcon />
+              </button>
+            </div>
+          ) : null}
+        </TableCell>
+      )}
     </TableRow>
   );
 }

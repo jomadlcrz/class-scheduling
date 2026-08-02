@@ -12,11 +12,13 @@ import {
   CurriculumSubjectRow,
   type CurriculumSubjectRowData,
 } from "~/features/subjects/curriculum-subject-row";
+import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
 import type { PrerequisiteOption } from "~/features/subjects/prerequisite-picker";
 import type { CreateSubjectInput } from "~/types/subject";
 
 type CurriculumSemesterPanelProps = {
   semesterNumber: number;
+  mode: CurriculumBuilderMode;
   semesterLabel: string;
   yearLabel: string;
   isOpen: boolean;
@@ -44,6 +46,7 @@ type CurriculumSemesterPanelProps = {
 
 export function CurriculumSemesterPanel({
   semesterNumber,
+  mode,
   semesterLabel,
   yearLabel,
   isOpen,
@@ -68,6 +71,9 @@ export function CurriculumSemesterPanel({
   onRemovePending,
   onDuplicatePending,
 }: CurriculumSemesterPanelProps) {
+  const isViewMode = mode === "view";
+  const hasSearch = search.trim().length > 0;
+
   return (
     <AccordionItem
       open={isOpen}
@@ -81,32 +87,38 @@ export function CurriculumSemesterPanel({
     >
       <div className="flex flex-col gap-4 p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Button type="button" variant="outline" block={false} onClick={onAddRow}>
-              <PlusIcon />
-              Add Subject Row
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              disabled={selectedCount === 0}
-              onClick={onDuplicateSelected}
-            >
-              <CopyIcon />
-              Duplicate Row
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              block={false}
-              disabled={selectedCount === 0}
-              onClick={onDeleteSelected}
-            >
-              <TrashIcon />
-              Delete Selected
-            </Button>
-          </div>
+          {isViewMode ? (
+            <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              Read-only preview
+            </p>
+          ) : (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Button type="button" variant="outline" block={false} onClick={onAddRow}>
+                <PlusIcon />
+                Add Subject Row
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                disabled={selectedCount === 0}
+                onClick={onDuplicateSelected}
+              >
+                <CopyIcon />
+                Duplicate Row
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                block={false}
+                disabled={selectedCount === 0}
+                onClick={onDeleteSelected}
+              >
+                <TrashIcon />
+                Delete Selected
+              </Button>
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-3">
             <SearchInput
               id={`curriculum-search-${semesterNumber}`}
@@ -128,35 +140,44 @@ export function CurriculumSemesterPanel({
 
         {rows.length === 0 ? (
           <div className="p-6">
-            <EmptyState title="No subjects in this term">
-              Add a subject row to start building {yearLabel} — {semesterLabel}.
+            <EmptyState title={hasSearch ? "No subjects found" : "No subjects in this term"}>
+              {hasSearch
+                ? "No subjects match your search."
+                : isViewMode
+                  ? `${yearLabel} — ${semesterLabel} has no subjects to preview.`
+                  : `Add a subject row to start building ${yearLabel} — ${semesterLabel}.`}
             </EmptyState>
           </div>
         ) : (
           <>
             <Table>
               <TableHead>
-                <TableHeader className="px-2 text-center align-middle">
-                  <Checkbox
-                    id={`curriculum-select-all-${semesterNumber}`}
-                    inset
-                    hideLabel
-                    ariaLabel="Select all editable rows"
-                    checked={pendingKeys.length > 0 && pendingKeys.every((k) => selected.has(k))}
-                    onChange={() => onToggleAll(pendingKeys)}
-                  />
-                </TableHeader>
+                {isViewMode ? (
+                  <TableHeader className="w-12 px-2 text-center">#</TableHeader>
+                ) : (
+                  <TableHeader className="px-2 text-center align-middle">
+                    <Checkbox
+                      id={`curriculum-select-all-${semesterNumber}`}
+                      inset
+                      hideLabel
+                      ariaLabel="Select all editable rows"
+                      checked={pendingKeys.length > 0 && pendingKeys.every((k) => selected.has(k))}
+                      onChange={() => onToggleAll(pendingKeys)}
+                    />
+                  </TableHeader>
+                )}
                 <TableHeader>Subject Code</TableHeader>
                 <TableHeader>Descriptive Title</TableHeader>
                 <TableHeader className="text-center">Units</TableHeader>
                 <TableHeader>Subject Type</TableHeader>
                 <TableHeader className="w-40 whitespace-nowrap">Prerequisites</TableHeader>
-                <TableHeader className="px-2" />
+                {!isViewMode && <TableHeader className="px-2" />}
               </TableHead>
               <TableBody>
                 {rows.map((row, index) => (
                   <CurriculumSubjectRow
                     key={row.key}
+                    mode={mode}
                     row={row}
                     index={index}
                     selected={selected.has(row.key)}
@@ -169,8 +190,12 @@ export function CurriculumSemesterPanel({
                 ))}
               </TableBody>
             </Table>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <TextButton onClick={onAddRow}>+ Add New Subject</TextButton>
+            <div
+              className={`flex flex-wrap items-center gap-3 ${
+                isViewMode ? "justify-end" : "justify-between"
+              }`}
+            >
+              {!isViewMode && <TextButton onClick={onAddRow}>+ Add New Subject</TextButton>}
               <p className="font-body text-sm text-slate-600 dark:text-slate-300">
                 Total Units:{" "}
                 <span className="font-bold tabular-nums text-slate-900 dark:text-white">{totalUnits}</span>
