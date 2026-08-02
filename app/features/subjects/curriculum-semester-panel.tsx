@@ -3,14 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { EmptyState } from "~/components/feedback/empty-state";
-import {
-  BookOpenIcon,
-  CopyIcon,
-  DownloadIcon,
-  PlusIcon,
-  TrashIcon,
-  UploadIcon,
-} from "~/components/ui/icons";
+import { CopyIcon, DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { SearchInput } from "~/components/ui/search-input";
 import { Switch } from "~/components/ui/switch";
 import { Table, TableBody, TableHead, TableHeader } from "~/components/ui/table";
@@ -79,20 +72,15 @@ export function CurriculumSemesterPanel({
     <AccordionItem
       open={isOpen}
       onOpenChange={onOpenChange}
-      className="border-slate-200 dark:border-white/10 dark:bg-surface-raised/80"
-      headerClassName="bg-slate-50 px-4 py-3 sm:flex-row dark:bg-surface-overlay/60"
       title={
-        <span className="flex items-center gap-2.5">
-          <BookOpenIcon />
-          <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-            {semesterLabel}
-          </span>
+        <span className="font-body text-base font-semibold text-navy-700 dark:text-mist-100">
+          {semesterLabel}
         </span>
       }
       adornment={<Badge tone="slate">{rows.length} Subject{rows.length === 1 ? "" : "s"}</Badge>}
     >
-      <div className="border-t border-slate-200 dark:border-white/10">
-        <div className="flex flex-col gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-surface-raised/40 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
             <Button type="button" variant="outline" block={false} onClick={onAddRow}>
               <PlusIcon />
@@ -190,7 +178,7 @@ export function CurriculumSemesterPanel({
                 ))}
               </TableBody>
             </Table>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <TextButton onClick={onAddRow}>+ Add New Subject</TextButton>
               <p className="font-body text-sm text-slate-600 dark:text-slate-300">
                 Total Units:{" "}

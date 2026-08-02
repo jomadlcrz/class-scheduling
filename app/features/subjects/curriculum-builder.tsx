@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Accordion } from "~/components/ui/accordion";
 import { TabList } from "~/components/ui/tabs";
 import { CurriculumBuilderActionsBar } from "~/features/subjects/curriculum-builder-actions-bar";
 import { CurriculumBuilderHeader } from "~/features/subjects/curriculum-builder-header";
@@ -186,7 +187,7 @@ export function CurriculumBuilder({
         onCancel={onCancel}
       />
 
-      <div className="flex flex-col gap-4">
+      <Accordion>
         {semesters.map(({ semesterNumber: semester }) => {
           const key = sectionKey(activeYear, semester);
           const isOpen = !collapsed.has(key);
@@ -230,7 +231,7 @@ export function CurriculumBuilder({
             />
           );
         })}
-      </div>
+      </Accordion>
     </div>
   );
 }
