@@ -5,11 +5,21 @@ type SwitchProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  /** Compact row for toolbars — label sits beside the toggle. */
+  inline?: boolean;
 };
 
-export function Switch({ id, label, description, checked, onChange, disabled = false }: SwitchProps) {
+export function Switch({
+  id,
+  label,
+  description,
+  checked,
+  onChange,
+  disabled = false,
+  inline = false,
+}: SwitchProps) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className={`flex items-center gap-4 ${inline ? "" : "justify-between"}`}>
       <div className="flex flex-col gap-0.5">
         <p className="font-body text-sm font-semibold text-slate-500 dark:text-slate-400">{label}</p>
         {description && (

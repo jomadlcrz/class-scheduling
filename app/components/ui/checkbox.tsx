@@ -1,8 +1,10 @@
 type CheckboxProps = {
   id: string;
-  label: React.ReactNode;
+  label?: React.ReactNode;
   /** Accessible name for the checkbox. Falls back to label text when label is a string. */
   ariaLabel?: string;
+  /** Hide the label text — use in tables/toolbars with ariaLabel instead. */
+  hideLabel?: boolean;
   name?: string;
   /** Submitted as this value when checked (for FormData.getAll on shared names). */
   value?: string;
@@ -13,7 +15,17 @@ type CheckboxProps = {
 };
 
 /** Only the box itself is clickable — the label text is plain, non-interactive. */
-export function Checkbox({ id, label, ariaLabel, name, value, defaultChecked, checked, onChange }: CheckboxProps) {
+export function Checkbox({
+  id,
+  label,
+  ariaLabel,
+  hideLabel = false,
+  name,
+  value,
+  defaultChecked,
+  checked,
+  onChange,
+}: CheckboxProps) {
   const isControlled = checked !== undefined;
 
   return (
@@ -29,7 +41,9 @@ export function Checkbox({ id, label, ariaLabel, name, value, defaultChecked, ch
         aria-label={ariaLabel ?? (typeof label === "string" ? label : undefined)}
         className="size-4 cursor-pointer accent-navy-800 dark:accent-gold-400"
       />
-      <span className="font-body text-sm text-slate-600 dark:text-slate-300">{label}</span>
+      {!hideLabel && label != null && (
+        <span className="font-body text-sm text-slate-600 dark:text-slate-300">{label}</span>
+      )}
     </div>
   );
 }

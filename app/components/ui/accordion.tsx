@@ -6,27 +6,41 @@ type AccordionItemProps = {
   children: ReactNode;
   defaultOpen?: boolean;
   open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   adornment?: ReactNode;
+  className?: string;
+  headerClassName?: string;
 };
 
-export function AccordionItem({ title, children, defaultOpen, open, adornment }: AccordionItemProps) {
+export function AccordionItem({
+  title,
+  children,
+  defaultOpen,
+  open,
+  onOpenChange,
+  adornment,
+  className,
+  headerClassName,
+}: AccordionItemProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
   const reduceMotion = useReducedMotion();
 
   function toggle() {
-    if (!isControlled) setInternalOpen((v) => !v);
+    const next = !isOpen;
+    if (isControlled) onOpenChange?.(next);
+    else setInternalOpen(next);
   }
 
   return (
-    <div className="rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
+    <div className={`rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5 ${className ?? ""}`.trim()}>
       <div
         role="button"
         tabIndex={0}
         onClick={toggle}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } }}
-        className="flex w-full flex-col gap-2 px-5 py-4 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 sm:flex-row sm:items-center sm:gap-3"
+        className={`flex w-full flex-col gap-2 px-5 py-4 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 sm:flex-row sm:items-center sm:gap-3 ${headerClassName ?? ""}`.trim()}
       >
         <span className="flex flex-1 items-center gap-2">
           <span className="flex-1">{title}</span>

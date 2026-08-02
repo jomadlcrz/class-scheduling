@@ -1,20 +1,15 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useAuth } from "~/auth/auth-provider";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog } from "~/components/ui/modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { CurriculumEntryForm } from "~/features/subjects/curriculum-entry-form";
-import {
-  CurriculumStructure,
-  type PendingEntry,
-} from "~/features/subjects/curriculum-structure";
+import { CurriculumBuilder } from "~/features/subjects/curriculum-builder";
+import type { PendingEntry } from "~/features/subjects/curriculum-structure";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
@@ -44,36 +39,17 @@ export default function SubjectsNew() {
 
 function SubjectsNewPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const canManageAcademicYear = user?.role === "admin" || user?.role === "registrar";
-  const formCardObserver = useRef<ResizeObserver | null>(null);
-  /** Live height of the form card, so the structure card can cap itself to match and scroll internally. */
-  const [formCardHeight, setFormCardHeight] = useState<number>();
-  // Callback ref (not a plain ref + mount effect): the form card only enters the DOM
-  // once loading finishes, well after the initial mount, so an empty-deps effect
-  // would never see it and the observer would never attach.
-  const formCardRef = useCallback((node: HTMLDivElement | null) => {
-    formCardObserver.current?.disconnect();
-    if (!node) return;
-    // contentRect excludes the card's own padding/border; getBoundingClientRect
-    // reports the border-box height, matching what's actually on screen.
-    const observer = new ResizeObserver(() => {
-      setFormCardHeight(node.getBoundingClientRect().height);
-    });
-    observer.observe(node);
-    formCardObserver.current = observer;
-  }, []);
   const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
   const [schoolYears, setSchoolYears] = useState<SchoolYearOption[] | null>(null);
   const [program, setProgram] = useState("");
   const [pending, setPending] = useState<PendingEntry[]>([]);
-  /** Pending entry pulled back into the form for changes. */
-  const [editing, setEditing] = useState<PendingEntry | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  /** Collapsed year/semester sections of the curriculum structure tree. */
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const tempIdCounter = useRef(0);
 
@@ -82,7 +58,12 @@ function SubjectsNewPage() {
       .then(([s, p]) => {
         setAllSubjects(s);
         setPrograms(p);
-        setProgram((current) => current || (p[0]?.abbrev ?? ""));
+        const requested = searchParams.get("program");
+        const initial =
+          requested && p.some((item) => item.abbrev === requested)
+            ? requested
+            : p[0]?.abbrev ?? "";
+        setProgram(initial);
       })
       .catch(() => {
         setAllSubjects([]);
@@ -93,10 +74,9 @@ function SubjectsNewPage() {
       .then((options) => setSubjectTypes(options.subjectType))
       .catch(() => {});
     schoolYearService.list().then(setSchoolYears).catch(() => setSchoolYears([]));
-  }, []);
+  }, [searchParams]);
 
-  /** Unsaved work: staged entries or one being edited in the form. */
-  const isDirty = pending.length > 0 || editing !== null;
+  const isDirty = pending.length > 0;
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
     useUnsavedChangesGuard(isDirty, !isSaving);
 
@@ -105,63 +85,69 @@ function SubjectsNewPage() {
     [allSubjects, program],
   );
 
-  // Prerequisites are referenced by subject code on the backend.
   const prerequisiteOptions = useMemo(
     () => [
       ...savedForProgram.map((s) => ({ id: s.code, code: s.code, title: s.title })),
-      ...pending.map((p) => ({ id: p.code, code: p.code, title: p.title })),
+      ...pending.map((p) => ({ id: p.code || p.tempId, code: p.code, title: p.title })),
     ],
     [savedForProgram, pending],
   );
 
-  function handleAdd(input: Omit<CreateSubjectInput, "program">) {
-    const taken = [...savedForProgram, ...pending].some(
-      (s) => s.code.toLowerCase() === input.code.toLowerCase(),
-    );
-    if (taken) {
-      throw new Error(
-        `A subject with the code ${input.code} already exists in ${program}.`,
-      );
-    }
-
-    // Re-adding an edited entry keeps its temp id.
-    let tempId = editing?.tempId;
-    if (!tempId) {
-      tempIdCounter.current += 1;
-      tempId = `tmp-${tempIdCounter.current}`;
-    }
-    setPending((current) => [...current, { ...input, program, tempId }]);
-    setEditing(null);
+  function resetProgram(nextProgram: string) {
+    setProgram(nextProgram);
+    setPending([]);
+    setCollapsed(new Set());
   }
 
-  function handleEditPending(tempId: string) {
-    const entry = pending.find((p) => p.tempId === tempId);
-    if (!entry) return;
-    // Restore the current edit target first so it isn't lost.
+  function handleAddPending(yearLevel: number, semester: number) {
+    tempIdCounter.current += 1;
+    const tempId = `tmp-${tempIdCounter.current}`;
     setPending((current) => [
-      ...(editing ? [...current, editing] : current).filter(
-        (p) => p.tempId !== tempId,
-      ),
+      ...current,
+      {
+        tempId,
+        program,
+        yearLevel,
+        semester,
+        code: "",
+        title: "",
+        units: 3,
+        subjectType: subjectTypes[0] ?? "",
+        prerequisites: [],
+      },
     ]);
-    setEditing(entry);
-  }
-
-  function handleCancelEdit() {
-    if (editing) setPending((current) => [...current, editing]);
-    setEditing(null);
-  }
-
-  function handleToggleSection(key: string) {
+    const semesterKey = `y${yearLevel}s${semester}`;
     setCollapsed((current) => {
       const next = new Set(current);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      next.delete(semesterKey);
       return next;
     });
   }
 
+  function handleUpdatePending(
+    tempId: string,
+    patch: Partial<Omit<CreateSubjectInput, "program">>,
+  ) {
+    setPending((current) =>
+      current.map((entry) => (entry.tempId === tempId ? { ...entry, ...patch } : entry)),
+    );
+  }
+
+  function handleDuplicatePending(tempId: string) {
+    const source = pending.find((entry) => entry.tempId === tempId);
+    if (!source) return;
+    tempIdCounter.current += 1;
+    setPending((current) => [
+      ...current,
+      {
+        ...source,
+        tempId: `tmp-${tempIdCounter.current}`,
+        code: source.code ? `${source.code}-copy` : "",
+      },
+    ]);
+  }
+
   function handleRemovePending(tempId: string) {
-    // Drop the entry and any pending references to it as a prerequisite.
     setPending((current) => {
       const removed = current.find((p) => p.tempId === tempId);
       return current
@@ -173,62 +159,74 @@ function SubjectsNewPage() {
     });
   }
 
+  function validatePending(): string | null {
+    for (const entry of pending) {
+      if (!entry.code.trim()) return "Every new subject needs a subject code.";
+      if (!entry.title.trim()) return "Every new subject needs a descriptive title.";
+      if (!Number.isFinite(entry.units) || entry.units < 1) {
+        return `${entry.code || "A subject"} must have at least 1 unit.`;
+      }
+    }
+
+    const seen = new Set<string>();
+    for (const entry of pending) {
+      const key = entry.code.trim().toLowerCase();
+      if (seen.has(key)) {
+        return `Duplicate subject code ${entry.code} in the pending list.`;
+      }
+      seen.add(key);
+    }
+
+    for (const entry of pending) {
+      const clash = savedForProgram.some(
+        (s) => s.code.toLowerCase() === entry.code.trim().toLowerCase(),
+      );
+      if (clash) {
+        return `A subject with the code ${entry.code} already exists in ${program}.`;
+      }
+    }
+
+    return null;
+  }
+
   async function handleSave() {
     const selectedProgram = (programs ?? []).find((p) => p.abbrev === program);
     if (!selectedProgram || pending.length === 0) return;
 
+    const validationError = validatePending();
+    if (validationError) {
+      setSaveError(validationError);
+      return;
+    }
+
     setSaveError(null);
     setIsSaving(true);
     try {
-      // One nested payload creates the whole batch atomically backend-side.
       const message = await subjectService.createCurriculum(
         selectedProgram.abbrev,
         selectedProgram.name,
-        pending.map(({ tempId: _tempId, program: _program, ...entry }) => entry),
+        pending.map(({ tempId: _tempId, program: _program, ...entry }) => ({
+          ...entry,
+          code: entry.code.trim(),
+          title: entry.title.trim(),
+        })),
       );
       if (message) toast.success(message);
       navigate("/subjects");
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : "",
-      );
+      setSaveError(err instanceof Error ? err.message : "");
       setIsSaving(false);
     }
   }
 
   const isLoading = allSubjects === null || programs === null || schoolYears === null;
-  /** Without at least one academic year the curriculum is missing its term context. */
   const noAcademicYear = schoolYears !== null && schoolYears.length === 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
-        title="New Subjects"
-        description="Add subjects one at a time and review the curriculum structure before saving."
-        actions={
-          noAcademicYear ? undefined : (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                block={false}
-                onClick={() => navigate("/subjects")}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                block={false}
-                disabled={pending.length === 0}
-                isLoading={isSaving}
-                loadingLabel="Saving…"
-                onClick={handleSave}
-              >
-                Save Curriculum{pending.length > 0 ? ` (${pending.length})` : ""}
-              </Button>
-            </>
-          )
-        }
+        title="Curriculum Builder"
+        description="Build or edit a program curriculum by year level and semester."
       />
 
       {noAcademicYear ? (
@@ -252,68 +250,39 @@ function SubjectsNewPage() {
         <div
           role="status"
           aria-label="Loading curriculum"
-          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
+          className="mt-6 grid place-items-center py-12 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-5">
           <FormError message={saveError} />
-
-          <div className="grid items-start gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
-            <div
-              ref={formCardRef}
-              className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-surface-raised/80"
-            >
-              <FieldChrome id="new-subject-program" label="Program">
-                <Select
-                  items={(programs ?? []).map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
-                  value={program}
-                  onValueChange={(v) => {
-                    setProgram(v as string);
-                    // Prerequisites belong to a program; switching drops staged work.
-                    setPending([]);
-                    setEditing(null);
-                  }}
-                >
-                  <SelectTrigger id="new-subject-program">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(programs ?? []).map((p) => (
-                      <SelectItem key={p.abbrev} value={p.abbrev}>
-                        {p.abbrev} — {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FieldChrome>
-
-              <CurriculumEntryForm
-                key={editing?.tempId ?? "new"}
-                initialEntry={editing ?? undefined}
-                prerequisiteOptions={prerequisiteOptions}
-                subjectTypes={subjectTypes}
-                onAdd={handleAdd}
-                onCancelEdit={editing ? handleCancelEdit : undefined}
-              />
-            </div>
-
-            <div
-              className="scrollbar-thin rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-surface-raised/80 lg:overflow-y-auto"
-              style={formCardHeight ? { maxHeight: formCardHeight } : undefined}
-            >
-              <CurriculumStructure
-                program={program}
-                saved={savedForProgram}
-                pending={pending}
-                collapsed={collapsed}
-                onToggleSection={handleToggleSection}
-                onEditPending={handleEditPending}
-                onRemovePending={handleRemovePending}
-              />
-            </div>
-          </div>
+          <CurriculumBuilder
+            program={program}
+            programs={programs ?? []}
+            onProgramChange={resetProgram}
+            saved={savedForProgram}
+            pending={pending}
+            subjectTypes={subjectTypes}
+            prerequisiteOptions={prerequisiteOptions}
+            collapsed={collapsed}
+            onToggleSection={(key) =>
+              setCollapsed((current) => {
+                const next = new Set(current);
+                if (next.has(key)) next.delete(key);
+                else next.add(key);
+                return next;
+              })
+            }
+            onUpdatePending={handleUpdatePending}
+            onAddPending={handleAddPending}
+            onRemovePending={handleRemovePending}
+            onDuplicatePending={handleDuplicatePending}
+            isSaving={isSaving}
+            pendingCount={pending.length}
+            onSave={handleSave}
+            onCancel={() => navigate("/subjects")}
+          />
         </div>
       )}
 

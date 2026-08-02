@@ -13,6 +13,8 @@ type PrerequisitePickerProps = {
   /** Selected option ids. */
   value: string[];
   onChange: (ids: string[]) => void;
+  /** Table-cell mode: no field label, tighter padding. */
+  compact?: boolean;
 };
 
 /**
@@ -20,7 +22,7 @@ type PrerequisitePickerProps = {
  * a chip inside the field. Matching is by exact code (case-insensitive);
  * Backspace on an empty input removes the last chip.
  */
-export function PrerequisitePicker({ options, value, onChange }: PrerequisitePickerProps) {
+export function PrerequisitePicker({ options, value, onChange, compact = false }: PrerequisitePickerProps) {
   const [query, setQuery] = useState("");
   const listId = useId();
   const inputId = useId();
@@ -40,18 +42,13 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
     return true;
   }
 
-  return (
-    <FieldChrome
-      id={inputId}
-      label="Prerequisites"
-      labelEnd={<span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>}
+  const field = (
+    <div
+      onClick={() => inputRef.current?.focus()}
+      className={`flex cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
+        compact ? "min-h-9 px-2 py-1" : "min-h-10.5 px-3 py-2"
+      } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
     >
-      <div
-        onClick={() => inputRef.current?.focus()}
-        className={`flex min-h-10.5 cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
-          disabled ? "cursor-not-allowed opacity-60" : ""
-        }`}
-      >
         {selected.map((option) => (
           <span
             key={option.id}
@@ -80,7 +77,9 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
             disabled
               ? "No subjects available"
               : selected.length === 0
-                ? "Type a subject code…"
+                ? compact
+                  ? "None"
+                  : "Type a subject code…"
                 : ""
           }
           autoComplete="off"
@@ -98,15 +97,32 @@ export function PrerequisitePicker({ options, value, onChange }: PrerequisitePic
           }}
           className="min-w-24 flex-1 bg-transparent text-sm text-inherit placeholder-slate-400 outline-none disabled:cursor-not-allowed dark:placeholder-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
         />
-      </div>
+    </div>
+  );
 
-      <datalist id={listId}>
-        {available.map((option) => (
-          <option key={option.id} value={option.code}>
-            {option.title}
-          </option>
-        ))}
-      </datalist>
+  const datalist = (
+    <datalist id={listId}>
+      {available.map((option) => (
+        <option key={option.id} value={option.code}>
+          {option.title}
+        </option>
+      ))}
+    </datalist>
+  );
+
+  return compact ? (
+    <>
+      {field}
+      {datalist}
+    </>
+  ) : (
+    <FieldChrome
+      id={inputId}
+      label="Prerequisites"
+      labelEnd={<span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>}
+    >
+      {field}
+      {datalist}
     </FieldChrome>
   );
 }
