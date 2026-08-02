@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { MOCK_AUDIT_LOG, type AuditAction } from "~/features/academic-terms/mock-data";
+import { MOCK_AUDIT_LOG, type AuditAction, type MockAuditEntry } from "~/features/academic-terms/mock-data";
 
 type TermClosureAuditLogModalProps = {
   open: boolean;
@@ -52,6 +52,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
   }, [schoolYear, semester, action, performedBy]);
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
   function resetFilters() {
     setSchoolYear("all");
@@ -135,20 +136,31 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         </Button>
       </div>
 
-      <Alert variant="default" className="mt-4 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200">
+      <Alert
+        variant="default"
+        className="mt-4 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200"
+      >
         <HelpCircleIcon />
         <AlertDescription>
           Showing {Math.min((page - 1) * pageSize + 1, filtered.length)} to{" "}
           {Math.min(page * pageSize, filtered.length)} of {filtered.length} audit log entries
         </AlertDescription>
-        <AlertAction>
-          <Button type="button" variant="outline" block={false} onClick={() => toast.info("Export CSV — mock only.")}>
-            Export CSV
-          </Button>
+        <AlertAction className="w-full sm:w-auto">
+          <div className="w-full sm:w-auto">
+            <Button type="button" variant="outline" block={false} onClick={() => toast.info("Export CSV — mock only.")}>
+              Export CSV
+            </Button>
+          </div>
         </AlertAction>
       </Alert>
 
-      <div className="mt-4 overflow-x-auto">
+      <div className="mt-4 flex flex-col gap-3 sm:hidden">
+        {pageItems.map((entry) => (
+          <AuditLogMobileCard key={entry.id} entry={entry} />
+        ))}
+      </div>
+
+      <div className="mt-4 hidden sm:block">
         <Table>
           <TableHead>
             <TableHeader>Date &amp; Time</TableHeader>
@@ -164,14 +176,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
               <TableRow key={entry.id}>
                 <TableCell className="whitespace-nowrap">{entry.dateTime}</TableCell>
                 <TableCell>
-                  <Badge tone={auditActionTone(entry.action)}>
-                    <span className="inline-flex items-center gap-1">
-                      {entry.action === "Closed" || entry.action === "Auto-Closed" ? (
-                        <LockIcon size={14} />
-                      ) : null}
-                      {entry.action}
-                    </span>
-                  </Badge>
+                  <AuditActionBadge action={entry.action} />
                 </TableCell>
                 <TableCell>
                   {entry.schoolYear} / {entry.semester}
@@ -180,7 +185,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
                 <TableCell className="hidden lg:table-cell">{entry.role}</TableCell>
                 <TableCell className="hidden md:table-cell">{entry.ipAddress ?? "—"}</TableCell>
                 <TableCell>
-                  <span className="inline-flex items-center gap-1">
+                  <span className="inline-flex items-start gap-1">
                     {entry.details}
                     <HelpCircleIcon />
                   </span>
@@ -191,13 +196,67 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         </Table>
       </div>
 
-      <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
+      {totalPages > 1 && (
+        <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
+      )}
 
       <div className="mt-4 flex justify-end border-t border-slate-200 pt-4 dark:border-white/10">
-        <Button type="button" variant="outline" block={false} onClick={onClose}>
-          Close
-        </Button>
+        <div className="w-full sm:w-auto">
+          <Button type="button" variant="outline" block={false} onClick={onClose}>
+            Close
+          </Button>
+        </div>
       </div>
     </Modal>
+  );
+}
+
+function AuditActionBadge({ action }: { action: AuditAction }) {
+  return (
+    <Badge tone={auditActionTone(action)}>
+      <span className="inline-flex items-center gap-1">
+        {action === "Closed" || action === "Auto-Closed" ? <LockIcon size={14} /> : null}
+        {action}
+      </span>
+    </Badge>
+  );
+}
+
+function AuditLogMobileCard({ entry }: { entry: MockAuditEntry }) {
+  return (
+    <article className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <AuditActionBadge action={entry.action} />
+        <time className="font-body text-xs text-slate-500 dark:text-slate-400">{entry.dateTime}</time>
+      </div>
+
+      <p className="mt-3 font-body text-sm font-medium text-navy-700 dark:text-mist-100">
+        {entry.schoolYear} / {entry.semester}
+      </p>
+
+      <dl className="mt-3 space-y-2 font-body text-sm text-slate-600 dark:text-slate-300">
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Performed By</dt>
+          <dd className="mt-0.5">{entry.performedBy}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Role</dt>
+          <dd className="mt-0.5">{entry.role}</dd>
+        </div>
+        {entry.ipAddress && (
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">IP Address</dt>
+            <dd className="mt-0.5">{entry.ipAddress}</dd>
+          </div>
+        )}
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Details</dt>
+          <dd className="mt-0.5 inline-flex items-start gap-1">
+            {entry.details}
+            <HelpCircleIcon />
+          </dd>
+        </div>
+      </dl>
+    </article>
   );
 }

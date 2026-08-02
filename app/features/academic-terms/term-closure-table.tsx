@@ -1,4 +1,4 @@
-import { EyeIcon, LockIcon } from "~/components/ui/icons";
+import { LockIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -17,7 +17,7 @@ type TermClosureTableProps = {
 };
 
 const actionButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-body text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function TermClosureTable({ terms, onViewDetails, onReopen }: TermClosureTableProps) {
   return (
@@ -53,21 +53,17 @@ export function TermClosureTable({ terms, onViewDetails, onReopen }: TermClosure
             <TableCell className="hidden lg:table-cell">{row.closedAt ?? "—"}</TableCell>
             <TableCell className="hidden lg:table-cell">{row.closedBy ?? "—"}</TableCell>
             <TableCell>
-              <div className="flex justify-end gap-1">
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => onViewDetails(row)}
-                  aria-label={`View details for ${row.schoolYear} ${row.semester}`}
-                  title="View details"
-                  className={actionButtonClassName}
+                  className={`${actionButtonClassName} border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10`}
                 >
-                  <EyeIcon />
+                  View Details
                 </button>
                 <button
                   type="button"
                   disabled={!row.reopenable}
-                  onClick={() => onReopen(row)}
-                  aria-label={`Reopen ${row.schoolYear} ${row.semester}`}
                   title={
                     !row.reopenable
                       ? row.status === "Open"
@@ -75,9 +71,11 @@ export function TermClosureTable({ terms, onViewDetails, onReopen }: TermClosure
                         : "Terms closed due to school year end cannot be reopened"
                       : "Reopen this term"
                   }
-                  className={actionButtonClassName}
+                  onClick={() => onReopen(row)}
+                  className={`${actionButtonClassName} border-red-200 text-red-700 hover:bg-red-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-400/10`}
                 >
-                  <LockIcon size={16} />
+                  <LockIcon size={14} />
+                  Reopen
                 </button>
               </div>
             </TableCell>

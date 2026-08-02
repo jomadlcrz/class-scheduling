@@ -16,7 +16,7 @@ type SemesterTableProps = {
 };
 
 const actionButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-blue-200 px-2.5 py-1.5 font-body text-xs font-medium text-blue-700 transition-colors duration-150 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10";
 
 function semesterStatusTone(status: string | undefined) {
   return status === "Active" ? "emerald" : "slate";
@@ -48,16 +48,17 @@ export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
               <StatusBadge tone={semesterStatusTone(sem.status)}>{sem.status ?? "Active"}</StatusBadge>
             </TableCell>
             <TableCell>
-              <div className="flex justify-end gap-1">
+              <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => onEdit(sem)}
                   aria-label={`Edit ${sem.displayName ?? sem.semester}`}
-                  title={sem.canEdit === false ? "Semester cannot be edited" : "Edit"}
+                  title={sem.canEdit === false ? "Semester cannot be edited" : undefined}
                   disabled={sem.canEdit === false}
-                  className={`${actionButtonClassName} disabled:cursor-not-allowed disabled:opacity-40`}
+                  className={actionButtonClassName}
                 >
                   <EditIcon />
+                  Edit
                 </button>
               </div>
             </TableCell>

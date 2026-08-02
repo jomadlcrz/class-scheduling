@@ -147,8 +147,8 @@ function ModalContent({
         aria-hidden="true"
       />
 
-      {/* Panel */}
-      <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center p-4">
+      {/* Panel — on small screens use nearly full viewport height so content scrolls inside. */}
+      <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
         <motion.div
           role="dialog"
           aria-modal="true"
@@ -157,12 +157,12 @@ function ModalContent({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-surface-raised ${
+          className={`pointer-events-auto flex max-h-[calc(100dvh-1rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-xl sm:max-h-[calc(100dvh-2rem)] sm:p-5 dark:border-white/10 dark:bg-surface-raised ${
             xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
           }`}
         >
-          <div className="flex shrink-0 items-start justify-between gap-4">
-            <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
+          <div className="flex shrink-0 items-start justify-between gap-3">
+            <h2 className="min-w-0 font-display text-lg tracking-wide text-navy-700 sm:text-xl dark:text-mist-100">
               {title}
             </h2>
             <button
@@ -174,10 +174,10 @@ function ModalContent({
               <CloseIcon />
             </button>
           </div>
-          {/* -mx-5 px-5 (matching the panel's p-5) keeps focus rings visible
-              at the scroll pane edges without pushing the scrollbar past the
-              panel border. */}
-          <div className="scrollbar-thin -mx-5 mt-4 overflow-y-auto px-5">{children}</div>
+          {/* -mx matches panel padding so focus rings stay visible at scroll edges. */}
+          <div className="scrollbar-thin -mx-4 mt-4 min-h-0 flex-1 overflow-y-auto px-4 sm:-mx-5 sm:px-5">
+            {children}
+          </div>
         </motion.div>
       </div>
     </>
