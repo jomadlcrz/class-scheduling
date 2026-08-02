@@ -3,11 +3,18 @@ import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } fr
 type SchoolYearEntry = {
   id: number;
   school_year: string;
+  status?: string | null;
+  is_current?: boolean;
+  current_label?: string | null;
+  created_at?: string | null;
 };
 
 export type SchoolYearOption = {
   id: number;
   schoolYear: string;
+  status?: string | null;
+  isCurrent?: boolean;
+  createdAt?: string | null;
 };
 
 export type DeletedSchoolYear = SchoolYearOption & { deactivatedAt: string | null };
@@ -18,6 +25,16 @@ let cachePromise: Promise<SchoolYearOption[]> | null = null;
 function invalidateCache() {
   cachedSchoolYears = null;
   cachePromise = null;
+}
+
+function mapSchoolYear(entry: SchoolYearEntry): SchoolYearOption {
+  return {
+    id: entry.id,
+    schoolYear: entry.school_year,
+    status: entry.status ?? null,
+    isCurrent: entry.is_current ?? false,
+    createdAt: entry.created_at ?? null,
+  };
 }
 
 /** GET /school-years — 404 → empty. Result is cached after the first fetch. */
@@ -34,15 +51,10 @@ async function list(): Promise<SchoolYearOption[]> {
         cachedSchoolYears = [];
         return cachedSchoolYears;
       }
-      // Not a "no data yet" 404 (e.g. a transient 500) — don't cache the
-      // failure, so the next call retries instead of returning this same
-      // rejected promise for the rest of the session.
       cachePromise = null;
       throw err;
     }
-    cachedSchoolYears = data
-      .map((s) => ({ id: s.id, schoolYear: s.school_year }))
-      .sort((a, b) => b.schoolYear.localeCompare(a.schoolYear));
+    cachedSchoolYears = data.map(mapSchoolYear);
     return cachedSchoolYears;
   })();
 
@@ -63,7 +75,14 @@ async function update(id: number, schoolYear: string): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /school-years/:id — soft-delete; 409 if still referenced by academic records/schedules. */
+/** PATCH /school-years/:id/archive — requires typing the exact school year name. */
+async function archive(id: number, confirm: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/school-years/${id}/archive`, { confirm });
+  invalidateCache();
+  return apiMessage(data);
+}
+
+/** @deprecated Prefer archive — kept for legacy callers. */
 async function remove(id: number): Promise<string> {
   const data = await apiDelete<{ message?: string }>(`/school-years/${id}`);
   invalidateCache();
@@ -79,7 +98,7 @@ async function listDeleted(): Promise<DeletedSchoolYear[]> {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((s) => ({ id: s.id, schoolYear: s.school_year, deactivatedAt: s.deactivated_at }));
+  return data.map((s) => ({ ...mapSchoolYear(s), deactivatedAt: s.deactivated_at }));
 }
 
 /** PATCH /school-years/:id/restore */
@@ -92,7 +111,7 @@ async function restore(id: number): Promise<string> {
 /** GET /school-years/:id */
 async function get(id: number): Promise<SchoolYearOption> {
   const s = await apiGet<SchoolYearEntry>(`/school-years/${id}`);
-  return { id: s.id, schoolYear: s.school_year };
+  return mapSchoolYear(s);
 }
 
-export const schoolYearService = { list, create, update, remove, listDeleted, restore, get };
+export const schoolYearService = { list, create, update, archive, remove, listDeleted, restore, get };

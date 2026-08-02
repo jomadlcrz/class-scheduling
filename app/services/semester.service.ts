@@ -5,6 +5,10 @@ type SemesterResponse = {
   id: number;
   semester: string;
   semester_number: number;
+  display_name?: string;
+  description?: string | null;
+  status?: string;
+  can_edit?: boolean;
 };
 
 export type DeletedSemester = Semester & { deactivatedAt: string | null };
@@ -15,6 +19,18 @@ let cachePromise: Promise<Semester[]> | null = null;
 function invalidateCache() {
   cachedSemesters = null;
   cachePromise = null;
+}
+
+function mapSemester(s: SemesterResponse): Semester {
+  return {
+    id: s.id,
+    semester: s.semester,
+    semesterNumber: s.semester_number,
+    displayName: s.display_name ?? s.semester,
+    description: s.description ?? null,
+    status: s.status ?? "Active",
+    canEdit: s.can_edit ?? true,
+  };
 }
 
 /** GET /semesters — 404 → empty. Result is cached after the first fetch. */
@@ -31,17 +47,10 @@ async function list(): Promise<Semester[]> {
         cachedSemesters = [];
         return cachedSemesters;
       }
-      // Not a "no data yet" 404 (e.g. a transient 500) — don't cache the
-      // failure, so the next call retries instead of returning this same
-      // rejected promise for the rest of the session.
       cachePromise = null;
       throw err;
     }
-    cachedSemesters = data.map((s) => ({
-      id: s.id,
-      semester: s.semester,
-      semesterNumber: s.semester_number,
-    }));
+    cachedSemesters = data.map(mapSemester);
     return cachedSemesters;
   })();
 
@@ -85,9 +94,7 @@ async function listDeleted(): Promise<DeletedSemester[]> {
     throw err;
   }
   return data.map((s) => ({
-    id: s.id,
-    semester: s.semester,
-    semesterNumber: s.semester_number,
+    ...mapSemester(s),
     deactivatedAt: s.deactivated_at,
   }));
 }
@@ -102,7 +109,7 @@ async function restore(id: number): Promise<string> {
 /** GET /semesters/:id */
 async function get(id: number): Promise<Semester> {
   const s = await apiGet<SemesterResponse>(`/semesters/${id}`);
-  return { id: s.id, semester: s.semester, semesterNumber: s.semester_number };
+  return mapSemester(s);
 }
 
 export const semesterService = { list, create, update, remove, listDeleted, restore, get };

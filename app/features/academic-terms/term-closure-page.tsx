@@ -3,36 +3,28 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
-import { AuditLogIcon, FilterIcon, HelpCircleIcon, LockIcon } from "~/components/ui/icons";
+import { AuditLogIcon, FilterIcon, HelpCircleIcon } from "~/components/ui/icons";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { MOCK_TERM_CLOSURES, type MockTermClosure } from "~/features/academic-terms/mock-data";
-import { closedReasonTone, StatusBadge, termStatusTone } from "~/features/academic-terms/status-badges";
+import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermClosureAuditLogModal } from "~/features/academic-terms/term-closure-audit-log-modal";
 import { TermClosureDetailsModal } from "~/features/academic-terms/term-closure-details-modal";
+import { TermClosureTable } from "~/features/academic-terms/term-closure-table";
+import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
-
-const actionButtonClassName =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-body text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function TermClosurePage() {
   const [search, setSearch] = useState("");
   const [schoolYear, setSchoolYear] = useState("all");
   const [semester, setSemester] = useState("all");
   const [status, setStatus] = useState("all");
-  const [page, setPage] = useState(1);
   const [detailsTerm, setDetailsTerm] = useState<MockTermClosure | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
-  const pageSize = 5;
+
+  const resetKey = `${search}|${schoolYear}|${semester}|${status}`;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -45,8 +37,7 @@ export function TermClosurePage() {
     });
   }, [search, schoolYear, semester, status]);
 
-  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pagination = usePagination(filtered, resetKey);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -79,10 +70,7 @@ export function TermClosurePage() {
             { value: "2024-2025", label: "2024-2025" },
           ]}
           value={schoolYear}
-          onChange={(value) => {
-            setSchoolYear(value);
-            setPage(1);
-          }}
+          onChange={setSchoolYear}
         />
         <FilterDropdown
           label="Semester"
@@ -92,10 +80,7 @@ export function TermClosurePage() {
             { value: "2nd Semester", label: "2nd Semester" },
           ]}
           value={semester}
-          onChange={(value) => {
-            setSemester(value);
-            setPage(1);
-          }}
+          onChange={setSemester}
         />
         <FilterDropdown
           label="Status"
@@ -105,17 +90,11 @@ export function TermClosurePage() {
             { value: "Closed", label: "Closed" },
           ]}
           value={status}
-          onChange={(value) => {
-            setStatus(value);
-            setPage(1);
-          }}
+          onChange={setStatus}
         />
         <SearchInput
           value={search}
-          onChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
+          onChange={setSearch}
           placeholder="Search term…"
           className="min-w-40 flex-1 sm:max-w-xs"
         />
@@ -126,73 +105,26 @@ export function TermClosurePage() {
       </div>
 
       <div className="mt-4">
-        <Table>
-          <TableHead>
-            <TableHeader>School Year</TableHeader>
-            <TableHeader>Semester</TableHeader>
-            <TableHeader>Status</TableHeader>
-            <TableHeader className="hidden md:table-cell">Closed Reason</TableHeader>
-            <TableHeader className="hidden lg:table-cell">Closed At</TableHeader>
-            <TableHeader className="hidden lg:table-cell">Closed By</TableHeader>
-            <TableHeader>
-              <span className="sr-only">Actions</span>
-            </TableHeader>
-          </TableHead>
-          <TableBody>
-            {pageItems.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>
-                  <span className="font-medium text-navy-700 dark:text-mist-100">{row.schoolYear}</span>
-                </TableCell>
-                <TableCell>{row.semester}</TableCell>
-                <TableCell>
-                  <StatusBadge tone={termStatusTone(row.status)}>{row.status}</StatusBadge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {row.closedReason ? (
-                    <StatusBadge tone={closedReasonTone(row.closedReason)}>{row.closedReason}</StatusBadge>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell className="hidden lg:table-cell">{row.closedAt ?? "—"}</TableCell>
-                <TableCell className="hidden lg:table-cell">{row.closedBy ?? "—"}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className={`${actionButtonClassName} border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10`}
-                      onClick={() => setDetailsTerm(row)}
-                    >
-                      View Details
-                    </button>
-                    <button
-                      type="button"
-                      disabled={!row.reopenable}
-                      title={
-                        !row.reopenable
-                          ? row.status === "Open"
-                            ? "Term is already open"
-                            : "Terms closed due to school year end cannot be reopened"
-                          : "Reopen this term"
-                      }
-                      className={`${actionButtonClassName} border-red-200 text-red-700 hover:bg-red-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-400/10`}
-                      onClick={() => toast.info("Reopen — mock only.")}
-                    >
-                      <LockIcon size={14} />
-                      Reopen
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {filtered.length === 0 ? (
+          <EmptyState title="No terms found">No terms match the current filters.</EmptyState>
+        ) : (
+          <>
+            <TermClosureTable
+              terms={pagination.pageItems}
+              onViewDetails={setDetailsTerm}
+              onReopen={() => toast.info("Reopen — mock only.")}
+            />
+            {pagination.totalPages > 1 && (
+              <Pagination
+                page={pagination.page}
+                totalItems={pagination.totalItems}
+                pageSize={pagination.pageSize}
+                onPageChange={pagination.setPage}
+              />
+            )}
+          </>
+        )}
       </div>
-
-      {totalPages > 1 && (
-        <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
-      )}
 
       <Card className="mt-6 p-5">
         <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Status Guide</h3>

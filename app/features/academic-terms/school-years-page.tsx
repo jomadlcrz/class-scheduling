@@ -1,47 +1,57 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  ArchiveIcon,
-  EditIcon,
-  HelpCircleIcon,
-  PlusIcon,
-  RefreshCwIcon,
-} from "~/components/ui/icons";
-import { Modal } from "~/components/ui/modal";
+import { EmptyState } from "~/components/feedback/empty-state";
+import { HelpCircleIcon, PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import { MOCK_SCHOOL_YEARS } from "~/features/academic-terms/mock-data";
-import { calendarStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
+import { Spinner } from "~/components/ui/spinner";
+import { SchoolYearForm } from "~/features/academic-term/school-year-form";
+import { SchoolYearTable } from "~/features/academic-term/school-year-table";
+import { usePagination } from "~/hooks/use-pagination";
+import { useSchoolYears } from "~/hooks/use-school-years";
 import { PageHeader } from "~/layouts/page-header";
-
-const actionButtonClassName =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-body text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400";
+import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
 
 export function SchoolYearsPage() {
+  const { schoolYears, loading, refresh } = useSchoolYears();
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
-  const pageSize = 5;
+  const [editTarget, setEditTarget] = useState<SchoolYearOption | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<SchoolYearOption | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return MOCK_SCHOOL_YEARS;
-    return MOCK_SCHOOL_YEARS.filter((row) => row.schoolYear.toLowerCase().includes(q));
-  }, [search]);
+    if (!q) return schoolYears;
+    return schoolYears.filter((row) => row.schoolYear.toLowerCase().includes(q));
+  }, [schoolYears, search]);
 
-  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pagination = usePagination(filtered, search);
+
+  async function handleCreate(schoolYear: string) {
+    const message = await schoolYearService.create(schoolYear);
+    if (message) toast.success(message);
+    setCreateOpen(false);
+    await refresh();
+  }
+
+  async function handleEdit(schoolYear: string) {
+    if (!editTarget) return;
+    const message = await schoolYearService.update(editTarget.id, schoolYear);
+    if (message) toast.success(message);
+    setEditTarget(null);
+    await refresh();
+  }
+
+  async function handleArchive() {
+    if (!archiveTarget) return;
+    const message = await schoolYearService.archive(archiveTarget.id, archiveTarget.schoolYear);
+    if (message) toast.success(message);
+    setArchiveTarget(null);
+    await refresh();
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -67,7 +77,7 @@ export function SchoolYearsPage() {
             type="button"
             variant="outline"
             block={false}
-            onClick={() => toast.info("Mock only — wiring coming soon.")}
+            onClick={() => toast.info("Check current year — wiring coming soon.")}
           >
             <RefreshCwIcon />
             Check Current Year
@@ -81,77 +91,41 @@ export function SchoolYearsPage() {
         </h2>
         <SearchInput
           value={search}
-          onChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
+          onChange={setSearch}
           placeholder="Search school year…"
           className="w-full sm:w-56"
         />
       </div>
 
       <div className="mt-3">
-        <Table>
-          <TableHead>
-            <TableHeader>School Year</TableHeader>
-            <TableHeader>Calendar Status</TableHeader>
-            <TableHeader>Current</TableHeader>
-            <TableHeader className="hidden md:table-cell">Created At</TableHeader>
-            <TableHeader>
-              <span className="sr-only">Actions</span>
-            </TableHeader>
-          </TableHead>
-          <TableBody>
-            {pageItems.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>
-                  <span className="font-medium text-navy-700 dark:text-mist-100">{row.schoolYear}</span>
-                </TableCell>
-                <TableCell>
-                  <StatusBadge tone={calendarStatusTone(row.calendarStatus)}>{row.calendarStatus}</StatusBadge>
-                </TableCell>
-                <TableCell>
-                  {row.isCurrent ? (
-                    <Badge tone="sky">
-                      <span className="inline-flex items-center gap-1">
-                        <span aria-hidden="true">★</span>
-                        Current
-                      </span>
-                    </Badge>
-                  ) : (
-                    <span className="text-slate-400">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">{row.createdAt}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className={`${actionButtonClassName} border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10`}
-                      onClick={() => toast.info("Mock only — edit wiring coming soon.")}
-                    >
-                      <EditIcon />
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className={`${actionButtonClassName} border-red-200 text-red-700 hover:bg-red-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-400/10`}
-                      onClick={() => toast.info("Mock only — archive wiring coming soon.")}
-                    >
-                      <ArchiveIcon />
-                      Archive
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {loading ? (
+          <div role="status" aria-label="Loading school years" className="grid place-items-center py-12">
+            <Spinner />
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState title={search ? "No school years found" : "No school years yet"}>
+            {search
+              ? "Try a different search term."
+              : "Create the first school year to get started."}
+          </EmptyState>
+        ) : (
+          <>
+            <SchoolYearTable
+              schoolYears={pagination.pageItems}
+              onEdit={setEditTarget}
+              onArchive={setArchiveTarget}
+            />
+            {pagination.totalPages > 1 && (
+              <Pagination
+                page={pagination.page}
+                totalItems={pagination.totalItems}
+                pageSize={pagination.pageSize}
+                onPageChange={pagination.setPage}
+              />
+            )}
+          </>
+        )}
       </div>
-
-      {totalPages > 1 && (
-        <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
-      )}
 
       <Alert variant="warning" className="mt-6">
         <HelpCircleIcon />
@@ -169,25 +143,31 @@ export function SchoolYearsPage() {
       </Alert>
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create School Year">
-        <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-          Mock form — will connect to <code className="text-xs">POST /school-years</code> when wired.
-        </p>
-        <div className="mt-4 flex justify-end gap-2">
-          <Button type="button" variant="outline" block={false} onClick={() => setCreateOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            block={false}
-            onClick={() => {
-              toast.success("Mock school year created.");
-              setCreateOpen(false);
-            }}
-          >
-            Create
-          </Button>
-        </div>
+        <SchoolYearForm onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
       </Modal>
+
+      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit School Year">
+        {editTarget && (
+          <SchoolYearForm
+            initialValue={editTarget.schoolYear}
+            onSubmit={handleEdit}
+            onCancel={() => setEditTarget(null)}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDialog
+        open={archiveTarget !== null}
+        onClose={() => setArchiveTarget(null)}
+        title="Archive school year"
+        confirmLabel="Archive"
+        loadingLabel="Archiving…"
+        confirmVariant="danger"
+        onConfirm={handleArchive}
+      >
+        <span className="font-medium text-navy-700 dark:text-white">{archiveTarget?.schoolYear}</span> will
+        be archived and hidden from active dropdowns.
+      </ConfirmDialog>
     </div>
   );
 }

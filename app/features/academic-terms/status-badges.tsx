@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import type { CalendarStatus, ClosedReason, TermStatus } from "~/features/academic-terms/mock-data";
 
-export function calendarStatusTone(status: CalendarStatus): BadgeTone {
+export function calendarStatusTone(status: CalendarStatus | string | null | undefined): BadgeTone {
   switch (status) {
     case "Ongoing":
       return "emerald";
@@ -10,6 +10,8 @@ export function calendarStatusTone(status: CalendarStatus): BadgeTone {
       return "slate";
     case "Upcoming":
       return "sky";
+    default:
+      return "slate";
   }
 }
 

@@ -24,11 +24,10 @@ export function AcademicTermPage() {
 
   const [addSchoolYearOpen, setAddSchoolYearOpen] = useState(false);
   const [editSchoolYear, setEditSchoolYear] = useState<SchoolYearOption | null>(null);
-  const [deleteSchoolYear, setDeleteSchoolYear] = useState<SchoolYearOption | null>(null);
+  const [archiveSchoolYear, setArchiveSchoolYear] = useState<SchoolYearOption | null>(null);
 
   const [addSemesterOpen, setAddSemesterOpen] = useState(false);
   const [editSemester, setEditSemester] = useState<Semester | null>(null);
-  const [deleteSemester, setDeleteSemester] = useState<Semester | null>(null);
 
   async function handleAddSchoolYear(schoolYear: string) {
     const message = await schoolYearService.create(schoolYear);
@@ -45,10 +44,11 @@ export function AcademicTermPage() {
     await refreshSchoolYears();
   }
 
-  async function handleDeleteSchoolYear() {
-    if (!deleteSchoolYear) return;
-    const message = await schoolYearService.remove(deleteSchoolYear.id);
+  async function handleArchiveSchoolYear() {
+    if (!archiveSchoolYear) return;
+    const message = await schoolYearService.archive(archiveSchoolYear.id, archiveSchoolYear.schoolYear);
     if (message) toast.success(message);
+    setArchiveSchoolYear(null);
     await refreshSchoolYears();
   }
 
@@ -64,13 +64,6 @@ export function AcademicTermPage() {
     const message = await semesterService.update(editSemester.id, value);
     if (message) toast.success(message);
     setEditSemester(null);
-    await refreshSemesters();
-  }
-
-  async function handleDeleteSemester() {
-    if (!deleteSemester) return;
-    const message = await semesterService.remove(deleteSemester.id);
-    if (message) toast.success(message);
     await refreshSemesters();
   }
 
@@ -110,7 +103,7 @@ export function AcademicTermPage() {
         ) : schoolYears.length === 0 ? (
           <EmptyState title="No school years yet">Add the first school year to get started.</EmptyState>
         ) : (
-          <SchoolYearTable schoolYears={schoolYears} onEdit={setEditSchoolYear} onDelete={setDeleteSchoolYear} />
+          <SchoolYearTable schoolYears={schoolYears} onEdit={setEditSchoolYear} onArchive={setArchiveSchoolYear} />
         )}
       </div>
 
@@ -129,7 +122,7 @@ export function AcademicTermPage() {
         ) : semesters.length === 0 ? (
           <EmptyState title="No semesters yet">Add the first semester to get started.</EmptyState>
         ) : (
-          <SemesterTable semesters={semesters} onEdit={setEditSemester} onDelete={setDeleteSemester} />
+          <SemesterTable semesters={semesters} onEdit={setEditSemester} />
         )}
       </div>
 
@@ -146,16 +139,16 @@ export function AcademicTermPage() {
         )}
       </Modal>
       <ConfirmDialog
-        open={deleteSchoolYear !== null}
-        onClose={() => setDeleteSchoolYear(null)}
-        title="Delete school year"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
+        open={archiveSchoolYear !== null}
+        onClose={() => setArchiveSchoolYear(null)}
+        title="Archive school year"
+        confirmLabel="Archive"
+        loadingLabel="Archiving…"
         confirmVariant="danger"
-        onConfirm={handleDeleteSchoolYear}
+        onConfirm={handleArchiveSchoolYear}
       >
-        <span className="font-medium text-navy-700 dark:text-white">{deleteSchoolYear?.schoolYear}</span> will be
-        removed.
+        <span className="font-medium text-navy-700 dark:text-white">{archiveSchoolYear?.schoolYear}</span> will
+        be archived.
       </ConfirmDialog>
 
       <Modal open={addSemesterOpen} onClose={() => setAddSemesterOpen(false)} title="Add Semester">
@@ -170,17 +163,6 @@ export function AcademicTermPage() {
           />
         )}
       </Modal>
-      <ConfirmDialog
-        open={deleteSemester !== null}
-        onClose={() => setDeleteSemester(null)}
-        title="Delete semester"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={handleDeleteSemester}
-      >
-        <span className="font-medium text-navy-700 dark:text-white">{deleteSemester?.semester}</span> will be removed.
-      </ConfirmDialog>
     </div>
   );
 }
