@@ -48,6 +48,44 @@ export function meta() {
   ];
 }
 
+function StudentListEmptyState({
+  searchQuery,
+  variant,
+}: {
+  searchQuery: string;
+  variant: "all" | "regular" | "irregular";
+}) {
+  const hasSearch = searchQuery.trim() !== "";
+
+  if (hasSearch) {
+    const searchTitle =
+      variant === "regular"
+        ? "No regular students found"
+        : variant === "irregular"
+          ? "No irregular students found"
+          : "No students found";
+    return (
+      <EmptyState title={searchTitle}>No students match your search.</EmptyState>
+    );
+  }
+
+  const emptyTitle =
+    variant === "regular"
+      ? "No regular students yet"
+      : variant === "irregular"
+        ? "No irregular students yet"
+        : "No records found";
+
+  const emptyDescription =
+    variant === "regular"
+      ? "No regular student records have been added yet."
+      : variant === "irregular"
+        ? "No irregular student records have been added yet."
+        : "No student records have been added yet.";
+
+  return <EmptyState title={emptyTitle}>{emptyDescription}</EmptyState>;
+}
+
 export default function StudentsRoute() {
   return (
     <RoleGuard allow={["admin", "registrar"]}>
@@ -545,9 +583,7 @@ export function StudentsPage() {
                 <Spinner />
               </div>
             ) : visibleStudents.length === 0 ? (
-              <EmptyState title="No students found">
-                No students match the current filters.
-              </EmptyState>
+              <StudentListEmptyState searchQuery={search} variant="all" />
             ) : (
               <>
                 <StudentAccountTable
@@ -583,9 +619,7 @@ export function StudentsPage() {
                 {regularLoadError || irregularLoadError}
               </ResultState>
             ) : visibleStudents.length === 0 ? (
-              <EmptyState title="No students found">
-                No students match the current filters.
-              </EmptyState>
+              <StudentListEmptyState searchQuery={search} variant="all" />
             ) : (
               <>
                 <StudentAccountTable
@@ -651,9 +685,7 @@ export function StudentsPage() {
               <Spinner />
             </div>
           ) : visibleRegularStudents.length === 0 ? (
-            <EmptyState title="No regular students">
-              No students match the current filters.
-            </EmptyState>
+            <StudentListEmptyState searchQuery={regularSearch} variant="regular" />
           ) : (
             <>
               <StudentAccountTable
@@ -707,9 +739,7 @@ export function StudentsPage() {
               <Spinner />
             </div>
           ) : visibleIrregularStudents.length === 0 ? (
-            <EmptyState title="No irregular students">
-              No students match the current filters.
-            </EmptyState>
+            <StudentListEmptyState searchQuery={irregularSearch} variant="irregular" />
           ) : (
             <>
               <StudentAccountTable
