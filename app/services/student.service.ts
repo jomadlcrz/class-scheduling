@@ -8,8 +8,11 @@ import type {
   StudentAccountRow,
   StudentAccountStatus,
   StudentDeletePreview,
+  StudentProfileDetail,
+  UpdateStudentProfileInput,
   UpdateEnrollmentInput,
 } from "~/types/student";
+import { semesterService } from "~/services/semester.service";
 
 /**
  * Student records (students module) and login accounts (super_admin module).
@@ -140,9 +143,11 @@ type EnrollmentHistoryResponse = {
   program: string;
   set: string | null;
   enrolled_status: string;
+  enrollment_state?: string | null;
   student_type: string;
   school_year: string | null;
-  semester: string | null;
+  semester?: string | null;
+  semester_number?: number | null;
   enrolled_subjects: {
     subject_id: number;
     subject_code: string;
@@ -153,16 +158,25 @@ type EnrollmentHistoryResponse = {
 
 /** GET /students/{id}/enrollments — every term this student has been enrolled in. */
 async function getEnrollments(studentProfileId: number): Promise<StudentAcademicRecord[]> {
-  const data = await apiGet<EnrollmentHistoryResponse>(`/students/${studentProfileId}/enrollments`);
+  const [data, semesters] = await Promise.all([
+    apiGet<EnrollmentHistoryResponse>(`/students/${studentProfileId}/enrollments`),
+    semesterService.list(),
+  ]);
+  const semesterLabels = new Map(
+    semesters.map((semester) => [semester.semesterNumber, semester.displayName ?? semester.semester]),
+  );
   return data.map((a) => ({
     studentAcademicId: a.student_academic_id,
     yearLevel: a.year_level,
     program: a.program,
     set: a.set,
     enrolledStatus: a.enrolled_status,
+    enrollmentState: a.enrollment_state ?? null,
     studentType: a.student_type,
     schoolYear: a.school_year,
-    semester: a.semester,
+    semester:
+      a.semester ??
+      (a.semester_number != null ? semesterLabels.get(a.semester_number) ?? null : null),
     enrolledSubjects: a.enrolled_subjects.map((es) => ({
       subjectId: es.subject_id,
       subjectCode: es.subject_code,
@@ -170,6 +184,42 @@ async function getEnrollments(studentProfileId: number): Promise<StudentAcademic
       units: es.units,
     })),
   }));
+}
+
+/** GET /students/:id — one active student's editable personal profile. */
+async function getProfile(studentProfileId: number): Promise<StudentProfileDetail> {
+  const row = await apiGet<{
+    student_profile_id: number;
+    student_id: string | null;
+    first_name: string;
+    mid_name: string | null;
+    last_name: string;
+    mobile: string | null;
+    email: string | null;
+    account_status: string;
+    profile_photo_url: string | null;
+  }>(`/students/${studentProfileId}`);
+
+  return {
+    studentProfileId: row.student_profile_id,
+    studentId: row.student_id,
+    firstName: row.first_name,
+    midName: row.mid_name,
+    lastName: row.last_name,
+    mobile: row.mobile,
+    email: row.email,
+    accountStatus: row.account_status,
+    profilePhotoUrl: row.profile_photo_url,
+  };
+}
+
+/** PUT /students/:id — updates personal data without touching enrollment history. */
+async function updateProfile(
+  studentProfileId: number,
+  input: UpdateStudentProfileInput,
+): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/students/${studentProfileId}`, input);
+  return apiMessage(data);
 }
 
 type DeletedStudentResponse = {
@@ -218,7 +268,11 @@ async function remove(studentProfileId: number, confirmText: string): Promise<st
 
 /** GET /students/<id>/delete-preview — read-only breakdown of what deleting the profile would affect. */
 async function getDeletePreview(studentProfileId: number): Promise<StudentDeletePreview> {
-  return apiGet<StudentDeletePreview>(`/students/${studentProfileId}/archive-preview`);
+  const data = await apiGet<{
+    student: StudentDeletePreview["student"];
+    willArchive: StudentDeletePreview["will_delete"];
+  }>(`/students/${studentProfileId}/archive-preview`);
+  return { student: data.student, will_delete: data.willArchive };
 }
 
 /** PUT /students/enrollments/<id> — corrects a single term's set/year level/status. */
@@ -291,6 +345,8 @@ export const studentService = {
   listAccounts,
   enroll,
   getEnrollments,
+  getProfile,
+  updateProfile,
   listDeleted,
   restore,
   remove,

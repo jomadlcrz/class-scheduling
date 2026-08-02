@@ -1,4 +1,4 @@
-import { EditIcon } from "~/components/ui/icons";
+import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -13,16 +13,17 @@ import type { Semester } from "~/types/semester";
 type SemesterTableProps = {
   semesters: Semester[];
   onEdit: (semester: Semester) => void;
+  onArchive?: (semester: Semester) => void;
 };
 
 const actionButtonClassName =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-blue-200 px-2.5 py-1.5 font-body text-xs font-medium text-blue-700 transition-colors duration-150 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10";
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-body text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 function semesterStatusTone(status: string | undefined) {
   return status === "Active" ? "emerald" : "slate";
 }
 
-export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
+export function SemesterTable({ semesters, onEdit, onArchive }: SemesterTableProps) {
   return (
     <Table>
       <TableHead>
@@ -48,18 +49,29 @@ export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
               <StatusBadge tone={semesterStatusTone(sem.status)}>{sem.status ?? "Active"}</StatusBadge>
             </TableCell>
             <TableCell>
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => onEdit(sem)}
                   aria-label={`Edit ${sem.displayName ?? sem.semester}`}
                   title={sem.canEdit === false ? "Semester cannot be edited" : undefined}
                   disabled={sem.canEdit === false}
-                  className={actionButtonClassName}
+                  className={`${actionButtonClassName} border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10`}
                 >
                   <EditIcon />
                   Edit
                 </button>
+                {onArchive && (
+                  <button
+                    type="button"
+                    onClick={() => onArchive(sem)}
+                    aria-label={`Archive ${sem.displayName ?? sem.semester}`}
+                    className={`${actionButtonClassName} border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-gold-400/30 dark:text-gold-300 dark:hover:bg-gold-400/10`}
+                  >
+                    <ArchiveIcon />
+                    Archive
+                  </button>
+                )}
               </div>
             </TableCell>
           </TableRow>

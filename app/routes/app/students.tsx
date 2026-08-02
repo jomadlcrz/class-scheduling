@@ -818,6 +818,7 @@ export function StudentsPage() {
             student={viewTarget}
             sets={sets}
             academicStatuses={enumOptions?.academicStatus ?? []}
+            enrollmentStates={enumOptions?.enrollmentState ?? []}
           />
         )}
       </Modal>

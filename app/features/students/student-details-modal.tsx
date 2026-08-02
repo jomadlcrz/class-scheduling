@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import { Label } from "~/components/ui/label";
@@ -8,22 +9,36 @@ import { SectionHeading } from "~/components/ui/section-heading";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { EnrollmentEditForm } from "~/features/students/enrollment-edit-form";
+import { StudentProfileForm } from "~/features/students/student-profile-form";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { studentService } from "~/services/student.service";
 import type { ClassSet } from "~/types/set";
-import type { StudentAcademicRecord, StudentAccountRow } from "~/types/student";
+import type {
+  StudentAcademicRecord,
+  StudentAccountRow,
+  StudentProfileDetail,
+  UpdateEnrollmentInput,
+} from "~/types/student";
 
 type StudentDetailsModalProps = {
   student: StudentAccountRow;
   sets: ClassSet[];
   academicStatuses: string[];
+  enrollmentStates: string[];
 };
 
-export function StudentDetailsModal({ student, sets, academicStatuses }: StudentDetailsModalProps) {
+export function StudentDetailsModal({
+  student,
+  sets,
+  academicStatuses,
+  enrollmentStates,
+}: StudentDetailsModalProps) {
   const { yearLevelLabel } = useYearLevels();
   // Fetched fresh via GET /students/{id}/enrollments rather than reused from the
   // bulk list, so a just-completed enrollment shows up without a full page reload.
   const [academics, setAcademics] = useState<StudentAcademicRecord[] | null>(null);
+  const [profile, setProfile] = useState<StudentProfileDetail | null>(null);
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<StudentAcademicRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StudentAcademicRecord | null>(null);
 
@@ -34,21 +49,49 @@ export function StudentDetailsModal({ student, sets, academicStatuses }: Student
       .catch(() => setAcademics(student.academics));
   }
 
+  async function refreshProfile() {
+    try {
+      setProfile(await studentService.getProfile(student.studentProfileId));
+    } catch {
+      setProfile(null);
+    }
+  }
+
   useEffect(() => {
     setAcademics(null);
+    setProfile(null);
+    setProfileEditOpen(false);
     refreshEnrollments();
+    void refreshProfile();
   }, [student.studentProfileId]);
+
+  const displayName = profile
+    ? [profile.firstName, profile.midName, profile.lastName].filter(Boolean).join(" ")
+    : student.studentName || [student.firstName, student.midName, student.lastName].filter(Boolean).join(" ");
 
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <SectionHeading>Personal Information</SectionHeading>
+        <div className="flex items-end justify-between gap-3">
+          <SectionHeading>Personal Information</SectionHeading>
+          <Button
+            type="button"
+            variant="outline"
+            block={false}
+            disabled={!profile}
+            onClick={() => setProfileEditOpen(true)}
+          >
+            <EditIcon />
+            Edit Profile
+          </Button>
+        </div>
         <Card className="mt-2 p-4">
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Student ID" value={student.studentId || "—"} />
-            <Field label="Name" value={student.studentName || [student.firstName, student.midName, student.lastName].filter(Boolean).join(" ")} />
-            <Field label="Email" value={student.email ?? "—"} />
-            <Field label="Mobile" value={student.mobile ?? "—"} />
+            <Field label="Student ID" value={profile?.studentId || student.studentId || "—"} />
+            <Field label="Name" value={displayName} />
+            <Field label="Email" value={profile?.email ?? student.email ?? "—"} />
+            <Field label="Mobile" value={profile?.mobile ?? student.mobile ?? "—"} />
+            {profile && <Field label="Account Status" value={profile.accountStatus} />}
           </dl>
         </Card>
       </section>
@@ -76,7 +119,8 @@ export function StudentDetailsModal({ student, sets, academicStatuses }: Student
                       <Field label="Program" value={a.program} />
                       <Field label="Year Level" value={yearLevelLabel(a.yearLevel)} />
                       <Field label="Set" value={a.set ?? "—"} />
-                      <Field label="Enrolled Status" value={a.enrolledStatus} />
+                      <Field label="Academic Status" value={a.enrolledStatus} />
+                      {a.enrollmentState && <Field label="Enrollment State" value={a.enrollmentState} />}
                       <Field label="Student Type" value={a.studentType} />
                       <Field label="School Year" value={a.schoolYear ?? "—"} />
                       <Field label="Semester" value={a.semester ?? "—"} />
@@ -143,15 +187,58 @@ export function StudentDetailsModal({ student, sets, academicStatuses }: Student
         )}
       </section>
 
+      <Modal open={profileEditOpen} onClose={() => setProfileEditOpen(false)} title="Edit Student Profile">
+        {profile && (
+          <StudentProfileForm
+            profile={profile}
+            onSubmit={async (input) => {
+              const message = await studentService.updateProfile(student.studentProfileId, input);
+              if (message) toast.success(message);
+              setProfileEditOpen(false);
+              await refreshProfile();
+            }}
+            onCancel={() => setProfileEditOpen(false)}
+          />
+        )}
+      </Modal>
+
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Enrollment">
         {editTarget && (
           <EnrollmentEditForm
             record={editTarget}
             sets={sets}
             academicStatuses={academicStatuses}
+            enrollmentStates={enrollmentStates}
             onSubmit={async (input) => {
-              const message = await studentService.updateEnrollment(editTarget.studentAcademicId, input);
-              if (message) toast.success(message);
+              if (
+                input.enrollmentState != null &&
+                input.enrollmentState !== editTarget.enrollmentState
+              ) {
+                const message = await studentService.setEnrollmentState(
+                  editTarget.studentAcademicId,
+                  input.enrollmentState,
+                );
+                if (message) toast.success(message);
+              }
+
+              const correction: UpdateEnrollmentInput = {};
+              if (input.yearLevel != null && input.yearLevel !== editTarget.yearLevel) {
+                correction.yearLevel = input.yearLevel;
+              }
+              if (input.setId != null) correction.setId = input.setId;
+              if (
+                input.enrolledStatus != null &&
+                input.enrolledStatus !== editTarget.enrolledStatus
+              ) {
+                correction.enrolledStatus = input.enrolledStatus;
+              }
+              if (Object.keys(correction).length > 0) {
+                const message = await studentService.updateEnrollment(
+                  editTarget.studentAcademicId,
+                  correction,
+                );
+                if (message) toast.success(message);
+              }
               setEditTarget(null);
               refreshEnrollments();
             }}

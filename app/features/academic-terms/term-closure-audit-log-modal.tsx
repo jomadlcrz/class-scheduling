@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { Alert, AlertAction, AlertDescription } from "~/components/ui/alert";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { HelpCircleIcon, LockIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
@@ -43,6 +43,8 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
   const [semester, setSemester] = useState("all");
   const [action, setAction] = useState("all");
   const [performedBy, setPerformedBy] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -65,6 +67,8 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         semesterNumber: semester !== "all" ? Number(semester) : undefined,
         action: action !== "all" ? action : undefined,
         performedBy: performedBy !== "all" ? Number(performedBy) : undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
         page,
         perPage: pageSize,
       })
@@ -79,7 +83,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         setPages(1);
       })
       .finally(() => setLoadingEntries(false));
-  }, [open, schoolYear, semester, action, performedBy, page]);
+  }, [open, schoolYear, semester, action, performedBy, dateFrom, dateTo, page]);
 
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const rangeEnd = Math.min(page * pageSize, total);
@@ -110,6 +114,8 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
     setSemester("all");
     setAction("all");
     setPerformedBy("all");
+    setDateFrom("");
+    setDateTo("");
     setPage(1);
   }
 
@@ -165,14 +171,32 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
               setPage(1);
             }}
           />
-          <button
-            type="button"
-            className="rounded-lg border border-slate-300 px-3 py-2 font-body text-sm text-slate-500 dark:border-white/15 dark:text-slate-400"
-            disabled
-            title="Date range — coming soon"
-          >
-            Select date range
-          </button>
+          <label className="flex items-center gap-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
+            <span>From</span>
+            <input
+              type="date"
+              aria-label="Audit log start date"
+              value={dateFrom}
+              onChange={(event) => {
+                setDateFrom(event.target.value);
+                setPage(1);
+              }}
+              className={`${inputClassName} w-auto py-1.5`}
+            />
+          </label>
+          <label className="flex items-center gap-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
+            <span>To</span>
+            <input
+              type="date"
+              aria-label="Audit log end date"
+              value={dateTo}
+              onChange={(event) => {
+                setDateTo(event.target.value);
+                setPage(1);
+              }}
+              className={`${inputClassName} w-auto py-1.5`}
+            />
+          </label>
           <Button type="button" variant="outline" block={false} onClick={resetFilters}>
             Reset
           </Button>
@@ -187,11 +211,6 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         <AlertDescription>
           Showing {rangeStart} to {rangeEnd} of {total} audit log entries
         </AlertDescription>
-        <AlertAction>
-          <Button type="button" variant="outline" block={false} onClick={() => toast.info("Export CSV — coming soon.")}>
-            Export CSV
-          </Button>
-        </AlertAction>
       </Alert>
 
       {loadingEntries ? (

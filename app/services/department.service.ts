@@ -29,7 +29,7 @@ function mapDepartments(data: DepartmentsResponse): Department[] {
  * The backend answers an empty table with 404. */
 async function list(): Promise<Department[]> {
   try {
-    return mapDepartments(await apiGet<DepartmentsResponse>("/departments"));
+    return mapDepartments(await apiGet<DepartmentsResponse>("/departments/"));
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -50,7 +50,7 @@ async function listAcademic(): Promise<Department[]> {
 
 /** POST /departments — bulk endpoint; a single create sends a one-item list. Returns the backend message. */
 async function create(input: CreateDepartmentInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/departments", {
+  const data = await apiPost<{ message?: string }>("/departments/", {
     departments: [
       {
         buildingName: input.buildingName,
@@ -82,7 +82,18 @@ async function remove(id: number, confirmCode: string): Promise<string> {
 
 /** GET /departments/:id/delete-preview — read-only breakdown of what the delete would affect. */
 async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
-  return apiGet<DepartmentDeletePreview>(`/departments/${id}/archive-preview`);
+  const data = await apiGet<{
+    department: DepartmentDeletePreview["department"];
+    archivable: boolean;
+    blockers: DepartmentDeletePreview["blockers"];
+    willArchive: DepartmentDeletePreview["will_delete"];
+  }>(`/departments/${id}/archive-preview`);
+  return {
+    department: data.department,
+    deletable: data.archivable,
+    blockers: data.blockers,
+    will_delete: data.willArchive,
+  };
 }
 
 export type DeletedDepartment = {

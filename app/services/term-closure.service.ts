@@ -148,7 +148,7 @@ function mapAuditEntry(raw: ApiAuditEntry): TermAuditLogEntry {
 
 export type TermContext = {
   schoolYears: { id: number; schoolYear: string }[];
-  semesters: { semesterNumber: number; label: string }[];
+  semesters: { semesterNumber: number; label: string; semId?: number }[];
   selection: { syId: number | null; semId: number | null; semesterNumber: number | null; schoolYear: string | null };
   term: TermClosureItem | null;
   calendar: { academicYearStartMonth: number; currentSchoolYear: string | null; currentSemesterNumber: number | null; existsForToday: boolean | null; expectedSchoolYear: string | null };
@@ -232,6 +232,8 @@ type AuditLogQuery = {
   semesterNumber?: number;
   action?: string;
   performedBy?: number;
+  dateFrom?: string;
+  dateTo?: string;
   page?: number;
   perPage?: number;
 };
@@ -243,6 +245,8 @@ async function listAuditLog(query: AuditLogQuery = {}): Promise<TermAuditLogResu
   if (query.semesterNumber != null) params.set("semester_number", String(query.semesterNumber));
   if (query.action) params.set("action", query.action);
   if (query.performedBy != null) params.set("performed_by", String(query.performedBy));
+  if (query.dateFrom) params.set("date_from", query.dateFrom);
+  if (query.dateTo) params.set("date_to", query.dateTo);
   if (query.page != null) params.set("page", String(query.page));
   if (query.perPage != null) params.set("per_page", String(query.perPage));
 

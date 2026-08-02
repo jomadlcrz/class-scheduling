@@ -127,6 +127,13 @@ type PermissionRecycleBinResponse = {
   deactivated_at: string | null;
 }[];
 
+export type PermissionArchivePreview = {
+  permission: { permission_id: number; permission_slug: string };
+  archivable: boolean;
+  blockers: { role_grants: number };
+  willArchive: Record<string, never>;
+};
+
 /** GET /permissions/recycle-bin — 404 → empty. */
 async function listDeleted(): Promise<DeletedPermission[]> {
   let data: PermissionRecycleBinResponse;
@@ -172,8 +179,12 @@ async function createPermissionBulk(input: { permissionSlug: string; description
 }
 
 /** DELETE /permissions/<id> — soft delete; 409 if still granted to a role. */
-async function remove(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/permissions/${id}/archive`);
+async function getArchivePreview(id: number): Promise<PermissionArchivePreview> {
+  return apiGet<PermissionArchivePreview>(`/permissions/${id}/archive-preview`);
+}
+
+async function remove(id: number, confirm: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/permissions/${id}/archive`, { confirm });
   return apiMessage(data);
 }
 
@@ -202,6 +213,7 @@ export const permissionService = {
   listDeleted,
   get,
   update,
+  getArchivePreview,
   remove,
   restore,
 };

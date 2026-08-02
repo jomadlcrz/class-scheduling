@@ -22,6 +22,13 @@ export function SchoolYearsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SchoolYearOption | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<SchoolYearOption | null>(null);
+  const [checkingCurrent, setCheckingCurrent] = useState(false);
+  const [currentCheck, setCurrentCheck] = useState<{
+    schoolYear: string;
+    existsForToday?: boolean;
+    expectedSchoolYear?: string | null;
+  } | null>(null);
+  const [currentCheckError, setCurrentCheckError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -53,6 +60,20 @@ export function SchoolYearsPage() {
     await refresh();
   }
 
+  async function handleCheckCurrentYear() {
+    setCheckingCurrent(true);
+    setCurrentCheckError(null);
+    try {
+      const current = await schoolYearService.getCurrent();
+      setCurrentCheck(current);
+    } catch (err) {
+      setCurrentCheck(null);
+      setCurrentCheckError(err instanceof Error ? err.message : "");
+    } finally {
+      setCheckingCurrent(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
@@ -71,13 +92,23 @@ export function SchoolYearsPage() {
         <AlertDescription>
           The current school year is used as the default in the global term selector. Make sure a school
           year exists for the current academic calendar.
+          {currentCheck && (
+            <p className="mt-1 font-medium">
+              {currentCheck.existsForToday
+                ? `Current calendar school year: ${currentCheck.schoolYear}.`
+                : `${currentCheck.schoolYear} is the nearest active school year; ${currentCheck.expectedSchoolYear ?? "the current calendar year"} is not configured.`}
+            </p>
+          )}
+          {currentCheckError && <p className="mt-1 text-red-700 dark:text-red-300">{currentCheckError}</p>}
         </AlertDescription>
         <AlertAction>
           <Button
             type="button"
             variant="outline"
             block={false}
-            onClick={() => toast.info("Check current year — wiring coming soon.")}
+            isLoading={checkingCurrent}
+            loadingLabel="Checking…"
+            onClick={handleCheckCurrentYear}
           >
             <RefreshCwIcon />
             Check Current Year
@@ -134,12 +165,6 @@ export function SchoolYearsPage() {
           Archiving will hide the school year from active dropdowns and reports. All historical data will
           be preserved and remain accessible.
         </AlertDescription>
-        <AlertAction>
-          <Button type="button" variant="outline" block={false} onClick={() => toast.info("Learn more — mock only.")}>
-            <HelpCircleIcon />
-            Learn more
-          </Button>
-        </AlertAction>
       </Alert>
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create School Year">

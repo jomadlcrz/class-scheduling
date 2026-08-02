@@ -13,13 +13,14 @@ import type { TermClosureItem } from "~/types/term-closure";
 type TermClosureTableProps = {
   terms: TermClosureItem[];
   onViewDetails: (term: TermClosureItem) => void;
+  onClose: (term: TermClosureItem) => void;
   onReopen: (term: TermClosureItem) => void;
 };
 
 const actionButtonClassName =
   "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-body text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50";
 
-export function TermClosureTable({ terms, onViewDetails, onReopen }: TermClosureTableProps) {
+export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: TermClosureTableProps) {
   return (
     <Table>
       <TableHead>
@@ -61,6 +62,16 @@ export function TermClosureTable({ terms, onViewDetails, onReopen }: TermClosure
                 >
                   View Details
                 </button>
+                {row.actions.canClose && (
+                  <button
+                    type="button"
+                    onClick={() => onClose(row)}
+                    className={`${actionButtonClassName} border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-gold-400/30 dark:text-gold-300 dark:hover:bg-gold-400/10`}
+                  >
+                    <LockIcon size={14} />
+                    Close
+                  </button>
+                )}
                 <button
                   type="button"
                   disabled={!row.actions.canReopen}

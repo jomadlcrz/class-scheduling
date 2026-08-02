@@ -108,7 +108,11 @@ async function remove(id: number, confirmCode: string): Promise<string> {
 
 /** GET /sets/:id/delete-preview — read-only breakdown of what the delete would affect. */
 async function getDeletePreview(id: number): Promise<SetDeletePreview> {
-  return apiGet<SetDeletePreview>(`/sets/${id}/archive-preview`);
+  const data = await apiGet<{
+    set: SetDeletePreview["set"];
+    willArchive: SetDeletePreview["will_delete"];
+  }>(`/sets/${id}/archive-preview`);
+  return { set: data.set, will_delete: data.willArchive };
 }
 
 export type DeletedSet = {

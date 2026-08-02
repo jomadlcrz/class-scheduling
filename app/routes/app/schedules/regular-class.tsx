@@ -1,16 +1,19 @@
 import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { AlertIcon, PlusIcon, PrinterIcon } from "~/components/ui/icons";
+import { AlertIcon, PlusIcon, PrinterIcon, RefreshCwIcon, TrashIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { openSchedulePrint } from "~/features/schedules/print-schedule";
+import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -19,7 +22,7 @@ import {
 } from "~/features/schedules/schedule-view-toggle";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
-import { scheduleService } from "~/services/schedule.service";
+import { scheduleService, type ScheduledSetOption } from "~/services/schedule.service";
 import {
   DAYS,
   type Schedule,
@@ -44,8 +47,14 @@ export default function RegularClassRoute() {
 function RegularClassPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
+  const { context: termContext, selectTerm } = useTermContext();
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
+  const [scheduledSets, setScheduledSets] = useState<ScheduledSetOption[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [clearTarget, setClearTarget] = useState<ScheduledSetOption | null>(null);
+  const [ledgerDriftCount, setLedgerDriftCount] = useState<number | null>(null);
+  const [checkingLedgers, setCheckingLedgers] = useState(false);
 
   // Filters — pin the view to a single section's weekly schedule.
   const [schoolYear, setSchoolYear] = useState("");
@@ -70,6 +79,10 @@ function RegularClassPage() {
         setLoadError(err instanceof Error ? err.message : "Unable to load schedules.");
         setSchedules([]);
       });
+  }, []);
+
+  useEffect(() => {
+    scheduleService.getSetWithSchedules().then(setScheduledSets).catch(() => setScheduledSets([]));
   }, []);
 
   const schoolYears = useMemo(
@@ -101,6 +114,33 @@ function RegularClassPage() {
       );
   }, [schedules, setName, schoolYear, semester]);
 
+  const selectedSchoolYearId = useMemo(
+    () => termContext?.schoolYears.find((row) => row.schoolYear === schoolYear)?.id ?? null,
+    [schoolYear, termContext],
+  );
+
+  const selectedScheduledSet = useMemo(
+    () =>
+      scheduledSets.find(
+        (row) =>
+          row.setCode === setName &&
+          row.schoolYear === schoolYear &&
+          row.semesterNumber === semester,
+      ) ?? null,
+    [scheduledSets, schoolYear, semester, setName],
+  );
+
+  useEffect(() => {
+    if (!selectedSchoolYearId) return;
+    if (
+      termContext?.selection.syId === selectedSchoolYearId &&
+      termContext.selection.semesterNumber === semester
+    ) {
+      return;
+    }
+    void selectTerm(selectedSchoolYearId, semester);
+  }, [selectedSchoolYearId, semester, selectTerm, termContext]);
+
   // Keep the set selection valid when the year/semester filters change.
   useEffect(() => {
     if (setName && !availableSets.includes(setName)) {
@@ -108,9 +148,75 @@ function RegularClassPage() {
     }
   }, [availableSets, setName]);
 
+  function selectedTermParams() {
+    if (!selectedSchoolYearId) return null;
+    const matchingSelection =
+      termContext?.selection.syId === selectedSchoolYearId &&
+      termContext.selection.semesterNumber === semester;
+    return {
+      syId: selectedSchoolYearId,
+      semId: matchingSelection ? termContext.selection.semId ?? undefined : undefined,
+      semesterNumber: semester,
+    };
+  }
+
+  async function handleClearSchedule() {
+    if (!clearTarget || !selectedSchoolYearId) return;
+    const message = await scheduleService.removeSetSchedules(
+      clearTarget.setId,
+      selectedSchoolYearId,
+      semester,
+    );
+    if (message) toast.success(message);
+    setSchedules((current) =>
+      current?.filter(
+        (row) =>
+          row.setCode !== clearTarget.setCode ||
+          row.schoolYear !== schoolYear ||
+          row.semester !== semester,
+      ) ?? [],
+    );
+    setScheduledSets((current) =>
+      current.filter(
+        (row) =>
+          row.setId !== clearTarget.setId ||
+          row.schoolYear !== schoolYear ||
+          row.semesterNumber !== semester,
+      ),
+    );
+    setClearTarget(null);
+  }
+
+  async function handleCheckLedgers() {
+    const params = selectedTermParams();
+    if (!params) return;
+    setActionError(null);
+    setCheckingLedgers(true);
+    try {
+      const result = await scheduleService.reconcileInstructorLedgers(params);
+      if (result.drift.length > 0) {
+        setLedgerDriftCount(result.drift.length);
+      } else if (result.message) {
+        toast.success(result.message);
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "");
+    } finally {
+      setCheckingLedgers(false);
+    }
+  }
+
+  async function handleRepairLedgers() {
+    const params = selectedTermParams();
+    if (!params) return;
+    const result = await scheduleService.reconcileInstructorLedgers(params, true);
+    if (result.message) toast.success(result.message);
+    setLedgerDriftCount(null);
+  }
+
   const isLoading = schedules === null;
   // Filters only make sense once there's at least one schedule to show.
-  const showContent = !loadError && !isLoading && visibleSchedules.length > 0;
+  const showContent = !loadError && !isLoading && (schedules?.length ?? 0) > 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -118,12 +224,35 @@ function RegularClassPage() {
         title="Regular Schedule Builder"
         description="Class schedules for the current academic term."
         actions={
-          showContent ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            {selectedScheduledSet && (
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                onClick={() => setClearTarget(selectedScheduledSet)}
+              >
+                <TrashIcon />
+                Clear Schedule
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              disabled={!selectedSchoolYearId}
+              isLoading={checkingLedgers}
+              loadingLabel="Checking…"
+              onClick={handleCheckLedgers}
+            >
+              <RefreshCwIcon />
+              Check Ledgers
+            </Button>
             <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
               <PlusIcon />
               Create Schedule
             </Button>
-          ) : undefined
+          </div>
         }
       />
 
@@ -250,6 +379,12 @@ function RegularClassPage() {
 
       <div className="mt-4">
         <AnimatePresence>
+          {actionError && (
+            <Alert key="action-error" variant="destructive" className="mb-4">
+              <AlertIcon />
+              <AlertDescription>{actionError}</AlertDescription>
+            </Alert>
+          )}
           {loadError && (
             <Alert key="load-error" variant="destructive" className="mb-4">
               <AlertIcon />
@@ -284,6 +419,31 @@ function RegularClassPage() {
           <ScheduleTable schedules={visibleSchedules} />
         )}
       </div>
+
+      <ConfirmDialog
+        open={clearTarget !== null}
+        onClose={() => setClearTarget(null)}
+        title="Clear set schedule"
+        confirmLabel="Clear schedule"
+        loadingLabel="Clearing…"
+        confirmVariant="danger"
+        onConfirm={handleClearSchedule}
+      >
+        Clear the complete {clearTarget?.setCode} schedule for S.Y. {schoolYear}, {semesterLabel(semester)}?
+        Instructor and subject hour ledgers will be released with the saved sessions.
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={ledgerDriftCount !== null && ledgerDriftCount > 0}
+        onClose={() => setLedgerDriftCount(null)}
+        title="Repair instructor ledgers"
+        confirmLabel="Repair ledgers"
+        loadingLabel="Repairing…"
+        onConfirm={handleRepairLedgers}
+      >
+        The read-only check found {ledgerDriftCount} ledger {ledgerDriftCount === 1 ? "discrepancy" : "discrepancies"}.
+        Recalculate the counters from the saved schedule sessions?
+      </ConfirmDialog>
     </div>
   );
 }

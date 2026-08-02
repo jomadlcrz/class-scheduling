@@ -230,7 +230,10 @@ function PermissionsPage() {
         confirmVariant="danger"
         onConfirm={async () => {
           if (!deletePermissionTarget) return;
-          const message = await permissionService.remove(deletePermissionTarget.id);
+          const message = await permissionService.remove(
+            deletePermissionTarget.id,
+            deletePermissionTarget.slug,
+          );
           if (message) toast.success(message);
           refresh();
           setDeletePermissionTarget(null);

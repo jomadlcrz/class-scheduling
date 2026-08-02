@@ -62,6 +62,7 @@ export type StudentAcademicRecord = {
   program: string;
   set: string | null;
   enrolledStatus: string;
+  enrollmentState?: string | null;
   studentType: string;
   schoolYear: string | null;
   semester: string | null;
@@ -79,6 +80,26 @@ export type StudentAccountRow = {
   email: string | null;
   hasAccount: boolean;
   academics: StudentAcademicRecord[];
+};
+
+export type StudentProfileDetail = {
+  studentProfileId: number;
+  studentId: string | null;
+  firstName: string;
+  midName: string | null;
+  lastName: string;
+  mobile: string | null;
+  email: string | null;
+  accountStatus: string;
+  profilePhotoUrl: string | null;
+};
+
+export type UpdateStudentProfileInput = {
+  firstName: string;
+  midName: string | null;
+  lastName: string;
+  mobile: string;
+  email: string;
 };
 
 /** POST /students/{id}/enroll payload — re-enrolls an existing profile into a new term. */

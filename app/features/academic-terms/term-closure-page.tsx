@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
-import { AuditLogIcon, FilterIcon, HelpCircleIcon } from "~/components/ui/icons";
+import { AuditLogIcon, HelpCircleIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
@@ -14,6 +14,7 @@ import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermClosureAuditLogModal } from "~/features/academic-terms/term-closure-audit-log-modal";
 import { TermClosureDetailsModal } from "~/features/academic-terms/term-closure-details-modal";
 import { TermClosureTable } from "~/features/academic-terms/term-closure-table";
+import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { usePagination } from "~/hooks/use-pagination";
 import { useTermClosures } from "~/hooks/use-term-closures";
 import { PageHeader } from "~/layouts/page-header";
@@ -22,43 +23,59 @@ import type { TermClosureItem } from "~/types/term-closure";
 
 export function TermClosurePage() {
   const { closures, loading, refresh } = useTermClosures();
+  const { context: selectedContext, refresh: refreshSelectedTerm } = useTermContext();
   const [search, setSearch] = useState("");
   const [schoolYear, setSchoolYear] = useState("all");
   const [semester, setSemester] = useState("all");
   const [detailsTerm, setDetailsTerm] = useState<TermClosureItem | null>(null);
+  const [closeTarget, setCloseTarget] = useState<TermClosureItem | null>(null);
   const [reopenTarget, setReopenTarget] = useState<TermClosureItem | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
 
+  const terms = useMemo(() => {
+    const selected = selectedContext?.term;
+    if (!selected) return closures;
+    return [selected, ...closures.filter((row) => row.syId !== selected.syId || row.semId !== selected.semId)];
+  }, [closures, selectedContext]);
+
   const schoolYearOptions = useMemo(() => {
-    const values = [...new Set(closures.map((row) => row.schoolYear))].sort().reverse();
+    const values = [...new Set(terms.map((row) => row.schoolYear))].sort().reverse();
     return values.map((value) => ({ value, label: value }));
-  }, [closures]);
+  }, [terms]);
 
   const semesterOptions = useMemo(() => {
-    const values = [...new Set(closures.map((row) => row.semesterDisplayName))];
+    const values = [...new Set(terms.map((row) => row.semesterDisplayName))];
     return values.map((value) => ({ value, label: value }));
-  }, [closures]);
+  }, [terms]);
 
   const resetKey = `${search}|${schoolYear}|${semester}`;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return closures.filter((row) => {
+    return terms.filter((row) => {
       if (schoolYear !== "all" && row.schoolYear !== schoolYear) return false;
       if (semester !== "all" && row.semesterDisplayName !== semester) return false;
       if (q && !`${row.schoolYear} ${row.semesterDisplayName}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [closures, search, schoolYear, semester]);
+  }, [terms, search, schoolYear, semester]);
 
   const pagination = usePagination(filtered, resetKey);
+
+  async function handleClose() {
+    if (!closeTarget) return;
+    const message = await termClosureService.close(closeTarget.syId, closeTarget.semId);
+    if (message) toast.success(message);
+    setCloseTarget(null);
+    await Promise.all([refresh(), refreshSelectedTerm()]);
+  }
 
   async function handleReopen() {
     if (!reopenTarget) return;
     const message = await termClosureService.reopen(reopenTarget.syId, reopenTarget.semesterNumber);
     if (message) toast.success(message);
     setReopenTarget(null);
-    await refresh();
+    await Promise.all([refresh(), refreshSelectedTerm()]);
   }
 
   return (
@@ -102,10 +119,6 @@ export function TermClosurePage() {
           placeholder="Search term…"
           className="min-w-40 flex-1 sm:max-w-xs"
         />
-        <Button type="button" variant="outline" block={false} onClick={() => toast.info("Advanced filters — coming soon.")}>
-          <FilterIcon />
-          Filters
-        </Button>
       </div>
 
       <div className="mt-4">
@@ -114,9 +127,9 @@ export function TermClosurePage() {
             <Spinner />
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState title={closures.length === 0 ? "No terms have been posted yet" : "No terms found"}>
-            {closures.length === 0
-              ? "Posted terms will appear here after a registrar closes a term."
+          <EmptyState title={terms.length === 0 ? "No terms are available" : "No terms found"}>
+            {terms.length === 0
+              ? "Create a school year and semester before managing term closure."
               : "No terms match the current filters."}
           </EmptyState>
         ) : (
@@ -124,6 +137,7 @@ export function TermClosurePage() {
             <TermClosureTable
               terms={pagination.pageItems}
               onViewDetails={setDetailsTerm}
+              onClose={setCloseTarget}
               onReopen={setReopenTarget}
             />
             {pagination.totalPages > 1 && (
@@ -164,6 +178,19 @@ export function TermClosurePage() {
       </Card>
 
       <TermClosureDetailsModal term={detailsTerm} onClose={() => setDetailsTerm(null)} />
+
+      <ConfirmDialog
+        open={closeTarget !== null}
+        onClose={() => setCloseTarget(null)}
+        title="Close term"
+        confirmLabel="Close term"
+        loadingLabel="Closing…"
+        confirmVariant="danger"
+        onConfirm={handleClose}
+      >
+        Close {closeTarget?.semesterDisplayName}, S.Y. {closeTarget?.schoolYear}? Scheduling and
+        destructive academic-record changes for this term will be locked.
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={reopenTarget !== null}

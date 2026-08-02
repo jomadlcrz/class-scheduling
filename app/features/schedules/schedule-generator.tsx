@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon, EditIcon } from "~/components/ui/icons";
 import { scheduleService, type ScheduleSuggestion, type SlotDraft } from "~/services/schedule.service";
 import { formatDecimalHour } from "~/lib/time";
@@ -30,12 +31,14 @@ export function GenerationConflictsAlert({
   onEditConflict,
   onApplySuggestion,
   onConfirmMove,
+  onResolve,
 }: {
   conflicts: string[];
   suggestions?: ScheduleSuggestion[];
   onEditConflict?: (conflict: string) => void;
   onApplySuggestion?: (suggestion: ScheduleSuggestion) => void;
   onConfirmMove?: (suggestion: ScheduleSuggestion) => void;
+  onResolve?: () => void;
 }) {
   const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
   const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
@@ -88,6 +91,14 @@ export function GenerationConflictsAlert({
             {overrideSuggestions.map((s, i) => (
               <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
             ))}
+          </div>
+        )}
+
+        {conflicts.length > 0 && onResolve && (
+          <div className="mt-3">
+            <Button type="button" variant="outline" block={false} onClick={onResolve}>
+              Resolve conflicts
+            </Button>
           </div>
         )}
       </AlertDescription>
@@ -300,12 +311,15 @@ export function useAutoGenerate() {
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<ScheduleSuggestion[]>([]);
 
-  const generate = useCallback(async (params: AutoGenerateParams): Promise<SlotDraft[]> => {
+  const generate = useCallback(async (
+    params: AutoGenerateParams,
+    strategy: "default" | "greedy" | "resolve" = "default",
+  ): Promise<SlotDraft[]> => {
     setIsGenerating(true);
     setConflicts([]);
     setSuggestions([]);
     try {
-      const result = await scheduleService.autoGenerate(params);
+      const result = await scheduleService.autoGenerate({ ...params, strategy });
       setConflicts(result.conflicts);
       setSuggestions(result.suggestions);
       setHasGenerated(true);

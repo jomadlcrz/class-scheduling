@@ -155,6 +155,7 @@ function SchedulesNewPage() {
   const [conflictLoading, setConflictLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [pendingMove, setPendingMove] = useState<ScheduleSuggestion | null>(null);
+  const [resolveOpen, setResolveOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -353,6 +354,30 @@ function SchedulesNewPage() {
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Unable to generate a schedule.");
     }
+  }
+
+  async function handleResolveConflicts() {
+    if (!selectedSet || !selectedProgram || !selectedYearLevel) return;
+    setSaveError(null);
+    const generated = await generate(
+      {
+        schoolYear,
+        semester,
+        semesterLabel: semesterLabel(semester),
+        yearLevel: selectedYearLevel,
+        yearLevelLabel: yearLevelLabel(selectedYearLevel),
+        programId: selectedProgram.id,
+        setId: selectedSet.id,
+      },
+      "resolve",
+    );
+    tempIdCounter.current = 0;
+    setSlots(
+      generated.map((slot) => {
+        tempIdCounter.current += 1;
+        return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
+      }),
+    );
   }
 
   async function handleApplySuggestion(suggestion: ScheduleSuggestion) {
@@ -740,7 +765,15 @@ function SchedulesNewPage() {
 
           <AnimatePresence>
             {generationConflicts.length > 0 && (
-              <GenerationConflictsAlert key="generation-conflicts" conflicts={generationConflicts} suggestions={generationSuggestions} onEditConflict={openConflictDrawer} onApplySuggestion={handleApplySuggestion} onConfirmMove={handleConfirmMove} />
+              <GenerationConflictsAlert
+                key="generation-conflicts"
+                conflicts={generationConflicts}
+                suggestions={generationSuggestions}
+                onEditConflict={openConflictDrawer}
+                onApplySuggestion={handleApplySuggestion}
+                onConfirmMove={handleConfirmMove}
+                onResolve={() => setResolveOpen(true)}
+              />
             )}
           </AnimatePresence>
 
@@ -882,6 +915,19 @@ function SchedulesNewPage() {
             {formatTime(deleteTarget.endTime)}) will be removed from this schedule.
           </>
         )}
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={resolveOpen}
+        onClose={() => setResolveOpen(false)}
+        title="Resolve schedule conflicts?"
+        confirmLabel="Resolve conflicts"
+        loadingLabel="Resolving…"
+        onConfirm={handleResolveConflicts}
+      >
+        The conflict resolver may move already-saved sessions from other sets when it can do so without
+        displacing a class. Those moves are written immediately; the generated schedule remains a proposal
+        until you save it.
       </ConfirmDialog>
 
       <ConfirmDialog

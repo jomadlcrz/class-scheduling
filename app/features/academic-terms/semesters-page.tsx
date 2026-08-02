@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { HelpCircleIcon, PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { SemesterForm, type SemesterFormValue } from "~/features/academic-term/semester-form";
+import { SemesterArchiveDialog } from "~/features/academic-term/semester-archive-dialog";
 import { SemesterTable } from "~/features/academic-term/semester-table";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -17,6 +18,7 @@ export function SemestersPage() {
   const { semesters, loading, refresh } = useSemesters();
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Semester | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Semester | null>(null);
 
   async function handleAdd(value: SemesterFormValue) {
     const message = await semesterService.create(value);
@@ -30,6 +32,13 @@ export function SemestersPage() {
     const message = await semesterService.update(editTarget.id, value);
     if (message) toast.success(message);
     setEditTarget(null);
+    await refresh();
+  }
+
+  async function handleArchive(semester: Semester) {
+    const message = await semesterService.remove(semester.id, semester.semester);
+    if (message) toast.success(message);
+    setArchiveTarget(null);
     await refresh();
   }
 
@@ -68,13 +77,23 @@ export function SemestersPage() {
         ) : semesters.length === 0 ? (
           <EmptyState title="No semesters yet">Add the first semester to get started.</EmptyState>
         ) : (
-          <SemesterTable semesters={semesters} onEdit={setEditTarget} />
+          <SemesterTable
+            semesters={semesters}
+            onEdit={setEditTarget}
+            onArchive={setArchiveTarget}
+          />
         )}
       </div>
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create Semester">
         <SemesterForm onSubmit={handleAdd} onCancel={() => setCreateOpen(false)} />
       </Modal>
+
+      <SemesterArchiveDialog
+        semester={archiveTarget}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={handleArchive}
+      />
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Semester">
         {editTarget && (
@@ -91,17 +110,11 @@ export function SemestersPage() {
         <AlertTitle>About Semesters</AlertTitle>
         <AlertDescription>
           <ul className="mt-1 list-disc space-y-1 pl-4">
-            <li>Semester records cannot be deleted.</li>
+            <li>Unused semester records can be archived and restored later.</li>
             <li>Only the display name and description can be edited.</li>
             <li>Changes here will reflect across all school years.</li>
           </ul>
         </AlertDescription>
-        <AlertAction>
-          <Button type="button" variant="outline" block={false} onClick={() => toast.info("Learn more — mock only.")}>
-            <HelpCircleIcon />
-            Learn more
-          </Button>
-        </AlertAction>
       </Alert>
     </div>
   );

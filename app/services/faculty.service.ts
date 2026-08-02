@@ -78,7 +78,7 @@ type DepartmentsResponse = {
 async function listDepartmentOptions(): Promise<DepartmentOption[]> {
   let data: DepartmentsResponse;
   try {
-    data = await apiGet<DepartmentsResponse>("/departments");
+    data = await apiGet<DepartmentsResponse>("/departments/");
   } catch (err) {
     // The backend answers an empty departments table with 404.
     if (err instanceof ApiError && err.status === 404) return [];

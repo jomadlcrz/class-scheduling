@@ -79,7 +79,11 @@ async function remove(id: number, confirmCode: string): Promise<string> {
 
 /** GET /programs/:id/delete-preview — read-only breakdown of what the delete would affect. */
 async function getDeletePreview(id: number): Promise<ProgramDeletePreview> {
-  return apiGet<ProgramDeletePreview>(`/programs/${id}/archive-preview`);
+  const data = await apiGet<{
+    program: ProgramDeletePreview["program"];
+    willArchive: ProgramDeletePreview["will_delete"];
+  }>(`/programs/${id}/archive-preview`);
+  return { program: data.program, will_delete: data.willArchive };
 }
 
 export type DeletedProgram = {

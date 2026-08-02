@@ -11,16 +11,27 @@ type EnrollmentEditFormProps = {
   record: StudentAcademicRecord;
   sets: ClassSet[];
   academicStatuses: string[];
-  onSubmit: (input: UpdateEnrollmentInput) => Promise<void>;
+  enrollmentStates: string[];
+  onSubmit: (input: EnrollmentEditValue) => Promise<void>;
   onCancel: () => void;
 };
 
+export type EnrollmentEditValue = UpdateEnrollmentInput & { enrollmentState?: string };
+
 /** Edits a single term's set/year level/status (PUT /students/enrollments/<id>) — doesn't touch enrolled subjects. */
-export function EnrollmentEditForm({ record, sets, academicStatuses, onSubmit, onCancel }: EnrollmentEditFormProps) {
+export function EnrollmentEditForm({
+  record,
+  sets,
+  academicStatuses,
+  enrollmentStates,
+  onSubmit,
+  onCancel,
+}: EnrollmentEditFormProps) {
   const { yearLevels } = useYearLevels();
   const [yearLevel, setYearLevel] = useState(String(record.yearLevel));
   const [setId, setSetId] = useState("");
   const [enrolledStatus, setEnrolledStatus] = useState(record.enrolledStatus);
+  const [enrollmentState, setEnrollmentState] = useState(record.enrollmentState ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -34,6 +45,7 @@ export function EnrollmentEditForm({ record, sets, academicStatuses, onSubmit, o
         yearLevel: Number(yearLevel),
         ...(setId && { setId: Number(setId) }),
         enrolledStatus,
+        ...(enrollmentState && { enrollmentState }),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
@@ -88,7 +100,7 @@ export function EnrollmentEditForm({ record, sets, academicStatuses, onSubmit, o
         </Select>
       </FieldChrome>
 
-      <FieldChrome id="enrollment-status" label="Enrolled Status">
+      <FieldChrome id="enrollment-status" label="Academic Status">
         <Select
           items={academicStatuses.map((s) => ({ value: s, label: s }))}
           value={enrolledStatus}
@@ -101,6 +113,33 @@ export function EnrollmentEditForm({ record, sets, academicStatuses, onSubmit, o
             {academicStatuses.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FieldChrome>
+
+      <FieldChrome
+        id="enrollment-state"
+        label="Enrollment State"
+        hint="Use this to mark the enrollment as enrolled, dropped, withdrawn, or voided without deleting its history."
+      >
+        <Select
+          items={[
+            { value: "", label: "Keep current state" },
+            ...enrollmentStates.map((state) => ({ value: state, label: state })),
+          ]}
+          value={enrollmentState}
+          onValueChange={(value) => setEnrollmentState(value as string)}
+        >
+          <SelectTrigger id="enrollment-state">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Keep current state</SelectItem>
+            {enrollmentStates.map((state) => (
+              <SelectItem key={state} value={state}>
+                {state}
               </SelectItem>
             ))}
           </SelectContent>

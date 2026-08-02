@@ -13,6 +13,18 @@ type SemesterResponse = {
 
 export type DeletedSemester = Semester & { deactivatedAt: string | null };
 
+export type SemesterArchivePreview = {
+  semester: { id: number; semester: string };
+  archivable: boolean;
+  blockers: {
+    references: number;
+    studentAcademics: number;
+    instructorTeachingTerms: number;
+    items: { key: string; label: string; count: number }[];
+  };
+  willArchive: Record<string, never>;
+};
+
 let cachedSemesters: Semester[] | null = null;
 let cachePromise: Promise<Semester[]> | null = null;
 
@@ -85,8 +97,8 @@ async function remove(id: number, confirm: string): Promise<string> {
 }
 
 /** GET /semesters/:id/archive-preview — checks whether archival is safe. */
-async function getArchivePreview(id: number): Promise<unknown> {
-  return apiGet(`/semesters/${id}/archive-preview`);
+async function getArchivePreview(id: number): Promise<SemesterArchivePreview> {
+  return apiGet<SemesterArchivePreview>(`/semesters/${id}/archive-preview`);
 }
 
 /** GET /semesters/recycle-bin — always fresh, not cached. 404 → empty. */

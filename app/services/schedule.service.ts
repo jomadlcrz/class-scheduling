@@ -336,10 +336,16 @@ async function autoGenerate(input: {
   programId: number;
   setId: number;
   withRebalance?: boolean;
+  strategy?: "default" | "greedy" | "resolve";
 }): Promise<AutoGenerateResult> {
-  const endpoint = input.withRebalance
-    ? "/regular_schedule/auto-generate-schedule/with-rebalance"
-    : "/regular_schedule/auto-generate-schedule";
+  const endpoint =
+    input.strategy === "resolve"
+      ? "/regular_schedule/auto-generate-schedule/resolve"
+      : input.strategy === "greedy"
+        ? "/regular_schedule/auto-generate-schedule/greedy"
+        : input.withRebalance
+          ? "/regular_schedule/auto-generate-schedule/with-rebalance"
+          : "/regular_schedule/auto-generate-schedule";
   const data = await apiPost<AutoGenerateResponse>(endpoint, {
     schoolYear: input.schoolYear,
     semester: input.semesterLabel,
@@ -702,18 +708,93 @@ async function generateGreedySchedule(payload: Record<string, unknown>): Promise
   return apiPost<Record<string, unknown>>("/regular_schedule/auto-generate-schedule/greedy", payload);
 }
 
-async function removeSetSchedules(setId: number): Promise<string> {
-  return apiMessage(await apiDelete<{ message?: string }>(`/regular_schedule/set/${setId}`));
+async function removeSetSchedules(
+  setId: number,
+  syId: number,
+  semesterNumber: number,
+): Promise<string> {
+  const query = new URLSearchParams({
+    syId: String(syId),
+    semester_number: String(semesterNumber),
+  });
+  return apiMessage(
+    await apiDelete<{ message?: string }>(`/regular_schedule/set/${setId}?${query}`),
+  );
 }
 
-async function getSetWithSchedules(params: { syId: number; semId: number; programId?: number }): Promise<Record<string, unknown>> {
-  const query = new URLSearchParams({ sy_id: String(params.syId), sem_id: String(params.semId) });
-  if (params.programId != null) query.set("program_id", String(params.programId));
-  return apiGet<Record<string, unknown>>(`/schedule/get-set-with-schedules?${query}`);
+export type ScheduledSetOption = {
+  setId: number;
+  setCode: string;
+  yearLevel: string | number;
+  schoolYear: string;
+  programId: number;
+  program: string;
+  semesterNumber: number;
+};
+
+async function getSetWithSchedules(): Promise<ScheduledSetOption[]> {
+  const data = await apiGet<{
+    sets: {
+      set_id: number;
+      set_code: string;
+      year_level: string | number;
+      school_year: string;
+      program_id: number;
+      program: string;
+      semester_number: number;
+    }[];
+  }>("/schedule/get-set-with-schedules");
+  return data.sets.map((row) => ({
+    setId: row.set_id,
+    setCode: row.set_code,
+    yearLevel: row.year_level,
+    schoolYear: row.school_year,
+    programId: row.program_id,
+    program: row.program,
+    semesterNumber: row.semester_number,
+  }));
 }
 
-async function reconcileInstructorLedgers(payload?: Record<string, unknown>): Promise<Record<string, unknown>> {
-  return apiPost<Record<string, unknown>>("/regular_schedule/instructor-ledgers/reconcile", payload ?? {});
+export type InstructorLedgerReconciliation = {
+  message: string;
+  checked: number;
+  drift: {
+    instructor_id?: number;
+    instructor_name?: string | null;
+    set_id?: number;
+    subject_id?: number;
+    scope: string;
+    ledger: number | null;
+    actual: number;
+    ledger_days?: number | null;
+    actual_days?: number;
+  }[];
+  repaired: boolean;
+};
+
+async function reconcileInstructorLedgers(
+  params: { syId: number; semId?: number; semesterNumber: number },
+  apply = false,
+): Promise<InstructorLedgerReconciliation> {
+  const payload = {
+    syId: params.syId,
+    ...(params.semId != null ? { semId: params.semId } : {}),
+    semester: params.semesterNumber,
+  };
+  if (apply) {
+    return apiPost<InstructorLedgerReconciliation>(
+      "/regular_schedule/instructor-ledgers/reconcile",
+      payload,
+    );
+  }
+  const query = new URLSearchParams({
+    syId: String(params.syId),
+    semester: String(params.semesterNumber),
+  });
+  if (params.semId != null) query.set("semId", String(params.semId));
+  return apiGet<InstructorLedgerReconciliation>(
+    `/regular_schedule/instructor-ledgers/reconcile?${query}`,
+  );
 }
 
 export const scheduleService = {

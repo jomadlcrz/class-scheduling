@@ -5,6 +5,7 @@ import { AuthGuard } from "~/auth/auth-guard";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { LayoutSidebarIcon } from "~/components/ui/icons";
 import { Toaster } from "~/components/ui/sonner";
+import { TermContextProvider } from "~/features/academic-terms/term-context-provider";
 import { DashboardIntroOverlay, useJustLoggedIn } from "~/layouts/dashboard-intro";
 import { Navbar } from "~/layouts/navbar";
 import { Sidebar } from "~/layouts/sidebar";
@@ -17,7 +18,9 @@ export default function AppShell() {
   return (
     <ThemeProvider>
       <AuthGuard>
-        <Shell />
+        <TermContextProvider>
+          <Shell />
+        </TermContextProvider>
       </AuthGuard>
       <Toaster />
     </ThemeProvider>

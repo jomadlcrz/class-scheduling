@@ -197,7 +197,11 @@ async function remove(id: number, confirmCode: string): Promise<string> {
 
 /** GET /subjects/:id/delete-preview — read-only breakdown of what the delete would affect, across every program it sits on. */
 async function getDeletePreview(id: number): Promise<SubjectDeletePreview> {
-  return apiGet<SubjectDeletePreview>(`/subjects/${id}/archive-preview`);
+  const data = await apiGet<{
+    subject: SubjectDeletePreview["subject"];
+    willArchive: SubjectDeletePreview["will_delete"];
+  }>(`/subjects/${id}/archive-preview`);
+  return { subject: data.subject, will_delete: data.willArchive };
 }
 
 export const subjectService = {
