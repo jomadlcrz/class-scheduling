@@ -112,7 +112,11 @@ export type DeletedStudent = {
   studentProfileId: number;
   firstName: string;
   lastName: string;
+  profilePhotoUrl: string | null;
   deactivatedAt: string | null;
+  academicTerms: number;
+  enrolledSubjects: number;
+  hasLoginAccount: boolean;
 };
 
 /** PUT /students/enrollments/<id> body — corrects a single term's set/year level/status; doesn't touch enrolled subjects. */

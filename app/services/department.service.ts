@@ -85,9 +85,21 @@ async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
   return apiGet<DepartmentDeletePreview>(`/departments/${id}/delete-preview`);
 }
 
-export type DeletedDepartment = { id: number; name: string; deactivatedAt: string | null };
+export type DeletedDepartment = {
+  id: number;
+  abbrev: string;
+  name: string;
+  deactivatedAt: string | null;
+  cascadeArchived?: { programs: number };
+};
 
-type DepartmentRecycleBinResponse = { department_id: number; department_name: string; deactivated_at: string | null }[];
+type DepartmentRecycleBinResponse = {
+  department_id: number;
+  department_abbrev: string;
+  department_name: string;
+  deactivated_at: string | null;
+  cascade_archived?: { programs: number };
+}[];
 
 /** GET /departments/recycle-bin — 404 → empty. */
 async function listDeleted(): Promise<DeletedDepartment[]> {
@@ -98,7 +110,13 @@ async function listDeleted(): Promise<DeletedDepartment[]> {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((d) => ({ id: d.department_id, name: d.department_name, deactivatedAt: d.deactivated_at }));
+  return data.map((d) => ({
+    id: d.department_id,
+    abbrev: d.department_abbrev,
+    name: d.department_name,
+    deactivatedAt: d.deactivated_at,
+    cascadeArchived: d.cascade_archived,
+  }));
 }
 
 /** PATCH /departments/:id/restore */

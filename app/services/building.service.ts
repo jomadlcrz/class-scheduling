@@ -1,5 +1,5 @@
 import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
-import type { Building, BuildingArchivePreview } from "~/types/building";
+import type { Building, BuildingArchivePreview, DeletedBuilding } from "~/types/building";
 
 /** Buildings read + archive against the facilities module (registrar_admin). */
 
@@ -39,9 +39,14 @@ async function getArchivePreview(id: number): Promise<BuildingArchivePreview> {
   return apiGet<BuildingArchivePreview>(`/buildings/${id}/archive-preview`);
 }
 
-export type DeletedBuilding = { id: number; name: string; deactivatedAt: string | null };
+export type { DeletedBuilding };
 
-type BuildingRecycleBinResponse = { building_id: number; building_name: string; deactivated_at: string | null }[];
+type BuildingRecycleBinResponse = {
+  building_id: number;
+  building_name: string;
+  deactivated_at: string | null;
+  cascade_archived?: { rooms: number; departments: number; programs: number };
+}[];
 
 /** GET /buildings/recycle-bin — 404 → empty. Archiving a building cascades to its rooms. */
 async function listDeleted(): Promise<DeletedBuilding[]> {
@@ -52,7 +57,12 @@ async function listDeleted(): Promise<DeletedBuilding[]> {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((b) => ({ id: b.building_id, name: b.building_name, deactivatedAt: b.deactivated_at }));
+  return data.map((b) => ({
+    id: b.building_id,
+    name: b.building_name,
+    deactivatedAt: b.deactivated_at,
+    cascadeArchived: b.cascade_archived,
+  }));
 }
 
 /** PATCH /buildings/:id/restore — also restores rooms archived in the same archive call. */

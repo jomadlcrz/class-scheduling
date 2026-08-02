@@ -87,6 +87,7 @@ export type DeletedProgram = {
   abbrev: string;
   name: string;
   deactivatedAt: string | null;
+  cascadeArchived?: { sets: number; subjects: number };
 };
 
 type ProgramRecycleBinResponse = {
@@ -94,6 +95,7 @@ type ProgramRecycleBinResponse = {
   program_abbrev: string;
   program_name: string;
   deactivated_at: string | null;
+  cascade_archived?: { sets: number; subjects: number };
 }[];
 
 /** GET /programs/recycle-bin — 404 → empty. */
@@ -110,6 +112,7 @@ async function listDeleted(): Promise<DeletedProgram[]> {
     abbrev: p.program_abbrev,
     name: p.program_name,
     deactivatedAt: p.deactivated_at,
+    cascadeArchived: p.cascade_archived,
   }));
 }
 

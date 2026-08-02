@@ -17,6 +17,11 @@ export type CreateFacilitiesInput = {
   floors: CreateFacilityFloorInput[];
 };
 
+/** Payload for POST /buildings/:id/rooms — add rooms to an existing building. */
+export type AddBuildingRoomsInput = {
+  floors: CreateFacilityFloorInput[];
+};
+
 /** A room row while composing a new facility in the UI. */
 export type FacilityRoomDraft = {
   key: string;

@@ -1,50 +1,50 @@
 import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
 
-/** Soft-deleted curriculum subjects (registrar_admin module). */
+/** Soft-deleted curriculum subjects (registrar_admin/curriculums). */
 
-type RecycleBinResponse = {
-  program: string;
+type SubjectRecycleBinResponse = {
   subject_id: number;
   subject_code: string;
   desc_title: string;
   units: number;
-  subject_type: string;
-  prerequisites?: { subject_code: string }[];
+  subject_type: string | null;
+  deactivated_at: string | null;
+  prerequisite_links: number;
 }[];
 
 export type DeletedSubject = {
-  program: string;
   subjectId: number;
   subjectCode: string;
   descTitle: string;
   units: number;
-  subjectType: string;
-  prerequisites: string[];
+  subjectType: string | null;
+  deactivatedAt: string | null;
+  prerequisiteLinks: number;
 };
 
-/** GET /recycle_bin — subjects with is_active = false. 404 → empty. */
+/** GET /subjects/recycle-bin — deactivated subjects, newest first. */
 async function list(): Promise<DeletedSubject[]> {
-  let data: RecycleBinResponse;
+  let data: SubjectRecycleBinResponse;
   try {
-    data = await apiGet<RecycleBinResponse>("/recycle_bin");
+    data = await apiGet<SubjectRecycleBinResponse>("/subjects/recycle-bin");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((d) => ({
-    program: d.program,
-    subjectId: d.subject_id,
-    subjectCode: d.subject_code,
-    descTitle: d.desc_title,
-    units: d.units,
-    subjectType: d.subject_type,
-    prerequisites: (d.prerequisites ?? []).map((p) => p.subject_code),
+  return data.map((row) => ({
+    subjectId: row.subject_id,
+    subjectCode: row.subject_code,
+    descTitle: row.desc_title,
+    units: row.units,
+    subjectType: row.subject_type,
+    deactivatedAt: row.deactivated_at,
+    prerequisiteLinks: row.prerequisite_links,
   }));
 }
 
-/** PATCH /recycle_bin?subject_id=<id> — restores a subject. Returns the backend message. */
+/** PATCH /subjects/:id/restore */
 async function restore(subjectId: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/recycle_bin?subject_id=${subjectId}`);
+  const data = await apiPatch<{ message?: string }>(`/subjects/${subjectId}/restore`);
   return apiMessage(data);
 }
 

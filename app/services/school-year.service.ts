@@ -17,7 +17,10 @@ export type SchoolYearOption = {
   createdAt?: string | null;
 };
 
-export type DeletedSchoolYear = SchoolYearOption & { deactivatedAt: string | null };
+export type DeletedSchoolYear = SchoolYearOption & {
+  deactivatedAt: string | null;
+  createdAt?: string | null;
+};
 
 let cachedSchoolYears: SchoolYearOption[] | null = null;
 let cachePromise: Promise<SchoolYearOption[]> | null = null;
@@ -91,14 +94,20 @@ async function remove(id: number): Promise<string> {
 
 /** GET /school-years/recycle-bin — always fresh, not cached (matches recycle-bin.service.ts precedent). 404 → empty. */
 async function listDeleted(): Promise<DeletedSchoolYear[]> {
-  let data: (SchoolYearEntry & { deactivated_at: string | null })[];
+  let data: (SchoolYearEntry & { created_at?: string | null; deactivated_at: string | null })[];
   try {
-    data = await apiGet<(SchoolYearEntry & { deactivated_at: string | null })[]>("/school-years/recycle-bin");
+    data = await apiGet<(SchoolYearEntry & { created_at?: string | null; deactivated_at: string | null })[]>(
+      "/school-years/recycle-bin",
+    );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((s) => ({ ...mapSchoolYear(s), deactivatedAt: s.deactivated_at }));
+  return data.map((s) => ({
+    ...mapSchoolYear(s),
+    createdAt: s.created_at ?? null,
+    deactivatedAt: s.deactivated_at,
+  }));
 }
 
 /** PATCH /school-years/:id/restore */

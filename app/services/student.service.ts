@@ -176,7 +176,11 @@ type DeletedStudentResponse = {
   student_profile_id: number;
   first_name: string;
   last_name: string;
+  profile_photo_url: string | null;
   deactivated_at: string | null;
+  academic_terms: number;
+  enrolled_subjects: number;
+  has_login_account: boolean;
 }[];
 
 /** GET /students/recycle-bin — soft-deleted student profiles. 404 → empty. */
@@ -192,7 +196,11 @@ async function listDeleted(): Promise<DeletedStudent[]> {
     studentProfileId: s.student_profile_id,
     firstName: s.first_name,
     lastName: s.last_name,
+    profilePhotoUrl: s.profile_photo_url,
     deactivatedAt: s.deactivated_at,
+    academicTerms: s.academic_terms,
+    enrolledSubjects: s.enrolled_subjects,
+    hasLoginAccount: s.has_login_account,
   }));
 }
 

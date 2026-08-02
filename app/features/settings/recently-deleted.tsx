@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "~/hooks/use-auth";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -6,23 +6,26 @@ import { Badge } from "~/components/ui/badge";
 import { RotateIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
+import { TabList } from "~/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
-import { buildingService } from "~/services/building.service";
-import { departmentService } from "~/services/department.service";
+import { buildingService, type DeletedBuilding } from "~/services/building.service";
+import { departmentService, type DeletedDepartment } from "~/services/department.service";
 import { permissionService } from "~/services/permission.service";
-import { programService } from "~/services/program.service";
+import type { DeletedPermission } from "~/types/permission";
+import { programService, type DeletedProgram } from "~/services/program.service";
 import { recycleBinService, type DeletedSubject } from "~/services/recycle-bin.service";
-import { roomService } from "~/services/room.service";
-import { schoolYearService } from "~/services/school-year.service";
-import { semesterService } from "~/services/semester.service";
-import { setService } from "~/services/set.service";
+import { roomService, type DeletedRoom } from "~/services/room.service";
+import { schoolYearService, type DeletedSchoolYear } from "~/services/school-year.service";
+import { semesterService, type DeletedSemester } from "~/services/semester.service";
+import { setService, type DeletedSet } from "~/services/set.service";
+import { studentService } from "~/services/student.service";
+import type { DeletedStudent } from "~/types/student";
 
-/** A row shape shared by every resource whose recycle bin is just "a label + when it was deleted". */
-type SimpleDeletedItem = { id: number; label: string; deactivatedAt: string | null };
-
-type SimpleTabKey =
+type TabKey =
+  | "subjects"
+  | "students"
   | "programs"
   | "sets"
   | "buildings"
@@ -32,189 +35,542 @@ type SimpleTabKey =
   | "semesters"
   | "permissions";
 
-/** Every resource here shares the new per-resource `GET .../recycle-bin` + `PATCH .../<id>/restore` shape —
- * only the field names differ per resource, so their list() results are normalized into SimpleDeletedItem
- * here rather than forcing 9 different response shapes into the service layer's return types. */
-const SIMPLE_TABS: { key: SimpleTabKey; label: string; list: () => Promise<SimpleDeletedItem[]>; restore: (id: number) => Promise<string> }[] = [
-  {
-    key: "programs",
-    label: "Programs",
-    list: async () =>
-      (await programService.listDeleted()).map((p) => ({
-        id: p.id,
-        label: `${p.abbrev} — ${p.name}`,
-        deactivatedAt: p.deactivatedAt,
-      })),
-    restore: (id) => programService.restore(id),
-  },
-  {
-    key: "sets",
-    label: "Sets",
-    list: async () =>
-      (await setService.listDeleted()).map((s) => ({ id: s.id, label: s.setCode, deactivatedAt: s.deactivatedAt })),
-    restore: (id) => setService.restore(id),
-  },
-  {
-    key: "buildings",
-    label: "Buildings",
-    list: async () =>
-      (await buildingService.listDeleted()).map((b) => ({ id: b.id, label: b.name, deactivatedAt: b.deactivatedAt })),
-    restore: (id) => buildingService.restore(id),
-  },
-  {
-    key: "rooms",
-    label: "Rooms",
-    list: async () =>
-      (await roomService.listDeleted()).map((r) => ({ id: r.id, label: r.name, deactivatedAt: r.deactivatedAt })),
-    restore: (id) => roomService.restore(id),
-  },
-  {
-    key: "departments",
-    label: "Departments",
-    list: async () =>
-      (await departmentService.listDeleted()).map((d) => ({
-        id: d.id,
-        label: d.name,
-        deactivatedAt: d.deactivatedAt,
-      })),
-    restore: (id) => departmentService.restore(id),
-  },
-  {
-    key: "school-years",
-    label: "School Years",
-    list: async () =>
-      (await schoolYearService.listDeleted()).map((sy) => ({
-        id: sy.id,
-        label: sy.schoolYear,
-        deactivatedAt: sy.deactivatedAt,
-      })),
-    restore: (id) => schoolYearService.restore(id),
-  },
-  {
-    key: "semesters",
-    label: "Semesters",
-    list: async () =>
-      (await semesterService.listDeleted()).map((s) => ({
-        id: s.id,
-        label: s.semester,
-        deactivatedAt: s.deactivatedAt,
-      })),
-    restore: (id) => semesterService.restore(id),
-  },
-  {
-    key: "permissions",
-    label: "Permissions",
-    list: async () =>
-      (await permissionService.listDeleted()).map((p) => ({
-        id: p.id,
-        label: p.slug,
-        deactivatedAt: p.deactivatedAt,
-      })),
-    restore: (id) => permissionService.restore(id),
-  },
+type TabConfig = {
+  key: TabKey;
+  label: string;
+  roles: ("admin" | "registrar")[];
+};
+
+const TABS: TabConfig[] = [
+  { key: "subjects", label: "Subjects", roles: ["registrar"] },
+  { key: "students", label: "Students", roles: ["registrar"] },
+  { key: "programs", label: "Programs", roles: ["registrar"] },
+  { key: "sets", label: "Sets", roles: ["registrar"] },
+  { key: "buildings", label: "Buildings", roles: ["registrar"] },
+  { key: "rooms", label: "Rooms", roles: ["registrar"] },
+  { key: "departments", label: "Departments", roles: ["registrar"] },
+  { key: "school-years", label: "School Years", roles: ["registrar"] },
+  { key: "semesters", label: "Semesters", roles: ["registrar"] },
+  { key: "permissions", label: "Permissions", roles: ["admin"] },
 ];
 
-type TabKey = "subjects" | SimpleTabKey;
-
-function formatDate(value: string | null): string {
+function formatDateTime(value: string | null): string {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
+}
+
+const restoreButtonClassName =
+  "inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 font-body text-xs font-medium text-blue-700 transition-colors duration-150 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-400/10";
+
+function RestoreButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} aria-label={`Restore ${label}`} className={restoreButtonClassName}>
+      <RotateIcon size={14} />
+      Restore
+    </button>
+  );
 }
 
 export function RecentlyDeleted() {
   const { user } = useAuth();
-  // AuthGuard only mounts this once the session is loaded, so the user's role
-  // is always known here. Super admin only gets Permissions, so start there.
-  const [activeTab, setActiveTab] = useState<TabKey>(() => (user?.role === "admin" ? "permissions" : "subjects"));
-  const [subjects, setSubjects] = useState<DeletedSubject[] | null>(null);
-  const [simpleItems, setSimpleItems] = useState<SimpleDeletedItem[] | null>(null);
+  const role = user?.role === "admin" ? "admin" : "registrar";
+
+  const visibleTabs = useMemo(() => TABS.filter((tab) => tab.roles.includes(role)), [role]);
+  const tabOptions = useMemo(
+    () => visibleTabs.map((tab) => ({ value: tab.key, label: tab.label })),
+    [visibleTabs],
+  );
+  const [activeTab, setActiveTab] = useState<TabKey>(() => visibleTabs[0]?.key ?? "subjects");
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [subjectRestoreTarget, setSubjectRestoreTarget] = useState<DeletedSubject | null>(null);
-  const [simpleRestoreTarget, setSimpleRestoreTarget] = useState<SimpleDeletedItem | null>(null);
 
-  const activeSimpleTab = SIMPLE_TABS.find((t) => t.key === activeTab);
+  const [subjects, setSubjects] = useState<DeletedSubject[]>([]);
+  const [students, setStudents] = useState<DeletedStudent[]>([]);
+  const [programs, setPrograms] = useState<DeletedProgram[]>([]);
+  const [sets, setSets] = useState<DeletedSet[]>([]);
+  const [buildings, setBuildings] = useState<DeletedBuilding[]>([]);
+  const [rooms, setRooms] = useState<DeletedRoom[]>([]);
+  const [departments, setDepartments] = useState<DeletedDepartment[]>([]);
+  const [schoolYears, setSchoolYears] = useState<DeletedSchoolYear[]>([]);
+  const [semesters, setSemesters] = useState<DeletedSemester[]>([]);
+  const [permissions, setPermissions] = useState<DeletedPermission[]>([]);
 
-  /** Role-based access to the recycle bins: super admin (admin) restores only
-   * Permissions; registrars never restore Permissions. Everyone else sees all. */
-  const visibleSimpleTabs = SIMPLE_TABS.filter((t) => {
-    if (user?.role === "admin") return t.key === "permissions";
-    if (user?.role === "registrar") return t.key !== "permissions";
-    return true;
-  });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmLabel, setConfirmLabel] = useState("");
+  const [pendingRestore, setPendingRestore] = useState<(() => Promise<string>) | null>(null);
 
-  const tabs: { key: TabKey; label: string }[] =
-    user?.role === "admin"
-      ? visibleSimpleTabs.map((t) => ({ key: t.key, label: t.label }))
-      : [{ key: "subjects", label: "Subjects" }, ...visibleSimpleTabs.map((t) => ({ key: t.key, label: t.label }))];
-
-  function refresh() {
-    setError(null);
-    if (activeTab === "subjects") {
-      setSubjects(null);
-      recycleBinService
-        .list()
-        .then(setSubjects)
-        .catch((err) =>
-          setError(err instanceof Error ? err.message : ""),
-        );
-      return;
+  useEffect(() => {
+    if (!visibleTabs.some((tab) => tab.key === activeTab)) {
+      setActiveTab(visibleTabs[0]?.key ?? "subjects");
     }
-    if (!activeSimpleTab) return;
-    setSimpleItems(null);
-    activeSimpleTab
-      .list()
-      .then(setSimpleItems)
-      .catch((err) => setError(err instanceof Error ? err.message : ""));
-  }
+  }, [activeTab, visibleTabs]);
 
-  useEffect(refresh, [activeTab]);
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      switch (activeTab) {
+        case "subjects":
+          setSubjects(await recycleBinService.list());
+          break;
+        case "students":
+          setStudents(await studentService.listDeleted());
+          break;
+        case "programs":
+          setPrograms(await programService.listDeleted());
+          break;
+        case "sets":
+          setSets(await setService.listDeleted());
+          break;
+        case "buildings":
+          setBuildings(await buildingService.listDeleted());
+          break;
+        case "rooms":
+          setRooms(await roomService.listDeleted());
+          break;
+        case "departments":
+          setDepartments(await departmentService.listDeleted());
+          break;
+        case "school-years":
+          setSchoolYears(await schoolYearService.listDeleted());
+          break;
+        case "semesters":
+          setSemesters(await semesterService.listDeleted());
+          break;
+        case "permissions":
+          setPermissions(await permissionService.listDeleted());
+          break;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "");
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab]);
 
-  async function handleSubjectRestore() {
-    if (!subjectRestoreTarget) return;
-    const message = await recycleBinService.restore(subjectRestoreTarget.subjectId);
-    if (message) toast.success(message);
+  useEffect(() => {
     refresh();
+  }, [refresh]);
+
+  function askRestore(label: string, action: () => Promise<string>) {
+    setConfirmLabel(label);
+    setPendingRestore(() => action);
+    setConfirmOpen(true);
   }
 
-  async function handleSimpleRestore() {
-    if (!simpleRestoreTarget || !activeSimpleTab) return;
-    const message = await activeSimpleTab.restore(simpleRestoreTarget.id);
+  async function handleConfirm() {
+    if (!pendingRestore) return;
+    const message = await pendingRestore();
     if (message) toast.success(message);
-    refresh();
+    await refresh();
   }
 
-  const isLoading = activeTab === "subjects" ? subjects === null : simpleItems === null;
-  const isEmpty = activeTab === "subjects" ? subjects?.length === 0 : simpleItems?.length === 0;
+  const isEmpty = useMemo(() => {
+    switch (activeTab) {
+      case "subjects":
+        return subjects.length === 0;
+      case "students":
+        return students.length === 0;
+      case "programs":
+        return programs.length === 0;
+      case "sets":
+        return sets.length === 0;
+      case "buildings":
+        return buildings.length === 0;
+      case "rooms":
+        return rooms.length === 0;
+      case "departments":
+        return departments.length === 0;
+      case "school-years":
+        return schoolYears.length === 0;
+      case "semesters":
+        return semesters.length === 0;
+      case "permissions":
+        return permissions.length === 0;
+      default:
+        return true;
+    }
+  }, [
+    activeTab,
+    subjects,
+    students,
+    programs,
+    sets,
+    buildings,
+    rooms,
+    departments,
+    schoolYears,
+    semesters,
+    permissions,
+  ]);
+
+  function renderTable() {
+    switch (activeTab) {
+      case "subjects":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Code</TableHeader>
+              <TableHeader>Title</TableHeader>
+              <TableHeader className="hidden sm:table-cell text-center">Units</TableHeader>
+              <TableHeader className="hidden md:table-cell">Type</TableHeader>
+              <TableHeader className="hidden lg:table-cell text-center">Prereq Links</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {subjects.map((subject) => (
+                <TableRow key={subject.subjectId}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
+                    {subject.subjectCode}
+                  </TableCell>
+                  <TableCell>{subject.descTitle}</TableCell>
+                  <TableCell className="hidden sm:table-cell text-center">{subject.units}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {subject.subjectType ? <SubjectTypeBadge type={subject.subjectType} /> : "—"}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell text-center">{subject.prerequisiteLinks}</TableCell>
+                  <TableCell>{formatDateTime(subject.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={subject.subjectCode}
+                      onClick={() =>
+                        askRestore(`${subject.subjectCode} — ${subject.descTitle}`, async () =>
+                          recycleBinService.restore(subject.subjectId),
+                        )
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "students":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Name</TableHeader>
+              <TableHeader className="hidden sm:table-cell text-center">Terms</TableHeader>
+              <TableHeader className="hidden md:table-cell text-center">Enrollments</TableHeader>
+              <TableHeader className="hidden lg:table-cell">Login</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {students.map((student) => {
+                const name = `${student.lastName}, ${student.firstName}`;
+                return (
+                  <TableRow key={student.studentProfileId}>
+                    <TableCell className="font-medium text-navy-700 dark:text-mist-100">{name}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-center">{student.academicTerms}</TableCell>
+                    <TableCell className="hidden md:table-cell text-center">{student.enrolledSubjects}</TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {student.hasLoginAccount ? "Yes" : "No"}
+                    </TableCell>
+                    <TableCell>{formatDateTime(student.deactivatedAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <RestoreButton
+                        label={name}
+                        onClick={() =>
+                          askRestore(name, async () => studentService.restore(student.studentProfileId))
+                        }
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        );
+
+      case "programs":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Program</TableHeader>
+              <TableHeader className="hidden md:table-cell">Cascade</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {programs.map((program) => (
+                <TableRow key={program.id}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
+                    {program.abbrev} — {program.name}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {program.cascadeArchived ? (
+                      <span className="font-body text-sm text-slate-600 dark:text-slate-300">
+                        {program.cascadeArchived.sets} sets, {program.cascadeArchived.subjects} subjects
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>{formatDateTime(program.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={program.abbrev}
+                      onClick={() =>
+                        askRestore(`${program.abbrev} — ${program.name}`, async () => programService.restore(program.id))
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "sets":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Set</TableHeader>
+              <TableHeader className="hidden sm:table-cell text-center">Students</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {sets.map((set) => (
+                <TableRow key={set.id}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
+                    {set.setCode}
+                    {set.setName ? ` — ${set.setName}` : ""}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell text-center">{set.studentsAffected}</TableCell>
+                  <TableCell>{formatDateTime(set.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={set.setCode}
+                      onClick={() =>
+                        askRestore(set.setCode, async () => setService.restore(set.id))
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "buildings":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Building</TableHeader>
+              <TableHeader className="hidden md:table-cell">Cascade</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {buildings.map((building) => (
+                <TableRow key={building.id}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">{building.name}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {building.cascadeArchived ? (
+                      <span className="font-body text-sm text-slate-600 dark:text-slate-300">
+                        {building.cascadeArchived.rooms} rooms, {building.cascadeArchived.departments} depts,{" "}
+                        {building.cascadeArchived.programs} programs
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>{formatDateTime(building.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={building.name}
+                      onClick={() =>
+                        askRestore(building.name, async () => buildingService.restore(building.id))
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "rooms":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Room</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {rooms.map((room) => (
+                <TableRow key={room.id}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">{room.name}</TableCell>
+                  <TableCell>{formatDateTime(room.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={room.name}
+                      onClick={() => askRestore(room.name, async () => roomService.restore(room.id))}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "departments":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Department</TableHeader>
+              <TableHeader className="hidden md:table-cell">Cascade</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {departments.map((department) => (
+                <TableRow key={department.id}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
+                    {department.abbrev} — {department.name}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {department.cascadeArchived
+                      ? `${department.cascadeArchived.programs} programs`
+                      : "—"}
+                  </TableCell>
+                  <TableCell>{formatDateTime(department.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={department.abbrev}
+                      onClick={() =>
+                        askRestore(`${department.abbrev} — ${department.name}`, async () =>
+                          departmentService.restore(department.id),
+                        )
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "school-years":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>School Year</TableHeader>
+              <TableHeader className="hidden sm:table-cell">Created</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {schoolYears.map((year) => (
+                <TableRow key={year.id}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">{year.schoolYear}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{formatDateTime(year.createdAt ?? null)}</TableCell>
+                  <TableCell>{formatDateTime(year.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={year.schoolYear}
+                      onClick={() =>
+                        askRestore(year.schoolYear, async () => schoolYearService.restore(year.id))
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "semesters":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Semester</TableHeader>
+              <TableHeader className="hidden sm:table-cell text-center">Number</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {semesters.map((semester) => {
+                const label = semester.displayName ?? semester.semester ?? `Semester ${semester.semesterNumber}`;
+                return (
+                  <TableRow key={semester.id}>
+                    <TableCell className="font-medium text-navy-700 dark:text-mist-100">{label}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-center">{semester.semesterNumber}</TableCell>
+                    <TableCell>{formatDateTime(semester.deactivatedAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <RestoreButton
+                        label={label}
+                        onClick={() => askRestore(label, async () => semesterService.restore(semester.id))}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        );
+
+      case "permissions":
+        return (
+          <Table>
+            <TableHead>
+              <TableHeader>Permission</TableHeader>
+              <TableHeader>Deleted</TableHeader>
+              <TableHeader className="text-right">Restore</TableHeader>
+            </TableHead>
+            <TableBody>
+              {permissions.map((permission) => (
+                <TableRow key={permission.id}>
+                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
+                    <Badge tone="violet">{permission.slug}</Badge>
+                  </TableCell>
+                  <TableCell>{formatDateTime(permission.deactivatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <RestoreButton
+                      label={permission.slug}
+                      onClick={() =>
+                        askRestore(permission.slug, async () => permissionService.restore(permission.id))
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      default:
+        return null;
+    }
+  }
 
   return (
     <div>
       <SettingsPageHeader title="Recently Deleted" />
 
-      <div role="tablist" aria-label="Recently deleted resource" className="mt-6 flex flex-wrap gap-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`cursor-pointer rounded-lg px-3 py-1.5 font-body text-sm font-medium transition-colors duration-150 ${
-              activeTab === tab.key
-                ? "bg-navy-700 text-white dark:bg-gold-400 dark:text-navy-900"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <p className="mt-2 font-body text-sm text-slate-500 dark:text-slate-400">
+        Restore archived items within the 30-day window before they are permanently removed.
+      </p>
+
+      <TabList
+        ariaLabel="Recently deleted resource"
+        tabs={tabOptions}
+        value={activeTab}
+        onChange={setActiveTab}
+        className="mt-6"
+      />
 
       {error ? (
         <div className="mt-6">
           <EmptyState title="Couldn't load recently deleted items">{error}</EmptyState>
         </div>
-      ) : isLoading ? (
+      ) : loading ? (
         <div
           role="status"
           aria-label="Loading recently deleted items"
@@ -228,112 +584,22 @@ export function RecentlyDeleted() {
             Deleted items will appear here and can be restored within 30 days.
           </EmptyState>
         </div>
-      ) : activeTab === "subjects" ? (
-        <div className="mt-6 flex flex-col gap-3">
-          <Table>
-            <TableHead>
-              <TableHeader>Code</TableHeader>
-              <TableHeader>Title</TableHeader>
-              <TableHeader className="hidden sm:table-cell">Program</TableHeader>
-              <TableHeader className="hidden lg:table-cell">Type</TableHeader>
-              <TableHeader className="hidden lg:table-cell">Prerequisites</TableHeader>
-              <TableHeader className="text-right">Restore</TableHeader>
-            </TableHead>
-            <TableBody>
-              {(subjects ?? []).map((subject) => (
-                <TableRow key={subject.subjectId}>
-                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
-                    {subject.subjectCode}
-                  </TableCell>
-                  <TableCell>{subject.descTitle}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{subject.program}</TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <SubjectTypeBadge type={subject.subjectType} />
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {subject.prerequisites.length === 0 ? (
-                      "—"
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {subject.prerequisites.map((code) => (
-                          <Badge key={code} tone="slate">
-                            {code}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <button
-                      type="button"
-                      onClick={() => setSubjectRestoreTarget(subject)}
-                      aria-label={`Restore ${subject.subjectCode}`}
-                      className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 font-body text-xs font-medium text-blue-700 transition-colors duration-150 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-400/10"
-                    >
-                      <RotateIcon size={14} />
-                      Restore
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-3">
-          <Table>
-            <TableHead>
-              <TableHeader>Name</TableHeader>
-              <TableHeader>Deleted</TableHeader>
-              <TableHeader className="text-right">Restore</TableHeader>
-            </TableHead>
-            <TableBody>
-              {(simpleItems ?? []).map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">{item.label}</TableCell>
-                  <TableCell>{formatDate(item.deactivatedAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <button
-                      type="button"
-                      onClick={() => setSimpleRestoreTarget(item)}
-                      aria-label={`Restore ${item.label}`}
-                      className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 font-body text-xs font-medium text-blue-700 transition-colors duration-150 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-400/10"
-                    >
-                      <RotateIcon size={14} />
-                      Restore
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <div className="mt-6 flex flex-col gap-3">{renderTable()}</div>
       )}
 
       <ConfirmDialog
-        open={subjectRestoreTarget !== null}
-        onClose={() => setSubjectRestoreTarget(null)}
-        title="Restore subject"
-        confirmLabel="Restore"
-        loadingLabel="Restoring…"
-        onConfirm={handleSubjectRestore}
-      >
-        <span className="font-medium text-navy-700 dark:text-mist-100">
-          {subjectRestoreTarget?.subjectCode} — {subjectRestoreTarget?.descTitle}
-        </span>{" "}
-        will be restored to {subjectRestoreTarget?.program}.
-      </ConfirmDialog>
-
-      <ConfirmDialog
-        open={simpleRestoreTarget !== null}
-        onClose={() => setSimpleRestoreTarget(null)}
+        open={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false);
+          setPendingRestore(null);
+        }}
         title="Restore item"
         confirmLabel="Restore"
         loadingLabel="Restoring…"
-        onConfirm={handleSimpleRestore}
+        onConfirm={handleConfirm}
       >
-        <span className="font-medium text-navy-700 dark:text-mist-100">{simpleRestoreTarget?.label}</span> will be
-        restored.
+        <span className="font-medium text-navy-700 dark:text-mist-100">{confirmLabel}</span> will be restored.
       </ConfirmDialog>
     </div>
   );

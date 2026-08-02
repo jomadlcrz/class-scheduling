@@ -1,5 +1,6 @@
 import { ApiError, apiGet, apiMessage, apiPost } from "~/lib/api";
 import type {
+  AddBuildingRoomsInput,
   CreateFacilitiesInput,
   FacilityBuildingDetail,
   FacilityRoomDetail,
@@ -86,4 +87,19 @@ async function create(input: CreateFacilitiesInput): Promise<{ message: string; 
   };
 }
 
-export const facilityService = { list, getById, create };
+/** POST /buildings/:id/rooms — add one or more rooms to an existing building. */
+async function addRooms(
+  buildingId: number,
+  input: AddBuildingRoomsInput,
+): Promise<{ message: string; roomCount: number }> {
+  const data = await apiPost<{
+    message?: string;
+    rooms?: { roomId: number }[];
+  }>(`/buildings/${buildingId}/rooms`, input);
+  return {
+    message: apiMessage(data),
+    roomCount: data.rooms?.length ?? 0,
+  };
+}
+
+export const facilityService = { list, getById, create, addRooms };

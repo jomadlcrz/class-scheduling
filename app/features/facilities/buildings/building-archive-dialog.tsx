@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { AlertTriangleIcon, DoorOpenIcon } from "~/components/ui/icons";
+import { AlertTriangleIcon, DoorOpenIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
@@ -18,8 +18,7 @@ type BuildingArchiveDialogProps = {
 const summaryRowClassName =
   "flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm dark:border-white/10 dark:bg-white/5";
 
-/** Confirm-preview dialog for archiving a building: fetches GET /buildings/:id/archive-preview.
- * Cascades to active rooms in the building, but refuses if any room is still used by a schedule. */
+/** Confirm-preview dialog for archiving a building: fetches GET /buildings/:id/archive-preview. */
 export function BuildingArchiveDialog({ building, onClose, onConfirm }: BuildingArchiveDialogProps) {
   const [preview, setPreview] = useState<BuildingArchivePreview | null>(null);
   const [loading, setLoading] = useState(false);
@@ -86,14 +85,14 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
     if (!preview) return null;
 
     if (!preview.archivable) {
-      const { roomsInUse } = preview.blockers;
+      const { roomsInUse, departmentsWithStaff } = preview.blockers;
       return (
         <div className="flex flex-col gap-4">
           <Alert variant="destructive">
             <AlertTriangleIcon />
             <AlertTitle>This building can't be archived yet</AlertTitle>
             <AlertDescription>
-              One or more rooms are still used by active schedules.
+              Clear schedule blockers and reassign staff before archiving this building.
             </AlertDescription>
           </Alert>
 
@@ -114,8 +113,24 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
             </ul>
           )}
 
+          {departmentsWithStaff.length > 0 && (
+            <ul className="flex flex-col gap-1.5">
+              {departmentsWithStaff.map((d) => (
+                <li key={d.departmentId} className={summaryRowClassName}>
+                  <span className="flex items-center gap-2">
+                    <UsersIcon />
+                    {d.departmentName}
+                  </span>
+                  <span className="font-medium">
+                    {d.staff} staff assigned
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Move classes to another room first — then you can retry.
+            Move classes to another room and reassign staff first — then you can retry.
           </p>
           <div className="flex justify-end">
             <Button type="button" variant="outline" block={false} onClick={onClose}>
@@ -126,6 +141,8 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
       );
     }
 
+    const { rooms, departments, programs } = preview.willArchive;
+
     return (
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
@@ -133,14 +150,24 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
           <span className="font-medium text-navy-700 dark:text-mist-100">
             {preview.building.buildingName}
           </span>{" "}
-          soft-deletes the building and its {preview.willArchive.length}{" "}
-          {preview.willArchive.length === 1 ? "active room" : "active rooms"}. Restore them from
-          Recently Deleted within the standard 30-day window.
+          soft-deletes the building, its {rooms.length} active{" "}
+          {rooms.length === 1 ? "room" : "rooms"}
+          {departments.length > 0 && (
+            <>
+              , {departments.length} {departments.length === 1 ? "department" : "departments"}
+            </>
+          )}
+          {programs.length > 0 && (
+            <>
+              , and {programs.length} {programs.length === 1 ? "program" : "programs"}
+            </>
+          )}
+          . Restore from Recently Deleted within the standard 30-day window.
         </p>
 
-        {preview.willArchive.length > 0 && (
+        {rooms.length > 0 && (
           <ul className="flex flex-wrap gap-1.5">
-            {preview.willArchive.map((room) => (
+            {rooms.map((room) => (
               <li
                 key={room.roomId}
                 className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"

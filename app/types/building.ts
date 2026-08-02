@@ -17,17 +17,31 @@ export type Building = {
 };
 
 /** Shape of GET /buildings/:id/archive-preview and the PATCH /buildings/:id/archive payload.
- * Archiving cascades to active rooms in the building, but refuses if any room is still
- * used by a schedule. */
+ * Archiving cascades to active rooms, departments, and programs in the building. */
 export type BuildingArchivePreview = {
   building: {
     buildingId: number;
     buildingName: string;
   };
-  /** False when blockers.roomsInUse is non-empty. */
   archivable: boolean;
   blockers: {
     roomsInUse: { roomId: number; roomName: string; regularSchedules: number }[];
+    departmentsWithStaff: { departmentId: number; departmentName: string; staff: number }[];
   };
-  willArchive: { roomId: number; roomName: string }[];
+  willArchive: {
+    rooms: { roomId: number; roomName: string }[];
+    departments: { departmentId: number; departmentName: string }[];
+    programs: { programId: number; programAbbrev: string }[];
+  };
+};
+
+export type DeletedBuilding = {
+  id: number;
+  name: string;
+  deactivatedAt: string | null;
+  cascadeArchived?: {
+    rooms: number;
+    departments: number;
+    programs: number;
+  };
 };

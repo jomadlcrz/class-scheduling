@@ -114,13 +114,17 @@ async function getDeletePreview(id: number): Promise<SetDeletePreview> {
 export type DeletedSet = {
   id: number;
   setCode: string;
+  setName: string;
   deactivatedAt: string | null;
+  studentsAffected: number;
 };
 
 type SetRecycleBinResponse = {
   set_id: number;
   set_code: string;
+  set_name: string;
   deactivated_at: string | null;
+  students_affected: number;
 }[];
 
 /** GET /sets/recycle-bin — 404 → empty. */
@@ -132,7 +136,13 @@ async function listDeleted(): Promise<DeletedSet[]> {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
   }
-  return data.map((s) => ({ id: s.set_id, setCode: s.set_code, deactivatedAt: s.deactivated_at }));
+  return data.map((s) => ({
+    id: s.set_id,
+    setCode: s.set_code,
+    setName: s.set_name,
+    deactivatedAt: s.deactivated_at,
+    studentsAffected: s.students_affected,
+  }));
 }
 
 /** PATCH /sets/:id/restore */
