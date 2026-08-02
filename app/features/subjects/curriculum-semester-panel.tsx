@@ -136,9 +136,10 @@ export function CurriculumSemesterPanel({
           <>
             <Table>
               <TableHead>
-                <TableHeader className="w-10">
+                <TableHeader className="px-2 text-center align-middle">
                   <Checkbox
                     id={`curriculum-select-all-${semesterNumber}`}
+                    inset
                     hideLabel
                     ariaLabel="Select all editable rows"
                     checked={pendingKeys.length > 0 && pendingKeys.every((k) => selected.has(k))}
@@ -147,10 +148,10 @@ export function CurriculumSemesterPanel({
                 </TableHeader>
                 <TableHeader>Subject Code</TableHeader>
                 <TableHeader>Descriptive Title</TableHeader>
-                <TableHeader className="w-20 min-w-20 text-center">Units</TableHeader>
-                <TableHeader className="w-44">Subject Type</TableHeader>
+                <TableHeader className="text-center">Units</TableHeader>
+                <TableHeader>Subject Type</TableHeader>
                 <TableHeader className="min-w-48">Prerequisites</TableHeader>
-                <TableHeader className="w-12" />
+                <TableHeader className="px-2" />
               </TableHead>
               <TableBody>
                 {rows.map((row, index) => (

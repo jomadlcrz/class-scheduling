@@ -5,6 +5,8 @@ type CheckboxProps = {
   ariaLabel?: string;
   /** Hide the label text — use in tables/toolbars with ariaLabel instead. */
   hideLabel?: boolean;
+  /** Table cell variant — centered with a larger, easy-to-click target. */
+  inset?: boolean;
   name?: string;
   /** Submitted as this value when checked (for FormData.getAll on shared names). */
   value?: string;
@@ -14,12 +16,16 @@ type CheckboxProps = {
   onChange?: (checked: boolean) => void;
 };
 
+const inputClassName =
+  "size-4 cursor-pointer accent-navy-800 dark:accent-gold-400";
+
 /** Only the box itself is clickable — the label text is plain, non-interactive. */
 export function Checkbox({
   id,
   label,
   ariaLabel,
   hideLabel = false,
+  inset = false,
   name,
   value,
   defaultChecked,
@@ -27,20 +33,32 @@ export function Checkbox({
   onChange,
 }: CheckboxProps) {
   const isControlled = checked !== undefined;
+  const inputProps = {
+    id,
+    name: name ?? id,
+    type: "checkbox" as const,
+    value,
+    "aria-label": ariaLabel ?? (typeof label === "string" ? label : undefined),
+    className: inputClassName,
+    ...(isControlled
+      ? { checked, onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.checked) }
+      : { defaultChecked }),
+  };
+
+  if (inset) {
+    return (
+      <label
+        htmlFor={id}
+        className="mx-auto grid size-8 cursor-pointer place-items-center rounded-lg transition-colors hover:bg-slate-100 focus-within:ring-2 focus-within:ring-gold-400/60 dark:hover:bg-white/10"
+      >
+        <input {...inputProps} />
+      </label>
+    );
+  }
 
   return (
     <div className="flex w-fit items-center gap-2">
-      <input
-        id={id}
-        name={name ?? id}
-        type="checkbox"
-        value={value}
-        {...(isControlled
-          ? { checked, onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.checked) }
-          : { defaultChecked })}
-        aria-label={ariaLabel ?? (typeof label === "string" ? label : undefined)}
-        className="size-4 cursor-pointer accent-navy-800 dark:accent-gold-400"
-      />
+      <input {...inputProps} />
       {!hideLabel && label != null && (
         <span className="font-body text-sm text-slate-600 dark:text-slate-300">{label}</span>
       )}

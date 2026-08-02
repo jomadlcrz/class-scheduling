@@ -1,4 +1,3 @@
-import { Badge } from "~/components/ui/badge";
 import { TrashIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { TableCell, TableRow } from "~/components/ui/table";
@@ -9,6 +8,7 @@ import {
   PrerequisitePicker,
   type PrerequisiteOption,
 } from "~/features/subjects/prerequisite-picker";
+import { PrerequisiteBadges } from "~/features/subjects/prerequisite-badges";
 import { SUBJECT_TYPE_LABELS, type CreateSubjectInput } from "~/types/subject";
 
 export type CurriculumSubjectRowData = {
@@ -35,6 +35,9 @@ type CurriculumSubjectRowProps = {
 const deleteButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400";
 
+const unitsInputClassName =
+  "box-border w-12 rounded-lg border border-slate-300 bg-white px-1 py-1.5 text-center font-body text-sm tabular-nums text-gray-900 outline-none transition-colors duration-150 focus:border-blue-700 focus:ring-2 focus:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
+
 export function CurriculumSubjectRow({
   row,
   index,
@@ -49,20 +52,26 @@ export function CurriculumSubjectRow({
 
   return (
     <TableRow className={isEditable ? "bg-amber-50/40 dark:bg-gold-400/5" : undefined}>
-      <TableCell className="align-top">
+      <TableCell className="px-2 text-center align-middle">
         {isEditable ? (
           <Checkbox
             id={`select-${row.key}`}
+            inset
             hideLabel
             ariaLabel={`Select ${row.code || "new subject"}`}
             checked={selected}
             onChange={() => onToggleSelected()}
           />
         ) : (
-          <span className="mt-0.5 inline-block w-4 text-center text-xs text-slate-400">{index + 1}</span>
+          <span
+            className="mx-auto grid size-8 place-items-center font-body text-xs tabular-nums text-slate-400 dark:text-slate-500"
+            aria-hidden
+          >
+            {index + 1}
+          </span>
         )}
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="min-w-0 align-middle">
         {isEditable && row.tempId ? (
           <TableInput
             value={row.code}
@@ -71,10 +80,15 @@ export function CurriculumSubjectRow({
             className="font-medium"
           />
         ) : (
-          <span className="font-medium text-navy-700 dark:text-mist-100">{row.code}</span>
+          <span
+            className="block truncate font-medium text-navy-700 dark:text-mist-100"
+            title={row.code}
+          >
+            {row.code}
+          </span>
         )}
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="min-w-0 align-middle">
         {isEditable && row.tempId ? (
           <TableInput
             value={row.title}
@@ -82,27 +96,28 @@ export function CurriculumSubjectRow({
             placeholder="Introduction to Computing"
           />
         ) : (
-          row.title
+          <span className="block truncate" title={row.title}>
+            {row.title}
+          </span>
         )}
       </TableCell>
-      <TableCell className="w-24 min-w-24 align-middle text-center">
+      <TableCell className="px-1 align-middle text-center whitespace-nowrap">
         {isEditable && row.tempId ? (
-          <div className="mx-auto w-20">
-            <TableInput
-              type="number"
-              min={1}
-              max={6}
-              step={1}
-              value={row.units}
-              onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
-              className="px-1 text-center tabular-nums"
-            />
-          </div>
+          <input
+            type="number"
+            min={1}
+            max={6}
+            step={1}
+            value={row.units}
+            onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
+            aria-label={`Units for ${row.code || "new subject"}`}
+            className={unitsInputClassName}
+          />
         ) : (
-          <span className="block text-center tabular-nums">{row.units}</span>
+          <span className="inline-block min-w-12 tabular-nums">{row.units}</span>
         )}
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="min-w-0 align-middle">
         {isEditable && row.tempId ? (
           <Select
             items={subjectTypes.map((type) => ({
@@ -127,7 +142,7 @@ export function CurriculumSubjectRow({
           <SubjectTypeBadge type={row.subjectType} />
         )}
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="min-w-0 align-middle">
         {isEditable && row.tempId ? (
           <PrerequisitePicker
             compact
@@ -146,20 +161,14 @@ export function CurriculumSubjectRow({
             }
           />
         ) : row.prerequisites.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {row.prerequisites.map((code) => (
-              <Badge key={code} tone="slate">
-                {code}
-              </Badge>
-            ))}
-          </div>
+          <PrerequisiteBadges codes={row.prerequisites} maxVisible={2} />
         ) : (
           <span className="text-slate-400 dark:text-slate-500">None</span>
         )}
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="px-2 align-middle">
         {isEditable && row.tempId ? (
-          <div className="flex justify-end">
+          <div className="flex justify-center">
             <button
               type="button"
               onClick={() => onRemovePending(row.tempId!)}

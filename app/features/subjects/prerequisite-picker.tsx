@@ -1,6 +1,7 @@
 ﻿import { useId, useMemo, useState } from "react";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
+import { PrerequisiteMoreBadge } from "~/features/subjects/prerequisite-more-badge";
 
 export type PrerequisiteOption = {
   /** Real id for saved subjects, temp id for pending entries. */
@@ -31,6 +32,8 @@ export function PrerequisitePicker({ options, value, onChange, compact = false }
     .filter((o): o is PrerequisiteOption => Boolean(o));
   const available = options.filter((o) => !value.includes(o.id));
   const disabled = options.length === 0;
+  const visibleSelected = compact ? selected.slice(0, 1) : selected;
+  const hiddenSelected = compact ? selected.slice(1) : [];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -42,6 +45,9 @@ export function PrerequisitePicker({ options, value, onChange, compact = false }
 
   const placeholder =
     selected.length === 0 ? (compact ? "None" : "Search subjects…") : compact ? "Add…" : "Add prerequisite…";
+
+  const chipClassName =
+    "inline-flex items-center gap-1.5 rounded-md bg-navy-500/10 px-2 py-1 text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200";
 
   const picker = disabled ? (
     <div className={`${inputClassName} text-slate-400 dark:text-slate-500`}>No subjects available</div>
@@ -60,15 +66,12 @@ export function PrerequisitePicker({ options, value, onChange, compact = false }
       itemToStringLabel={(id) => options.find((o) => o.id === id)?.code ?? ""}
     >
       <div
-        className={`flex cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
+        className={`flex min-w-0 cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 ${
           compact ? "min-h-9 px-2 py-1" : "min-h-10.5 px-3 py-2"
         }`}
       >
-        {selected.map((option) => (
-          <span
-            key={option.id}
-            className="inline-flex items-center gap-1.5 rounded-md bg-navy-500/10 px-2 py-1 text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200"
-          >
+        {visibleSelected.map((option) => (
+          <span key={option.id} className={chipClassName}>
             {option.code}
             <button
               type="button"
@@ -80,6 +83,18 @@ export function PrerequisitePicker({ options, value, onChange, compact = false }
             </button>
           </span>
         ))}
+
+        {compact && hiddenSelected.length > 0 && (
+          <PrerequisiteMoreBadge
+            count={hiddenSelected.length}
+            items={hiddenSelected.map((option) => ({
+              id: option.id,
+              code: option.code,
+              title: option.title,
+            }))}
+            onRemove={(id) => onChange(value.filter((entry) => entry !== id))}
+          />
+        )}
 
         <CommandInput
           embedded
