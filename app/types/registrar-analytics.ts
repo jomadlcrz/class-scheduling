@@ -52,12 +52,42 @@ export type LabCapacity = {
   laboratories: LabSummary[];
 };
 
+export type EnrollmentStatusBreakdown = {
+  status: string;
+  count: number;
+};
+
+export type NotEnrolledStudent = {
+  student_profile_id: number;
+  student_id: string | null;
+  full_name: string;
+};
+
 export type Enrollment = {
+  /** Enrolled THIS term — a StudentAcademic row exists for this sy_id/sem_id. */
   total_students: number;
+  /** Whole active roster, enrolled or not — the denominator for not_enrolled_count. */
+  total_active_students: number;
+  /** Active students with no enrollment row at all this term — they never
+   * show up in the pending counts below, since there's nothing to be
+   * "pending" on. */
+  not_enrolled_count: number;
+  /** Every not-yet-enrolled active student, complete — not a "top N" sample. */
+  not_enrolled_students: NotEnrolledStudent[];
   regular_count: number;
+  regular_seated_count: number;
+  regular_pending_count: number;
   irregular_count: number;
   irregular_pending_count: number;
   irregular_fully_seated_count: number;
+  /** Sum of regular_pending_count + irregular_pending_count — read this for a
+   * single school-wide "awaiting seats" figure instead of adding the two
+   * group counts yourself. */
+  total_pending_count: number;
+  total_seated_count: number;
+  /** Five mutually-exclusive categories (including "Not yet enrolled"),
+   * donut/pie-ready, across the whole active roster. */
+  status_breakdown: EnrollmentStatusBreakdown[];
 };
 
 export type DepartmentStaffing = {

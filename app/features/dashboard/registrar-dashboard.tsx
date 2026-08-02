@@ -12,6 +12,7 @@ import type { RegistrarAnalyticsResponse } from "~/types/registrar-analytics";
 import {
   ChartCard,
   EnrollmentDonut,
+  IRREGULAR_PENDING,
   LabCapacityMeters,
   ScheduleCompletionChart,
   StaffingByDepartmentChart,
@@ -36,9 +37,52 @@ type Tile = {
   unit?: string;
   hint?: string;
   tone?: string;
+  color?: string;
   badge?: string;
   meterPercent?: number;
 };
+
+function pct(count: number, of: number): number {
+  return of > 0 ? Math.round((count / of) * 100) : 0;
+}
+
+/** A lower-is-better gap: 0 is done, under a quarter is on track, past half
+ * needs attention. */
+function gapTone(count: number, of: number): string {
+  if (count <= 0) return "good";
+  const percent = pct(count, of);
+  if (percent >= 50) return "critical";
+  if (percent >= 25) return "warning";
+  return "good";
+}
+
+/** Deliberately scoped to students who ARE enrolled but have no seat yet —
+ * "not yet enrolled" is a different question, answered by the Enrollment
+ * status donut above instead. Keeping the two apart is the point: an
+ * enrollment gap and a scheduling gap are not the same kind of problem. */
+function buildNotYetScheduledTiles(data: RegistrarAnalyticsResponse): Tile[] {
+  const en = data.enrollment;
+  return [
+    {
+      title: "Regular — no schedule",
+      displayValue: String(en.regular_pending_count),
+      unit: `of ${en.regular_count} regular students`,
+      tone: gapTone(en.regular_pending_count, en.regular_count),
+      badge: `${pct(en.regular_pending_count, en.regular_count)}% of regulars`,
+    },
+    {
+      title: "Irregular — no schedule",
+      displayValue: String(en.irregular_pending_count),
+      unit: `of ${en.irregular_count} irregular students`,
+      // Irregular's own identity color (same amber as its donut slice)
+      // once there's a real gap, rather than the shared warning ladder —
+      // a glance at the color alone says which group it is.
+      color: en.irregular_pending_count > 0 ? IRREGULAR_PENDING : undefined,
+      tone: gapTone(en.irregular_pending_count, en.irregular_count),
+      badge: `${pct(en.irregular_pending_count, en.irregular_count)}% of irregulars`,
+    },
+  ];
+}
 
 function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
   const sc = data.schedule_completion;
@@ -70,14 +114,14 @@ function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
       displayValue: String(en.total_students),
       unit: `${en.regular_count} regular · ${en.irregular_count} irregular`,
       tone:
-        en.irregular_pending_count > 0
-          ? en.irregular_pending_count >= en.irregular_count
+        en.total_pending_count > 0
+          ? en.total_pending_count >= en.total_students
             ? "critical"
             : "warning"
           : "good",
       badge:
-        en.irregular_pending_count > 0
-          ? `${en.irregular_pending_count} awaiting seats`
+        en.total_pending_count > 0
+          ? `${en.total_pending_count} awaiting seats`
           : "All seated",
     },
     {
@@ -157,6 +201,48 @@ function UnscheduledSetsTable({ sets }: { sets: RegistrarAnalyticsResponse["sche
   );
 }
 
+function NotEnrolledStudentsTable({ students }: { students: RegistrarAnalyticsResponse["enrollment"]["not_enrolled_students"] }) {
+  if (students.length === 0) {
+    return (
+      <motion.div
+        variants={popCard}
+        className="flex h-44 items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500"
+      >
+        Every active student has enrolled this term.
+      </motion.div>
+    );
+  }
+  const shown = students.slice(0, 12);
+  const overflow = students.length - shown.length;
+  return (
+    <motion.div variants={popCard}>
+      <Table>
+        <TableHead>
+          <TableHeader>Student</TableHeader>
+          <TableHeader>Student ID</TableHeader>
+        </TableHead>
+        <TableBody>
+          {shown.map((student) => (
+            <TableRow key={student.student_profile_id}>
+              <TableCell>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{student.full_name}</span>
+              </TableCell>
+              <TableCell>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{student.student_id ?? "—"}</span>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      {overflow > 0 && (
+        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+          +{overflow} more not-yet-enrolled students.
+        </p>
+      )}
+    </motion.div>
+  );
+}
+
 export function RegistrarDashboard() {
   const {
     data,
@@ -172,6 +258,7 @@ export function RegistrarDashboard() {
   } = useTermData<RegistrarAnalyticsResponse>((sy, sem) => registrarService.getAnalytics(sy, sem));
 
   const tiles = data ? buildTiles(data) : [];
+  const notYetScheduledTiles = data ? buildNotYetScheduledTiles(data) : [];
 
   return (
     <div className="space-y-6">
@@ -261,9 +348,40 @@ export function RegistrarDashboard() {
                       <ScheduleCompletionChart programs={data.schedule_completion.by_program} />
                     </ChartCard>
                   </div>
-                  <ChartCard title="Enrollment mix" subtitle="Regular vs irregular students enrolled this term.">
+                  <ChartCard
+                    title="Enrollment status"
+                    subtitle="Who's on the roster this term — regular, irregular, or not yet enrolled."
+                  >
                     <EnrollmentDonut enrollment={data.enrollment} />
                   </ChartCard>
+                </motion.div>
+              </motion.section>
+
+              {/* ─── Not yet enrolled students ─── */}
+              <motion.section variants={fadeSlideUp}>
+                <h3 className="mb-3 text-base font-bold text-slate-800 dark:text-slate-200">
+                  Not yet enrolled students
+                </h3>
+                <NotEnrolledStudentsTable students={data.enrollment.not_enrolled_students} />
+              </motion.section>
+
+              {/* ─── Not yet scheduled ─── */}
+              <motion.section variants={fadeSlideUp}>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                  Not yet scheduled
+                </h3>
+                <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+                  Already enrolled, but still without a seat — separate from the not-yet-enrolled count above.
+                </p>
+                <motion.div
+                  variants={staggerWidgets}
+                  initial="hidden"
+                  animate="visible"
+                  className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+                >
+                  {notYetScheduledTiles.map((tile) => (
+                    <StatTile key={tile.title} {...tile} />
+                  ))}
                 </motion.div>
               </motion.section>
 

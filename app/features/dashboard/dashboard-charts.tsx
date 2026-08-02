@@ -169,6 +169,7 @@ export function StatTile({
   unit,
   hint,
   tone = "neutral",
+  color: colorOverride,
   badge,
   meterPercent,
 }: {
@@ -177,10 +178,14 @@ export function StatTile({
   unit?: string;
   hint?: string;
   tone?: string;
+  /** Explicit hex color, e.g. to carry a group's own identity (Irregular's
+   * indigo/amber) instead of the shared good/warning/critical ladder. Takes
+   * precedence over `tone` when set. */
+  color?: string;
   badge?: string;
   meterPercent?: number;
 }) {
-  const color = chartStatusColor(tone);
+  const color = colorOverride ?? chartStatusColor(tone);
   return (
     <motion.div
       variants={{
@@ -399,15 +404,60 @@ export function ScheduleCompletionChart({ programs }: { programs: ScheduleComple
 
 // ── Enrollment donut ─────────────────────────────────────────────────────────
 
+/** A rotating fallback ramp for any status label the color rules below don't
+ * recognize, so a category the backend adds later still renders distinctly
+ * instead of falling back to a single flat color. */
+const DONUT_FALLBACK_RAMP = [
+  "var(--color-navy-500)",
+  "var(--color-navy-300)",
+  "#8b8f9c",
+  "#5b6472",
+];
+
+/** Irregular gets its own hue ("Midnight Cram") instead of a lighter shade of
+ * Regular's green/amber — deep indigo for seated, amber glow for pending.
+ * Shared with the "Not yet scheduled" tiles below so the same group reads
+ * the same color everywhere on this dashboard. */
+export const IRREGULAR_SEATED = "#4c3fa0";
+export const IRREGULAR_PENDING = "#e8a23d";
+
+/** This chart answers ONE question — who is enrolled, at all — so every
+ * status_breakdown row collapses into its top-level enrollment bucket
+ * ("Regular — seated"/"Regular — pending" both count as "Regular"). Seating
+ * status (seated vs pending) is a different question, answered by the
+ * separate "Not yet scheduled" section — mixing the two into one chart was
+ * confusing. A category the backend adds later still lands in the right
+ * bucket without a frontend change, as long as its label says which group it
+ * belongs to. */
+function enrollmentGroupOf(status: string): string {
+  const s = status.toLowerCase();
+  if (s.includes("not") && s.includes("enrolled")) return "Not yet enrolled";
+  if (s.includes("irregular")) return "Irregular";
+  if (s.includes("regular")) return "Regular";
+  return status;
+}
+
+const ENROLLMENT_GROUP_COLORS: Record<string, string> = {
+  "Not yet enrolled": STATUS_COLORS.critical,
+  Regular: STATUS_COLORS.good,
+  Irregular: IRREGULAR_SEATED,
+};
+
 export function EnrollmentDonut({ enrollment }: { enrollment: Enrollment }) {
   const c = useChartColors();
-  const data = [
-    { name: "Regular", value: enrollment.regular_count, color: STATUS_COLORS.good },
-    { name: "Irregular", value: enrollment.irregular_count, color: "var(--color-navy-500)" },
-  ];
+  const totals = new Map<string, number>();
+  for (const row of enrollment.status_breakdown) {
+    const group = enrollmentGroupOf(row.status);
+    totals.set(group, (totals.get(group) ?? 0) + row.count);
+  }
+  const data = Array.from(totals, ([name, value], i) => ({
+    name,
+    value,
+    color: ENROLLMENT_GROUP_COLORS[name] ?? DONUT_FALLBACK_RAMP[i % DONUT_FALLBACK_RAMP.length],
+  }));
   const total = data.reduce((sum, d) => sum + d.value, 0);
   if (total === 0) {
-    return <ChartEmpty message="No students enrolled this term." />;
+    return <ChartEmpty message="No active students on the roster." />;
   }
   return (
     <div className="flex flex-col items-center justify-center gap-5 sm:flex-row">
@@ -435,7 +485,7 @@ export function EnrollmentDonut({ enrollment }: { enrollment: Enrollment }) {
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-bold text-slate-900 dark:text-white">{total}</span>
           <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            enrolled
+            on roster
           </span>
         </div>
       </div>
@@ -447,10 +497,10 @@ export function EnrollmentDonut({ enrollment }: { enrollment: Enrollment }) {
             <span className={`ml-4 font-medium tabular-nums ${c.label}`}>{d.value}</span>
           </div>
         ))}
-        {enrollment.irregular_pending_count > 0 && (
+        {enrollment.not_enrolled_count > 0 && (
           <p className={`pt-1 text-[11px] ${c.muted}`}>
-            {enrollment.irregular_pending_count} irregular student
-            {enrollment.irregular_pending_count === 1 ? "" : "s"} still need a seat
+            {enrollment.not_enrolled_count} student
+            {enrollment.not_enrolled_count === 1 ? " hasn't" : "s haven't"} enrolled yet
           </p>
         )}
       </div>
