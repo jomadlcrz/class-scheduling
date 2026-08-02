@@ -39,16 +39,22 @@ function CompactPrerequisitePicker({
 }: PickerProps) {
   const searchId = useId();
   const [query, setQuery] = useState("");
-  const selected = options.filter((option) => value.includes(option.id));
+  const [view, setView] = useState<"all" | "selected">("all");
+  const selected = value
+    .map((id) => options.find((option) => option.id === id))
+    .filter((option): option is PrerequisiteOption => Boolean(option));
   const filtered = useMemo(() => {
+    const candidates = view === "selected"
+      ? options.filter((option) => value.includes(option.id))
+      : options;
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return options;
-    return options.filter(
+    if (!normalizedQuery) return candidates;
+    return candidates.filter(
       (option) =>
         option.code.toLowerCase().includes(normalizedQuery) ||
         option.title.toLowerCase().includes(normalizedQuery),
     );
-  }, [options, query]);
+  }, [options, query, value, view]);
 
   if (options.length === 0) {
     return (
@@ -76,40 +82,76 @@ function CompactPrerequisitePicker({
       }
       triggerClassName={compactTriggerClassName}
       className="w-72 max-w-[calc(100vw-1rem)] p-0"
+      scrollable={false}
       onOpenChange={(open) => {
-        if (!open) setQuery("");
+        if (!open) {
+          setQuery("");
+          setView("all");
+        }
       }}
     >
       {(close) => (
-        <div className="flex flex-col">
-          <div className="border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                Prerequisites
-              </p>
-              <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                {selected.length} selected
-              </span>
-            </div>
+        <div className="flex max-h-[calc(100vh-1rem)] min-h-0 flex-col">
+          <div className="shrink-0 border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
+            <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+              Prerequisites
+            </p>
             <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
               Choose all subjects that must be completed first.
             </p>
+            <div
+              role="group"
+              aria-label="Prerequisite list view"
+              className="mt-2 grid grid-cols-2 rounded-lg bg-slate-100 p-0.5 dark:bg-white/5"
+            >
+              <button
+                type="button"
+                aria-pressed={view === "all"}
+                onClick={() => {
+                  setView("all");
+                  setQuery("");
+                }}
+                className={`cursor-pointer rounded-md px-2 py-1 font-body text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                  view === "all"
+                    ? "bg-white text-navy-700 shadow-sm dark:bg-white/10 dark:text-white"
+                    : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-white"
+                }`}
+              >
+                All subjects
+              </button>
+              <button
+                type="button"
+                aria-pressed={view === "selected"}
+                disabled={selected.length === 0}
+                onClick={() => {
+                  setView("selected");
+                  setQuery("");
+                }}
+                className={`cursor-pointer rounded-md px-2 py-1 font-body text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 ${
+                  view === "selected"
+                    ? "bg-white text-navy-700 shadow-sm dark:bg-white/10 dark:text-white"
+                    : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-white"
+                }`}
+              >
+                Selected ({selected.length})
+              </button>
+            </div>
           </div>
 
-          <div className="px-2 pt-2">
+          <div className="shrink-0 px-2 pt-2">
             <SearchInput
               id={searchId}
               value={query}
               onChange={setQuery}
-              placeholder="Search code or title…"
+              placeholder={view === "selected" ? "Search selected…" : "Search code or title…"}
               ariaLabel="Search prerequisite subjects"
             />
           </div>
 
-          <div className="max-h-56 overflow-y-auto px-1.5 py-2">
+          <div className="min-h-0 max-h-56 flex-1 overflow-y-auto px-1.5 py-2">
             {filtered.length === 0 ? (
               <p role="status" className="px-3 py-6 text-center font-body text-sm text-slate-400 dark:text-slate-500">
-                No subjects found.
+                {view === "selected" ? "No selected prerequisites found." : "No subjects found."}
               </p>
             ) : (
               filtered.map((option) => {
@@ -121,13 +163,13 @@ function CompactPrerequisitePicker({
                     role="menuitemcheckbox"
                     aria-checked={isSelected}
                     className={compactOptionClassName}
-                    onClick={() =>
-                      onChange(
-                        isSelected
-                          ? value.filter((id) => id !== option.id)
-                          : [...value, option.id],
-                      )
-                    }
+                    onClick={() => {
+                      const nextValue = isSelected
+                        ? value.filter((id) => id !== option.id)
+                        : [...value, option.id];
+                      onChange(nextValue);
+                      if (view === "selected" && nextValue.length === 0) setView("all");
+                    }}
                   >
                     <span
                       className={`grid size-4 shrink-0 place-items-center rounded border ${
@@ -153,11 +195,14 @@ function CompactPrerequisitePicker({
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-2 border-t border-slate-200 px-3 py-2 dark:border-white/10">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-t border-slate-200 px-3 py-2 dark:border-white/10">
             <button
               type="button"
               disabled={selected.length === 0}
-              onClick={() => onChange([])}
+              onClick={() => {
+                onChange([]);
+                setView("all");
+              }}
               className="cursor-pointer rounded-md px-2 py-1 font-body text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
             >
               Clear
@@ -166,6 +211,7 @@ function CompactPrerequisitePicker({
               type="button"
               onClick={() => {
                 setQuery("");
+                setView("all");
                 close();
               }}
               className="cursor-pointer rounded-md bg-navy-800 px-3 py-1.5 font-body text-xs font-medium text-white transition-colors hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-200"
@@ -183,7 +229,9 @@ function CompactPrerequisitePicker({
 function FullPrerequisitePicker({ options, value, onChange }: PickerProps) {
   const [query, setQuery] = useState("");
   const inputId = useId();
-  const selected = options.filter((option) => value.includes(option.id));
+  const selected = value
+    .map((id) => options.find((option) => option.id === id))
+    .filter((option): option is PrerequisiteOption => Boolean(option));
   const available = options.filter((option) => !value.includes(option.id));
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

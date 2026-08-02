@@ -10,6 +10,8 @@ type PopoverProps = {
   triggerClassName?: string;
   /** Extra classes for the floating panel (e.g. width). */
   className?: string;
+  /** Disable panel scrolling when a child region owns the overflow. */
+  scrollable?: boolean;
   /** Panel contents; receives a `close` helper to dismiss after a selection. */
   children: (close: () => void) => ReactNode;
   /** Called with the new state whenever the popover opens or closes. */
@@ -17,14 +19,22 @@ type PopoverProps = {
 };
 
 const panelBase =
-  "z-50 max-h-[60vh] overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-[0_0_0_1px_#d1d9e080,0_6px_12px_-3px_#25292e0a,0_6px_18px_0_#25292e1f] dark:border-white/10 dark:bg-surface-raised dark:shadow-[0_0_0_1px_#ffffff14,0_6px_12px_-3px_#0000005c,0_6px_18px_0_#00000080]";
+  "z-50 rounded-lg border border-slate-200 bg-white shadow-[0_0_0_1px_#d1d9e080,0_6px_12px_-3px_#25292e0a,0_6px_18px_0_#25292e1f] dark:border-white/10 dark:bg-surface-raised dark:shadow-[0_0_0_1px_#ffffff14,0_6px_12px_-3px_#0000005c,0_6px_18px_0_#00000080]";
 
 /**
  * Anchored popover rendered in a portal so it escapes overflow/scroll clipping.
  * Positions under the trigger, flips above when there isn't room below, and
  * clamps inside the viewport — recomputing on scroll/resize.
  */
-export function Popover({ label, trigger, triggerClassName, className, children, onOpenChange }: PopoverProps) {
+export function Popover({
+  label,
+  trigger,
+  triggerClassName,
+  className,
+  scrollable = true,
+  children,
+  onOpenChange,
+}: PopoverProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -111,9 +121,13 @@ export function Popover({ label, trigger, triggerClassName, className, children,
               left: pos?.left ?? 0,
               visibility: pos ? "visible" : "hidden",
             }}
-            className={`${panelBase} ${className ?? ""}`}
+            className={`${panelBase} ${
+              scrollable
+                ? "max-h-[60vh] overflow-y-auto py-1"
+                : "max-h-[calc(100vh-1rem)] overflow-hidden"
+            } ${className ?? ""}`}
           >
-            {children(() => setOpen(false))}
+            {children(close)}
           </div>,
           document.body,
         )}
