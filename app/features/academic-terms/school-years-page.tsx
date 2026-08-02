@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import {
   ArchiveIcon,
   EditIcon,
@@ -42,6 +41,7 @@ export function SchoolYearsPage() {
   }, [search]);
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -75,22 +75,22 @@ export function SchoolYearsPage() {
         </AlertAction>
       </Alert>
 
-      <Card className="mt-6 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
-          <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-            School Years List
-          </h2>
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value);
-              setPage(1);
-            }}
-            placeholder="Search school year…"
-            className="w-full sm:w-56"
-          />
-        </div>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+          School Years List
+        </h2>
+        <SearchInput
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+          placeholder="Search school year…"
+          className="w-full sm:w-56"
+        />
+      </div>
 
+      <div className="mt-3">
         <Table>
           <TableHead>
             <TableHeader>School Year</TableHeader>
@@ -147,11 +147,11 @@ export function SchoolYearsPage() {
             ))}
           </TableBody>
         </Table>
+      </div>
 
-        <div className="border-t border-slate-200 px-4 py-3 dark:border-white/10">
-          <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
-        </div>
-      </Card>
+      {totalPages > 1 && (
+        <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
+      )}
 
       <Alert variant="warning" className="mt-6">
         <HelpCircleIcon />

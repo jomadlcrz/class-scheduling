@@ -46,6 +46,7 @@ export function TermClosurePage() {
   }, [search, schoolYear, semester, status]);
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -124,7 +125,7 @@ export function TermClosurePage() {
         </Button>
       </div>
 
-      <Card className="mt-4 overflow-hidden">
+      <div className="mt-4">
         <Table>
           <TableHead>
             <TableHeader>School Year</TableHeader>
@@ -187,11 +188,11 @@ export function TermClosurePage() {
             ))}
           </TableBody>
         </Table>
+      </div>
 
-        <div className="border-t border-slate-200 px-4 py-3 dark:border-white/10">
-          <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
-        </div>
-      </Card>
+      {totalPages > 1 && (
+        <Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} />
+      )}
 
       <Card className="mt-6 p-5">
         <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Status Guide</h3>

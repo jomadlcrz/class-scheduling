@@ -3,7 +3,6 @@ import { Link } from "react-router";
 import { toast } from "sonner";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { CalendarIcon, EditIcon, HelpCircleIcon, PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import {
@@ -46,24 +45,21 @@ export function SemestersPage() {
         </AlertDescription>
       </Alert>
 
-      <Card className="mt-6 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-white/10">
-          <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-            Semesters List
-          </h2>
-          <span title="Only two global semesters exist">
-            <Button type="button" variant="outline" block={false} disabled>
-              <PlusIcon />
-              Add Semester
-            </Button>
-          </span>
-        </div>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+          Semesters List
+        </h2>
+        <span title="Only two global semesters exist">
+          <Button type="button" variant="outline" block={false} disabled>
+            <PlusIcon />
+            Add Semester
+          </Button>
+        </span>
+      </div>
 
+      <div className="mt-3">
         <SemestersTable semesters={MOCK_SEMESTERS} />
-        <p className="border-t border-slate-200 px-4 py-3 font-body text-sm text-slate-500 dark:border-white/10 dark:text-slate-400">
-          Showing 1 to 2 of 2 entries
-        </p>
-      </Card>
+      </div>
 
       <Alert variant="default" className="mt-6 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200">
         <HelpCircleIcon />
