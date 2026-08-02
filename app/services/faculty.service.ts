@@ -74,11 +74,11 @@ type DepartmentsResponse = {
   }[];
 };
 
-/** GET /departments — real departments for the account form dropdown. */
+/** GET /departments/academic — only departments that can own faculty accounts. */
 async function listDepartmentOptions(): Promise<DepartmentOption[]> {
   let data: DepartmentsResponse;
   try {
-    data = await apiGet<DepartmentsResponse>("/departments/");
+    data = await apiGet<DepartmentsResponse>("/departments/academic");
   } catch (err) {
     // The backend answers an empty departments table with 404.
     if (err instanceof ApiError && err.status === 404) return [];

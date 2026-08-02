@@ -7,12 +7,18 @@ import { formatDecimalHour } from "~/lib/time";
 import type { ScheduleSemester } from "~/types/schedule";
 import type { YearLevel } from "~/types/subject";
 
-const SUBJECT_CODE_RE = /\b([A-Z]{2,8}\d{1,4})\b/g;
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
-function highlightSubjectCode(text: string) {
-  const parts = text.split(SUBJECT_CODE_RE);
+function highlightSubjectCodes(text: string, subjectCodes: string[]) {
+  const codes = [...new Set(subjectCodes.filter(Boolean))].sort((a, b) => b.length - a.length);
+  if (codes.length === 0) return text;
+
+  const codeSet = new Set(codes);
+  const parts = text.split(new RegExp(`(${codes.map(escapeRegExp).join("|")})`, "g"));
   return parts.map((part, i) =>
-    i % 2 === 1 ? <strong key={i} className="font-semibold">{part}</strong> : part
+    codeSet.has(part) ? <strong key={i} className="font-semibold">{part}</strong> : part
   );
 }
 
@@ -27,6 +33,7 @@ export function AutoGenerateIcon() {
 /** Subject-placement failures from the last auto-generate run. Render only when non-empty. */
 export function GenerationConflictsAlert({
   conflicts,
+  subjectCodes,
   suggestions,
   onEditConflict,
   onApplySuggestion,
@@ -34,6 +41,7 @@ export function GenerationConflictsAlert({
   onResolve,
 }: {
   conflicts: string[];
+  subjectCodes: string[];
   suggestions?: ScheduleSuggestion[];
   onEditConflict?: (conflict: string) => void;
   onApplySuggestion?: (suggestion: ScheduleSuggestion) => void;
@@ -43,6 +51,9 @@ export function GenerationConflictsAlert({
   const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
   const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
   const repackSuggestions = (suggestions ?? []).filter((s) => s.type === "repack_instructor");
+  const hasAutoResolvableSuggestion = [...moveSuggestions, ...repackSuggestions].some(
+    (suggestion) => suggestion.apply && (suggestion.displaces?.length ?? 0) === 0,
+  );
   return (
     <Alert variant="warning">
       <AlertTriangleIcon />
@@ -51,7 +62,7 @@ export function GenerationConflictsAlert({
           <ul className="list-disc space-y-1 pl-4">
             {conflicts.map((c, i) => (
               <li key={i}>
-                {highlightSubjectCode(c)}
+                {highlightSubjectCodes(c, subjectCodes)}
                 {onEditConflict && /\bmoving\b.*\bfrom\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\bto\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\(/i.test(c) && (
                   <>
                     {" "}
@@ -94,7 +105,7 @@ export function GenerationConflictsAlert({
           </div>
         )}
 
-        {conflicts.length > 0 && onResolve && (
+        {conflicts.length > 0 && hasAutoResolvableSuggestion && onResolve && (
           <div className="mt-3">
             <Button type="button" variant="outline" block={false} onClick={onResolve}>
               Resolve conflicts
