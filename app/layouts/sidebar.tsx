@@ -60,16 +60,16 @@ const NAV_GROUPS: NavGroup[] = [
       {
         label: "Academic Terms",
         icon: <CalendarIcon />,
-        roles: ["registrar", "admin"],
+        roles: ["registrar"],
         subItems: [
           {
             label: "School Years",
             to: "/academic-terms/school-years",
-            roles: ["registrar", "admin"],
+            roles: ["registrar"],
             matchPaths: ["/academic-term", "/academic-terms"],
           },
-          { label: "Semesters", to: "/academic-terms/semesters", roles: ["registrar", "admin"] },
-          { label: "Term Closure", to: "/academic-terms/term-closure", roles: ["registrar", "admin"] },
+          { label: "Semesters", to: "/academic-terms/semesters", roles: ["registrar"] },
+          { label: "Term Closure", to: "/academic-terms/term-closure", roles: ["registrar"] },
         ],
       },
       { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },

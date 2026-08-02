@@ -10,7 +10,7 @@ export function meta() {
 
 export default function SemestersRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar"]}>
+    <RoleGuard allow={["registrar"]}>
       <SemestersPage />
     </RoleGuard>
   );

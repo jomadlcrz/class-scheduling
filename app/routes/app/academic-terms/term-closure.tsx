@@ -10,7 +10,7 @@ export function meta() {
 
 export default function TermClosureRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar"]}>
+    <RoleGuard allow={["registrar"]}>
       <TermClosurePage />
     </RoleGuard>
   );
