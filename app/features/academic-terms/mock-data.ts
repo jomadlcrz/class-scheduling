@@ -110,7 +110,7 @@ export const MOCK_TERM_CLOSURES: MockTermClosure[] = [
     status: "Closed",
     closedReason: "Closed by Registrar (Posted)",
     closedAt: "Mar 15, 2026 10:30 AM",
-    closedBy: "Maria Santos",
+    closedBy: "Maria Santos (Registrar Admin)",
     reopenable: true,
     closedNotes: "End of term grades have been posted and verified.",
   },
@@ -144,7 +144,7 @@ export const MOCK_TERM_CLOSURES: MockTermClosure[] = [
     status: "Closed",
     closedReason: "Closed by Registrar (Posted)",
     closedAt: "Oct 20, 2025 02:15 PM",
-    closedBy: "Maria Santos",
+    closedBy: "Maria Santos (Registrar Admin)",
     reopenable: false,
   },
   {
