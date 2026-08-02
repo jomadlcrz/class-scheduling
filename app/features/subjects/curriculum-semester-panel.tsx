@@ -147,7 +147,7 @@ export function CurriculumSemesterPanel({
                 </TableHeader>
                 <TableHeader>Subject Code</TableHeader>
                 <TableHeader>Descriptive Title</TableHeader>
-                <TableHeader className="w-20 text-center">Units</TableHeader>
+                <TableHeader className="w-20 min-w-20 text-center">Units</TableHeader>
                 <TableHeader className="w-44">Subject Type</TableHeader>
                 <TableHeader className="min-w-48">Prerequisites</TableHeader>
                 <TableHeader className="w-12" />

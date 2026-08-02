@@ -85,16 +85,18 @@ export function CurriculumSubjectRow({
           row.title
         )}
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="w-20 min-w-20 align-middle text-center">
         {isEditable && row.tempId ? (
-          <TableInput
-            type="number"
-            min={1}
-            max={6}
-            value={row.units}
-            onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
-            className="text-center tabular-nums"
-          />
+          <div className="mx-auto w-14">
+            <TableInput
+              type="number"
+              min={1}
+              max={6}
+              value={row.units}
+              onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
+              className="px-2 text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+          </div>
         ) : (
           <span className="block text-center tabular-nums">{row.units}</span>
         )}
