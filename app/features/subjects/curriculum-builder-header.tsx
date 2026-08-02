@@ -42,7 +42,7 @@ export function CurriculumBuilderHeader({
         <Alert className="lg:max-w-md">
           <HelpCircleIcon />
           <AlertDescription>
-            Select a program, year level, and semester to build or edit the curriculum.
+            Select a program and year level, then expand a semester to build or edit the curriculum.
           </AlertDescription>
         </Alert>
       </div>

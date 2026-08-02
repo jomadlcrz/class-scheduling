@@ -1,18 +1,8 @@
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { FieldChrome } from "~/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-
-type SemesterOption = {
-  id: number;
-  semesterNumber: number;
-  label: string;
-};
+import { DownloadIcon, UploadIcon } from "~/components/ui/icons";
 
 type CurriculumBuilderActionsBarProps = {
-  semesters: SemesterOption[];
-  focusSemester: number;
-  onFocusSemesterChange: (semester: number) => void;
   pendingCount: number;
   isSaving: boolean;
   onSave: () => void;
@@ -20,9 +10,6 @@ type CurriculumBuilderActionsBarProps = {
 };
 
 export function CurriculumBuilderActionsBar({
-  semesters,
-  focusSemester,
-  onFocusSemesterChange,
   pendingCount,
   isSaving,
   onSave,
@@ -30,29 +17,16 @@ export function CurriculumBuilderActionsBar({
 }: CurriculumBuilderActionsBarProps) {
   return (
     <Card className="flex flex-wrap items-center justify-between gap-3 border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-surface-overlay/60">
-      <FieldChrome id="curriculum-focus-semester" label="Semester">
-        <div className="w-44">
-          <Select
-            items={semesters.map((s) => ({
-              value: String(s.semesterNumber),
-              label: s.label,
-            }))}
-            value={String(focusSemester)}
-            onValueChange={(v) => onFocusSemesterChange(Number(v))}
-          >
-            <SelectTrigger id="curriculum-focus-semester">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {semesters.map((s) => (
-                <SelectItem key={s.id} value={String(s.semesterNumber)}>
-                  {s.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </FieldChrome>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Button type="button" variant="outline" block={false} disabled>
+          <UploadIcon />
+          Import Excel
+        </Button>
+        <Button type="button" variant="outline" block={false} disabled>
+          <DownloadIcon />
+          Export Curriculum
+        </Button>
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel

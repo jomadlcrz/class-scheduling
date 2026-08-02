@@ -3,7 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { CopyIcon, DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
+import { CopyIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { SearchInput } from "~/components/ui/search-input";
 import { Switch } from "~/components/ui/switch";
 import { Table, TableBody, TableHead, TableHeader } from "~/components/ui/table";
@@ -105,15 +105,6 @@ export function CurriculumSemesterPanel({
             >
               <TrashIcon />
               Delete Selected
-            </Button>
-            <span className="mx-1 hidden h-5 w-px bg-slate-200 sm:inline dark:bg-white/10" />
-            <Button type="button" variant="outline" block={false} disabled>
-              <UploadIcon />
-              Import Excel
-            </Button>
-            <Button type="button" variant="outline" block={false} disabled>
-              <DownloadIcon />
-              Export Curriculum
             </Button>
           </div>
           <div className="flex flex-wrap items-center gap-3">

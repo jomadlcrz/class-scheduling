@@ -63,7 +63,6 @@ export function CurriculumBuilder({
   const { semesters, semesterLabel } = useSemesters();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [activeYear, setActiveYear] = useState<number>(yearLevelIds[0] ?? 1);
-  const [focusSemester, setFocusSemester] = useState<number>(semesters[0]?.semesterNumber ?? 1);
   const [search, setSearch] = useState("");
   const [autoSort, setAutoSort] = useState(false);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
@@ -143,11 +142,6 @@ export function CurriculumBuilder({
     if (first) onDuplicatePending(first);
   }
 
-  function ensureSemesterOpen(year: number, semester: number) {
-    const key = sectionKey(year, semester);
-    if (collapsed.has(key)) onToggleSection(key);
-  }
-
   return (
     <div className="flex flex-col gap-5">
       <CurriculumBuilderHeader
@@ -165,22 +159,11 @@ export function CurriculumBuilder({
         value={activeYear}
         onChange={(year) => {
           setActiveYear(year);
-          setFocusSemester(semesters[0]?.semesterNumber ?? 1);
           setSelected(new Set());
         }}
       />
 
       <CurriculumBuilderActionsBar
-        semesters={semesters.map((s) => ({
-          id: s.id,
-          semesterNumber: s.semesterNumber,
-          label: semesterLabel(s.semesterNumber),
-        }))}
-        focusSemester={focusSemester}
-        onFocusSemesterChange={(semester) => {
-          setFocusSemester(semester);
-          ensureSemesterOpen(activeYear, semester);
-        }}
         pendingCount={pendingCount}
         isSaving={isSaving}
         onSave={onSave}
