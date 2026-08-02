@@ -11,7 +11,7 @@ import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-as
 import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
-import { facultyKey, flattenDepartmentSubjects, formatInstructorName } from "~/lib/faculty-load";
+import { facultyKey, formatInstructorName } from "~/lib/faculty-load";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
@@ -89,28 +89,25 @@ export function SubjectAssignmentView() {
     return map;
   }, [apiData.subjects]);
 
-  // Compute available subjects from the department curriculum tree, grouped by program
+  // The modal must use the same term-filtered program payload used when saving.
+  // The legacy /deans/subjects tree exposes a different semester field shape,
+  // which caused every subject to be filtered out here.
   const availableSubjectsByProgram = useMemo(() => {
-    if (!apiData.subjects) return new Map<string, Subject[]>();
-    const selectedSem = apiData.semesters.find((s) => String(s.id) === apiData.selectedSemesterId);
-    const semesterCat = selectedSem?.semesterNumber;
-    const choices = flattenDepartmentSubjects(apiData.subjects, semesterCat);
     const map = new Map<string, Subject[]>();
-    for (const c of choices) {
-      const subjects = map.get(c.programAbbrev) ?? [];
-      subjects.push({
-        curriculumDetailId: c.curriculumDetailId,
-        subjectCode: c.subjectCode,
-        descriptiveTitle: c.descriptiveTitle,
-        units: c.units,
-        lecHours: c.units,
+    for (const program of programOptions) {
+      map.set(program.abbrev, program.subjects.map((subject) => ({
+        curriculumDetailId: subject.curriculumDetailId,
+        subjectId: subject.id,
+        subjectCode: subject.code,
+        descriptiveTitle: subject.title,
+        units: subject.units,
+        lecHours: subject.units,
         labHours: 0,
-        weeklyHours: c.units,
-      });
-      map.set(c.programAbbrev, subjects);
+        weeklyHours: subject.units,
+      })));
     }
     return map;
-  }, [apiData.subjects, apiData.semesters, apiData.selectedSemesterId]);
+  }, [programOptions]);
 
   // Compute available instructors (exclude already-added ones)
   const availableInstructors = useMemo(() => {

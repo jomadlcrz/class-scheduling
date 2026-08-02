@@ -167,6 +167,13 @@ export function AssignSubjectModal({
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    if (!open) {
+      setSelectedCodes(new Set());
+      setSearch("");
+    }
+  }, [open]);
+
   const toggle = (code: string) => {
     if (assignedSubjectCodes.has(code)) return;
     setSelectedCodes((prev) => {
