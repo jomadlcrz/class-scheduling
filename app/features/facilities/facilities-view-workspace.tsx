@@ -328,7 +328,7 @@ export function FacilitiesViewWorkspace({
             </p>
           </div>
           <nav aria-label="Floor index">
-            <ul className="py-2">
+            <ul>
               {filteredFloors.map((floor) => {
                 const isActive = activeFloor === floor.floorLevel;
                 return (
