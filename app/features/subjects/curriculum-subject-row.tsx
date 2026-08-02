@@ -72,7 +72,7 @@ export function CurriculumSubjectRow({
           </span>
         )}
       </TableCell>
-      <TableCell className="min-w-0 align-middle">
+      <TableCell className="w-36 min-w-0 align-middle">
         {isEditable && row.tempId ? (
           <TableInput
             value={row.code}

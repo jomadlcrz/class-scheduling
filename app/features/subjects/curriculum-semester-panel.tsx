@@ -166,7 +166,7 @@ export function CurriculumSemesterPanel({
                     />
                   </TableHeader>
                 )}
-                <TableHeader>Subject Code</TableHeader>
+                <TableHeader className="w-36">Subject Code</TableHeader>
                 <TableHeader>Descriptive Title</TableHeader>
                 <TableHeader className="text-center">Units</TableHeader>
                 <TableHeader>Subject Type</TableHeader>
