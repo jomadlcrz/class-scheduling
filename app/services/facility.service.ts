@@ -45,6 +45,7 @@ function mapRoom(room: FacilitiesResponse["buildings"][number]["rooms"][number])
     status: room.room_status,
     timeRemaining: room.time_remaining,
     programIds: room.programs.map((p) => p.program_id),
+    programs: mapPrograms(room.programs),
   };
 }
 

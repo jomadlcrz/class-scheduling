@@ -45,15 +45,3 @@ export function buildFloorBuckets(building: FacilityBuildingDetail) {
 
   return floors;
 }
-
-const floorButtonClassName = (active: boolean) =>
-  `flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-    active
-      ? "border-gwc-blue-bright bg-gwc-blue-bright/10 font-semibold text-gwc-blue-bright dark:border-blue-400 dark:bg-blue-400/10 dark:text-blue-300"
-      : "border-slate-200 bg-white text-navy-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-mist-100 dark:hover:bg-white/10"
-  }`;
-
-export const statCardClassName =
-  "rounded-lg border border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/5";
-
-export { floorButtonClassName };

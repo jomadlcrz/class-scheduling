@@ -1,3 +1,5 @@
+import type { RoomProgram } from "~/types/room";
+
 /** Payload for POST /create-facilities — one building and all nested rooms in one transaction. */
 export type CreateFacilityRoomInput = {
   roomName: string;
@@ -54,6 +56,7 @@ export type FacilityRoomDetail = {
   status: string;
   timeRemaining: string;
   programIds: number[];
+  programs: RoomProgram[];
 };
 
 /** Room row while editing an existing building. */

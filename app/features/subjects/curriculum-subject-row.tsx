@@ -73,7 +73,7 @@ export function CurriculumSubjectRow({
           </span>
         )}
       </TableCell>
-      <TableCell className={`${isViewMode ? "min-w-0" : "w-36 min-w-0"} align-middle`}>
+      <TableCell className={`${isViewMode ? "min-w-0" : "md:w-36 min-w-0"} align-middle`}>
         {isEditable && row.tempId ? (
           <TableInput
             value={row.code}
@@ -121,7 +121,7 @@ export function CurriculumSubjectRow({
           <span className="inline-block tabular-nums">{row.units}</span>
         )}
       </TableCell>
-      <TableCell className={`${isViewMode ? "min-w-0" : "w-32 min-w-0"} align-middle`}>
+      <TableCell className={`${isViewMode ? "min-w-0" : "md:w-32 min-w-0"} align-middle`}>
         {isEditable && row.tempId ? (
           <Select
             items={subjectTypes.map((type) => ({

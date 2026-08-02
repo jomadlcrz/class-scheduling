@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
-import { EditIcon, PlusIcon } from "~/components/ui/icons";
+import { PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
 import { BuildingArchiveDialog } from "~/features/facilities/buildings/building-archive-dialog";
 import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
 import { PageHeader } from "~/layouts/page-header";
@@ -39,9 +41,18 @@ function FacilitiesPage() {
   const [roomTypes, setRoomTypes] = useState<string[]>([]);
   const [roomStatuses, setRoomStatuses] = useState<string[]>([]);
   const [archiveTarget, setArchiveTarget] = useState<Building | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   async function refresh() {
-    const data = await facilityService.list().catch(() => [] as FacilityBuildingDetail[]);
+    setLoadError(null);
+    let data: FacilityBuildingDetail[];
+    try {
+      data = await facilityService.list();
+    } catch (error) {
+      setBuildings([]);
+      setLoadError(error instanceof Error ? error.message : "");
+      return;
+    }
     setBuildings(data);
     setSelectedBuildingId((current) => {
       if (data.length === 0) return null;
@@ -51,7 +62,7 @@ function FacilitiesPage() {
   }
 
   useEffect(() => {
-    refresh();
+    void refresh();
     programService.list().then(setPrograms).catch(() => setPrograms([]));
     enumService
       .getOptions()
@@ -62,9 +73,6 @@ function FacilitiesPage() {
       .catch(() => {});
   }, []);
 
-  const selectedBuilding =
-    buildings?.find((entry) => entry.id === selectedBuildingId) ?? buildings?.[0] ?? null;
-
   async function handleArchiveBuilding(building: Building) {
     const message = await buildingService.archive(building.id, building.name);
     if (message) toast.success(message);
@@ -73,7 +81,7 @@ function FacilitiesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
       <PageHeader
         title="Facilities"
         description="Browse campus buildings and rooms by floor."
@@ -85,34 +93,6 @@ function FacilitiesPage() {
         }
       />
 
-      {selectedBuilding && buildings && buildings.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            onClick={() => navigate(`/facilities/${selectedBuilding.id}`)}
-          >
-            <EditIcon />
-            Manage Building
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            onClick={() =>
-              setArchiveTarget({
-                id: selectedBuilding.id,
-                name: selectedBuilding.name,
-                floorCount: selectedBuilding.floorCount,
-              })
-            }
-          >
-            Archive Building
-          </Button>
-        </div>
-      )}
-
       <div className="mt-6">
         {buildings === null ? (
           <div
@@ -122,6 +102,28 @@ function FacilitiesPage() {
           >
             <Spinner />
           </div>
+        ) : loadError !== null ? (
+          <Card className="p-2">
+            <EmptyState
+              title="Unable to load facilities"
+              action={
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  onClick={() => {
+                    setBuildings(null);
+                    void refresh();
+                  }}
+                >
+                  <RefreshCwIcon />
+                  Try again
+                </Button>
+              }
+            >
+              {loadError}
+            </EmptyState>
+          </Card>
         ) : (
           <FacilitiesViewWorkspace
             buildings={buildings}
@@ -130,6 +132,14 @@ function FacilitiesPage() {
             roomStatuses={roomStatuses}
             selectedBuildingId={selectedBuildingId}
             onBuildingChange={setSelectedBuildingId}
+            onManageBuilding={(building) => navigate(`/facilities/${building.id}`)}
+            onArchiveBuilding={(building) =>
+              setArchiveTarget({
+                id: building.id,
+                name: building.name,
+                floorCount: building.floorCount,
+              })
+            }
           />
         )}
       </div>

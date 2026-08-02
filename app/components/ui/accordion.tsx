@@ -1,5 +1,5 @@
-﻿import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useId, useState, type ReactNode } from "react";
 
 type AccordionItemProps = {
   title: ReactNode;
@@ -22,6 +22,9 @@ export function AccordionItem({
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
   const reduceMotion = useReducedMotion();
+  const id = useId();
+  const triggerId = `accordion-trigger-${id}`;
+  const panelId = `accordion-panel-${id}`;
 
   function toggle() {
     const next = !isOpen;
@@ -31,15 +34,16 @@ export function AccordionItem({
 
   return (
     <div className="rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={toggle}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } }}
-        className="flex w-full flex-col gap-2 px-5 py-4 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 sm:flex-row sm:items-center sm:gap-3"
-      >
-        <span className="flex flex-1 items-center gap-2">
-          <span className="flex-1">{title}</span>
+      <div className="flex min-h-13 items-stretch">
+        <button
+          id={triggerId}
+          type="button"
+          aria-expanded={isOpen}
+          aria-controls={panelId}
+          onClick={toggle}
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-5 py-3 text-left text-sm text-navy-900 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5"
+        >
+          <span className="min-w-0 flex-1">{title}</span>
           <svg
             width="16"
             height="16"
@@ -55,12 +59,15 @@ export function AccordionItem({
           >
             <polyline points="9 6 15 12 9 18" />
           </svg>
-        </span>
-        {adornment && <span className="shrink-0">{adornment}</span>}
+        </button>
+        {adornment && <div className="flex shrink-0 items-center py-2 pr-3">{adornment}</div>}
       </div>
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
+            id={panelId}
+            role="region"
+            aria-labelledby={triggerId}
             key="content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}

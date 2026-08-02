@@ -150,7 +150,7 @@ function roomToArchiveTarget(room: FacilityRoomDetail, building: FacilityBuildin
     type: room.type,
     status: room.status,
     timeRemaining: room.timeRemaining,
-    programs: [],
+    programs: room.programs,
   };
 }
 
