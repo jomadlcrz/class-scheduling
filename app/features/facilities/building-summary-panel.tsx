@@ -75,7 +75,6 @@ export function BuildingSummaryPanel({ summary, programs }: BuildingSummaryPanel
         </div>
       )}
 
-      <p className="mt-5 font-body text-xs text-slate-400 dark:text-slate-500">Live updates</p>
     </Card>
   );
 }

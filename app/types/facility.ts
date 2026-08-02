@@ -31,3 +31,46 @@ export type FacilityFloorDraft = {
   floorLevel: number;
   rooms: FacilityRoomDraft[];
 };
+
+/** Nested building payload from GET /get-facilities. */
+export type FacilityBuildingDetail = {
+  id: number;
+  name: string;
+  floorCount: number;
+  rooms: FacilityRoomDetail[];
+};
+
+export type FacilityRoomDetail = {
+  id: number;
+  floor: number;
+  name: string;
+  type: string;
+  capacity: number;
+  status: string;
+  timeRemaining: string;
+  programIds: number[];
+};
+
+/** Room row while editing an existing building. */
+export type EditFacilityRoomDraft = {
+  key: string;
+  roomId?: number;
+  roomName: string;
+  roomType: string;
+  roomCapacity: number;
+  programIds: number[];
+  status: string;
+  isNew: boolean;
+  isDeleted: boolean;
+};
+
+export type EditFacilityFloorDraft = {
+  floorLevel: number;
+  rooms: EditFacilityRoomDraft[];
+};
+
+export type EditBuildingChangeSummary = {
+  added: number;
+  modified: number;
+  deleted: number;
+};

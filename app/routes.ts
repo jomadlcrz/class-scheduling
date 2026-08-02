@@ -20,6 +20,7 @@ export default [
     route("permissions", "routes/app/permissions.tsx"),
     route("facilities", "routes/app/facilities.tsx"),
     route("facilities/new", "routes/app/facilities/new.tsx"),
+    route("facilities/:buildingId", "routes/app/facilities/$buildingId.tsx"),
     route("buildings", "routes/app/buildings.tsx"),
     route("buildings/new", "routes/app/buildings/new.tsx"),
     route("rooms", "routes/app/rooms.tsx"),
