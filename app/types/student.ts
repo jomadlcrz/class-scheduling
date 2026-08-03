@@ -128,18 +128,6 @@ export type RegularStudentRow = {
   academics: StudentAcademicRecord[];
 };
 
-/** GET /students/recycle-bin row — soft-deleted student profiles. */
-export type DeletedStudent = {
-  studentProfileId: number;
-  firstName: string;
-  lastName: string;
-  profilePhotoUrl: string | null;
-  deactivatedAt: string | null;
-  academicTerms: number;
-  enrolledSubjects: number;
-  hasLoginAccount: boolean;
-};
-
 /** PUT /students/enrollments/<id> body — corrects a single term's set/year level/status; doesn't touch enrolled subjects. */
 export type UpdateEnrollmentInput = {
   yearLevel?: number;
@@ -152,26 +140,4 @@ export type StudentAccountStatus = {
   studentProfileId: number;
   hasAccount: boolean;
   accountActive: boolean | null;
-};
-
-/** Shape of GET /students/:id/delete-preview and the DELETE /students/:id payload.
- * Two-stage cascade: deleting only soft-deletes the profile and deactivates the
- * login account. Academic history and the S3 photo are untouched until the 30-day
- * recycle-bin purge, which restores nothing if the profile is restored in time. */
-export type StudentDeletePreview = {
-  student: {
-    student_profile_id: number;
-    first_name: string;
-    last_name: string;
-  };
-  will_delete: {
-    /** Per-term enrollment records — kept untouched for the recycle-bin window. */
-    academic_terms: number;
-    /** Enrolled-subject rows hanging off those terms — kept untouched. */
-    enrolled_subjects: number;
-    /** True when the profile has a login account (deactivated on delete, never deleted). */
-    has_login_account: boolean;
-    /** True when the profile has an S3 photo (deleted only at purge). */
-    has_profile_photo: boolean;
-  };
 };

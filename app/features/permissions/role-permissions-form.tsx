@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
+import { SearchInput } from "~/components/ui/search-input";
 import { permissionService } from "~/services/permission.service";
 import type { PermissionSummary, RolePermission } from "~/types/permission";
 
@@ -19,6 +20,14 @@ export function RolePermissionsForm({ role, catalog, onSaved, onCancel }: RolePe
   );
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredCatalog = normalizedSearch
+    ? catalog.filter((permission) =>
+        `${permission.slug} ${permission.description ?? ""}`.toLowerCase().includes(normalizedSearch),
+      )
+    : catalog;
 
   function toggle(id: number, checked: boolean) {
     setSelectedIds((current) => {
@@ -48,26 +57,41 @@ export function RolePermissionsForm({ role, catalog, onSaved, onCancel }: RolePe
       {catalog.length === 0 ? (
         <p className="text-sm text-slate-500 dark:text-slate-400">No permissions exist yet.</p>
       ) : (
-        <div className="flex max-h-80 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10">
-          {catalog.map((permission) => (
-            <Checkbox
-              key={permission.id}
-              id={`role-permission-${permission.id}`}
-              ariaLabel={permission.description || permission.slug}
-              label={
-                <span className="flex flex-col">
-                  <span>{permission.slug}</span>
-                  {permission.description && (
-                    <span className="text-xs text-slate-400 dark:text-slate-500">
-                      {permission.description}
+        <div className="flex flex-col gap-3">
+          <SearchInput
+            id="permission-search"
+            value={search}
+            onChange={setSearch}
+            placeholder="Search permissions..."
+          />
+
+          <div className="flex max-h-80 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10">
+            {filteredCatalog.length === 0 ? (
+              <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                No permissions match your search.
+              </p>
+            ) : (
+              filteredCatalog.map((permission) => (
+                <Checkbox
+                  key={permission.id}
+                  id={`role-permission-${permission.id}`}
+                  ariaLabel={permission.description || permission.slug}
+                  label={
+                    <span className="flex flex-col">
+                      <span>{permission.slug}</span>
+                      {permission.description && (
+                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                          {permission.description}
+                        </span>
+                      )}
                     </span>
-                  )}
-                </span>
-              }
-              checked={selectedIds.has(permission.id)}
-              onChange={(checked) => toggle(permission.id, checked)}
-            />
-          ))}
+                  }
+                  checked={selectedIds.has(permission.id)}
+                  onChange={(checked) => toggle(permission.id, checked)}
+                />
+              ))
+            )}
+          </div>
         </div>
       )}
 

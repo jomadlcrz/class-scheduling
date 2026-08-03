@@ -20,12 +20,9 @@ import { roomService, type DeletedRoom } from "~/services/room.service";
 import { schoolYearService, type DeletedSchoolYear } from "~/services/school-year.service";
 import { semesterService, type DeletedSemester } from "~/services/semester.service";
 import { setService, type DeletedSet } from "~/services/set.service";
-import { studentService } from "~/services/student.service";
-import type { DeletedStudent } from "~/types/student";
 
 type TabKey =
   | "subjects"
-  | "students"
   | "programs"
   | "sets"
   | "buildings"
@@ -43,7 +40,6 @@ type TabConfig = {
 
 const TABS: TabConfig[] = [
   { key: "subjects", label: "Subjects", roles: ["registrar"] },
-  { key: "students", label: "Students", roles: ["registrar"] },
   { key: "programs", label: "Programs", roles: ["registrar"] },
   { key: "sets", label: "Sets", roles: ["registrar"] },
   { key: "buildings", label: "Buildings", roles: ["registrar"] },
@@ -86,7 +82,6 @@ export function RecentlyDeleted() {
   const [error, setError] = useState<string | null>(null);
 
   const [subjects, setSubjects] = useState<DeletedSubject[]>([]);
-  const [students, setStudents] = useState<DeletedStudent[]>([]);
   const [programs, setPrograms] = useState<DeletedProgram[]>([]);
   const [sets, setSets] = useState<DeletedSet[]>([]);
   const [buildings, setBuildings] = useState<DeletedBuilding[]>([]);
@@ -113,9 +108,6 @@ export function RecentlyDeleted() {
       switch (activeTab) {
         case "subjects":
           setSubjects(await recycleBinService.list());
-          break;
-        case "students":
-          setStudents(await studentService.listDeleted());
           break;
         case "programs":
           setPrograms(await programService.listDeleted());
@@ -170,8 +162,6 @@ export function RecentlyDeleted() {
     switch (activeTab) {
       case "subjects":
         return subjects.length === 0;
-      case "students":
-        return students.length === 0;
       case "programs":
         return programs.length === 0;
       case "sets":
@@ -194,7 +184,6 @@ export function RecentlyDeleted() {
   }, [
     activeTab,
     subjects,
-    students,
     programs,
     sets,
     buildings,
@@ -244,44 +233,6 @@ export function RecentlyDeleted() {
                   </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
-        );
-
-      case "students":
-        return (
-          <Table>
-            <TableHead>
-              <TableHeader>Name</TableHeader>
-              <TableHeader className="hidden sm:table-cell text-center">Terms</TableHeader>
-              <TableHeader className="hidden md:table-cell text-center">Enrollments</TableHeader>
-              <TableHeader className="hidden lg:table-cell">Login</TableHeader>
-              <TableHeader>Deleted</TableHeader>
-              <TableHeader className="text-right">Restore</TableHeader>
-            </TableHead>
-            <TableBody>
-              {students.map((student) => {
-                const name = `${student.lastName}, ${student.firstName}`;
-                return (
-                  <TableRow key={student.studentProfileId}>
-                    <TableCell className="font-medium text-navy-700 dark:text-mist-100">{name}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-center">{student.academicTerms}</TableCell>
-                    <TableCell className="hidden md:table-cell text-center">{student.enrolledSubjects}</TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {student.hasLoginAccount ? "Yes" : "No"}
-                    </TableCell>
-                    <TableCell>{formatDateTime(student.deactivatedAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <RestoreButton
-                        label={name}
-                        onClick={() =>
-                          askRestore(name, async () => studentService.restore(student.studentProfileId))
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
             </TableBody>
           </Table>
         );

@@ -2,12 +2,10 @@ import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, api
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
-  DeletedStudent,
   EnrollStudentInput,
   StudentAcademicRecord,
   StudentAccountRow,
   StudentAccountStatus,
-  StudentDeletePreview,
   StudentProfileDetail,
   UpdateStudentProfileInput,
   UpdateEnrollmentInput,
@@ -222,59 +220,6 @@ async function updateProfile(
   return apiMessage(data);
 }
 
-type DeletedStudentResponse = {
-  student_profile_id: number;
-  first_name: string;
-  last_name: string;
-  profile_photo_url: string | null;
-  deactivated_at: string | null;
-  academic_terms: number;
-  enrolled_subjects: number;
-  has_login_account: boolean;
-}[];
-
-/** GET /students/recycle-bin — soft-deleted student profiles. 404 → empty. */
-async function listDeleted(): Promise<DeletedStudent[]> {
-  let data: DeletedStudentResponse;
-  try {
-    data = await apiGet<DeletedStudentResponse>("/students/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((s) => ({
-    studentProfileId: s.student_profile_id,
-    firstName: s.first_name,
-    lastName: s.last_name,
-    profilePhotoUrl: s.profile_photo_url,
-    deactivatedAt: s.deactivated_at,
-    academicTerms: s.academic_terms,
-    enrolledSubjects: s.enrolled_subjects,
-    hasLoginAccount: s.has_login_account,
-  }));
-}
-
-/** PATCH /students/<id>/restore */
-async function restore(studentProfileId: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/restore`);
-  return apiMessage(data);
-}
-
-/** DELETE /students/<id> — soft-deletes the profile and deactivates the login account after the caller echoes the student's full name (case-sensitively). Academic history is left untouched. */
-async function remove(studentProfileId: number, confirmText: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/archive`, { confirm: confirmText });
-  return apiMessage(data);
-}
-
-/** GET /students/<id>/delete-preview — read-only breakdown of what deleting the profile would affect. */
-async function getDeletePreview(studentProfileId: number): Promise<StudentDeletePreview> {
-  const data = await apiGet<{
-    student: StudentDeletePreview["student"];
-    willArchive: StudentDeletePreview["will_delete"];
-  }>(`/students/${studentProfileId}/archive-preview`);
-  return { student: data.student, will_delete: data.willArchive };
-}
-
 /** PUT /students/enrollments/<id> — corrects a single term's set/year level/status. */
 async function updateEnrollment(studentAcademicId: number, input: UpdateEnrollmentInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/students/enrollments/${studentAcademicId}`, input);
@@ -347,10 +292,6 @@ export const studentService = {
   getEnrollments,
   getProfile,
   updateProfile,
-  listDeleted,
-  restore,
-  remove,
-  getDeletePreview,
   updateEnrollment,
   removeEnrollment,
   setEnrollmentState,
