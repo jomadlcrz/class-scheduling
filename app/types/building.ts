@@ -16,6 +16,16 @@ export type Building = {
   floorCount: number;
 };
 
+export type CreateBuildingInput = {
+  name: string;
+  floorCount: number;
+};
+
+export type UpdateBuildingInput = {
+  name?: string;
+  floorCount?: number;
+};
+
 /** Shape of GET /buildings/:id/archive-preview and the PATCH /buildings/:id/archive payload.
  * Archiving cascades to active rooms, departments, and programs in the building. */
 export type BuildingArchivePreview = {

@@ -5,17 +5,20 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
 import { BuildingArchiveDialog } from "~/features/facilities/buildings/building-archive-dialog";
+import { BuildingForm } from "~/features/facilities/buildings/building-form";
 import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
-import type { FacilityBuildingDetail } from "~/types/facility";
+import type { CreateBuildingInput } from "~/types/building";
 import type { Building } from "~/types/building";
+import type { FacilityBuildingDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
 
 export function meta() {
@@ -42,6 +45,8 @@ function FacilitiesPage() {
   const [roomStatuses, setRoomStatuses] = useState<string[]>([]);
   const [archiveTarget, setArchiveTarget] = useState<Building | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<FacilityBuildingDetail | null>(null);
 
   async function refresh() {
     setLoadError(null);
@@ -80,15 +85,34 @@ function FacilitiesPage() {
     await refresh();
   }
 
+  async function handleCreateBuilding(input: CreateBuildingInput) {
+    const { message, buildingId } = await buildingService.create(input);
+    if (message) toast.success(message);
+    await refresh();
+    if (buildingId) setSelectedBuildingId(buildingId);
+    setCreateOpen(false);
+  }
+
+  async function handleEditBuilding(input: CreateBuildingInput) {
+    if (!editTarget) return;
+    const message = await buildingService.update(editTarget.id, {
+      name: input.name,
+      floorCount: input.floorCount,
+    });
+    if (message) toast.success(message);
+    await refresh();
+    setEditTarget(null);
+  }
+
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
       <PageHeader
         title="Facilities"
         description="Browse campus buildings and rooms by floor."
         actions={
-          <Button type="button" block={false} onClick={() => navigate("/facilities/new")}>
+          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
             <PlusIcon />
-            New Facility
+            New Building
           </Button>
         }
       />
@@ -132,6 +156,7 @@ function FacilitiesPage() {
             roomStatuses={roomStatuses}
             selectedBuildingId={selectedBuildingId}
             onBuildingChange={setSelectedBuildingId}
+            onEditBuilding={setEditTarget}
             onManageBuilding={(building) => navigate(`/facilities/${building.id}`)}
             onArchiveBuilding={(building) =>
               setArchiveTarget({
@@ -149,6 +174,24 @@ function FacilitiesPage() {
         onClose={() => setArchiveTarget(null)}
         onConfirm={handleArchiveBuilding}
       />
+
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Building">
+        <BuildingForm onSubmit={handleCreateBuilding} onCancel={() => setCreateOpen(false)} />
+      </Modal>
+
+      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Building">
+        {editTarget && (
+          <BuildingForm
+            building={{
+              id: editTarget.id,
+              name: editTarget.name,
+              floorCount: editTarget.floorCount,
+            }}
+            onSubmit={handleEditBuilding}
+            onCancel={() => setEditTarget(null)}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

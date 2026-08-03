@@ -1,5 +1,11 @@
-import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
-import type { Building, BuildingArchivePreview, DeletedBuilding } from "~/types/building";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import type {
+  Building,
+  BuildingArchivePreview,
+  CreateBuildingInput,
+  DeletedBuilding,
+  UpdateBuildingInput,
+} from "~/types/building";
 
 /** Buildings read + archive against the facilities module (registrar_admin). */
 
@@ -77,4 +83,22 @@ async function get(id: number): Promise<Building> {
   return { id: b.building_id, name: b.building_name, floorCount: b.floor_count };
 }
 
-export const buildingService = { list, archive, getArchivePreview, listDeleted, restore, get };
+/** POST /buildings — create an empty building shell (name + floor count). */
+async function create(input: CreateBuildingInput): Promise<{ message: string; buildingId: number }> {
+  const data = await apiPost<{ message?: string; buildingId?: number }>("/buildings", {
+    buildingName: input.name,
+    floorCount: input.floorCount,
+  });
+  return { message: apiMessage(data), buildingId: data.buildingId ?? 0 };
+}
+
+/** PUT /buildings/:id — update building name and/or floor count. */
+async function update(id: number, input: UpdateBuildingInput): Promise<string> {
+  const body: Record<string, unknown> = {};
+  if (input.name !== undefined) body.buildingName = input.name;
+  if (input.floorCount !== undefined) body.floorCount = input.floorCount;
+  const data = await apiPut<{ message?: string }>(`/buildings/${id}`, body);
+  return apiMessage(data);
+}
+
+export const buildingService = { list, create, update, archive, getArchivePreview, listDeleted, restore, get };

@@ -38,6 +38,7 @@ type FacilitiesViewWorkspaceProps = {
   roomStatuses: string[];
   selectedBuildingId: number | null;
   onBuildingChange: (buildingId: number) => void;
+  onEditBuilding: (building: FacilityBuildingDetail) => void;
   onManageBuilding: (building: FacilityBuildingDetail) => void;
   onArchiveBuilding: (building: FacilityBuildingDetail) => void;
 };
@@ -66,6 +67,7 @@ export function FacilitiesViewWorkspace({
   roomStatuses,
   selectedBuildingId,
   onBuildingChange,
+  onEditBuilding,
   onManageBuilding,
   onArchiveBuilding,
 }: FacilitiesViewWorkspaceProps) {
@@ -189,10 +191,18 @@ export function FacilitiesViewWorkspace({
               type="button"
               variant="outline"
               block={false}
-              onClick={() => onManageBuilding(building)}
+              onClick={() => onEditBuilding(building)}
             >
               <EditIcon />
-              Manage
+              Edit Building
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => onManageBuilding(building)}
+            >
+              Manage Rooms
             </Button>
             <Button
               type="button"
