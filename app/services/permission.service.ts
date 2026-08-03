@@ -183,7 +183,7 @@ async function getArchivePreview(id: number): Promise<PermissionArchivePreview> 
   return apiGet<PermissionArchivePreview>(`/permissions/${id}/archive-preview`);
 }
 
-async function remove(id: number, confirm: string): Promise<string> {
+async function archive(id: number, confirm: string): Promise<string> {
   const data = await apiPatch<{ message?: string }>(`/permissions/${id}/archive`, { confirm });
   return apiMessage(data);
 }
@@ -214,6 +214,6 @@ export const permissionService = {
   get,
   update,
   getArchivePreview,
-  remove,
+  archive,
   restore,
 };

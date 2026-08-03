@@ -8,6 +8,7 @@ import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { AddPermissionForm } from "~/features/permissions/add-permission-form";
 import { AddRoleForm } from "~/features/permissions/add-role-form";
+import { PermissionArchiveDialog } from "~/features/permissions/permission-archive-dialog";
 import { PermissionCatalogTable } from "~/features/permissions/permission-catalog-table";
 import { PermissionEditForm } from "~/features/permissions/permission-edit-form";
 import { PermissionMatrix } from "~/features/permissions/permission-matrix";
@@ -46,7 +47,7 @@ function PermissionsPage() {
     null,
   );
   const [editPermissionTarget, setEditPermissionTarget] = useState<RolePermission | null>(null);
-  const [deletePermissionTarget, setDeletePermissionTarget] = useState<RolePermission | null>(null);
+  const [archivePermissionTarget, setArchivePermissionTarget] = useState<RolePermission | null>(null);
 
   function refresh() {
     permissionService
@@ -117,7 +118,7 @@ function PermissionsPage() {
             <PermissionCatalogTable
               catalog={catalog}
               onEdit={setEditPermissionTarget}
-              onDelete={setDeletePermissionTarget}
+              onArchive={setArchivePermissionTarget}
             />
           </section>
         </div>
@@ -201,27 +202,15 @@ function PermissionsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog
-        open={deletePermissionTarget !== null}
-        onClose={() => setDeletePermissionTarget(null)}
-        title="Delete permission"
-        confirmLabel="Delete"
-        loadingLabel="Deleting…"
-        confirmVariant="danger"
-        onConfirm={async () => {
-          if (!deletePermissionTarget) return;
-          const message = await permissionService.remove(
-            deletePermissionTarget.id,
-            deletePermissionTarget.slug,
-          );
+      <PermissionArchiveDialog
+        permission={archivePermissionTarget}
+        onClose={() => setArchivePermissionTarget(null)}
+        onConfirm={async (permission) => {
+          const message = await permissionService.archive(permission.id, permission.slug);
           if (message) toast.success(message);
           refresh();
-          setDeletePermissionTarget(null);
         }}
-      >
-        <span className="font-medium text-navy-700 dark:text-mist-100">{deletePermissionTarget?.slug}</span> will be
-        removed.
-      </ConfirmDialog>
+      />
     </div>
   );
 }
