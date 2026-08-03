@@ -16,8 +16,8 @@ import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
-import type { CreateBuildingInput } from "~/types/building";
 import type { Building } from "~/types/building";
+import type { CreateBuildingInput } from "~/types/building";
 import type { FacilityBuildingDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
 
@@ -45,7 +45,6 @@ function FacilitiesPage() {
   const [roomStatuses, setRoomStatuses] = useState<string[]>([]);
   const [archiveTarget, setArchiveTarget] = useState<Building | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<FacilityBuildingDetail | null>(null);
 
   async function refresh() {
@@ -85,14 +84,6 @@ function FacilitiesPage() {
     await refresh();
   }
 
-  async function handleCreateBuilding(input: CreateBuildingInput) {
-    const { message, buildingId } = await buildingService.create(input);
-    if (message) toast.success(message);
-    await refresh();
-    if (buildingId) setSelectedBuildingId(buildingId);
-    setCreateOpen(false);
-  }
-
   async function handleEditBuilding(input: CreateBuildingInput) {
     if (!editTarget) return;
     const message = await buildingService.update(editTarget.id, {
@@ -110,9 +101,9 @@ function FacilitiesPage() {
         title="Facilities"
         description="Browse campus buildings and rooms by floor."
         actions={
-          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
+          <Button type="button" block={false} onClick={() => navigate("/facilities/new")}>
             <PlusIcon />
-            New Building
+            New Facility
           </Button>
         }
       />
@@ -174,10 +165,6 @@ function FacilitiesPage() {
         onClose={() => setArchiveTarget(null)}
         onConfirm={handleArchiveBuilding}
       />
-
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Building">
-        <BuildingForm onSubmit={handleCreateBuilding} onCancel={() => setCreateOpen(false)} />
-      </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Building">
         {editTarget && (

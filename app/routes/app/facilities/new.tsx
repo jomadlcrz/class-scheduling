@@ -4,7 +4,9 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { ArrowLeftIcon } from "~/components/ui/icons";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { CreateBuildingWorkspace } from "~/features/facilities/create-building-workspace";
+import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
@@ -31,6 +33,10 @@ function CreateFacilityPage() {
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [roomTypes, setRoomTypes] = useState<string[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
+    useUnsavedChangesGuard(isDirty, !isSaving);
 
   useEffect(() => {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
@@ -41,9 +47,15 @@ function CreateFacilityPage() {
   }, []);
 
   async function handleCreate(input: CreateFacilitiesInput) {
-    const { message } = await facilityService.create(input);
-    if (message) toast.success(message);
-    navigate("/facilities");
+    setIsSaving(true);
+    try {
+      const { message } = await facilityService.create(input);
+      if (message) toast.success(message);
+      navigate("/facilities");
+    } catch (error) {
+      setIsSaving(false);
+      throw error;
+    }
   }
 
   return (
@@ -65,8 +77,33 @@ function CreateFacilityPage() {
           programs={programs}
           onSubmit={handleCreate}
           onCancel={() => navigate("/facilities")}
+          onDirtyChange={setIsDirty}
         />
       </div>
+
+      <ConfirmDialog
+        open={blocker.state === "blocked"}
+        onClose={() => blocker.reset?.()}
+        title="Discard unsaved facility?"
+        confirmLabel="Discard"
+        loadingLabel="Discarding…"
+        confirmVariant="danger"
+        onConfirm={async () => blocker.proceed?.()}
+      >
+        You have unsaved facility details. Leaving this page will discard them.
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={reloadPromptOpen}
+        onClose={() => setReloadPromptOpen(false)}
+        title="Discard unsaved facility?"
+        confirmLabel="Reload"
+        loadingLabel="Reloading…"
+        confirmVariant="danger"
+        onConfirm={async () => confirmReload()}
+      >
+        You have unsaved facility details. Reloading will discard them.
+      </ConfirmDialog>
     </div>
   );
 }

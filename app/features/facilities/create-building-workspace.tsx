@@ -22,6 +22,7 @@ type CreateBuildingWorkspaceProps = {
   programs: Program[];
   onSubmit: (input: CreateFacilitiesInput) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 };
 
 let draftKeyCounter = 0;
@@ -109,6 +110,7 @@ export function CreateBuildingWorkspace({
   programs,
   onSubmit,
   onCancel,
+  onDirtyChange,
 }: CreateBuildingWorkspaceProps) {
   const defaultRoomType = roomTypes[0] ?? "";
   const [isLoading, setIsLoading] = useState(false);
@@ -127,6 +129,15 @@ export function CreateBuildingWorkspace({
     () => computeSummary(buildingName, floorCount, floors),
     [buildingName, floorCount, floors],
   );
+
+  const isDirty =
+    buildingName.trim() !== "" ||
+    floorCount !== 1 ||
+    floors.some((floor) => floor.rooms.length > 0);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   function updateFloorRooms(floorLevel: number, updater: (rooms: FacilityRoomDraft[]) => FacilityRoomDraft[]) {
     setFloors((current) =>
