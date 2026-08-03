@@ -137,7 +137,7 @@ const floorButtonClassName = (active: boolean) =>
   }`;
 
 const statCardClassName =
-  "rounded-lg border border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/5";
+  "rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5";
 
 function roomToArchiveTarget(room: FacilityRoomDetail, building: FacilityBuildingDetail): Room {
   return {
@@ -293,8 +293,7 @@ export function EditBuildingWorkspace({
         </div>
       </div>
 
-      <Card className="p-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className={statCardClassName}>
             <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Building Name
@@ -327,8 +326,7 @@ export function EditBuildingWorkspace({
               {summary.roomTypeCounts["Lecture Room"] ?? 0} / {summary.roomTypeCounts.Laboratory ?? 0}
             </p>
           </div>
-        </div>
-      </Card>
+      </div>
 
       <FormError message={error} />
 

@@ -49,7 +49,7 @@ function pluralizeRooms(count: number) {
 
 function OverviewStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <Card className="px-4 py-3">
+    <Card className="bg-white px-4 py-3 dark:bg-white/5">
       <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {label}
       </p>
@@ -171,8 +171,8 @@ export function FacilitiesViewWorkspace({
 
   return (
     <div className="flex flex-col gap-5">
-      <Card className="overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-white/10 dark:bg-white/5">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 dark:border-white/10 dark:bg-white/5">
           <div className="flex min-w-0 items-center gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-navy-700 dark:bg-white/10 dark:text-slate-300">
               <Building2Icon />
@@ -216,8 +216,8 @@ export function FacilitiesViewWorkspace({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 p-4 xl:grid-cols-[minmax(180px,1.3fr)_repeat(4,minmax(0,1fr))]">
-          <Card className="col-span-2 flex flex-col justify-center px-4 py-3 xl:col-span-1">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-[minmax(180px,1.3fr)_repeat(4,minmax(0,1fr))]">
+          <Card className="col-span-2 flex flex-col justify-center bg-white px-4 py-3 dark:bg-white/5 xl:col-span-1">
             <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Browse building
             </p>
@@ -247,7 +247,7 @@ export function FacilitiesViewWorkspace({
           <OverviewStat label="Total capacity" value={totalCapacity.toLocaleString()} />
           <OverviewStat label="Room types" value={Object.keys(summary.roomTypeCounts).length} />
         </div>
-      </Card>
+      </div>
 
       <Card className="p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
