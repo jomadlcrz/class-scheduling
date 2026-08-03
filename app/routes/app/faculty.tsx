@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
-import { SuccessDone } from "~/components/feedback/success-done";
 import { Button } from "~/components/ui/button";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
@@ -13,17 +13,12 @@ import { Spinner } from "~/components/ui/spinner";
 import { ActivateFacultyDialog } from "~/features/faculty/activate-faculty-dialog";
 import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-dialog";
 import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
-import { FacultyAccountForm } from "~/features/faculty/faculty-account-form";
 import { FacultyEditForm } from "~/features/faculty/faculty-edit-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
-import { enumService, type EnumOptions } from "~/services/enum.service";
 import { facultyService } from "~/services/faculty.service";
-import { permissionService } from "~/services/permission.service";
-import type { DepartmentOption } from "~/types/department";
-import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
-import type { PermissionSummary } from "~/types/permission";
+import type { Faculty } from "~/types/faculty";
 
 export function meta() {
   return [
@@ -41,17 +36,13 @@ export default function FacultyRoute() {
 }
 
 function FacultyPage() {
+  const navigate = useNavigate();
   const [facultyList, setFacultyList] = useState<Faculty[] | null>(null);
-  const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
-  const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
-  const [rolePermissions, setRolePermissions] = useState<PermissionSummary[]>([]);
 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<Faculty | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Faculty | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<Faculty | null>(null);
@@ -64,22 +55,6 @@ function FacultyPage() {
       setLoadError(err instanceof Error ? err.message : "Unable to load faculty.");
       setFacultyList([]);
     });
-    // Real departments + enum values for the account form; failures
-    // just leave the dropdowns empty (validation reports the department).
-    facultyService
-      .listDepartmentOptions()
-      .then(setDepartmentOptions)
-      .catch(() => setDepartmentOptions([]));
-    enumService
-      .getOptions()
-      .then(setEnumOptions)
-      .catch(() => setEnumOptions(null));
-    // Role permissions for the account form's side panel; viewers without
-    // access (403) simply don't get the panel.
-    permissionService
-      .list()
-      .then(setRolePermissions)
-      .catch(() => setRolePermissions([]));
   }, []);
 
   /** Unique department codes derived from the faculty list. */
@@ -139,18 +114,6 @@ function FacultyPage() {
     facultyService.list().then(setFacultyList).catch(() => {});
   }
 
-  async function handleCreate(input: CreateFacultyAccountInput) {
-    const message = await facultyService.create(input);
-    if (message) toast.success(message);
-    setCreatedEmail(input.email);
-    refreshFacultyList();
-  }
-
-  function closeCreate() {
-    setCreateOpen(false);
-    setCreatedEmail(null);
-  }
-
   async function handleEdit(input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) {
     if (!editTarget) return;
     const message = await facultyService.update(editTarget.id, input);
@@ -179,7 +142,7 @@ function FacultyPage() {
         title="Instructors & Deans"
         description="Instructors and deans with their department assignments."
         actions={
-          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
+          <Button type="button" block={false} onClick={() => navigate("/faculty/new")}>
             <PlusIcon />
             New Faculty
           </Button>
@@ -244,28 +207,6 @@ function FacultyPage() {
           </>
         )}
       </div>
-
-      <Modal
-        open={createOpen}
-        onClose={closeCreate}
-        title="New Faculty"
-        wide={!createdEmail && rolePermissions.length > 0}
-      >
-        {createdEmail ? (
-          <SuccessDone title="Faculty registered" onDone={closeCreate}>
-            Login credentials with a temporary password were emailed to {createdEmail}.
-          </SuccessDone>
-        ) : (
-          <FacultyAccountForm
-            departments={departmentOptions}
-            genders={enumOptions?.gender ?? []}
-            civilStatuses={enumOptions?.civilStatus ?? []}
-            rolePermissions={rolePermissions}
-            onSubmit={handleCreate}
-            onCancel={closeCreate}
-          />
-        )}
-      </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Faculty">
         {editTarget && (

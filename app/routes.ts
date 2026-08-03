@@ -17,6 +17,7 @@ export default [
   layout("layouts/app-shell.tsx", [
     route("dashboard", "routes/app/dashboard.tsx"),
     route("administrators", "routes/app/administrators.tsx"),
+    route("administrators/new", "routes/app/administrators-new.tsx"),
     route("permissions", "routes/app/permissions.tsx"),
     route("facilities", "routes/app/facilities.tsx"),
     route("facilities/new", "routes/app/facilities/new.tsx"),
@@ -35,6 +36,7 @@ export default [
     route("dean/subject-assignments", "routes/app/dean-subject-assignments.tsx"),
     route("dean/teaching-terms/:id", "routes/app/dean-teaching-term.tsx"),
     route("faculty", "routes/app/faculty.tsx"),
+    route("faculty/new", "routes/app/faculty-new.tsx"),
     route("faculty-loads", "routes/app/faculty-loads.tsx"),
     route("schedules", "routes/app/schedules/index.tsx"),
     route("schedules/weekly-hour-allocations", "routes/app/schedules/weekly-hour-allocations.tsx"),

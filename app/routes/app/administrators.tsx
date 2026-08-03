@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
-import { SuccessDone } from "~/components/feedback/success-done";
 import { Button } from "~/components/ui/button";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
@@ -11,17 +11,13 @@ import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { ActivateAdministratorDialog } from "~/features/administrators/activate-administrator-dialog";
-import { AdministratorAccountForm } from "~/features/administrators/administrator-account-form";
 import { AdministratorEditForm } from "~/features/administrators/administrator-edit-form";
 import { AdministratorTable } from "~/features/administrators/administrator-table";
 import { DeactivateAdministratorDialog } from "~/features/administrators/deactivate-administrator-dialog";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { administratorService } from "~/services/administrator.service";
-import { departmentService } from "~/services/department.service";
-import { enumService, type EnumOptions } from "~/services/enum.service";
-import type { Administrator, CreateAdministratorAccountInput } from "~/types/administrator";
-import type { DepartmentOption } from "~/types/department";
+import type { Administrator } from "~/types/administrator";
 
 export function meta() {
   return [
@@ -39,14 +35,11 @@ export default function AdministratorsRoute() {
 }
 
 function AdministratorsPage() {
+  const navigate = useNavigate();
   const [administrators, setAdministrators] = useState<Administrator[] | null>(null);
-  const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
-  const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<Administrator | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Administrator | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<Administrator | null>(null);
@@ -66,14 +59,6 @@ function AdministratorsPage() {
 
   useEffect(() => {
     refresh();
-    departmentService
-      .list()
-      .then((departments) => setDepartmentOptions(departments.map((d) => ({ id: d.id, abbrev: d.abbrev, name: d.name }))))
-      .catch(() => setDepartmentOptions([]));
-    enumService
-      .getOptions()
-      .then(setEnumOptions)
-      .catch(() => setEnumOptions(null));
   }, []);
 
   const visibleAdministrators = useMemo(() => {
@@ -117,13 +102,6 @@ function AdministratorsPage() {
     };
   }, [pageIds]);
 
-  async function handleCreate(input: CreateAdministratorAccountInput) {
-    const message = await administratorService.create(input);
-    if (message) toast.success(message);
-    setCreatedEmail(input.email);
-    refresh();
-  }
-
   async function handleEdit(input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) {
     if (!editTarget) return;
     const message = await administratorService.update(editTarget.id, input);
@@ -146,18 +124,13 @@ function AdministratorsPage() {
     setReactivateTarget(null);
   }
 
-  function closeCreate() {
-    setCreateOpen(false);
-    setCreatedEmail(null);
-  }
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Administrators"
         description="Super Admin and Registrar Admin accounts."
         actions={
-          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
+          <Button type="button" block={false} onClick={() => navigate("/administrators/new")}>
             <PlusIcon />
             New Administrator
           </Button>
@@ -216,22 +189,6 @@ function AdministratorsPage() {
           </>
         )}
       </div>
-
-      <Modal open={createOpen} onClose={closeCreate} title="New Administrator">
-        {createdEmail ? (
-          <SuccessDone title="Administrator registered" onDone={closeCreate}>
-            Login credentials with a temporary password will be emailed to {createdEmail}.
-          </SuccessDone>
-        ) : (
-          <AdministratorAccountForm
-            departments={departmentOptions}
-            genders={enumOptions?.gender ?? []}
-            civilStatuses={enumOptions?.civilStatus ?? []}
-            onSubmit={handleCreate}
-            onCancel={closeCreate}
-          />
-        )}
-      </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Administrator">
         {editTarget && (

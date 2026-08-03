@@ -10,7 +10,7 @@ type SuccessDoneProps = {
   doneLabel?: string;
 };
 
-/** Terminal state for a create flow inside a Modal: success message plus a single "Done" button to close it. */
+/** Terminal state for a create flow: success message plus a single "Done" action. */
 export function SuccessDone({ title, children, onDone, doneLabel = "Done" }: SuccessDoneProps) {
   return (
     <div className="flex flex-col items-center gap-4">

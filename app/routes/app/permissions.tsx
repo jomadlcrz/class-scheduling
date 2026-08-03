@@ -42,7 +42,6 @@ function PermissionsPage() {
   const [addRoleOpen, setAddRoleOpen] = useState(false);
   const [addPermissionOpen, setAddPermissionOpen] = useState(false);
   const [assignTarget, setAssignTarget] = useState<PermissionSummary | null>(null);
-  const [editTarget, setEditTarget] = useState<PermissionSummary | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<{ roleId: number; permissionId: number } | null>(
     null,
   );
@@ -99,7 +98,7 @@ function PermissionsPage() {
         </EmptyState>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
-          <PermissionTable roles={roles} onEdit={setEditTarget} onAssign={setAssignTarget} />
+          <PermissionTable roles={roles} onAssign={setAssignTarget} />
           <section>
             <h2 className="mb-3 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               Permission Matrix
@@ -161,25 +160,6 @@ function PermissionsPage() {
               setAssignTarget(null);
             }}
             onCancel={() => setAssignTarget(null)}
-          />
-        )}
-      </Modal>
-
-      <Modal
-        open={editTarget !== null}
-        onClose={() => setEditTarget(null)}
-        title={editTarget ? `Update Permissions — ${editTarget.name}` : "Update Permissions"}
-      >
-        {editTarget && (
-          <RolePermissionsForm
-            role={editTarget}
-            catalog={catalog}
-            onSaved={(message) => {
-              if (message) toast.success(message);
-              refresh();
-              setEditTarget(null);
-            }}
-            onCancel={() => setEditTarget(null)}
           />
         )}
       </Modal>

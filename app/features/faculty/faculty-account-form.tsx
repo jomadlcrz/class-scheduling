@@ -1,9 +1,10 @@
 ﻿import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { CheckIcon } from "~/components/ui/icons";
+import { Card } from "~/components/ui/card";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { RolePermissionsPanel } from "~/features/permissions/role-permissions-panel";
 import { facultySchema, FACULTY_ROLES } from "~/schemas/faculty.schema";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput } from "~/types/faculty";
@@ -18,6 +19,7 @@ type FacultyAccountFormProps = {
   rolePermissions: PermissionSummary[];
   onSubmit: (input: CreateFacultyAccountInput) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 };
 
 /** Creates the faculty login account + profile on the backend (temp password emailed). */
@@ -28,6 +30,7 @@ export function FacultyAccountForm({
   rolePermissions,
   onSubmit,
   onCancel,
+  onDirtyChange,
 }: FacultyAccountFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,10 +73,16 @@ export function FacultyAccountForm({
   const showPermissions = rolePermissions.length > 0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <FormError message={error} />
+    <form
+      onSubmit={handleSubmit}
+      onChange={() => onDirtyChange?.(true)}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <Card className="flex flex-col gap-4 p-6">
+        <FormError message={error} />
 
-      <div className={showPermissions ? "grid gap-6 sm:grid-cols-[1fr_minmax(0,18rem)]" : undefined}>
+        <div className="grid gap-6 sm:grid-cols-2">
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <Input id="faculty-first-name" label="First Name" type="text" required placeholder="Enter first name" />
@@ -104,6 +113,10 @@ export function FacultyAccountForm({
             }}
           />
 
+        </div>
+
+        <div className="flex flex-col gap-4">
+
           <FieldChrome id="faculty-department" label="Department" required>
             <Select
               items={[
@@ -112,6 +125,7 @@ export function FacultyAccountForm({
               ]}
               name="faculty-department"
               defaultValue=""
+              onValueChange={() => onDirtyChange?.(true)}
             >
               <SelectTrigger id="faculty-department">
                 <SelectValue />
@@ -133,6 +147,7 @@ export function FacultyAccountForm({
                 items={[{ value: "", label: "Select a gender" }, ...genders.map((g) => ({ value: g, label: g }))]}
                 name="faculty-gender"
                 defaultValue=""
+                onValueChange={() => onDirtyChange?.(true)}
               >
                 <SelectTrigger id="faculty-gender">
                   <SelectValue />
@@ -155,6 +170,7 @@ export function FacultyAccountForm({
                 ]}
                 name="faculty-civil-status"
                 defaultValue=""
+                onValueChange={() => onDirtyChange?.(true)}
               >
                 <SelectTrigger id="faculty-civil-status">
                   <SelectValue />
@@ -179,7 +195,10 @@ export function FacultyAccountForm({
               ]}
               name="faculty-role"
               value={role}
-              onValueChange={(v) => setRole(v as string)}
+              onValueChange={(v) => {
+                setRole(v as string);
+                onDirtyChange?.(true);
+              }}
             >
               <SelectTrigger id="faculty-role">
                 <SelectValue />
@@ -194,12 +213,13 @@ export function FacultyAccountForm({
               </SelectContent>
             </Select>
           </FieldChrome>
+
+          {showPermissions && <RolePermissionsPanel role={selectedRole} />}
         </div>
+        </div>
+      </Card>
 
-        {showPermissions && <RolePermissionsPanel role={selectedRole} />}
-      </div>
-
-      <div className="flex justify-end gap-2">
+      <div className="sticky bottom-0 z-10 flex justify-between border-t border-slate-200 bg-slate-50/95 py-4 backdrop-blur dark:border-white/10 dark:bg-surface/95">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
@@ -208,42 +228,5 @@ export function FacultyAccountForm({
         </Button>
       </div>
     </form>
-  );
-}
-
-/** What the chosen role will be able to do; hint until a role is picked. */
-function RolePermissionsPanel({ role }: { role: PermissionSummary | undefined }) {
-  return (
-    <aside className="h-fit rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-      <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
-        Role Permissions
-      </h3>
-      {role ? (
-        <ul className="mt-3 flex flex-col gap-2.5">
-          {role.permissions.map((p) => (
-            <li key={p.id} className="flex items-start gap-2">
-              <span className="mt-0.5 shrink-0 text-emerald-500" aria-hidden="true">
-                <CheckIcon />
-              </span>
-              <span>
-                <span className="block text-sm font-medium text-navy-700 dark:text-mist-100">
-                  {p.description || p.slug}
-                </span>
-                <span className="block text-xs text-slate-400 dark:text-slate-500">{p.slug}</span>
-              </span>
-            </li>
-          ))}
-          {role.permissions.length === 0 && (
-            <li className="text-sm text-slate-500 dark:text-slate-400">
-              This role has no permissions assigned.
-            </li>
-          )}
-        </ul>
-      ) : (
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-          Select a role to see what it can do.
-        </p>
-      )}
-    </aside>
   );
 }

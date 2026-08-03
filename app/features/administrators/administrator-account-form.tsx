@@ -1,20 +1,25 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { RolePermissionsPanel } from "~/features/permissions/role-permissions-panel";
 import { administratorSchema } from "~/schemas/administrator.schema";
 import type { CreateAdministratorAccountInput } from "~/types/administrator";
 import { ADMINISTRATOR_ROLES } from "~/types/administrator";
 import type { DepartmentOption } from "~/types/department";
+import type { PermissionSummary } from "~/types/permission";
 
 type AdministratorAccountFormProps = {
   departments: DepartmentOption[];
   /** Backend enum values (enumService); empty selection = not specified. */
   genders: string[];
   civilStatuses: string[];
+  rolePermissions: PermissionSummary[];
   onSubmit: (input: CreateAdministratorAccountInput) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 };
 
 /** Creates a Super Admin or Registrar Admin account (temp password emailed). */
@@ -22,12 +27,17 @@ export function AdministratorAccountForm({
   departments,
   genders,
   civilStatuses,
+  rolePermissions,
   onSubmit,
   onCancel,
+  onDirtyChange,
 }: AdministratorAccountFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState("");
+  const selectedRole = rolePermissions.find(
+    (item) => item.name.toLowerCase() === role.toLowerCase(),
+  );
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -60,13 +70,21 @@ export function AdministratorAccountForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <FormError message={error} />
+    <form
+      onSubmit={handleSubmit}
+      onChange={() => onDirtyChange?.(true)}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <Card className="flex flex-col gap-4 p-6">
+        <FormError message={error} />
 
-      <div className="grid grid-cols-2 gap-3">
-        <Input id="admin-first-name" label="First Name" type="text" required placeholder="Enter first name" />
-        <Input id="admin-mid-name" label="Middle Name" type="text" placeholder="Enter middle name" />
-      </div>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Input id="admin-first-name" label="First Name" type="text" required placeholder="Enter first name" />
+          <Input id="admin-mid-name" label="Middle Name" type="text" placeholder="Enter middle name" />
+        </div>
 
       <Input id="admin-last-name" label="Last Name" type="text" required placeholder="Enter last name" />
 
@@ -86,6 +104,10 @@ export function AdministratorAccountForm({
         }}
       />
 
+          </div>
+
+          <div className="flex flex-col gap-4">
+
       <FieldChrome id="admin-role" label="Role" required>
         <Select
           items={[
@@ -94,7 +116,10 @@ export function AdministratorAccountForm({
           ]}
           name="admin-role"
           value={role}
-          onValueChange={(v) => setRole(v as string)}
+          onValueChange={(v) => {
+            setRole(v as string);
+            onDirtyChange?.(true);
+          }}
         >
           <SelectTrigger id="admin-role">
             <SelectValue />
@@ -118,6 +143,7 @@ export function AdministratorAccountForm({
           ]}
           name="admin-department"
           defaultValue=""
+          onValueChange={() => onDirtyChange?.(true)}
         >
           <SelectTrigger id="admin-department">
             <SelectValue />
@@ -139,6 +165,7 @@ export function AdministratorAccountForm({
             items={[{ value: "", label: "Select a gender" }, ...genders.map((g) => ({ value: g, label: g }))]}
             name="admin-gender"
             defaultValue=""
+            onValueChange={() => onDirtyChange?.(true)}
           >
             <SelectTrigger id="admin-gender">
               <SelectValue />
@@ -161,6 +188,7 @@ export function AdministratorAccountForm({
             ]}
             name="admin-civil-status"
             defaultValue=""
+            onValueChange={() => onDirtyChange?.(true)}
           >
             <SelectTrigger id="admin-civil-status">
               <SelectValue />
@@ -177,11 +205,16 @@ export function AdministratorAccountForm({
         </FieldChrome>
       </div>
 
-      <p className="font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-        New administrators start with a temporary password and must set their own at first login.
-      </p>
+            <p className="font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+              New administrators start with a temporary password and must set their own at first login.
+            </p>
 
-      <div className="flex justify-end gap-2">
+            <RolePermissionsPanel role={selectedRole} />
+          </div>
+        </div>
+      </Card>
+
+      <div className="sticky bottom-0 z-10 flex justify-between border-t border-slate-200 bg-slate-50/95 py-4 backdrop-blur dark:border-white/10 dark:bg-surface/95">
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
