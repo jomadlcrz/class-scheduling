@@ -1,16 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Alert, AlertAction, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { HelpCircleIcon, PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
+import { HelpCircleIcon, PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
 import { Spinner } from "~/components/ui/spinner";
 import { SchoolYearForm } from "~/features/academic-term/school-year-form";
 import { SchoolYearTable } from "~/features/academic-term/school-year-table";
-import { SchoolYearArchiveDialog } from "~/features/academic-term/school-year-archive-dialog";
 import { usePagination } from "~/hooks/use-pagination";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { PageHeader } from "~/layouts/page-header";
@@ -21,14 +20,19 @@ export function SchoolYearsPage() {
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SchoolYearOption | null>(null);
-  const [archiveTarget, setArchiveTarget] = useState<SchoolYearOption | null>(null);
-  const [checkingCurrent, setCheckingCurrent] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [currentCheck, setCurrentCheck] = useState<{
     schoolYear: string;
     existsForToday?: boolean;
     expectedSchoolYear?: string | null;
   } | null>(null);
-  const [currentCheckError, setCurrentCheckError] = useState<string | null>(null);
+
+  useEffect(() => {
+    schoolYearService
+      .getCurrent()
+      .then((current) => setCurrentCheck(current))
+      .catch(() => setCurrentCheck(null));
+  }, [schoolYears.length]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -37,6 +41,8 @@ export function SchoolYearsPage() {
   }, [schoolYears, search]);
 
   const pagination = usePagination(filtered, search);
+  const missingCurrentYear = currentCheck?.existsForToday === false;
+  const expectedYear = currentCheck?.expectedSchoolYear;
 
   async function handleCreate(schoolYear: string) {
     const message = await schoolYearService.create(schoolYear);
@@ -53,73 +59,45 @@ export function SchoolYearsPage() {
     await refresh();
   }
 
-  async function handleArchive(schoolYear: SchoolYearOption) {
-    const message = await schoolYearService.archive(schoolYear.id, schoolYear.schoolYear);
-    if (message) toast.success(message);
-    setArchiveTarget(null);
-    await refresh();
-  }
-
-  async function handleCheckCurrentYear() {
-    setCheckingCurrent(true);
-    setCurrentCheckError(null);
-    try {
-      const current = await schoolYearService.getCurrent();
-      setCurrentCheck(current);
-    } catch (err) {
-      setCurrentCheck(null);
-      setCurrentCheckError(err instanceof Error ? err.message : "");
-    } finally {
-      setCheckingCurrent(false);
-    }
-  }
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="School Years"
-        description="Create, manage, and archive school years."
         actions={
-          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
-            <PlusIcon />
-            Create School Year
-          </Button>
+          <>
+            <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
+              <HelpCircleIcon />
+              Help
+            </Button>
+            <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
+              <PlusIcon />
+              Create
+            </Button>
+          </>
         }
       />
 
-      <Alert variant="default" className="mt-6 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200">
-        <HelpCircleIcon />
-        <AlertDescription>
-          The current school year is used as the default in the global term selector. Make sure a school
-          year exists for the current academic calendar.
-          {currentCheck && (
-            <p className="mt-1 font-medium">
-              {currentCheck.existsForToday
-                ? `Current calendar school year: ${currentCheck.schoolYear}.`
-                : `${currentCheck.schoolYear} is the nearest active school year; ${currentCheck.expectedSchoolYear ?? "the current calendar year"} is not configured.`}
-            </p>
-          )}
-          {currentCheckError && <p className="mt-1 text-red-700 dark:text-red-300">{currentCheckError}</p>}
-        </AlertDescription>
-        <AlertAction>
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            isLoading={checkingCurrent}
-            loadingLabel="Checking…"
-            onClick={handleCheckCurrentYear}
-          >
-            <RefreshCwIcon />
-            Check Current Year
-          </Button>
-        </AlertAction>
-      </Alert>
+      {missingCurrentYear && expectedYear && (
+        <Alert variant="warning" className="mt-6">
+          <AlertDescription>
+            No school year exists for the current academic calendar ({expectedYear}).
+          </AlertDescription>
+          <AlertAction>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => {
+                setCreateOpen(true);
+              }}
+            >
+              Create {expectedYear}
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-          School Years List
-        </h2>
         <SearchInput
           value={search}
           onChange={setSearch}
@@ -135,17 +113,11 @@ export function SchoolYearsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState title={search ? "No school years found" : "No school years yet"}>
-            {search
-              ? "Try a different search term."
-              : "Create the first school year to get started."}
+            {search ? "Try a different search term." : "Create the first school year to get started."}
           </EmptyState>
         ) : (
           <>
-            <SchoolYearTable
-              schoolYears={pagination.pageItems}
-              onEdit={setEditTarget}
-              onArchive={setArchiveTarget}
-            />
+            <SchoolYearTable schoolYears={pagination.pageItems} onEdit={setEditTarget} />
             {pagination.totalPages > 1 && (
               <Pagination
                 page={pagination.page}
@@ -158,22 +130,19 @@ export function SchoolYearsPage() {
         )}
       </div>
 
-      <Alert variant="warning" className="mt-6">
-        <HelpCircleIcon />
-        <AlertTitle>Archiving a school year</AlertTitle>
-        <AlertDescription>
-          Archiving will hide the school year from active dropdowns and reports. All historical data will
-          be preserved and remain accessible.
-        </AlertDescription>
-      </Alert>
-
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create School Year">
-        <SchoolYearForm onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
+        <SchoolYearForm
+          mode="create"
+          initialValue={missingCurrentYear ? expectedYear ?? "" : ""}
+          onSubmit={handleCreate}
+          onCancel={() => setCreateOpen(false)}
+        />
       </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit School Year">
         {editTarget && (
           <SchoolYearForm
+            mode="edit"
             initialValue={editTarget.schoolYear}
             onSubmit={handleEdit}
             onCancel={() => setEditTarget(null)}
@@ -181,11 +150,22 @@ export function SchoolYearsPage() {
         )}
       </Modal>
 
-      <SchoolYearArchiveDialog
-        schoolYear={archiveTarget}
-        onClose={() => setArchiveTarget(null)}
-        onConfirm={handleArchive}
-      />
+      <Modal open={helpOpen} onClose={() => setHelpOpen(false)} title="School years" wide>
+        <div className="space-y-4 font-body text-sm text-slate-600 dark:text-slate-300">
+          <p>
+            Each row is one academic year (e.g. 2026-2027). Calendar status — Ongoing, Ended, or
+            Upcoming — is computed from today&apos;s date.
+          </p>
+          <p>
+            School years are not archived. After both semesters are posted, close the year from{" "}
+            <strong>Term Closure</strong>. Historical records stay available.
+          </p>
+          <p>
+            The current year is hoisted to the top of the list and used as the default in the global
+            term selector.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,9 +1,10 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import type { CreateSemesterInput, Semester } from "~/types/semester";
+import { ApiError, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import type { CreateSemesterInput, Semester, SemesterWritePayload } from "~/types/semester";
 
 type SemesterResponse = {
-  id: number;
-  semester: string;
+  id?: number;
+  semester?: string;
+  semester_name?: string;
   semester_number: number;
   display_name?: string;
   description?: string | null;
@@ -11,37 +12,75 @@ type SemesterResponse = {
   can_edit?: boolean;
 };
 
-type DeletedSemester = Semester & { deactivatedAt: string | null };
-
-export type SemesterArchivePreview = {
-  semester: { id: number; semester: string };
-  archivable: boolean;
-  blockers: {
-    references: number;
-    studentAcademics: number;
-    instructorTeachingTerms: number;
-    items: { key: string; label: string; count: number }[];
-  };
-  willArchive: Record<string, never>;
-};
-
 let cachedSemesters: Semester[] | null = null;
 let cachePromise: Promise<Semester[]> | null = null;
+/** GET /semesters list omits id — resolved via GET /semesters/:id probes. */
+const semIdByNumber = new Map<number, number>();
 
 function invalidateCache() {
   cachedSemesters = null;
   cachePromise = null;
+  semIdByNumber.clear();
 }
 
 function mapSemester(s: SemesterResponse): Semester {
+  const semesterName = s.semester_name ?? s.semester ?? s.display_name ?? `Semester ${s.semester_number}`;
+  const id = s.id ?? semIdByNumber.get(s.semester_number) ?? 0;
   return {
-    id: s.id,
-    semester: s.semester,
+    id,
+    semester: semesterName,
     semesterNumber: s.semester_number,
-    displayName: s.display_name ?? s.semester,
+    displayName: s.display_name ?? semesterName,
     description: s.description ?? null,
     status: s.status ?? "Active",
-    canEdit: s.can_edit ?? true,
+    canEdit: (s.can_edit ?? true) && id > 0,
+  };
+}
+
+/**
+ * The list endpoint returns semester_number + semester_name only. Resolve database
+ * ids by probing GET /semesters/:id until each semester_number is matched.
+ */
+async function resolveSemesterIds(numbers: number[]): Promise<void> {
+  const needed = new Set(numbers.filter((n) => !semIdByNumber.has(n)));
+  if (needed.size === 0) return;
+
+  for (let id = 1; id <= 20; id++) {
+    try {
+      const row = await apiGet<{ semester_number: number }>(`/semesters/${id}`);
+      semIdByNumber.set(row.semester_number, id);
+      needed.delete(row.semester_number);
+      if (needed.size === 0) return;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) continue;
+      throw err;
+    }
+  }
+
+  if (needed.size > 0) {
+    throw new Error(
+      `Could not resolve semester id for semester number${needed.size > 1 ? "s" : ""} ${[...needed].join(", ")}.`,
+    );
+  }
+}
+
+async function resolveSemesterId(semesterNumber: number): Promise<number> {
+  const cached = semIdByNumber.get(semesterNumber);
+  if (cached != null) return cached;
+  await resolveSemesterIds([semesterNumber]);
+  const id = semIdByNumber.get(semesterNumber);
+  if (id == null) {
+    throw new Error(`Could not resolve semester id for semester number ${semesterNumber}.`);
+  }
+  return id;
+}
+
+/** Build POST/PUT body exactly as backend SemesterSchema expects. */
+function toWritePayload(input: CreateSemesterInput): SemesterWritePayload {
+  return {
+    semester: input.semester,
+    semesterNumber: input.semesterNumber,
+    semesterName: input.semesterName,
   };
 }
 
@@ -62,6 +101,9 @@ async function list(): Promise<Semester[]> {
       cachePromise = null;
       throw err;
     }
+    if (data.length > 0) {
+      await resolveSemesterIds(data.map((row) => row.semester_number));
+    }
     cachedSemesters = data.map(mapSemester);
     return cachedSemesters;
   })();
@@ -71,54 +113,21 @@ async function list(): Promise<Semester[]> {
 
 /** POST /semesters — 409 when the semester already exists. Invalidates the list cache. */
 async function create(input: CreateSemesterInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/semesters", {
-    semester: input.semester,
-    semesterNumber: input.semesterNumber,
-  });
+  const data = await apiPost<{ message?: string; semester?: SemesterResponse & { id?: number } }>(
+    "/semesters",
+    toWritePayload(input),
+  );
+  if (data.semester?.id != null) {
+    semIdByNumber.set(data.semester.semester_number ?? input.semesterNumber, data.semester.id);
+  }
   invalidateCache();
   return apiMessage(data);
 }
 
 /** PUT /semesters/:id */
 async function update(id: number, input: CreateSemesterInput): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/semesters/${id}`, {
-    semester: input.semester,
-    semesterNumber: input.semesterNumber,
-  });
-  invalidateCache();
-  return apiMessage(data);
-}
-
-/** DELETE /semesters/:id — soft-delete; 409 if still referenced by academic records/teaching terms. */
-async function remove(id: number, confirm: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/semesters/${id}/archive`, { confirm });
-  invalidateCache();
-  return apiMessage(data);
-}
-
-/** GET /semesters/:id/archive-preview — checks whether archival is safe. */
-async function getArchivePreview(id: number): Promise<SemesterArchivePreview> {
-  return apiGet<SemesterArchivePreview>(`/semesters/${id}/archive-preview`);
-}
-
-/** GET /semesters/recycle-bin — always fresh, not cached. 404 → empty. */
-async function listDeleted(): Promise<DeletedSemester[]> {
-  let data: (SemesterResponse & { deactivated_at: string | null })[];
-  try {
-    data = await apiGet<(SemesterResponse & { deactivated_at: string | null })[]>("/semesters/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((s) => ({
-    ...mapSemester(s),
-    deactivatedAt: s.deactivated_at,
-  }));
-}
-
-/** PATCH /semesters/:id/restore */
-async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/semesters/${id}/restore`);
+  const resolvedId = id > 0 ? id : await resolveSemesterId(input.semesterNumber);
+  const data = await apiPut<{ message?: string }>(`/semesters/${resolvedId}`, toWritePayload(input));
   invalidateCache();
   return apiMessage(data);
 }
@@ -126,7 +135,8 @@ async function restore(id: number): Promise<string> {
 /** GET /semesters/:id */
 async function get(id: number): Promise<Semester> {
   const s = await apiGet<SemesterResponse>(`/semesters/${id}`);
-  return mapSemester(s);
+  semIdByNumber.set(s.semester_number, id);
+  return mapSemester({ ...s, id });
 }
 
-export const semesterService = { list, create, update, remove, getArchivePreview, listDeleted, restore, get };
+export const semesterService = { list, create, update, get };

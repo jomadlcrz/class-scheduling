@@ -14,7 +14,13 @@ export function useSchoolYears(): UseSchoolYearsResult {
 
   const refresh = useCallback(async () => {
     const data = await schoolYearService.list();
-    setSchoolYears(data);
+    setSchoolYears(
+      [...data].sort((a, b) => {
+        if (a.isCurrent && !b.isCurrent) return -1;
+        if (!a.isCurrent && b.isCurrent) return 1;
+        return b.schoolYear.localeCompare(a.schoolYear);
+      }),
+    );
   }, []);
 
   useEffect(() => {

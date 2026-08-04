@@ -69,25 +69,19 @@ export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: Te
                     className={`${actionButtonClassName} border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-gold-400/30 dark:text-gold-300 dark:hover:bg-gold-400/10`}
                   >
                     <LockIcon size={14} />
-                    Close
+                    Post
                   </button>
                 )}
-                <button
-                  type="button"
-                  disabled={!row.actions.canReopen}
-                  title={
-                    !row.actions.canReopen
-                      ? row.status === "Open"
-                        ? "Term is already open"
-                        : "Terms closed due to school year end cannot be reopened"
-                      : "Reopen this term"
-                  }
-                  onClick={() => onReopen(row)}
-                  className={`${actionButtonClassName} border-red-200 text-red-700 hover:bg-red-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-400/10`}
-                >
-                  <LockIcon size={14} />
-                  Reopen
-                </button>
+                {row.actions.canReopen && (
+                  <button
+                    type="button"
+                    title="Reopen this term"
+                    onClick={() => onReopen(row)}
+                    className={`${actionButtonClassName} border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10`}
+                  >
+                    Reopen
+                  </button>
+                )}
               </div>
             </TableCell>
           </TableRow>

@@ -8,7 +8,11 @@ export type Semester = {
   canEdit?: boolean;
 };
 
-export type CreateSemesterInput = {
+/** POST /semesters body — matches backend SemesterSchema (camelCase keys). */
+export type SemesterWritePayload = {
   semester: string;
-  semesterNumber: number;
+  semesterNumber: 1 | 2;
+  semesterName: string;
 };
+
+export type CreateSemesterInput = SemesterWritePayload;

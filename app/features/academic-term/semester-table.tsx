@@ -1,5 +1,4 @@
-import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
-import { archiveLabeledActionButtonClassName } from "~/features/archive/archive-icon-styles";
+import { EditIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -14,7 +13,6 @@ import type { Semester } from "~/types/semester";
 type SemesterTableProps = {
   semesters: Semester[];
   onEdit: (semester: Semester) => void;
-  onArchive?: (semester: Semester) => void;
 };
 
 const actionButtonClassName =
@@ -24,7 +22,7 @@ function semesterStatusTone(status: string | undefined) {
   return status === "Active" ? "emerald" : "slate";
 }
 
-export function SemesterTable({ semesters, onEdit, onArchive }: SemesterTableProps) {
+export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
   return (
     <Table>
       <TableHead>
@@ -62,17 +60,6 @@ export function SemesterTable({ semesters, onEdit, onArchive }: SemesterTablePro
                   <EditIcon />
                   Edit
                 </button>
-                {onArchive && (
-                  <button
-                    type="button"
-                    onClick={() => onArchive(sem)}
-                    aria-label={`Archive ${sem.displayName ?? sem.semester}`}
-                    className={`${actionButtonClassName} ${archiveLabeledActionButtonClassName}`}
-                  >
-                    <ArchiveIcon />
-                    Archive
-                  </button>
-                )}
               </div>
             </TableCell>
           </TableRow>

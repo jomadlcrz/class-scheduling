@@ -1,19 +1,20 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { AuditLogIcon, HelpCircleIcon } from "~/components/ui/icons";
-import { ConfirmDialog } from "~/components/ui/modal";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
 import { Spinner } from "~/components/ui/spinner";
+import { Textarea } from "~/components/ui/textarea";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
+import { TermCloseDialog } from "~/features/academic-terms/term-close-dialog";
 import { TermClosureAuditLogModal } from "~/features/academic-terms/term-closure-audit-log-modal";
-import { TermClosureDetailsModal } from "~/features/academic-terms/term-closure-details-modal";
+import { TermClosureDetailsDrawer } from "~/features/academic-terms/term-closure-details-drawer";
 import { TermClosureTable } from "~/features/academic-terms/term-closure-table";
+import { TermWorkflowCard } from "~/features/academic-terms/term-workflow-card";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { usePagination } from "~/hooks/use-pagination";
 import { useTermClosures } from "~/hooks/use-term-closures";
@@ -30,7 +31,9 @@ export function TermClosurePage() {
   const [detailsTerm, setDetailsTerm] = useState<TermClosureItem | null>(null);
   const [closeTarget, setCloseTarget] = useState<TermClosureItem | null>(null);
   const [reopenTarget, setReopenTarget] = useState<TermClosureItem | null>(null);
+  const [reopenReason, setReopenReason] = useState("");
   const [auditOpen, setAuditOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const terms = useMemo(() => {
     const selected = selectedContext?.term;
@@ -62,63 +65,82 @@ export function TermClosurePage() {
 
   const pagination = usePagination(filtered, resetKey);
 
-  async function handleClose() {
-    if (!closeTarget) return;
-    const message = await termClosureService.close(closeTarget.syId, closeTarget.semId);
+  async function afterChange(message: string) {
     if (message) toast.success(message);
-    setCloseTarget(null);
     await Promise.all([refresh(), refreshSelectedTerm()]);
+  }
+
+  async function handleClose(reason: string) {
+    if (!closeTarget) return;
+    const message = await termClosureService.close(
+      closeTarget.syId,
+      closeTarget.semesterNumber,
+      reason || undefined,
+    );
+    setCloseTarget(null);
+    await afterChange(message);
   }
 
   async function handleReopen() {
     if (!reopenTarget) return;
-    const message = await termClosureService.reopen(reopenTarget.syId, reopenTarget.semesterNumber);
-    if (message) toast.success(message);
+    const message = await termClosureService.reopen(
+      reopenTarget.syId,
+      reopenTarget.semesterNumber,
+      reopenReason.trim() || undefined,
+    );
     setReopenTarget(null);
-    await Promise.all([refresh(), refreshSelectedTerm()]);
+    setReopenReason("");
+    await afterChange(message);
   }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Term Closure"
-        description="Close a term after posting grades. Closed terms are protected from destructive changes."
         actions={
-          <Button type="button" variant="outline" block={false} onClick={() => setAuditOpen(true)}>
-            <AuditLogIcon />
-            View Audit Log
-          </Button>
+          <>
+            <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
+              <HelpCircleIcon />
+              Help
+            </Button>
+            <Button type="button" variant="outline" block={false} onClick={() => setAuditOpen(true)}>
+              <AuditLogIcon />
+              Audit log
+            </Button>
+          </>
         }
       />
 
-      <Alert variant="default" className="mt-6 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200">
-        <HelpCircleIcon />
-        <AlertDescription>
-          Only the registrar can close or reopen a term. This list shows terms posted by the registrar.
-        </AlertDescription>
-      </Alert>
+      <div className="mt-6">
+        <TermWorkflowCard onChanged={refresh} />
+      </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <FilterDropdown
-          label="School Year"
-          allLabel="All School Years"
-          options={schoolYearOptions}
-          value={schoolYear}
-          onChange={setSchoolYear}
-        />
-        <FilterDropdown
-          label="Semester"
-          allLabel="All Semesters"
-          options={semesterOptions}
-          value={semester}
-          onChange={setSemester}
-        />
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search term…"
-          className="min-w-40 flex-1 sm:max-w-xs"
-        />
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+          Closure history
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterDropdown
+            label="School Year"
+            allLabel="All years"
+            options={schoolYearOptions}
+            value={schoolYear}
+            onChange={setSchoolYear}
+          />
+          <FilterDropdown
+            label="Semester"
+            allLabel="All semesters"
+            options={semesterOptions}
+            value={semester}
+            onChange={setSemester}
+          />
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search…"
+            className="w-40"
+          />
+        </div>
       </div>
 
       <div className="mt-4">
@@ -127,10 +149,10 @@ export function TermClosurePage() {
             <Spinner />
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState title={terms.length === 0 ? "No terms are available" : "No terms found"}>
+          <EmptyState title={terms.length === 0 ? "No terms posted yet" : "No matches"}>
             {terms.length === 0
-              ? "Create a school year and semester before managing term closure."
-              : "No terms match the current filters."}
+              ? "Post a semester from the workflow above when grades are finalized."
+              : "Try different filters."}
           </EmptyState>
         ) : (
           <>
@@ -152,59 +174,72 @@ export function TermClosurePage() {
         )}
       </div>
 
-      <Card className="mt-6 p-5">
-        <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Status Guide</h3>
-        <ul className="mt-3 space-y-2 font-body text-sm text-slate-600 dark:text-slate-300">
-          <li>
-            <StatusBadge tone="emerald">Open</StatusBadge> — Term accepts changes.
-          </li>
-          <li>
-            <StatusBadge tone="gold">Closed</StatusBadge> — Term is protected from destructive changes.
-          </li>
-          <li>
-            <StatusBadge tone="slate">School Year Ended</StatusBadge> — Auto-closed on June 1; not reopenable.
-          </li>
-        </ul>
+      <TermClosureDetailsDrawer term={detailsTerm} onClose={() => setDetailsTerm(null)} />
 
-        <Alert variant="default" className="mt-4 border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
-          <AlertTitle>Notes</AlertTitle>
-          <AlertDescription>
-            <ul className="mt-1 list-disc space-y-1 pl-4">
-              <li>Reopen is only available for terms closed by the registrar.</li>
-              <li>Terms closed due to school year end cannot be reopened.</li>
-            </ul>
-          </AlertDescription>
-        </Alert>
-      </Card>
-
-      <TermClosureDetailsModal term={detailsTerm} onClose={() => setDetailsTerm(null)} />
-
-      <ConfirmDialog
+      <TermCloseDialog
         open={closeTarget !== null}
+        syId={closeTarget?.syId ?? null}
+        semesterNumber={closeTarget?.semesterNumber ?? null}
         onClose={() => setCloseTarget(null)}
-        title="Close term"
-        confirmLabel="Close term"
-        loadingLabel="Closing…"
-        confirmVariant="danger"
         onConfirm={handleClose}
-      >
-        Close {closeTarget?.semesterDisplayName}, S.Y. {closeTarget?.schoolYear}? Scheduling and
-        destructive academic-record changes for this term will be locked.
-      </ConfirmDialog>
+      />
 
       <ConfirmDialog
         open={reopenTarget !== null}
-        onClose={() => setReopenTarget(null)}
+        onClose={() => {
+          setReopenTarget(null);
+          setReopenReason("");
+        }}
         title="Reopen term"
         confirmLabel="Reopen term"
         loadingLabel="Reopening…"
         onConfirm={handleReopen}
       >
-        Reopen {reopenTarget?.semesterDisplayName}, S.Y. {reopenTarget?.schoolYear}? Destructive deletes will work
-        again until you post the term.
+        <p>
+          Reopen {reopenTarget?.semesterDisplayName}, S.Y. {reopenTarget?.schoolYear}? Destructive
+          deletes will work again until you post the term.
+        </p>
+        <div className="mt-4">
+          <Textarea
+            id="history-reopen-reason"
+            label="Reason for reopening"
+            value={reopenReason}
+            onChange={(event) => setReopenReason(event.target.value)}
+            placeholder="Optional notes for the audit trail"
+          />
+        </div>
       </ConfirmDialog>
 
       <TermClosureAuditLogModal open={auditOpen} onClose={() => setAuditOpen(false)} />
+
+      <Modal open={helpOpen} onClose={() => setHelpOpen(false)} title="Term closure" wide>
+        <div className="space-y-5 font-body text-sm text-slate-600 dark:text-slate-300">
+          <p>
+            Post a term when grades are finalized. This blocks destructive deletes for that semester
+            while views and reports still work.
+          </p>
+          <div>
+            <p className="mb-2 font-medium text-navy-700 dark:text-mist-100">Status badges</p>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2">
+                <StatusBadge tone="emerald">Open</StatusBadge>
+                <span>Accepts changes.</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <StatusBadge tone="gold">Closed — Posted</StatusBadge>
+                <span>Registrar posted; reopen while the school year runs.</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <StatusBadge tone="slate">Closed — Year ended</StatusBadge>
+                <span>Calendar ended on June 1; not reopenable.</span>
+              </li>
+            </ul>
+          </div>
+          <p>
+            Workflow: post 1st semester → run 2nd semester → post 2nd semester → close school year.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }

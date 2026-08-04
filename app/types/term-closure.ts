@@ -75,3 +75,84 @@ export type TermAuditLogResult = {
   total: number;
   pages: number;
 };
+
+export type TermClosePreview = {
+  term: {
+    syId: number;
+    schoolYear: string;
+    semesterNumber: number;
+    semesterName: string;
+    status: "Open" | "Closed";
+    closedReason: string | null;
+    closedReasonLabel: string | null;
+  };
+  canClose: boolean;
+  alreadyClosed: boolean;
+  closureEffects: { label: string }[];
+  confirmation: {
+    title: string;
+    message: string;
+    closureReasonLabel: string;
+    closureReasonRequired: boolean;
+  };
+};
+
+export type TermWorkflowStep = {
+  key: string;
+  label: string;
+  description: string;
+  status: "completed" | "current" | "pending";
+  semesterNumber?: number;
+};
+
+export type TermWorkflowSemester = {
+  semesterNumber: number;
+  semesterName: string;
+  status: "Open" | "Closed";
+  closedReason: string | null;
+  closedReasonLabel: string | null;
+  actions: { canClose: boolean; canReopen: boolean };
+};
+
+export type TermWorkflowNextAction = {
+  key: string;
+  label: string;
+  description: string;
+  semesterNumber?: number;
+  method?: string;
+  previewPath?: string;
+  submitPath?: string;
+};
+
+export type TermWorkflow = {
+  schoolYear: {
+    id: number;
+    schoolYear: string;
+    status?: string | null;
+    isCurrent?: boolean;
+    registrarCompleted?: boolean;
+  };
+  semesters: TermWorkflowSemester[];
+  workflow: {
+    steps: TermWorkflowStep[];
+    activeSemesterNumber: number | null;
+    postedSemesters: number[];
+    bothSemestersPosted: boolean;
+    schoolYearCompleted: boolean;
+    nextAction: TermWorkflowNextAction;
+  };
+};
+
+export type SchoolYearClosePreview = {
+  schoolYear: { id: number; schoolYear: string };
+  postedSemesters: number[];
+  missingSemesters: number[];
+  alreadyCompleted: boolean;
+  canClose: boolean;
+  confirmation: {
+    title: string;
+    message: string;
+    completionReasonLabel: string;
+    completionReasonRequired: boolean;
+  };
+};

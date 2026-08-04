@@ -1,5 +1,4 @@
-import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
-import { archiveLabeledActionButtonClassName } from "~/features/archive/archive-icon-styles";
+import { EditIcon } from "~/components/ui/icons";
 import { Badge } from "~/components/ui/badge";
 import {
   Table,
@@ -15,7 +14,6 @@ import type { SchoolYearOption } from "~/services/school-year.service";
 type SchoolYearTableProps = {
   schoolYears: SchoolYearOption[];
   onEdit: (schoolYear: SchoolYearOption) => void;
-  onArchive: (schoolYear: SchoolYearOption) => void;
 };
 
 const actionButtonClassName =
@@ -28,7 +26,7 @@ function formatCreatedAt(iso: string | null | undefined): string {
   return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-export function SchoolYearTable({ schoolYears, onEdit, onArchive }: SchoolYearTableProps) {
+export function SchoolYearTable({ schoolYears, onEdit }: SchoolYearTableProps) {
   return (
     <Table>
       <TableHead>
@@ -76,15 +74,6 @@ export function SchoolYearTable({ schoolYears, onEdit, onArchive }: SchoolYearTa
                 >
                   <EditIcon />
                   Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onArchive(sy)}
-                  aria-label={`Archive ${sy.schoolYear}`}
-                  className={`${actionButtonClassName} ${archiveLabeledActionButtonClassName}`}
-                >
-                  <ArchiveIcon />
-                  Archive
                 </button>
               </div>
             </TableCell>

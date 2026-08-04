@@ -9,15 +9,16 @@ const EXAMPLE_SCHOOL_YEAR = `${CURRENT_YEAR}-${CURRENT_YEAR + 1}`;
 
 type SchoolYearFormProps = {
   initialValue?: string;
+  mode?: "create" | "edit";
   onSubmit: (schoolYear: string) => Promise<void>;
   onCancel: () => void;
 };
 
-export function SchoolYearForm({ initialValue, onSubmit, onCancel }: SchoolYearFormProps) {
+export function SchoolYearForm({ initialValue, mode, onSubmit, onCancel }: SchoolYearFormProps) {
   const [schoolYear, setSchoolYear] = useState(initialValue ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const isEdit = Boolean(initialValue);
+  const isEdit = mode === "edit" || (mode == null && Boolean(initialValue));
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value;

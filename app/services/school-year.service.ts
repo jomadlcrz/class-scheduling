@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 
 type SchoolYearEntry = {
   id: number;
@@ -17,23 +17,6 @@ export type SchoolYearOption = {
   createdAt?: string | null;
 };
 
-type DeletedSchoolYear = SchoolYearOption & {
-  deactivatedAt: string | null;
-  createdAt?: string | null;
-};
-
-export type SchoolYearArchivePreview = {
-  schoolYear: { id: number; schoolYear: string };
-  archivable: boolean;
-  blockers: {
-    references: number;
-    studentAcademics: number;
-    regularSchedules: number;
-    instructorTeachingTerms: number;
-    items: { key: string; label: string; count: number }[];
-  };
-};
-
 let cachedSchoolYears: SchoolYearOption[] | null = null;
 let cachePromise: Promise<SchoolYearOption[]> | null = null;
 
@@ -49,18 +32,6 @@ function mapSchoolYear(entry: SchoolYearEntry): SchoolYearOption {
     status: entry.status ?? null,
     isCurrent: entry.is_current ?? false,
     createdAt: entry.created_at ?? null,
-  };
-}
-
-function mapArchivePreview(data: {
-  school_year: { id: number; school_year: string };
-  archivable: boolean;
-  blockers: SchoolYearArchivePreview["blockers"];
-}): SchoolYearArchivePreview {
-  return {
-    schoolYear: { id: data.school_year.id, schoolYear: data.school_year.school_year },
-    archivable: data.archivable,
-    blockers: data.blockers,
   };
 }
 
@@ -102,48 +73,6 @@ async function update(id: number, schoolYear: string): Promise<string> {
   return apiMessage(data);
 }
 
-/** PATCH /school-years/:id/archive — requires typing the exact school year name. */
-async function archive(id: number, confirm: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/school-years/${id}/archive`, { confirm });
-  invalidateCache();
-  return apiMessage(data);
-}
-
-/** GET /school-years/:id/archive-preview — checks whether archival is safe. */
-async function getArchivePreview(id: number): Promise<SchoolYearArchivePreview> {
-  const data = await apiGet<{
-    school_year: { id: number; school_year: string };
-    archivable: boolean;
-    blockers: SchoolYearArchivePreview["blockers"];
-  }>(`/school-years/${id}/archive-preview`);
-  return mapArchivePreview(data);
-}
-
-/** GET /school-years/recycle-bin — always fresh, not cached (matches recycle-bin.service.ts precedent). 404 → empty. */
-async function listDeleted(): Promise<DeletedSchoolYear[]> {
-  let data: (SchoolYearEntry & { created_at?: string | null; deactivated_at: string | null })[];
-  try {
-    data = await apiGet<(SchoolYearEntry & { created_at?: string | null; deactivated_at: string | null })[]>(
-      "/school-years/recycle-bin",
-    );
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((s) => ({
-    ...mapSchoolYear(s),
-    createdAt: s.created_at ?? null,
-    deactivatedAt: s.deactivated_at,
-  }));
-}
-
-/** PATCH /school-years/:id/restore */
-async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/school-years/${id}/restore`);
-  invalidateCache();
-  return apiMessage(data);
-}
-
 /** GET /school-years/:id */
 async function get(id: number): Promise<SchoolYearOption> {
   const s = await apiGet<SchoolYearEntry>(`/school-years/${id}`);
@@ -156,4 +85,4 @@ async function getCurrent(): Promise<SchoolYearOption & { existsForToday?: boole
   return { ...mapSchoolYear(entry), existsForToday: entry.exists_for_today, expectedSchoolYear: entry.expected_school_year };
 }
 
-export const schoolYearService = { list, create, update, archive, getArchivePreview, listDeleted, restore, get, getCurrent };
+export const schoolYearService = { list, create, update, get, getCurrent };
