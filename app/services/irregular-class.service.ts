@@ -86,11 +86,13 @@ function mapIrregularStudents(data: IrregularStudentsResponse): IrregularStudent
   });
 }
 
-/** GET /students/irregular — students flagged AcademicStatus.IRREGULAR. 404 → empty. */
-async function listStudents(): Promise<IrregularStudent[]> {
+/** GET /students/irregular — irregular students enrolled in the selected term. 404 → empty. */
+async function listStudents(syId: number, semesterNumber: number): Promise<IrregularStudent[]> {
   let data: IrregularStudentsResponse;
   try {
-    data = await apiGet<IrregularStudentsResponse>("/students/irregular");
+    data = await apiGet<IrregularStudentsResponse>(
+      `/students/irregular${termScopeQuery(syId, semesterNumber)}`,
+    );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
