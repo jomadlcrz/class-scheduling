@@ -84,10 +84,6 @@ export function SchoolYearCloseDialog({ open, syId, onClose, onConfirm }: School
           <>
             <p className="font-body text-sm text-slate-600 dark:text-slate-300">{preview.confirmation.message}</p>
 
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 font-body text-sm leading-relaxed text-amber-900 dark:border-gold-400/25 dark:bg-gold-400/10 dark:text-gold-300">
-              When this is closed, all records from the 1st and 2nd semesters will be locked. Reopening it will unlock them again.
-            </p>
-
             {preview.missingSemesters.length > 0 && (
               <p className="font-body text-sm text-amber-700 dark:text-amber-300">
                 Still open: semester {preview.missingSemesters.join(", ")}.

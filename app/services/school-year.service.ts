@@ -7,6 +7,9 @@ type SchoolYearEntry = {
   is_current?: boolean;
   current_label?: string | null;
   created_at?: string | null;
+  registrar_completed?: boolean;
+  registrar_completed_at?: string | null;
+  completion_reason?: string | null;
 };
 
 export type SchoolYearOption = {
@@ -15,6 +18,9 @@ export type SchoolYearOption = {
   status?: string | null;
   isCurrent?: boolean;
   createdAt?: string | null;
+  registrarCompleted: boolean;
+  registrarCompletedAt?: string | null;
+  completionReason?: string | null;
 };
 
 let cachedSchoolYears: SchoolYearOption[] | null = null;
@@ -32,6 +38,9 @@ function mapSchoolYear(entry: SchoolYearEntry): SchoolYearOption {
     status: entry.status ?? null,
     isCurrent: entry.is_current ?? false,
     createdAt: entry.created_at ?? null,
+    registrarCompleted: entry.registrar_completed ?? false,
+    registrarCompletedAt: entry.registrar_completed_at ?? null,
+    completionReason: entry.completion_reason ?? null,
   };
 }
 
@@ -85,4 +94,4 @@ async function getCurrent(): Promise<SchoolYearOption & { existsForToday?: boole
   return { ...mapSchoolYear(entry), existsForToday: entry.exists_for_today, expectedSchoolYear: entry.expected_school_year };
 }
 
-export const schoolYearService = { list, create, update, get, getCurrent };
+export const schoolYearService = { list, create, update, get, getCurrent, invalidateCache };

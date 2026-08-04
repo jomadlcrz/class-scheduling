@@ -10,16 +10,19 @@ import { SearchInput } from "~/components/ui/search-input";
 import { Spinner } from "~/components/ui/spinner";
 import { SchoolYearForm } from "~/features/academic-term/school-year-form";
 import { SchoolYearTable } from "~/features/academic-term/school-year-table";
+import { SchoolYearCloseDialog } from "~/features/academic-terms/school-year-close-dialog";
 import { usePagination } from "~/hooks/use-pagination";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { PageHeader } from "~/layouts/page-header";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
+import { termClosureService } from "~/services/term-closure.service";
 
 export function SchoolYearsPage() {
   const { schoolYears, loading, refresh } = useSchoolYears();
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SchoolYearOption | null>(null);
+  const [closeTarget, setCloseTarget] = useState<SchoolYearOption | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [currentCheck, setCurrentCheck] = useState<{
     schoolYear: string;
@@ -56,6 +59,18 @@ export function SchoolYearsPage() {
     const message = await schoolYearService.update(editTarget.id, schoolYear);
     if (message) toast.success(message);
     setEditTarget(null);
+    await refresh();
+  }
+
+  async function handleClose(reason: string) {
+    if (!closeTarget) return;
+    const message = await termClosureService.closeSchoolYear(
+      closeTarget.id,
+      reason || undefined,
+    );
+    if (message) toast.success(message);
+    setCloseTarget(null);
+    schoolYearService.invalidateCache();
     await refresh();
   }
 
@@ -118,7 +133,11 @@ export function SchoolYearsPage() {
           </EmptyState>
         ) : (
           <>
-            <SchoolYearTable schoolYears={pagination.pageItems} onEdit={setEditTarget} />
+            <SchoolYearTable
+              schoolYears={pagination.pageItems}
+              onEdit={setEditTarget}
+              onClose={setCloseTarget}
+            />
             {pagination.totalPages > 1 && (
               <Pagination
                 page={pagination.page}
@@ -151,6 +170,13 @@ export function SchoolYearsPage() {
         )}
       </Modal>
 
+      <SchoolYearCloseDialog
+        open={closeTarget !== null}
+        syId={closeTarget?.id ?? null}
+        onClose={() => setCloseTarget(null)}
+        onConfirm={handleClose}
+      />
+
       <Modal open={helpOpen} onClose={() => setHelpOpen(false)} title="School years" wide>
         <div className="space-y-4 font-body text-sm text-slate-600 dark:text-slate-300">
           <p>
@@ -158,8 +184,8 @@ export function SchoolYearsPage() {
             Upcoming — is computed from today&apos;s date.
           </p>
           <p>
-            School years are not archived. After both semesters are posted, close the year from{" "}
-            <strong>Term Closure</strong>. Historical records stay available.
+            School years are not archived. After both semesters are posted, use the row&apos;s Close
+            action to complete the year. Historical records stay available.
           </p>
           <p>
             The current year is hoisted to the top of the list and used as the default in the global

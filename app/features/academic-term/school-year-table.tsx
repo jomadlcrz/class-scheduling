@@ -1,4 +1,4 @@
-import { EditIcon } from "~/components/ui/icons";
+import { EditIcon, LockIcon } from "~/components/ui/icons";
 import { Badge } from "~/components/ui/badge";
 import {
   Table,
@@ -15,6 +15,7 @@ import type { SchoolYearOption } from "~/services/school-year.service";
 type SchoolYearTableProps = {
   schoolYears: SchoolYearOption[];
   onEdit: (schoolYear: SchoolYearOption) => void;
+  onClose: (schoolYear: SchoolYearOption) => void;
 };
 
 function formatCreatedAt(iso: string | null | undefined): string {
@@ -24,7 +25,7 @@ function formatCreatedAt(iso: string | null | undefined): string {
   return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-export function SchoolYearTable({ schoolYears, onEdit }: SchoolYearTableProps) {
+export function SchoolYearTable({ schoolYears, onEdit, onClose }: SchoolYearTableProps) {
   return (
     <Table>
       <TableHead>
@@ -71,6 +72,16 @@ export function SchoolYearTable({ schoolYears, onEdit }: SchoolYearTableProps) {
                   <EditIcon />
                   Edit
                 </TableActionButton>
+                {!sy.registrarCompleted && (
+                  <TableActionButton
+                    tone="amber"
+                    onClick={() => onClose(sy)}
+                    aria-label={`Close ${sy.schoolYear}`}
+                  >
+                    <LockIcon size={14} />
+                    Close
+                  </TableActionButton>
+                )}
               </div>
             </TableCell>
           </TableRow>
