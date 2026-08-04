@@ -15,6 +15,7 @@ import {
   LayersIcon,
   RotateIcon,
 } from "~/components/ui/icons";
+import { archiveLabeledActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Select,
   SelectContent,
@@ -204,15 +205,14 @@ export function FacilitiesViewWorkspace({
             >
               Manage Rooms
             </Button>
-            <Button
+            <button
               type="button"
-              variant="outline"
-              block={false}
               onClick={() => onArchiveBuilding(building)}
+              className={archiveLabeledActionButtonClassName}
             >
               <ArchiveIcon />
               Archive
-            </Button>
+            </button>
           </div>
         </div>
 

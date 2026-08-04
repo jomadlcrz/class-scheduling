@@ -1,4 +1,5 @@
 import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import type { RolePermission } from "~/types/permission";
 
@@ -47,7 +48,7 @@ export function PermissionCatalogTable({ catalog, onEdit, onArchive }: Permissio
                   onClick={() => onArchive(permission)}
                   aria-label={`Archive ${permission.slug}`}
                   title="Archive"
-                  className={actionButtonClassName}
+                  className={archiveActionButtonClassName}
                 >
                   <ArchiveIcon />
                 </button>

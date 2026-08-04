@@ -155,20 +155,6 @@ async function restore(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** GET /sets/:id */
-async function get(id: number): Promise<{ id: number; programId: number; yearLevel: YearLevel; setCode: string; setName: string }> {
-  const s = await apiGet<{ set_id: number; program_id: number; year_level: number; set_code: string; set_name: string }>(
-    `/sets/${id}`,
-  );
-  return {
-    id: s.set_id,
-    programId: s.program_id,
-    yearLevel: s.year_level as YearLevel,
-    setCode: s.set_code,
-    setName: s.set_name,
-  };
-}
-
 export const setService = {
   list,
   listUnscheduled,
@@ -178,5 +164,4 @@ export const setService = {
   getDeletePreview,
   listDeleted,
   restore,
-  get,
 };

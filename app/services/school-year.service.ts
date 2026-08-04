@@ -119,13 +119,6 @@ async function getArchivePreview(id: number): Promise<SchoolYearArchivePreview> 
   return mapArchivePreview(data);
 }
 
-/** @deprecated Prefer archive — kept for legacy callers. */
-async function remove(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/school-years/${id}`);
-  invalidateCache();
-  return apiMessage(data);
-}
-
 /** GET /school-years/recycle-bin — always fresh, not cached (matches recycle-bin.service.ts precedent). 404 → empty. */
 async function listDeleted(): Promise<DeletedSchoolYear[]> {
   let data: (SchoolYearEntry & { created_at?: string | null; deactivated_at: string | null })[];
@@ -163,4 +156,4 @@ async function getCurrent(): Promise<SchoolYearOption & { existsForToday?: boole
   return { ...mapSchoolYear(entry), existsForToday: entry.exists_for_today, expectedSchoolYear: entry.expected_school_year };
 }
 
-export const schoolYearService = { list, create, update, archive, getArchivePreview, remove, listDeleted, restore, get, getCurrent };
+export const schoolYearService = { list, create, update, archive, getArchivePreview, listDeleted, restore, get, getCurrent };

@@ -162,7 +162,7 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
               , and {programs.length} {programs.length === 1 ? "program" : "programs"}
             </>
           )}
-          . Restore from Recently Deleted within the standard 30-day window.
+          . It can be restored from Archive at any time.
         </p>
 
         {rooms.length > 0 && (

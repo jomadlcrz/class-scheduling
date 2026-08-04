@@ -117,8 +117,7 @@ export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialo
           <span className="font-medium text-navy-700 dark:text-mist-100">
             {preview.room.roomName}
           </span>{" "}
-          only soft-deletes the room — no curriculum or schedule is touched. It can be restored
-          from Recently Deleted until it is purged after the standard 30-day window.
+          only soft-deletes the room — no curriculum or schedule is touched. It can be restored from Archive at any time.
         </p>
 
         <div className="flex flex-col gap-1.5">

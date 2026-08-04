@@ -1,4 +1,5 @@
 import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
+import { archiveLabeledActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Table,
   TableBody,
@@ -66,7 +67,7 @@ export function SemesterTable({ semesters, onEdit, onArchive }: SemesterTablePro
                     type="button"
                     onClick={() => onArchive(sem)}
                     aria-label={`Archive ${sem.displayName ?? sem.semester}`}
-                    className={`${actionButtonClassName} border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-gold-400/30 dark:text-gold-300 dark:hover:bg-gold-400/10`}
+                    className={`${actionButtonClassName} ${archiveLabeledActionButtonClassName}`}
                   >
                     <ArchiveIcon />
                     Archive

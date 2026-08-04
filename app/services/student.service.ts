@@ -284,6 +284,79 @@ async function importRecords(file: File): Promise<ImportStudentResponse> {
   return apiUpload<ImportStudentResponse>("/students/import", formData);
 }
 
+export type StudentArchivePreview = {
+  student: {
+    student_profile_id: number;
+    first_name: string;
+    last_name: string;
+  };
+  archivable: boolean;
+  blockers: Record<string, unknown>;
+  willArchive: {
+    academic_terms: number;
+    enrolled_subjects: number;
+    has_login_account: boolean;
+    has_profile_photo?: boolean;
+  };
+};
+
+export type DeletedStudentProfile = {
+  studentProfileId: number;
+  firstName: string;
+  lastName: string;
+  deactivatedAt: string | null;
+  academicTerms: number;
+  enrolledSubjects: number;
+  hasLoginAccount: boolean;
+};
+
+/** GET /students/:id/archive-preview */
+async function getArchivePreview(studentProfileId: number): Promise<StudentArchivePreview> {
+  return apiGet<StudentArchivePreview>(`/students/${studentProfileId}/archive-preview`);
+}
+
+/** PATCH /students/:id/archive — requires typing the student's full name. */
+async function archiveProfile(studentProfileId: number, confirmFullName: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/archive`, {
+    confirm: confirmFullName,
+  });
+  return apiMessage(data);
+}
+
+/** GET /students/recycle-bin */
+async function listDeletedProfiles(): Promise<DeletedStudentProfile[]> {
+  let data: {
+    student_profile_id: number;
+    first_name: string;
+    last_name: string;
+    deactivated_at: string | null;
+    academic_terms: number;
+    enrolled_subjects: number;
+    has_login_account: boolean;
+  }[];
+  try {
+    data = await apiGet("/students/recycle-bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return data.map((row) => ({
+    studentProfileId: row.student_profile_id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    deactivatedAt: row.deactivated_at,
+    academicTerms: row.academic_terms,
+    enrolledSubjects: row.enrolled_subjects,
+    hasLoginAccount: row.has_login_account,
+  }));
+}
+
+/** PATCH /students/:id/restore — restores an archived student profile. */
+async function restoreProfile(studentProfileId: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/restore`);
+  return apiMessage(data);
+}
+
 export const studentService = {
   createRecord,
   createAccount,
@@ -299,4 +372,8 @@ export const studentService = {
   deactivateAccount,
   reactivateAccount,
   importRecords,
+  getArchivePreview,
+  archiveProfile,
+  listDeletedProfiles,
+  restoreProfile,
 };

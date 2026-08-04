@@ -108,11 +108,11 @@ type DepartmentRecycleBinResponse = {
   cascade_archived?: { programs: number };
 }[];
 
-/** GET /departments/recycle-bin — 404 → empty. */
+/** GET /departments/archive — legacy alias; /departments/recycle-bin returns the same payload. */
 async function listDeleted(): Promise<DeletedDepartment[]> {
   let data: DepartmentRecycleBinResponse;
   try {
-    data = await apiGet<DepartmentRecycleBinResponse>("/departments/recycle-bin");
+    data = await apiGet<DepartmentRecycleBinResponse>("/departments/archive");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;

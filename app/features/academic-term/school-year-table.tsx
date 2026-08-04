@@ -1,4 +1,5 @@
 import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
+import { archiveLabeledActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import { Badge } from "~/components/ui/badge";
 import {
   Table,
@@ -80,7 +81,7 @@ export function SchoolYearTable({ schoolYears, onEdit, onArchive }: SchoolYearTa
                   type="button"
                   onClick={() => onArchive(sy)}
                   aria-label={`Archive ${sy.schoolYear}`}
-                  className={`${actionButtonClassName} border-red-200 text-red-700 hover:bg-red-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-400/10`}
+                  className={`${actionButtonClassName} ${archiveLabeledActionButtonClassName}`}
                 >
                   <ArchiveIcon />
                   Archive

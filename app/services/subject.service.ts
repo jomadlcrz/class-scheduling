@@ -142,10 +142,15 @@ export type CurriculumSubjectEntry = {
   prerequisites: string[];
 };
 
-/** POST /subjects — one nested payload creates a whole batch of curriculum entries. Returns the backend message. */
+/** POST /programs — nested curriculum payload (creates program + subjects in one request). */
 async function createCurriculum(
-  programAbbrev: string,
-  programName: string,
+  program: {
+    departmentId: number;
+    abbrev: string;
+    name: string;
+    type: string;
+    lengthYears: number;
+  },
   entries: CurriculumSubjectEntry[],
 ): Promise<string> {
   const yearLevels = new Map<number, Map<number, CurriculumSubjectEntry[]>>();
@@ -157,9 +162,12 @@ async function createCurriculum(
     subjects.push(entry);
   }
 
-  const data = await apiPost<{ message?: string }>("/subjects", {
-    programAbbrev,
-    programName,
+  const data = await apiPost<{ message?: string }>("/programs", {
+    departmentId: program.departmentId,
+    programAbbrev: program.abbrev,
+    programName: program.name,
+    programType: program.type,
+    programLength: program.lengthYears,
     yearLevels: [...yearLevels.entries()].map(([yearName, semesters]) => ({
       yearName,
       semesters: [...semesters.entries()].map(([semesterName, subjects]) => ({
@@ -169,7 +177,7 @@ async function createCurriculum(
           descriptiveTitle: s.title,
           units: s.units,
           subjectType: s.subjectType,
-          prerequisites: s.prerequisites.map((code) => ({ subjectCode: code })),
+          prerequisites: s.prerequisites.map((code) => ({ prerequisite: code })),
         })),
       })),
     })),

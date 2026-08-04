@@ -66,7 +66,7 @@ export default [
       route("settings", "routes/app/settings/index.tsx"),
       route("settings/profile", "routes/app/settings/profile.tsx"),
       route("settings/security", "routes/app/settings/security.tsx"),
-      route("settings/recently-deleted", "routes/app/settings/recently-deleted.tsx"),
+      route("settings/archive", "routes/app/settings/archive.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

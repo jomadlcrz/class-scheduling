@@ -1,5 +1,6 @@
 ﻿import { Badge } from "~/components/ui/badge";
 import { ArchiveIcon, ClockIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Table,
   TableBody,
@@ -82,7 +83,7 @@ export function RoomTable({ rooms, onArchive }: RoomTableProps) {
                   onClick={() => onArchive(room)}
                   aria-label={`Archive ${room.name}`}
                   title="Archive"
-                  className={actionButtonClassName}
+                  className={archiveActionButtonClassName}
                 >
                   <ArchiveIcon />
                 </button>

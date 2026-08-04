@@ -1,6 +1,6 @@
 import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
 
-/** Soft-deleted curriculum subjects (registrar_admin/curriculums). */
+/** Legacy curriculum recycle bin — GET/PATCH /recycle_bin (prefer archive.service for new UI). */
 
 type SubjectRecycleBinResponse = {
   subject_id: number;
@@ -22,15 +22,7 @@ export type DeletedSubject = {
   prerequisiteLinks: number;
 };
 
-/** GET /subjects/recycle-bin — deactivated subjects, newest first. */
-async function list(): Promise<DeletedSubject[]> {
-  let data: SubjectRecycleBinResponse;
-  try {
-    data = await apiGet<SubjectRecycleBinResponse>("/subjects/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
+function mapRows(data: SubjectRecycleBinResponse): DeletedSubject[] {
   return data.map((row) => ({
     subjectId: row.subject_id,
     subjectCode: row.subject_code,
@@ -42,9 +34,21 @@ async function list(): Promise<DeletedSubject[]> {
   }));
 }
 
-/** PATCH /subjects/:id/restore */
+/** GET /recycle_bin — legacy alias for deactivated subjects. */
+async function list(): Promise<DeletedSubject[]> {
+  let data: SubjectRecycleBinResponse;
+  try {
+    data = await apiGet<SubjectRecycleBinResponse>("/recycle_bin");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return mapRows(data);
+}
+
+/** PATCH /recycle_bin?subject_id= — legacy restore alias. */
 async function restore(subjectId: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/subjects/${subjectId}/restore`);
+  const data = await apiPatch<{ message?: string }>(`/recycle_bin?subject_id=${subjectId}`);
   return apiMessage(data);
 }
 

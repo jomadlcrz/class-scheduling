@@ -94,7 +94,7 @@ export function PermissionArchiveDialog({
           ) : (
             <>
               <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                Archiving <span className="font-medium text-navy-700 dark:text-mist-100">{slug}</span> removes it from the active permission catalog. It can be restored from Recently Deleted.
+                Archiving <span className="font-medium text-navy-700 dark:text-mist-100">{slug}</span> removes it from the active permission catalog. It can be restored from Archive.
               </p>
               <div className="flex flex-col gap-1.5">
                 <label

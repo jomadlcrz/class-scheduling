@@ -91,7 +91,7 @@ export function SemesterArchiveDialog({
                 Archive {semester.displayName}? It will be removed from active selectors.
               </p>
               <p className="mt-1 font-body text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                The semester can be restored later from the recycle bin.
+                The semester can be restored later from Archive.
               </p>
             </div>
           </div>

@@ -126,8 +126,8 @@ async function restore(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** GET /programs/:id — no auth required server-side (backend inconsistency vs. the rest of this module), harmless either way. */
-async function get(id: number): Promise<Program> {
+/** GET /programs/:id — includes department_id for curriculum append flows. */
+async function get(id: number): Promise<Program & { departmentId: number }> {
   const p = await apiGet<{
     program_id: number;
     program_abbrev: string;
@@ -143,6 +143,7 @@ async function get(id: number): Promise<Program> {
     name: p.program_name,
     type: p.program_type,
     lengthYears: p.program_length,
+    departmentId: p.department_id,
   };
 }
 

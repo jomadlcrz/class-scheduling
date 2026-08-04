@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { KeyIcon, TrashIcon, UserIcon } from "~/components/ui/icons";
+import { ArchiveIcon, KeyIcon, UserIcon } from "~/components/ui/icons";
 import type { Role } from "~/types/user";
 
 export type SettingsSection = {
@@ -39,10 +39,10 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     label: "Administration",
     sections: [
       {
-        label: "Recently Deleted",
-        description: "Restore items deleted within the last 30 days.",
-        href: "/settings/recently-deleted",
-        icon: TrashIcon,
+        label: "Archive",
+        description: "Browse and restore archived records. Data is preserved until you restore it.",
+        href: "/settings/archive",
+        icon: ArchiveIcon,
         roles: ["admin", "registrar"],
       },
     ],

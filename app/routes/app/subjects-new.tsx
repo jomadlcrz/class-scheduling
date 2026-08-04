@@ -202,9 +202,15 @@ function SubjectsNewPage() {
     setSaveError(null);
     setIsSaving(true);
     try {
+      const programDetail = await programService.get(selectedProgram.id);
       const message = await subjectService.createCurriculum(
-        selectedProgram.abbrev,
-        selectedProgram.name,
+        {
+          departmentId: programDetail.departmentId,
+          abbrev: programDetail.abbrev,
+          name: programDetail.name,
+          type: programDetail.type,
+          lengthYears: programDetail.lengthYears,
+        },
         pending.map(({ tempId: _tempId, program: _program, ...entry }) => ({
           ...entry,
           code: entry.code.trim(),

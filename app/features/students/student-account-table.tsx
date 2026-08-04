@@ -1,5 +1,6 @@
 ﻿import { Button } from "~/components/ui/button";
-import { EyeIcon, GraduationCapIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { ArchiveIcon, EyeIcon, GraduationCapIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Table,
   TableBody,
@@ -25,10 +26,13 @@ type StudentAccountTableProps = {
   onEnroll: ((student: StudentAccountRow) => void) | null;
   onDeactivateAccount: ((student: StudentAccountRow) => void) | null;
   onReactivateAccount: ((student: StudentAccountRow) => void) | null;
+  onArchiveProfile: ((student: StudentAccountRow) => void) | null;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+const labeledActionButtonClassName =
+  "flex h-8 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white";
 
 export function StudentAccountTable({
   students,
@@ -38,6 +42,7 @@ export function StudentAccountTable({
   onEnroll,
   onDeactivateAccount,
   onReactivateAccount,
+  onArchiveProfile,
 }: StudentAccountTableProps) {
   return (
     <Table>
@@ -77,9 +82,10 @@ export function StudentAccountTable({
                     onClick={() => onView(student)}
                     aria-label={`View ${displayName(student)}`}
                     title="View details"
-                    className={actionButtonClassName}
+                    className={labeledActionButtonClassName}
                   >
                     <EyeIcon />
+                    <span>View details</span>
                   </button>
                 )}
                 {onEnroll && (
@@ -91,6 +97,17 @@ export function StudentAccountTable({
                     className={actionButtonClassName}
                   >
                     <GraduationCapIcon />
+                  </button>
+                )}
+                {onArchiveProfile && (
+                  <button
+                    type="button"
+                    onClick={() => onArchiveProfile(student)}
+                    aria-label={`Archive profile for ${displayName(student)}`}
+                    title="Archive student profile"
+                    className={archiveActionButtonClassName}
+                  >
+                    <ArchiveIcon />
                   </button>
                 )}
                 {onDeactivateAccount && onReactivateAccount && (
