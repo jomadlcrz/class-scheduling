@@ -276,9 +276,9 @@ export function AssignSubjectModal({
       </div>
       <div className="scrollbar-thin max-h-80 overflow-y-auto rounded-xl border border-slate-300 bg-white pr-1 dark:border-white/10 dark:bg-white/5">
         <table className="w-full table-fixed border-separate border-spacing-0 text-left font-body text-sm">
-          <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-surface-raised">
+          <thead>
             <tr>
-              <th className="w-10 border-b-2 border-slate-300 px-3 py-2 align-middle text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:text-slate-400">
+              <th className="sticky top-0 z-10 w-10 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 align-middle text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
                 <Checkbox
                   id="select-all"
                   label=""
@@ -287,13 +287,13 @@ export function AssignSubjectModal({
                   onChange={toggleAll}
                 />
               </th>
-              <th className="w-24 border-b-2 border-slate-300 px-3 py-2 align-middle text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:text-slate-400">
+              <th className="sticky top-0 z-10 w-24 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 align-middle text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
                 Code
               </th>
-              <th className="border-b-2 border-slate-300 px-3 py-2 align-middle text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:text-slate-400">
+              <th className="sticky top-0 z-10 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 align-middle text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
                 Descriptive Title
               </th>
-              <th className="w-16 border-b-2 border-slate-300 px-3 py-2 align-middle text-right text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:text-slate-400">
+              <th className="sticky top-0 z-10 w-16 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 align-middle text-right text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
                 Units
               </th>
             </tr>
@@ -308,20 +308,30 @@ export function AssignSubjectModal({
             ) : (
               groupedSubjects.map((group) => (
                 <Fragment key={`${group.yearLevel}-${group.semesterCategory}`}>
-                  <tr className="border-b-2 border-slate-300 bg-slate-100/90 dark:border-white/10 dark:bg-white/10">
+                  <tr>
                     <th
                       colSpan={4}
-                      className="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-navy-800 dark:text-slate-200"
+                      className="border-b border-slate-200 bg-white px-3 py-3 dark:border-white/10 dark:bg-transparent"
                     >
-                      <span className="inline-flex items-center justify-center gap-2">
-                        <span>
-                          {group.yearLevel > 0 ? `Year Level ${group.yearLevel}` : "Other"}
-                          {group.semesterCategory > 0 ? ` · ${semesterLabel(group.semesterCategory)}` : ""}
+                      <div className="flex items-center justify-center gap-3">
+                        <span
+                          aria-hidden
+                          className="h-px min-w-8 flex-1 bg-linear-to-r from-transparent to-slate-300 dark:to-white/15"
+                        />
+                        <span className="inline-flex shrink-0 items-center gap-2 rounded-md border border-navy-200/70 bg-navy-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-navy-800 dark:border-navy-700/50 dark:bg-navy-900/40 dark:text-slate-200">
+                          <span>
+                            {group.yearLevel > 0 ? `Year Level ${group.yearLevel}` : "Other"}
+                            {group.semesterCategory > 0 ? ` · ${semesterLabel(group.semesterCategory)}` : ""}
+                          </span>
+                          <span className="font-medium normal-case tracking-normal text-slate-500 dark:text-slate-400">
+                            ({group.subjects.length} subject{group.subjects.length !== 1 ? "s" : ""})
+                          </span>
                         </span>
-                        <span className="font-medium normal-case tracking-normal text-slate-500 dark:text-slate-400">
-                          ({group.subjects.length} subject{group.subjects.length !== 1 ? "s" : ""})
-                        </span>
-                      </span>
+                        <span
+                          aria-hidden
+                          className="h-px min-w-8 flex-1 bg-linear-to-l from-transparent to-slate-300 dark:to-white/15"
+                        />
+                      </div>
                     </th>
                   </tr>
                   {group.subjects.map((s) => {

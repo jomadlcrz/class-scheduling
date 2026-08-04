@@ -8,6 +8,7 @@ import { programService } from "~/services/program.service";
 import type {
   DepartmentSubjectProgram,
   FacultyLoadingEntry,
+  TeachingTerm,
   TeachingTermDetail,
 } from "~/types/faculty-load";
 
@@ -52,6 +53,53 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
       })),
     })),
   };
+}
+
+function mapTeachingTermsToEntries(teachingTerms: TeachingTerm[]): FacultyLoadingEntry[] {
+  return teachingTerms.map((tt) => {
+    const assignmentIdMap = new Map(
+      (tt.subjectAssignments ?? []).map((sa) => [sa.subjectCode, sa.subjectAssignmentId]),
+    );
+    const saByCode = new Map(tt.subjectAssignments?.map((sa) => [sa.subjectCode, sa]) ?? []);
+    return {
+      instructorName: tt.instructorName,
+      employeeId: tt.employeeId,
+      instructorProfileId: tt.instructorProfileId,
+      department: tt.department ?? "",
+      semester: "",
+      academicTerm: "",
+      syId: tt.syId,
+      semesterNumber: tt.semesterNumber,
+      maxWeeklyHours: tt.maxWeeklyHours,
+      teachingTermId: tt.id,
+      subjectAssignmentIds: assignmentIdMap,
+      programs: (tt.programs ?? []).map((p) => ({
+        programId: p.programId,
+        programAbbrev: p.programAbbrev,
+        programName: p.programName,
+        subjects: p.subjects.map((s) => {
+          const full = saByCode.get(s.subjectCode);
+          return {
+            subjectAssignmentId: s.subjectAssignmentId,
+            curriculumDetailId: s.curriculumDetailId,
+            subjectCode: s.subjectCode,
+            descriptiveTitle: full?.descriptiveTitle ?? "",
+            units: full?.units ?? 0,
+            lecHours: full?.lecHours ?? 0,
+            labHours: full?.labHours ?? 0,
+          };
+        }),
+      })),
+      subjects: (tt.subjectAssignments ?? []).map((sa) => ({
+        subjectCode: sa.subjectCode,
+        descriptiveTitle: sa.descriptiveTitle,
+        units: { total: sa.units, lecHours: sa.lecHours, labHours: sa.labHours },
+        schedules: [],
+        curriculumDetailId: sa.curriculumDetailId,
+        programAbbrev: sa.programAbbrev,
+      })),
+    };
+  });
 }
 
 export function useDeanSubjectAssignments() {
@@ -121,51 +169,7 @@ export function useDeanSubjectAssignments() {
     deanService.listTeachingTerms({ syId, semesterNumber })
       .then((teachingTerms) => {
         if (cancelled) return;
-        const entries: FacultyLoadingEntry[] = teachingTerms.map((tt) => {
-          const assignmentIdMap = new Map(
-            (tt.subjectAssignments ?? []).map((sa) => [sa.subjectCode, sa.subjectAssignmentId]),
-          );
-          const saByCode = new Map(tt.subjectAssignments?.map((sa) => [sa.subjectCode, sa]) ?? []);
-          return {
-            instructorName: tt.instructorName,
-            employeeId: tt.employeeId,
-            instructorProfileId: tt.instructorProfileId,
-            department: tt.department ?? "",
-            semester: "",
-            academicTerm: "",
-            syId: tt.syId,
-            semesterNumber: tt.semesterNumber,
-            maxWeeklyHours: tt.maxWeeklyHours,
-            teachingTermId: tt.id,
-            subjectAssignmentIds: assignmentIdMap,
-            programs: (tt.programs ?? []).map((p) => ({
-              programId: p.programId,
-              programAbbrev: p.programAbbrev,
-              programName: p.programName,
-              subjects: p.subjects.map((s) => {
-                const full = saByCode.get(s.subjectCode);
-                return {
-                  subjectAssignmentId: s.subjectAssignmentId,
-                  curriculumDetailId: s.curriculumDetailId,
-                  subjectCode: s.subjectCode,
-                  descriptiveTitle: full?.descriptiveTitle ?? "",
-                  units: full?.units ?? 0,
-                  lecHours: full?.lecHours ?? 0,
-                  labHours: full?.labHours ?? 0,
-                };
-              }),
-            })),
-            subjects: (tt.subjectAssignments ?? []).map((sa) => ({
-              subjectCode: sa.subjectCode,
-              descriptiveTitle: sa.descriptiveTitle,
-              units: { total: sa.units, lecHours: sa.lecHours, labHours: sa.labHours },
-              schedules: [],
-              curriculumDetailId: sa.curriculumDetailId,
-              programAbbrev: sa.programAbbrev,
-            })),
-          };
-        });
-        setEntries(entries);
+        setEntries(mapTeachingTermsToEntries(teachingTerms));
       })
       .catch((err) => {
         if (cancelled) return;
@@ -174,6 +178,16 @@ export function useDeanSubjectAssignments() {
       });
 
     return () => { cancelled = true; };
+  }, [selectedSchoolYearId, selectedSemesterNumber]);
+
+  const reloadEntries = useCallback(async () => {
+    if (!selectedSchoolYearId || !selectedSemesterNumber) return;
+    const syId = Number(selectedSchoolYearId);
+    const semesterNumber = Number(selectedSemesterNumber);
+    if (!semesterNumber) return;
+
+    const teachingTerms = await deanService.listTeachingTerms({ syId, semesterNumber });
+    setEntries(mapTeachingTermsToEntries(teachingTerms));
   }, [selectedSchoolYearId, selectedSemesterNumber]);
 
   useEffect(() => {
@@ -303,6 +317,59 @@ export function useDeanSubjectAssignments() {
     setEntries((prev) => prev?.filter((entry) => entry.teachingTermId !== teachingTermId) ?? prev);
   }
 
+  function syncEntryFromInstructor(
+    instructorName: string,
+    inst: {
+      maxWeeklyHours: number | null;
+      programs: {
+        programAbbrev: string;
+        programName: string;
+        subjects: {
+          subjectCode: string;
+          descriptiveTitle: string;
+          units: number;
+          lecHours: number;
+          labHours: number;
+          curriculumDetailId?: number;
+        }[];
+      }[];
+    },
+  ) {
+    setEntries(
+      (prev) =>
+        prev?.map((entry) => {
+          if (entry.instructorName !== instructorName) return entry;
+          const subjectAssignmentIds = new Map(entry.subjectAssignmentIds ?? []);
+          return {
+            ...entry,
+            maxWeeklyHours: inst.maxWeeklyHours,
+            programs: inst.programs.map((program) => ({
+              programId:
+                entry.programs?.find((existing) => existing.programAbbrev === program.programAbbrev)
+                  ?.programId ?? 0,
+              programAbbrev: program.programAbbrev,
+              programName: program.programName,
+              subjects: program.subjects.map((subject) => {
+                const existing = entry.programs
+                  ?.flatMap((p) => p.subjects)
+                  .find((s) => s.subjectCode === subject.subjectCode);
+                return {
+                  subjectCode: subject.subjectCode,
+                  descriptiveTitle: subject.descriptiveTitle,
+                  units: subject.units,
+                  lecHours: subject.lecHours,
+                  labHours: subject.labHours,
+                  curriculumDetailId: subject.curriculumDetailId ?? existing?.curriculumDetailId ?? 0,
+                  subjectAssignmentId:
+                    subjectAssignmentIds.get(subject.subjectCode) ?? existing?.subjectAssignmentId ?? 0,
+                };
+              }),
+            })),
+          };
+        }) ?? prev,
+    );
+  }
+
   const matchedSy = schoolYears.find((s) => String(s.id) === selectedSchoolYearId);
   const matchedSem = semesters.find((s) => String(s.semesterNumber) === selectedSemesterNumber);
   const schoolYearLabel = matchedSy?.schoolYear ?? "";
@@ -332,6 +399,8 @@ export function useDeanSubjectAssignments() {
     createAssignments,
     deleteAssignment,
     deleteTeachingTerm,
+    reloadEntries,
+    syncEntryFromInstructor,
     updateMaxWeeklyHours,
     refresh,
   };

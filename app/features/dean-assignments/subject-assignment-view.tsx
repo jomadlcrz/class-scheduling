@@ -9,6 +9,7 @@ import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-assignment-toolbar";
 import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
+import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { facultyKey, formatInstructorName } from "~/lib/faculty-load";
@@ -377,6 +378,12 @@ export function SubjectAssignmentView() {
 
     try {
       await apiData.createAssignments([payload]);
+      const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+      if (entry) {
+        apiData.syncEntryFromInstructor(inst.name, inst);
+      } else {
+        await apiData.reloadEntries();
+      }
     } catch (error) {
       if (error instanceof ApiError) {
         toast.error(error.message);
@@ -409,6 +416,14 @@ export function SubjectAssignmentView() {
     }
     return false;
   }
+
+  const isDirty = useMemo(
+    () => instructors.some((inst) => hasAssignmentChanges(inst)),
+    [instructors, apiData.entries],
+  );
+
+  const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
+    useUnsavedChangesGuard(isDirty, !apiData.mutating);
 
   // Filter calculation
   const filteredInstructors = instructors.filter(
@@ -622,7 +637,29 @@ export function SubjectAssignmentView() {
         </p>
       </ConfirmDialog>
 
+      <ConfirmDialog
+        open={blocker.state === "blocked"}
+        onClose={() => blocker.reset?.()}
+        title="Discard unsaved assignments?"
+        confirmLabel="Discard"
+        loadingLabel="Discarding…"
+        confirmVariant="danger"
+        onConfirm={async () => blocker.proceed?.()}
+      >
+        You have unsaved subject assignments. Leaving this page will discard them.
+      </ConfirmDialog>
 
+      <ConfirmDialog
+        open={reloadPromptOpen}
+        onClose={() => setReloadPromptOpen(false)}
+        title="Discard unsaved assignments?"
+        confirmLabel="Reload"
+        loadingLabel="Reloading…"
+        confirmVariant="danger"
+        onConfirm={async () => confirmReload()}
+      >
+        You have unsaved subject assignments. Reloading will discard them.
+      </ConfirmDialog>
     </div>
   );
 }
