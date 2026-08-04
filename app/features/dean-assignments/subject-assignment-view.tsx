@@ -26,6 +26,8 @@ type Subject = {
   lecHours: number;
   labHours: number;
   weeklyHours: number;
+  yearLevel?: number;
+  semesterCategory?: number;
 };
 
 type ProgramGroup = {
@@ -70,10 +72,8 @@ export function SubjectAssignmentView() {
   }[]>([]);
 
   useEffect(() => {
-    const selectedSemester = apiData.semesters.find((s) => s.semesterNumber === Number(apiData.selectedSemesterNumber));
-    const semesterNumber = selectedSemester?.semesterNumber;
-    deanService.listDepartmentPrograms(semesterNumber).then(setProgramOptions).catch(() => {});
-  }, [apiData.selectedSemesterNumber, apiData.semesters]);
+    deanService.listDepartmentPrograms().then(setProgramOptions).catch(() => {});
+  }, []);
 
   // Search filter
   const [search, setSearch] = useState("");
@@ -90,9 +90,8 @@ export function SubjectAssignmentView() {
     return map;
   }, [apiData.subjects]);
 
-  // The modal must use the same term-filtered program payload used when saving.
-  // The legacy /deans/subjects tree exposes a different semester field shape,
-  // which caused every subject to be filtered out here.
+  // Keep the full curriculum available so the picker can group subjects by
+  // year level and semester. The curriculum detail id is used when saving.
   const availableSubjectsByProgram = useMemo(() => {
     const map = new Map<string, Subject[]>();
     for (const program of programOptions) {
@@ -105,6 +104,8 @@ export function SubjectAssignmentView() {
         lecHours: subject.units,
         labHours: 0,
         weeklyHours: subject.units,
+        yearLevel: subject.yearLevel,
+        semesterCategory: subject.semesterCategory,
       })));
     }
     return map;
@@ -283,7 +284,7 @@ export function SubjectAssignmentView() {
               });
 
             if (toAdd.length === 0) return prog;
-            return { ...prog, subjects: [...prog.subjects, ...toAdd] };
+            return { ...prog, subjects: [...toAdd, ...prog.subjects] };
           }),
         };
       }),
