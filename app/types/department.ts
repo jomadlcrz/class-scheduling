@@ -5,7 +5,7 @@ import type { BadgeTone } from "~/components/ui/badge";
  * via enumService — only display tones are mapped here, by value.
  */
 export const DEPARTMENT_TYPE_TONES: Record<string, BadgeTone> = {
-  Academic: "emerald",
+  Academic: "violet",
   Administrative: "slate",
 };
 

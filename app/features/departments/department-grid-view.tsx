@@ -91,9 +91,11 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
                     {dept.departmentType}
                   </Badge>
                   <Badge tone={getBuildingTone(dept.buildingName)}>{dept.buildingName}</Badge>
-                  <Badge tone={programCount > 0 ? "emerald" : "slate"}>
-                    {programCount} {programCount === 1 ? "Program" : "Programs"}
-                  </Badge>
+                  {dept.departmentType !== "Administrative" && (
+                    <Badge tone={programCount > 0 ? "emerald" : "slate"}>
+                      {programCount} {programCount === 1 ? "Program" : "Programs"}
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="mt-auto flex justify-end gap-1 border-t border-slate-100 pt-2 dark:border-white/5">
