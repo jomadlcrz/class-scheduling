@@ -1,11 +1,6 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
 import { archiveService } from "~/services/archive.service";
-import type {
-  CreateProgramInput,
-  Program,
-  ProgramDeletePreview,
-  UpdateProgramInput,
-} from "~/types/program";
+import type { Program, ProgramDeletePreview, UpdateProgramInput } from "~/types/program";
 
 /** Programs CRUD against the curriculums module (registrar_admin). */
 
@@ -39,21 +34,12 @@ async function list(): Promise<Program[]> {
   }));
 }
 
-/** POST /programs — bulk endpoint; a single create sends a one-item list. Returns the backend message. */
-async function create(input: CreateProgramInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/programs", {
-    programs: [
-      {
-        departmentName: input.departmentName,
-        programAbbrev: input.abbrev,
-        programName: input.name,
-        programType: input.type,
-        programLength: input.lengthYears,
-      },
-    ],
-  });
-  return apiMessage(data);
-}
+/**
+ * There's no standalone "create program" endpoint — POST /programs requires a
+ * full curriculum (at least one year level, semester, and subject) in the same
+ * request. See subjectService.createCurriculum, used by the Curriculum Builder's
+ * "+ New Program" flow, for program creation.
+ */
 
 /** PUT /programs/:id — abbrev, name, type, length, and department are updatable. Returns the backend message. */
 async function update(id: number, input: UpdateProgramInput): Promise<string> {
@@ -138,4 +124,4 @@ async function get(id: number): Promise<Program & { departmentId: number }> {
   };
 }
 
-export const programService = { list, create, update, remove, getDeletePreview, listDeleted, restore, get };
+export const programService = { list, update, remove, getDeletePreview, listDeleted, restore, get };

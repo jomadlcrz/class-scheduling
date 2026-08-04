@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useAuth } from "~/auth/auth-provider";
@@ -9,44 +9,55 @@ import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumBuilder } from "~/features/subjects/curriculum-builder";
+import {
+  emptyNewProgramDraft,
+  NEW_PROGRAM_VALUE,
+  type NewProgramDraft,
+} from "~/features/subjects/curriculum-builder-header";
 import type { PendingEntry } from "~/features/subjects/curriculum-structure";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
+import { programSchema } from "~/schemas/program.schema";
+import { departmentService } from "~/services/department.service";
 import { enumService } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
 import { subjectService } from "~/services/subject.service";
+import type { Department } from "~/types/department";
+import { PROGRAM_TYPE_YEARS } from "~/types/program";
 import type { Program } from "~/types/program";
 import type { CreateSubjectInput, Subject } from "~/types/subject";
 
 export function meta() {
   return [
-    { title: "New Subjects — GWC Class Scheduling" },
+    { title: "New Program — GWC Class Scheduling" },
     {
       name: "description",
-      content: "Add subjects to a program curriculum.",
+      content: "Create a program with its curriculum, or add subjects to an existing one.",
     },
   ];
 }
 
-export default function SubjectsNew() {
+export default function ProgramsNew() {
   return (
     <RoleGuard allow={["admin", "registrar", "dean"]}>
-      <SubjectsNewPage />
+      <ProgramsNewPage />
     </RoleGuard>
   );
 }
 
-function SubjectsNewPage() {
+function ProgramsNewPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const canManageAcademicTerm = user?.role === "admin" || user?.role === "registrar";
   const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
   const [programs, setPrograms] = useState<Program[] | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
   const [schoolYears, setSchoolYears] = useState<SchoolYearOption[] | null>(null);
   const [program, setProgram] = useState("");
+  const [newProgram, setNewProgram] = useState<NewProgramDraft>(emptyNewProgramDraft([]));
   const [pending, setPending] = useState<PendingEntry[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -54,20 +65,24 @@ function SubjectsNewPage() {
   const tempIdCounter = useRef(0);
 
   useEffect(() => {
-    Promise.all([subjectService.list(), programService.list()])
-      .then(([s, p]) => {
+    Promise.all([subjectService.list(), programService.list(), departmentService.listAcademic()])
+      .then(([s, p, d]) => {
         setAllSubjects(s);
         setPrograms(p);
+        setDepartments(d);
+        setNewProgram((current) => (current.departmentName ? current : emptyNewProgramDraft(d)));
+        // Coming from "Add Subject" on an existing program's curriculum names it
+        // explicitly; anything else (including a bare /programs/new visit) starts
+        // a brand-new program, since that's this route's primary purpose.
         const requested = searchParams.get("program");
         const initial =
-          requested && p.some((item) => item.abbrev === requested)
-            ? requested
-            : p[0]?.abbrev ?? "";
+          requested && p.some((item) => item.abbrev === requested) ? requested : NEW_PROGRAM_VALUE;
         setProgram(initial);
       })
       .catch(() => {
         setAllSubjects([]);
         setPrograms([]);
+        setDepartments([]);
       });
     enumService
       .getOptions()
@@ -80,9 +95,11 @@ function SubjectsNewPage() {
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
     useUnsavedChangesGuard(isDirty, !isSaving);
 
+  const isNewProgram = program === NEW_PROGRAM_VALUE;
+
   const savedForProgram = useMemo(
-    () => (allSubjects ?? []).filter((s) => s.program === program),
-    [allSubjects, program],
+    () => (isNewProgram ? [] : (allSubjects ?? []).filter((s) => s.program === program)),
+    [allSubjects, program, isNewProgram],
   );
 
   const prerequisiteOptions = useMemo(
@@ -97,6 +114,10 @@ function SubjectsNewPage() {
     setProgram(nextProgram);
     setPending([]);
     setCollapsed(new Set());
+  }
+
+  function handleNewProgramChange(patch: Partial<NewProgramDraft>) {
+    setNewProgram((current) => ({ ...current, ...patch }));
   }
 
   function handleAddPending(yearLevel: number, semester: number) {
@@ -190,8 +211,29 @@ function SubjectsNewPage() {
   }
 
   async function handleSave() {
-    const selectedProgram = (programs ?? []).find((p) => p.abbrev === program);
-    if (!selectedProgram || pending.length === 0) return;
+    if (pending.length === 0) return;
+
+    let newProgramDepartmentId: number | undefined;
+    if (isNewProgram) {
+      const result = programSchema.safeParse({
+        departmentName: newProgram.departmentName,
+        abbrev: newProgram.abbrev.trim().toUpperCase(),
+        name: newProgram.name.trim(),
+        type: newProgram.type,
+        lengthYears: PROGRAM_TYPE_YEARS[newProgram.type] ?? 4,
+      });
+      if (!result.success) {
+        setSaveError(result.error.issues[0].message);
+        return;
+      }
+      newProgramDepartmentId = departments.find((d) => d.name === newProgram.departmentName)?.id;
+      if (!newProgramDepartmentId) {
+        setSaveError("Select a department.");
+        return;
+      }
+    } else if (!(programs ?? []).some((p) => p.abbrev === program)) {
+      return;
+    }
 
     const validationError = validatePending();
     if (validationError) {
@@ -199,9 +241,32 @@ function SubjectsNewPage() {
       return;
     }
 
+    const entries = pending.map(({ tempId: _tempId, program: _program, ...entry }) => ({
+      ...entry,
+      code: entry.code.trim(),
+      title: entry.title.trim(),
+    }));
+
     setSaveError(null);
     setIsSaving(true);
     try {
+      if (isNewProgram && newProgramDepartmentId) {
+        const message = await subjectService.createCurriculum(
+          {
+            departmentId: newProgramDepartmentId,
+            abbrev: newProgram.abbrev.trim().toUpperCase(),
+            name: newProgram.name.trim(),
+            type: newProgram.type,
+            lengthYears: PROGRAM_TYPE_YEARS[newProgram.type] ?? 4,
+          },
+          entries,
+        );
+        if (message) toast.success(message);
+        navigate("/programs");
+        return;
+      }
+
+      const selectedProgram = (programs ?? []).find((p) => p.abbrev === program)!;
       const programDetail = await programService.get(selectedProgram.id);
       const message = await subjectService.createCurriculum(
         {
@@ -211,11 +276,7 @@ function SubjectsNewPage() {
           type: programDetail.type,
           lengthYears: programDetail.lengthYears,
         },
-        pending.map(({ tempId: _tempId, program: _program, ...entry }) => ({
-          ...entry,
-          code: entry.code.trim(),
-          title: entry.title.trim(),
-        })),
+        entries,
       );
       if (message) toast.success(message);
       navigate("/subjects");
@@ -227,12 +288,13 @@ function SubjectsNewPage() {
 
   const isLoading = allSubjects === null || programs === null || schoolYears === null;
   const noAcademicTerm = schoolYears !== null && schoolYears.length === 0;
+  const cancelTarget = isNewProgram ? "/programs" : "/subjects";
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Curriculum Builder"
-        description="Build or edit a program curriculum by year level and semester."
+        description="Create a new program or build on an existing one — both start with at least one subject."
       />
 
       {noAcademicTerm ? (
@@ -267,6 +329,9 @@ function SubjectsNewPage() {
             program={program}
             programs={programs ?? []}
             onProgramChange={resetProgram}
+            departments={departments}
+            newProgram={newProgram}
+            onNewProgramChange={handleNewProgramChange}
             saved={savedForProgram}
             pending={pending}
             subjectTypes={subjectTypes}
@@ -287,7 +352,7 @@ function SubjectsNewPage() {
             isSaving={isSaving}
             pendingCount={pending.length}
             onSave={handleSave}
-            onCancel={() => navigate("/subjects")}
+            onCancel={() => navigate(cancelTarget)}
           />
         </div>
       )}

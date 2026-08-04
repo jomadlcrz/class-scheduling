@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Accordion } from "~/components/ui/accordion";
 import { TabList } from "~/components/ui/tabs";
 import { CurriculumBuilderActionsBar } from "~/features/subjects/curriculum-builder-actions-bar";
-import { CurriculumBuilderHeader } from "~/features/subjects/curriculum-builder-header";
+import { CurriculumBuilderHeader, type NewProgramDraft } from "~/features/subjects/curriculum-builder-header";
 import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
 import { CurriculumSemesterPanel } from "~/features/subjects/curriculum-semester-panel";
 import type { CurriculumSubjectRowData } from "~/features/subjects/curriculum-subject-row";
@@ -10,6 +10,7 @@ import type { PendingEntry } from "~/features/subjects/curriculum-structure";
 import type { PrerequisiteOption } from "~/features/subjects/prerequisite-picker";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import type { Department } from "~/types/department";
 import type { Program } from "~/types/program";
 import type { CreateSubjectInput, Subject } from "~/types/subject";
 
@@ -17,6 +18,9 @@ type CurriculumBuilderProps = {
   program: string;
   programs: Program[];
   onProgramChange: (abbrev: string) => void;
+  departments: Department[];
+  newProgram: NewProgramDraft;
+  onNewProgramChange: (patch: Partial<NewProgramDraft>) => void;
   saved: Subject[];
   pending: PendingEntry[];
   subjectTypes: string[];
@@ -46,6 +50,9 @@ export function CurriculumBuilder({
   program,
   programs,
   onProgramChange,
+  departments,
+  newProgram,
+  onNewProgramChange,
   saved,
   pending,
   subjectTypes,
@@ -164,6 +171,9 @@ export function CurriculumBuilder({
         program={program}
         programs={programs}
         onProgramChange={onProgramChange}
+        departments={departments}
+        newProgram={newProgram}
+        onNewProgramChange={onNewProgramChange}
       />
 
       <TabList

@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -36,12 +37,12 @@ export default function Programs() {
 }
 
 function ProgramsPage() {
+  const navigate = useNavigate();
   const [programsList, setProgramsList] = useState<Program[] | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Program | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Program | null>(null);
 
@@ -76,13 +77,6 @@ function ProgramsPage() {
     setProgramsList(await programService.list());
   }
 
-  async function handleCreate(input: CreateProgramInput) {
-    const message = await programService.create(input);
-    if (message) toast.success(message);
-    await refresh();
-    setCreateOpen(false);
-  }
-
   async function handleEdit(input: CreateProgramInput) {
     if (!editTarget) return;
     const message = await programService.update(editTarget.id, {
@@ -109,7 +103,9 @@ function ProgramsPage() {
         title="Programs"
         description="Academic programs offered by each department."
         actions={
-          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
+          // Creation lives on /programs/new — a program can't be saved without
+          // its first curriculum entry, so program and subject creation happen together.
+          <Button type="button" block={false} onClick={() => navigate("/programs/new")}>
             <PlusIcon />
             New Program
           </Button>
@@ -178,14 +174,6 @@ function ProgramsPage() {
           </>
         )}
       </div>
-
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Program">
-        <ProgramForm
-          departments={departments}
-          onSubmit={handleCreate}
-          onCancel={() => setCreateOpen(false)}
-        />
-      </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Program">
         {editTarget && (

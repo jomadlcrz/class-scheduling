@@ -56,7 +56,7 @@ function SubjectsPage() {
   const [semester, setSemester] = useState("all");
   const [yearLevel, setYearLevel] = useState("all");
 
-  // Creation lives on /subjects/new; the modal is for editing only.
+  // Creation lives on /programs/new; the modal is for editing only.
   const [editTarget, setEditTarget] = useState<Subject | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Subject | null>(null);
 
@@ -125,7 +125,16 @@ function SubjectsPage() {
         title="Subjects"
         description="Program curriculum subjects: codes, units, hours, and prerequisites."
         actions={
-          <Button type="button" block={false} onClick={() => navigate("/subjects/new")}>
+          <Button
+            type="button"
+            block={false}
+            onClick={() => {
+              // No program named yet: default to the first one so "New Subject"
+              // opens ready to add to a curriculum, not to create a whole new program.
+              const firstProgram = (programs ?? [])[0]?.abbrev;
+              navigate(firstProgram ? `/programs/new?program=${firstProgram}` : "/programs/new");
+            }}
+          >
             <PlusIcon />
             New Subject
           </Button>

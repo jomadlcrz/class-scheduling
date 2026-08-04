@@ -13,7 +13,7 @@ export function CurriculumForm({ programCode }: CurriculumFormProps) {
     <Button
       type="button"
       block={false}
-      onClick={() => navigate(`/subjects/new?program=${programCode}`)}
+      onClick={() => navigate(`/programs/new?program=${programCode}`)}
     >
       <PlusIcon />
       Add Subject
