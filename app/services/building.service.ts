@@ -1,10 +1,9 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
+import { archiveService } from "~/services/archive.service";
 import type {
   Building,
   BuildingArchivePreview,
-  CreateBuildingInput,
   DeletedBuilding,
-  UpdateBuildingInput,
 } from "~/types/building";
 
 /** Buildings read + archive against the facilities module (registrar_admin). */
@@ -47,34 +46,26 @@ async function getArchivePreview(id: number): Promise<BuildingArchivePreview> {
 
 ;
 
-type BuildingRecycleBinResponse = {
-  building_id: number;
-  building_name: string;
-  deactivated_at: string | null;
-  cascade_archived?: { rooms: number; departments: number; programs: number };
-}[];
-
-/** GET /buildings/recycle-bin — 404 → empty. Archiving a building cascades to its rooms. */
+/** GET /archive?category=buildings. Archiving a building cascades to its rooms. */
 async function listDeleted(): Promise<DeletedBuilding[]> {
-  let data: BuildingRecycleBinResponse;
-  try {
-    data = await apiGet<BuildingRecycleBinResponse>("/buildings/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((b) => ({
-    id: b.building_id,
-    name: b.building_name,
-    deactivatedAt: b.deactivated_at,
-    cascadeArchived: b.cascade_archived,
+  const items = await archiveService.listCategoryItems("buildings");
+  return items.map((item) => ({
+    id: item.entityId,
+    name: item.label,
+    deactivatedAt: item.archivedAt,
+    cascadeArchived: item.summary
+      ? {
+          rooms: Number(item.summary.rooms ?? 0),
+          departments: Number(item.summary.departments ?? 0),
+          programs: Number(item.summary.programs ?? 0),
+        }
+      : undefined,
   }));
 }
 
-/** PATCH /buildings/:id/restore — also restores rooms archived in the same archive call. */
+/** PATCH /archive/building/:id/restore — also restores rows archived in the same cascade. */
 async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/buildings/${id}/restore`);
-  return apiMessage(data);
+  return archiveService.restore("building", id);
 }
 
 /** GET /buildings/:id */
@@ -83,22 +74,4 @@ async function get(id: number): Promise<Building> {
   return { id: b.building_id, name: b.building_name, floorCount: b.floor_count };
 }
 
-/** POST /buildings — create an empty building shell (name + floor count). */
-async function create(input: CreateBuildingInput): Promise<{ message: string; buildingId: number }> {
-  const data = await apiPost<{ message?: string; buildingId?: number }>("/buildings", {
-    buildingName: input.name,
-    floorCount: input.floorCount,
-  });
-  return { message: apiMessage(data), buildingId: data.buildingId ?? 0 };
-}
-
-/** PUT /buildings/:id — update building name and/or floor count. */
-async function update(id: number, input: UpdateBuildingInput): Promise<string> {
-  const body: Record<string, unknown> = {};
-  if (input.name !== undefined) body.buildingName = input.name;
-  if (input.floorCount !== undefined) body.floorCount = input.floorCount;
-  const data = await apiPut<{ message?: string }>(`/buildings/${id}`, body);
-  return apiMessage(data);
-}
-
-export const buildingService = { list, create, update, archive, getArchivePreview, listDeleted, restore, get };
+export const buildingService = { list, archive, getArchivePreview, listDeleted, restore, get };

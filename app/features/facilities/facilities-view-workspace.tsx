@@ -10,7 +10,6 @@ import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import {
   ArchiveIcon,
   Building2Icon,
-  EditIcon,
   FilterIcon,
   LayersIcon,
   RotateIcon,
@@ -39,7 +38,6 @@ type FacilitiesViewWorkspaceProps = {
   roomStatuses: string[];
   selectedBuildingId: number | null;
   onBuildingChange: (buildingId: number) => void;
-  onEditBuilding: (building: FacilityBuildingDetail) => void;
   onManageBuilding: (building: FacilityBuildingDetail) => void;
   onArchiveBuilding: (building: FacilityBuildingDetail) => void;
 };
@@ -68,7 +66,6 @@ export function FacilitiesViewWorkspace({
   roomStatuses,
   selectedBuildingId,
   onBuildingChange,
-  onEditBuilding,
   onManageBuilding,
   onArchiveBuilding,
 }: FacilitiesViewWorkspaceProps) {
@@ -188,15 +185,6 @@ export function FacilitiesViewWorkspace({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              onClick={() => onEditBuilding(building)}
-            >
-              <EditIcon />
-              Edit Building
-            </Button>
             <Button
               type="button"
               variant="outline"

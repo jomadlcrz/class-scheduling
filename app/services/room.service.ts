@@ -1,4 +1,5 @@
 import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
+import { archiveService } from "~/services/archive.service";
 import type { Room, RoomArchivePreview, RoomProgram } from "~/types/room";
 
 /** Rooms read + archive against the facilities module (registrar_admin). */
@@ -68,24 +69,15 @@ async function getArchivePreview(id: number): Promise<RoomArchivePreview> {
 
 type DeletedRoom = { id: number; name: string; deactivatedAt: string | null };
 
-type RoomRecycleBinResponse = { room_id: number; room_name: string; deactivated_at: string | null }[];
-
-/** GET /rooms/recycle-bin — 404 → empty. */
+/** GET /archive?category=rooms. */
 async function listDeleted(): Promise<DeletedRoom[]> {
-  let data: RoomRecycleBinResponse;
-  try {
-    data = await apiGet<RoomRecycleBinResponse>("/rooms/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((r) => ({ id: r.room_id, name: r.room_name, deactivatedAt: r.deactivated_at }));
+  const items = await archiveService.listCategoryItems("rooms");
+  return items.map((item) => ({ id: item.entityId, name: item.label, deactivatedAt: item.archivedAt }));
 }
 
-/** PATCH /rooms/:id/restore */
+/** PATCH /archive/room/:id/restore */
 async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/rooms/${id}/restore`);
-  return apiMessage(data);
+  return archiveService.restore("room", id);
 }
 
 export const roomService = { list, archive, getArchivePreview, listDeleted, restore };

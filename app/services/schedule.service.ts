@@ -603,12 +603,6 @@ async function updateRegular(
   return apiMessage(data);
 }
 
-/** DELETE /regular_schedule/<id> — hard delete. */
-async function removeRegular(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/regular_schedule/${id}`);
-  return apiMessage(data);
-}
-
 export type SubjectHourOverride = {
   id: number;
   subjectId: number;
@@ -805,7 +799,6 @@ export const scheduleService = {
   getRegular,
   updateRegular,
   updateRegularSlot,
-  removeRegular,
   listSubjectHourOverrides,
   upsertSubjectHourOverride,
   deleteSubjectHourOverride,

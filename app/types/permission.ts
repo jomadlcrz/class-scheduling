@@ -18,7 +18,7 @@ export type UpdatePermissionInput = {
   description?: string;
 };
 
-/** GET /permissions/recycle-bin row. */
+/** Archived permission row from GET /archive?category=permissions. */
 export type DeletedPermission = {
   id: number;
   slug: string;

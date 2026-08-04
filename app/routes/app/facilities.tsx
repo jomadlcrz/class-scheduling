@@ -5,11 +5,9 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
 import { BuildingArchiveDialog } from "~/features/facilities/buildings/building-archive-dialog";
-import { BuildingForm } from "~/features/facilities/buildings/building-form";
 import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
@@ -17,7 +15,6 @@ import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
 import type { Building } from "~/types/building";
-import type { CreateBuildingInput } from "~/types/building";
 import type { FacilityBuildingDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
 
@@ -45,7 +42,6 @@ function FacilitiesPage() {
   const [roomStatuses, setRoomStatuses] = useState<string[]>([]);
   const [archiveTarget, setArchiveTarget] = useState<Building | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [editTarget, setEditTarget] = useState<FacilityBuildingDetail | null>(null);
 
   async function refresh() {
     setLoadError(null);
@@ -82,17 +78,6 @@ function FacilitiesPage() {
     if (message) toast.success(message);
     setArchiveTarget(null);
     await refresh();
-  }
-
-  async function handleEditBuilding(input: CreateBuildingInput) {
-    if (!editTarget) return;
-    const message = await buildingService.update(editTarget.id, {
-      name: input.name,
-      floorCount: input.floorCount,
-    });
-    if (message) toast.success(message);
-    await refresh();
-    setEditTarget(null);
   }
 
   return (
@@ -147,7 +132,6 @@ function FacilitiesPage() {
             roomStatuses={roomStatuses}
             selectedBuildingId={selectedBuildingId}
             onBuildingChange={setSelectedBuildingId}
-            onEditBuilding={setEditTarget}
             onManageBuilding={(building) => navigate(`/facilities/${building.id}`)}
             onArchiveBuilding={(building) =>
               setArchiveTarget({
@@ -165,20 +149,6 @@ function FacilitiesPage() {
         onClose={() => setArchiveTarget(null)}
         onConfirm={handleArchiveBuilding}
       />
-
-      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Building">
-        {editTarget && (
-          <BuildingForm
-            building={{
-              id: editTarget.id,
-              name: editTarget.name,
-              floorCount: editTarget.floorCount,
-            }}
-            onSubmit={handleEditBuilding}
-            onCancel={() => setEditTarget(null)}
-          />
-        )}
-      </Modal>
     </div>
   );
 }

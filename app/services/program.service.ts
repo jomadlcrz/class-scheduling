@@ -1,4 +1,5 @@
 import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { archiveService } from "~/services/archive.service";
 import type {
   CreateProgramInput,
   Program,
@@ -94,36 +95,26 @@ type DeletedProgram = {
   cascadeArchived?: { sets: number; subjects: number };
 };
 
-type ProgramRecycleBinResponse = {
-  program_id: number;
-  program_abbrev: string;
-  program_name: string;
-  deactivated_at: string | null;
-  cascade_archived?: { sets: number; subjects: number };
-}[];
-
-/** GET /programs/recycle-bin — 404 → empty. */
+/** GET /archive?category=programs. */
 async function listDeleted(): Promise<DeletedProgram[]> {
-  let data: ProgramRecycleBinResponse;
-  try {
-    data = await apiGet<ProgramRecycleBinResponse>("/programs/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((p) => ({
-    id: p.program_id,
-    abbrev: p.program_abbrev,
-    name: p.program_name,
-    deactivatedAt: p.deactivated_at,
-    cascadeArchived: p.cascade_archived,
+  const items = await archiveService.listCategoryItems("programs");
+  return items.map((item) => ({
+    id: item.entityId,
+    abbrev: String(item.extra.program_abbrev ?? ""),
+    name: String(item.extra.program_name ?? item.label),
+    deactivatedAt: item.archivedAt,
+    cascadeArchived: item.summary
+      ? {
+          sets: Number(item.summary.sets ?? 0),
+          subjects: Number(item.summary.subjects ?? 0),
+        }
+      : undefined,
   }));
 }
 
-/** PATCH /programs/:id/restore */
+/** PATCH /archive/program/:id/restore */
 async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/programs/${id}/restore`);
-  return apiMessage(data);
+  return archiveService.restore("program", id);
 }
 
 /** GET /programs/:id — includes department_id for curriculum append flows. */

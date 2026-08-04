@@ -1,4 +1,5 @@
 import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { archiveService } from "~/services/archive.service";
 import type { CreateDepartmentInput, Department, DepartmentDeletePreview, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
@@ -100,36 +101,26 @@ type DeletedDepartment = {
   cascadeArchived?: { programs: number };
 };
 
-type DepartmentRecycleBinResponse = {
-  department_id: number;
-  department_abbrev: string;
-  department_name: string;
-  deactivated_at: string | null;
-  cascade_archived?: { programs: number };
-}[];
-
-/** GET /departments/archive — legacy alias; /departments/recycle-bin returns the same payload. */
+/** GET /archive?category=departments. */
 async function listDeleted(): Promise<DeletedDepartment[]> {
-  let data: DepartmentRecycleBinResponse;
-  try {
-    data = await apiGet<DepartmentRecycleBinResponse>("/departments/archive");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((d) => ({
-    id: d.department_id,
-    abbrev: d.department_abbrev,
-    name: d.department_name,
-    deactivatedAt: d.deactivated_at,
-    cascadeArchived: d.cascade_archived,
-  }));
+  const items = await archiveService.listCategoryItems("departments");
+  return items.map((item) => {
+    const [abbrev = "", ...nameParts] = item.label.split(" — ");
+    return {
+      id: item.entityId,
+      abbrev,
+      name: nameParts.join(" — ") || item.label,
+      deactivatedAt: item.archivedAt,
+      cascadeArchived: item.summary
+        ? { programs: Number(item.summary.programs ?? 0) }
+        : undefined,
+    };
+  });
 }
 
-/** PATCH /departments/:id/restore */
+/** PATCH /archive/department/:id/restore */
 async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/departments/${id}/restore`);
-  return apiMessage(data);
+  return archiveService.restore("department", id);
 }
 
 /** GET /departments/:id */

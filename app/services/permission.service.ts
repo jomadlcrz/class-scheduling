@@ -1,4 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { archiveService } from "~/services/archive.service";
 import type { DeletedPermission, PermissionSummary, RolePermission, UpdatePermissionInput } from "~/types/permission";
 
 /**
@@ -121,12 +122,6 @@ async function grant(roleId: number, permissionIds: number[]): Promise<string> {
   return apiMessage(data);
 }
 
-type PermissionRecycleBinResponse = {
-  permission_id: number;
-  permission_slug: string;
-  deactivated_at: string | null;
-}[];
-
 export type PermissionArchivePreview = {
   permission: { permission_id: number; permission_slug: string };
   archivable: boolean;
@@ -134,16 +129,14 @@ export type PermissionArchivePreview = {
   willArchive: Record<string, never>;
 };
 
-/** GET /permissions/recycle-bin — 404 → empty. */
+/** GET /archive?category=permissions. */
 async function listDeleted(): Promise<DeletedPermission[]> {
-  let data: PermissionRecycleBinResponse;
-  try {
-    data = await apiGet<PermissionRecycleBinResponse>("/permissions/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((p) => ({ id: p.permission_id, slug: p.permission_slug, deactivatedAt: p.deactivated_at }));
+  const items = await archiveService.listCategoryItems("permissions");
+  return items.map((item) => ({
+    id: item.entityId,
+    slug: String(item.extra.permission_slug ?? item.label),
+    deactivatedAt: item.archivedAt,
+  }));
 }
 
 /** GET /permissions/<id> */
@@ -188,10 +181,9 @@ async function archive(id: number, confirm: string): Promise<string> {
   return apiMessage(data);
 }
 
-/** PATCH /permissions/<id>/restore */
+/** PATCH /archive/permission/<id>/restore */
 async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/permissions/${id}/restore`);
-  return apiMessage(data);
+  return archiveService.restore("permission", id);
 }
 
 /** POST /roles — create multiple roles in bulk (JSON array body). */

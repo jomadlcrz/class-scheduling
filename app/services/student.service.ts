@@ -11,6 +11,7 @@ import type {
   UpdateEnrollmentInput,
 } from "~/types/student";
 import { semesterService } from "~/services/semester.service";
+import { archiveService } from "~/services/archive.service";
 
 /**
  * Student records (students module) and login accounts (super_admin module).
@@ -323,38 +324,23 @@ async function archiveProfile(studentProfileId: number, confirmFullName: string)
   return apiMessage(data);
 }
 
-/** GET /students/recycle-bin */
+/** GET /archive?category=students. */
 async function listDeletedProfiles(): Promise<DeletedStudentProfile[]> {
-  let data: {
-    student_profile_id: number;
-    first_name: string;
-    last_name: string;
-    deactivated_at: string | null;
-    academic_terms: number;
-    enrolled_subjects: number;
-    has_login_account: boolean;
-  }[];
-  try {
-    data = await apiGet("/students/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((row) => ({
-    studentProfileId: row.student_profile_id,
-    firstName: row.first_name,
-    lastName: row.last_name,
-    deactivatedAt: row.deactivated_at,
-    academicTerms: row.academic_terms,
-    enrolledSubjects: row.enrolled_subjects,
-    hasLoginAccount: row.has_login_account,
+  const items = await archiveService.listCategoryItems("students");
+  return items.map((item) => ({
+    studentProfileId: item.entityId,
+    firstName: String(item.extra.first_name ?? ""),
+    lastName: String(item.extra.last_name ?? ""),
+    deactivatedAt: item.archivedAt,
+    academicTerms: Number(item.summary?.academic_terms ?? 0),
+    enrolledSubjects: Number(item.summary?.enrolled_subjects ?? 0),
+    hasLoginAccount: Boolean(item.summary?.has_login_account),
   }));
 }
 
-/** PATCH /students/:id/restore — restores an archived student profile. */
+/** PATCH /archive/student/:id/restore — restores an archived student profile. */
 async function restoreProfile(studentProfileId: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/restore`);
-  return apiMessage(data);
+  return archiveService.restore("student", studentProfileId);
 }
 
 export const studentService = {

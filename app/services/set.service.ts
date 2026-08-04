@@ -1,5 +1,6 @@
 import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { appendTermScopeParams } from "~/lib/term-scope";
+import { archiveService } from "~/services/archive.service";
 import type { ClassSet, CreateSetInput, SetDeletePreview } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
@@ -133,36 +134,21 @@ type DeletedSet = {
   studentsAffected: number;
 };
 
-type SetRecycleBinResponse = {
-  set_id: number;
-  set_code: string;
-  set_name: string;
-  deactivated_at: string | null;
-  students_affected: number;
-}[];
-
-/** GET /sets/recycle-bin — 404 → empty. */
+/** GET /archive?category=sets. */
 async function listDeleted(): Promise<DeletedSet[]> {
-  let data: SetRecycleBinResponse;
-  try {
-    data = await apiGet<SetRecycleBinResponse>("/sets/recycle-bin");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.map((s) => ({
-    id: s.set_id,
-    setCode: s.set_code,
-    setName: s.set_name,
-    deactivatedAt: s.deactivated_at,
-    studentsAffected: s.students_affected,
+  const items = await archiveService.listCategoryItems("sets");
+  return items.map((item) => ({
+    id: item.entityId,
+    setCode: String(item.extra.set_code ?? ""),
+    setName: String(item.extra.set_name ?? item.label),
+    deactivatedAt: item.archivedAt,
+    studentsAffected: Number(item.summary?.students_affected ?? 0),
   }));
 }
 
-/** PATCH /sets/:id/restore */
+/** PATCH /archive/set/:id/restore */
 async function restore(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/sets/${id}/restore`);
-  return apiMessage(data);
+  return archiveService.restore("set", id);
 }
 
 export const setService = {

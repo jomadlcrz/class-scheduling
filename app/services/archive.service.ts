@@ -93,20 +93,9 @@ async function listCategories(): Promise<ArchiveCategoryMeta[]> {
   return data.categories;
 }
 
-/** GET /archive/recycle-bin — legacy alias of the archive index. */
+/** Compatibility alias for callers that still use recycle-bin terminology. */
 async function listRecycleBin(category?: ArchiveCategoryKey): Promise<ArchiveCategory[]> {
-  const query = category ? `?category=${category}` : "";
-  const data = await apiGet<{ categories: { key: ArchiveCategoryKey; label: string; description: string; entity_type: ArchiveEntityType; count: number; items: RawArchiveItem[] }[] }>(
-    `/archive/recycle-bin${query}`,
-  );
-  return data.categories.map((cat) => ({
-    key: cat.key,
-    label: cat.label,
-    description: cat.description,
-    entityType: cat.entity_type,
-    count: cat.count,
-    items: cat.items.map(mapItem),
-  }));
+  return list(category);
 }
 
 /** GET /archive — full index, optionally filtered by category. */
