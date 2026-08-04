@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { TableActionButton } from "~/features/academic-terms/table-action-button";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
 import type { Semester } from "~/types/semester";
 
@@ -14,9 +15,6 @@ type SemesterTableProps = {
   semesters: Semester[];
   onEdit: (semester: Semester) => void;
 };
-
-const actionButtonClassName =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-body text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 function semesterStatusTone(status: string | undefined) {
   return status === "Active" ? "emerald" : "slate";
@@ -47,17 +45,15 @@ export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-2">
-                <button
-                  type="button"
+                <TableActionButton
                   onClick={() => onEdit(sem)}
                   aria-label={`Edit ${sem.displayName ?? sem.semester}`}
                   title={sem.canEdit === false ? "Semester cannot be edited" : undefined}
                   disabled={sem.canEdit === false}
-                  className={`${actionButtonClassName} border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10`}
                 >
                   <EditIcon />
                   Edit
-                </button>
+                </TableActionButton>
               </div>
             </TableCell>
           </TableRow>

@@ -1,11 +1,9 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
-import { AuditLogIcon, HelpCircleIcon } from "~/components/ui/icons";
+import { HelpCircleIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
@@ -24,7 +22,6 @@ import { termClosureService } from "~/services/term-closure.service";
 import type { TermClosureItem } from "~/types/term-closure";
 
 export function TermClosurePage() {
-  const navigate = useNavigate();
   const { closures, loading, refresh } = useTermClosures();
   const { context: selectedContext, refresh: refreshSelectedTerm } = useTermContext();
   const [search, setSearch] = useState("");
@@ -100,21 +97,10 @@ export function TermClosurePage() {
         title="Term Closure"
         description="Post a semester after grades are finalized. Destructive deletes are blocked; views and reports stay available."
         actions={
-          <>
-            <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
-              <HelpCircleIcon />
-              Help
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              onClick={() => navigate("/academic-terms/audit-log")}
-            >
-              <AuditLogIcon />
-              Audit log
-            </Button>
-          </>
+          <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
+            <HelpCircleIcon />
+            Help
+          </Button>
         }
       />
 
@@ -159,7 +145,7 @@ export function TermClosurePage() {
           </div>
         </div>
 
-        <Card className="mt-4 overflow-hidden">
+        <div className="mt-4">
           {loading ? (
             <div role="status" aria-label="Loading term closures" className="grid place-items-center py-12">
               <Spinner />
@@ -179,18 +165,16 @@ export function TermClosurePage() {
                 onReopen={setReopenTarget}
               />
               {pagination.totalPages > 1 && (
-                <div className="border-t border-slate-100 px-4 py-3 dark:border-white/10">
-                  <Pagination
-                    page={pagination.page}
-                    totalItems={pagination.totalItems}
-                    pageSize={pagination.pageSize}
-                    onPageChange={pagination.setPage}
-                  />
-                </div>
+                <Pagination
+                  page={pagination.page}
+                  totalItems={pagination.totalItems}
+                  pageSize={pagination.pageSize}
+                  onPageChange={pagination.setPage}
+                />
               )}
             </>
           )}
-        </Card>
+        </div>
       </section>
 
       <TermClosureDetailsDrawer term={detailsTerm} onClose={() => setDetailsTerm(null)} />

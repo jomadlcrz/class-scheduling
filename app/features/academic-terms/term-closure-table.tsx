@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { closedReasonTone, StatusBadge, termStatusTone } from "~/features/academic-terms/status-badges";
+import { TableActionButton } from "~/features/academic-terms/table-action-button";
 import type { TermClosureItem } from "~/types/term-closure";
 
 type TermClosureTableProps = {
@@ -16,9 +17,6 @@ type TermClosureTableProps = {
   onClose: (term: TermClosureItem) => void;
   onReopen: (term: TermClosureItem) => void;
 };
-
-const actionButtonClassName =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-body text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: TermClosureTableProps) {
   return (
@@ -55,32 +53,28 @@ export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: Te
             <TableCell className="hidden lg:table-cell">{row.closedBy?.display ?? "—"}</TableCell>
             <TableCell>
               <div className="flex justify-end gap-2">
-                <button
-                  type="button"
+                <TableActionButton
                   onClick={() => onViewDetails(row)}
-                  className={`${actionButtonClassName} border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-400/30 dark:text-blue-300 dark:hover:bg-blue-400/10`}
                 >
                   View Details
-                </button>
+                </TableActionButton>
                 {row.actions.canClose && (
-                  <button
-                    type="button"
+                  <TableActionButton
+                    tone="amber"
                     onClick={() => onClose(row)}
-                    className={`${actionButtonClassName} border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-gold-400/30 dark:text-gold-300 dark:hover:bg-gold-400/10`}
                   >
                     <LockIcon size={14} />
                     Post
-                  </button>
+                  </TableActionButton>
                 )}
                 {row.actions.canReopen && (
-                  <button
-                    type="button"
+                  <TableActionButton
+                    tone="slate"
                     title="Reopen this term"
                     onClick={() => onReopen(row)}
-                    className={`${actionButtonClassName} border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10`}
                   >
                     Reopen
-                  </button>
+                  </TableActionButton>
                 )}
               </div>
             </TableCell>
