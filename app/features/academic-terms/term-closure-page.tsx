@@ -23,7 +23,7 @@ import type { TermClosureItem } from "~/types/term-closure";
 
 export function TermClosurePage() {
   const { closures, loading, refresh } = useTermClosures();
-  const { context: selectedContext, refresh: refreshSelectedTerm } = useTermContext();
+  const { refresh: refreshSelectedTerm } = useTermContext();
   const [search, setSearch] = useState("");
   const [schoolYear, setSchoolYear] = useState("all");
   const [semester, setSemester] = useState("all");
@@ -34,33 +34,27 @@ export function TermClosurePage() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [workflowRevision, setWorkflowRevision] = useState(0);
 
-  const terms = useMemo(() => {
-    const selected = selectedContext?.term;
-    if (!selected) return closures;
-    return [selected, ...closures.filter((row) => row.syId !== selected.syId || row.semesterNumber !== selected.semesterNumber)];
-  }, [closures, selectedContext]);
-
   const schoolYearOptions = useMemo(() => {
-    const values = [...new Set(terms.map((row) => row.schoolYear))].sort().reverse();
+    const values = [...new Set(closures.map((row) => row.schoolYear))].sort().reverse();
     return values.map((value) => ({ value, label: value }));
-  }, [terms]);
+  }, [closures]);
 
   const semesterOptions = useMemo(() => {
-    const values = [...new Set(terms.map((row) => row.semesterDisplayName))];
+    const values = [...new Set(closures.map((row) => row.semesterDisplayName))];
     return values.map((value) => ({ value, label: value }));
-  }, [terms]);
+  }, [closures]);
 
   const resetKey = `${search}|${schoolYear}|${semester}`;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return terms.filter((row) => {
+    return closures.filter((row) => {
       if (schoolYear !== "all" && row.schoolYear !== schoolYear) return false;
       if (semester !== "all" && row.semesterDisplayName !== semester) return false;
       if (q && !`${row.schoolYear} ${row.semesterDisplayName}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [terms, search, schoolYear, semester]);
+  }, [closures, search, schoolYear, semester]);
 
   const pagination = usePagination(filtered, resetKey);
 
@@ -120,7 +114,7 @@ export function TermClosurePage() {
               Closure history
             </h2>
             <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-              Registrar-posted terms and reopen actions.
+              Registrar-posted terms.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -153,8 +147,8 @@ export function TermClosurePage() {
               <Spinner />
             </div>
           ) : filtered.length === 0 ? (
-            <EmptyState title={terms.length === 0 ? "No terms posted yet" : "No matches"}>
-              {terms.length === 0
+            <EmptyState title={closures.length === 0 ? "No terms posted yet" : "No matches"}>
+              {closures.length === 0
                 ? "Use the workflow above to post a semester when scheduling is complete. Posted terms will appear here."
                 : "Try different filters."}
             </EmptyState>
