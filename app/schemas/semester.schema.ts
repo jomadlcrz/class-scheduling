@@ -19,7 +19,6 @@ export const SEMESTER_NUMBER_TO_NAME: Record<1 | 2, string> = {
 
 export const semesterWriteSchema = z
   .object({
-    semester: z.string().min(1, "Enter a semester name.").max(20, "Keep it under 20 characters."),
     semesterNumber: z.union([z.literal(1), z.literal(2)]),
     semesterName: z.string().min(1, "Enter a semester name.").max(20, "Keep it under 20 characters."),
   })

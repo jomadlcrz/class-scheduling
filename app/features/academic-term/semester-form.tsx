@@ -2,14 +2,9 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import {
-  SEMESTER_NUMBER_TO_NAME,
-  semesterWriteSchema,
-} from "~/schemas/semester.schema";
+import { SEMESTER_NUMBER_TO_NAME, semesterWriteSchema } from "~/schemas/semester.schema";
 
 export type SemesterFormValue = {
-  semester: string;
   semesterNumber: 1 | 2;
   semesterName: string;
 };
@@ -22,34 +17,37 @@ type SemesterFormProps = {
   onCancel: () => void;
 };
 
-/** Collects semester, semesterNumber, and semesterName for POST /semesters. */
+/** Collects semesterNumber and semesterName for POST /semesters. */
 export function SemesterForm({ initialValue, defaultNumber, mode, onSubmit, onCancel }: SemesterFormProps) {
   const isEdit = mode === "edit" || (mode == null && Boolean(initialValue));
-  const [semesterNumber, setSemesterNumber] = useState<1 | 2>(
-    initialValue?.semesterNumber ?? defaultNumber ?? 1,
+  const [semesterNumber, setSemesterNumber] = useState(
+    String(initialValue?.semesterNumber ?? defaultNumber ?? 1),
   );
   const [semesterName, setSemesterName] = useState(
-    initialValue?.semesterName ?? initialValue?.semester ?? SEMESTER_NUMBER_TO_NAME[defaultNumber ?? 1],
+    initialValue?.semesterName ?? SEMESTER_NUMBER_TO_NAME[defaultNumber ?? 1],
   );
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  function handleNumberChange(value: string | null) {
-    if (value == null) return;
-    const next = Number(value) as 1 | 2;
-    if (next !== 1 && next !== 2) return;
-    setSemesterNumber(next);
-    if (!isEdit) {
-      setSemesterName(SEMESTER_NUMBER_TO_NAME[next]);
+  function handleNumberChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const raw = event.target.value.replace(/\D/g, "").slice(0, 1);
+    setSemesterNumber(raw);
+    const next = Number(raw);
+    if (!isEdit && (next === 1 || next === 2)) {
+      setSemesterName(SEMESTER_NUMBER_TO_NAME[next as 1 | 2]);
     }
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmedName = semesterName.trim();
+    const numberValue = Number(semesterNumber);
+    if (numberValue !== 1 && numberValue !== 2) {
+      setError("Semester number must be 1 or 2.");
+      return;
+    }
     const payload = {
-      semester: trimmedName,
-      semesterNumber,
+      semesterNumber: numberValue as 1 | 2,
       semesterName: trimmedName,
     };
 
@@ -75,27 +73,21 @@ export function SemesterForm({ initialValue, defaultNumber, mode, onSubmit, onCa
       <FormError message={error} />
 
       <div className="w-full">
-        <label htmlFor="semester-number" className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
-          Semester number
-        </label>
-        <div className="mt-1.5">
-          <Select
-            items={[
-              { value: "1", label: "1 — 1st Semester" },
-              { value: "2", label: "2 — 2nd Semester" },
-            ]}
-            value={String(semesterNumber)}
-            onValueChange={handleNumberChange}
-          >
-            <SelectTrigger id="semester-number" aria-label="Semester number" disabled={isEdit}>
-              <SelectValue placeholder="Select semester" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">1 — 1st Semester</SelectItem>
-              <SelectItem value="2">2 — 2nd Semester</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Input
+          id="semester-number"
+          label="Semester number"
+          type="number"
+          min={1}
+          max={2}
+          step={1}
+          inputMode="numeric"
+          required
+          value={semesterNumber}
+          onChange={handleNumberChange}
+          disabled={isEdit}
+          placeholder="1"
+          hint="Only 1 or 2 — the two global semesters."
+        />
       </div>
 
       <Input
@@ -105,7 +97,7 @@ export function SemesterForm({ initialValue, defaultNumber, mode, onSubmit, onCa
         value={semesterName}
         onChange={(event) => setSemesterName(event.target.value)}
         placeholder="1st Semester"
-        hint='Sent as both "semester" and "semesterName" — use "1st Semester" or "2nd Semester".'
+        hint='Sent as "semesterName" — must match the number, e.g. "1st Semester" or "2nd Semester".'
         autoFocus
       />
 

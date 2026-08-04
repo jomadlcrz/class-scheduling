@@ -3,14 +3,12 @@ export type Semester = {
   semester: string;
   semesterNumber: number;
   displayName?: string;
-  description?: string | null;
   status?: string;
   canEdit?: boolean;
 };
 
 /** POST /semesters body — matches backend SemesterSchema (camelCase keys). */
 export type SemesterWritePayload = {
-  semester: string;
   semesterNumber: 1 | 2;
   semesterName: string;
 };

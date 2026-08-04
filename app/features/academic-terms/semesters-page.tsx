@@ -91,7 +91,6 @@ export function SemestersPage() {
           <SemesterForm
             mode="edit"
             initialValue={{
-              semester: editTarget.semester,
               semesterNumber: editTarget.semesterNumber as 1 | 2,
               semesterName: editTarget.semester,
             }}

@@ -7,7 +7,6 @@ type SemesterResponse = {
   semester_name?: string;
   semester_number: number;
   display_name?: string;
-  description?: string | null;
   status?: string;
   can_edit?: boolean;
 };
@@ -31,7 +30,6 @@ function mapSemester(s: SemesterResponse): Semester {
     semester: semesterName,
     semesterNumber: s.semester_number,
     displayName: s.display_name ?? semesterName,
-    description: s.description ?? null,
     status: s.status ?? "Active",
     canEdit: (s.can_edit ?? true) && id > 0,
   };
@@ -78,7 +76,6 @@ async function resolveSemesterRowId(semesterNumber: number): Promise<number> {
 /** Build POST/PUT body exactly as backend SemesterSchema expects. */
 function toWritePayload(input: CreateSemesterInput): SemesterWritePayload {
   return {
-    semester: input.semester,
     semesterNumber: input.semesterNumber,
     semesterName: input.semesterName,
   };

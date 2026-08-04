@@ -28,7 +28,6 @@ export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
       <TableHead>
         <TableHeader>Semester Number</TableHeader>
         <TableHeader>Display Name</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Description</TableHeader>
         <TableHeader>Status</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -43,7 +42,6 @@ export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
                 {sem.displayName ?? sem.semester}
               </span>
             </TableCell>
-            <TableCell className="hidden sm:table-cell">{sem.description ?? "—"}</TableCell>
             <TableCell>
               <StatusBadge tone={semesterStatusTone(sem.status)}>{sem.status ?? "Active"}</StatusBadge>
             </TableCell>
