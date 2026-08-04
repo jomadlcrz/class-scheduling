@@ -26,7 +26,7 @@ type MappingRoom = {
 
 type MappingFilters = {
   schoolYear?: string;
-  semester?: string;
+  semesterNumber?: number;
   building?: string;
 };
 
@@ -42,7 +42,7 @@ function toSubjectType(raw: string | null | undefined): SubjectType {
 async function list(filters?: MappingFilters): Promise<MappingResult> {
   const params = new URLSearchParams();
   if (filters?.schoolYear) params.set("school_year", filters.schoolYear);
-  if (filters?.semester) params.set("semester", filters.semester);
+  if (filters?.semesterNumber != null) params.set("semester_number", String(filters.semesterNumber));
   if (filters?.building) params.set("building", filters.building);
 
   const query = params.toString();

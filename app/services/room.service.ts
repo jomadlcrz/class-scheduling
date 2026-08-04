@@ -1,6 +1,6 @@
-import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
 import { archiveService } from "~/services/archive.service";
-import type { Room, RoomArchivePreview, RoomProgram } from "~/types/room";
+import type { Room, RoomArchivePreview, RoomDetail, RoomProgram, UpdateRoomInput } from "~/types/room";
 
 /** Rooms read + archive against the facilities module (registrar_admin). */
 
@@ -80,4 +80,41 @@ async function restore(id: number): Promise<string> {
   return archiveService.restore("room", id);
 }
 
-export const roomService = { list, archive, getArchivePreview, listDeleted, restore };
+type RoomDetailResponse = {
+  room_id: number;
+  building_id: number;
+  floor_level: number;
+  room_name: string;
+  room_type: string;
+  room_capacity: number;
+  room_status: string;
+  program_ids: number[];
+  programs: { program_id: number; program_abbrev: string; program_name: string }[];
+};
+
+function mapRoomDetail(raw: RoomDetailResponse): RoomDetail {
+  return {
+    id: raw.room_id,
+    buildingId: raw.building_id,
+    floor: raw.floor_level,
+    name: raw.room_name,
+    type: raw.room_type,
+    capacity: raw.room_capacity,
+    status: raw.room_status,
+    programIds: raw.program_ids,
+    programs: mapPrograms(raw.programs),
+  };
+}
+
+/** GET /rooms/:id — populate edit forms including program_ids. */
+async function get(id: number): Promise<RoomDetail> {
+  return mapRoomDetail(await apiGet<RoomDetailResponse>(`/rooms/${id}`));
+}
+
+/** PUT /rooms/:id — partial update; never send read-only statuses like Occupied. */
+async function update(id: number, input: UpdateRoomInput): Promise<{ message: string; room: RoomDetail }> {
+  const data = await apiPut<{ message?: string; room: RoomDetailResponse }>(`/rooms/${id}`, input);
+  return { message: apiMessage(data), room: mapRoomDetail(data.room) };
+}
+
+export const roomService = { list, archive, getArchivePreview, listDeleted, restore, get, update };

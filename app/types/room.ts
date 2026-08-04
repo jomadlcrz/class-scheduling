@@ -36,6 +36,31 @@ export type Room = {
   programs: RoomProgram[];
 };
 
+/** Full room row from GET /rooms/:id — used to populate edit forms. */
+export type RoomDetail = {
+  id: number;
+  buildingId: number;
+  floor: number;
+  name: string;
+  type: string;
+  capacity: number;
+  status: string;
+  programIds: number[];
+  programs: RoomProgram[];
+};
+
+/** Partial body for PUT /rooms/:id — only Vacant or Maintenance may be set manually. */
+export type UpdateRoomInput = {
+  roomName?: string;
+  roomType?: string;
+  roomCapacity?: number;
+  floorLevel?: number;
+  programIds?: number[];
+  roomStatus?: "Vacant" | "Maintenance";
+};
+
+export const MANUAL_ROOM_STATUSES = ["Vacant", "Maintenance"] as const;
+
 /** Shape of GET /rooms/:id/archive-preview and the PATCH /rooms/:id/archive payload.
  * A room still blocks while a real schedule uses it — the type-to-confirm on the
  * room's own name is the only other guard. */

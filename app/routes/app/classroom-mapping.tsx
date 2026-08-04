@@ -41,7 +41,7 @@ function ClassroomMappingPage() {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [schoolYear, setSchoolYear] = useState("");
-  const [semester, setSemester] = useState("");
+  const [semesterNumber, setSemesterNumber] = useState<number | null>(null);
   const [buildingFilter, setBuildingFilter] = useState("all");
   const buildingName = buildings.find((b) => String(b.id) === buildingFilter)?.name;
   const [rawSearch, setRawSearch] = useState("");
@@ -53,7 +53,9 @@ function ClassroomMappingPage() {
     Promise.all([semesterService.list(), schoolYearService.list()])
       .then(([semesterList, schoolYearList]) => {
         setSemesters(semesterList);
-        if (semesterList.length > 0 && !semester) setSemester(semesterList[0].semester);
+        if (semesterList.length > 0 && semesterNumber === null) {
+          setSemesterNumber(semesterList[0].semesterNumber);
+        }
         setSchoolYears(schoolYearList.map((o) => o.schoolYear));
         if (schoolYearList.length > 0 && !schoolYear) setSchoolYear(schoolYearList[0].schoolYear);
       })
@@ -65,12 +67,12 @@ function ClassroomMappingPage() {
   }, []);
 
   useEffect(() => {
-    if (!semester || !schoolYear) return;
+    if (semesterNumber === null || !schoolYear) return;
     let stale = false;
     setLoadError(null);
     setClassrooms(null);
     Promise.all([
-      classroomMappingService.list({ schoolYear, semester, building: buildingName }),
+      classroomMappingService.list({ schoolYear, semesterNumber, building: buildingName }),
       buildingService.list(),
     ])
       .then(([result, buildingList]) => {
@@ -83,7 +85,7 @@ function ClassroomMappingPage() {
         setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
       });
     return () => { stale = true; };
-  }, [semester, schoolYear, semesters, buildingName]);
+  }, [semesterNumber, schoolYear, buildingName]);
 
   const search = useDeferredValue(rawSearch);
 
@@ -138,10 +140,13 @@ function ClassroomMappingPage() {
                     ? [{ value: "", label: "Loading…" }]
                     : semesters.length === 0
                       ? [{ value: "", label: "No semester" }]
-                      : semesters.map((s) => ({ value: s.semester, label: s.semester }))
+                      : semesters.map((s) => ({
+                          value: String(s.semesterNumber),
+                          label: s.displayName ?? s.semester,
+                        }))
                 }
-                value={semester}
-                onValueChange={(v) => setSemester(v as string)}
+                value={semesterNumber != null ? String(semesterNumber) : ""}
+                onValueChange={(v) => setSemesterNumber(v ? Number(v) : null)}
               >
                 <SelectTrigger id="cm-sem" aria-label="Semester">
                   <SelectValue />
@@ -152,7 +157,11 @@ function ClassroomMappingPage() {
                   ) : semesters.length === 0 ? (
                     <SelectItem value="">No semester</SelectItem>
                   ) : (
-                    semesters.map(s => <SelectItem key={s.id} value={s.semester}>{s.semester}</SelectItem>)
+                    semesters.map((s) => (
+                      <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                        {s.displayName ?? s.semester}
+                      </SelectItem>
+                    ))
                   )}
                 </SelectContent>
               </Select>

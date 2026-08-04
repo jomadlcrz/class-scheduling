@@ -23,15 +23,35 @@ import {
 } from "~/features/facilities/edit-building-summary-panel";
 import type { AddBuildingRoomsInput, FacilityBuildingDetail, FacilityRoomDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
-import type { Room } from "~/types/room";
+import type { UpdateBuildingInput } from "~/types/building";
+import { MANUAL_ROOM_STATUSES, type Room, type UpdateRoomInput } from "~/types/room";
 
 type EditBuildingWorkspaceProps = {
   building: FacilityBuildingDetail;
   roomTypes: string[];
   programs: Program[];
+  onUpdateBuilding: (input: UpdateBuildingInput) => Promise<void>;
+  onUpdateRoom: (roomId: number, input: UpdateRoomInput) => Promise<void>;
   onAddRooms: (input: AddBuildingRoomsInput) => Promise<void>;
   onArchiveRoom: (room: Room) => Promise<void>;
   onCancel: () => void;
+};
+
+type ExistingRoomDraft = {
+  id: number;
+  snapshot: {
+    roomName: string;
+    roomType: string;
+    roomCapacity: number;
+    floorLevel: number;
+    programIds: number[];
+    roomStatus: string;
+  };
+  roomName: string;
+  roomType: string;
+  roomCapacity: number;
+  programIds: number[];
+  roomStatusOverride: string | null;
 };
 
 type NewRoomDraft = {
@@ -59,20 +79,72 @@ function newRoomDraft(roomType = ""): NewRoomDraft {
   };
 }
 
-function buildFloors(building: FacilityBuildingDetail) {
-  const floors = Array.from({ length: building.floorCount }, (_, index) => ({
+function roomToExistingDraft(room: FacilityRoomDetail): ExistingRoomDraft {
+  const programIds = [...room.programIds];
+  const snapshot = {
+    roomName: room.name,
+    roomType: room.type,
+    roomCapacity: room.capacity,
+    floorLevel: room.floor,
+    programIds,
+    roomStatus: room.status,
+  };
+  return { id: room.id, snapshot, roomName: room.name, roomType: room.type, roomCapacity: room.capacity, programIds, roomStatusOverride: null };
+}
+
+function sortedProgramKey(ids: number[]): string {
+  return [...ids].sort((a, b) => a - b).join(",");
+}
+
+function buildRoomUpdatePayload(draft: ExistingRoomDraft): UpdateRoomInput | null {
+  const { snapshot } = draft;
+  const payload: UpdateRoomInput = {};
+  const name = draft.roomName.trim();
+  if (name !== snapshot.roomName) payload.roomName = name;
+  if (draft.roomType !== snapshot.roomType) payload.roomType = draft.roomType;
+  if (draft.roomCapacity !== snapshot.roomCapacity) payload.roomCapacity = draft.roomCapacity;
+  if (sortedProgramKey(draft.programIds) !== sortedProgramKey(snapshot.programIds)) {
+    payload.programIds = [...draft.programIds];
+  }
+  if (
+    draft.roomStatusOverride !== null &&
+    draft.roomStatusOverride !== snapshot.roomStatus &&
+    (draft.roomStatusOverride === "Vacant" || draft.roomStatusOverride === "Maintenance")
+  ) {
+    payload.roomStatus = draft.roomStatusOverride;
+  }
+  return Object.keys(payload).length > 0 ? payload : null;
+}
+
+function buildBuildingUpdatePayload(
+  original: { name: string; floorCount: number },
+  current: { name: string; floorCount: number },
+): UpdateBuildingInput | null {
+  const payload: UpdateBuildingInput = {};
+  const name = current.name.trim();
+  if (name !== original.name) payload.name = name;
+  if (current.floorCount !== original.floorCount) payload.floorCount = current.floorCount;
+  return Object.keys(payload).length > 0 ? payload : null;
+}
+
+function buildFloors(
+  building: FacilityBuildingDetail,
+  existingDrafts: ExistingRoomDraft[],
+) {
+  const floorCount = Math.max(building.floorCount, ...existingDrafts.map((r) => r.snapshot.floorLevel), 1);
+  const floors = Array.from({ length: floorCount }, (_, index) => ({
     floorLevel: index + 1,
-    existingRooms: [] as FacilityRoomDetail[],
+    existingRooms: [] as ExistingRoomDraft[],
     newRooms: [] as NewRoomDraft[],
   }));
 
-  for (const room of building.rooms) {
-    const floor = floors[room.floor - 1];
+  for (const room of existingDrafts) {
+    const floor = floors[room.snapshot.floorLevel - 1];
     if (floor) floor.existingRooms.push(room);
   }
 
   for (const floor of floors) {
-    floor.existingRooms.sort((a, b) => a.name.localeCompare(b.name));
+    floor.existingRooms.sort((a, b) => a.roomName.localeCompare(b.roomName));
   }
 
   return floors;
@@ -95,19 +167,22 @@ function toAddRoomsPayload(floors: ReturnType<typeof buildFloors>): AddBuildingR
 }
 
 function computeSummary(
-  building: FacilityBuildingDetail,
+  buildingName: string,
+  floorCount: number,
   floors: ReturnType<typeof buildFloors>,
 ): EditBuildingSummaryData {
   const existingRooms = floors.flatMap((floor) => floor.existingRooms);
   const newRooms = floors.flatMap((floor) => floor.newRooms);
   const roomTypeCounts: Record<string, number> = {};
   const labProgramIds = new Set<number>();
+  let modified = 0;
 
   for (const room of existingRooms) {
-    roomTypeCounts[room.type] = (roomTypeCounts[room.type] ?? 0) + 1;
-    if (room.type === "Laboratory") {
+    roomTypeCounts[room.roomType] = (roomTypeCounts[room.roomType] ?? 0) + 1;
+    if (room.roomType === "Laboratory") {
       room.programIds.forEach((id) => labProgramIds.add(id));
     }
+    if (buildRoomUpdatePayload(room) !== null) modified += 1;
   }
 
   for (const room of newRooms) {
@@ -119,13 +194,13 @@ function computeSummary(
   }
 
   return {
-    buildingName: building.name,
-    floorCount: building.floorCount,
+    buildingName,
+    floorCount,
     totalRooms: existingRooms.length + newRooms.length,
     existingRoomCount: existingRooms.length,
     roomTypeCounts,
     labProgramIds: [...labProgramIds],
-    changes: { added: newRooms.length, modified: 0, deleted: 0 },
+    changes: { added: newRooms.length, modified, deleted: 0 },
   };
 }
 
@@ -139,18 +214,19 @@ const floorButtonClassName = (active: boolean) =>
 const statCardClassName =
   "rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5";
 
-function roomToArchiveTarget(room: FacilityRoomDetail, building: FacilityBuildingDetail): Room {
+function roomToArchiveTarget(draft: ExistingRoomDraft, building: FacilityBuildingDetail): Room {
+  const source = building.rooms.find((room) => room.id === draft.id);
   return {
-    id: room.id,
+    id: draft.id,
     buildingId: building.id,
     buildingName: building.name,
-    floor: room.floor,
-    name: room.name,
-    capacity: room.capacity,
-    type: room.type,
-    status: room.status,
-    timeRemaining: room.timeRemaining,
-    programs: room.programs,
+    floor: draft.snapshot.floorLevel,
+    name: draft.roomName.trim() || draft.snapshot.roomName,
+    capacity: draft.roomCapacity,
+    type: draft.roomType,
+    status: draft.snapshot.roomStatus,
+    timeRemaining: source?.timeRemaining ?? "",
+    programs: source?.programs ?? [],
   };
 }
 
@@ -158,34 +234,84 @@ export function EditBuildingWorkspace({
   building,
   roomTypes,
   programs,
+  onUpdateBuilding,
+  onUpdateRoom,
   onAddRooms,
   onArchiveRoom,
   onCancel,
 }: EditBuildingWorkspaceProps) {
   const defaultRoomType = roomTypes[0] ?? "";
+  const buildingSnapshot = { name: building.name, floorCount: building.floorCount };
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedFloor, setSelectedFloor] = useState(1);
-  const [floors, setFloors] = useState(() => buildFloors(building));
+  const [buildingName, setBuildingName] = useState(building.name);
+  const [floorCount, setFloorCount] = useState(building.floorCount);
+  const [existingDrafts, setExistingDrafts] = useState(() => building.rooms.map(roomToExistingDraft));
+  const [floors, setFloors] = useState(() => buildFloors(building, building.rooms.map(roomToExistingDraft)));
   const [archiveTarget, setArchiveTarget] = useState<Room | null>(null);
 
   useEffect(() => {
-    setFloors(buildFloors(building));
+    const drafts = building.rooms.map(roomToExistingDraft);
+    setBuildingName(building.name);
+    setFloorCount(building.floorCount);
+    setExistingDrafts(drafts);
+    setFloors(buildFloors(building, drafts));
     setSelectedFloor(1);
     setError(null);
   }, [building]);
 
-  const summary = useMemo(() => computeSummary(building, floors), [building, floors]);
-  const hasNewRooms = summary.changes.added > 0;
+  const buildingPayload = buildBuildingUpdatePayload(buildingSnapshot, {
+    name: buildingName,
+    floorCount,
+  });
+  const summary = useMemo(
+    () => computeSummary(buildingName, floorCount, floors),
+    [buildingName, floorCount, floors],
+  );
+  const hasChanges = buildingPayload !== null || summary.changes.added > 0 || summary.changes.modified > 0;
   const selectedFloorData = floors.find((floor) => floor.floorLevel === selectedFloor);
 
-  function updateNewRooms(floorLevel: number, updater: (rooms: NewRoomDraft[]) => NewRoomDraft[]) {
-    setFloors((current) =>
-      current.map((floor) =>
-        floor.floorLevel === floorLevel ? { ...floor, newRooms: updater(floor.newRooms) } : floor,
-      ),
+  function updateExistingDrafts(updater: (rooms: ExistingRoomDraft[]) => ExistingRoomDraft[]) {
+    setExistingDrafts((current) => {
+      const next = updater(current);
+      setFloors(buildFloors({ ...building, floorCount, name: buildingName }, next));
+      return next;
+    });
+  }
+
+  function updateExistingRoom(roomId: number, patch: Partial<ExistingRoomDraft>) {
+    updateExistingDrafts((rooms) => rooms.map((room) => (room.id === roomId ? { ...room, ...patch } : room)));
+  }
+
+  function toggleExistingProgram(roomId: number, programId: number) {
+    updateExistingDrafts((rooms) =>
+      rooms.map((room) => {
+        if (room.id !== roomId) return room;
+        const next = new Set(room.programIds);
+        next.has(programId) ? next.delete(programId) : next.add(programId);
+        return { ...room, programIds: [...next] };
+      }),
     );
   }
+
+  function updateNewRooms(floorLevel: number, updater: (rooms: NewRoomDraft[]) => NewRoomDraft[]) {
+    setFloors((current) => {
+      const next = current.map((floor) =>
+        floor.floorLevel === floorLevel ? { ...floor, newRooms: updater(floor.newRooms) } : floor,
+      );
+      return next;
+    });
+  }
+
+  useEffect(() => {
+    setFloors((current) =>
+      buildFloors({ ...building, floorCount, name: buildingName }, existingDrafts).map((floor) => ({
+        ...floor,
+        newRooms: current.find((entry) => entry.floorLevel === floor.floorLevel)?.newRooms ?? [],
+      })),
+    );
+  }, [floorCount]);
 
   function addRoom(floorLevel: number) {
     updateNewRooms(floorLevel, (rooms) => [...rooms, newRoomDraft(defaultRoomType)]);
@@ -226,9 +352,41 @@ export function EditBuildingWorkspace({
 
   async function handleSave() {
     const newRooms = floors.flatMap((floor) => floor.newRooms);
-    if (newRooms.length === 0) {
-      toast.message("No new rooms to save.");
+    const modifiedRooms = existingDrafts
+      .map((draft) => ({ draft, payload: buildRoomUpdatePayload(draft) }))
+      .filter((entry): entry is { draft: ExistingRoomDraft; payload: UpdateRoomInput } => entry.payload !== null);
+
+    if (!buildingPayload && modifiedRooms.length === 0 && newRooms.length === 0) {
+      toast.message("No changes to save.");
       return;
+    }
+
+    if (!buildingName.trim()) {
+      setError("Building name is required.");
+      return;
+    }
+    if (!Number.isInteger(floorCount) || floorCount < 1) {
+      setError("Enter a valid floor count.");
+      return;
+    }
+
+    for (const room of existingDrafts) {
+      if (!room.roomName.trim()) {
+        setError("Every room needs a name.");
+        return;
+      }
+      if (!room.roomType) {
+        setError("Select a type for every room.");
+        return;
+      }
+      if (!Number.isInteger(room.roomCapacity) || room.roomCapacity < 1) {
+        setError("Enter a valid capacity for every room.");
+        return;
+      }
+      if (room.roomType === "Laboratory" && room.programIds.length === 0) {
+        setError("Each laboratory must be assigned to at least one program.");
+        return;
+      }
     }
 
     for (const room of newRooms) {
@@ -251,15 +409,15 @@ export function EditBuildingWorkspace({
     }
 
     const payload = toAddRoomsPayload(floors);
-    if (payload.floors.length === 0) {
-      setError("Add at least one room before saving.");
-      return;
-    }
 
     setError(null);
     setIsSaving(true);
     try {
-      await onAddRooms(payload);
+      if (buildingPayload) await onUpdateBuilding(buildingPayload);
+      for (const { draft, payload: roomPayload } of modifiedRooms) {
+        await onUpdateRoom(draft.id, roomPayload);
+      }
+      if (payload.floors.length > 0) await onAddRooms(payload);
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
     } finally {
@@ -279,7 +437,7 @@ export function EditBuildingWorkspace({
             Manage Building
           </h1>
           <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-            Add rooms to this building or archive existing ones. Room details cannot be edited after creation.
+            Edit building details, update rooms, add new ones, or archive existing rooms.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -287,24 +445,33 @@ export function EditBuildingWorkspace({
             <ArrowLeftIcon />
             Back
           </Button>
-          <Button type="button" block={false} onClick={handleSave} disabled={!hasNewRooms} isLoading={isSaving} loadingLabel="Saving…">
-            Save New Rooms
+          <Button type="button" block={false} onClick={handleSave} disabled={!hasChanges} isLoading={isSaving} loadingLabel="Saving…">
+            Save Changes
           </Button>
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className={statCardClassName}>
-            <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Building Name
-            </p>
-            <p className="mt-1 font-medium text-navy-700 dark:text-mist-100">{building.name}</p>
+            <Input
+              id="edit-building-name"
+              label="Building Name"
+              required
+              value={buildingName}
+              onChange={(e) => setBuildingName(e.target.value)}
+            />
           </div>
           <div className={statCardClassName}>
-            <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Total Floors
-            </p>
-            <p className="mt-1 font-medium text-navy-700 dark:text-mist-100">{building.floorCount}</p>
+            <Input
+              id="edit-building-floors"
+              label="Total Floors"
+              type="number"
+              required
+              min={1}
+              value={floorCount}
+              onChange={(e) => setFloorCount(Math.max(1, Number(e.target.value) || 1))}
+              hint="Cannot drop below the highest floor with active rooms."
+            />
           </div>
           <div className={statCardClassName}>
             <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -380,18 +547,27 @@ export function EditBuildingWorkspace({
             </Card>
           ) : (
             <div className="flex flex-col gap-4">
-              {selectedFloorData.existingRooms.map((room) => (
-                <Card key={room.id} className="p-4">
+              {selectedFloorData.existingRooms.map((room) => {
+                const isDirty = buildRoomUpdatePayload(room) !== null;
+                const liveStatus = room.snapshot.roomStatus;
+                const canSetStatus = MANUAL_ROOM_STATUSES.includes(
+                  liveStatus as (typeof MANUAL_ROOM_STATUSES)[number],
+                );
+                const statusValue = room.roomStatusOverride ?? liveStatus;
+
+                return (
+                <Card key={room.id} className={`p-4 ${isDirty ? "ring-1 ring-amber-300 dark:ring-gold-400/40" : ""}`}>
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="truncate font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                          {room.name}
+                          {room.roomName.trim() || room.snapshot.roomName}
                         </h3>
                         <Badge tone="emerald">Existing</Badge>
+                        {isDirty && <Badge tone="gold">Modified</Badge>}
                       </div>
                       <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">
-                        {room.type} · Capacity {room.capacity} · {room.status}
+                        Live status: {liveStatus}
                       </p>
                     </div>
                     <Button
@@ -404,17 +580,145 @@ export function EditBuildingWorkspace({
                       Archive
                     </Button>
                   </div>
-                  {room.type === "Laboratory" && room.programIds.length > 0 && (
-                    <p className="font-body text-xs text-slate-500 dark:text-slate-400">
-                      Programs:{" "}
-                      {programs
-                        .filter((p) => room.programIds.includes(p.id))
-                        .map((p) => p.abbrev)
-                        .join(", ")}
-                    </p>
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Input
+                      id={`existing-room-name-${room.id}`}
+                      label="Room Name"
+                      required
+                      value={room.roomName}
+                      onChange={(e) => updateExistingRoom(room.id, { roomName: e.target.value })}
+                    />
+                    <FieldChrome id={`existing-room-type-${room.id}`} label="Room Type">
+                      <Select
+                        items={roomTypes.map((t) => ({ value: t, label: t }))}
+                        value={room.roomType}
+                        onValueChange={(value) =>
+                          updateExistingRoom(room.id, {
+                            roomType: value as string,
+                            programIds: value === "Laboratory" ? room.programIds : [],
+                          })
+                        }
+                      >
+                        <SelectTrigger id={`existing-room-type-${room.id}`}>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roomTypes.map((t) => (
+                            <SelectItem key={t} value={t}>
+                              {t}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldChrome>
+                    <Input
+                      id={`existing-room-capacity-${room.id}`}
+                      label="Capacity"
+                      type="number"
+                      required
+                      min={1}
+                      value={room.roomCapacity}
+                      onChange={(e) =>
+                        updateExistingRoom(room.id, { roomCapacity: Number(e.target.value) })
+                      }
+                    />
+                  </div>
+
+                  {canSetStatus ? (
+                    <div className="mt-3 md:max-w-xs">
+                      <FieldChrome id={`existing-room-status-${room.id}`} label="Manual status">
+                        <Select
+                          items={MANUAL_ROOM_STATUSES.map((s) => ({ value: s, label: s }))}
+                          value={statusValue}
+                          onValueChange={(value) =>
+                            updateExistingRoom(room.id, { roomStatusOverride: value as string })
+                          }
+                        >
+                          <SelectTrigger id={`existing-room-status-${room.id}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MANUAL_ROOM_STATUSES.map((s) => (
+                              <SelectItem key={s} value={s}>
+                                {s}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FieldChrome>
+                    </div>
+                  ) : liveStatus === "Occupied" || liveStatus === "Non-Schedulable" ? (
+                    <div className="mt-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        block={false}
+                        onClick={() => updateExistingRoom(room.id, { roomStatusOverride: "Maintenance" })}
+                      >
+                        Mark under maintenance
+                      </Button>
+                    </div>
+                  ) : null}
+
+                  {room.roomType === "Laboratory" && (
+                    <div className="mt-3">
+                      <FieldChrome
+                        id={`existing-room-programs-${room.id}`}
+                        label="Assigned Programs"
+                        hint="A laboratory must have at least one program."
+                      >
+                        <Menu.Root modal={false}>
+                          <Menu.Trigger
+                            id={`existing-room-programs-${room.id}`}
+                            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-gray-900 outline-none transition-colors duration-150 focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700/20 data-popup-open:border-blue-700 data-popup-open:ring-2 data-popup-open:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/20 dark:data-popup-open:border-blue-400 dark:data-popup-open:ring-blue-400/20"
+                          >
+                            <span className="min-w-0 truncate">
+                              {room.programIds.length === 0
+                                ? "Select programs"
+                                : programs
+                                    .filter((p) => room.programIds.includes(p.id))
+                                    .map((p) => p.abbrev)
+                                    .join(", ")}
+                            </span>
+                            <span className="shrink-0 text-slate-400 dark:text-slate-500">
+                              <ChevronDownIcon />
+                            </span>
+                          </Menu.Trigger>
+                          <Menu.Portal>
+                            <Menu.Positioner
+                              sideOffset={6}
+                              align="start"
+                              collisionPadding={8}
+                              className="z-50 outline-none"
+                            >
+                              <Menu.Popup className="max-h-64 min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised">
+                                {programs.map((p) => (
+                                  <Menu.CheckboxItem
+                                    key={p.id}
+                                    checked={room.programIds.includes(p.id)}
+                                    onCheckedChange={() => toggleExistingProgram(room.id, p.id)}
+                                    closeOnClick={false}
+                                    className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
+                                  >
+                                    <span className="min-w-0 truncate">
+                                      {p.abbrev} — {p.name}
+                                    </span>
+                                    <Menu.CheckboxItemIndicator className="shrink-0 text-blue-700 dark:text-blue-400">
+                                      <CheckIcon />
+                                    </Menu.CheckboxItemIndicator>
+                                  </Menu.CheckboxItem>
+                                ))}
+                              </Menu.Popup>
+                            </Menu.Positioner>
+                          </Menu.Portal>
+                        </Menu.Root>
+                      </FieldChrome>
+                    </div>
                   )}
                 </Card>
-              ))}
+              );
+              })}
 
               {selectedFloorData.newRooms.map((room, index) => (
                 <div

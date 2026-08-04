@@ -4,13 +4,15 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Spinner } from "~/components/ui/spinner";
 import { EditBuildingWorkspace } from "~/features/facilities/edit-building-workspace";
+import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
 import { roomService } from "~/services/room.service";
 import type { AddBuildingRoomsInput, FacilityBuildingDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
-import type { Room } from "~/types/room";
+import type { Room, UpdateRoomInput } from "~/types/room";
+import type { UpdateBuildingInput } from "~/types/building";
 
 export function meta() {
   return [
@@ -66,6 +68,18 @@ function EditBuildingPage() {
     }
   }, [building, loading, navigate]);
 
+  async function handleUpdateBuilding(input: UpdateBuildingInput) {
+    const message = await buildingService.update(id, input);
+    if (message) toast.success(message);
+    await refresh();
+  }
+
+  async function handleUpdateRoom(roomId: number, input: UpdateRoomInput) {
+    const { message } = await roomService.update(roomId, input);
+    if (message) toast.success(message);
+    await refresh();
+  }
+
   async function handleAddRooms(input: AddBuildingRoomsInput) {
     const { message, roomCount } = await facilityService.addRooms(id, input);
     if (message) toast.success(message);
@@ -97,6 +111,8 @@ function EditBuildingPage() {
         building={building}
         roomTypes={roomTypes}
         programs={programs}
+        onUpdateBuilding={handleUpdateBuilding}
+        onUpdateRoom={handleUpdateRoom}
         onAddRooms={handleAddRooms}
         onArchiveRoom={handleArchiveRoom}
         onCancel={() => navigate("/facilities")}

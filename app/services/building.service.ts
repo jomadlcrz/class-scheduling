@@ -1,9 +1,10 @@
-import { ApiError, apiGet, apiMessage, apiPatch } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
 import { archiveService } from "~/services/archive.service";
 import type {
   Building,
   BuildingArchivePreview,
   DeletedBuilding,
+  UpdateBuildingInput,
 } from "~/types/building";
 
 /** Buildings read + archive against the facilities module (registrar_admin). */
@@ -44,8 +45,6 @@ async function getArchivePreview(id: number): Promise<BuildingArchivePreview> {
   return apiGet<BuildingArchivePreview>(`/buildings/${id}/archive-preview`);
 }
 
-;
-
 /** GET /archive?category=buildings. Archiving a building cascades to its rooms. */
 async function listDeleted(): Promise<DeletedBuilding[]> {
   const items = await archiveService.listCategoryItems("buildings");
@@ -74,4 +73,13 @@ async function get(id: number): Promise<Building> {
   return { id: b.building_id, name: b.building_name, floorCount: b.floor_count };
 }
 
-export const buildingService = { list, archive, getArchivePreview, listDeleted, restore, get };
+/** PUT /buildings/:id — partial update (buildingName, floorCount). */
+async function update(id: number, input: UpdateBuildingInput): Promise<string> {
+  const body: Record<string, unknown> = {};
+  if (input.name !== undefined) body.buildingName = input.name;
+  if (input.floorCount !== undefined) body.floorCount = input.floorCount;
+  const data = await apiPut<{ message?: string }>(`/buildings/${id}`, body);
+  return apiMessage(data);
+}
+
+export const buildingService = { list, archive, getArchivePreview, listDeleted, restore, get, update };
