@@ -11,7 +11,7 @@ type SubjectsResponse = {
     year_level: number;
     year_total_units: number;
     semester_details: {
-      semester: number;
+      semester_number: number;
       semester_total_units: number;
       subjects: {
         subject_id: number;
@@ -41,7 +41,7 @@ async function list(): Promise<Subject[]> {
           id: s.subject_id,
           program: codeByName.get(program.program_name) ?? program.program_name,
           yearLevel: year.year_level as YearLevel,
-          semester: sem.semester as Semester,
+          semester: sem.semester_number as Semester,
           code: s.subject_code,
           title: s.descriptive_title,
           units: s.units,

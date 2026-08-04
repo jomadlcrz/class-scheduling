@@ -15,7 +15,7 @@ type SubjectsResponse = {
     year_level: number;
     year_total_units: number;
     semester_details: {
-      semester: number;
+      semester_number: number;
       semester_total_units: number;
       subjects: {
         subject_id: number;
@@ -45,12 +45,12 @@ async function getByProgram(programCode: string): Promise<ProgramCurriculum | nu
     .flatMap((year) =>
       year.semester_details.map((sem) => ({
         yearLevel: year.year_level as YearLevel,
-        semester: sem.semester as Semester,
+        semester: sem.semester_number as Semester,
         subjects: sem.subjects.map((s) => ({
           id: s.subject_id,
           program: programCode,
           yearLevel: year.year_level as YearLevel,
-          semester: sem.semester as Semester,
+          semester: sem.semester_number as Semester,
           code: s.subject_code,
           title: s.descriptive_title,
           units: s.units,
