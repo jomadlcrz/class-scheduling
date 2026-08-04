@@ -25,7 +25,7 @@ function connectorTone(leftStatus: TermWorkflowStep["status"]): string {
     return "bg-emerald-400 dark:bg-emerald-500/70";
   }
   if (leftStatus === "current") {
-    return "bg-gradient-to-r from-amber-400 to-slate-200 dark:from-gold-400/70 dark:to-white/10";
+    return "bg-linear-to-r from-amber-400 to-slate-200 dark:from-gold-400/70 dark:to-white/10";
   }
   return "bg-slate-200 dark:bg-white/10";
 }
@@ -95,7 +95,7 @@ export function TermWorkflowTimeline({
             <li key={step.key} className="relative flex min-w-0 flex-col items-center px-2 text-center">
               {!isLast && (
                 <span
-                  className={`absolute left-[calc(50%+1.25rem)] top-[1.125rem] h-0.5 w-[calc(100%-2.5rem)] ${connectorTone(step.status)}`}
+                  className={`absolute left-[calc(50%+1.25rem)] top-4.5 h-0.5 w-[calc(100%-2.5rem)] ${connectorTone(step.status)}`}
                   aria-hidden="true"
                 />
               )}
@@ -135,7 +135,7 @@ export function TermWorkflowTimeline({
             <li key={step.key} className="relative flex gap-4 pb-6 last:pb-0">
               {!isLast && (
                 <span
-                  className={`absolute left-[1.125rem] top-10 bottom-0 w-0.5 -translate-x-1/2 ${
+                  className={`absolute left-4.5 top-10 bottom-0 w-0.5 -translate-x-1/2 ${
                     step.status === "completed"
                       ? "bg-emerald-400 dark:bg-emerald-500/70"
                       : "bg-slate-200 dark:bg-white/10"
@@ -169,8 +169,8 @@ export function TermWorkflowTimeline({
       </ol>
 
       {currentStep && nextAction.key !== "done" && (
-        <div className="rounded-lg border border-amber-200/80 bg-gradient-to-r from-amber-50/80 to-white px-4 py-3 dark:border-gold-400/20 dark:from-gold-400/10 dark:to-transparent">
-          <p className="font-body text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-gold-300">
+        <div className="rounded-lg border border-blue-200 bg-linear-to-r from-blue-50 to-white px-4 py-3 dark:border-gold-400/20 dark:from-gold-400/10 dark:to-transparent">
+          <p className="font-body text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-gold-300">
             Next up
           </p>
           <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">{nextAction.label}</p>
