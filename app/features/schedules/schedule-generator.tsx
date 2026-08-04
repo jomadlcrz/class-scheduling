@@ -2,7 +2,12 @@ import { useCallback, useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon, EditIcon } from "~/components/ui/icons";
-import { scheduleService, type ScheduleSuggestion, type SlotDraft } from "~/services/schedule.service";
+import {
+  scheduleService,
+  type AutoGenerateResolution,
+  type ScheduleSuggestion,
+  type SlotDraft,
+} from "~/services/schedule.service";
 import { formatDecimalHour } from "~/lib/time";
 import type { ScheduleSemester } from "~/types/schedule";
 import type { YearLevel } from "~/types/subject";
@@ -321,6 +326,7 @@ export function useAutoGenerate() {
   const [hasGenerated, setHasGenerated] = useState(false);
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<ScheduleSuggestion[]>([]);
+  const [resolution, setResolution] = useState<AutoGenerateResolution | null>(null);
 
   const generate = useCallback(async (
     params: AutoGenerateParams,
@@ -329,10 +335,12 @@ export function useAutoGenerate() {
     setIsGenerating(true);
     setConflicts([]);
     setSuggestions([]);
+    setResolution(null);
     try {
       const result = await scheduleService.autoGenerate({ ...params, strategy });
       setConflicts(result.conflicts);
       setSuggestions(result.suggestions);
+      setResolution(result.resolution);
       setHasGenerated(true);
       return result.slots;
     } finally {
@@ -344,7 +352,8 @@ export function useAutoGenerate() {
     setHasGenerated(false);
     setConflicts([]);
     setSuggestions([]);
+    setResolution(null);
   }, []);
 
-  return { isGenerating, hasGenerated, conflicts, suggestions, generate, reset };
+  return { isGenerating, hasGenerated, conflicts, suggestions, resolution, generate, reset };
 }

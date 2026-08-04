@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { AlertIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
@@ -164,6 +164,7 @@ function SchedulesNewPage() {
     hasGenerated,
     conflicts: generationConflicts,
     suggestions: generationSuggestions,
+    resolution: generationResolution,
     generate,
     reset: resetGeneration,
   } = useAutoGenerate();
@@ -762,6 +763,28 @@ function SchedulesNewPage() {
           )}
 
           <AnimatePresence>
+            {generationResolution && (
+              <Alert
+                key="generation-resolution"
+                variant={generationResolution.unresolved.length > 0 ? "warning" : "success"}
+              >
+                <AlertTitle>Conflict resolution finished</AlertTitle>
+                <AlertDescription>
+                  Completed {generationResolution.passes} {generationResolution.passes === 1 ? "pass" : "passes"} and moved{" "}
+                  {generationResolution.sessionsMoved} saved {generationResolution.sessionsMoved === 1 ? "session" : "sessions"}.
+                  {generationResolution.movesRefused.length > 0 && (
+                    <> {generationResolution.movesRefused.length} {generationResolution.movesRefused.length === 1 ? "move was" : "moves were"} refused.</>
+                  )}
+                  {generationResolution.unresolved.length > 0 && (
+                    <ul className="mt-2 list-disc space-y-1 pl-5">
+                      {generationResolution.unresolved.map((conflict) => (
+                        <li key={conflict}>{conflict}</li>
+                      ))}
+                    </ul>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
             {generationConflicts.length > 0 && (
               <GenerationConflictsAlert
                 key="generation-conflicts"

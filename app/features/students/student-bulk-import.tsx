@@ -18,11 +18,16 @@ import { programService } from "~/services/program.service";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
 import { semesterService } from "~/services/semester.service";
 import { setService } from "~/services/set.service";
-import { studentService, type ImportStudentResponse } from "~/services/student.service";
+import {
+  studentService,
+  type ImportStudentInput,
+  type ImportStudentResponse,
+} from "~/services/student.service";
 import { subjectService } from "~/services/subject.service";
 import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
 import type { ClassSet } from "~/types/set";
+import type { Subject } from "~/types/subject";
 
 export type BulkEnrolledStatus = "Regular" | "Irregular";
 
@@ -168,19 +173,6 @@ function parseCsv(text: string): StudentRow[] {
   return rows;
 }
 
-/**
- * The uploaded CSV always carries an "Enrolled Status" column (the backend
- * requires it); the value is this route's fixed status, so sheet users never
- * fill it in.
- */
-function toCsv(rows: StudentRow[], enrolledStatus: BulkEnrolledStatus): string {
-  const lines = [[...CSV_HEADERS, "Enrolled Status"].join(",")];
-  for (const row of rows) {
-    lines.push([...CSV_KEYS.map((k) => row[k]), enrolledStatus].join(","));
-  }
-  return lines.join("\n");
-}
-
 function BulkStatusTabs() {
   return (
     <div className="flex gap-2 border-b border-slate-200 dark:border-white/10">
@@ -227,9 +219,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ImportStudentResponse | null>(null);
   const [submittedRows, setSubmittedRows] = useState<StudentRow[]>([]);
-  const [isCreating, setIsCreating] = useState(false);
-
-  const [subjectCodes, setSubjectCodes] = useState<string[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [sets, setSets] = useState<ClassSet[]>([]);
   const [schoolYears, setSchoolYears] = useState<SchoolYearOption[]>([]);
@@ -237,7 +227,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
   const [enumOpts, setEnumOpts] = useState<EnumOptions | null>(null);
 
   useEffect(() => {
-    subjectService.list().then((subjects) => setSubjectCodes([...new Set(subjects.map((s) => s.code))])).catch(() => {});
+    subjectService.list().then(setSubjects).catch(() => {});
     programService.list().then(setPrograms).catch(() => {});
     setService.list().then(setSets).catch(() => {});
     schoolYearService.list().then(setSchoolYears).catch(() => {});
@@ -257,6 +247,81 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
     () => rows.filter((r) => r.firstName.trim() && r.lastName.trim() && r.contactNumber.trim() && r.email.trim()),
     [rows],
   );
+
+  const subjectCodes = useMemo(
+    () => [...new Set(subjects.map((subject) => subject.code))],
+    [subjects],
+  );
+
+  function prepareImportRow(row: StudentRow): ImportStudentInput {
+    const program = programs.find(
+      (option) => option.abbrev.toLowerCase() === row.program.trim().toLowerCase(),
+    );
+    const yearLevel = Number(row.yearLevel);
+    const schoolYear = schoolYears.find(
+      (option) => option.schoolYear.toLowerCase() === row.schoolYear.trim().toLowerCase(),
+    );
+    const semester = semesters.find((option) => {
+      const value = row.semester.trim().toLowerCase();
+      return option.semester.toLowerCase() === value ||
+        option.displayName?.toLowerCase() === value ||
+        String(option.semesterNumber) === value;
+    });
+    const set = isIrregular
+      ? null
+      : sets.find(
+          (option) =>
+            option.program.toLowerCase() === row.program.trim().toLowerCase() &&
+            option.yearLevel === yearLevel &&
+            option.setCode.toLowerCase() === row.section.trim().toLowerCase(),
+        );
+    const requestedSubjectCodes = row.subjectCodes
+      .split(/[,;]+/)
+      .map((code) => code.trim())
+      .filter(Boolean);
+    const subjectIds = requestedSubjectCodes.map((code) =>
+      subjects.find(
+        (subject) =>
+          subject.program.toLowerCase() === row.program.trim().toLowerCase() &&
+          subject.code.toLowerCase() === code.toLowerCase(),
+      )?.id,
+    );
+
+    const missing: string[] = [];
+    if (!program) missing.push("program");
+    if (!Number.isInteger(yearLevel) || yearLevel < 1) missing.push("year level");
+    if (!schoolYear) missing.push("school year");
+    if (!semester) missing.push("semester");
+    if (!isIrregular && !set) missing.push("set");
+    if (!row.studentType.trim()) missing.push("student type");
+    if (isIrregular && requestedSubjectCodes.length === 0) missing.push("subject codes");
+    if (subjectIds.some((id) => id == null)) missing.push("recognized subject codes");
+    if (missing.length > 0 || !program || !schoolYear || !semester) {
+      return {
+        error: `Invalid or missing ${missing.join(", ")}.`,
+        studentId: row.studentNumber.trim() || undefined,
+      };
+    }
+
+    return {
+      input: {
+        studentId: row.studentNumber.trim() || undefined,
+        firstName: row.firstName,
+        midName: row.middleName.trim() || undefined,
+        lastName: row.lastName,
+        mobile: row.contactNumber,
+        email: row.email,
+        programId: program.id,
+        yearLevel,
+        setId: set?.id ?? null,
+        studentType: row.studentType,
+        enrolledStatus,
+        syId: schoolYear.id,
+        semesterNumber: semester.semesterNumber,
+        subjectIds: subjectIds.filter((id): id is number => id != null),
+      },
+    };
+  }
 
   function updateRow(index: number, updater: (row: StudentRow) => StudentRow) {
     setRows((prev) => prev.map((row, i) => (i === index ? updater(row) : row)));
@@ -326,10 +391,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
     setError(null);
     setIsLoading(true);
     try {
-      const csv = toCsv(validRows, enrolledStatus);
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const file = new File([blob], "students.csv", { type: "text/csv" });
-      const res = await studentService.importRecords(file);
+      const res = await studentService.importRecords(validRows.map(prepareImportRow));
       setSubmittedRows(validRows);
       setResult(res);
       setRows([{ ...EMPTY_ROW }]);
@@ -337,19 +399,6 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
       setError(err instanceof Error ? err.message : "");
     } finally {
       setIsLoading(false);
-    }
-  }
-
-  async function handleCreateAccounts() {
-    const studentIds = (result?.results ?? [])
-      .filter((r): r is { row: number; student_id: string; status: "created"; message?: string; errors?: Record<string, unknown> } => r.status === "created" && !!r.student_id)
-      .map((r) => r.student_id);
-    if (studentIds.length === 0) return;
-    setIsCreating(true);
-    try {
-      toast.success(`Created ${studentIds.length} account${studentIds.length > 1 ? "s" : ""}.`);
-    } finally {
-      setIsCreating(false);
     }
   }
 
@@ -461,11 +510,6 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
             <Button type="button" variant="outline" block={false} onClick={() => { setResult(null); setSubmittedRows([]); setRows([{ ...EMPTY_ROW }]); }}>
               Import Another
             </Button>
-            {result.created > 0 && (
-              <Button type="button" block={false} isLoading={isCreating} loadingLabel="Creating records…" onClick={handleCreateAccounts}>
-                Create Records
-              </Button>
-            )}
           </div>
         </div>
       </div>

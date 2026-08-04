@@ -285,6 +285,14 @@ export type ScheduleSuggestion = {
   netGain?: number;
 };
 
+export type AutoGenerateResolution = {
+  passes: number;
+  sessionsMoved: number;
+  moves: unknown[];
+  movesRefused: unknown[];
+  unresolved: string[];
+};
+
 type AutoGenerateResponse = {
   school_year: string;
   semester: string;
@@ -313,6 +321,13 @@ type AutoGenerateResponse = {
   conflicts: string[];
   /** Machine-readable fix suggestions (subject hour overrides, session moves, etc.). */
   suggestions?: unknown[];
+  resolution?: {
+    passes: number;
+    sessions_moved: number;
+    moves: unknown[];
+    moves_refused: unknown[];
+    unresolved: string[];
+  };
 };
 
 type AutoGenerateResult = {
@@ -321,6 +336,8 @@ type AutoGenerateResult = {
   conflicts: string[];
   /** Structured suggestions the UI can render as one-click fixes. */
   suggestions: ScheduleSuggestion[];
+  /** Present only when the write-enabled conflict resolver was requested. */
+  resolution: AutoGenerateResolution | null;
 };
 
 /**
@@ -383,6 +400,15 @@ async function autoGenerate(input: {
   return {
     slots,
     conflicts: data.conflicts ?? [],
+    resolution: data.resolution
+      ? {
+          passes: data.resolution.passes,
+          sessionsMoved: data.resolution.sessions_moved,
+          moves: data.resolution.moves ?? [],
+          movesRefused: data.resolution.moves_refused ?? [],
+          unresolved: data.resolution.unresolved ?? [],
+        }
+      : null,
     suggestions: (data.suggestions ?? []).map((s) => {
       const r = s as Record<string, unknown>;
       return {
@@ -702,18 +728,42 @@ async function generateGreedySchedule(payload: Record<string, unknown>): Promise
   return apiPost<Record<string, unknown>>("/regular_schedule/auto-generate-schedule/greedy", payload);
 }
 
+export type UnseatedIrregularStudent = {
+  studentProfileId: number;
+  studentId: string | null;
+  name: string;
+};
+
+export type RemoveSetSchedulesResult = {
+  message: string;
+  irregularStudentsUnseated: UnseatedIrregularStudent[];
+};
+
 async function removeSetSchedules(
   setId: number,
   syId: number,
   semesterNumber: number,
-): Promise<string> {
+): Promise<RemoveSetSchedulesResult> {
   const query = new URLSearchParams({
     syId: String(syId),
     semester_number: String(semesterNumber),
   });
-  return apiMessage(
-    await apiDelete<{ message?: string }>(`/regular_schedule/set/${setId}?${query}`),
-  );
+  const data = await apiDelete<{
+    message?: string;
+    irregular_students_unseated?: {
+      student_profile_id: number;
+      student_id: string | null;
+      name: string;
+    }[];
+  }>(`/regular_schedule/set/${setId}?${query}`);
+  return {
+    message: apiMessage(data),
+    irregularStudentsUnseated: (data.irregular_students_unseated ?? []).map((student) => ({
+      studentProfileId: student.student_profile_id,
+      studentId: student.student_id,
+      name: student.name,
+    })),
+  };
 }
 
 export type ScheduledSetOption = {

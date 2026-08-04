@@ -15,7 +15,7 @@ export type CreateStudentRecordInput = {
   email: string;
   programId: number;
   yearLevel: number;
-  setId: number;
+  setId?: number | null;
   studentType: string;
   enrolledStatus: string;
   syId: number;

@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
@@ -29,10 +29,8 @@ async function createRecord(input: CreateStudentRecordInput): Promise<string> {
     academic: {
       programId: input.programId,
       yearLevel: input.yearLevel,
-      setId: input.setId,
+      ...(input.setId != null && { setId: input.setId }),
       studentType: input.studentType,
-      // Ignored by the current backend schema (unknown = EXCLUDE); sent for
-      // when enrolledStatus is added to StudentAcademicSchema.
       enrolledStatus: input.enrolledStatus,
       syId: input.syId,
       semesterNumber: input.semesterNumber,
@@ -278,11 +276,48 @@ export type ImportStudentResponse = {
   results: ImportStudentResult[];
 };
 
-/** POST /students/import — uploads a .csv or .xlsx file. */
-async function importRecords(file: File): Promise<ImportStudentResponse> {
-  const formData = new FormData();
-  formData.append("file", file);
-  return apiUpload<ImportStudentResponse>("/students/import", formData);
+export type ImportStudentInput =
+  | { input: CreateStudentRecordInput; error?: never }
+  | { input?: never; error: string; studentId?: string };
+
+/** Client-side batch over POST /students; spreadsheets are parsed in the browser. */
+async function importRecords(rows: ImportStudentInput[]): Promise<ImportStudentResponse> {
+  const results = await Promise.all(
+    rows.map(async (row, index): Promise<ImportStudentResult> => {
+      if (!row.input) {
+        return {
+          row: index + 1,
+          student_id: row.studentId,
+          status: "error",
+          message: row.error,
+        };
+      }
+      const input = row.input;
+      try {
+        const message = await createRecord(input);
+        return {
+          row: index + 1,
+          student_id: input.studentId,
+          status: "created",
+          ...(message && { message }),
+        };
+      } catch (err) {
+        return {
+          row: index + 1,
+          student_id: input.studentId,
+          status: "error",
+          message: err instanceof Error ? err.message : "",
+        };
+      }
+    }),
+  );
+  const created = results.filter((result) => result.status === "created").length;
+  return {
+    total: rows.length,
+    created,
+    failed: results.length - created,
+    results,
+  };
 }
 
 export type StudentArchivePreview = {

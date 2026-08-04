@@ -641,7 +641,7 @@ async function closeSchoolYear(syId: number, reason?: string): Promise<string> {
 async function getLifecycle(syId: number): Promise<AcademicLifecycle> {
   const raw = await apiGet<{
     school_year: ApiSchoolYearState;
-    terms: { semester_number: number; term: ApiTermState; grading_periods: ApiGradingPeriodState[] }[];
+    terms: { semester_number: number; term: ApiTermState; grading_periods?: ApiGradingPeriodState[] }[];
     workflow: Record<string, unknown>;
   }>(`/school-years/${syId}/lifecycle`);
   return {
@@ -649,7 +649,7 @@ async function getLifecycle(syId: number): Promise<AcademicLifecycle> {
     terms: raw.terms.map((row) => ({
       semesterNumber: row.semester_number,
       term: mapTermState(row.term),
-      gradingPeriods: row.grading_periods.map(mapGradingPeriodState),
+      gradingPeriods: (row.grading_periods ?? []).map(mapGradingPeriodState),
     })),
     workflow: raw.workflow,
   };

@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { AlertIcon, PlusIcon, PrinterIcon, RefreshCwIcon, TrashIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
-import { ConfirmDialog } from "~/components/ui/modal";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { openSchedulePrint } from "~/features/schedules/print-schedule";
@@ -22,7 +22,11 @@ import {
 } from "~/features/schedules/schedule-view-toggle";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
-import { scheduleService, type ScheduledSetOption } from "~/services/schedule.service";
+import {
+  scheduleService,
+  type ScheduledSetOption,
+  type UnseatedIrregularStudent,
+} from "~/services/schedule.service";
 import {
   DAYS,
   type Schedule,
@@ -53,6 +57,7 @@ function RegularClassPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [clearTarget, setClearTarget] = useState<ScheduledSetOption | null>(null);
+  const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
   const [ledgerDriftCount, setLedgerDriftCount] = useState<number | null>(null);
   const [checkingLedgers, setCheckingLedgers] = useState(false);
 
@@ -158,12 +163,13 @@ function RegularClassPage() {
 
   async function handleClearSchedule() {
     if (!clearTarget || !selectedSchoolYearId) return;
-    const message = await scheduleService.removeSetSchedules(
+    const result = await scheduleService.removeSetSchedules(
       clearTarget.setId,
       selectedSchoolYearId,
       semester,
     );
-    if (message) toast.success(message);
+    if (result.message) toast.success(result.message);
+    setUnseatedStudents(result.irregularStudentsUnseated);
     setSchedules((current) =>
       current?.filter(
         (row) =>
@@ -428,6 +434,33 @@ function RegularClassPage() {
         Clear the complete {clearTarget?.setCode} schedule for S.Y. {schoolYear}, {semesterLabel(semester)}?
         Instructor and subject hour ledgers will be released with the saved sessions.
       </ConfirmDialog>
+
+      <Modal
+        open={unseatedStudents.length > 0}
+        onClose={() => setUnseatedStudents([])}
+        title="Irregular students unseated"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            Clearing the set removed these students from borrowed class offerings. They now need to be seated again.
+          </p>
+          <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-white/10 dark:border-white/10">
+            {unseatedStudents.map((student) => (
+              <li key={student.studentProfileId} className="px-3 py-2 font-body text-sm">
+                <span className="font-medium text-navy-700 dark:text-mist-100">{student.name}</span>
+                {student.studentId && (
+                  <span className="ml-2 text-slate-500 dark:text-slate-400">{student.studentId}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-end">
+            <Button type="button" block={false} onClick={() => setUnseatedStudents([])}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <ConfirmDialog
         open={ledgerDriftCount !== null && ledgerDriftCount > 0}
