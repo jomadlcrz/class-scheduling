@@ -25,6 +25,8 @@ type ScheduleCompletion = {
   unscheduled_sets_count: number;
   scheduled_percent: number;
   by_program: ScheduleCompletionProgram[];
+  /** Per year-level cut of the same sets — optional on older payloads. */
+  by_year_level?: { year_level: number; total_sets: number; scheduled_sets: number; unscheduled_sets: number; scheduled_percent: number }[];
   unscheduled_sets: UnscheduledSet[];
 };
 
@@ -49,6 +51,7 @@ type LabCapacity = {
   hour_utilization_percent: number;
   slot_utilization_percent: number;
   conflicts: number;
+  utilization_bands?: { band: string; range_low_percent: number; range_high_percent: number | null; description: string; count: number }[];
   laboratories: LabSummary[];
 };
 
@@ -64,7 +67,7 @@ type NotEnrolledStudent = {
 };
 
 export type Enrollment = {
-  /** Enrolled THIS term — a StudentAcademic row exists for this sy_id/sem_id. */
+  /** Enrolled THIS term — a StudentAcademic row exists for this sy_id/semester_number. */
   total_students: number;
   /** Whole active roster, enrolled or not — the denominator for not_enrolled_count. */
   total_active_students: number;
@@ -111,6 +114,7 @@ type Staffing = {
   capacity_booked_hours: number;
   capacity_used_percent: number;
   instructors_over_cap: number;
+  load_bands?: { band: string; range_low_percent: number; range_high_percent: number | null; description: string; count: number }[];
   by_department: DepartmentStaffing[];
 };
 
@@ -118,9 +122,8 @@ export type RegistrarAnalyticsResponse = {
   meta: {
     sy_id: number;
     school_year: string;
-    sem_id: number;
-    semester: string;
     semester_number: number;
+    semester_name: string;
   };
   schedule_completion: ScheduleCompletion;
   lab_capacity: LabCapacity;

@@ -1,4 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { appendTermScopeParams, termScopeQuery } from "~/lib/term-scope";
 import { semesterService } from "~/services/semester.service";
 import {
   DAY_LABELS,
@@ -642,13 +643,13 @@ type SubjectHourOverrideResponse = {
   note: string | null;
 };
 
-/** GET /schedule/subject-hour-overrides?syId=&semId=[&setId=] — per-subject hour overrides for a term. */
+/** GET /schedule/subject-hour-overrides?sy_id=&semester_number=[&setId=] — per-subject hour overrides for a term. */
 async function listSubjectHourOverrides(params: {
   syId: number;
-  semId: number;
+  semesterNumber: number;
   setId?: number;
 }): Promise<SubjectHourOverride[]> {
-  const query = new URLSearchParams({ syId: String(params.syId), semId: String(params.semId) });
+  const query = appendTermScopeParams(new URLSearchParams(), params.syId, params.semesterNumber);
   if (params.setId != null) query.set("setId", String(params.setId));
   const data = await apiGet<SubjectHourOverrideResponse[]>(`/schedule/subject-hour-overrides?${query}`);
   return data.map((r) => ({
@@ -673,7 +674,7 @@ async function listSubjectHourOverrides(params: {
 async function upsertSubjectHourOverride(input: {
   subjectId: number;
   syId: number;
-  semId: number;
+  semesterNumber: number;
   setId?: number | null;
   lectureHours: number;
   labHours: number;
@@ -683,7 +684,7 @@ async function upsertSubjectHourOverride(input: {
   const data = await apiPost<{ id: number; created: boolean }>("/schedule/subject-hour-overrides", {
     subjectId: input.subjectId,
     syId: input.syId,
-    semId: input.semId,
+    semesterNumber: input.semesterNumber,
     setId: input.setId,
     lectureHours: input.lectureHours,
     labHours: input.labHours,
@@ -773,13 +774,12 @@ type InstructorLedgerReconciliation = {
 };
 
 async function reconcileInstructorLedgers(
-  params: { syId: number; semId?: number; semesterNumber: number },
+  params: { syId: number; semesterNumber: number },
   apply = false,
 ): Promise<InstructorLedgerReconciliation> {
   const payload = {
     syId: params.syId,
-    ...(params.semId != null ? { semId: params.semId } : {}),
-    semester: params.semesterNumber,
+    semesterNumber: params.semesterNumber,
   };
   if (apply) {
     return apiPost<InstructorLedgerReconciliation>(
@@ -787,11 +787,7 @@ async function reconcileInstructorLedgers(
       payload,
     );
   }
-  const query = new URLSearchParams({
-    syId: String(params.syId),
-    semester: String(params.semesterNumber),
-  });
-  if (params.semId != null) query.set("semId", String(params.semId));
+  const query = appendTermScopeParams(new URLSearchParams(), params.syId, params.semesterNumber);
   return apiGet<InstructorLedgerReconciliation>(
     `/regular_schedule/instructor-ledgers/reconcile?${query}`,
   );

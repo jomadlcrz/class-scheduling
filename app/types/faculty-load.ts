@@ -77,6 +77,7 @@ export type FacultyLoadingEntry = {
   instructorProfileId?: number;
   syId?: number;
   semId?: number;
+  semesterNumber?: number;
   /** subjectCode → subjectAssignmentId lookup, merged from teaching terms. */
   subjectAssignmentIds?: Map<string, number>;
   /** Programs grouped from the teaching term response — matches the grouped view on /dean/teaching-terms/<id>. */
@@ -106,6 +107,7 @@ export type TeachingTerm = {
   department?: string;
   syId: number;
   semId: number;
+  semesterNumber: number;
   maxWeeklyHours: number;
   currentWeeklyHours: number;
   /** Populated by the list endpoint so the view can reference assignment IDs. */

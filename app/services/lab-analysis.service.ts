@@ -1,4 +1,5 @@
 import { apiGet } from "~/lib/api";
+import { termScopeQuery } from "~/lib/term-scope";
 import type {
   LabAnalysis,
   LabConflict,
@@ -315,16 +316,17 @@ function mapProgramAccess(p: ProgramAccessResponse): LabProgramAccessRow {
 }
 
 /**
- * GET /schedule/laboratory-analysis?sy_id=&sem_id=[&program_id=] — read-only
+ * GET /schedule/laboratory-analysis?sy_id=&semester_number=[&program_id=] — read-only
  * capacity board for every laboratory room: the configured slot grid, who
  * holds each window, free windows, usage split by program, and the same
  * cut per program (`programAccess`) answering "can this program still get
  * a lab class this term". Gated on rooms:read, not schedules:read.
  */
-async function analyze(params: { syId: number; semId: number; programId?: number }): Promise<LabAnalysis> {
-  const query = new URLSearchParams({ sy_id: String(params.syId), sem_id: String(params.semId) });
-  if (params.programId != null) query.set("program_id", String(params.programId));
-  const data = await apiGet<LabAnalysisResponse>(`/schedule/laboratory-analysis?${query}`);
+async function analyze(params: { syId: number; semesterNumber: number; programId?: number }): Promise<LabAnalysis> {
+  const query = termScopeQuery(params.syId, params.semesterNumber, {
+    program_id: params.programId,
+  });
+  const data = await apiGet<LabAnalysisResponse>(`/schedule/laboratory-analysis${query}`);
 
   return {
     term: {

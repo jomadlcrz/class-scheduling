@@ -27,6 +27,7 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
     academicTerm: prev?.academicTerm ?? "",
     syId: detail.term.sy_id ?? prev?.syId,
     semId: detail.term.sem_id ?? prev?.semId,
+    semesterNumber: detail.term.semester_number ?? prev?.semesterNumber,
     maxWeeklyHours: detail.hours.max_weekly_hours,
     teachingTermId: detail.teaching_term_id,
     subjectAssignmentIds,
@@ -115,9 +116,10 @@ export function useDeanSubjectAssignments() {
     setLoadError(null);
 
     const syId = Number(selectedSchoolYearId);
-    const semId = Number(selectedSemesterId);
+    const semesterNumber = semesters.find((s) => String(s.id) === selectedSemesterId)?.semesterNumber;
+    if (!semesterNumber) return;
 
-    deanService.listTeachingTerms({ syId, semId })
+    deanService.listTeachingTerms({ syId, semesterNumber })
       .then((teachingTerms) => {
         if (cancelled) return;
         const entries: FacultyLoadingEntry[] = teachingTerms.map((tt) => {
@@ -134,6 +136,7 @@ export function useDeanSubjectAssignments() {
             academicTerm: "",
             syId: tt.syId,
             semId: tt.semId,
+            semesterNumber: tt.semesterNumber,
             maxWeeklyHours: tt.maxWeeklyHours,
             teachingTermId: tt.id,
             subjectAssignmentIds: assignmentIdMap,
@@ -173,7 +176,7 @@ export function useDeanSubjectAssignments() {
       });
 
     return () => { cancelled = true; };
-  }, [selectedSchoolYearId, selectedSemesterId]);
+  }, [selectedSchoolYearId, selectedSemesterId, semesters]);
 
   useEffect(() => {
     const cleanup = refresh();
@@ -210,7 +213,7 @@ export function useDeanSubjectAssignments() {
     try {
       const message = await deanService.createSubjectAssignments(
         Number(selectedSchoolYearId),
-        Number(selectedSemesterId),
+        semesters.find((s) => String(s.id) === selectedSemesterId)?.semesterNumber ?? 1,
         instructorLoads,
       );
       if (message) toast.success(message);
@@ -278,10 +281,10 @@ export function useDeanSubjectAssignments() {
     timers.set(teachingTermId, setTimeout(async () => {
       timers.delete(teachingTermId);
       const entry = entries?.find((e) => e.teachingTermId === teachingTermId);
-      if (!entry || entry.syId == null || entry.semId == null || entry.instructorProfileId == null) return;
+      if (!entry || entry.syId == null || entry.semesterNumber == null || entry.instructorProfileId == null) return;
       try {
         const message = await deanService.updateMaxWeeklyHours(
-          entry.syId, entry.semId, entry.instructorProfileId, hours,
+          entry.syId, entry.semesterNumber, entry.instructorProfileId, hours,
         );
         if (message) toast.success(message);
         const term = await deanService.getTeachingTermDetail(teachingTermId);

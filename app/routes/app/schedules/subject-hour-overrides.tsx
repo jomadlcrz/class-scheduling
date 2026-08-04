@@ -76,13 +76,13 @@ function SubjectHourOverridesPage() {
     setOverrides(null);
     setLoadError(null);
     scheduleService
-      .listSubjectHourOverrides({ syId: matchedSy.id, semId: matchedSem.id })
+      .listSubjectHourOverrides({ syId: matchedSy.id, semesterNumber: matchedSem.semesterNumber })
       .then(setOverrides)
       .catch((err) => {
         setLoadError(err instanceof Error ? err.message : "Unable to load overrides.");
         setOverrides([]);
       });
-  }, [matchedSy?.id, matchedSem?.id]);
+  }, [matchedSy?.id, matchedSem?.semesterNumber]);
 
   // Load subjects and sets for the form pickers (independent of term for browsing)
   useEffect(() => {
@@ -102,14 +102,17 @@ function SubjectHourOverridesPage() {
       return;
     }
     setService
-      .list({ syId: matchedSy.id, semId: matchedSem.id })
+      .list({ syId: matchedSy.id, semesterNumber: matchedSem.semesterNumber })
       .then(setSets)
       .catch(() => setSets([]));
-  }, [matchedSy?.id, matchedSem?.id]);
+  }, [matchedSy?.id, matchedSem?.semesterNumber]);
 
   async function refresh() {
     if (!matchedSy || !matchedSem) return;
-    const data = await scheduleService.listSubjectHourOverrides({ syId: matchedSy.id, semId: matchedSem.id });
+    const data = await scheduleService.listSubjectHourOverrides({
+      syId: matchedSy.id,
+      semesterNumber: matchedSem.semesterNumber,
+    });
     setOverrides(data);
   }
 
@@ -133,7 +136,7 @@ function SubjectHourOverridesPage() {
       const result = await scheduleService.upsertSubjectHourOverride({
         ...input,
         syId: matchedSy.id,
-        semId: matchedSem.id,
+        semesterNumber: matchedSem.semesterNumber,
       });
       toast.success(result.created ? "Override created." : "Override updated.");
       await refresh();
@@ -150,7 +153,7 @@ function SubjectHourOverridesPage() {
       const result = await scheduleService.upsertSubjectHourOverride({
         ...pendingOverride,
         syId: matchedSy.id,
-        semId: matchedSem.id,
+        semesterNumber: matchedSem.semesterNumber,
       });
       toast.success(result.created ? "Override created." : "Override updated.");
       await refresh();
@@ -168,7 +171,7 @@ function SubjectHourOverridesPage() {
       const result = await scheduleService.upsertSubjectHourOverride({
         subjectId: input.subjectId,
         syId: matchedSy.id,
-        semId: matchedSem.id,
+        semesterNumber: matchedSem.semesterNumber,
         setId: input.setId,
         lectureHours: input.lectureHours,
         labHours: input.labHours,

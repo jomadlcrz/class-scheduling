@@ -1,4 +1,5 @@
 import { apiGet } from "~/lib/api";
+import { appendTermScopeParams } from "~/lib/term-scope";
 import type { RegularStudentRow } from "~/types/student";
 
 /** Regular students and their academic records (registrar_admin students module). */
@@ -29,10 +30,11 @@ type RegularStudentsResponse = {
 }[];
 
 /** GET /students/regular — students flagged AcademicStatus.REGULAR, optionally scoped to a term. */
-async function listStudents(params?: { syId?: number; semId?: number }): Promise<RegularStudentRow[]> {
+async function listStudents(params?: { syId?: number; semesterNumber?: number }): Promise<RegularStudentRow[]> {
   const query = new URLSearchParams();
-  if (params?.syId) query.set("sy_id", String(params.syId));
-  if (params?.semId) query.set("sem_id", String(params.semId));
+  if (params?.syId != null && params.semesterNumber != null) {
+    appendTermScopeParams(query, params.syId, params.semesterNumber);
+  }
   const suffix = query.toString() ? `?${query}` : "";
 
   const data = await apiGet<RegularStudentsResponse>(`/students/regular${suffix}`);

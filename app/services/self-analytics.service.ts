@@ -1,10 +1,7 @@
 import { apiGet } from "~/lib/api";
+import { termScopeQuery } from "~/lib/term-scope";
 
 export type SelfAnalytics = Record<string, unknown>;
-
-function termQuery(syId: number, semId: number) {
-  return `?sy_id=${syId}&sem_id=${semId}`;
-}
 
 /** GET /super-admin/analytics — system-wide account and RBAC snapshot. */
 async function getAdmin(): Promise<SelfAnalytics> {
@@ -12,13 +9,13 @@ async function getAdmin(): Promise<SelfAnalytics> {
 }
 
 /** GET /students/me/analytics — current student's term-scoped summary. */
-async function getStudent(syId: number, semId: number): Promise<SelfAnalytics> {
-  return apiGet<SelfAnalytics>(`/students/me/analytics${termQuery(syId, semId)}`);
+async function getStudent(syId: number, semesterNumber: number): Promise<SelfAnalytics> {
+  return apiGet<SelfAnalytics>(`/students/me/analytics${termScopeQuery(syId, semesterNumber)}`);
 }
 
 /** GET /instructor/analytics — current faculty member's term-scoped summary. */
-async function getFaculty(syId: number, semId: number): Promise<SelfAnalytics> {
-  return apiGet<SelfAnalytics>(`/instructor/analytics${termQuery(syId, semId)}`);
+async function getFaculty(syId: number, semesterNumber: number): Promise<SelfAnalytics> {
+  return apiGet<SelfAnalytics>(`/instructor/analytics${termScopeQuery(syId, semesterNumber)}`);
 }
 
 export const selfAnalyticsService = { getAdmin, getStudent, getFaculty };

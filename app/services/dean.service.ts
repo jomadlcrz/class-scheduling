@@ -1,4 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { termScopeQuery } from "~/lib/term-scope";
 import { facultyService } from "~/services/faculty.service";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 import type { DeanAnalyticsResponse } from "~/types/dean-analytics";
@@ -136,11 +137,11 @@ async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
 }
 
 /** GET /deans/faculty-loading — the loading sheet for one term. */
-async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLoadingEntry[]> {
+async function getFacultyLoading(syId: number, semesterNumber: number): Promise<FacultyLoadingEntry[]> {
   let data: FacultyLoadingResponse;
   try {
     data = await apiGet<FacultyLoadingResponse>(
-      `/deans/faculty-loading?sy_id=${syId}&sem_id=${semId}`,
+      `/deans/faculty-loading${termScopeQuery(syId, semesterNumber)}`,
     );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
@@ -174,7 +175,7 @@ async function getFacultyLoading(syId: number, semId: number): Promise<FacultyLo
 /** POST /deans/subject-assignments — one POST per instructor. */
 async function createSubjectAssignments(
   syId: number,
-  semId: number,
+  semesterNumber: number,
   instructorLoads: {
     instructorProfileId: number;
     maxWeeklyHours: number;
@@ -191,7 +192,7 @@ async function createSubjectAssignments(
       maxWeeklyHours: load.maxWeeklyHours,
       programs: load.programs,
       syId,
-      semId,
+      semesterNumber,
     });
     const msg = apiMessage(data);
     if (msg) messages.push(msg);
@@ -202,11 +203,11 @@ async function createSubjectAssignments(
 /** GET /deans/teaching-terms — all teaching terms visible to the caller (dean: own department). */
 async function listTeachingTerms(params?: {
   syId?: number;
-  semId?: number;
+  semesterNumber?: number;
 }): Promise<TeachingTerm[]> {
   const query = new URLSearchParams();
   if (params?.syId != null) query.set("sy_id", String(params.syId));
-  if (params?.semId != null) query.set("sem_id", String(params.semId));
+  if (params?.semesterNumber != null) query.set("semester_number", String(params.semesterNumber));
   const qs = query.toString();
   const data = await apiGet<TeachingTermDetail[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
   return data.map((t) => ({
@@ -217,6 +218,7 @@ async function listTeachingTerms(params?: {
     department: t.instructor?.department ?? "",
     syId: t.term?.sy_id ?? 0,
     semId: t.term?.sem_id ?? 0,
+    semesterNumber: t.term?.semester_number ?? 0,
     maxWeeklyHours: t.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: t.hours?.current_weekly_hours ?? 0,
     subjectAssignments: (t.subject_assignments ?? []).map((sa) => ({
@@ -253,6 +255,7 @@ async function getTeachingTerm(id: number): Promise<TeachingTerm> {
     department: data.instructor?.department ?? "",
     syId: data.term?.sy_id ?? 0,
     semId: data.term?.sem_id ?? 0,
+    semesterNumber: data.term?.semester_number ?? 0,
     maxWeeklyHours: data.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: data.hours?.current_weekly_hours ?? 0,
     subjectAssignments: (data.subject_assignments ?? []).map((sa) => ({
@@ -329,7 +332,7 @@ type DepartmentProgramResponse = {
 };
 
 /** GET /deans/department/programs — programs under the dean's own department. */
-async function listDepartmentPrograms(semId?: number): Promise<{
+async function listDepartmentPrograms(semesterNumber?: number): Promise<{
   id: number;
   abbrev: string;
   name: string;
@@ -345,7 +348,7 @@ async function listDepartmentPrograms(semId?: number): Promise<{
 }[]> {
   let data: DepartmentProgramResponse;
   try {
-    const query = semId != null ? `?sem_id=${semId}` : "";
+    const query = semesterNumber != null ? `?semester_number=${semesterNumber}` : "";
     data = await apiGet<DepartmentProgramResponse>(`/deans/department/programs${query}`);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
@@ -376,7 +379,7 @@ async function getTeachingTermDetail(id: number): Promise<TeachingTermDetail> {
  *  The backend re-applies max_weekly_hours on every POST to this endpoint. */
 async function updateMaxWeeklyHours(
   syId: number,
-  semId: number,
+  semesterNumber: number,
   instructorProfileId: number,
   maxWeeklyHours: number,
 ): Promise<string> {
@@ -385,14 +388,14 @@ async function updateMaxWeeklyHours(
     maxWeeklyHours: maxWeeklyHours,
     programs: [],
     syId,
-    semId,
+    semesterNumber,
   });
   return apiMessage(data);
 }
 
 /** GET /deans/analytics — the staffing dashboard for one term, render-ready. */
-async function getAnalytics(syId: number, semId: number): Promise<DeanAnalyticsResponse> {
-  return apiGet<DeanAnalyticsResponse>(`/deans/analytics?sy_id=${syId}&sem_id=${semId}`);
+async function getAnalytics(syId: number, semesterNumber: number): Promise<DeanAnalyticsResponse> {
+  return apiGet<DeanAnalyticsResponse>(`/deans/analytics${termScopeQuery(syId, semesterNumber)}`);
 }
 
 export const deanService = {

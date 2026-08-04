@@ -150,12 +150,8 @@ function RegularClassPage() {
 
   function selectedTermParams() {
     if (!selectedSchoolYearId) return null;
-    const matchingSelection =
-      termContext?.selection.syId === selectedSchoolYearId &&
-      termContext.selection.semesterNumber === semester;
     return {
       syId: selectedSchoolYearId,
-      semId: matchingSelection ? termContext.selection.semId ?? undefined : undefined,
       semesterNumber: semester,
     };
   }

@@ -69,18 +69,18 @@ function IrregularClassPage() {
       return;
     }
     irregularClassService
-      .listPendingStudents(matchedSy.id, matchedSem.id)
+      .listPendingStudents(matchedSy.id, matchedSem.semesterNumber)
       .then(setStudents)
       .catch(() => {});
     irregularClassService
-      .listPendingSchedule(matchedSy.id, matchedSem.id)
+      .listPendingSchedule(matchedSy.id, matchedSem.semesterNumber)
       .then(setPending)
       .catch(() => setPending([]));
     irregularClassService
-      .listAssignedSchedule(matchedSy.id, matchedSem.id)
+      .listAssignedSchedule(matchedSy.id, matchedSem.semesterNumber)
       .then(setAssigned)
       .catch(() => setAssigned([]));
-  }, [matchedSy?.id, matchedSem?.id]);
+  }, [matchedSy?.id, matchedSem?.semesterNumber]);
 
   const selectedPending = !matchedSy || !matchedSem
     ? undefined
@@ -92,12 +92,12 @@ function IrregularClassPage() {
       studentAcademicId,
       regularSchedIds,
       syId: matchedSy.id,
-      semId: matchedSem.id,
+      semesterNumber: matchedSem.semesterNumber,
     });
     if (message) toast.success(message);
-    irregularClassService.listPendingStudents(matchedSy.id, matchedSem.id).then(setStudents).catch(() => {});
-    irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.id).then(setPending).catch(() => {});
-    irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.id).then(setAssigned).catch(() => {});
+    irregularClassService.listPendingStudents(matchedSy.id, matchedSem.semesterNumber).then(setStudents).catch(() => {});
+    irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.semesterNumber).then(setPending).catch(() => {});
+    irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.semesterNumber).then(setAssigned).catch(() => {});
     setSelectedStudent(null);
   }
 

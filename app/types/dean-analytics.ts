@@ -85,9 +85,8 @@ export type DeanAnalyticsResponse = {
     department_id: number;
     sy_id: number;
     school_year: string;
-    sem_id: number;
-    semester: string;
     semester_number: number;
+    semester_name: string;
     teaching_terms: number;
     assignments: number;
     curriculum_subjects: number;

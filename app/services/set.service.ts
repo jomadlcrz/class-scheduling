@@ -1,4 +1,5 @@
 import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { appendTermScopeParams } from "~/lib/term-scope";
 import type { ClassSet, CreateSetInput, SetDeletePreview } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
@@ -15,10 +16,15 @@ type SetsResponse = {
 }[];
 
 /** GET /sets — sets come nested per program; flattened here. 404 → empty. */
-async function list(filters?: { syId?: number; semId?: number; programId?: number }): Promise<ClassSet[]> {
+async function list(filters?: {
+  syId?: number;
+  semesterNumber?: number;
+  programId?: number;
+}): Promise<ClassSet[]> {
   const params = new URLSearchParams();
-  if (filters?.syId) params.set("sy_id", String(filters.syId));
-  if (filters?.semId) params.set("sem_id", String(filters.semId));
+  if (filters?.syId != null && filters.semesterNumber != null) {
+    appendTermScopeParams(params, filters.syId, filters.semesterNumber);
+  }
   if (filters?.programId) params.set("program_id", String(filters.programId));
   const qs = params.toString();
 
@@ -46,17 +52,21 @@ async function list(filters?: { syId?: number; semId?: number; programId?: numbe
 
 /**
  * GET /sets/unscheduled — returns sets that have no schedule yet for the given term.
- * sy_id and sem_id are required.
+ * sy_id and semester_number are required.
  */
-async function listUnscheduled(filters: { syId: number; semId: number; programId?: number; yearLevel?: number | string }): Promise<ClassSet[]> {
-  const params = new URLSearchParams({ sy_id: String(filters.syId), sem_id: String(filters.semId) });
+async function listUnscheduled(filters: {
+  syId: number;
+  semesterNumber: number;
+  programId?: number;
+  yearLevel?: number | string;
+}): Promise<ClassSet[]> {
+  const params = appendTermScopeParams(new URLSearchParams(), filters.syId, filters.semesterNumber);
   if (filters.programId) params.set("program_id", String(filters.programId));
   if (filters.yearLevel) params.set("year_level", String(filters.yearLevel));
-  const qs = params.toString();
 
   let data: SetsResponse;
   try {
-    data = await apiGet<SetsResponse>(`/sets/unscheduled?${qs}`);
+    data = await apiGet<SetsResponse>(`/sets/unscheduled?${params}`);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;

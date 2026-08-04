@@ -31,12 +31,12 @@ export function SelfAnalyticsDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   const syId = context?.selection.syId ?? null;
-  const semId = context?.selection.semId ?? null;
+  const semesterNumber = context?.selection.semesterNumber ?? null;
   const needsTerm = user?.role === "faculty" || user?.role === "student";
 
   useEffect(() => {
     if (!user || !["admin", "faculty", "student"].includes(user.role)) return;
-    if (needsTerm && (syId == null || semId == null)) {
+    if (needsTerm && (syId == null || semesterNumber == null)) {
       setAnalytics(null);
       return;
     }
@@ -48,8 +48,8 @@ export function SelfAnalyticsDashboard() {
       user.role === "admin"
         ? selfAnalyticsService.getAdmin()
         : user.role === "faculty"
-          ? selfAnalyticsService.getFaculty(syId!, semId!)
-          : selfAnalyticsService.getStudent(syId!, semId!);
+          ? selfAnalyticsService.getFaculty(syId!, semesterNumber!)
+          : selfAnalyticsService.getStudent(syId!, semesterNumber!);
 
     request
       .then((result) => {
@@ -68,7 +68,7 @@ export function SelfAnalyticsDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [needsTerm, semId, syId, user]);
+  }, [needsTerm, semesterNumber, syId, user]);
 
   const summary = useMemo(() => {
     const raw = analytics?.summary;
@@ -103,7 +103,7 @@ export function SelfAnalyticsDashboard() {
           <div role="status" aria-label="Loading dashboard analytics" className="grid place-items-center py-12">
             <Spinner />
           </div>
-        ) : needsTerm && (syId == null || semId == null) ? (
+        ) : needsTerm && (syId == null || semesterNumber == null) ? (
           <EmptyState title="Select an academic term">
             Choose a school year and semester in the navigation bar to load this dashboard.
           </EmptyState>

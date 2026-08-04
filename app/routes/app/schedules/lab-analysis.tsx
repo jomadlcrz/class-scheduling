@@ -71,7 +71,7 @@ function LabAnalysisPage() {
     labAnalysisService
       .analyze({
         syId: matchedSy.id,
-        semId: matchedSem.id,
+        semesterNumber: matchedSem.semesterNumber,
         programId: programFilter === "all" ? undefined : Number(programFilter),
       })
       .then((data) => {
@@ -84,7 +84,7 @@ function LabAnalysisPage() {
     return () => {
       stale = true;
     };
-  }, [matchedSy?.id, matchedSem?.id, programFilter]);
+  }, [matchedSy?.id, matchedSem?.semesterNumber, programFilter]);
 
   const termReady = Boolean(matchedSy && matchedSem);
   const subjectRows = analysis ? aggregateLabSubjects(analysis.laboratories) : [];

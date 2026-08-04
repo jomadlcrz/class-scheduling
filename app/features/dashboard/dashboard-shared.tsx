@@ -40,7 +40,7 @@ export type SemOption = { id: number; semester: string; semesterNumber: number }
  * the given analytics payload whenever the term selectors change. The fetch
  * callback may be recreated every render; a ref keeps the latest while the
  * effect only watches the selected term. */
-export function useTermData<T>(fetch: (syId: number, semId: number) => Promise<T>) {
+export function useTermData<T>(fetch: (syId: number, semesterNumber: number) => Promise<T>) {
   const [data, setData] = useState<T | null>(null);
   const [syId, setSyId] = useState<number>(0);
   const [semId, setSemId] = useState<number>(0);
@@ -78,13 +78,15 @@ export function useTermData<T>(fetch: (syId: number, semId: number) => Promise<T
 
   useEffect(() => {
     if (!syId || !semId) return;
+    const semesterNumber = sems.find((sem) => sem.id === semId)?.semesterNumber;
+    if (!semesterNumber) return;
     let cancelled = false;
     const isInitial = !dataRef.current;
     if (!isInitial) setRefreshing(true);
     if (isInitial) setLoading(true);
     setError(null);
     fetchRef
-      .current(syId, semId)
+      .current(syId, semesterNumber)
       .then((d) => {
         if (!cancelled) {
           dataRef.current = d;
@@ -103,7 +105,7 @@ export function useTermData<T>(fetch: (syId: number, semId: number) => Promise<T
     return () => {
       cancelled = true;
     };
-  }, [syId, semId]);
+  }, [syId, semId, sems]);
 
   return { data, syId, semId, setSyId, setSemId, loading, error, refreshing, years, sems };
 }

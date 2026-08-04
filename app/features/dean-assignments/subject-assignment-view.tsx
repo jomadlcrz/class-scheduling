@@ -70,9 +70,10 @@ export function SubjectAssignmentView() {
   }[]>([]);
 
   useEffect(() => {
-    const semId = apiData.selectedSemesterId ? Number(apiData.selectedSemesterId) : undefined;
-    deanService.listDepartmentPrograms(semId).then(setProgramOptions).catch(() => {});
-  }, [apiData.selectedSemesterId]);
+    const selectedSemester = apiData.semesters.find((s) => s.id === Number(apiData.selectedSemesterId));
+    const semesterNumber = selectedSemester?.semesterNumber;
+    deanService.listDepartmentPrograms(semesterNumber).then(setProgramOptions).catch(() => {});
+  }, [apiData.selectedSemesterId, apiData.semesters]);
 
   // Search filter
   const [search, setSearch] = useState("");

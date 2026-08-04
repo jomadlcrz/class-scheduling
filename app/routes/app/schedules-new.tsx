@@ -198,12 +198,12 @@ function SchedulesNewPage() {
     setService
       .listUnscheduled({
         syId: matchedSy.id,
-        semId: matchedSem.id,
+        semesterNumber: matchedSem.semesterNumber,
         programId: Number(selectedProgramId),
       })
       .then(setSets)
       .catch(() => setSets([]));
-  }, [matchedSy?.id, matchedSem?.id, selectedProgramId]);
+  }, [matchedSy?.id, matchedSem?.semesterNumber, selectedProgramId]);
 
   const selectedProgram = programs?.find((p) => String(p.id) === selectedProgramId);
   const selectedSet = sets.find((s) => String(s.id) === selectedSetId);
@@ -388,7 +388,7 @@ function SchedulesNewPage() {
       const result = await scheduleService.upsertSubjectHourOverride({
         subjectId: body.subjectId as number,
         syId: body.syId as number,
-        semId: body.semId as number,
+        semesterNumber: (body.semesterNumber ?? body.semId) as number,
         setId: body.setId != null ? (body.setId as number) : null,
         lectureHours: body.lectureHours as number,
         labHours: body.labHours as number,
