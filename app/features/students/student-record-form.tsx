@@ -45,12 +45,12 @@ export function StudentRecordForm({
   // Program, year level, and semester drive the set and subject choices.
   const [programId, setProgramId] = useState("");
   const [yearLevel, setYearLevel] = useState("");
-  const [semId, setSemId] = useState("");
+  const [semesterNumber, setSemesterNumber] = useState("");
   const [enrolledStatus, setEnrolledStatus] = useState("");
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<Set<number>>(new Set());
 
   const selectedProgram = programs.find((p) => String(p.id) === programId);
-  const selectedSemester = semesters.find((s) => String(s.id) === semId);
+  const selectedSemester = semesters.find((s) => String(s.semesterNumber) === semesterNumber);
   const isIrregular = enrolledStatus === "Irregular";
 
   const yearOptions = yearLevelIds.filter(
@@ -88,7 +88,7 @@ export function StudentRecordForm({
   // Subject choices change with program/year/semester/status; drop stale selections.
   useEffect(() => {
     setSelectedSubjectIds(new Set());
-  }, [programId, yearLevel, semId, enrolledStatus]);
+  }, [programId, yearLevel, semesterNumber, enrolledStatus]);
 
   const allSubjectsSelected =
     filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
@@ -130,7 +130,7 @@ export function StudentRecordForm({
       studentType: String(data.get("student-type") ?? ""),
       enrolledStatus,
       syId: String(data.get("student-sy") ?? ""),
-      semId,
+      semesterNumber,
       subjectIds: Array.from(selectedSubjectIds),
     });
     if (!result.success) {
@@ -344,11 +344,11 @@ export function StudentRecordForm({
               <Select
                 items={[
                   { value: "", label: "Select a semester" },
-                  ...semesters.map((s) => ({ value: String(s.id), label: s.semester })),
+                  ...semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester })),
                 ]}
                 name="student-sem"
-                value={semId}
-                onValueChange={(v) => setSemId(v as string)}
+                value={semesterNumber}
+                onValueChange={(v) => setSemesterNumber(v as string)}
               >
                 <SelectTrigger id="student-sem">
                   <SelectValue />
@@ -356,7 +356,7 @@ export function StudentRecordForm({
                 <SelectContent>
                   <SelectItem value="">Select a semester</SelectItem>
                   {semesters.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
+                    <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>
                       {s.semester}
                     </SelectItem>
                   ))}
@@ -382,7 +382,7 @@ export function StudentRecordForm({
             <div className="mt-1 flex max-h-48 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10">
               {filteredSubjects.length === 0 ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {selectedProgram && semId && (isIrregular || yearLevel)
+                  {selectedProgram && semesterNumber && (isIrregular || yearLevel)
                     ? isIrregular
                       ? "No curriculum subjects found for this program and semester."
                       : "No curriculum subjects found for this program, year, and semester."

@@ -43,7 +43,6 @@ type ApiTermInformation = {
 type ApiTermClosureItem = {
   id: number | null;
   sy_id: number;
-  sem_id?: number;
   school_year: string;
   semester_number: number;
   semester_name?: string;
@@ -237,7 +236,6 @@ function mapClosureItem(raw: ApiTermClosureItem): TermClosureItem {
   return {
     id: raw.id,
     syId: raw.sy_id,
-    semId: raw.sem_id ?? raw.semester_number,
     schoolYear: raw.school_year,
     semesterNumber: raw.semester_number,
     semesterDisplayName: resolveSemesterName(raw),
@@ -332,8 +330,8 @@ function mapGradingPeriodState(raw: ApiGradingPeriodState): GradingPeriodLifecyc
 
 export type TermContext = {
   schoolYears: { id: number; schoolYear: string }[];
-  semesters: { semesterNumber: number; label: string; semId?: number }[];
-  selection: { syId: number | null; semId: number | null; semesterNumber: number | null; schoolYear: string | null };
+  semesters: { semesterNumber: number; label: string }[];
+  selection: { syId: number | null; semesterNumber: number | null; schoolYear: string | null };
   term: TermClosureItem | null;
   calendar: { academicYearStartMonth: number; currentSchoolYear: string | null; currentSemesterNumber: number | null; existsForToday: boolean | null; expectedSchoolYear: string | null };
 };
@@ -346,18 +344,17 @@ async function getContext(params: { syId?: number; semesterNumber?: number } = {
   const raw = await apiGet<{
     school_years: { id: number; school_year: string }[];
     semesters: { id?: number; semester_number: number; semester_name?: string; display_name?: string }[];
-    selection: { sy_id: number | null; sem_id: number | null; semester_number: number | null; school_year: string | null };
+    selection: { sy_id: number | null; semester_number: number | null; school_year: string | null };
     term: ApiTermClosureItem | null;
     calendar: { academic_year_start_month: number; current_school_year: string | null; current_semester_number: number | null; exists_for_today: boolean | null; expected_school_year: string | null };
   }>(`/terms/context${query.size ? `?${query}` : ""}`);
   return {
     schoolYears: raw.school_years.map((row) => ({ id: row.id, schoolYear: row.school_year })),
     semesters: raw.semesters.map((row) => ({
-      semId: row.id,
       semesterNumber: row.semester_number,
       label: resolveSemesterName(row),
     })),
-    selection: { syId: raw.selection.sy_id, semId: raw.selection.sem_id, semesterNumber: raw.selection.semester_number, schoolYear: raw.selection.school_year },
+    selection: { syId: raw.selection.sy_id, semesterNumber: raw.selection.semester_number, schoolYear: raw.selection.school_year },
     term: raw.term ? mapClosureItem(raw.term) : null,
     calendar: { academicYearStartMonth: raw.calendar.academic_year_start_month, currentSchoolYear: raw.calendar.current_school_year, currentSemesterNumber: raw.calendar.current_semester_number, existsForToday: raw.calendar.exists_for_today, expectedSchoolYear: raw.calendar.expected_school_year },
   };

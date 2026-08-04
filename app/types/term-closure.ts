@@ -28,7 +28,6 @@ export type TermClosureTermInformation = {
 export type TermClosureItem = {
   id: number | null;
   syId: number;
-  semId: number;
   schoolYear: string;
   semesterNumber: number;
   semesterDisplayName: string;

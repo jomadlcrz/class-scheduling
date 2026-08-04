@@ -247,9 +247,9 @@ export function RegistrarDashboard() {
   const {
     data,
     syId,
-    semId,
+    semesterNumber,
     setSyId,
-    setSemId,
+    setSemesterNumber,
     loading,
     error,
     refreshing,
@@ -312,9 +312,9 @@ export function RegistrarDashboard() {
                   years={years}
                   sems={sems}
                   syId={syId}
-                  semId={semId}
+                  semesterNumber={semesterNumber}
                   onSyId={setSyId}
-                  onSemId={setSemId}
+                  onSemesterNumber={setSemesterNumber}
                 />
               </motion.div>
 

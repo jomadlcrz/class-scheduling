@@ -35,7 +35,7 @@ async function createRecord(input: CreateStudentRecordInput): Promise<string> {
       // when enrolledStatus is added to StudentAcademicSchema.
       enrolledStatus: input.enrolledStatus,
       syId: input.syId,
-      semId: input.semId,
+      semesterNumber: input.semesterNumber,
     },
     enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
   });
@@ -129,7 +129,7 @@ async function enroll(studentProfileId: number, input: EnrollStudentInput): Prom
       studentType: input.studentType,
       enrolledStatus: input.enrolledStatus,
       syId: input.syId,
-      semId: input.semId,
+      semesterNumber: input.semesterNumber,
     },
     enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
   });

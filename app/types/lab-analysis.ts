@@ -164,8 +164,6 @@ export type LabAnalysis = {
   term: {
     syId: number;
     schoolYear: string;
-    semId: number;
-    semester: string;
     semesterNumber: number;
   };
   window: {

@@ -36,7 +36,7 @@ export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: Te
       </TableHead>
       <TableBody>
         {terms.map((row) => (
-          <TableRow key={`${row.syId}-${row.semId}`}>
+          <TableRow key={`${row.syId}-${row.semesterNumber}`}>
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">{row.schoolYear}</span>
             </TableCell>

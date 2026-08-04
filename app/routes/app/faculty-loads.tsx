@@ -36,11 +36,11 @@ function FacultyLoadsPage() {
     semesterName,
     semesters,
     semesterLabel,
-    selectedSemesterId,
-    setSelectedSemesterId,
+    selectedSemesterNumber,
+    setSelectedSemesterNumber,
   } = useDeanFacultyLoading();
 
-  const contextReady = Boolean(selectedSchoolYearId && selectedSemesterId);
+  const contextReady = Boolean(selectedSchoolYearId && selectedSemesterNumber);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -67,8 +67,8 @@ function FacultyLoadsPage() {
           onSchoolYearChange={setSelectedSchoolYearId}
           semesterName={semesterName}
           semesters={semesters}
-          selectedSemesterId={selectedSemesterId}
-          onSemesterChange={setSelectedSemesterId}
+          selectedSemesterNumber={selectedSemesterNumber}
+          onSemesterChange={setSelectedSemesterNumber}
           semesterLabel={semesterLabel}
         />
       )}

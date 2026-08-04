@@ -15,17 +15,17 @@ type SemesterResponse = {
 let cachedSemesters: Semester[] | null = null;
 let cachePromise: Promise<Semester[]> | null = null;
 /** GET /semesters list omits id — resolved via GET /semesters/:id probes. */
-const semIdByNumber = new Map<number, number>();
+const semesterRowIdByNumber = new Map<number, number>();
 
 function invalidateCache() {
   cachedSemesters = null;
   cachePromise = null;
-  semIdByNumber.clear();
+  semesterRowIdByNumber.clear();
 }
 
 function mapSemester(s: SemesterResponse): Semester {
   const semesterName = s.semester_name ?? s.semester ?? s.display_name ?? `Semester ${s.semester_number}`;
-  const id = s.id ?? semIdByNumber.get(s.semester_number) ?? 0;
+  const id = s.id ?? semesterRowIdByNumber.get(s.semester_number) ?? 0;
   return {
     id,
     semester: semesterName,
@@ -41,14 +41,14 @@ function mapSemester(s: SemesterResponse): Semester {
  * The list endpoint returns semester_number + semester_name only. Resolve database
  * ids by probing GET /semesters/:id until each semester_number is matched.
  */
-async function resolveSemesterIds(numbers: number[]): Promise<void> {
-  const needed = new Set(numbers.filter((n) => !semIdByNumber.has(n)));
+async function resolveSemesterRowIds(numbers: number[]): Promise<void> {
+  const needed = new Set(numbers.filter((n) => !semesterRowIdByNumber.has(n)));
   if (needed.size === 0) return;
 
   for (let id = 1; id <= 20; id++) {
     try {
       const row = await apiGet<{ semester_number: number }>(`/semesters/${id}`);
-      semIdByNumber.set(row.semester_number, id);
+      semesterRowIdByNumber.set(row.semester_number, id);
       needed.delete(row.semester_number);
       if (needed.size === 0) return;
     } catch (err) {
@@ -64,11 +64,11 @@ async function resolveSemesterIds(numbers: number[]): Promise<void> {
   }
 }
 
-async function resolveSemesterId(semesterNumber: number): Promise<number> {
-  const cached = semIdByNumber.get(semesterNumber);
+async function resolveSemesterRowId(semesterNumber: number): Promise<number> {
+  const cached = semesterRowIdByNumber.get(semesterNumber);
   if (cached != null) return cached;
-  await resolveSemesterIds([semesterNumber]);
-  const id = semIdByNumber.get(semesterNumber);
+  await resolveSemesterRowIds([semesterNumber]);
+  const id = semesterRowIdByNumber.get(semesterNumber);
   if (id == null) {
     throw new Error(`Could not resolve semester id for semester number ${semesterNumber}.`);
   }
@@ -102,7 +102,7 @@ async function list(): Promise<Semester[]> {
       throw err;
     }
     if (data.length > 0) {
-      await resolveSemesterIds(data.map((row) => row.semester_number));
+      await resolveSemesterRowIds(data.map((row) => row.semester_number));
     }
     cachedSemesters = data.map(mapSemester);
     return cachedSemesters;
@@ -118,7 +118,7 @@ async function create(input: CreateSemesterInput): Promise<string> {
     toWritePayload(input),
   );
   if (data.semester?.id != null) {
-    semIdByNumber.set(data.semester.semester_number ?? input.semesterNumber, data.semester.id);
+    semesterRowIdByNumber.set(data.semester.semester_number ?? input.semesterNumber, data.semester.id);
   }
   invalidateCache();
   return apiMessage(data);
@@ -126,7 +126,7 @@ async function create(input: CreateSemesterInput): Promise<string> {
 
 /** PUT /semesters/:id */
 async function update(id: number, input: CreateSemesterInput): Promise<string> {
-  const resolvedId = id > 0 ? id : await resolveSemesterId(input.semesterNumber);
+  const resolvedId = id > 0 ? id : await resolveSemesterRowId(input.semesterNumber);
   const data = await apiPut<{ message?: string }>(`/semesters/${resolvedId}`, toWritePayload(input));
   invalidateCache();
   return apiMessage(data);
@@ -135,7 +135,7 @@ async function update(id: number, input: CreateSemesterInput): Promise<string> {
 /** GET /semesters/:id */
 async function get(id: number): Promise<Semester> {
   const s = await apiGet<SemesterResponse>(`/semesters/${id}`);
-  semIdByNumber.set(s.semester_number, id);
+  semesterRowIdByNumber.set(s.semester_number, id);
   return mapSemester({ ...s, id });
 }
 

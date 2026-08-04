@@ -14,7 +14,7 @@ export function useDeanFacultyLoading() {
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 
   const [selectedSchoolYearId, setSelectedSchoolYearId] = useState("");
-  const [selectedSemesterId, setSelectedSemesterId] = useState("");
+  const [selectedSemesterNumber, setSelectedSemesterNumber] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [entries, setEntries] = useState<FacultyLoadingEntry[] | null>(null);
@@ -29,21 +29,21 @@ export function useDeanFacultyLoading() {
 
   // Default semester
   useEffect(() => {
-    if (selectedSemesterId || semesters.length === 0) return;
+    if (selectedSemesterNumber || semesters.length === 0) return;
     const first = semesters.find((s) => s.semesterNumber !== 3) ?? semesters[0];
-    if (first) setSelectedSemesterId(String(first.id));
-  }, [semesters, selectedSemesterId]);
+    if (first) setSelectedSemesterNumber(String(first.semesterNumber));
+  }, [semesters, selectedSemesterNumber]);
 
   // Fetch loading data when term changes
   useEffect(() => {
-    if (!selectedSchoolYearId || !selectedSemesterId) return;
+    if (!selectedSchoolYearId || !selectedSemesterNumber) return;
     let cancelled = false;
     setEntries(null);
     setLoadError(null);
     setSelectedIndex(0);
 
     deanService
-      .getFacultyLoading(Number(selectedSchoolYearId), Number(selectedSemesterId))
+      .getFacultyLoading(Number(selectedSchoolYearId), Number(selectedSemesterNumber))
       .then((data) => {
         if (!cancelled) setEntries(data);
       })
@@ -54,10 +54,10 @@ export function useDeanFacultyLoading() {
       });
 
     return () => { cancelled = true; };
-  }, [selectedSchoolYearId, selectedSemesterId]);
+  }, [selectedSchoolYearId, selectedSemesterNumber]);
 
   const matchedSy = schoolYears.find((s) => String(s.id) === selectedSchoolYearId);
-  const matchedSem = semesters.find((s) => String(s.id) === selectedSemesterId);
+  const matchedSem = semesters.find((s) => String(s.semesterNumber) === selectedSemesterNumber);
 
   const schoolYearLabel = matchedSy?.schoolYear ?? "";
   const semesterName = matchedSem ? semesterLabel(matchedSem.semesterNumber) : "";
@@ -81,8 +81,8 @@ export function useDeanFacultyLoading() {
     semesterName,
     semesters,
     semesterLabel,
-    selectedSemesterId,
-    setSelectedSemesterId,
+    selectedSemesterNumber,
+    setSelectedSemesterNumber,
     // Instructor
     entries,
     selectedEntry,

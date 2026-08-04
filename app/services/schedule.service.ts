@@ -500,8 +500,7 @@ type CreationContextResponse = {
  * GET /regular_schedule/create-regular-class-schedules — year levels & semesters
  * scoped to schedule creation. Only the year levels are safe to source from here:
  * the semesters this returns are just the 1st/2nd Semester label vocabulary, not
- * real Semester rows, and callers elsewhere on this page need the real `semId`
- * foreign key (from semesterService/useSemesters) to query sets.
+ * real Semester rows; term-scoped APIs use `semesterNumber`.
  */
 async function getCreationContext(): Promise<{ yearLevels: ScheduleYearLevelOption[] }> {
   const data = await apiGet<CreationContextResponse>(
@@ -612,7 +611,7 @@ export type SubjectHourOverride = {
   setName: string | null;
   scope: "set" | "all_sets";
   syId: number;
-  semId: number;
+  semesterNumber: number;
   lectureHours: number;
   labHours: number;
   meetings: number;
@@ -629,7 +628,7 @@ type SubjectHourOverrideResponse = {
   set_name: string | null;
   scope: string;
   sy_id: number;
-  sem_id: number;
+  semester_number: number;
   lecture_hours: number;
   lab_hours: number;
   meetings: number;
@@ -655,7 +654,7 @@ async function listSubjectHourOverrides(params: {
     setName: r.set_name,
     scope: r.scope as "set" | "all_sets",
     syId: r.sy_id,
-    semId: r.sem_id,
+    semesterNumber: r.semester_number,
     lectureHours: Number(r.lecture_hours),
     labHours: Number(r.lab_hours),
     meetings: r.meetings,

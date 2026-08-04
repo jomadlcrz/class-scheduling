@@ -16,7 +16,7 @@ type DeanFacultyLoadsViewProps = {
   onSchoolYearChange: (id: string) => void;
   semesterName: string;
   semesters: Semester[];
-  selectedSemesterId: string;
+  selectedSemesterNumber: string;
   onSemesterChange: (id: string) => void;
   semesterLabel: (n: number) => string;
 };
@@ -34,7 +34,7 @@ export function DeanFacultyLoadsView({
   onSchoolYearChange,
   semesterName,
   semesters,
-  selectedSemesterId,
+  selectedSemesterNumber,
   onSemesterChange,
   semesterLabel,
 }: DeanFacultyLoadsViewProps) {
@@ -84,8 +84,8 @@ export function DeanFacultyLoadsView({
                 <Select
                   items={semesters
                     .filter((s) => s.semesterNumber !== 3)
-                    .map((s) => ({ value: String(s.id), label: semesterLabel(s.semesterNumber) }))}
-                  value={selectedSemesterId}
+                    .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))}
+                  value={selectedSemesterNumber}
                   onValueChange={(v) => onSemesterChange(v as string)}
                 >
                   <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
@@ -95,7 +95,7 @@ export function DeanFacultyLoadsView({
                     {semesters
                       .filter((s) => s.semesterNumber !== 3)
                       .map((s) => (
-                        <SelectItem key={s.id} value={String(s.id)}>
+                        <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>
                           {semesterLabel(s.semesterNumber)}
                         </SelectItem>
                       ))}

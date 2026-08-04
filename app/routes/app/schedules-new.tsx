@@ -388,7 +388,7 @@ function SchedulesNewPage() {
       const result = await scheduleService.upsertSubjectHourOverride({
         subjectId: body.subjectId as number,
         syId: body.syId as number,
-        semesterNumber: (body.semesterNumber ?? body.semId) as number,
+        semesterNumber: body.semesterNumber as number,
         setId: body.setId != null ? (body.setId as number) : null,
         lectureHours: body.lectureHours as number,
         labHours: body.labHours as number,

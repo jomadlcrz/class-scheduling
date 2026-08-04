@@ -76,7 +76,6 @@ export type FacultyLoadingEntry = {
   teachingTermId: number | null;
   instructorProfileId?: number;
   syId?: number;
-  semId?: number;
   semesterNumber?: number;
   /** subjectCode → subjectAssignmentId lookup, merged from teaching terms. */
   subjectAssignmentIds?: Map<string, number>;
@@ -106,7 +105,6 @@ export type TeachingTerm = {
   employeeId: string | null;
   department?: string;
   syId: number;
-  semId: number;
   semesterNumber: number;
   maxWeeklyHours: number;
   currentWeeklyHours: number;
@@ -220,7 +218,6 @@ export type TeachingTermDetail = {
   term: {
     sy_id: number;
     school_year: string | null;
-    sem_id: number;
     semester: string | null;
     semester_number: number | null;
   };

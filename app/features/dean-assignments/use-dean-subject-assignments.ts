@@ -26,7 +26,6 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
     semester: prev?.semester ?? "",
     academicTerm: prev?.academicTerm ?? "",
     syId: detail.term.sy_id ?? prev?.syId,
-    semId: detail.term.sem_id ?? prev?.semId,
     semesterNumber: detail.term.semester_number ?? prev?.semesterNumber,
     maxWeeklyHours: detail.hours.max_weekly_hours,
     teachingTermId: detail.teaching_term_id,
@@ -60,7 +59,7 @@ export function useDeanSubjectAssignments() {
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 
   const [selectedSchoolYearId, setSelectedSchoolYearId] = useState("");
-  const [selectedSemesterId, setSelectedSemesterId] = useState("");
+  const [selectedSemesterNumber, setSelectedSemesterNumber] = useState("");
 
   const [instructors, setInstructors] = useState<DepartmentInstructor[] | null>(null);
   const [subjects, setSubjects] = useState<DepartmentSubjectProgram[] | null>(null);
@@ -77,10 +76,10 @@ export function useDeanSubjectAssignments() {
 
   // Default semester
   useEffect(() => {
-    if (selectedSemesterId || semesters.length === 0) return;
+    if (selectedSemesterNumber || semesters.length === 0) return;
     const first = semesters.find((s) => s.semesterNumber !== 3) ?? semesters[0];
-    if (first) setSelectedSemesterId(String(first.id));
-  }, [semesters, selectedSemesterId]);
+    if (first) setSelectedSemesterNumber(String(first.semesterNumber));
+  }, [semesters, selectedSemesterNumber]);
 
   // Fetch instructors + subjects + programs (term-independent)
   useEffect(() => {
@@ -110,13 +109,13 @@ export function useDeanSubjectAssignments() {
   }, []);
 
   const refresh = useCallback(() => {
-    if (!selectedSchoolYearId || !selectedSemesterId) return;
+    if (!selectedSchoolYearId || !selectedSemesterNumber) return;
     let cancelled = false;
     setEntries(null);
     setLoadError(null);
 
     const syId = Number(selectedSchoolYearId);
-    const semesterNumber = semesters.find((s) => String(s.id) === selectedSemesterId)?.semesterNumber;
+    const semesterNumber = Number(selectedSemesterNumber);
     if (!semesterNumber) return;
 
     deanService.listTeachingTerms({ syId, semesterNumber })
@@ -135,7 +134,6 @@ export function useDeanSubjectAssignments() {
             semester: "",
             academicTerm: "",
             syId: tt.syId,
-            semId: tt.semId,
             semesterNumber: tt.semesterNumber,
             maxWeeklyHours: tt.maxWeeklyHours,
             teachingTermId: tt.id,
@@ -176,7 +174,7 @@ export function useDeanSubjectAssignments() {
       });
 
     return () => { cancelled = true; };
-  }, [selectedSchoolYearId, selectedSemesterId, semesters]);
+  }, [selectedSchoolYearId, selectedSemesterNumber]);
 
   useEffect(() => {
     const cleanup = refresh();
@@ -213,7 +211,7 @@ export function useDeanSubjectAssignments() {
     try {
       const message = await deanService.createSubjectAssignments(
         Number(selectedSchoolYearId),
-        semesters.find((s) => String(s.id) === selectedSemesterId)?.semesterNumber ?? 1,
+        Number(selectedSemesterNumber) || 1,
         instructorLoads,
       );
       if (message) toast.success(message);
@@ -306,7 +304,7 @@ export function useDeanSubjectAssignments() {
   }
 
   const matchedSy = schoolYears.find((s) => String(s.id) === selectedSchoolYearId);
-  const matchedSem = semesters.find((s) => String(s.id) === selectedSemesterId);
+  const matchedSem = semesters.find((s) => String(s.semesterNumber) === selectedSemesterNumber);
   const schoolYearLabel = matchedSy?.schoolYear ?? "";
   const semesterName = matchedSem ? semesterLabel(matchedSem.semesterNumber) : "";
 
@@ -324,8 +322,8 @@ export function useDeanSubjectAssignments() {
     semesterName,
     semesters,
     semesterLabel,
-    selectedSemesterId,
-    setSelectedSemesterId,
+    selectedSemesterNumber,
+    setSelectedSemesterNumber,
     // Data
     instructors,
     subjects,

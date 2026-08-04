@@ -25,6 +25,6 @@ export const studentSchema = z.object({
   studentType: z.string().min(1, "Select a student type."),
   enrolledStatus: z.string().min(1, "Select an enrolled status."),
   syId: z.coerce.number().int().positive("Select a school year."),
-  semId: z.coerce.number().int().positive("Select a semester."),
+  semesterNumber: z.coerce.number().int().min(1, "Select a semester.").max(2),
   subjectIds: z.array(z.number()).min(1, "Select at least one subject."),
 });

@@ -10,7 +10,7 @@ type SubjectAssignmentToolbarProps = {
   selectedSchoolYearId: string;
   onSchoolYearChange: (value: string) => void;
   semesters: Semester[];
-  selectedSemesterId: string;
+  selectedSemesterNumber: string;
   semesterLabel: (semesterNumber: number) => string;
   onSemesterChange: (value: string) => void;
   search: string;
@@ -22,7 +22,7 @@ export function SubjectAssignmentToolbar({
   selectedSchoolYearId,
   onSchoolYearChange,
   semesters,
-  selectedSemesterId,
+  selectedSemesterNumber,
   semesterLabel,
   onSemesterChange,
   search,
@@ -39,9 +39,9 @@ export function SubjectAssignmentToolbar({
         </Select>
       </FieldChrome>
       <FieldChrome id="subject-assignment-semester" label="Semester">
-        <Select items={academicSemesters.map((semester) => ({ value: String(semester.id), label: semesterLabel(semester.semesterNumber) }))} value={selectedSemesterId} onValueChange={(value) => onSemesterChange(value ?? "")}>
+        <Select items={academicSemesters.map((semester) => ({ value: String(semester.semesterNumber), label: semesterLabel(semester.semesterNumber) }))} value={selectedSemesterNumber} onValueChange={(value) => onSemesterChange(value ?? "")}>
           <SelectTrigger id="subject-assignment-semester"><SelectValue placeholder="Select semester" /></SelectTrigger>
-          <SelectContent>{academicSemesters.map((semester) => <SelectItem key={semester.id} value={String(semester.id)}>{semesterLabel(semester.semesterNumber)}</SelectItem>)}</SelectContent>
+          <SelectContent>{academicSemesters.map((semester) => <SelectItem key={semester.semesterNumber} value={String(semester.semesterNumber)}>{semesterLabel(semester.semesterNumber)}</SelectItem>)}</SelectContent>
         </Select>
       </FieldChrome>
       <div className="sm:col-span-2 lg:col-span-1">

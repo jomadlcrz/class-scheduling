@@ -46,13 +46,13 @@ export function StudentEnrollForm({
   const [yearLevel, setYearLevel] = useState("");
   const [setId, setSetId] = useState("");
   const [syId, setSyId] = useState("");
-  const [semId, setSemId] = useState("");
+  const [semesterNumber, setSemesterNumber] = useState("");
   const [studentType, setStudentType] = useState("");
   const [enrolledStatus, setEnrolledStatus] = useState("");
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<Set<number>>(new Set());
 
   const selectedProgram = programs.find((p) => String(p.id) === programId);
-  const selectedSemester = semesters.find((s) => String(s.id) === semId);
+  const selectedSemester = semesters.find((s) => String(s.semesterNumber) === semesterNumber);
   const isIrregular = enrolledStatus === "Irregular";
 
   const yearOptions = yearLevelIds.filter((y) => y <= (selectedProgram?.lengthYears ?? 6));
@@ -76,7 +76,7 @@ export function StudentEnrollForm({
 
   useEffect(() => {
     setSelectedSubjectIds(new Set());
-  }, [programId, yearLevel, semId, enrolledStatus]);
+  }, [programId, yearLevel, semesterNumber, enrolledStatus]);
 
   const allSubjectsSelected =
     filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
@@ -97,7 +97,7 @@ export function StudentEnrollForm({
   async function handleSubmit() {
     const resolvedSetId = isIrregular ? filteredSets[0]?.id : Number(setId);
 
-    if (!programId || !yearLevel || !syId || !semId || !studentType || !enrolledStatus) {
+    if (!programId || !yearLevel || !syId || !semesterNumber || !studentType || !enrolledStatus) {
       setError("Fill in all required fields.");
       return;
     }
@@ -120,7 +120,7 @@ export function StudentEnrollForm({
         studentType,
         enrolledStatus,
         syId: Number(syId),
-        semId: Number(semId),
+        semesterNumber: Number(semesterNumber),
         subjectIds: [...selectedSubjectIds],
       });
     } catch (err) {
@@ -285,10 +285,10 @@ export function StudentEnrollForm({
           <Select
             items={[
               { value: "", label: "Select a semester" },
-              ...semesters.map((s) => ({ value: String(s.id), label: s.semester })),
+              ...semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester })),
             ]}
-            value={semId}
-            onValueChange={(v) => setSemId(v as string)}
+            value={semesterNumber}
+            onValueChange={(v) => setSemesterNumber(v as string)}
           >
             <SelectTrigger id="enroll-sem">
               <SelectValue />
@@ -296,7 +296,7 @@ export function StudentEnrollForm({
             <SelectContent>
               <SelectItem value="">Select a semester</SelectItem>
               {semesters.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
+                <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>
                   {s.semester}
                 </SelectItem>
               ))}

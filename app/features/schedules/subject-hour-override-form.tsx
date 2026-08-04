@@ -11,8 +11,6 @@ type SubjectOption = { id: number; code: string; title: string; subjectType: str
 
 export type OverrideFormInput = {
   subjectId: number;
-  syId: number;
-  semId: number;
   setId?: number | null;
   lectureHours: number;
   labHours: number;
@@ -111,8 +109,6 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
     try {
       await onSubmit({
         subjectId: Number(selectedSubjectId),
-        syId: 0,
-        semId: 0,
         setId: setId === "all" ? null : Number(setId),
         lectureHours: lec,
         labHours: lab,
@@ -163,8 +159,6 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
               setIsLoading(true);
               onSubmit({
                 subjectId: Number(selectedSubjectId),
-                syId: 0,
-                semId: 0,
                 setId: setId === "all" ? null : Number(setId),
                 lectureHours: lec,
                 labHours: lab,

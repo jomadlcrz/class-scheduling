@@ -19,7 +19,7 @@ export type CreateStudentRecordInput = {
   studentType: string;
   enrolledStatus: string;
   syId: number;
-  semId: number;
+  semesterNumber: number;
   subjectIds: number[];
 };
 
@@ -84,7 +84,7 @@ export type EnrollStudentInput = {
   studentType: string;
   enrolledStatus: string;
   syId: number;
-  semId: number;
+  semesterNumber: number;
   subjectIds: number[];
 };
 

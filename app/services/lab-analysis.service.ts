@@ -149,8 +149,6 @@ type LabAnalysisResponse = {
   term: {
     sy_id: number;
     school_year: string;
-    sem_id: number;
-    semester: string;
     semester_number: number;
   };
   window: {
@@ -332,8 +330,6 @@ async function analyze(params: { syId: number; semesterNumber: number; programId
     term: {
       syId: data.term.sy_id,
       schoolYear: data.term.school_year,
-      semId: data.term.sem_id,
-      semester: data.term.semester,
       semesterNumber: data.term.semester_number,
     },
     window: {

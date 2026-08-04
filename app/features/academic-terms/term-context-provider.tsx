@@ -39,13 +39,11 @@ async function loadFallbackContext(
   return {
     schoolYears: schoolYears.map((row) => ({ id: row.id, schoolYear: row.schoolYear })),
     semesters: semesters.map((row) => ({
-      semId: row.id,
       semesterNumber: row.semesterNumber,
       label: row.displayName ?? row.semester,
     })),
     selection: {
       syId: selectedSchoolYear?.id ?? null,
-      semId: selectedSemester?.id ?? null,
       semesterNumber: selectedSemester?.semesterNumber ?? null,
       schoolYear: selectedSchoolYear?.schoolYear ?? null,
     },

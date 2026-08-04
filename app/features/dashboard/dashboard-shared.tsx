@@ -43,7 +43,7 @@ export type SemOption = { id: number; semester: string; semesterNumber: number }
 export function useTermData<T>(fetch: (syId: number, semesterNumber: number) => Promise<T>) {
   const [data, setData] = useState<T | null>(null);
   const [syId, setSyId] = useState<number>(0);
-  const [semId, setSemId] = useState<number>(0);
+  const [semesterNumber, setSemesterNumber] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -65,7 +65,7 @@ export function useTermData<T>(fetch: (syId: number, semesterNumber: number) => 
       const current = y.at(0);
       const first = s.find((sem) => sem.semesterNumber !== 3) ?? s.at(0);
       if (current) setSyId(current.id);
-      if (first) setSemId(first.id);
+      if (first) setSemesterNumber(first.semesterNumber);
     } catch {
       setYears([]);
       setSems([]);
@@ -77,9 +77,7 @@ export function useTermData<T>(fetch: (syId: number, semesterNumber: number) => 
   }, [fetchTerms]);
 
   useEffect(() => {
-    if (!syId || !semId) return;
-    const semesterNumber = sems.find((sem) => sem.id === semId)?.semesterNumber;
-    if (!semesterNumber) return;
+    if (!syId || !semesterNumber) return;
     let cancelled = false;
     const isInitial = !dataRef.current;
     if (!isInitial) setRefreshing(true);
@@ -105,25 +103,25 @@ export function useTermData<T>(fetch: (syId: number, semesterNumber: number) => 
     return () => {
       cancelled = true;
     };
-  }, [syId, semId, sems]);
+  }, [syId, semesterNumber]);
 
-  return { data, syId, semId, setSyId, setSemId, loading, error, refreshing, years, sems };
+  return { data, syId, semesterNumber, setSyId, setSemesterNumber, loading, error, refreshing, years, sems };
 }
 
 export function TermSelectors({
   years,
   sems,
   syId,
-  semId,
+  semesterNumber,
   onSyId,
-  onSemId,
+  onSemesterNumber,
 }: {
   years: TermOption[];
   sems: SemOption[];
   syId: number;
-  semId: number;
+  semesterNumber: number;
   onSyId: (id: number) => void;
-  onSemId: (id: number) => void;
+  onSemesterNumber: (semesterNumber: number) => void;
 }) {
   return (
     <motion.div
@@ -154,10 +152,10 @@ export function TermSelectors({
       </div>
       <div className="w-44">
         <Select
-          items={sems.map((s) => ({ value: String(s.id), label: s.semester }))}
-          value={semId ? String(semId) : ""}
+          items={sems.map((s) => ({ value: String(s.semesterNumber), label: s.semester }))}
+          value={semesterNumber ? String(semesterNumber) : ""}
           onValueChange={(v) => {
-            if (v) onSemId(Number(v));
+            if (v) onSemesterNumber(Number(v));
           }}
         >
           <SelectTrigger id="dashboard-sem">
@@ -165,7 +163,7 @@ export function TermSelectors({
           </SelectTrigger>
           <SelectContent>
             {sems.map((s) => (
-              <SelectItem key={s.id} value={String(s.id)}>
+              <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>
                 {s.semester}
               </SelectItem>
             ))}

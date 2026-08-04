@@ -61,7 +61,7 @@ type DepartmentSubjectsResponse = {
     year_level: number;
     year_total_units: number;
     semester_details: {
-      semester: number;
+      semester_number: number;
       semester_total_units: number;
       subjects: {
         curriculum_detail_id: number;
@@ -121,7 +121,7 @@ async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
       yearLevel: year.year_level,
       yearTotalUnits: Number(year.year_total_units),
       semesterDetails: year.semester_details.map((sem) => ({
-        semester: sem.semester,
+        semester: sem.semester_number,
         semesterTotalUnits: Number(sem.semester_total_units),
         subjects: sem.subjects.map((s) => ({
           curriculumDetailId: s.curriculum_detail_id,
@@ -217,7 +217,6 @@ async function listTeachingTerms(params?: {
     employeeId: t.instructor?.employee_id ?? null,
     department: t.instructor?.department ?? "",
     syId: t.term?.sy_id ?? 0,
-    semId: t.term?.sem_id ?? 0,
     semesterNumber: t.term?.semester_number ?? 0,
     maxWeeklyHours: t.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: t.hours?.current_weekly_hours ?? 0,
@@ -254,7 +253,6 @@ async function getTeachingTerm(id: number): Promise<TeachingTerm> {
     employeeId: data.instructor?.employee_id ?? null,
     department: data.instructor?.department ?? "",
     syId: data.term?.sy_id ?? 0,
-    semId: data.term?.sem_id ?? 0,
     semesterNumber: data.term?.semester_number ?? 0,
     maxWeeklyHours: data.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: data.hours?.current_weekly_hours ?? 0,

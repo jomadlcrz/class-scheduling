@@ -45,7 +45,7 @@ function IrregularClassPage() {
   const { schoolYears, defaultSchoolYear } = useSchoolYears();
   const { semesters } = useSemesters();
   const [schoolYear, setSchoolYear] = useState("");
-  const [semId, setSemId] = useState("");
+  const [semesterNumber, setSemesterNumber] = useState("");
   const [pending, setPending] = useState<StudentPendingSchedule[] | null>(null);
   const [assigned, setAssigned] = useState<StudentAssignedSchedule[] | null>(null);
 
@@ -55,12 +55,12 @@ function IrregularClassPage() {
   }, [schoolYear, schoolYears, defaultSchoolYear]);
 
   useEffect(() => {
-    if (semId || semesters.length === 0) return;
-    setSemId(String(semesters[0].id));
-  }, [semId, semesters]);
+    if (semesterNumber || semesters.length === 0) return;
+    setSemesterNumber(String(semesters[0].semesterNumber));
+  }, [semesterNumber, semesters]);
 
   const matchedSy = schoolYears.find((sy) => sy.schoolYear === schoolYear);
-  const matchedSem = semesters.find((s) => String(s.id) === semId);
+  const matchedSem = semesters.find((s) => String(s.semesterNumber) === semesterNumber);
 
   useEffect(() => {
     if (!matchedSy || !matchedSem) {
@@ -156,16 +156,16 @@ function IrregularClassPage() {
             </FieldChrome>
             <FieldChrome id="ic-semester" label="Semester">
               <Select
-                items={semesters.map((s) => ({ value: String(s.id), label: s.semester }))}
-                value={semId}
-                onValueChange={(v) => setSemId(v as string)}
+                items={semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester }))}
+                value={semesterNumber}
+                onValueChange={(v) => setSemesterNumber(v as string)}
               >
                 <SelectTrigger id="ic-semester">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {semesters.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
+                    <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>
                       {s.semester}
                     </SelectItem>
                   ))}

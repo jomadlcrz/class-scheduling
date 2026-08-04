@@ -70,10 +70,10 @@ export function SubjectAssignmentView() {
   }[]>([]);
 
   useEffect(() => {
-    const selectedSemester = apiData.semesters.find((s) => s.id === Number(apiData.selectedSemesterId));
+    const selectedSemester = apiData.semesters.find((s) => s.semesterNumber === Number(apiData.selectedSemesterNumber));
     const semesterNumber = selectedSemester?.semesterNumber;
     deanService.listDepartmentPrograms(semesterNumber).then(setProgramOptions).catch(() => {});
-  }, [apiData.selectedSemesterId, apiData.semesters]);
+  }, [apiData.selectedSemesterNumber, apiData.semesters]);
 
   // Search filter
   const [search, setSearch] = useState("");
@@ -120,7 +120,7 @@ export function SubjectAssignmentView() {
   // Reset instructors when term filter changes
   useEffect(() => {
     setInstructors([]);
-  }, [apiData.selectedSchoolYearId, apiData.selectedSemesterId]);
+  }, [apiData.selectedSchoolYearId, apiData.selectedSemesterNumber]);
 
   // Initialize instructors from existing entries (instructors with teaching terms this term)
   useEffect(() => {
@@ -481,9 +481,9 @@ export function SubjectAssignmentView() {
         selectedSchoolYearId={apiData.selectedSchoolYearId}
         onSchoolYearChange={apiData.setSelectedSchoolYearId}
         semesters={apiData.semesters}
-        selectedSemesterId={apiData.selectedSemesterId}
+        selectedSemesterNumber={apiData.selectedSemesterNumber}
         semesterLabel={apiData.semesterLabel}
-        onSemesterChange={apiData.setSelectedSemesterId}
+        onSemesterChange={apiData.setSelectedSemesterNumber}
         search={search}
         onSearchChange={setSearch}
       />

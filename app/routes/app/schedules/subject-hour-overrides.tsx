@@ -57,7 +57,7 @@ function SubjectHourOverridesPage() {
   const [sets, setSets] = useState<ClassSet[]>([]);
   const [allocations, setAllocations] = useState<WeeklyHourAllocation[]>([]);
 
-  // Resolve syId / semId from labels
+  // Resolve the selected school year and semester number from labels.
   const matchedSy = schoolYears.find((s) => s.schoolYear === schoolYear);
   const matchedSem = semesters.find((s) => s.semesterNumber === semester);
 

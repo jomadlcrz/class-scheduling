@@ -38,7 +38,7 @@ export function TermClosurePage() {
   const terms = useMemo(() => {
     const selected = selectedContext?.term;
     if (!selected) return closures;
-    return [selected, ...closures.filter((row) => row.syId !== selected.syId || row.semId !== selected.semId)];
+    return [selected, ...closures.filter((row) => row.syId !== selected.syId || row.semesterNumber !== selected.semesterNumber)];
   }, [closures, selectedContext]);
 
   const schoolYearOptions = useMemo(() => {
