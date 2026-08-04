@@ -87,10 +87,10 @@ function SubjectsNewPage() {
 
   const prerequisiteOptions = useMemo(
     () => [
-      ...savedForProgram.map((s) => ({ id: s.code, code: s.code, title: s.title })),
+      ...(allSubjects ?? []).map((s) => ({ id: s.code, code: s.code, title: s.title })),
       ...pending.map((p) => ({ id: p.code || p.tempId, code: p.code, title: p.title })),
     ],
-    [savedForProgram, pending],
+    [allSubjects, pending],
   );
 
   function resetProgram(nextProgram: string) {
