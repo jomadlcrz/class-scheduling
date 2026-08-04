@@ -6,7 +6,6 @@ import { useAuth } from "~/auth/auth-provider";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { PlusIcon, PrinterIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
@@ -176,14 +175,54 @@ function ProgramCurriculaPage() {
       />
 
       <div className="mt-6 flex flex-col gap-5">
-        <CurriculumHeader
-          programs={programs ?? []}
-          selected={selectedCode}
-          onChange={setSelectedCode}
-          curriculum={curriculum}
-          onEditProgram={canManagePrograms && selectedProgram ? () => setEditProgramTarget(selectedProgram) : undefined}
-          onArchiveProgram={canManagePrograms && selectedProgram ? () => setArchiveProgramTarget(selectedProgram) : undefined}
-        />
+        <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised/80">
+          <CurriculumHeader
+            programs={programs ?? []}
+            selected={selectedCode}
+            onChange={setSelectedCode}
+            curriculum={curriculum}
+            onEditProgram={canManagePrograms && selectedProgram ? () => setEditProgramTarget(selectedProgram) : undefined}
+            onArchiveProgram={canManagePrograms && selectedProgram ? () => setArchiveProgramTarget(selectedProgram) : undefined}
+          />
+
+          {hasSubjects && (
+            <div className="flex flex-col gap-3 border-t border-slate-200 p-4 dark:border-white/10 sm:flex-row sm:items-end sm:justify-between">
+              <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in this curriculum
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="relative w-full sm:w-64">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                    <SearchIcon />
+                  </span>
+                  <input
+                    id="curriculum-search"
+                    type="search"
+                    placeholder="Code or title…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    aria-label="Search"
+                    className={`${inputClassName} pl-9 pr-4`}
+                  />
+                </div>
+                <div className="flex items-end justify-end gap-3">
+                  <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Curriculum view" />
+                  <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-300 dark:border-white/10">
+                    <button
+                      type="button"
+                      title="Print curriculum"
+                      aria-label="Print curriculum"
+                      onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
+                      className="grid h-8 w-9 cursor-pointer place-items-center bg-white text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300"
+                    >
+                      <PrinterIcon size={15} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {curriculum === "loading" || programs === null ? (
           <div
@@ -218,42 +257,6 @@ function ProgramCurriculaPage() {
           </EmptyState>
         ) : (
           <>
-            <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between">
-              <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in this curriculum
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div className="relative w-full sm:w-64">
-                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                    <SearchIcon />
-                  </span>
-                  <input
-                    id="curriculum-search"
-                    type="search"
-                    placeholder="Code or title…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    aria-label="Search"
-                    className={`${inputClassName} pl-9 pr-4`}
-                  />
-                </div>
-                <div className="flex items-end justify-end gap-3">
-                  <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Curriculum view" />
-                  <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-300 dark:border-white/10">
-                    <button
-                      type="button"
-                      title="Print curriculum"
-                      aria-label="Print curriculum"
-                      onClick={() => openCurriculumPrint(curriculum, semesterLabel, yearLevelLabel)}
-                      className="grid h-8 w-9 cursor-pointer place-items-center bg-white text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300"
-                    >
-                      <PrinterIcon size={15} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={`${selectedCode}-${viewMode}`}

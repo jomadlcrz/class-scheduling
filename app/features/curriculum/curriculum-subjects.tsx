@@ -4,6 +4,11 @@ import { archiveActionButtonClassName } from "~/features/archive/archive-icon-st
 import type { CurriculumGroup } from "~/types/curriculum";
 import type { Subject } from "~/types/subject";
 
+/** Catalog code, styled like a call number — the same treatment subject codes
+ * and their prerequisites share, so a glance tells you which cells cross-reference the catalog. */
+const codeChipClassName =
+  "inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[0.8rem] font-semibold tracking-wide text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-mist-100";
+
 type CurriculumSubjectsProps = {
   group: CurriculumGroup;
   /** Manage mode: row-level actions render when both are supplied (omit for read-only views, e.g. the dean's). */
@@ -42,12 +47,22 @@ export function CurriculumSubjects({ group, onEdit, onArchive }: CurriculumSubje
         {group.subjects.map((subject) => (
           <TableRow key={subject.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-mist-100">{subject.code}</span>
+              <span className={codeChipClassName}>{subject.code}</span>
             </TableCell>
             <TableCell>{subject.title}</TableCell>
             <TableCell className="text-center tabular-nums">{subject.units}</TableCell>
-            <TableCell className="text-center text-slate-400 dark:text-slate-500">
-              {subject.prerequisites.length > 0 ? subject.prerequisites.join(", ") : "—"}
+            <TableCell className="text-center">
+              {subject.prerequisites.length > 0 ? (
+                <div className="flex flex-wrap justify-center gap-1">
+                  {subject.prerequisites.map((code) => (
+                    <span key={code} className={codeChipClassName}>
+                      {code}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-slate-400 dark:text-slate-500">—</span>
+              )}
             </TableCell>
             {manageable && (
               <TableCell>
