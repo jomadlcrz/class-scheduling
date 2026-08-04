@@ -47,6 +47,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const loading = loadingFilters || loadingEntries;
 
   useEffect(() => {
     if (!open) return;
@@ -125,11 +126,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         Complete history of actions performed on term closures.
       </p>
 
-      {loadingFilters ? (
-        <div role="status" aria-label="Loading audit log filters" className="mt-4 grid place-items-center py-8">
-          <Spinner />
-        </div>
-      ) : (
+      {!loadingFilters && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <FilterDropdown
             label="School Year"
@@ -203,17 +200,19 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         </div>
       )}
 
-      <Alert
-        variant="default"
-        className="mt-4 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200"
-      >
-        <HelpCircleIcon />
-        <AlertDescription>
-          Showing {rangeStart} to {rangeEnd} of {total} audit log entries
-        </AlertDescription>
-      </Alert>
+      {!loading && (
+        <Alert
+          variant="default"
+          className="mt-4 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200"
+        >
+          <HelpCircleIcon />
+          <AlertDescription>
+            Showing {rangeStart} to {rangeEnd} of {total} audit log entries
+          </AlertDescription>
+        </Alert>
+      )}
 
-      {loadingEntries ? (
+      {loading ? (
         <div role="status" aria-label="Loading audit log" className="mt-4 grid place-items-center py-12">
           <Spinner />
         </div>
