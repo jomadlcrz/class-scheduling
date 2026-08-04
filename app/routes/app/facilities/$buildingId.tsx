@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Spinner } from "~/components/ui/spinner";
 import { EditBuildingWorkspace } from "~/features/facilities/edit-building-workspace";
+import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
@@ -47,6 +48,8 @@ function EditBuildingPage() {
     const data = await facilityService.getById(id);
     setBuilding(data);
   }, [id]);
+
+  useRefreshOnFocus(refresh);
 
   useEffect(() => {
     setLoading(true);

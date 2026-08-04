@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -9,6 +9,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
 import { BuildingArchiveDialog } from "~/features/facilities/buildings/building-archive-dialog";
 import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
+import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
@@ -43,7 +44,7 @@ function FacilitiesPage() {
   const [archiveTarget, setArchiveTarget] = useState<Building | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     setLoadError(null);
     let data: FacilityBuildingDetail[];
     try {
@@ -59,7 +60,9 @@ function FacilitiesPage() {
       if (current === null || !data.some((b) => b.id === current)) return data[0].id;
       return current;
     });
-  }
+  }, []);
+
+  useRefreshOnFocus(refresh);
 
   useEffect(() => {
     void refresh();
@@ -71,7 +74,7 @@ function FacilitiesPage() {
         setRoomStatuses(options.classroomStatus);
       })
       .catch(() => {});
-  }, []);
+  }, [refresh]);
 
   async function handleArchiveBuilding(building: Building) {
     const message = await buildingService.archive(building.id, building.name);
@@ -81,7 +84,7 @@ function FacilitiesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-400 px-4 py-8 sm:px-6">
       <PageHeader
         title="Facilities"
         description="Browse campus buildings and rooms by floor."
