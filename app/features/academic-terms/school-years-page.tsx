@@ -63,6 +63,7 @@ export function SchoolYearsPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="School Years"
+        description="Create and manage the academic years used to organize semesters and schedules."
         actions={
           <>
             <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>

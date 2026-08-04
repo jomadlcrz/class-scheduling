@@ -39,6 +39,7 @@ export function SemestersPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Semesters"
+        description="Define semester periods and dates used across scheduling and term operations."
         actions={
           <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
             <PlusIcon />

@@ -50,6 +50,7 @@ export default [
     route("academic-terms/school-years", "routes/app/academic-terms/school-years.tsx"),
     route("academic-terms/semesters", "routes/app/academic-terms/semesters.tsx"),
     route("academic-terms/term-closure", "routes/app/academic-terms/term-closure.tsx"),
+    route("academic-terms/audit-log", "routes/app/academic-terms/audit-log.tsx"),
     route("faculty-loading", "routes/app/faculty-loading.tsx"),
     route("faculty-schedule", "routes/app/faculty-schedule.tsx"),
     route("student-schedule", "routes/app/student-schedule.tsx"),

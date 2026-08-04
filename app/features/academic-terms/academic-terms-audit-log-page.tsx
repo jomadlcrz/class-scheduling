@@ -6,7 +6,6 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { HelpCircleIcon, LockIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import {
@@ -17,13 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { PageHeader } from "~/layouts/page-header";
 import { termClosureService } from "~/services/term-closure.service";
 import type { TermAuditLogEntry, TermAuditLogFilters } from "~/types/term-closure";
 
-type TermClosureAuditLogModalProps = {
-  open: boolean;
-  onClose: () => void;
-};
+const PAGE_SIZE = 10;
 
 function auditActionTone(action: string) {
   if (action === "term_closed") return "gold" as const;
@@ -31,13 +28,13 @@ function auditActionTone(action: string) {
   return "slate" as const;
 }
 
-export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogModalProps) {
+export function AcademicTermsAuditLogPage() {
   const [filters, setFilters] = useState<TermAuditLogFilters | null>(null);
   const [entries, setEntries] = useState<TermAuditLogEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
-  const [loadingFilters, setLoadingFilters] = useState(false);
-  const [loadingEntries, setLoadingEntries] = useState(false);
+  const [loadingFilters, setLoadingFilters] = useState(true);
+  const [loadingEntries, setLoadingEntries] = useState(true);
 
   const [schoolYear, setSchoolYear] = useState("all");
   const [semester, setSemester] = useState("all");
@@ -46,22 +43,32 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 5;
   const loading = loadingFilters || loadingEntries;
 
   useEffect(() => {
-    if (!open) return;
-    setLoadingFilters(true);
+    let cancelled = false;
+
     termClosureService
       .auditLogFilters()
-      .then(setFilters)
-      .catch(() => setFilters(null))
-      .finally(() => setLoadingFilters(false));
-  }, [open]);
+      .then((result) => {
+        if (!cancelled) setFilters(result);
+      })
+      .catch(() => {
+        if (!cancelled) setFilters(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingFilters(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
+    let cancelled = false;
     setLoadingEntries(true);
+
     termClosureService
       .listAuditLog({
         syId: schoolYear !== "all" ? Number(schoolYear) : undefined,
@@ -71,23 +78,31 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
         page,
-        perPage: pageSize,
+        perPage: PAGE_SIZE,
       })
       .then((result) => {
+        if (cancelled) return;
         setEntries(result.items);
         setTotal(result.total);
         setPages(result.pages);
       })
       .catch(() => {
+        if (cancelled) return;
         setEntries([]);
         setTotal(0);
         setPages(1);
       })
-      .finally(() => setLoadingEntries(false));
-  }, [open, schoolYear, semester, action, performedBy, dateFrom, dateTo, page]);
+      .finally(() => {
+        if (!cancelled) setLoadingEntries(false);
+      });
 
-  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const rangeEnd = Math.min(page * pageSize, total);
+    return () => {
+      cancelled = true;
+    };
+  }, [schoolYear, semester, action, performedBy, dateFrom, dateTo, page]);
+
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
   const schoolYearOptions = useMemo(
     () => filters?.schoolYears.map((row) => ({ value: String(row.id), label: row.schoolYear })) ?? [],
@@ -121,13 +136,14 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Term Closure Audit Log" xl>
-      <p className="font-body text-sm text-slate-500 dark:text-slate-400">
-        Complete history of actions performed on term closures.
-      </p>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <PageHeader
+        title="Academic Terms Audit Log"
+        description="Complete history of actions performed on academic terms."
+      />
 
       {!loadingFilters && (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-6 flex flex-wrap items-center gap-2">
           <FilterDropdown
             label="School Year"
             allLabel="All School Years"
@@ -217,7 +233,9 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
           <Spinner />
         </div>
       ) : entries.length === 0 ? (
-        <EmptyState title="No audit log entries">No entries match the current filters.</EmptyState>
+        <div className="mt-4">
+          <EmptyState title="No audit log entries">No entries match the current filters.</EmptyState>
+        </div>
       ) : (
         <>
           <div className="mt-4 flex flex-col gap-3 sm:hidden">
@@ -226,7 +244,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
             ))}
           </div>
 
-          <div className="mt-4 hidden sm:block [&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2">
+          <div className="mt-4 hidden sm:block">
             <Table>
               <TableHead>
                 <TableHeader>Date &amp; Time</TableHeader>
@@ -253,7 +271,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
                         {entry.performedByDisplay ?? "—"}
                       </span>
                       {(entry.role || entry.ipAddress) && (
-                        <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-slate-500">
+                        <span className="mt-0.5 block text-xs text-slate-400 dark:text-slate-500">
                           {[entry.role, entry.ipAddress].filter(Boolean).join(" · ")}
                         </span>
                       )}
@@ -266,17 +284,11 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
           </div>
 
           {pages > 1 && (
-            <Pagination page={page} totalItems={total} pageSize={pageSize} onPageChange={setPage} />
+            <Pagination page={page} totalItems={total} pageSize={PAGE_SIZE} onPageChange={setPage} />
           )}
         </>
       )}
-
-      <div className="mt-4 flex justify-end border-t border-slate-200 pt-4 dark:border-white/10">
-        <Button type="button" variant="outline" block={false} onClick={onClose}>
-          Close
-        </Button>
-      </div>
-    </Modal>
+    </div>
   );
 }
 
@@ -285,9 +297,13 @@ function AuditLogMobileCard({ entry }: { entry: TermAuditLogEntry }) {
     <article className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <Badge tone={auditActionTone(entry.action)}>{entry.actionLabel}</Badge>
-        <time className="font-body text-xs text-slate-500 dark:text-slate-400">{entry.occurredAtDisplay ?? "—"}</time>
+        <time className="font-body text-xs text-slate-500 dark:text-slate-400">
+          {entry.occurredAtDisplay ?? "—"}
+        </time>
       </div>
-      <p className="mt-3 font-body text-sm font-medium text-navy-700 dark:text-mist-100">{entry.termDisplay ?? "—"}</p>
+      <p className="mt-3 font-body text-sm font-medium text-navy-700 dark:text-mist-100">
+        {entry.termDisplay ?? "—"}
+      </p>
       <dl className="mt-3 space-y-2 font-body text-sm text-slate-600 dark:text-slate-300">
         <div>
           <dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Performed By</dt>

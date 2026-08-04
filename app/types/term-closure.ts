@@ -25,6 +25,13 @@ export type TermClosureTermInformation = {
   notes: string | null;
 };
 
+export type ClosureEffect = { label: string };
+
+export type TermClosureListResult = {
+  items: TermClosureItem[];
+  closureEffects: ClosureEffect[];
+};
+
 export type TermClosureItem = {
   id: number | null;
   syId: number;

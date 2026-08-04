@@ -70,6 +70,7 @@ const NAV_GROUPS: NavGroup[] = [
           },
           { label: "Semesters", to: "/academic-terms/semesters", roles: ["registrar"] },
           { label: "Term Closure", to: "/academic-terms/term-closure", roles: ["registrar"] },
+          { label: "Audit Log", to: "/academic-terms/audit-log", roles: ["registrar"] },
         ],
       },
       { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },

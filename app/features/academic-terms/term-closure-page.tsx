@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { AuditLogIcon, HelpCircleIcon } from "~/components/ui/icons";
@@ -9,9 +11,9 @@ import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { ClosureEffectsPanel } from "~/features/academic-terms/closure-effects-panel";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermCloseDialog } from "~/features/academic-terms/term-close-dialog";
-import { TermClosureAuditLogModal } from "~/features/academic-terms/term-closure-audit-log-modal";
 import { TermClosureDetailsDrawer } from "~/features/academic-terms/term-closure-details-drawer";
 import { TermClosureTable } from "~/features/academic-terms/term-closure-table";
 import { TermWorkflowCard } from "~/features/academic-terms/term-workflow-card";
@@ -23,7 +25,8 @@ import { termClosureService } from "~/services/term-closure.service";
 import type { TermClosureItem } from "~/types/term-closure";
 
 export function TermClosurePage() {
-  const { closures, loading, refresh } = useTermClosures();
+  const navigate = useNavigate();
+  const { closures, closureEffects, loading, refresh } = useTermClosures();
   const { context: selectedContext, refresh: refreshSelectedTerm } = useTermContext();
   const [search, setSearch] = useState("");
   const [schoolYear, setSchoolYear] = useState("all");
@@ -32,7 +35,6 @@ export function TermClosurePage() {
   const [closeTarget, setCloseTarget] = useState<TermClosureItem | null>(null);
   const [reopenTarget, setReopenTarget] = useState<TermClosureItem | null>(null);
   const [reopenReason, setReopenReason] = useState("");
-  const [auditOpen, setAuditOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
   const terms = useMemo(() => {
@@ -97,13 +99,19 @@ export function TermClosurePage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Term Closure"
+        description="Post a semester after grades are finalized. Destructive deletes are blocked; views and reports stay available."
         actions={
           <>
             <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
               <HelpCircleIcon />
               Help
             </Button>
-            <Button type="button" variant="outline" block={false} onClick={() => setAuditOpen(true)}>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => navigate("/academic-terms/audit-log")}
+            >
               <AuditLogIcon />
               Audit log
             </Button>
@@ -111,68 +119,84 @@ export function TermClosurePage() {
         }
       />
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-6">
         <TermWorkflowCard onChanged={refresh} />
-      </div>
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-          Closure history
-        </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterDropdown
-            label="School Year"
-            allLabel="All years"
-            options={schoolYearOptions}
-            value={schoolYear}
-            onChange={setSchoolYear}
-          />
-          <FilterDropdown
-            label="Semester"
-            allLabel="All semesters"
-            options={semesterOptions}
-            value={semester}
-            onChange={setSemester}
-          />
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="Search…"
-            className="w-40"
-          />
-        </div>
-      </div>
-
-      <div className="mt-4">
-        {loading ? (
-          <div role="status" aria-label="Loading term closures" className="grid place-items-center py-12">
-            <Spinner />
-          </div>
-        ) : filtered.length === 0 ? (
-          <EmptyState title={terms.length === 0 ? "No terms posted yet" : "No matches"}>
-            {terms.length === 0
-              ? "Post a semester from the workflow above when grades are finalized."
-              : "Try different filters."}
-          </EmptyState>
-        ) : (
-          <>
-            <TermClosureTable
-              terms={pagination.pageItems}
-              onViewDetails={setDetailsTerm}
-              onClose={setCloseTarget}
-              onReopen={setReopenTarget}
-            />
-            {pagination.totalPages > 1 && (
-              <Pagination
-                page={pagination.page}
-                totalItems={pagination.totalItems}
-                pageSize={pagination.pageSize}
-                onPageChange={pagination.setPage}
-              />
-            )}
-          </>
+        {!loading && closureEffects.length > 0 && (
+          <ClosureEffectsPanel effects={closureEffects} />
         )}
       </div>
+
+      <section className="mt-10" aria-labelledby="closure-history-heading">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2
+              id="closure-history-heading"
+              className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100"
+            >
+              Closure history
+            </h2>
+            <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
+              Registrar-posted terms and reopen actions.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <FilterDropdown
+              label="School Year"
+              allLabel="All years"
+              options={schoolYearOptions}
+              value={schoolYear}
+              onChange={setSchoolYear}
+            />
+            <FilterDropdown
+              label="Semester"
+              allLabel="All semesters"
+              options={semesterOptions}
+              value={semester}
+              onChange={setSemester}
+            />
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder="Search…"
+              className="w-40"
+            />
+          </div>
+        </div>
+
+        <Card className="mt-4 overflow-hidden">
+          {loading ? (
+            <div role="status" aria-label="Loading term closures" className="grid place-items-center py-12">
+              <Spinner />
+            </div>
+          ) : filtered.length === 0 ? (
+            <EmptyState title={terms.length === 0 ? "No terms posted yet" : "No matches"}>
+              {terms.length === 0
+                ? "Use the workflow above to post a semester when grades are finalized. Posted terms will appear here."
+                : "Try different filters."}
+            </EmptyState>
+          ) : (
+            <>
+              <TermClosureTable
+                terms={pagination.pageItems}
+                onViewDetails={setDetailsTerm}
+                onClose={setCloseTarget}
+                onReopen={setReopenTarget}
+              />
+              {pagination.totalPages > 1 && (
+                <div className="border-t border-slate-100 px-4 py-3 dark:border-white/10">
+                  <Pagination
+                    page={pagination.page}
+                    totalItems={pagination.totalItems}
+                    pageSize={pagination.pageSize}
+                    onPageChange={pagination.setPage}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </Card>
+      </section>
 
       <TermClosureDetailsDrawer term={detailsTerm} onClose={() => setDetailsTerm(null)} />
 
@@ -210,14 +234,20 @@ export function TermClosurePage() {
         </div>
       </ConfirmDialog>
 
-      <TermClosureAuditLogModal open={auditOpen} onClose={() => setAuditOpen(false)} />
-
       <Modal open={helpOpen} onClose={() => setHelpOpen(false)} title="Term closure" wide>
         <div className="space-y-5 font-body text-sm text-slate-600 dark:text-slate-300">
           <p>
             Post a term when grades are finalized. This blocks destructive deletes for that semester
             while views and reports still work.
           </p>
+          <div>
+            <p className="mb-2 font-medium text-navy-700 dark:text-mist-100">What posting a term does</p>
+            <p className="text-sm">
+              Posting locks destructive deletes — schedules, enrollments, faculty loads, and seat bookings.
+              Views, reports, and exports remain available. You can reopen a posted term while the school year
+              is still running.
+            </p>
+          </div>
           <div>
             <p className="mb-2 font-medium text-navy-700 dark:text-mist-100">Status badges</p>
             <ul className="space-y-2">

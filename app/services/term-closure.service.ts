@@ -7,6 +7,7 @@ import type {
   TermClosePreview,
   TermClosureHistoryEntry,
   TermClosureItem,
+  TermClosureListResult,
   TermClosureTermInformation,
   TermClosureUser,
   TermWorkflow,
@@ -426,9 +427,15 @@ async function close(syId: number, semesterNumber: number, reason?: string): Pro
 }
 
 /** GET /terms/closures — registrar-posted closures, newest first. */
-async function listClosures(): Promise<TermClosureItem[]> {
-  const data = await apiGet<{ items: ApiTermClosureItem[] }>("/terms/closures");
-  return data.items.map(mapClosureItem);
+async function listClosures(): Promise<TermClosureListResult> {
+  const data = await apiGet<{
+    items: ApiTermClosureItem[];
+    closure_effects: { label: string }[];
+  }>("/terms/closures");
+  return {
+    items: data.items.map(mapClosureItem),
+    closureEffects: data.closure_effects ?? [],
+  };
 }
 
 /** GET /terms/closures/:id — detail for one registrar-posted closure. */

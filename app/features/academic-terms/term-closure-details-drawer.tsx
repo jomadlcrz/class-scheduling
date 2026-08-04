@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
-import { CheckIcon, LockIcon } from "~/components/ui/icons";
+import { LockIcon } from "~/components/ui/icons";
 import { Drawer } from "~/components/ui/drawer";
+import { ClosureEffectsPanel } from "~/features/academic-terms/closure-effects-panel";
 import { StatusBadge, termStatusTone } from "~/features/academic-terms/status-badges";
 import type { TermClosureItem } from "~/types/term-closure";
 
@@ -50,27 +51,9 @@ export function TermClosureDetailsDrawer({ term, onClose }: TermClosureDetailsDr
         </dl>
       </section>
 
-      {isClosed && term.closureEffects.length > 0 && (
+      {term.closureEffects.length > 0 && (
         <section className="mt-6">
-          <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
-            Closure effects
-          </h3>
-          <ul className="mt-3 space-y-2">
-            {term.closureEffects.map((item) => (
-              <li
-                key={item.label}
-                className="flex items-start gap-2 font-body text-sm text-slate-600 dark:text-slate-300"
-              >
-                <span
-                  className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-400"
-                  aria-hidden="true"
-                >
-                  <CheckIcon size={12} strokeWidth={3} />
-                </span>
-                {item.label}
-              </li>
-            ))}
-          </ul>
+          <ClosureEffectsPanel effects={term.closureEffects} variant="compact" />
         </section>
       )}
 

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { FormError } from "~/components/forms/form-error";
-import { CheckIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";
 import { Spinner } from "~/components/ui/spinner";
+import { ClosureEffectsPanel } from "~/features/academic-terms/closure-effects-panel";
 import { termClosureService } from "~/services/term-closure.service";
 import type { TermClosePreview } from "~/types/term-closure";
 
@@ -87,27 +87,7 @@ export function TermCloseDialog({ open, syId, semesterNumber, onClose, onConfirm
             <p className="font-body text-sm text-slate-600 dark:text-slate-300">{preview.confirmation.message}</p>
 
             {preview.closureEffects.length > 0 && (
-              <section>
-                <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
-                  What happens when you post a term
-                </h3>
-                <ul className="mt-3 space-y-2">
-                  {preview.closureEffects.map((item) => (
-                    <li
-                      key={item.label}
-                      className="flex items-start gap-2.5 font-body text-sm text-slate-600 dark:text-slate-300"
-                    >
-                      <span
-                        className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-400"
-                        aria-hidden="true"
-                      >
-                        <CheckIcon size={12} strokeWidth={3} />
-                      </span>
-                      {item.label}
-                    </li>
-                  ))}
-                </ul>
-              </section>
+              <ClosureEffectsPanel effects={preview.closureEffects} variant="compact" />
             )}
 
             <Textarea
