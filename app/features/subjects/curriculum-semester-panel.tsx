@@ -169,7 +169,7 @@ export function CurriculumSemesterPanel({
                 <TableHeader>Descriptive Title</TableHeader>
                 <TableHeader className="text-center">Units</TableHeader>
                 <TableHeader className={isViewMode ? undefined : "md:w-32"}>Subject Type</TableHeader>
-                <TableHeader className="w-40 whitespace-nowrap">Prerequisites</TableHeader>
+                <TableHeader className="md:w-32 whitespace-nowrap">Prerequisites</TableHeader>
                 {!isViewMode && <TableHeader className="px-2" />}
               </TableHead>
               <TableBody>

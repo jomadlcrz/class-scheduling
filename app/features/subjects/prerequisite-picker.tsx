@@ -26,7 +26,7 @@ type PrerequisitePickerProps = {
 type PickerProps = Omit<PrerequisitePickerProps, "compact">;
 
 const compactTriggerClassName =
-  "inline-flex w-36 max-w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-body text-xs font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10";
+  "inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-body text-xs font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10";
 
 const compactOptionClassName =
   "flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-left font-body transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10";
@@ -58,7 +58,7 @@ function CompactPrerequisitePicker({
 
   if (options.length === 0) {
     return (
-      <span className="inline-flex w-36 max-w-full items-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-body text-xs text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500">
+      <span className="inline-flex w-full items-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-body text-xs text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500">
         None available
       </span>
     );

@@ -103,7 +103,7 @@ export function CurriculumSubjectRow({
           </span>
         )}
       </TableCell>
-      <TableCell className="w-24 min-w-24 px-1 align-middle text-center whitespace-nowrap">
+      <TableCell className="md:w-24 md:min-w-24 px-1 align-middle text-center whitespace-nowrap">
         {isEditable && row.tempId ? (
           <div className="mx-auto w-20">
             <TableInput
@@ -111,7 +111,8 @@ export function CurriculumSubjectRow({
               min={1}
               max={6}
               step={1}
-              value={row.units}
+              placeholder="—"
+              value={row.units === 0 ? "" : row.units}
               onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
               aria-label={`Units for ${row.code || "new subject"}`}
               className="px-1 text-center tabular-nums"
@@ -132,7 +133,7 @@ export function CurriculumSubjectRow({
             onValueChange={(v) => onUpdatePending(row.tempId!, { subjectType: v as string })}
           >
             <SelectTrigger className="py-1.5 text-xs">
-              <SelectValue />
+              <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
               {subjectTypes.map((type) => (
@@ -146,7 +147,7 @@ export function CurriculumSubjectRow({
           <SubjectTypeBadge type={row.subjectType} />
         )}
       </TableCell>
-      <TableCell className="w-40 max-w-40 align-middle">
+      <TableCell className="md:w-32 md:max-w-32 min-w-0 align-middle">
         {isEditable && row.tempId ? (
           <PrerequisitePicker
             compact

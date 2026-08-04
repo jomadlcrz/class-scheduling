@@ -132,8 +132,8 @@ function ProgramsNewPage() {
         semester,
         code: "",
         title: "",
-        units: 3,
-        subjectType: subjectTypes[0] ?? "",
+        units: 0,
+        subjectType: "",
         prerequisites: [],
       },
     ]);
@@ -186,6 +186,9 @@ function ProgramsNewPage() {
       if (!entry.title.trim()) return "Every new subject needs a descriptive title.";
       if (!Number.isFinite(entry.units) || entry.units < 1) {
         return `${entry.code || "A subject"} must have at least 1 unit.`;
+      }
+      if (!entry.subjectType) {
+        return `${entry.code || "A subject"} needs a subject type.`;
       }
     }
 
