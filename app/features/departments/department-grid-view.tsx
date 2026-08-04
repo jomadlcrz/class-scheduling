@@ -1,7 +1,8 @@
 ﻿import { motion, useReducedMotion, type Variants } from "motion/react";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { EditIcon, ArchiveIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import { actionButtonClassName } from "~/features/departments/department-table";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { getBuildingTone } from "~/types/building";
@@ -11,14 +12,14 @@ import type { Department } from "~/types/department";
 type DepartmentGridViewProps = {
   departments: Department[];
   onEdit: (department: Department) => void;
-  onDelete: (department: Department) => void;
+  onArchive: (department: Department) => void;
 };
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 /** Directory-plate grid: each card echoes the app's blueprint-grid motif with
  *  architectural corner ticks that reveal on hover. */
-export function DepartmentGridView({ departments, onEdit, onDelete }: DepartmentGridViewProps) {
+export function DepartmentGridView({ departments, onEdit, onArchive }: DepartmentGridViewProps) {
   const reduceMotion = useReducedMotion();
 
   const container: Variants = {
@@ -107,12 +108,12 @@ export function DepartmentGridView({ departments, onEdit, onDelete }: Department
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete(dept)}
-                    aria-label={`Delete ${dept.abbrev}`}
-                    title="Delete"
-                    className={actionButtonClassName}
+                    onClick={() => onArchive(dept)}
+                    aria-label={`Archive ${dept.abbrev}`}
+                    title="Archive"
+                    className={archiveActionButtonClassName}
                   >
-                    <TrashIcon />
+                    <ArchiveIcon />
                   </button>
                 </div>
               </div>

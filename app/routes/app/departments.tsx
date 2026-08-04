@@ -11,7 +11,7 @@ import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { DepartmentForm } from "~/features/departments/department-form";
-import { DepartmentDeleteDialog } from "~/features/departments/department-delete-dialog";
+import { DepartmentArchiveDialog } from "~/features/departments/department-archive-dialog";
 import { DepartmentGridView } from "~/features/departments/department-grid-view";
 import { DepartmentTable } from "~/features/departments/department-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
@@ -47,7 +47,7 @@ function DepartmentsPage() {
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Department | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Department | null>(null);
 
   useEffect(() => {
     departmentService.list().then(setDepts).catch(() => setDepts([]));
@@ -102,11 +102,11 @@ function DepartmentsPage() {
     setEditTarget(null);
   }
 
-  async function handleDelete(target: Department) {
+  async function handleArchive(target: Department) {
     const message = await departmentService.remove(target.id, target.abbrev);
     if (message) toast.success(message);
     await refresh();
-    setDeleteTarget(null);
+    setArchiveTarget(null);
   }
 
   return (
@@ -184,13 +184,13 @@ function DepartmentsPage() {
                   <DepartmentGridView
                     departments={pagination.pageItems}
                     onEdit={setEditTarget}
-                    onDelete={setDeleteTarget}
+                    onArchive={setArchiveTarget}
                   />
                 ) : (
                   <DepartmentTable
                     departments={pagination.pageItems}
                     onEdit={setEditTarget}
-                    onDelete={setDeleteTarget}
+                    onArchive={setArchiveTarget}
                   />
                 )}
               </motion.div>
@@ -226,10 +226,10 @@ function DepartmentsPage() {
         )}
       </Modal>
 
-      <DepartmentDeleteDialog
-        department={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
+      <DepartmentArchiveDialog
+        department={archiveTarget}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={handleArchive}
       />
     </div>
   );

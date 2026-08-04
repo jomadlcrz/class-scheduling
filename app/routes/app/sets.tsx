@@ -9,7 +9,7 @@ import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
-import { SetDeleteDialog } from "~/features/sets/set-delete-dialog";
+import { SetArchiveDialog } from "~/features/sets/set-archive-dialog";
 import { SetForm } from "~/features/sets/set-form";
 import { SetTable } from "~/features/sets/set-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -46,7 +46,7 @@ function SetsPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ClassSet | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<ClassSet | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<ClassSet | null>(null);
 
   useEffect(() => {
     setService.list().then(setSets).catch(() => setSets([]));
@@ -95,8 +95,7 @@ function SetsPage() {
     setEditTarget(null);
   }
 
-  async function handleDelete(target: ClassSet) {
-    // The backend asks for the set's own code as the deletion confirmation.
+  async function handleArchive(target: ClassSet) {
     const message = await setService.remove(target.id, target.setCode);
     if (message) toast.success(message);
     await refresh();
@@ -167,7 +166,7 @@ function SetsPage() {
               sets={pagination.pageItems}
               programs={programs ?? []}
               onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
+              onArchive={setArchiveTarget}
             />
             <Pagination
               page={pagination.page}
@@ -194,10 +193,10 @@ function SetsPage() {
         )}
       </Modal>
 
-      <SetDeleteDialog
-        set={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
+      <SetArchiveDialog
+        set={archiveTarget}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={handleArchive}
       />
     </div>
   );

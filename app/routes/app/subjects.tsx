@@ -12,7 +12,7 @@ import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { SubjectForm } from "~/features/subjects/subject-form";
-import { SubjectDeleteDialog } from "~/features/subjects/subject-delete-dialog";
+import { SubjectArchiveDialog } from "~/features/subjects/subject-archive-dialog";
 import { SubjectTable } from "~/features/subjects/subject-table";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
@@ -58,7 +58,7 @@ function SubjectsPage() {
 
   // Creation lives on /subjects/new; the modal is for editing only.
   const [editTarget, setEditTarget] = useState<Subject | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Subject | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Subject | null>(null);
 
   useEffect(() => {
     subjectService.list().then(setSubjects).catch(() => setSubjects([]));
@@ -112,11 +112,11 @@ function SubjectsPage() {
     setEditTarget(null);
   }
 
-  async function handleDelete(target: Subject) {
+  async function handleArchive(target: Subject) {
     const message = await subjectService.remove(target.id, target.code);
     if (message) toast.success(message);
     await refresh();
-    setDeleteTarget(null);
+    setArchiveTarget(null);
   }
 
   return (
@@ -192,7 +192,7 @@ function SubjectsPage() {
               subjects={pagination.pageItems}
               programs={programs ?? []}
               onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
+              onArchive={setArchiveTarget}
             />
             <Pagination
               page={pagination.page}
@@ -216,10 +216,10 @@ function SubjectsPage() {
         )}
       </Modal>
 
-      <SubjectDeleteDialog
-        subject={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
+      <SubjectArchiveDialog
+        subject={archiveTarget}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={handleArchive}
       />
     </div>
   );

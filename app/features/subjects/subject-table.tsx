@@ -1,6 +1,7 @@
 ﻿import { useMemo } from "react";
 import { Badge } from "~/components/ui/badge";
-import { EditIcon, TrashIcon } from "~/components/ui/icons";
+import { EditIcon, ArchiveIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Table,
   TableBody,
@@ -21,13 +22,13 @@ type SubjectTableProps = {
   subjects: Subject[];
   programs: Program[];
   onEdit: (subject: Subject) => void;
-  onDelete: (subject: Subject) => void;
+  onArchive: (subject: Subject) => void;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTableProps) {
+export function SubjectTable({ subjects, programs, onEdit, onArchive }: SubjectTableProps) {
   const { semesterLabel } = useSemesters();
   const { yearLevelLabel } = useYearLevels();
   const programDeptMap = useMemo(
@@ -104,12 +105,12 @@ export function SubjectTable({ subjects, programs, onEdit, onDelete }: SubjectTa
                 </button>
                 <button
                   type="button"
-                  onClick={() => onDelete(subject)}
-                  aria-label={`Delete ${subject.code}`}
-                  title="Delete"
-                  className={actionButtonClassName}
+                  onClick={() => onArchive(subject)}
+                  aria-label={`Archive ${subject.code}`}
+                  title="Archive"
+                  className={archiveActionButtonClassName}
                 >
-                  <TrashIcon />
+                  <ArchiveIcon />
                 </button>
               </div>
             </TableCell>

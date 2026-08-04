@@ -1,4 +1,5 @@
-﻿import { EditIcon, TrashIcon } from "~/components/ui/icons";
+﻿import { EditIcon, ArchiveIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
@@ -16,13 +17,13 @@ type SetTableProps = {
   sets: ClassSet[];
   programs: Program[];
   onEdit: (set: ClassSet) => void;
-  onDelete: (set: ClassSet) => void;
+  onArchive: (set: ClassSet) => void;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
+export function SetTable({ sets, programs, onEdit, onArchive }: SetTableProps) {
   const { yearLevelLabel } = useYearLevels();
   function getProgram(abbrev: string) {
     return programs.find((p) => p.abbrev === abbrev);
@@ -82,12 +83,12 @@ export function SetTable({ sets, programs, onEdit, onDelete }: SetTableProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete(set)}
-                    aria-label={`Delete set ${set.setCode}`}
-                    title="Delete"
-                    className={actionButtonClassName}
+                    onClick={() => onArchive(set)}
+                    aria-label={`Archive set ${set.setCode}`}
+                    title="Archive"
+                    className={archiveActionButtonClassName}
                   >
-                    <TrashIcon />
+                    <ArchiveIcon />
                   </button>
                 </div>
               </TableCell>

@@ -9,7 +9,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { departmentService } from "~/services/department.service";
 import type { Department, DepartmentDeletePreview } from "~/types/department";
 
-type DepartmentDeleteDialogProps = {
+type DepartmentArchiveDialogProps = {
   department: Department | null;
   onClose: () => void;
   onConfirm: (department: Department) => Promise<void>;
@@ -18,22 +18,20 @@ type DepartmentDeleteDialogProps = {
 const summaryRowClassName =
   "flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm dark:border-white/10 dark:bg-white/5";
 
-/** Confirm-preview dialog for deleting a department: fetches GET /departments/:id/delete-preview.
- * Programs cascade fully; staff assignment still blocks outright (accounts are never
- * touched). Requires typing the department's own abbreviation to confirm. */
-export function DepartmentDeleteDialog({ department, onClose, onConfirm }: DepartmentDeleteDialogProps) {
+/** Confirm-preview dialog for archiving a department: fetches GET /departments/:id/archive-preview. */
+export function DepartmentArchiveDialog({ department, onClose, onConfirm }: DepartmentArchiveDialogProps) {
   const [preview, setPreview] = useState<DepartmentDeletePreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmValue, setConfirmValue] = useState("");
-  const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
     if (!department) return;
     setPreview(null);
     setError(null);
     setConfirmValue("");
-    setDeleting(false);
+    setArchiving(false);
     setLoading(true);
     departmentService
       .getDeletePreview(department.id)
@@ -45,17 +43,17 @@ export function DepartmentDeleteDialog({ department, onClose, onConfirm }: Depar
   const confirmed =
     preview !== null && confirmValue.trim().toUpperCase() === preview.department.department_abbrev;
 
-  async function handleDelete() {
+  async function handleArchive() {
     if (!department) return;
     setError(null);
-    setDeleting(true);
+    setArchiving(true);
     try {
       await onConfirm(department);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
     } finally {
-      setDeleting(false);
+      setArchiving(false);
     }
   }
 
@@ -64,7 +62,7 @@ export function DepartmentDeleteDialog({ department, onClose, onConfirm }: Depar
       return (
         <div
           role="status"
-          aria-label="Loading delete preview"
+          aria-label="Loading archive preview"
           className="grid place-items-center py-10 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
@@ -120,13 +118,11 @@ export function DepartmentDeleteDialog({ department, onClose, onConfirm }: Depar
     return (
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          Deleting{" "}
+          Archiving{" "}
           <span className="font-medium text-navy-700 dark:text-mist-100">
             {preview.department.department_abbrev} — {preview.department.department_name}
           </span>{" "}
-          cascades through every program below, exactly like deleting each one
-          itself: curriculum, sets, schedules, instructor assignments, and
-          irregular enrollments.
+          cascades through every program below. It can be restored from Archive at any time.
         </p>
 
         <ul className="flex flex-col gap-2">
@@ -155,17 +151,17 @@ export function DepartmentDeleteDialog({ department, onClose, onConfirm }: Depar
 
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="department-delete-confirm"
+            htmlFor="department-archive-confirm"
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
             <span className="font-semibold text-navy-700 dark:text-mist-100">
               {preview.department.department_abbrev}
             </span>{" "}
-            to confirm deletion
+            to confirm archival
           </label>
           <input
-            id="department-delete-confirm"
+            id="department-archive-confirm"
             type="text"
             autoCapitalize="characters"
             autoComplete="off"
@@ -186,11 +182,11 @@ export function DepartmentDeleteDialog({ department, onClose, onConfirm }: Depar
             variant="danger"
             block={false}
             disabled={!confirmed}
-            isLoading={deleting}
-            loadingLabel="Deleting…"
-            onClick={handleDelete}
+            isLoading={archiving}
+            loadingLabel="Archiving…"
+            onClick={handleArchive}
           >
-            Delete department
+            Archive department
           </Button>
         </div>
       </div>
@@ -198,7 +194,7 @@ export function DepartmentDeleteDialog({ department, onClose, onConfirm }: Depar
   }
 
   return (
-    <Modal open={department !== null} onClose={onClose} title="Delete department" wide>
+    <Modal open={department !== null} onClose={onClose} title="Archive department" wide>
       {renderBody()}
     </Modal>
   );

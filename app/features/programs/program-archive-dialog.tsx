@@ -8,7 +8,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { programService } from "~/services/program.service";
 import type { Program, ProgramDeletePreview } from "~/types/program";
 
-type ProgramDeleteDialogProps = {
+type ProgramArchiveDialogProps = {
   program: Program | null;
   onClose: () => void;
   onConfirm: (program: Program) => Promise<void>;
@@ -17,22 +17,20 @@ type ProgramDeleteDialogProps = {
 const summaryRowClassName =
   "flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm dark:border-white/10 dark:bg-white/5";
 
-/** Confirm-preview dialog for deleting a program: fetches GET /programs/:id/delete-preview,
- * lists everything the cascade will touch, and requires typing the program's
- * abbreviation to confirm. Nothing data-driven blocks the delete anymore. */
-export function ProgramDeleteDialog({ program, onClose, onConfirm }: ProgramDeleteDialogProps) {
+/** Confirm-preview dialog for archiving a program: fetches GET /programs/:id/archive-preview. */
+export function ProgramArchiveDialog({ program, onClose, onConfirm }: ProgramArchiveDialogProps) {
   const [preview, setPreview] = useState<ProgramDeletePreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmValue, setConfirmValue] = useState("");
-  const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
     if (!program) return;
     setPreview(null);
     setError(null);
     setConfirmValue("");
-    setDeleting(false);
+    setArchiving(false);
     setLoading(true);
     programService
       .getDeletePreview(program.id)
@@ -44,17 +42,17 @@ export function ProgramDeleteDialog({ program, onClose, onConfirm }: ProgramDele
   const confirmed =
     program !== null && confirmValue.trim().toUpperCase() === program.abbrev;
 
-  async function handleDelete() {
+  async function handleArchive() {
     if (!program) return;
     setError(null);
-    setDeleting(true);
+    setArchiving(true);
     try {
       await onConfirm(program);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
     } finally {
-      setDeleting(false);
+      setArchiving(false);
     }
   }
 
@@ -63,7 +61,7 @@ export function ProgramDeleteDialog({ program, onClose, onConfirm }: ProgramDele
       return (
         <div
           role="status"
-          aria-label="Loading delete preview"
+          aria-label="Loading archive preview"
           className="grid place-items-center py-10 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
@@ -92,13 +90,13 @@ export function ProgramDeleteDialog({ program, onClose, onConfirm }: ProgramDele
     return (
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          Deleting{" "}
+          Archiving{" "}
           <span className="font-medium text-navy-700 dark:text-mist-100">
             {preview.program.program_abbrev} — {preview.program.program_name}
           </span>{" "}
           cascades through everything that only exists for this program. Regular
           students' academic records are kept — they just end up pointing at an
-          inactive program.
+          inactive program. It can be restored from Archive at any time.
         </p>
 
         <ul className="flex flex-col gap-2">
@@ -199,17 +197,17 @@ export function ProgramDeleteDialog({ program, onClose, onConfirm }: ProgramDele
 
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="program-delete-confirm"
+            htmlFor="program-archive-confirm"
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
             <span className="font-semibold text-navy-700 dark:text-mist-100">
               {preview.program.program_abbrev}
             </span>{" "}
-            to confirm deletion
+            to confirm archival
           </label>
           <input
-            id="program-delete-confirm"
+            id="program-archive-confirm"
             type="text"
             autoCapitalize="characters"
             autoComplete="off"
@@ -230,11 +228,11 @@ export function ProgramDeleteDialog({ program, onClose, onConfirm }: ProgramDele
             variant="danger"
             block={false}
             disabled={!confirmed}
-            isLoading={deleting}
-            loadingLabel="Deleting…"
-            onClick={handleDelete}
+            isLoading={archiving}
+            loadingLabel="Archiving…"
+            onClick={handleArchive}
           >
-            Delete program
+            Archive program
           </Button>
         </div>
       </div>
@@ -242,7 +240,7 @@ export function ProgramDeleteDialog({ program, onClose, onConfirm }: ProgramDele
   }
 
   return (
-    <Modal open={program !== null} onClose={onClose} title="Delete program" wide>
+    <Modal open={program !== null} onClose={onClose} title="Archive program" wide>
       {renderBody()}
     </Modal>
   );

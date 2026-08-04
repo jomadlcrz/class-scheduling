@@ -9,7 +9,7 @@ import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
-import { ProgramDeleteDialog } from "~/features/programs/program-delete-dialog";
+import { ProgramArchiveDialog } from "~/features/programs/program-archive-dialog";
 import { ProgramForm } from "~/features/programs/program-form";
 import { ProgramTable } from "~/features/programs/program-table";
 import { usePagination } from "~/hooks/use-pagination";
@@ -43,7 +43,7 @@ function ProgramsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Program | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Program | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Program | null>(null);
 
   useEffect(() => {
     programService.list().then(setProgramsList).catch(() => setProgramsList([]));
@@ -97,8 +97,7 @@ function ProgramsPage() {
     setEditTarget(null);
   }
 
-  async function handleDelete(target: Program) {
-    // The backend asks for the program's abbreviation as the deletion confirmation.
+  async function handleArchive(target: Program) {
     const message = await programService.remove(target.id, target.abbrev);
     if (message) toast.success(message);
     await refresh();
@@ -168,7 +167,7 @@ function ProgramsPage() {
             <ProgramTable
               programs={pagination.pageItems}
               onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
+              onArchive={setArchiveTarget}
             />
             <Pagination
               page={pagination.page}
@@ -199,10 +198,10 @@ function ProgramsPage() {
         )}
       </Modal>
 
-      <ProgramDeleteDialog
-        program={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
+      <ProgramArchiveDialog
+        program={archiveTarget}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={handleArchive}
       />
     </div>
   );

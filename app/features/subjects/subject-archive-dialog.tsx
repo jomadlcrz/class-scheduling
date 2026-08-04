@@ -8,7 +8,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { subjectService } from "~/services/subject.service";
 import type { Subject, SubjectDeletePreview } from "~/types/subject";
 
-type SubjectDeleteDialogProps = {
+type SubjectArchiveDialogProps = {
   subject: Subject | null;
   onClose: () => void;
   onConfirm: (subject: Subject) => Promise<void>;
@@ -17,22 +17,20 @@ type SubjectDeleteDialogProps = {
 const summaryRowClassName =
   "flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm dark:border-white/10 dark:bg-white/5";
 
-/** Confirm-preview dialog for deleting a subject: fetches GET /subjects/:id/delete-preview,
- * lists everything the cascade will touch across every program that uses it, and requires
- * typing the subject's own code to confirm. Nothing data-driven blocks the delete. */
-export function SubjectDeleteDialog({ subject, onClose, onConfirm }: SubjectDeleteDialogProps) {
+/** Confirm-preview dialog for archiving a subject: fetches GET /subjects/:id/archive-preview. */
+export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArchiveDialogProps) {
   const [preview, setPreview] = useState<SubjectDeletePreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmValue, setConfirmValue] = useState("");
-  const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
     if (!subject) return;
     setPreview(null);
     setError(null);
     setConfirmValue("");
-    setDeleting(false);
+    setArchiving(false);
     setLoading(true);
     subjectService
       .getDeletePreview(subject.id)
@@ -44,17 +42,17 @@ export function SubjectDeleteDialog({ subject, onClose, onConfirm }: SubjectDele
   const confirmed =
     preview !== null && confirmValue.trim().toUpperCase() === preview.subject.subject_code;
 
-  async function handleDelete() {
+  async function handleArchive() {
     if (!subject) return;
     setError(null);
-    setDeleting(true);
+    setArchiving(true);
     try {
       await onConfirm(subject);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
     } finally {
-      setDeleting(false);
+      setArchiving(false);
     }
   }
 
@@ -63,7 +61,7 @@ export function SubjectDeleteDialog({ subject, onClose, onConfirm }: SubjectDele
       return (
         <div
           role="status"
-          aria-label="Loading delete preview"
+          aria-label="Loading archive preview"
           className="grid place-items-center py-10 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
@@ -90,13 +88,11 @@ export function SubjectDeleteDialog({ subject, onClose, onConfirm }: SubjectDele
     return (
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          Deleting{" "}
+          Archiving{" "}
           <span className="font-medium text-navy-700 dark:text-mist-100">
             {preview.subject.subject_code} — {preview.subject.descriptive_title}
           </span>{" "}
-          reaches into every program whose curriculum it sits on. Only this
-          subject's own schedule sessions are cleared — the rest of each set's
-          schedule is left intact.
+          reaches into every program whose curriculum it sits on. It can be restored from Archive at any time.
         </p>
 
         <ul className="flex flex-col gap-2">
@@ -175,17 +171,17 @@ export function SubjectDeleteDialog({ subject, onClose, onConfirm }: SubjectDele
 
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="subject-delete-confirm"
+            htmlFor="subject-archive-confirm"
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
             <span className="font-semibold text-navy-700 dark:text-mist-100">
               {preview.subject.subject_code}
             </span>{" "}
-            to confirm deletion
+            to confirm archival
           </label>
           <input
-            id="subject-delete-confirm"
+            id="subject-archive-confirm"
             type="text"
             autoCapitalize="characters"
             autoComplete="off"
@@ -206,11 +202,11 @@ export function SubjectDeleteDialog({ subject, onClose, onConfirm }: SubjectDele
             variant="danger"
             block={false}
             disabled={!confirmed}
-            isLoading={deleting}
-            loadingLabel="Deleting…"
-            onClick={handleDelete}
+            isLoading={archiving}
+            loadingLabel="Archiving…"
+            onClick={handleArchive}
           >
-            Delete subject
+            Archive subject
           </Button>
         </div>
       </div>
@@ -218,7 +214,7 @@ export function SubjectDeleteDialog({ subject, onClose, onConfirm }: SubjectDele
   }
 
   return (
-    <Modal open={subject !== null} onClose={onClose} title="Delete subject" wide>
+    <Modal open={subject !== null} onClose={onClose} title="Archive subject" wide>
       {renderBody()}
     </Modal>
   );

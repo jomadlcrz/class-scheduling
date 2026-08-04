@@ -1,4 +1,5 @@
-﻿import { EditIcon, TrashIcon } from "~/components/ui/icons";
+﻿import { EditIcon, ArchiveIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Table,
   TableBody,
@@ -13,13 +14,13 @@ import type { Program } from "~/types/program";
 type ProgramTableProps = {
   programs: Program[];
   onEdit: (program: Program) => void;
-  onDelete: (program: Program) => void;
+  onArchive: (program: Program) => void;
 };
 
 const actionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
-export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) {
+export function ProgramTable({ programs, onEdit, onArchive }: ProgramTableProps) {
   return (
     <Table>
       <TableHead>
@@ -63,12 +64,12 @@ export function ProgramTable({ programs, onEdit, onDelete }: ProgramTableProps) 
                 </button>
                 <button
                   type="button"
-                  onClick={() => onDelete(prog)}
-                  aria-label={`Delete ${prog.abbrev}`}
-                  title="Delete"
-                  className={actionButtonClassName}
+                  onClick={() => onArchive(prog)}
+                  aria-label={`Archive ${prog.abbrev}`}
+                  title="Archive"
+                  className={archiveActionButtonClassName}
                 >
-                  <TrashIcon />
+                  <ArchiveIcon />
                 </button>
               </div>
             </TableCell>
