@@ -191,7 +191,7 @@ export function FacilitiesViewWorkspace({
               block={false}
               onClick={() => onManageBuilding(building)}
             >
-              Manage Rooms
+              Manage
             </Button>
             <button
               type="button"
