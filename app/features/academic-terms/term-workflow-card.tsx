@@ -3,8 +3,10 @@ import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { LockIcon } from "~/components/ui/icons";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { Textarea } from "~/components/ui/textarea";
 import { SchoolYearCloseDialog } from "~/features/academic-terms/school-year-close-dialog";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermCloseDialog } from "~/features/academic-terms/term-close-dialog";
@@ -15,10 +17,11 @@ import type { TermWorkflow } from "~/types/term-closure";
 
 type TermWorkflowCardProps = {
   onChanged?: () => Promise<void>;
+  refreshKey?: number;
 };
 
 /** Academic year workflow — timeline stepper, semester cards, post/reopen actions. */
-export function TermWorkflowCard({ onChanged }: TermWorkflowCardProps) {
+export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCardProps) {
   const { context, refresh, selectTerm } = useTermContext();
   const schoolYears = context?.schoolYears ?? [];
   const [syId, setSyId] = useState<number | null>(context?.selection.syId ?? null);
@@ -26,6 +29,8 @@ export function TermWorkflowCard({ onChanged }: TermWorkflowCardProps) {
   const [loading, setLoading] = useState(false);
   const [closeSemester, setCloseSemester] = useState<number | null>(null);
   const [closeSchoolYearOpen, setCloseSchoolYearOpen] = useState(false);
+  const [reopenSchoolYearOpen, setReopenSchoolYearOpen] = useState(false);
+  const [reopenReason, setReopenReason] = useState("");
 
   useEffect(() => {
     if (syId == null && context?.selection.syId != null) {
@@ -59,7 +64,7 @@ export function TermWorkflowCard({ onChanged }: TermWorkflowCardProps) {
     return () => {
       cancelled = true;
     };
-  }, [syId]);
+  }, [syId, refreshKey]);
 
   async function reload() {
     if (syId == null) return;
@@ -80,6 +85,17 @@ export function TermWorkflowCard({ onChanged }: TermWorkflowCardProps) {
     if (syId == null) return;
     const message = await termClosureService.closeSchoolYear(syId, reason || undefined);
     if (message) toast.success(message);
+    await reload();
+  }
+
+  async function handleReopenSchoolYear() {
+    if (syId == null) return;
+    const message = await termClosureService.reopenSchoolYear(
+      syId,
+      reopenReason.trim() || undefined,
+    );
+    if (message) toast.success(message);
+    setReopenReason("");
     await reload();
   }
 
@@ -161,7 +177,19 @@ export function TermWorkflowCard({ onChanged }: TermWorkflowCardProps) {
               />
 
               <div className="flex justify-end border-t border-slate-100 pt-6 dark:border-white/10">
-                {canRunNextAction && (
+                {workflow.workflow.schoolYearCompleted ? (
+                  <div className="shrink-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      block={false}
+                      disabled={loading}
+                      onClick={() => setReopenSchoolYearOpen(true)}
+                    >
+                      Reopen School Year
+                    </Button>
+                  </div>
+                ) : canRunNextAction && (
                   <div className="shrink-0">
                     <Button type="button" block={false} disabled={loading} onClick={handleNextAction}>
                       <LockIcon size={16} />
@@ -193,6 +221,31 @@ export function TermWorkflowCard({ onChanged }: TermWorkflowCardProps) {
         onClose={() => setCloseSchoolYearOpen(false)}
         onConfirm={handleCloseSchoolYear}
       />
+
+      <ConfirmDialog
+        open={reopenSchoolYearOpen}
+        onClose={() => {
+          setReopenSchoolYearOpen(false);
+          setReopenReason("");
+        }}
+        title="Reopen school year"
+        confirmLabel="Reopen school year"
+        loadingLabel="Reopening…"
+        onConfirm={handleReopenSchoolYear}
+      >
+        <p>
+          Reopening this school year will unlock records from both the 1st and 2nd semesters.
+        </p>
+        <div className="mt-4">
+          <Textarea
+            id="school-year-reopen-reason"
+            label="Reason for reopening"
+            value={reopenReason}
+            onChange={(event) => setReopenReason(event.target.value)}
+            placeholder="Optional notes for the audit trail"
+          />
+        </div>
+      </ConfirmDialog>
 
     </>
   );

@@ -32,6 +32,7 @@ export function TermClosurePage() {
   const [reopenTarget, setReopenTarget] = useState<TermClosureItem | null>(null);
   const [reopenReason, setReopenReason] = useState("");
   const [helpOpen, setHelpOpen] = useState(false);
+  const [workflowRevision, setWorkflowRevision] = useState(0);
 
   const terms = useMemo(() => {
     const selected = selectedContext?.term;
@@ -66,6 +67,7 @@ export function TermClosurePage() {
   async function afterChange(message: string) {
     if (message) toast.success(message);
     await Promise.all([refresh(), refreshSelectedTerm()]);
+    setWorkflowRevision((revision) => revision + 1);
   }
 
   async function handleClose(reason: string) {
@@ -105,7 +107,7 @@ export function TermClosurePage() {
       />
 
       <div className="mt-6">
-        <TermWorkflowCard onChanged={refresh} />
+        <TermWorkflowCard onChanged={refresh} refreshKey={workflowRevision} />
       </div>
 
       <section className="mt-10" aria-labelledby="closure-history-heading">

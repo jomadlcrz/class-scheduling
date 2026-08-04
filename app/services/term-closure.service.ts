@@ -577,7 +577,7 @@ async function getTermWorkflow(syId: number): Promise<TermWorkflow> {
         key: step.key,
         label: step.label,
         description: step.description,
-        status: step.status,
+        status: raw.workflow.school_year_completed ? "completed" : step.status,
         semesterNumber: step.semester_number,
       })),
       activeSemesterNumber: raw.workflow.active_semester_number,
@@ -632,6 +632,14 @@ async function getSchoolYearClosePreview(syId: number): Promise<SchoolYearCloseP
 async function closeSchoolYear(syId: number, reason?: string): Promise<string> {
   const data = await apiPost<{ message?: string }>(`/school-years/${syId}/close`, {
     ...(reason ? { completion_reason: reason } : {}),
+  });
+  return apiMessage(data);
+}
+
+/** POST /school-years/{id}/reopen — unlock both semesters in a registrar-closed school year. */
+async function reopenSchoolYear(syId: number, reason?: string): Promise<string> {
+  const data = await apiPost<{ message?: string }>(`/school-years/${syId}/reopen`, {
+    ...(reason ? { reason } : {}),
   });
   return apiMessage(data);
 }
@@ -822,6 +830,7 @@ export const termClosureService = {
   getTermWorkflow,
   getSchoolYearClosePreview,
   closeSchoolYear,
+  reopenSchoolYear,
   getLifecycle,
   getSchoolYearState,
   getSchoolYearStatePreview,
