@@ -378,24 +378,6 @@ async function getContext(params: { syId?: number; semesterNumber?: number } = {
   };
 }
 
-/** GET /school-years/:id/terms/:semester/state — lifecycle status for one term. */
-async function getStatus(syId: number, semesterNumber: number): Promise<TermClosureItem> {
-  const raw = await apiGet<ApiTermState>(
-    `/school-years/${syId}/terms/${semesterNumber}/state`,
-  );
-  return mapClosureItem(raw);
-}
-
-/** GET /school-years/:id/terms/:semester/state/preview — impact summary before posting a term. */
-async function getClosePreview(syId: number, semesterNumber: number): Promise<TermClosePreview> {
-  return getTermStatePreview(syId, semesterNumber);
-}
-
-/** PATCH /school-years/:id/terms/:semester/state — post (close) a term. */
-async function close(syId: number, semesterNumber: number, reason?: string): Promise<string> {
-  return patchTermState(syId, semesterNumber, "closed", reason);
-}
-
 /** GET /terms/closures — registrar-posted closures, newest first. */
 async function listClosures(): Promise<TermClosureListResult> {
   const data = await apiGet<{
@@ -411,11 +393,6 @@ async function listClosures(): Promise<TermClosureListResult> {
 /** GET /terms/closures/:id — detail for one registrar-posted closure. */
 async function getClosure(closureId: number): Promise<TermClosureItem> {
   return mapClosureItem(await apiGet<ApiTermClosureItem>(`/terms/closures/${closureId}`));
-}
-
-/** PATCH /school-years/:id/terms/:semester/state — reopen a posted term. */
-async function reopen(syId: number, semesterNumber: number, reason?: string): Promise<string> {
-  return patchTermState(syId, semesterNumber, "open", reason);
 }
 
 /** GET /terms/audit-log/filters */
@@ -500,21 +477,6 @@ async function getLifecycle(syId: number): Promise<AcademicLifecycle> {
 /** Workflow view derived from GET /school-years/{id}/lifecycle. */
 async function getTermWorkflow(syId: number): Promise<TermWorkflow> {
   return lifecycleToTermWorkflow(await getLifecycle(syId));
-}
-
-/** GET /school-years/{id}/state/preview — preview closing a school year. */
-async function getSchoolYearClosePreview(syId: number): Promise<SchoolYearClosePreview> {
-  return getSchoolYearStatePreview(syId);
-}
-
-/** PATCH /school-years/{id}/state — close a school year after both semesters are posted. */
-async function closeSchoolYear(syId: number, reason?: string): Promise<string> {
-  return patchSchoolYearState(syId, "closed", reason);
-}
-
-/** PATCH /school-years/{id}/state — reopen a registrar-closed school year. */
-async function reopenSchoolYear(syId: number, reason?: string): Promise<string> {
-  return patchSchoolYearState(syId, "open", reason);
 }
 
 /** GET /school-years/:id/state. */
@@ -633,18 +595,11 @@ async function patchTermState(
 
 export const termClosureService = {
   getContext,
-  getStatus,
-  getClosePreview,
-  close,
   listClosures,
   getClosure,
-  reopen,
   auditLogFilters,
   listAuditLog,
   getTermWorkflow,
-  getSchoolYearClosePreview,
-  closeSchoolYear,
-  reopenSchoolYear,
   getLifecycle,
   getSchoolYearState,
   getSchoolYearStatePreview,
