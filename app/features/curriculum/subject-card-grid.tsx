@@ -1,15 +1,24 @@
 ﻿import { motion, useReducedMotion, type Variants } from "motion/react";
+import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
+import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import type { Subject } from "~/types/subject";
 
 type SubjectCardGridProps = {
   subjects: Subject[];
+  /** Manage mode: per-card actions render when both are supplied (omit for read-only views, e.g. the dean's). */
+  onEdit?: (subject: Subject) => void;
+  onArchive?: (subject: Subject) => void;
 };
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
+const cardActionButtonClassName =
+  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+
 /** Per-subject cards for a semester: the unit count reads like a credit stamp. */
-export function SubjectCardGrid({ subjects }: SubjectCardGridProps) {
+export function SubjectCardGrid({ subjects, onEdit, onArchive }: SubjectCardGridProps) {
   const reduceMotion = useReducedMotion();
+  const manageable = Boolean(onEdit || onArchive);
 
   if (subjects.length === 0) {
     return (
@@ -53,13 +62,41 @@ export function SubjectCardGrid({ subjects }: SubjectCardGridProps) {
               </div>
             )}
           </div>
-          <div className="shrink-0 text-right">
-            <p className="font-display text-2xl tabular-nums text-navy-700 dark:text-mist-100">
-              {subject.units}
-            </p>
-            <p className="font-body text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
-              units
-            </p>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            {manageable && (
+              <div className="flex items-center gap-0.5">
+                {onEdit && (
+                  <button
+                    type="button"
+                    onClick={() => onEdit(subject)}
+                    aria-label={`Edit ${subject.code}`}
+                    title="Edit"
+                    className={cardActionButtonClassName}
+                  >
+                    <EditIcon />
+                  </button>
+                )}
+                {onArchive && (
+                  <button
+                    type="button"
+                    onClick={() => onArchive(subject)}
+                    aria-label={`Archive ${subject.code}`}
+                    title="Archive"
+                    className={archiveActionButtonClassName}
+                  >
+                    <ArchiveIcon />
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="text-right">
+              <p className="font-display text-2xl tabular-nums text-navy-700 dark:text-mist-100">
+                {subject.units}
+              </p>
+              <p className="font-body text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                units
+              </p>
+            </div>
           </div>
         </motion.div>
       ))}

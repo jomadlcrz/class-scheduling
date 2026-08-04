@@ -11,17 +11,12 @@ import type { PrerequisiteOption } from "~/features/subjects/prerequisite-picker
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { Department } from "~/types/department";
-import type { Program } from "~/types/program";
-import type { CreateSubjectInput, Subject } from "~/types/subject";
+import type { CreateSubjectInput } from "~/types/subject";
 
 type CurriculumBuilderProps = {
-  program: string;
-  programs: Program[];
-  onProgramChange: (abbrev: string) => void;
   departments: Department[];
   newProgram: NewProgramDraft;
   onNewProgramChange: (patch: Partial<NewProgramDraft>) => void;
-  saved: Subject[];
   pending: PendingEntry[];
   subjectTypes: string[];
   prerequisiteOptions: PrerequisiteOption[];
@@ -47,13 +42,9 @@ function sortRows(rows: CurriculumSubjectRowData[], autoSort: boolean) {
 }
 
 export function CurriculumBuilder({
-  program,
-  programs,
-  onProgramChange,
   departments,
   newProgram,
   onNewProgramChange,
-  saved,
   pending,
   subjectTypes,
   prerequisiteOptions,
@@ -83,29 +74,17 @@ export function CurriculumBuilder({
     const map = new Map<number, CurriculumSubjectRowData[]>();
     for (const semester of semesters) {
       const semesterNumber = semester.semesterNumber;
-      const semesterRows: CurriculumSubjectRowData[] = [
-        ...saved
-          .filter((s) => s.yearLevel === activeYear && s.semester === semesterNumber)
-          .map((s) => ({
-            key: `saved-${s.id}`,
-            code: s.code,
-            title: s.title,
-            units: s.units,
-            subjectType: s.subjectType,
-            prerequisites: s.prerequisites,
-          })),
-        ...pending
-          .filter((p) => p.yearLevel === activeYear && p.semester === semesterNumber)
-          .map((p) => ({
-            key: p.tempId,
-            tempId: p.tempId,
-            code: p.code,
-            title: p.title,
-            units: p.units,
-            subjectType: p.subjectType,
-            prerequisites: p.prerequisites,
-          })),
-      ];
+      const semesterRows: CurriculumSubjectRowData[] = pending
+        .filter((p) => p.yearLevel === activeYear && p.semester === semesterNumber)
+        .map((p) => ({
+          key: p.tempId,
+          tempId: p.tempId,
+          code: p.code,
+          title: p.title,
+          units: p.units,
+          subjectType: p.subjectType,
+          prerequisites: p.prerequisites,
+        }));
       const filtered = query
         ? semesterRows.filter(
             (r) =>
@@ -119,7 +98,7 @@ export function CurriculumBuilder({
       );
     }
     return map;
-  }, [saved, pending, activeYear, semesters, query, autoSortSections]);
+  }, [pending, activeYear, semesters, query, autoSortSections]);
 
   function toggleSelected(key: string) {
     setSelected((current) => {
@@ -131,11 +110,10 @@ export function CurriculumBuilder({
   }
 
   function toggleAllSemester(keys: string[]) {
-    const pendingKeys = keys.filter((k) => !k.startsWith("saved-"));
-    const allSelected = pendingKeys.length > 0 && pendingKeys.every((k) => selected.has(k));
+    const allSelected = keys.length > 0 && keys.every((k) => selected.has(k));
     setSelected((current) => {
       const next = new Set(current);
-      for (const key of pendingKeys) {
+      for (const key of keys) {
         if (allSelected) next.delete(key);
         else next.add(key);
       }
@@ -144,14 +122,12 @@ export function CurriculumBuilder({
   }
 
   function deleteSelected() {
-    for (const key of selected) {
-      if (!key.startsWith("saved-")) onRemovePending(key);
-    }
+    for (const key of selected) onRemovePending(key);
     setSelected(new Set());
   }
 
   function duplicateSelected() {
-    const first = [...selected].find((k) => !k.startsWith("saved-"));
+    const first = [...selected][0];
     if (first) onDuplicatePending(first);
   }
 
@@ -167,10 +143,6 @@ export function CurriculumBuilder({
   return (
     <div className="flex flex-col gap-5">
       <CurriculumBuilderHeader
-        mode={mode}
-        program={program}
-        programs={programs}
-        onProgramChange={onProgramChange}
         departments={departments}
         newProgram={newProgram}
         onNewProgramChange={onNewProgramChange}

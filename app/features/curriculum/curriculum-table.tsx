@@ -6,7 +6,7 @@ import { CurriculumSubjects } from "~/features/curriculum/curriculum-subjects";
 import { SubjectCardGrid } from "~/features/curriculum/subject-card-grid";
 import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import type { CurriculumGroup, ProgramCurriculum } from "~/types/curriculum";
-import type { YearLevel } from "~/types/subject";
+import type { Subject, YearLevel } from "~/types/subject";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 
@@ -15,9 +15,18 @@ type CurriculumTableProps = {
   /** Filters visible subjects by code/title match; matching sections auto-expand. */
   search?: string;
   viewMode?: ScheduleViewMode;
+  /** Manage mode: row/card actions render when both are supplied (omit for read-only views, e.g. the dean's). */
+  onEditSubject?: (subject: Subject) => void;
+  onArchiveSubject?: (subject: Subject) => void;
 };
 
-export function CurriculumTable({ curriculum, search = "", viewMode = "table" }: CurriculumTableProps) {
+export function CurriculumTable({
+  curriculum,
+  search = "",
+  viewMode = "table",
+  onEditSubject,
+  onArchiveSubject,
+}: CurriculumTableProps) {
   const query = search.trim().toLowerCase();
 
   const filteredGroups = useMemo(() => {
@@ -55,6 +64,8 @@ export function CurriculumTable({ curriculum, search = "", viewMode = "table" }:
             groups={yearGroups}
             forceOpen={query.length > 0}
             viewMode={viewMode}
+            onEditSubject={onEditSubject}
+            onArchiveSubject={onArchiveSubject}
           />
         );
       })}
@@ -68,12 +79,16 @@ function YearBlock({
   groups,
   forceOpen,
   viewMode,
+  onEditSubject,
+  onArchiveSubject,
 }: {
   yearLevel: YearLevel;
   yearUnits: number;
   groups: CurriculumGroup[];
   forceOpen: boolean;
   viewMode: ScheduleViewMode;
+  onEditSubject?: (subject: Subject) => void;
+  onArchiveSubject?: (subject: Subject) => void;
 }) {
   const { yearLevelLabel } = useYearLevels();
   return (
@@ -90,7 +105,13 @@ function YearBlock({
       <div className="p-5">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {groups.map((group) => (
-            <SemesterCard key={group.semester} group={group} viewMode={viewMode} />
+            <SemesterCard
+              key={group.semester}
+              group={group}
+              viewMode={viewMode}
+              onEditSubject={onEditSubject}
+              onArchiveSubject={onArchiveSubject}
+            />
           ))}
         </div>
       </div>
@@ -98,7 +119,17 @@ function YearBlock({
   );
 }
 
-function SemesterCard({ group, viewMode }: { group: CurriculumGroup; viewMode: ScheduleViewMode }) {
+function SemesterCard({
+  group,
+  viewMode,
+  onEditSubject,
+  onArchiveSubject,
+}: {
+  group: CurriculumGroup;
+  viewMode: ScheduleViewMode;
+  onEditSubject?: (subject: Subject) => void;
+  onArchiveSubject?: (subject: Subject) => void;
+}) {
   const { semesterLabel } = useSemesters();
   return (
     <div className="flex flex-col gap-2">
@@ -111,9 +142,9 @@ function SemesterCard({ group, viewMode }: { group: CurriculumGroup; viewMode: S
         )}
       </div>
       {viewMode === "grid" ? (
-        <SubjectCardGrid subjects={group.subjects} />
+        <SubjectCardGrid subjects={group.subjects} onEdit={onEditSubject} onArchive={onArchiveSubject} />
       ) : (
-        <CurriculumSubjects group={group} />
+        <CurriculumSubjects group={group} onEdit={onEditSubject} onArchive={onArchiveSubject} />
       )}
     </div>
   );

@@ -22,7 +22,7 @@ type SubjectFormProps = {
 };
 
 /**
- * Edit form for an existing subject (creation happens on /programs/new).
+ * Edit form for an existing subject (creation happens on /program-curricula/new).
  * The curriculum slot (program/year/semester) is fixed by the backend.
  */
 export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCancel }: SubjectFormProps) {
