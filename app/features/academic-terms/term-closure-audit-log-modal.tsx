@@ -46,7 +46,7 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 5;
   const loading = loadingFilters || loadingEntries;
 
   useEffect(() => {
@@ -226,15 +226,13 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
             ))}
           </div>
 
-          <div className="mt-4 hidden sm:block">
+          <div className="mt-4 hidden sm:block [&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2">
             <Table>
               <TableHead>
                 <TableHeader>Date &amp; Time</TableHeader>
                 <TableHeader>Action</TableHeader>
-                <TableHeader>Term (School Year / Semester)</TableHeader>
+                <TableHeader>Term</TableHeader>
                 <TableHeader>Performed By</TableHeader>
-                <TableHeader className="hidden lg:table-cell">Role</TableHeader>
-                <TableHeader className="hidden md:table-cell">IP Address</TableHeader>
                 <TableHeader>Details</TableHeader>
               </TableHead>
               <TableBody>
@@ -250,15 +248,17 @@ export function TermClosureAuditLogModal({ open, onClose }: TermClosureAuditLogM
                       </Badge>
                     </TableCell>
                     <TableCell>{entry.termDisplay ?? "—"}</TableCell>
-                    <TableCell>{entry.performedByDisplay ?? "—"}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{entry.role ?? "—"}</TableCell>
-                    <TableCell className="hidden md:table-cell">{entry.ipAddress ?? "—"}</TableCell>
                     <TableCell>
-                      <span className="inline-flex items-start gap-1">
-                        {entry.details ?? "—"}
-                        <HelpCircleIcon />
+                      <span className="block font-medium text-navy-700 dark:text-mist-100">
+                        {entry.performedByDisplay ?? "—"}
                       </span>
+                      {(entry.role || entry.ipAddress) && (
+                        <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-slate-500">
+                          {[entry.role, entry.ipAddress].filter(Boolean).join(" · ")}
+                        </span>
+                      )}
                     </TableCell>
+                    <TableCell>{entry.details ?? "—"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
