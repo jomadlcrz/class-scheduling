@@ -1,4 +1,4 @@
-import { apiGet, apiMessage, apiPatch } from "~/lib/api";
+import { apiGet, apiMessage, apiPatch, apiPost } from "~/lib/api";
 import type {
   SchoolYearClosePreview,
   TermAuditLogEntry,
@@ -628,11 +628,10 @@ async function getSchoolYearClosePreview(syId: number): Promise<SchoolYearCloseP
   };
 }
 
-/** PATCH /school-years/{id}/state — mark a school year complete once both semesters are posted. */
+/** POST /school-years/{id}/close — mark a school year complete once both semesters are posted. */
 async function closeSchoolYear(syId: number, reason?: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/school-years/${syId}/state`, {
-    status: "closed",
-    ...(reason ? { reason } : {}),
+  const data = await apiPost<{ message?: string }>(`/school-years/${syId}/close`, {
+    ...(reason ? { completion_reason: reason } : {}),
   });
   return apiMessage(data);
 }
