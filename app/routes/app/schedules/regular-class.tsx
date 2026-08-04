@@ -7,7 +7,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { AlertIcon, PlusIcon, PrinterIcon, RefreshCwIcon, TrashIcon } from "~/components/ui/icons";
+import { AlertIcon, PlusIcon, PrinterIcon, TrashIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -58,8 +58,6 @@ function RegularClassPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [clearTarget, setClearTarget] = useState<ScheduledSetOption | null>(null);
   const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
-  const [ledgerDriftCount, setLedgerDriftCount] = useState<number | null>(null);
-  const [checkingLedgers, setCheckingLedgers] = useState(false);
 
   // Filters — pin the view to a single section's weekly schedule.
   const [schoolYear, setSchoolYear] = useState("");
@@ -153,14 +151,6 @@ function RegularClassPage() {
     }
   }, [availableSets, setName]);
 
-  function selectedTermParams() {
-    if (!selectedSchoolYearId) return null;
-    return {
-      syId: selectedSchoolYearId,
-      semesterNumber: semester,
-    };
-  }
-
   async function handleClearSchedule() {
     if (!clearTarget || !selectedSchoolYearId) return;
     const result = await scheduleService.removeSetSchedules(
@@ -189,33 +179,6 @@ function RegularClassPage() {
     setClearTarget(null);
   }
 
-  async function handleCheckLedgers() {
-    const params = selectedTermParams();
-    if (!params) return;
-    setActionError(null);
-    setCheckingLedgers(true);
-    try {
-      const result = await scheduleService.reconcileInstructorLedgers(params);
-      if (result.drift.length > 0) {
-        setLedgerDriftCount(result.drift.length);
-      } else if (result.message) {
-        toast.success(result.message);
-      }
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "");
-    } finally {
-      setCheckingLedgers(false);
-    }
-  }
-
-  async function handleRepairLedgers() {
-    const params = selectedTermParams();
-    if (!params) return;
-    const result = await scheduleService.reconcileInstructorLedgers(params, true);
-    if (result.message) toast.success(result.message);
-    setLedgerDriftCount(null);
-  }
-
   const isLoading = schedules === null;
   // Filters only make sense once there's at least one schedule to show.
   const showContent = !loadError && !isLoading && (schedules?.length ?? 0) > 0;
@@ -238,18 +201,6 @@ function RegularClassPage() {
                 Clear Schedule
               </Button>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              disabled={!selectedSchoolYearId}
-              isLoading={checkingLedgers}
-              loadingLabel="Checking…"
-              onClick={handleCheckLedgers}
-            >
-              <RefreshCwIcon />
-              Check Ledgers
-            </Button>
             <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
               <PlusIcon />
               Create Schedule
@@ -461,18 +412,6 @@ function RegularClassPage() {
           </div>
         </div>
       </Modal>
-
-      <ConfirmDialog
-        open={ledgerDriftCount !== null && ledgerDriftCount > 0}
-        onClose={() => setLedgerDriftCount(null)}
-        title="Repair instructor ledgers"
-        confirmLabel="Repair ledgers"
-        loadingLabel="Repairing…"
-        onConfirm={handleRepairLedgers}
-      >
-        The read-only check found {ledgerDriftCount} ledger {ledgerDriftCount === 1 ? "discrepancy" : "discrepancies"}.
-        Recalculate the counters from the saved schedule sessions?
-      </ConfirmDialog>
     </div>
   );
 }

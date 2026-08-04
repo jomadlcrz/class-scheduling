@@ -7,7 +7,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
-import { AlertIcon, PlusIcon, RotateIcon } from "~/components/ui/icons";
+import { AlertIcon, PlusIcon, RefreshCwIcon, RotateIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleContextForm } from "~/features/schedules/schedule-context-form";
@@ -159,6 +159,9 @@ function SchedulesNewPage() {
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [ledgerDriftCount, setLedgerDriftCount] = useState<number | null>(null);
+  const [checkingLedgers, setCheckingLedgers] = useState(false);
+  const [ledgerError, setLedgerError] = useState<string | null>(null);
   const {
     isGenerating,
     hasGenerated,
@@ -673,6 +676,41 @@ function SchedulesNewPage() {
   /** Without at least one academic term there's nothing to schedule. */
   const noAcademicTerm = !schoolYearsLoading && schoolYears.length === 0;
 
+  function selectedTermParams() {
+    if (!matchedSy) return null;
+    return {
+      syId: matchedSy.id,
+      semesterNumber: semester,
+    };
+  }
+
+  async function handleCheckLedgers() {
+    const params = selectedTermParams();
+    if (!params) return;
+    setLedgerError(null);
+    setCheckingLedgers(true);
+    try {
+      const result = await scheduleService.reconcileInstructorLedgers(params);
+      if (result.drift.length > 0) {
+        setLedgerDriftCount(result.drift.length);
+      } else if (result.message) {
+        toast.success(result.message);
+      }
+    } catch (err) {
+      setLedgerError(err instanceof Error ? err.message : "");
+    } finally {
+      setCheckingLedgers(false);
+    }
+  }
+
+  async function handleRepairLedgers() {
+    const params = selectedTermParams();
+    if (!params) return;
+    const result = await scheduleService.reconcileInstructorLedgers(params, true);
+    if (result.message) toast.success(result.message);
+    setLedgerDriftCount(null);
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
@@ -681,6 +719,18 @@ function SchedulesNewPage() {
         actions={
           noAcademicTerm ? undefined : (
             <>
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                disabled={!matchedSy || isSaving || isGenerating}
+                isLoading={checkingLedgers}
+                loadingLabel="Checking…"
+                onClick={handleCheckLedgers}
+              >
+                <RefreshCwIcon />
+                Check Ledgers
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -733,6 +783,12 @@ function SchedulesNewPage() {
               <Alert key="save-error" variant="destructive">
                 <AlertIcon />
                 <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
+            )}
+            {ledgerError && (
+              <Alert key="ledger-error" variant="destructive">
+                <AlertIcon />
+                <AlertDescription>{ledgerError}</AlertDescription>
               </Alert>
             )}
           </AnimatePresence>
@@ -1033,6 +1089,18 @@ function SchedulesNewPage() {
             </div>
           )
         )}
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={ledgerDriftCount !== null && ledgerDriftCount > 0}
+        onClose={() => setLedgerDriftCount(null)}
+        title="Repair instructor ledgers"
+        confirmLabel="Repair ledgers"
+        loadingLabel="Repairing…"
+        onConfirm={handleRepairLedgers}
+      >
+        The read-only check found {ledgerDriftCount} ledger {ledgerDriftCount === 1 ? "discrepancy" : "discrepancies"}.
+        Recalculate the counters from the saved schedule sessions?
       </ConfirmDialog>
 
       <ConfirmDialog
