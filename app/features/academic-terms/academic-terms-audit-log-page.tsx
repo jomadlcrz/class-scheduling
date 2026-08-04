@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
-import { HelpCircleIcon, LockIcon } from "~/components/ui/icons";
+import { LockIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
@@ -100,9 +99,6 @@ export function AcademicTermsAuditLogPage() {
       cancelled = true;
     };
   }, [schoolYear, semester, action, performedBy, dateFrom, dateTo, page]);
-
-  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-  const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
   const schoolYearOptions = useMemo(
     () => filters?.schoolYears.map((row) => ({ value: String(row.id), label: row.schoolYear })) ?? [],
@@ -214,18 +210,6 @@ export function AcademicTermsAuditLogPage() {
             Reset
           </Button>
         </div>
-      )}
-
-      {!loading && (
-        <Alert
-          variant="default"
-          className="mt-4 border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200"
-        >
-          <HelpCircleIcon />
-          <AlertDescription>
-            Showing {rangeStart} to {rangeEnd} of {total} audit log entries
-          </AlertDescription>
-        </Alert>
       )}
 
       {loading ? (

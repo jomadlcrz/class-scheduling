@@ -1,15 +1,11 @@
 import type { ReactNode } from "react";
 import { BookOpenIcon, CalendarIcon, CheckIcon, LockIcon } from "~/components/ui/icons";
-import type { TermWorkflowNextAction, TermWorkflowSemester, TermWorkflowStep } from "~/types/term-closure";
+import type { TermWorkflowNextAction, TermWorkflowStep } from "~/types/term-closure";
 
 type TermWorkflowTimelineProps = {
   steps: TermWorkflowStep[];
-  semesters: TermWorkflowSemester[];
   nextAction: TermWorkflowNextAction;
   schoolYearLabel: string;
-  onPostSemester: (semesterNumber: number) => void;
-  onReopenSemester: (semesterNumber: number) => void;
-  onCloseSchoolYear: () => void;
 };
 
 function stepIcon(key: string): ReactNode {
@@ -70,73 +66,11 @@ function StepNode({ step, index }: { step: TermWorkflowStep; index: number }) {
   );
 }
 
-function StepAction({
-  step,
-  semester,
-  onPostSemester,
-  onReopenSemester,
-  onCloseSchoolYear,
-}: {
-  step: TermWorkflowStep;
-  semester: TermWorkflowSemester | undefined;
-  onPostSemester: (semesterNumber: number) => void;
-  onReopenSemester: (semesterNumber: number) => void;
-  onCloseSchoolYear: () => void;
-}) {
-  if (step.status !== "current") return null;
-
-  if (step.key === "close_school_year") {
-    return (
-      <button
-        type="button"
-        onClick={onCloseSchoolYear}
-        className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 font-body text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-gold-400/30 dark:bg-gold-400/10 dark:text-gold-200 dark:hover:bg-gold-400/15"
-      >
-        Close year
-      </button>
-    );
-  }
-
-  if (!semester) return null;
-
-  return (
-    <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-      {semester.actions.canClose && (
-        <button
-          type="button"
-          onClick={() => onPostSemester(semester.semesterNumber)}
-          className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 font-body text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-gold-400/30 dark:bg-gold-400/10 dark:text-gold-200 dark:hover:bg-gold-400/15"
-        >
-          Post
-        </button>
-      )}
-      {semester.actions.canReopen && (
-        <button
-          type="button"
-          onClick={() => onReopenSemester(semester.semesterNumber)}
-          className="rounded-md border border-slate-200 px-2.5 py-1 font-body text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          Reopen
-        </button>
-      )}
-    </div>
-  );
-}
-
-function semesterForStep(step: TermWorkflowStep, semesters: TermWorkflowSemester[]) {
-  if (step.semesterNumber == null) return undefined;
-  return semesters.find((row) => row.semesterNumber === step.semesterNumber);
-}
-
 /** Horizontal timeline on desktop, vertical on mobile — registrar academic-year workflow. */
 export function TermWorkflowTimeline({
   steps,
-  semesters,
   nextAction,
   schoolYearLabel,
-  onPostSemester,
-  onReopenSemester,
-  onCloseSchoolYear,
 }: TermWorkflowTimelineProps) {
   const completedCount = steps.filter((step) => step.status === "completed").length;
   const currentStep = steps.find((step) => step.status === "current");
@@ -155,7 +89,6 @@ export function TermWorkflowTimeline({
       {/* Desktop: horizontal stepper */}
       <ol className="hidden md:grid md:grid-cols-4 md:gap-0" aria-label="Academic year workflow">
         {steps.map((step, index) => {
-          const semester = semesterForStep(step, semesters);
           const isLast = index === steps.length - 1;
 
           return (
@@ -187,13 +120,6 @@ export function TermWorkflowTimeline({
                     {step.description}
                   </p>
                 )}
-                <StepAction
-                  step={step}
-                  semester={semester}
-                  onPostSemester={onPostSemester}
-                  onReopenSemester={onReopenSemester}
-                  onCloseSchoolYear={onCloseSchoolYear}
-                />
               </div>
             </li>
           );
@@ -203,7 +129,6 @@ export function TermWorkflowTimeline({
       {/* Mobile: vertical timeline */}
       <ol className="relative space-y-0 md:hidden" aria-label="Academic year workflow">
         {steps.map((step, index) => {
-          const semester = semesterForStep(step, semesters);
           const isLast = index === steps.length - 1;
 
           return (
@@ -237,13 +162,6 @@ export function TermWorkflowTimeline({
                 <p className="mt-1 font-body text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                   {step.description}
                 </p>
-                <StepAction
-                  step={step}
-                  semester={semester}
-                  onPostSemester={onPostSemester}
-                  onReopenSemester={onReopenSemester}
-                  onCloseSchoolYear={onCloseSchoolYear}
-                />
               </div>
             </li>
           );

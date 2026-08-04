@@ -11,7 +11,6 @@ import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { ClosureEffectsPanel } from "~/features/academic-terms/closure-effects-panel";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermCloseDialog } from "~/features/academic-terms/term-close-dialog";
 import { TermClosureDetailsDrawer } from "~/features/academic-terms/term-closure-details-drawer";
@@ -26,7 +25,7 @@ import type { TermClosureItem } from "~/types/term-closure";
 
 export function TermClosurePage() {
   const navigate = useNavigate();
-  const { closures, closureEffects, loading, refresh } = useTermClosures();
+  const { closures, loading, refresh } = useTermClosures();
   const { context: selectedContext, refresh: refreshSelectedTerm } = useTermContext();
   const [search, setSearch] = useState("");
   const [schoolYear, setSchoolYear] = useState("all");
@@ -119,12 +118,8 @@ export function TermClosurePage() {
         }
       />
 
-      <div className="mt-6 space-y-6">
+      <div className="mt-6">
         <TermWorkflowCard onChanged={refresh} />
-
-        {!loading && closureEffects.length > 0 && (
-          <ClosureEffectsPanel effects={closureEffects} />
-        )}
       </div>
 
       <section className="mt-10" aria-labelledby="closure-history-heading">
