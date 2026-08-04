@@ -95,7 +95,7 @@ export function TermClosurePage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Term Closure"
-        description="Post a semester after grades are finalized. Destructive deletes are blocked; views and reports stay available."
+        description="Post a semester when scheduling is complete. Destructive deletes are blocked; views and reports stay available."
         actions={
           <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
             <HelpCircleIcon />
@@ -153,7 +153,7 @@ export function TermClosurePage() {
           ) : filtered.length === 0 ? (
             <EmptyState title={terms.length === 0 ? "No terms posted yet" : "No matches"}>
               {terms.length === 0
-                ? "Use the workflow above to post a semester when grades are finalized. Posted terms will appear here."
+                ? "Use the workflow above to post a semester when scheduling is complete. Posted terms will appear here."
                 : "Try different filters."}
             </EmptyState>
           ) : (
@@ -216,7 +216,7 @@ export function TermClosurePage() {
       <Modal open={helpOpen} onClose={() => setHelpOpen(false)} title="Term closure" wide>
         <div className="space-y-5 font-body text-sm text-slate-600 dark:text-slate-300">
           <p>
-            Post a term when grades are finalized. This blocks destructive deletes for that semester
+            Post a term when scheduling is complete. This blocks destructive deletes for that semester
             while views and reports still work.
           </p>
           <div>

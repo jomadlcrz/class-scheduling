@@ -101,14 +101,14 @@ export function TermWorkflowCard({ onChanged }: TermWorkflowCardProps) {
   return (
     <>
       <Card className="overflow-hidden">
-        <div className="border-b border-slate-100 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/[0.03]">
+        <div className="border-b border-slate-100 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/3">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 Academic year workflow
               </h2>
               <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-                Post each semester when grades are finalized, then close the school year.
+                Post each semester when scheduling is complete, then close the school year.
               </p>
             </div>
 
