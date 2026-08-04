@@ -1,4 +1,4 @@
-import { apiGet, apiMessage, apiPatch, apiPost } from "~/lib/api";
+import { apiGet, apiMessage, apiPatch } from "~/lib/api";
 import type {
   SchoolYearClosePreview,
   TermAuditLogEntry,
@@ -11,6 +11,8 @@ import type {
   TermClosureTermInformation,
   TermClosureUser,
   TermWorkflow,
+  TermWorkflowNextAction,
+  TermWorkflowStep,
 } from "~/types/term-closure";
 
 type ApiUser = {
@@ -117,25 +119,6 @@ type ApiTermState = ApiTermClosureItem & {
   lock_effects: string[];
 };
 
-type ApiGradingPeriodState = {
-  sy_id: number;
-  semester_number: number;
-  semester_name: string;
-  school_year: string;
-  period: string;
-  period_label: string;
-  status: "Open" | "Closed";
-  is_closed: boolean;
-  reopenable: boolean;
-  actions: ApiLifecycleActions;
-  closure_reason: string | null;
-  closed_at: string | null;
-  closed_at_display: string | null;
-  closed_by: ApiUser | null;
-  inherited_term_lock: boolean;
-  lock_effects: string[];
-};
-
 export type LifecycleActions = { canClose: boolean; canOpen: boolean; canReopen: boolean };
 
 export type SchoolYearLifecycleState = {
@@ -162,41 +145,37 @@ export type TermLifecycleState = {
   lockEffects: string[];
 };
 
-export type GradingPeriodLifecycleState = {
-  syId: number;
-  semesterNumber: number;
-  semesterName: string;
-  schoolYear: string;
-  period: string;
-  periodLabel: string;
-  status: "Open" | "Closed";
-  isClosed: boolean;
-  reopenable: boolean;
-  actions: LifecycleActions;
-  closureReason: string | null;
-  closedAt: string | null;
-  closedAtDisplay: string | null;
-  closedBy: TermClosureUser | null;
-  inheritedTermLock: boolean;
-  lockEffects: string[];
-};
-
-export type GradingPeriodClosePreview = {
-  period: GradingPeriodLifecycleState;
-  canClose: boolean;
-  alreadyClosed: boolean;
-  lockEffects: string[];
-  confirmation: { title: string; message: string; reasonLabel: string; reasonRequired: boolean };
-};
-
 export type AcademicLifecycle = {
   schoolYear: SchoolYearLifecycleState;
   terms: {
     semesterNumber: number;
     term: TermLifecycleState;
-    gradingPeriods: GradingPeriodLifecycleState[];
   }[];
-  workflow: Record<string, unknown>;
+  workflow: TermWorkflow["workflow"];
+};
+
+type ApiWorkflowPayload = {
+  steps: {
+    key: string;
+    label: string;
+    description: string;
+    status: "completed" | "current" | "pending";
+    semester_number?: number;
+  }[];
+  active_semester_number: number | null;
+  posted_semesters: number[];
+  both_semesters_posted: boolean;
+  school_year_completed: boolean;
+  next_action: {
+    key: string;
+    label: string;
+    description: string;
+    semester_number?: number;
+    method?: string;
+    preview_path?: string;
+    submit_path?: string;
+    body?: { status: "open" | "closed"; reason?: string };
+  };
 };
 
 function mapUser(raw: ApiUser | null | undefined): TermClosureUser | null {
@@ -308,25 +287,63 @@ function mapTermState(raw: ApiTermState): TermLifecycleState {
   };
 }
 
-function mapGradingPeriodState(raw: ApiGradingPeriodState): GradingPeriodLifecycleState {
+function mapWorkflow(raw: ApiWorkflowPayload): TermWorkflow["workflow"] {
   return {
-    syId: raw.sy_id,
-    semesterNumber: raw.semester_number,
-    semesterName: raw.semester_name,
-    schoolYear: raw.school_year,
-    period: raw.period,
-    periodLabel: raw.period_label,
-    status: raw.status,
-    isClosed: raw.is_closed,
-    reopenable: raw.reopenable,
-    actions: mapLifecycleActions(raw.actions),
-    closureReason: raw.closure_reason,
-    closedAt: raw.closed_at,
-    closedAtDisplay: raw.closed_at_display,
-    closedBy: mapUser(raw.closed_by),
-    inheritedTermLock: raw.inherited_term_lock,
-    lockEffects: raw.lock_effects,
+    steps: raw.steps.map(
+      (step): TermWorkflowStep => ({
+        key: step.key,
+        label: step.label,
+        description: step.description,
+        status: raw.school_year_completed ? "completed" : step.status,
+        semesterNumber: step.semester_number,
+      }),
+    ),
+    activeSemesterNumber: raw.active_semester_number,
+    postedSemesters: raw.posted_semesters,
+    bothSemestersPosted: raw.both_semesters_posted,
+    schoolYearCompleted: raw.school_year_completed,
+    nextAction: mapNextAction(raw.next_action),
   };
+}
+
+function mapNextAction(raw: ApiWorkflowPayload["next_action"]): TermWorkflowNextAction {
+  return {
+    key: raw.key,
+    label: raw.label,
+    description: raw.description,
+    semesterNumber: raw.semester_number,
+    method: raw.method,
+    previewPath: raw.preview_path,
+    submitPath: raw.submit_path,
+    body: raw.body,
+  };
+}
+
+function lifecycleToTermWorkflow(lifecycle: AcademicLifecycle): TermWorkflow {
+  return {
+    schoolYear: {
+      id: lifecycle.schoolYear.syId,
+      schoolYear: lifecycle.schoolYear.schoolYear,
+      registrarCompleted: lifecycle.schoolYear.isClosed,
+      reopenable: lifecycle.schoolYear.reopenable,
+    },
+    semesters: lifecycle.terms.map((row) => ({
+      semesterNumber: row.semesterNumber,
+      semesterName: row.term.closure.semesterDisplayName,
+      status: row.term.closure.status,
+      closedReason: row.term.closure.closedReason,
+      closedReasonLabel: row.term.closure.closedReasonLabel,
+      actions: {
+        canClose: row.term.closure.actions.canClose,
+        canReopen: row.term.closure.actions.canReopen,
+      },
+    })),
+    workflow: lifecycle.workflow,
+  };
+}
+
+function lockEffectsToClosureEffects(effects: string[]): { label: string }[] {
+  return effects.map((label) => ({ label }));
 }
 
 export type TermContext = {
@@ -371,59 +388,12 @@ async function getStatus(syId: number, semesterNumber: number): Promise<TermClos
 
 /** GET /school-years/:id/terms/:semester/state/preview — impact summary before posting a term. */
 async function getClosePreview(syId: number, semesterNumber: number): Promise<TermClosePreview> {
-  const raw = await apiGet<{
-    term: {
-      sy_id: number;
-      school_year: string;
-      semester_number: number;
-      semester_name: string;
-      status: "Open" | "Closed";
-      closed_reason: string | null;
-      closed_reason_label: string | null;
-    };
-    can_close: boolean;
-    already_closed: boolean;
-    closure_effects: { label: string }[];
-    confirmation: {
-      title: string;
-      message: string;
-      closure_reason_label: string;
-      closure_reason_required: boolean;
-    };
-  }>(`/school-years/${syId}/terms/${semesterNumber}/state/preview`);
-
-  return {
-    term: {
-      syId: raw.term.sy_id,
-      schoolYear: raw.term.school_year,
-      semesterNumber: raw.term.semester_number,
-      semesterName: raw.term.semester_name,
-      status: raw.term.status,
-      closedReason: raw.term.closed_reason,
-      closedReasonLabel: raw.term.closed_reason_label,
-    },
-    canClose: raw.can_close,
-    alreadyClosed: raw.already_closed,
-    closureEffects: raw.closure_effects,
-    confirmation: {
-      title: raw.confirmation.title,
-      message: raw.confirmation.message,
-      closureReasonLabel: raw.confirmation.closure_reason_label,
-      closureReasonRequired: raw.confirmation.closure_reason_required,
-    },
-  };
+  return getTermStatePreview(syId, semesterNumber);
 }
 
-/** PATCH the term state to closed. */
+/** PATCH /school-years/:id/terms/:semester/state — post (close) a term. */
 async function close(syId: number, semesterNumber: number, reason?: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(
-    `/school-years/${syId}/terms/${semesterNumber}/state`,
-    {
-      status: "closed",
-      ...(reason ? { reason } : {}),
-    },
-  );
-  return apiMessage(data);
+  return patchTermState(syId, semesterNumber, "closed", reason);
 }
 
 /** GET /terms/closures — registrar-posted closures, newest first. */
@@ -443,13 +413,9 @@ async function getClosure(closureId: number): Promise<TermClosureItem> {
   return mapClosureItem(await apiGet<ApiTermClosureItem>(`/terms/closures/${closureId}`));
 }
 
-/** PATCH the term state to open. */
+/** PATCH /school-years/:id/terms/:semester/state — reopen a posted term. */
 async function reopen(syId: number, semesterNumber: number, reason?: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(
-    `/school-years/${syId}/terms/${semesterNumber}/state`,
-    { status: "open", ...(reason ? { reason } : {}) },
-  );
-  return apiMessage(data);
+  return patchTermState(syId, semesterNumber, "open", reason);
 }
 
 /** GET /terms/audit-log/filters */
@@ -514,152 +480,41 @@ async function listAuditLog(query: AuditLogQuery = {}): Promise<TermAuditLogResu
   };
 }
 
-/** GET /school-years/{id}/term-workflow — registrar scheduling workflow for one school year. */
-async function getTermWorkflow(syId: number): Promise<TermWorkflow> {
-  const raw = await apiGet<{
-    school_year: {
-      id: number;
-      school_year: string;
-      status?: string | null;
-      is_current?: boolean;
-      registrar_completed?: boolean;
-    };
-    semesters: {
-      semester_number: number;
-      semester_name: string;
-      status: "Open" | "Closed";
-      closed_reason: string | null;
-      closed_reason_label: string | null;
-      actions: { can_close: boolean; can_reopen: boolean };
-    }[];
-    workflow: {
-      steps: {
-        key: string;
-        label: string;
-        description: string;
-        status: "completed" | "current" | "pending";
-        semester_number?: number;
-      }[];
-      active_semester_number: number | null;
-      posted_semesters: number[];
-      both_semesters_posted: boolean;
-      school_year_completed: boolean;
-      next_action: {
-        key: string;
-        label: string;
-        description: string;
-        semester_number?: number;
-        method?: string;
-        preview_path?: string;
-        submit_path?: string;
-      };
-    };
-  }>(`/school-years/${syId}/term-workflow`);
-
-  return {
-    schoolYear: {
-      id: raw.school_year.id,
-      schoolYear: raw.school_year.school_year,
-      status: raw.school_year.status ?? null,
-      isCurrent: raw.school_year.is_current ?? false,
-      registrarCompleted: raw.school_year.registrar_completed ?? false,
-    },
-    semesters: raw.semesters.map((row) => ({
-      semesterNumber: row.semester_number,
-      semesterName: resolveSemesterName(row),
-      status: row.status,
-      closedReason: row.closed_reason,
-      closedReasonLabel: row.closed_reason_label,
-      actions: { canClose: row.actions.can_close, canReopen: row.actions.can_reopen },
-    })),
-    workflow: {
-      steps: raw.workflow.steps.map((step) => ({
-        key: step.key,
-        label: step.label,
-        description: step.description,
-        status: raw.workflow.school_year_completed ? "completed" : step.status,
-        semesterNumber: step.semester_number,
-      })),
-      activeSemesterNumber: raw.workflow.active_semester_number,
-      postedSemesters: raw.workflow.posted_semesters,
-      bothSemestersPosted: raw.workflow.both_semesters_posted,
-      schoolYearCompleted: raw.workflow.school_year_completed,
-      nextAction: {
-        key: raw.workflow.next_action.key,
-        label: raw.workflow.next_action.label,
-        description: raw.workflow.next_action.description,
-        semesterNumber: raw.workflow.next_action.semester_number,
-        method: raw.workflow.next_action.method,
-        previewPath: raw.workflow.next_action.preview_path,
-        submitPath: raw.workflow.next_action.submit_path,
-      },
-    },
-  };
-}
-
-/** GET /school-years/{id}/state/preview — preview closing a school year after both semesters are posted. */
-async function getSchoolYearClosePreview(syId: number): Promise<SchoolYearClosePreview> {
-  const raw = await apiGet<{
-    school_year: { id: number; school_year: string };
-    posted_semesters: number[];
-    missing_semesters: number[];
-    already_completed: boolean;
-    can_close: boolean;
-    confirmation: {
-      title: string;
-      message: string;
-      completion_reason_label: string;
-      completion_reason_required: boolean;
-    };
-  }>(`/school-years/${syId}/state/preview`);
-
-  return {
-    schoolYear: { id: raw.school_year.id, schoolYear: raw.school_year.school_year },
-    postedSemesters: raw.posted_semesters,
-    missingSemesters: raw.missing_semesters,
-    alreadyCompleted: raw.already_completed,
-    canClose: raw.can_close,
-    confirmation: {
-      title: raw.confirmation.title,
-      message: raw.confirmation.message,
-      completionReasonLabel: raw.confirmation.completion_reason_label,
-      completionReasonRequired: raw.confirmation.completion_reason_required,
-    },
-  };
-}
-
-/** POST /school-years/{id}/close — mark a school year complete once both semesters are posted. */
-async function closeSchoolYear(syId: number, reason?: string): Promise<string> {
-  const data = await apiPost<{ message?: string }>(`/school-years/${syId}/close`, {
-    ...(reason ? { completion_reason: reason } : {}),
-  });
-  return apiMessage(data);
-}
-
-/** POST /school-years/{id}/reopen — unlock both semesters in a registrar-closed school year. */
-async function reopenSchoolYear(syId: number, reason?: string): Promise<string> {
-  const data = await apiPost<{ message?: string }>(`/school-years/${syId}/reopen`, {
-    ...(reason ? { reason } : {}),
-  });
-  return apiMessage(data);
-}
-
-/** GET /school-years/:id/lifecycle — complete school-year, term, and grading-period tree. */
+/** GET /school-years/{id}/lifecycle — preferred workflow source for term closure UI. */
 async function getLifecycle(syId: number): Promise<AcademicLifecycle> {
   const raw = await apiGet<{
     school_year: ApiSchoolYearState;
-    terms: { semester_number: number; term: ApiTermState; grading_periods?: ApiGradingPeriodState[] }[];
-    workflow: Record<string, unknown>;
+    terms: { semester_number: number; term: ApiTermState }[];
+    workflow: ApiWorkflowPayload;
   }>(`/school-years/${syId}/lifecycle`);
   return {
     schoolYear: mapSchoolYearState(raw.school_year),
     terms: raw.terms.map((row) => ({
       semesterNumber: row.semester_number,
       term: mapTermState(row.term),
-      gradingPeriods: (row.grading_periods ?? []).map(mapGradingPeriodState),
     })),
-    workflow: raw.workflow,
+    workflow: mapWorkflow(raw.workflow),
   };
+}
+
+/** Workflow view derived from GET /school-years/{id}/lifecycle. */
+async function getTermWorkflow(syId: number): Promise<TermWorkflow> {
+  return lifecycleToTermWorkflow(await getLifecycle(syId));
+}
+
+/** GET /school-years/{id}/state/preview — preview closing a school year. */
+async function getSchoolYearClosePreview(syId: number): Promise<SchoolYearClosePreview> {
+  return getSchoolYearStatePreview(syId);
+}
+
+/** PATCH /school-years/{id}/state — close a school year after both semesters are posted. */
+async function closeSchoolYear(syId: number, reason?: string): Promise<string> {
+  return patchSchoolYearState(syId, "closed", reason);
+}
+
+/** PATCH /school-years/{id}/state — reopen a registrar-closed school year. */
+async function reopenSchoolYear(syId: number, reason?: string): Promise<string> {
+  return patchSchoolYearState(syId, "open", reason);
 }
 
 /** GET /school-years/:id/state. */
@@ -668,7 +523,7 @@ async function getSchoolYearState(syId: number): Promise<SchoolYearLifecycleStat
 }
 
 /** GET /school-years/:id/state/preview. */
-async function getSchoolYearStatePreview(syId: number): Promise<SchoolYearClosePreview & { lockEffects: string[] }> {
+async function getSchoolYearStatePreview(syId: number): Promise<SchoolYearClosePreview> {
   const raw = await apiGet<{
     school_year: { id: number; school_year: string };
     posted_semesters: number[];
@@ -689,7 +544,7 @@ async function getSchoolYearStatePreview(syId: number): Promise<SchoolYearCloseP
     missingSemesters: raw.missing_semesters,
     alreadyCompleted: raw.already_completed,
     canClose: raw.can_close,
-    lockEffects: raw.lock_effects,
+    lockEffects: raw.lock_effects ?? [],
     confirmation: {
       title: raw.confirmation.title,
       message: raw.confirmation.message,
@@ -715,7 +570,7 @@ async function getTermState(syId: number, semesterNumber: number): Promise<TermL
 }
 
 /** GET /school-years/:id/terms/:semester/state/preview. */
-async function getTermStatePreview(syId: number, semesterNumber: number): Promise<TermClosePreview & { lockEffects: string[] }> {
+async function getTermStatePreview(syId: number, semesterNumber: number): Promise<TermClosePreview> {
   const raw = await apiGet<{
     term: {
       sy_id: number;
@@ -737,6 +592,9 @@ async function getTermStatePreview(syId: number, semesterNumber: number): Promis
       closure_reason_required: boolean;
     };
   }>(`/school-years/${syId}/terms/${semesterNumber}/state/preview`);
+  const lockEffects = raw.lock_effects ?? [];
+  const closureEffects =
+    raw.closure_effects.length > 0 ? raw.closure_effects : lockEffectsToClosureEffects(lockEffects);
   return {
     term: {
       syId: raw.term.sy_id,
@@ -749,8 +607,8 @@ async function getTermStatePreview(syId: number, semesterNumber: number): Promis
     },
     canClose: raw.can_close,
     alreadyClosed: raw.already_closed,
-    closureEffects: raw.closure_effects,
-    lockEffects: raw.lock_effects,
+    closureEffects,
+    lockEffects,
     confirmation: {
       title: raw.confirmation.title,
       message: raw.confirmation.message,
@@ -760,60 +618,16 @@ async function getTermStatePreview(syId: number, semesterNumber: number): Promis
   };
 }
 
-function gradingPeriodStatePath(syId: number, semesterNumber: number, period: string): string {
-  return `/school-years/${syId}/terms/${semesterNumber}/grading-periods/${encodeURIComponent(period)}/state`;
-}
-
-/** GET /school-years/:id/terms/:semester/grading-periods. */
-async function listGradingPeriods(syId: number, semesterNumber: number): Promise<GradingPeriodLifecycleState[]> {
-  const raw = await apiGet<{ periods: ApiGradingPeriodState[] }>(
-    `/school-years/${syId}/terms/${semesterNumber}/grading-periods`,
-  );
-  return raw.periods.map(mapGradingPeriodState);
-}
-
-/** GET one grading-period state. */
-async function getGradingPeriodState(syId: number, semesterNumber: number, period: string): Promise<GradingPeriodLifecycleState> {
-  return mapGradingPeriodState(
-    await apiGet<ApiGradingPeriodState>(gradingPeriodStatePath(syId, semesterNumber, period)),
-  );
-}
-
-/** GET one grading-period state preview. */
-async function getGradingPeriodStatePreview(syId: number, semesterNumber: number, period: string): Promise<GradingPeriodClosePreview> {
-  const raw = await apiGet<{
-    period: ApiGradingPeriodState;
-    can_close: boolean;
-    already_closed: boolean;
-    lock_effects: string[];
-    confirmation: { title: string; message: string; reason_label: string; reason_required: boolean };
-  }>(`${gradingPeriodStatePath(syId, semesterNumber, period)}/preview`);
-  return {
-    period: mapGradingPeriodState(raw.period),
-    canClose: raw.can_close,
-    alreadyClosed: raw.already_closed,
-    lockEffects: raw.lock_effects,
-    confirmation: {
-      title: raw.confirmation.title,
-      message: raw.confirmation.message,
-      reasonLabel: raw.confirmation.reason_label,
-      reasonRequired: raw.confirmation.reason_required,
-    },
-  };
-}
-
-/** PATCH one grading-period state. */
-async function patchGradingPeriodState(
+async function patchTermState(
   syId: number,
   semesterNumber: number,
-  period: string,
   status: "open" | "closed",
   reason?: string,
 ): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(gradingPeriodStatePath(syId, semesterNumber, period), {
-    status,
-    ...(reason ? { reason } : {}),
-  });
+  const data = await apiPatch<{ message?: string }>(
+    `/school-years/${syId}/terms/${semesterNumber}/state`,
+    { status, ...(reason ? { reason } : {}) },
+  );
   return apiMessage(data);
 }
 
@@ -837,21 +651,5 @@ export const termClosureService = {
   patchSchoolYearState,
   getTermState,
   getTermStatePreview,
-  listGradingPeriods,
-  getGradingPeriodState,
-  getGradingPeriodStatePreview,
-  patchGradingPeriodState,
-  /** PATCH /school-years/{id}/terms/{n}/state — preferred lifecycle API. */
-  async patchTermState(
-    syId: number,
-    semesterNumber: number,
-    status: "open" | "closed",
-    reason?: string,
-  ): Promise<string> {
-    const data = await apiPatch<{ message?: string }>(
-      `/school-years/${syId}/terms/${semesterNumber}/state`,
-      { status, ...(reason ? { reason } : {}) },
-    );
-    return apiMessage(data);
-  },
+  patchTermState,
 };

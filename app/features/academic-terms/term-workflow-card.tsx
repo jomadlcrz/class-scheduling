@@ -75,7 +75,12 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
 
   async function handlePostTerm(reason: string) {
     if (syId == null || closeSemester == null) return;
-    const message = await termClosureService.close(syId, closeSemester, reason || undefined);
+    const message = await termClosureService.patchTermState(
+      syId,
+      closeSemester,
+      "closed",
+      reason || undefined,
+    );
     if (message) toast.success(message);
     setCloseSemester(null);
     await reload();
@@ -83,15 +88,17 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
 
   async function handleCloseSchoolYear(reason: string) {
     if (syId == null) return;
-    const message = await termClosureService.closeSchoolYear(syId, reason || undefined);
+    const message = await termClosureService.patchSchoolYearState(syId, "closed", reason || undefined);
     if (message) toast.success(message);
+    setCloseSchoolYearOpen(false);
     await reload();
   }
 
   async function handleReopenSchoolYear() {
     if (syId == null) return;
-    const message = await termClosureService.reopenSchoolYear(
+    const message = await termClosureService.patchSchoolYearState(
       syId,
+      "open",
       reopenReason.trim() || undefined,
     );
     if (message) toast.success(message);
@@ -113,6 +120,8 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
 
   const nextAction = workflow?.workflow.nextAction;
   const canRunNextAction = nextAction?.key === "close_semester" || nextAction?.key === "close_school_year";
+  const canReopenSchoolYear =
+    workflow?.workflow.schoolYearCompleted === true && workflow.schoolYear.reopenable === true;
 
   return (
     <>
@@ -177,7 +186,7 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
               />
 
               <div className="flex justify-end border-t border-slate-100 pt-6 dark:border-white/10">
-                {workflow.workflow.schoolYearCompleted ? (
+                {canReopenSchoolYear ? (
                   <div className="shrink-0">
                     <Button
                       type="button"

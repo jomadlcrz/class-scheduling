@@ -94,7 +94,8 @@ export type TermClosePreview = {
   };
   canClose: boolean;
   alreadyClosed: boolean;
-  closureEffects: { label: string }[];
+  closureEffects: ClosureEffect[];
+  lockEffects: string[];
   confirmation: {
     title: string;
     message: string;
@@ -128,6 +129,7 @@ export type TermWorkflowNextAction = {
   method?: string;
   previewPath?: string;
   submitPath?: string;
+  body?: { status: "open" | "closed"; reason?: string };
 };
 
 export type TermWorkflow = {
@@ -137,6 +139,7 @@ export type TermWorkflow = {
     status?: string | null;
     isCurrent?: boolean;
     registrarCompleted?: boolean;
+    reopenable?: boolean;
   };
   semesters: TermWorkflowSemester[];
   workflow: {
@@ -155,6 +158,7 @@ export type SchoolYearClosePreview = {
   missingSemesters: number[];
   alreadyCompleted: boolean;
   canClose: boolean;
+  lockEffects: string[];
   confirmation: {
     title: string;
     message: string;

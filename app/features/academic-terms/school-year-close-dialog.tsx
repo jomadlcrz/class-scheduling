@@ -4,6 +4,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";
 import { Spinner } from "~/components/ui/spinner";
+import { ClosureEffectsPanel } from "~/features/academic-terms/closure-effects-panel";
 import { termClosureService } from "~/services/term-closure.service";
 import type { SchoolYearClosePreview } from "~/types/term-closure";
 
@@ -33,7 +34,7 @@ export function SchoolYearCloseDialog({ open, syId, onClose, onConfirm }: School
     setLoading(true);
     setError(null);
     termClosureService
-      .getSchoolYearClosePreview(syId)
+      .getSchoolYearStatePreview(syId)
       .then((data) => {
         if (!cancelled) setPreview(data);
       })
@@ -88,6 +89,13 @@ export function SchoolYearCloseDialog({ open, syId, onClose, onConfirm }: School
               <p className="font-body text-sm text-amber-700 dark:text-amber-300">
                 Still open: semester {preview.missingSemesters.join(", ")}.
               </p>
+            )}
+
+            {preview.lockEffects.length > 0 && (
+              <ClosureEffectsPanel
+                effects={preview.lockEffects.map((label) => ({ label }))}
+                variant="compact"
+              />
             )}
 
             <Textarea

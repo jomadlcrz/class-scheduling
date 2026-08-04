@@ -35,9 +35,14 @@ export function TermCloseDialog({ open, syId, semesterNumber, onClose, onConfirm
     setLoading(true);
     setError(null);
     termClosureService
-      .getClosePreview(syId, semesterNumber)
+      .getTermStatePreview(syId, semesterNumber)
       .then((data) => {
-        if (!cancelled) setPreview(data);
+        if (!cancelled) {
+          setPreview(data);
+          const defaultReason =
+            semesterNumber === 1 ? "1st semester posted" : semesterNumber === 2 ? "2nd semester posted" : "";
+          setReason(defaultReason);
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "Unable to load preview.");

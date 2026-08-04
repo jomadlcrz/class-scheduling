@@ -218,7 +218,7 @@ export function AcademicTermsAuditLogPage() {
         </div>
       ) : entries.length === 0 ? (
         <div className="mt-4">
-          <EmptyState title="No audit log entries">No entries match the current filters.</EmptyState>
+          <EmptyState title="No audit log entries">No audit entries match these filters.</EmptyState>
         </div>
       ) : (
         <>

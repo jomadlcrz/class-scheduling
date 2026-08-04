@@ -66,9 +66,10 @@ export function TermClosurePage() {
 
   async function handleClose(reason: string) {
     if (!closeTarget) return;
-    const message = await termClosureService.close(
+    const message = await termClosureService.patchTermState(
       closeTarget.syId,
       closeTarget.semesterNumber,
+      "closed",
       reason || undefined,
     );
     setCloseTarget(null);
@@ -77,9 +78,10 @@ export function TermClosurePage() {
 
   async function handleReopen() {
     if (!reopenTarget) return;
-    const message = await termClosureService.reopen(
+    const message = await termClosureService.patchTermState(
       reopenTarget.syId,
       reopenTarget.semesterNumber,
+      "open",
       reopenReason.trim() || undefined,
     );
     setReopenTarget(null);

@@ -64,8 +64,9 @@ export function SchoolYearsPage() {
 
   async function handleClose(reason: string) {
     if (!closeTarget) return;
-    const message = await termClosureService.closeSchoolYear(
+    const message = await termClosureService.patchSchoolYearState(
       closeTarget.id,
+      "closed",
       reason || undefined,
     );
     if (message) toast.success(message);

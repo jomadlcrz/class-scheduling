@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { TableActionButton } from "~/features/academic-terms/table-action-button";
-import { StatusBadge } from "~/features/academic-terms/status-badges";
 import type { Semester } from "~/types/semester";
 
 type SemesterTableProps = {
@@ -16,17 +15,12 @@ type SemesterTableProps = {
   onEdit: (semester: Semester) => void;
 };
 
-function semesterStatusTone(status: string | undefined) {
-  return status === "Active" ? "emerald" : "slate";
-}
-
 export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
   return (
     <Table>
       <TableHead>
         <TableHeader>Semester Number</TableHeader>
         <TableHeader>Display Name</TableHeader>
-        <TableHeader>Status</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -39,9 +33,6 @@ export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
               <span className="font-medium text-navy-700 dark:text-mist-100">
                 {sem.displayName ?? sem.semester}
               </span>
-            </TableCell>
-            <TableCell>
-              <StatusBadge tone={semesterStatusTone(sem.status)}>{sem.status ?? "Active"}</StatusBadge>
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-2">

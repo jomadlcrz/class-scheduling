@@ -67,7 +67,7 @@ export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: Te
                     Post
                   </TableActionButton>
                 )}
-                {row.actions.canReopen && (
+                {row.reopenable && row.actions.canReopen && (
                   <TableActionButton
                     tone="slate"
                     title="Reopen this term"
