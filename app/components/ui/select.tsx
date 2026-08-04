@@ -3,10 +3,6 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "~/components/ui/icons
 
 const Select = SelectPrimitive.Root;
 
-function SelectGroup(props: SelectPrimitive.Group.Props) {
-  return <SelectPrimitive.Group data-slot="select-group" {...props} />;
-}
-
 function SelectValue({ className = "", ...props }: SelectPrimitive.Value.Props) {
   return (
     <SelectPrimitive.Value data-slot="select-value" className={`block truncate ${className}`.trim()} {...props} />
@@ -87,16 +83,6 @@ function SelectContent({
   );
 }
 
-function SelectLabel(props: SelectPrimitive.GroupLabel.Props) {
-  return (
-    <SelectPrimitive.GroupLabel
-      data-slot="select-label"
-      className="px-3 py-1.5 font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500"
-      {...props}
-    />
-  );
-}
-
 function SelectItem({ className = "", children, ...props }: SelectPrimitive.Item.Props) {
   return (
     <SelectPrimitive.Item
@@ -117,23 +103,10 @@ function SelectItem({ className = "", children, ...props }: SelectPrimitive.Item
   );
 }
 
-function SelectSeparator(props: SelectPrimitive.Separator.Props) {
-  return (
-    <SelectPrimitive.Separator
-      data-slot="select-separator"
-      className="-mx-1 my-1 h-px bg-slate-200 dark:bg-white/10"
-      {...props}
-    />
-  );
-}
-
 export {
   Select,
-  SelectGroup,
   SelectValue,
   SelectTrigger,
   SelectContent,
-  SelectLabel,
   SelectItem,
-  SelectSeparator,
 };

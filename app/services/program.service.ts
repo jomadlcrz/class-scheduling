@@ -86,7 +86,7 @@ async function getDeletePreview(id: number): Promise<ProgramDeletePreview> {
   return { program: data.program, will_delete: data.willArchive };
 }
 
-export type DeletedProgram = {
+type DeletedProgram = {
   id: number;
   abbrev: string;
   name: string;

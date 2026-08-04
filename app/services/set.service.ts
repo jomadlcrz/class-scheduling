@@ -115,7 +115,7 @@ async function getDeletePreview(id: number): Promise<SetDeletePreview> {
   return { set: data.set, will_delete: data.willArchive };
 }
 
-export type DeletedSet = {
+type DeletedSet = {
   id: number;
   setCode: string;
   setName: string;

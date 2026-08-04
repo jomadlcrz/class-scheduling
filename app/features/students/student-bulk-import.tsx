@@ -181,7 +181,7 @@ function toCsv(rows: StudentRow[], enrolledStatus: BulkEnrolledStatus): string {
   return lines.join("\n");
 }
 
-export function BulkStatusTabs() {
+function BulkStatusTabs() {
   return (
     <div className="flex gap-2 border-b border-slate-200 dark:border-white/10">
       {[

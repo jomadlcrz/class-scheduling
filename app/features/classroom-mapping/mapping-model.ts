@@ -1,4 +1,4 @@
-import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, getScheduleDayKey, type ScheduleDay } from "~/lib/schedule-days";
+import { SCHEDULE_DAY_NAMES, SCHEDULE_DAY_COLORS, getScheduleDayKey } from "~/lib/schedule-days";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
 
 /** Backend SubjectTypeName values (app/enums.py) — single source for the legend and styles. */
@@ -94,10 +94,6 @@ export const DAY_STYLES: Record<DayOfWeek, { color: string; bg: string; border: 
     }];
   }),
 ) as Record<DayOfWeek, { color: string; bg: string; border: string }>;
-
-function dayOfWeekToScheduleDay(day: DayOfWeek): ScheduleDay | null {
-  return getScheduleDayKey(day);
-}
 
 export const TYPE_STYLES: Record<SubjectType, { card: string; border: string; code: string; tableCode: string; dot: string }> = {
   "GenEd Core":                   { card: "bg-violet-100 dark:bg-violet-950/60",     border: "border-l-violet-600",   code: "text-violet-800 dark:text-violet-300",   tableCode: "text-violet-600 dark:text-violet-400",   dot: "bg-violet-600"    },

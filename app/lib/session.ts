@@ -18,7 +18,7 @@ export const SESSION_KEY = "gwc-session";
 const PENDING_KEY = "gwc-pending-password-change";
 
 /** Claims embedded in the backend's access token. */
-export type TokenPayload = {
+type TokenPayload = {
   user_id: number;
   first_name: string;
   last_name: string;

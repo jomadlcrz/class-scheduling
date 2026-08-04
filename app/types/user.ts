@@ -1,6 +1,6 @@
 export type Role = "admin" | "registrar" | "dean" | "faculty" | "student";
 
-export type UserStatus = "active" | "inactive";
+type UserStatus = "active" | "inactive";
 
 export type User = {
   id: string;

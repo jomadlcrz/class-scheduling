@@ -33,12 +33,6 @@ export const popCard = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: EASE_OUT } },
 };
 
-export function formatGeneratedAt(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-}
-
 export type TermOption = { id: number; schoolYear: string };
 export type SemOption = { id: number; semester: string; semesterNumber: number };
 

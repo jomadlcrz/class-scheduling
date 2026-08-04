@@ -94,7 +94,7 @@ export default function DeanTeachingTermRoute() {
   );
 }
 
-function meta() {
+export function meta() {
   return [{ title: "Teaching Term Detail — GWC Class Scheduling" }];
 }
 

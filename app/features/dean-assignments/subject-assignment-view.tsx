@@ -408,33 +408,6 @@ export function SubjectAssignmentView() {
     return false;
   }
 
-  const handleSubmit = async () => {
-    const instructorLoads = instructors.map((inst) => ({
-      instructorProfileId: inst.instructorProfileId,
-      ...(inst.maxWeeklyHours != null ? { maxWeeklyHours: inst.maxWeeklyHours } : { maxWeeklyHours: 0 }),
-      programs: inst.programs.map((prog) => {
-        const programOption = programOptions.find((p) => p.abbrev === prog.programAbbrev);
-        const programId = programOption?.id ?? 0;
-        
-        return {
-          programId,
-          subjects: prog.subjects.map((s) => {
-            const subjectOption = programOption?.subjects.find((subj) => subj.code === s.subjectCode);
-            return {
-              subjectId: subjectOption?.id ?? 0,
-            };
-          }),
-        };
-      }),
-    }));
-    
-    try {
-      await apiData.createAssignments(instructorLoads);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create assignments');
-    }
-  };
-
   // Filter calculation
   const filteredInstructors = instructors.filter(
     (inst) =>
@@ -535,7 +508,7 @@ export function SubjectAssignmentView() {
           </EmptyState>
         ) : (
           <Accordion>
-            {filteredInstructors.map((inst, i) => (
+            {filteredInstructors.map((inst) => (
               <InstructorCard
                 key={inst.id}
                 instructor={inst}
@@ -591,8 +564,6 @@ export function SubjectAssignmentView() {
           totalSubjectsAssigned={totalSubjectsAssigned}
           totalWeeklyHours={totalWeeklyHours}
           exceedingInstructorsCount={exceedingInstructors.length}
-          loading={apiData.mutating}
-          onSubmit={handleSubmit}
         />
       )}
 

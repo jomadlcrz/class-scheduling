@@ -73,7 +73,7 @@ type PaginationSubjectsResponse = {
   total_pages: number;
 };
 
-export type PaginatedSubject = {
+type PaginatedSubject = {
   id: number;
   curriculumId: number;
   program: { id: number; name: string } | null;
@@ -87,7 +87,7 @@ export type PaginatedSubject = {
   } | null;
 };
 
-export type PaginatedSubjectsResult = {
+type PaginatedSubjectsResult = {
   items: PaginatedSubject[];
   totalSubjects: number;
   page: number;
@@ -132,7 +132,7 @@ async function listPaginated(page = 1, perPage = 9): Promise<PaginatedSubjectsRe
   };
 }
 
-export type CurriculumSubjectEntry = {
+type CurriculumSubjectEntry = {
   yearLevel: number;
   semester: number;
   code: string;

@@ -11,7 +11,7 @@ export type ScheduleCompletionProgram = {
   scheduled_percent: number;
 };
 
-export type UnscheduledSet = {
+type UnscheduledSet = {
   set_id: number;
   set_code: string;
   year_level: number;
@@ -19,7 +19,7 @@ export type UnscheduledSet = {
   program_abbrev: string;
 };
 
-export type ScheduleCompletion = {
+type ScheduleCompletion = {
   total_sets: number;
   scheduled_sets: number;
   unscheduled_sets_count: number;
@@ -40,7 +40,7 @@ export type LabSummary = {
   is_fully_booked: boolean;
 };
 
-export type LabCapacity = {
+type LabCapacity = {
   laboratories_total: number;
   fully_booked_laboratories: number;
   laboratories_with_free_slots: number;
@@ -52,12 +52,12 @@ export type LabCapacity = {
   laboratories: LabSummary[];
 };
 
-export type EnrollmentStatusBreakdown = {
+type EnrollmentStatusBreakdown = {
   status: string;
   count: number;
 };
 
-export type NotEnrolledStudent = {
+type NotEnrolledStudent = {
   student_profile_id: number;
   student_id: string | null;
   full_name: string;
@@ -103,7 +103,7 @@ export type DepartmentStaffing = {
   instructors_over_cap: number;
 };
 
-export type Staffing = {
+type Staffing = {
   roster_size: number;
   instructors_staffed: number;
   instructors_idle: number;

@@ -45,7 +45,7 @@ async function getArchivePreview(id: number): Promise<BuildingArchivePreview> {
   return apiGet<BuildingArchivePreview>(`/buildings/${id}/archive-preview`);
 }
 
-export type { DeletedBuilding };
+;
 
 type BuildingRecycleBinResponse = {
   building_id: number;

@@ -1,14 +1,14 @@
 import type { RoomProgram } from "~/types/room";
 
 /** Payload for POST /create-facilities — one building and all nested rooms in one transaction. */
-export type CreateFacilityRoomInput = {
+type CreateFacilityRoomInput = {
   roomName: string;
   roomType: string;
   roomCapacity: number;
   programIds?: number[];
 };
 
-export type CreateFacilityFloorInput = {
+type CreateFacilityFloorInput = {
   floorLevel: number;
   rooms: CreateFacilityRoomInput[];
 };
@@ -57,24 +57,6 @@ export type FacilityRoomDetail = {
   timeRemaining: string;
   programIds: number[];
   programs: RoomProgram[];
-};
-
-/** Room row while editing an existing building. */
-export type EditFacilityRoomDraft = {
-  key: string;
-  roomId?: number;
-  roomName: string;
-  roomType: string;
-  roomCapacity: number;
-  programIds: number[];
-  status: string;
-  isNew: boolean;
-  isDeleted: boolean;
-};
-
-export type EditFacilityFloorDraft = {
-  floorLevel: number;
-  rooms: EditFacilityRoomDraft[];
 };
 
 export type EditBuildingChangeSummary = {

@@ -45,7 +45,7 @@ export type CoverageByProgram = {
   staffed_percent: number;
 };
 
-export type CoverageSubject = {
+type CoverageSubject = {
   program_id: number;
   program_abbrev: string;
   year_level: number;

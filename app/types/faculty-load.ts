@@ -1,7 +1,7 @@
 import type { Semester, YearLevel } from "~/types/subject";
 
 /** One subject to assign within a program (matched by id on the backend). */
-export type SubjectLoadInput = {
+type SubjectLoadInput = {
   subjectId: number;
 };
 
@@ -11,30 +11,7 @@ export type ProgramLoadInput = {
   subjects: SubjectLoadInput[];
 };
 
-/** One faculty member's full term load, identified by instructor profile id. */
-export type FacultyLoadInput = {
-  instructorProfileId: number;
-  firstName?: string;
-  lastName?: string;
-  maxWeeklyHours: number;
-  programs: ProgramLoadInput[];
-};
-
-/** A department faculty roster entry with instructor profile id. */
-export type DepartmentFacultyOption = {
-  instructorProfileId: number;
-  department: string;
-  firstName: string;
-  midName: string | null;
-  lastName: string;
-  gender: string;
-  civilStatus: string;
-  email: string | null;
-  mobile: string | null;
-  roles: string[];
-};
-
-export type DepartmentSubjectEntry = {
+type DepartmentSubjectEntry = {
   curriculumDetailId: number;
   subjectId: number;
   subjectCode: string;
@@ -43,13 +20,13 @@ export type DepartmentSubjectEntry = {
   prerequisites: string[];
 };
 
-export type DepartmentSubjectSemesterGroup = {
+type DepartmentSubjectSemesterGroup = {
   semester: Semester;
   semesterTotalUnits: number;
   subjects: DepartmentSubjectEntry[];
 };
 
-export type DepartmentSubjectYearGroup = {
+type DepartmentSubjectYearGroup = {
   yearLevel: YearLevel;
   yearTotalUnits: number;
   semesterDetails: DepartmentSubjectSemesterGroup[];
@@ -65,7 +42,7 @@ export type DepartmentSubjectProgram = {
 };
 
 /** One scheduled session under a subject, as returned by GET /deans/faculty-loading. */
-export type FacultyLoadingSchedule = {
+type FacultyLoadingSchedule = {
   day: string;
   time: string;
   numberOfStudents: number;
@@ -76,7 +53,7 @@ export type FacultyLoadingSchedule = {
 };
 
 /** One subject an instructor is carrying this term, with its scheduled sessions. */
-export type FacultyLoadingSubject = {
+type FacultyLoadingSubject = {
   subjectCode: string;
   descriptiveTitle: string;
   units: { total: number; lecHours: number; labHours: number };
@@ -201,7 +178,7 @@ export type TeachingTermDetailSubjectAssignment = {
 };
 
 /** One daily load entry (always Mon–Sat, 6 rows). */
-export type TeachingTermDetailDailyLoad = {
+type TeachingTermDetailDailyLoad = {
   daily_load_id: number | null;
   day_of_week: number;
   day_name: string;

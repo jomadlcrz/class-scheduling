@@ -1,6 +1,3 @@
-/** Shared tone for archive icons — light orange, consistent with GWC accent usage. */
-export const archiveIconClassName = "text-orange-400 dark:text-orange-300";
-
 export const archiveActionButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-orange-400 transition-colors duration-150 hover:bg-orange-50 hover:text-orange-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-orange-300 dark:hover:bg-orange-400/10 dark:hover:text-orange-200";
 

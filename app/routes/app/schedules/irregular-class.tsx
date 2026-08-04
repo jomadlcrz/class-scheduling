@@ -39,7 +39,6 @@ type Tab = "students" | "assigned";
 
 function IrregularClassPage() {
   const [students, setStudents] = useState<IrregularStudent[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<IrregularStudent | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("students");
 
@@ -126,11 +125,7 @@ function IrregularClassPage() {
         ))}
       </div>
 
-      {error ? (
-        <div className="mt-6">
-          <EmptyState title="Couldn't load irregular students">{error}</EmptyState>
-        </div>
-      ) : students === null ? (
+      {students === null ? (
         <div
           role="status"
           aria-label="Loading irregular students"

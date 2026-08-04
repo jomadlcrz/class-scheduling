@@ -55,7 +55,7 @@ function TimetableGrid({ room, slots }: { room: Classroom; slots: TimeSlot[] }) 
       style={{ cursor: "grab", scrollbarWidth: "none" }}
     >
       <div className="grid min-w-max" style={{ gridTemplateColumns: gridCols }}>
-        {DAYS.map((day, di) => {
+        {DAYS.map((day) => {
           const ds = DAY_STYLES[day];
           const cells = buildDayCells(day, room.entries, slots);
           return (

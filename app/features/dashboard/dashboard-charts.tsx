@@ -32,7 +32,7 @@ import type {
 
 /** Status tones — the same four status meanings everywhere (tiles, meters,
  * table severity), always accompanied by a label in the UI. */
-export const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<string, string> = {
   good: "#2f9e63",
   warning: "#d9a026",
   serious: "#e0744a",
@@ -318,9 +318,9 @@ export function DailyHoursChart({ days }: { days: DailyLoadHour[] }) {
 
 // ── Horizontal stacked bar rows (generic, used by both dashboards) ──────────
 
-export type StackedBarSeries = { key: string; label: string; color: string };
+type StackedBarSeries = { key: string; label: string; color: string };
 
-export function StackedBarRows({
+function StackedBarRows({
   data,
   yKey,
   categoryWidth = 64,
@@ -418,7 +418,7 @@ const DONUT_FALLBACK_RAMP = [
  * Regular's green/amber — deep indigo for seated, amber glow for pending.
  * Shared with the "Not yet scheduled" tiles below so the same group reads
  * the same color everywhere on this dashboard. */
-export const IRREGULAR_SEATED = "#4c3fa0";
+const IRREGULAR_SEATED = "#4c3fa0";
 export const IRREGULAR_PENDING = "#e8a23d";
 
 /** This chart answers ONE question — who is enrolled, at all — so every

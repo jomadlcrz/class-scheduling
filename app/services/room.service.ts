@@ -66,7 +66,7 @@ async function getArchivePreview(id: number): Promise<RoomArchivePreview> {
   return apiGet<RoomArchivePreview>(`/rooms/${id}/archive-preview`);
 }
 
-export type DeletedRoom = { id: number; name: string; deactivatedAt: string | null };
+type DeletedRoom = { id: number; name: string; deactivatedAt: string | null };
 
 type RoomRecycleBinResponse = { room_id: number; room_name: string; deactivated_at: string | null }[];
 

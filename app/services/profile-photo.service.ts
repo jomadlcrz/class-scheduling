@@ -23,7 +23,7 @@ type RawPhotoData = {
   has_photo: boolean;
 };
 
-export type ProfilePhotoData = {
+type ProfilePhotoData = {
   profileId: number;
   firstName: string | null;
   midName: string | null;
@@ -47,12 +47,12 @@ function endpoint(role: Role): string {
   return ENDPOINTS[role].base;
 }
 
-export async function getPhoto(role: Role): Promise<ProfilePhotoData> {
+async function getPhoto(role: Role): Promise<ProfilePhotoData> {
   const raw = await apiGet<RawPhotoData>(endpoint(role));
   return toProfilePhotoData(raw);
 }
 
-export async function uploadPhoto(role: Role, file: File): Promise<{ url: string; message: string }> {
+async function uploadPhoto(role: Role, file: File): Promise<{ url: string; message: string }> {
   const formData = new FormData();
   formData.append("photo", file);
   const data = await apiUpload<{ message?: string; profile_photo_url: string }>(
@@ -62,7 +62,7 @@ export async function uploadPhoto(role: Role, file: File): Promise<{ url: string
   return { url: data.profile_photo_url, message: data.message ?? "" };
 }
 
-export async function removePhoto(role: Role): Promise<string> {
+async function removePhoto(role: Role): Promise<string> {
   const data = await apiDelete<{ message?: string }>(endpoint(role));
   return data.message ?? "";
 }

@@ -16,7 +16,7 @@ export type NotificationType =
   | "student_enrolled"
   | "account_reactivated";
 
-export type NotificationSession = {
+type NotificationSession = {
   subject_code?: string | null;
   day?: string | null;
   start_time?: string | null;
@@ -24,7 +24,7 @@ export type NotificationSession = {
   room?: string | null;
 };
 
-export type NotificationTimeBlock = {
+type NotificationTimeBlock = {
   day?: string | null;
   start_time?: string | null;
   end_time?: string | null;

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ADMINISTRATOR_ROLES } from "~/types/administrator";
 
-export { ADMINISTRATOR_ROLES };
+;
 
 export const administratorSchema = z.object({
   firstName: z.string().min(1, "Enter the first name."),

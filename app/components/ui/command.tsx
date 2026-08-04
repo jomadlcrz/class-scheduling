@@ -1,5 +1,5 @@
 ﻿import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
-import { useState, type ComponentProps, type ReactNode } from "react";
+import { useState, type ComponentProps } from "react";
 import { CheckIcon, ChevronDownIcon, SearchIcon } from "~/components/ui/icons";
 
 const Command = ComboboxPrimitive.Root;
@@ -86,27 +86,6 @@ function CommandEmpty({ className = "", ...props }: ComponentProps<"div">) {
   );
 }
 
-function CommandGroup({
-  className = "",
-  heading,
-  children,
-  ...props
-}: ComboboxPrimitive.Group.Props & { heading?: ReactNode }) {
-  return (
-    <ComboboxPrimitive.Group data-slot="command-group" className={`py-1 ${className}`.trim()} {...props}>
-      {heading && (
-        <ComboboxPrimitive.GroupLabel
-          data-slot="command-group-label"
-          className="px-3 py-1.5 font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500"
-        >
-          {heading}
-        </ComboboxPrimitive.GroupLabel>
-      )}
-      {children}
-    </ComboboxPrimitive.Group>
-  );
-}
-
 function CommandItem({ className = "", children, ...props }: ComboboxPrimitive.Item.Props) {
   return (
     <ComboboxPrimitive.Item
@@ -125,15 +104,4 @@ function CommandItem({ className = "", children, ...props }: ComboboxPrimitive.I
   );
 }
 
-function CommandSeparator({ className = "", ...props }: ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="command-separator"
-      role="separator"
-      className={`-mx-1 my-1 h-px bg-slate-200 dark:bg-white/10 ${className}`.trim()}
-      {...props}
-    />
-  );
-}
-
-export { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator };
+export { Command, CommandInput, CommandList, CommandEmpty, CommandItem };

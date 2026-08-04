@@ -345,23 +345,3 @@ export async function apiUpload<T>(endpoint: string, formData: FormData): Promis
   return data as T;
 }
 
-const toSnakeKey = (value: string): string =>
-  value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-
-/** Recursively snake_case object keys — the backend mixes camelCase and snake_case responses. */
-function normalizeResponseKeys<T>(value: T): T {
-  if (Array.isArray(value)) {
-    return value.map((item) => normalizeResponseKeys(item)) as T;
-  }
-  if (!value || Object.prototype.toString.call(value) !== "[object Object]") {
-    return value;
-  }
-  return Object.fromEntries(
-    Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
-      toSnakeKey(key),
-      normalizeResponseKeys(entry),
-    ]),
-  ) as T;
-}
-
-

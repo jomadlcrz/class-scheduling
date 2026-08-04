@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import { CheckIcon, ChevronDownIcon, CloseIcon } from "~/components/ui/icons";
 
-export type FilterOption = { value: string; label: string };
+type FilterOption = { value: string; label: string };
 
 type FilterDropdownProps = {
   id?: string;

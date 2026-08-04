@@ -47,9 +47,3 @@ export function Pagination({ page, totalItems, pageSize, onPageChange }: Paginat
     </div>
   );
 }
-
-function pageSlice<T>(items: T[], page: number, pageSize: number): T[] {
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-  const currentPage = Math.min(Math.max(1, page), totalPages);
-  return items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-}

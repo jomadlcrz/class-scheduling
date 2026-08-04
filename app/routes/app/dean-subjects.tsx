@@ -10,8 +10,6 @@ import { inputClassName } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
-import { useSemesters } from "~/hooks/use-semesters";
-import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
 import { programService } from "~/services/program.service";
@@ -36,8 +34,6 @@ export default function DeanSubjectsRoute() {
 }
 
 function DeanSubjectsPage() {
-  const { semesterLabel } = useSemesters();
-  const { yearLevelLabel } = useYearLevels();
   const [subjects, setSubjects] = useState<DepartmentSubjectProgram[] | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);

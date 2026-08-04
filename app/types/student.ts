@@ -1,28 +1,9 @@
-import type { YearLevel } from "~/types/subject";
-
-export const STUDENT_STATUSES = ["enrolled", "inactive", "graduated"] as const;
-export type StudentStatus = (typeof STUDENT_STATUSES)[number];
-
-export const STUDENT_STATUS_LABELS: Record<StudentStatus, string> = {
-  enrolled: "Enrolled",
-  inactive: "Inactive",
-  graduated: "Graduated",
+type EnrolledSubjectRow = {
+  subjectId: number;
+  subjectCode: string;
+  descriptiveTitle: string;
+  units: number;
 };
-
-export type Student = {
-  id: string;
-  studentNumber: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  program: string;
-  yearLevel: YearLevel;
-  setCode: string;
-  status: StudentStatus;
-};
-
-export type CreateStudentInput = Omit<Student, "id">;
-export type UpdateStudentInput = Partial<CreateStudentInput>;
 
 /** POST /students payload — creates the student profile + academic record. */
 export type CreateStudentRecordInput = {
@@ -46,13 +27,6 @@ export type CreateStudentRecordInput = {
 export type CreateStudentAccountInput = {
   email: string;
   roleName: "Student";
-};
-
-export type EnrolledSubjectRow = {
-  subjectId: number;
-  subjectCode: string;
-  descriptiveTitle: string;
-  units: number;
 };
 
 /** One academic term's record — enrolled subjects differ per term, so they nest here. */

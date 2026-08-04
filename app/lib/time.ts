@@ -38,12 +38,6 @@ export function getSlotDuration(slotTime: string): number {
   return end > start ? end - start : 0;
 }
 
-/** Format a decimal-hour value to at most one decimal place. */
-export function formatHours(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-}
-
 /** Format a 24-hour "HH:MM" time as 12-hour with meridiem (e.g. "07:30" -> "7:30 AM"). */
 export function formatTime12h(value: string): string {
   if (!value) return "";

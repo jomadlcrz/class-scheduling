@@ -1,11 +1,9 @@
-import { Button } from "~/components/ui/button";
 import {
   AlertTriangleIcon,
   BookOpenIcon,
   CheckIcon,
   ClockIcon,
   LayersIcon,
-  SendIcon,
   UserIcon,
 } from "~/components/ui/icons";
 
@@ -15,8 +13,6 @@ type AssignmentSummaryFooterProps = {
   totalSubjectsAssigned: number;
   totalWeeklyHours: number;
   exceedingInstructorsCount: number;
-  loading?: boolean;
-  onSubmit: () => void;
 };
 
 export function AssignmentSummaryFooter({
@@ -25,8 +21,6 @@ export function AssignmentSummaryFooter({
   totalSubjectsAssigned,
   totalWeeklyHours,
   exceedingInstructorsCount,
-  loading,
-  onSubmit,
 }: AssignmentSummaryFooterProps) {
   return (
     <div className="sticky bottom-0 z-10 mt-6 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-surface/95 sm:gap-4 sm:px-6 sm:py-3.5 md:flex-row md:items-center md:justify-between">

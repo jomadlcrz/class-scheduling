@@ -460,7 +460,7 @@ export function StudentsPage() {
     }
   }
 
-  async function handleArchiveProfile(student: StudentAccountRow) {
+  async function handleArchiveProfile(_student: StudentAccountRow) {
     await reloadStudentLists();
     setArchiveTarget(null);
   }

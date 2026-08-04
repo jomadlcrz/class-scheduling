@@ -12,15 +12,6 @@ export const DAY_LABELS: Record<Day, string> = {
   S: "Saturday",
 };
 
-const DAY_SHORT: Record<Day, string> = {
-  M: "Mon",
-  T: "Tue",
-  W: "Wed",
-  Th: "Thu",
-  F: "Fri",
-  S: "Sat",
-};
-
 export type ScheduleSemester = number;
 
 export const SCHEDULE_MODES = ["F2F", "Online", "Modular"] as const;
@@ -57,9 +48,6 @@ export type Schedule = {
   /** Only populated for a STUDENT viewer of scheduleService.view(). */
   academicStatus?: string;
 };
-
-export type CreateScheduleInput = Omit<Schedule, "id">;
-export type UpdateScheduleInput = Partial<CreateScheduleInput>;
 
 /** GET /regular_schedule/<id> response, camelCased. */
 export type RegularScheduleDetail = {
@@ -100,11 +88,4 @@ export function getSlotDurationHours(startTime: string, endTime: string): number
 }
 
 // Re-export schedule-day constants from lib/schedule-days.ts.
-export {
-  SCHEDULE_DAY_ORDER,
-  SCHEDULE_DAYS,
-  SCHEDULE_DAY_NAMES,
-  getScheduleDayKey,
-  SCHEDULE_DAY_COLORS,
-  type ScheduleDay,
-} from "~/lib/schedule-days";
+;

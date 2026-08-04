@@ -59,19 +59,19 @@ export type LabDay = {
   sessionList: LabSession[];
 };
 
-export type LabProgramAccessEntry = {
+type LabProgramAccessEntry = {
   programId: number;
   programAbbrev: string | null;
   programName: string | null;
 };
 
-export type LabRoomAccess = {
+type LabRoomAccess = {
   isRestricted: boolean;
   programs: LabProgramAccessEntry[];
   note: string;
 };
 
-export type LabRoomUsage = {
+type LabRoomUsage = {
   sessions: number;
   bookedHours: number;
   windowCapacityHours: number;
@@ -88,7 +88,7 @@ export type LabRoomUsage = {
   distinctSets: number;
 };
 
-export type LabRoomProgramUsage = {
+type LabRoomProgramUsage = {
   programId: number | null;
   programAbbrev: string | null;
   sessions: number;
@@ -138,7 +138,7 @@ export type LabAnalysisTotals = {
   unslottedSessions: number;
 };
 
-export type LabProgramAccessRoom = {
+type LabProgramAccessRoom = {
   roomId: number;
   roomName: string;
   slotsFree: number;

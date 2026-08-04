@@ -11,7 +11,7 @@ type SemesterResponse = {
   can_edit?: boolean;
 };
 
-export type DeletedSemester = Semester & { deactivatedAt: string | null };
+type DeletedSemester = Semester & { deactivatedAt: string | null };
 
 export type SemesterArchivePreview = {
   semester: { id: number; semester: string };

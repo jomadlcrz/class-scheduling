@@ -1,6 +1,6 @@
 export type ScheduleDay = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
 
-export const SCHEDULE_DAY_ORDER: ScheduleDay[] = ["MON", "TUE", "WED", "THU", "FRI", "SAT"];
+const SCHEDULE_DAY_ORDER: ScheduleDay[] = ["MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 export const SCHEDULE_DAYS = [
   { key: "MON" as ScheduleDay, label: "Mon", full: "Monday" },

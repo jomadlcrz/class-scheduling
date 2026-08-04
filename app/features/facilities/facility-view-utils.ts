@@ -5,7 +5,7 @@ export function computeBuildingSummary(building: FacilityBuildingDetail): Buildi
   return computeFilteredSummary(building, building.rooms);
 }
 
-export function computeFilteredSummary(
+function computeFilteredSummary(
   building: FacilityBuildingDetail,
   rooms: FacilityBuildingDetail["rooms"],
 ): BuildingSummaryData {

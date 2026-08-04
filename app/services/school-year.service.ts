@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 
 type SchoolYearEntry = {
   id: number;
@@ -17,7 +17,7 @@ export type SchoolYearOption = {
   createdAt?: string | null;
 };
 
-export type DeletedSchoolYear = SchoolYearOption & {
+type DeletedSchoolYear = SchoolYearOption & {
   deactivatedAt: string | null;
   createdAt?: string | null;
 };

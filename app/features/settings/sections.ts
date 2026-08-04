@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import { ArchiveIcon, KeyIcon, UserIcon } from "~/components/ui/icons";
 import type { Role } from "~/types/user";
 
-export type SettingsSection = {
+type SettingsSection = {
   label: string;
   description: string;
   href: string;
@@ -17,7 +17,7 @@ export type SettingsGroup = {
 };
 
 /** Single source for settings navigation — the hub cards and the mobile quick-switcher both render from this. */
-export const SETTINGS_GROUPS: SettingsGroup[] = [
+const SETTINGS_GROUPS: SettingsGroup[] = [
   {
     label: "Account",
     sections: [

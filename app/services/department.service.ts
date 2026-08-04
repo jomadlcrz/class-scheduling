@@ -92,7 +92,7 @@ async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
   };
 }
 
-export type DeletedDepartment = {
+type DeletedDepartment = {
   id: number;
   abbrev: string;
   name: string;

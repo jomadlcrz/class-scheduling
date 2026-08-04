@@ -42,14 +42,14 @@ function newRoomDraft(roomType = ""): FacilityRoomDraft {
   };
 }
 
-function emptyFloors(count: number, roomType: string): FacilityFloorDraft[] {
+function emptyFloors(count: number): FacilityFloorDraft[] {
   return Array.from({ length: count }, (_, index) => ({
     floorLevel: index + 1,
     rooms: [],
   }));
 }
 
-function syncFloorCount(floors: FacilityFloorDraft[], count: number, roomType: string): FacilityFloorDraft[] {
+function syncFloorCount(floors: FacilityFloorDraft[], count: number): FacilityFloorDraft[] {
   const next = floors.slice(0, count);
   while (next.length < count) {
     next.push({ floorLevel: next.length + 1, rooms: [] });
@@ -117,11 +117,11 @@ export function CreateBuildingWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [buildingName, setBuildingName] = useState("");
   const [floorCount, setFloorCount] = useState(1);
-  const [floors, setFloors] = useState<FacilityFloorDraft[]>(() => emptyFloors(1, defaultRoomType));
+  const [floors, setFloors] = useState<FacilityFloorDraft[]>(() => emptyFloors(1));
   const [openFloors, setOpenFloors] = useState<number[]>([1]);
 
   useEffect(() => {
-    setFloors((current) => syncFloorCount(current, floorCount, defaultRoomType));
+    setFloors((current) => syncFloorCount(current, floorCount));
     setOpenFloors((current) => current.filter((level) => level <= floorCount));
   }, [floorCount, defaultRoomType]);
 

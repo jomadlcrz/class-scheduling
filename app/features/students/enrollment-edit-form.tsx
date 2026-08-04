@@ -16,7 +16,7 @@ type EnrollmentEditFormProps = {
   onCancel: () => void;
 };
 
-export type EnrollmentEditValue = UpdateEnrollmentInput & { enrollmentState?: string };
+type EnrollmentEditValue = UpdateEnrollmentInput & { enrollmentState?: string };
 
 /** Edits a single term's set/year level/status (PUT /students/enrollments/<id>) — doesn't touch enrolled subjects. */
 export function EnrollmentEditForm({

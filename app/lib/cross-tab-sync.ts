@@ -25,7 +25,7 @@ import { SESSION_KEY } from "~/lib/session";
 
 export type AuthSyncKind = "login" | "logout";
 
-export type AuthSyncMessage = {
+type AuthSyncMessage = {
   kind: AuthSyncKind;
   eventId: string;
 };

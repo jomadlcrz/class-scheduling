@@ -12,8 +12,6 @@ export type ClassSet = {
 
 export type CreateSetInput = Omit<ClassSet, "id">;
 
-export type UpdateSetInput = Partial<CreateSetInput>;
-
 /** Shape of GET /sets/:id/delete-preview and the DELETE /sets/:id payload. */
 export type SetDeletePreview = {
   set: {

@@ -14,7 +14,7 @@ const variants = {
     "border-amber-200 bg-amber-50 text-amber-900 [&>svg]:text-amber-600 dark:border-gold-400/25 dark:bg-gold-400/10 dark:text-gold-300 dark:[&>svg]:text-gold-400",
 } as const;
 
-export type AlertVariant = keyof typeof variants;
+type AlertVariant = keyof typeof variants;
 
 type AlertProps = {
   variant?: AlertVariant;

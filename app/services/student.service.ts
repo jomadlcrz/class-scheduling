@@ -261,7 +261,7 @@ async function reactivateAccount(studentProfileId: number): Promise<string> {
   return apiMessage(data);
 }
 
-export type ImportStudentResult = {
+type ImportStudentResult = {
   row: number;
   student_id?: string;
   status: "created" | "error";
@@ -300,7 +300,7 @@ export type StudentArchivePreview = {
   };
 };
 
-export type DeletedStudentProfile = {
+type DeletedStudentProfile = {
   studentProfileId: number;
   firstName: string;
   lastName: string;

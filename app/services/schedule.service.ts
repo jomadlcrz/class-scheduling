@@ -65,7 +65,7 @@ async function view(): Promise<Schedule[]> {
   const semesters = await semesterService.list();
   const semByName = new Map(semesters.map((s) => [s.semester, s.semesterNumber]));
 
-  return schedules.map((r, index) => {
+  return schedules.map((r) => {
     const [start, end] = r.class_time.split(" - ");
     // set_name is "{PROGRAM}-{year}{SET}", e.g. "BSIT-1A".
     const [programAbbrev, yearAndSet] = r.set_name?.split("-") ?? [];
@@ -222,7 +222,7 @@ export type SlotDraft = {
 };
 
 /** One relocated saved session within a repack_instructor suggestion. */
-export type RepackMove = {
+type RepackMove = {
   scheduleId: number;
   subjectCode: string;
   setName: string;
@@ -232,7 +232,7 @@ export type RepackMove = {
 };
 
 /** Where the previously-unplaceable subject lands once the repack's moves are applied. */
-export type RepackPlacement = {
+type RepackPlacement = {
   day: string;
   start: string;
   end: string;
@@ -242,7 +242,7 @@ export type RepackPlacement = {
 };
 
 /** A saved session the repack has no legal home for afterwards — the trade-off cost. */
-export type RepackDisplaced = {
+type RepackDisplaced = {
   scheduleId: number;
   subjectCode: string;
   setLabel: string;
@@ -314,7 +314,7 @@ type AutoGenerateResponse = {
   suggestions?: unknown[];
 };
 
-export type AutoGenerateResult = {
+type AutoGenerateResult = {
   slots: SlotDraft[];
   /** Subjects the algorithm couldn't fit anywhere, with the reason why. */
   conflicts: string[];
@@ -429,7 +429,7 @@ async function autoGenerate(input: {
   };
 }
 
-export type RegularSlotInput = {
+type RegularSlotInput = {
   day: Day;
   /** "HH:MM" 24h — accepted by the backend alongside "h:MM AM/PM". */
   startTime: string;
@@ -511,7 +511,7 @@ async function getCreationContext(): Promise<{ yearLevels: ScheduleYearLevelOpti
   };
 }
 
-export type ScheduleProgramOption = { id: number; abbrev: string; name: string };
+type ScheduleProgramOption = { id: number; abbrev: string; name: string };
 
 type ScheduleProgramsResponse = {
   program_id: number;
@@ -755,7 +755,7 @@ async function getSetWithSchedules(): Promise<ScheduledSetOption[]> {
   }));
 }
 
-export type InstructorLedgerReconciliation = {
+type InstructorLedgerReconciliation = {
   message: string;
   checked: number;
   drift: {

@@ -16,7 +16,7 @@ function HelpLink() {
 }
 
 /** Fixed radial-gradient backdrop shared by every auth page. */
-export function AmbientBackground() {
+function AmbientBackground() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
       <div
@@ -37,7 +37,7 @@ type BrandLogoProps = {
 };
 
 /** GWC logo linked back to the home page. */
-export function BrandLogo({ width = 56, className = "size-14 object-contain" }: BrandLogoProps) {
+function BrandLogo({ width = 56, className = "size-14 object-contain" }: BrandLogoProps) {
   return (
     <a
       href="/"

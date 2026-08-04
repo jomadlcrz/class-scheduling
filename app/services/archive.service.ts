@@ -36,7 +36,7 @@ export type ArchiveItem = {
   extra: Record<string, unknown>;
 };
 
-export type ArchiveCategory = {
+type ArchiveCategory = {
   key: ArchiveCategoryKey;
   label: string;
   description: string;
@@ -45,7 +45,7 @@ export type ArchiveCategory = {
   items: ArchiveItem[];
 };
 
-export type ArchiveCategoryMeta = {
+type ArchiveCategoryMeta = {
   key: ArchiveCategoryKey;
   label: string;
   description: string;

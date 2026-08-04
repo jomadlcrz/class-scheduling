@@ -2,7 +2,7 @@
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
-import { SCHEDULE_DAY_NAMES, getScheduleDayKey } from "~/lib/schedule-days";
+import { SCHEDULE_DAY_NAMES } from "~/lib/schedule-days";
 import { DAYS, DAY_LABELS, type Day, type Schedule } from "~/types/schedule";
 
 type TodayClassesProps = {

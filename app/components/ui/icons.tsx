@@ -254,16 +254,6 @@ export function UserIcon() {
   );
 }
 
-function BuildingIcon() {
-  return (
-    <IconBase>
-      <rect x="4" y="2" width="16" height="20" rx="2" />
-      <path d="M9 22v-4h6v4" />
-      <path d="M9 6h2M13 6h2M9 10h2M13 10h2M9 14h2M13 14h2" />
-    </IconBase>
-  );
-}
-
 export function Building2Icon() {
   return (
     <IconBase>
@@ -300,14 +290,6 @@ export function ChevronUpIcon() {
   return (
     <IconBase size={16}>
       <polyline points="18 15 12 9 6 15" />
-    </IconBase>
-  );
-}
-
-function ChevronLeftIcon() {
-  return (
-    <IconBase size={16}>
-      <polyline points="15 18 9 12 15 6" />
     </IconBase>
   );
 }
@@ -424,16 +406,6 @@ export function ShieldIcon() {
   );
 }
 
-function DoorIcon() {
-  return (
-    <IconBase>
-      <path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14" />
-      <path d="M2 20h20" />
-      <circle cx="14" cy="12" r="0.5" fill="currentColor" stroke="none" />
-    </IconBase>
-  );
-}
-
 export function DoorOpenIcon() {
   return (
     <IconBase>
@@ -442,14 +414,6 @@ export function DoorOpenIcon() {
       <path d="M13 20h6" />
       <path d="M10 12v.01" />
       <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.742a1 1 0 0 1 .758-.97l7-1.875a1 1 0 0 1 1.484.793z" />
-    </IconBase>
-  );
-}
-
-function FolderIcon() {
-  return (
-    <IconBase>
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </IconBase>
   );
 }
@@ -540,17 +504,6 @@ export function FlaskConicalIcon() {
   );
 }
 
-export function TableIcon() {
-  return (
-    <IconBase>
-      <path d="M12 3v18" />
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M3 9h18" />
-      <path d="M3 15h18" />
-    </IconBase>
-  );
-}
-
 export function BlocksIcon() {
   return (
     <IconBase>
@@ -623,41 +576,11 @@ export function GraduationCapIcon() {
   );
 }
 
-export function PaletteIcon() {
-  return (
-    <IconBase>
-      <circle cx="13.5" cy="6.5" r="1.5" />
-      <circle cx="17.5" cy="10.5" r="1.5" />
-      <circle cx="8.5" cy="7.5" r="1.5" />
-      <circle cx="6.5" cy="12.5" r="1.5" />
-      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
-    </IconBase>
-  );
-}
-
 export function BellIcon() {
   return (
     <IconBase>
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </IconBase>
-  );
-}
-
-function LayoutIcon() {
-  return (
-    <IconBase>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M3 9h18" />
-      <path d="M9 9v12" />
-    </IconBase>
-  );
-}
-
-function WrenchIcon() {
-  return (
-    <IconBase>
-      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
     </IconBase>
   );
 }
@@ -848,26 +771,6 @@ export function SendIcon({ size = 16 }: { size?: number }) {
     <IconBase size={size}>
       <line x1="22" y1="2" x2="11" y2="13" />
       <polygon points="22 2 15 22 11 13 2 9 22 2" />
-    </IconBase>
-  );
-}
-
-export function ShieldCheckIcon({ size = 16 }: { size?: number }) {
-  return (
-    <IconBase size={size}>
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <path d="m9 12 2 2 4-4" />
-    </IconBase>
-  );
-}
-
-export function UserPlusIcon({ size = 16 }: { size?: number }) {
-  return (
-    <IconBase size={size}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="8.5" cy="7" r="4" />
-      <line x1="20" y1="8" x2="20" y2="14" />
-      <line x1="17" y1="11" x2="23" y2="11" />
     </IconBase>
   );
 }

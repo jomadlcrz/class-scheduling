@@ -163,7 +163,7 @@ type PendingScheduleResponse = {
   }[];
 };
 
-export type MeetingSlot = {
+type MeetingSlot = {
   regularSchedId: number;
   mode: string;
   dayOfWeek: string;
@@ -173,7 +173,7 @@ export type MeetingSlot = {
   instructor: string | null;
 };
 
-export type AvailableOffering = {
+type AvailableOffering = {
   set: string | null;
   setId: number;
   regularSchedIds: number[];
@@ -184,7 +184,7 @@ export type AvailableOffering = {
   meetings: MeetingSlot[];
 };
 
-export type ScheduledSubject = {
+type ScheduledSubject = {
   subjectId: number;
   subjectCode: string;
   descTitle: string;
@@ -192,7 +192,7 @@ export type ScheduledSubject = {
   assignedOffering: AvailableOffering;
 };
 
-export type PendingSubject = {
+type PendingSubject = {
   subjectId: number;
   subjectCode: string;
   descTitle: string;
@@ -290,7 +290,7 @@ type AssignedScheduleResponse = {
   }[];
 };
 
-export type AssignedSchedule = {
+type AssignedSchedule = {
   id: number;
   regularSchedId: number;
   subjectId: number;
@@ -309,7 +309,7 @@ export type AssignedSchedule = {
   instructor: string | null;
 };
 
-export type AssignedSubject = {
+type AssignedSubject = {
   subjectId: number;
   subjectCode: string;
   descTitle: string;

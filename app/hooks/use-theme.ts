@@ -1,1 +1,1 @@
-export { useTheme, type Theme, type ThemePreference } from "~/components/theme/theme-provider";
+export { useTheme,  type ThemePreference } from "~/components/theme/theme-provider";

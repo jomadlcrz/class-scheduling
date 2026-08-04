@@ -69,7 +69,6 @@ export function CurriculumSemesterPanel({
   prerequisiteOptions,
   onUpdatePending,
   onRemovePending,
-  onDuplicatePending,
 }: CurriculumSemesterPanelProps) {
   const isViewMode = mode === "view";
   const hasSearch = search.trim().length > 0;
