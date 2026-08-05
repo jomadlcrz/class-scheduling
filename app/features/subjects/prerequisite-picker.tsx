@@ -1,9 +1,6 @@
 import { useId, useMemo, useState } from "react";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
-import { CheckIcon, ChevronDownIcon } from "~/components/ui/icons";
-import { FieldChrome, inputClassName } from "~/components/ui/input";
-import { Popover } from "~/components/ui/popover";
-import { SearchInput } from "~/components/ui/search-input";
+import { FieldChrome } from "~/components/ui/input";
 
 export type PrerequisiteOption = {
   /** Real id for saved subjects, temp id for pending entries. */
@@ -12,297 +9,132 @@ export type PrerequisiteOption = {
   title: string;
 };
 
-type PrerequisitePickerProps = {
+type PrerequisiteComboboxProps = {
   options: PrerequisiteOption[];
-  /** Selected option ids. */
+  /** Selected prerequisite strings — subject codes or free text (e.g. "3rd Year Standing"). */
   value: string[];
-  onChange: (ids: string[]) => void;
-  /** Table-cell mode: a short summary opens a searchable checklist. */
-  compact?: boolean;
-  /** Distinguishes compact pickers when several rows are visible. */
+  onChange: (values: string[]) => void;
+  /** The subject's own code, excluded from the selectable options. */
+  ownCode?: string;
+  /** Full-form mode: wraps the field in a labelled FieldChrome shell. */
+  labelled?: boolean;
+  /** Distinguishes several pickers when more than one is visible. */
   ariaLabel?: string;
 };
 
-type PickerProps = Omit<PrerequisitePickerProps, "compact">;
+const prereqChipClassName =
+  "inline-flex items-center gap-1 rounded-md bg-navy-500/10 px-1.5 py-0.5 text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200";
 
-const compactTriggerClassName =
-  "inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-body text-xs font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10";
-
-const compactOptionClassName =
-  "flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-left font-body transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10";
-
-function CompactPrerequisitePicker({
+/**
+ * Hybrid prerequisites field — pick an existing subject or type free text the
+ * backend also accepts (a standing phrase like "3rd Year Standing"). Values are
+ * stored as plain strings so free text doesn't need an option to exist for.
+ */
+export function PrerequisiteCombobox({
   options,
   value,
   onChange,
+  ownCode,
+  labelled = false,
   ariaLabel,
-}: PickerProps) {
-  const searchId = useId();
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState<"all" | "selected">("all");
-  const selected = value
-    .map((id) => options.find((option) => option.id === id))
-    .filter((option): option is PrerequisiteOption => Boolean(option));
-  const filtered = useMemo(() => {
-    const candidates = view === "selected"
-      ? options.filter((option) => value.includes(option.id))
-      : options;
-    const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return candidates;
-    return candidates.filter(
-      (option) =>
-        option.code.toLowerCase().includes(normalizedQuery) ||
-        option.title.toLowerCase().includes(normalizedQuery),
-    );
-  }, [options, query, value, view]);
-
-  if (options.length === 0) {
-    return (
-      <span className="inline-flex w-full items-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-body text-xs text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500">
-        None available
-      </span>
-    );
-  }
-
-  const summary =
-    selected.length === 0
-      ? "Select"
-      : selected.length === 1
-        ? selected[0].code
-        : `${selected.length} selected`;
-
-  return (
-    <Popover
-      label={ariaLabel ?? "Choose prerequisites"}
-      trigger={
-        <>
-          <span className="truncate">{summary}</span>
-          <ChevronDownIcon />
-        </>
-      }
-      triggerClassName={compactTriggerClassName}
-      className="w-72 max-w-[calc(100vw-1rem)] p-0"
-      scrollable={false}
-      onOpenChange={(open) => {
-        if (!open) {
-          setQuery("");
-          setView("all");
-        }
-      }}
-    >
-      {(close) => (
-        <div className="flex max-h-[calc(100vh-1rem)] min-h-0 flex-col">
-          <div className="shrink-0 border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
-            <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-              Prerequisites
-            </p>
-            <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-              Choose all subjects that must be completed first.
-            </p>
-            <div
-              role="group"
-              aria-label="Prerequisite list view"
-              className="mt-2 grid grid-cols-2 rounded-lg bg-slate-100 p-0.5 dark:bg-white/5"
-            >
-              <button
-                type="button"
-                aria-pressed={view === "all"}
-                onClick={() => {
-                  setView("all");
-                  setQuery("");
-                }}
-                className={`cursor-pointer rounded-md px-2 py-1 font-body text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                  view === "all"
-                    ? "bg-white text-navy-700 shadow-sm dark:bg-white/10 dark:text-white"
-                    : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-white"
-                }`}
-              >
-                All subjects
-              </button>
-              <button
-                type="button"
-                aria-pressed={view === "selected"}
-                disabled={selected.length === 0}
-                onClick={() => {
-                  setView("selected");
-                  setQuery("");
-                }}
-                className={`cursor-pointer rounded-md px-2 py-1 font-body text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 ${
-                  view === "selected"
-                    ? "bg-white text-navy-700 shadow-sm dark:bg-white/10 dark:text-white"
-                    : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-white"
-                }`}
-              >
-                Selected ({selected.length})
-              </button>
-            </div>
-          </div>
-
-          <div className="shrink-0 px-2 pt-2">
-            <SearchInput
-              id={searchId}
-              value={query}
-              onChange={setQuery}
-              placeholder={view === "selected" ? "Search selected…" : "Search code or title…"}
-              ariaLabel="Search prerequisite subjects"
-            />
-          </div>
-
-          <div className="min-h-0 max-h-56 flex-1 overflow-y-auto px-1.5 py-2">
-            {filtered.length === 0 ? (
-              <p role="status" className="px-3 py-6 text-center font-body text-sm text-slate-400 dark:text-slate-500">
-                {view === "selected" ? "No selected prerequisites found." : "No subjects found."}
-              </p>
-            ) : (
-              filtered.map((option) => {
-                const isSelected = value.includes(option.id);
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    role="menuitemcheckbox"
-                    aria-checked={isSelected}
-                    className={compactOptionClassName}
-                    onClick={() => {
-                      const nextValue = isSelected
-                        ? value.filter((id) => id !== option.id)
-                        : [...value, option.id];
-                      onChange(nextValue);
-                      if (view === "selected" && nextValue.length === 0) setView("all");
-                    }}
-                  >
-                    <span
-                      className={`grid size-4 shrink-0 place-items-center rounded border ${
-                        isSelected
-                          ? "border-navy-700 bg-navy-700 text-white dark:border-gold-400 dark:bg-gold-400 dark:text-navy-950"
-                          : "border-slate-300 bg-white dark:border-white/20 dark:bg-white/5"
-                      }`}
-                      aria-hidden="true"
-                    >
-                      {isSelected ? <CheckIcon size={12} strokeWidth={3} /> : null}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-navy-700 dark:text-mist-100">
-                        {option.code}
-                      </span>
-                      <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                        {option.title}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })
-            )}
-          </div>
-
-          <div className="flex shrink-0 items-center justify-between gap-2 border-t border-slate-200 px-3 py-2 dark:border-white/10">
-            <button
-              type="button"
-              disabled={selected.length === 0}
-              onClick={() => {
-                onChange([]);
-                setView("all");
-              }}
-              className="cursor-pointer rounded-md px-2 py-1 font-body text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
-            >
-              Clear
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setView("all");
-                close();
-              }}
-              className="cursor-pointer rounded-md bg-navy-800 px-3 py-1.5 font-body text-xs font-medium text-white transition-colors hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-200"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
-    </Popover>
-  );
-}
-
-/** Searchable tag field used by standalone subject forms. */
-function FullPrerequisitePicker({ options, value, onChange }: PickerProps) {
+}: PrerequisiteComboboxProps) {
   const [query, setQuery] = useState("");
   const inputId = useId();
-  const selected = value
-    .map((id) => options.find((option) => option.id === id))
-    .filter((option): option is PrerequisiteOption => Boolean(option));
-  const available = options.filter((option) => !value.includes(option.id));
-  const filtered = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return available;
-    return available.filter(
-      (option) =>
-        option.code.toLowerCase().includes(normalizedQuery) ||
-        option.title.toLowerCase().includes(normalizedQuery),
-    );
-  }, [available, query]);
-  const placeholder = selected.length === 0 ? "Search subjects…" : "Add prerequisite…";
-  const chipClassName =
-    "inline-flex items-center gap-1.5 rounded-md bg-navy-500/10 px-2 py-1 text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200";
+  const normalizedOwnCode = (ownCode ?? "").trim().toLowerCase();
 
-  const picker = options.length === 0 ? (
-    <div className={`${inputClassName} text-slate-400 dark:text-slate-500`}>No subjects available</div>
-  ) : (
+  const availableOptions = useMemo(
+    () =>
+      options.filter(
+        (o) =>
+          o.code.toLowerCase() !== normalizedOwnCode &&
+          !value.some((v) => v.toLowerCase() === o.code.toLowerCase()),
+      ),
+    [options, normalizedOwnCode, value],
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return availableOptions;
+    return availableOptions.filter(
+      (o) => o.code.toLowerCase().includes(q) || o.title.toLowerCase().includes(q),
+    );
+  }, [availableOptions, query]);
+
+  const trimmedQuery = query.trim();
+  const showFreeTextOption =
+    trimmedQuery.length > 0 && !filtered.some((o) => o.code.toLowerCase() === trimmedQuery.toLowerCase());
+
+  function addValue(raw: string) {
+    const next = raw.trim();
+    if (!next || value.some((v) => v.toLowerCase() === next.toLowerCase())) {
+      setQuery("");
+      return;
+    }
+    onChange([...value, next]);
+    setQuery("");
+  }
+
+  function removeValue(prerequisite: string) {
+    onChange(value.filter((v) => v !== prerequisite));
+  }
+
+  const picker = (
     <Command
       value=""
-      onValueChange={(next) => {
-        const id = next as string;
-        if (id && !value.includes(id)) {
-          onChange([...value, id]);
-          setQuery("");
-        }
-      }}
+      onValueChange={(next) => addValue(String(next))}
       inputValue={query}
       onInputValueChange={setQuery}
-      itemToStringLabel={(id) => options.find((option) => option.id === id)?.code ?? ""}
+      itemToStringLabel={(item) => String(item)}
     >
-      <div className="flex min-h-10.5 min-w-0 cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20">
-        {selected.map((option) => (
-          <span key={option.id} className={chipClassName}>
-            {option.code}
+      <div className="flex min-h-8.5 min-w-0 cursor-text flex-wrap items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20">
+        {value.map((prerequisite) => (
+          <span key={prerequisite} className={prereqChipClassName}>
+            {prerequisite}
             <button
               type="button"
-              onClick={() => onChange(value.filter((id) => id !== option.id))}
-              aria-label={`Remove ${option.code}`}
+              onClick={() => removeValue(prerequisite)}
+              aria-label={`Remove ${prerequisite}`}
               className="cursor-pointer leading-none text-navy-400 transition-colors duration-150 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-white"
             >
               ×
             </button>
           </span>
         ))}
-
         <CommandInput
           embedded
           id={inputId}
-          placeholder={placeholder}
-          focusPlaceholder="Search subjects…"
+          aria-label={ariaLabel ?? "Prerequisites"}
+          placeholder={value.length === 0 ? "Type or select…" : "Add another…"}
           onKeyDown={(event) => {
             if (event.key === "Backspace" && query === "" && value.length > 0) {
-              onChange(value.slice(0, -1));
+              removeValue(value[value.length - 1]);
             }
           }}
         />
       </div>
 
       <CommandList>
-        {filtered.length === 0 ? (
+        {filtered.length === 0 && !showFreeTextOption ? (
           <CommandEmpty>No subjects found.</CommandEmpty>
         ) : (
-          filtered.map((option) => (
-            <CommandItem key={option.id} value={option.id}>
-              {option.code} — {option.title}
-            </CommandItem>
-          ))
+          <>
+            {filtered.map((option) => (
+              <CommandItem key={option.id} value={option.code}>
+                {option.code} — {option.title}
+              </CommandItem>
+            ))}
+            {showFreeTextOption && (
+              <CommandItem value={trimmedQuery} className="text-blue-700 dark:text-blue-400">
+                Add “{trimmedQuery}”
+              </CommandItem>
+            )}
+          </>
         )}
       </CommandList>
     </Command>
   );
+
+  if (!labelled) return picker;
 
   return (
     <FieldChrome
@@ -313,9 +145,4 @@ function FullPrerequisitePicker({ options, value, onChange }: PickerProps) {
       {picker}
     </FieldChrome>
   );
-}
-
-/** Multi-select prerequisite field with full-form and compact table variants. */
-export function PrerequisitePicker({ compact = false, ...props }: PrerequisitePickerProps) {
-  return compact ? <CompactPrerequisitePicker {...props} /> : <FullPrerequisitePicker {...props} />;
 }

@@ -8,7 +8,7 @@ import { useYearLevels } from "~/hooks/use-year-levels";
 import type { Subject, UpdateSubjectInput } from "~/types/subject";
 import { SUBJECT_TYPE_LABELS } from "~/types/subject";
 import { subjectSchema } from "~/schemas/subject.schema";
-import { PrerequisitePicker } from "~/features/subjects/prerequisite-picker";
+import { PrerequisiteCombobox } from "~/features/subjects/prerequisite-picker";
 
 type SubjectFormProps = {
   /** The subject being edited. */
@@ -118,10 +118,12 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
         </FieldChrome>
       </div>
 
-      <PrerequisitePicker
+      <PrerequisiteCombobox
         options={prerequisiteOptions}
         value={prerequisites}
         onChange={setPrerequisites}
+        ownCode={subject.code}
+        labelled
       />
 
       <div className="flex justify-end gap-2">

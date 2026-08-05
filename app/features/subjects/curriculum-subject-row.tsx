@@ -1,12 +1,10 @@
-import { useId, useMemo, useState } from "react";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
 import { TrashIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { TableCell, TableRow } from "~/components/ui/table";
 import { TableInput } from "~/components/ui/table-input";
 import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
-import type { PrerequisiteOption } from "~/features/subjects/prerequisite-picker";
+import { PrerequisiteCombobox, type PrerequisiteOption } from "~/features/subjects/prerequisite-picker";
 import { SubjectTypeBadge } from "~/features/subjects/subject-type-badge";
 import { SUBJECT_TYPE_LABELS, type CreateSubjectInput } from "~/types/subject";
 
@@ -34,126 +32,6 @@ type CurriculumSubjectRowProps = {
 
 const deleteButtonClassName =
   "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400";
-
-const prereqChipClassName =
-  "inline-flex items-center gap-1 rounded-md bg-navy-500/10 px-1.5 py-0.5 text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200";
-
-/**
- * Hybrid prerequisites field — pick an existing subject or type free text the
- * backend also accepts (a standing phrase like "3rd Year Standing"). Values are
- * stored as plain strings so free text doesn't need an option to exist for.
- */
-function PrerequisitesComboboxField({
-  tempId,
-  ownCode,
-  prerequisites,
-  options,
-  onUpdatePending,
-  ariaLabel,
-}: {
-  tempId: string;
-  ownCode: string;
-  prerequisites: string[];
-  options: PrerequisiteOption[];
-  onUpdatePending: (tempId: string, patch: Partial<Omit<CreateSubjectInput, "program">>) => void;
-  ariaLabel: string;
-}) {
-  const [query, setQuery] = useState("");
-  const inputId = useId();
-  const normalizedOwnCode = ownCode.trim().toLowerCase();
-
-  const availableOptions = useMemo(
-    () =>
-      options.filter(
-        (o) =>
-          o.code.toLowerCase() !== normalizedOwnCode &&
-          !prerequisites.some((p) => p.toLowerCase() === o.code.toLowerCase()),
-      ),
-    [options, normalizedOwnCode, prerequisites],
-  );
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return availableOptions;
-    return availableOptions.filter(
-      (o) => o.code.toLowerCase().includes(q) || o.title.toLowerCase().includes(q),
-    );
-  }, [availableOptions, query]);
-
-  const trimmedQuery = query.trim();
-  const showFreeTextOption =
-    trimmedQuery.length > 0 && !filtered.some((o) => o.code.toLowerCase() === trimmedQuery.toLowerCase());
-
-  function addValue(raw: string) {
-    const value = raw.trim();
-    if (!value || prerequisites.some((p) => p.toLowerCase() === value.toLowerCase())) {
-      setQuery("");
-      return;
-    }
-    onUpdatePending(tempId, { prerequisites: [...prerequisites, value] });
-    setQuery("");
-  }
-
-  function removeValue(value: string) {
-    onUpdatePending(tempId, { prerequisites: prerequisites.filter((p) => p !== value) });
-  }
-
-  return (
-    <Command
-      value=""
-      onValueChange={(next) => addValue(String(next))}
-      inputValue={query}
-      onInputValueChange={setQuery}
-      itemToStringLabel={(value) => String(value)}
-    >
-      <div className="flex min-h-8.5 min-w-0 cursor-text flex-wrap items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20">
-        {prerequisites.map((value) => (
-          <span key={value} className={prereqChipClassName}>
-            {value}
-            <button
-              type="button"
-              onClick={() => removeValue(value)}
-              aria-label={`Remove ${value}`}
-              className="cursor-pointer leading-none text-navy-400 transition-colors duration-150 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-white"
-            >
-              ×
-            </button>
-          </span>
-        ))}
-        <CommandInput
-          embedded
-          id={inputId}
-          aria-label={ariaLabel}
-          placeholder={prerequisites.length === 0 ? "Type or select…" : "Add another…"}
-          onKeyDown={(event) => {
-            if (event.key === "Backspace" && query === "" && prerequisites.length > 0) {
-              removeValue(prerequisites[prerequisites.length - 1]);
-            }
-          }}
-        />
-      </div>
-
-      <CommandList>
-        {filtered.length === 0 && !showFreeTextOption ? (
-          <CommandEmpty>No subjects found.</CommandEmpty>
-        ) : (
-          <>
-            {filtered.map((option) => (
-              <CommandItem key={option.id} value={option.code}>
-                {option.code} — {option.title}
-              </CommandItem>
-            ))}
-            {showFreeTextOption && (
-              <CommandItem value={trimmedQuery} className="text-blue-700 dark:text-blue-400">
-                Add “{trimmedQuery}”
-              </CommandItem>
-            )}
-          </>
-        )}
-      </CommandList>
-    </Command>
-  );
-}
 
 export function CurriculumSubjectRow({
   mode,
@@ -267,12 +145,11 @@ export function CurriculumSubjectRow({
       </TableCell>
       <TableCell className="md:w-56 md:max-w-56 min-w-0 align-middle">
         {isEditable && row.tempId ? (
-          <PrerequisitesComboboxField
-            tempId={row.tempId}
-            ownCode={row.code}
-            prerequisites={row.prerequisites}
+          <PrerequisiteCombobox
+            value={row.prerequisites}
+            onChange={(next) => onUpdatePending(row.tempId!, { prerequisites: next })}
             options={prerequisiteOptions}
-            onUpdatePending={onUpdatePending}
+            ownCode={row.code}
             ariaLabel={`Prerequisites for ${row.code || "new subject"}`}
           />
         ) : row.prerequisites.length > 0 ? (
