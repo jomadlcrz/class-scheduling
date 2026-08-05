@@ -4,6 +4,7 @@ import type { Department } from "~/types/department";
 
 type ProgramWizardStep1InfoProps = {
   departments: Department[];
+  degreeTypes: string[];
   newProgram: NewProgramDraft;
   onNewProgramChange: (patch: Partial<NewProgramDraft>) => void;
   canAdvance: boolean;
@@ -14,6 +15,7 @@ type ProgramWizardStep1InfoProps = {
 
 export function ProgramWizardStep1Info({
   departments,
+  degreeTypes,
   newProgram,
   onNewProgramChange,
   canAdvance,
@@ -25,6 +27,7 @@ export function ProgramWizardStep1Info({
     <div className="flex flex-col gap-5">
       <CurriculumBuilderHeader
         departments={departments}
+        degreeTypes={degreeTypes}
         newProgram={newProgram}
         onNewProgramChange={onNewProgramChange}
       />

@@ -9,6 +9,7 @@ import type { CreateSubjectInput } from "~/types/subject";
 
 type ProgramWizardStep2CurriculumProps = {
   departments: Department[];
+  degreeTypes: string[];
   newProgram: NewProgramDraft;
   onNewProgramChange: (patch: Partial<NewProgramDraft>) => void;
   pending: PendingEntry[];

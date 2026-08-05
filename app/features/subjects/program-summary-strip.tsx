@@ -1,6 +1,5 @@
 import { Card } from "~/components/ui/card";
 import type { NewProgramDraft } from "~/features/subjects/curriculum-builder-header";
-import { PROGRAM_TYPE_YEARS } from "~/types/program";
 
 type ProgramSummaryStripProps = {
   newProgram: NewProgramDraft;
@@ -10,13 +9,12 @@ type ProgramSummaryStripProps = {
 
 /** Read-only recap of Step 1's fields, shown above Steps 2 and 3 so entered info stays visible. */
 export function ProgramSummaryStrip({ newProgram, totalUnits }: ProgramSummaryStripProps) {
-  const lengthYears = PROGRAM_TYPE_YEARS[newProgram.type] ?? 4;
   const fields = [
     { label: "Department", value: newProgram.departmentName || "—" },
     { label: "Program Abbreviation", value: newProgram.abbrev || "—" },
     { label: "Program Name", value: newProgram.name || "—" },
     { label: "Program Type", value: newProgram.type || "—" },
-    { label: "Program Length", value: `${lengthYears} Years` },
+    { label: "Program Length", value: `${newProgram.lengthYears} Years` },
     ...(totalUnits !== undefined ? [{ label: "Total Units", value: `${totalUnits} Units` }] : []),
   ];
 

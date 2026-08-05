@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Accordion, AccordionItem } from "~/components/ui/accordion";
+import { AccordionItem } from "~/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
@@ -79,78 +79,77 @@ export function ProgramWizardReview({
             No subjects added yet — go back to the Curriculum Builder to add some.
           </p>
         ) : (
-          <div className="mt-3">
-            <Accordion>
-              {groups.map((group) => (
-                <AccordionItem
-                  key={group.yearLevel}
-                  open={expandedYears.has(group.yearLevel)}
-                  onOpenChange={() => toggleYear(group.yearLevel)}
-                  title={
-                    <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                      {yearLevelLabel(group.yearLevel)}
-                    </span>
-                  }
-                  adornment={<Badge tone="gold">{group.totalUnits} Units</Badge>}
-                >
-                  <div className="flex flex-col gap-2 p-4">
-                    {group.semesters.map((semester, index) => (
-                      <AccordionItem
-                        key={semester.semester}
-                        variant="flat"
-                        defaultOpen={index === 0}
-                        title={
-                          <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
-                            {semesterLabel(semester.semester)}
-                          </span>
-                        }
-                        adornment={<Badge tone="slate">{semester.totalUnits} Units</Badge>}
-                      >
-                        <div className="pb-2 pl-1">
-                          <Table>
-                            <TableHead>
-                              <TableHeader>Subject Code</TableHeader>
-                              <TableHeader>Descriptive Title</TableHeader>
-                              <TableHeader className="text-center">Units</TableHeader>
-                              <TableHeader>Subject Type</TableHeader>
-                              <TableHeader>Prerequisites</TableHeader>
-                            </TableHead>
-                            <TableBody>
-                              {semester.subjects.map((subject) => (
-                                <TableRow key={subject.tempId}>
-                                  <TableCell className="font-medium text-navy-700 dark:text-mist-100">
-                                    {subject.code}
-                                  </TableCell>
-                                  <TableCell>{subject.title}</TableCell>
-                                  <TableCell className="text-center tabular-nums">
-                                    {subject.units}
-                                  </TableCell>
-                                  <TableCell>
-                                    <SubjectTypeBadge type={subject.subjectType} />
-                                  </TableCell>
-                                  <TableCell>
-                                    {subject.prerequisites.length > 0 ? (
-                                      <span
-                                        className="block min-w-0 whitespace-normal wrap-break-word leading-5 text-slate-600 dark:text-slate-300"
-                                        title={subject.prerequisites.join(", ")}
-                                      >
-                                        {subject.prerequisites.join(", ")}
-                                      </span>
-                                    ) : (
-                                      <span className="text-slate-400 dark:text-slate-500">None</span>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </AccordionItem>
-                    ))}
-                  </div>
-                </AccordionItem>
-              ))}
-            </Accordion>
+          <div className="mt-3 divide-y divide-slate-200 dark:divide-white/10">
+            {groups.map((group) => (
+              <AccordionItem
+                key={group.yearLevel}
+                variant="flat"
+                open={expandedYears.has(group.yearLevel)}
+                onOpenChange={() => toggleYear(group.yearLevel)}
+                title={
+                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                    {yearLevelLabel(group.yearLevel)}
+                  </span>
+                }
+                adornment={<Badge tone="gold">{group.totalUnits} Units</Badge>}
+              >
+                <div className="flex flex-col gap-2 pb-3">
+                  {group.semesters.map((semester, index) => (
+                    <AccordionItem
+                      key={semester.semester}
+                      variant="flat"
+                      defaultOpen={index === 0}
+                      title={
+                        <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
+                          {semesterLabel(semester.semester)}
+                        </span>
+                      }
+                      adornment={<Badge tone="slate">{semester.totalUnits} Units</Badge>}
+                    >
+                      <div className="pb-2 pl-1">
+                        <Table>
+                          <TableHead>
+                            <TableHeader>Subject Code</TableHeader>
+                            <TableHeader>Descriptive Title</TableHeader>
+                            <TableHeader className="text-center">Units</TableHeader>
+                            <TableHeader>Subject Type</TableHeader>
+                            <TableHeader>Prerequisites</TableHeader>
+                          </TableHead>
+                          <TableBody>
+                            {semester.subjects.map((subject) => (
+                              <TableRow key={subject.tempId}>
+                                <TableCell className="font-medium text-navy-700 dark:text-mist-100">
+                                  {subject.code}
+                                </TableCell>
+                                <TableCell>{subject.title}</TableCell>
+                                <TableCell className="text-center tabular-nums">
+                                  {subject.units}
+                                </TableCell>
+                                <TableCell>
+                                  <SubjectTypeBadge type={subject.subjectType} />
+                                </TableCell>
+                                <TableCell>
+                                  {subject.prerequisites.length > 0 ? (
+                                    <span
+                                      className="block min-w-0 whitespace-normal wrap-break-word leading-5 text-slate-600 dark:text-slate-300"
+                                      title={subject.prerequisites.join(", ")}
+                                    >
+                                      {subject.prerequisites.join(", ")}
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-400 dark:text-slate-500">None</span>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </AccordionItem>
+                  ))}
+                </div>
+              </AccordionItem>
+            ))}
           </div>
         )}
       </Card>

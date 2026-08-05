@@ -16,12 +16,11 @@ import { loadJson, removeJson, saveJson } from "~/lib/storage";
 import { programSchema } from "~/schemas/program.schema";
 import { subjectService } from "~/services/subject.service";
 import type { Department } from "~/types/department";
-import { PROGRAM_TYPE_YEARS } from "~/types/program";
 import type { CreateSubjectInput, Subject } from "~/types/subject";
 
 // Bump this whenever NewProgramDraft's shape changes, so drafts saved under
 // an older shape are simply ignored instead of resurrecting with missing fields.
-const DRAFT_KEY = "program-wizard-draft-v2";
+const DRAFT_KEY = "program-wizard-draft-v3";
 
 const STEPS: StepDefinition[] = [
   { key: "info", label: "Program Information" },
@@ -38,6 +37,7 @@ type DraftShape = {
 type ProgramWizardProps = {
   departments: Department[];
   subjectTypes: string[];
+  degreeTypes: string[];
   allSubjects: Subject[];
   isSaving: boolean;
   onSavingChange: (saving: boolean) => void;
@@ -49,6 +49,7 @@ type ProgramWizardProps = {
 export function ProgramWizard({
   departments,
   subjectTypes,
+  degreeTypes,
   allSubjects,
   isSaving,
   onSavingChange,
@@ -65,10 +66,16 @@ export function ProgramWizard({
   const tempIdCounter = useRef(0);
   const hasCheckedDraft = useRef(false);
 
-  // Seed the department default once departments arrive, without clobbering user input.
+  // Seed the department/type defaults once each arrives, without clobbering user input.
+  // Seeded independently since departments and degree types load via separate requests
+  // that can resolve in either order.
   useEffect(() => {
-    setNewProgram((current) => (current.departmentName ? current : emptyNewProgramDraft(departments)));
-  }, [departments]);
+    setNewProgram((current) => ({
+      ...current,
+      departmentName: current.departmentName || (departments[0]?.name ?? ""),
+      type: current.type || (degreeTypes[0] ?? ""),
+    }));
+  }, [departments, degreeTypes]);
 
   // Offer to resume a locally-saved draft — once, on first mount.
   useEffect(() => {
@@ -187,7 +194,9 @@ export function ProgramWizard({
     newProgram.departmentName.trim() !== "" &&
     newProgram.abbrev.trim() !== "" &&
     newProgram.name.trim() !== "" &&
-    newProgram.type.trim() !== "";
+    newProgram.type.trim() !== "" &&
+    Number.isInteger(newProgram.lengthYears) &&
+    newProgram.lengthYears >= 1;
   const step2Valid = pending.length > 0 && validatePending() === null;
   const maxUnlockedIndex = step1Valid ? (step2Valid ? 2 : 1) : 0;
 
@@ -221,7 +230,7 @@ export function ProgramWizard({
       abbrev: newProgram.abbrev.trim().toUpperCase(),
       name: newProgram.name.trim(),
       type: newProgram.type,
-      lengthYears: PROGRAM_TYPE_YEARS[newProgram.type] ?? 4,
+      lengthYears: newProgram.lengthYears,
     });
     if (!result.success) {
       setSaveError(result.error.issues[0].message);
@@ -255,6 +264,7 @@ export function ProgramWizard({
           name: result.data.name,
           type: result.data.type,
           lengthYears: result.data.lengthYears,
+          description: newProgram.description.trim(),
         },
         entries,
       );
@@ -300,6 +310,7 @@ export function ProgramWizard({
       {currentIndex === 0 && (
         <ProgramWizardStep1Info
           departments={departments}
+          degreeTypes={degreeTypes}
           newProgram={newProgram}
           onNewProgramChange={handleNewProgramChange}
           canAdvance={step1Valid}
@@ -312,6 +323,7 @@ export function ProgramWizard({
       {currentIndex === 1 && (
         <ProgramWizardStep2Curriculum
           departments={departments}
+          degreeTypes={degreeTypes}
           newProgram={newProgram}
           onNewProgramChange={handleNewProgramChange}
           pending={pending}

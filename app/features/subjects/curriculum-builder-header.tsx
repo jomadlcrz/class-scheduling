@@ -1,31 +1,32 @@
 import { Card } from "~/components/ui/card";
-import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import type { Department } from "~/types/department";
-import { PROGRAM_TYPE_YEARS, PROGRAM_TYPES } from "~/types/program";
 
 export type NewProgramDraft = {
   departmentName: string;
   abbrev: string;
   name: string;
   type: string;
-  /** UI-only for now — the backend has no slot for this yet, so it never reaches the save payload. */
+  lengthYears: number;
   description: string;
 };
 
-export function emptyNewProgramDraft(departments: Department[]): NewProgramDraft {
+export function emptyNewProgramDraft(departments: Department[], degreeTypes: string[] = []): NewProgramDraft {
   return {
     departmentName: departments[0]?.name ?? "",
     abbrev: "",
     name: "",
-    type: PROGRAM_TYPES[0],
+    type: degreeTypes[0] ?? "",
+    lengthYears: 4,
     description: "",
   };
 }
 
 type CurriculumBuilderHeaderProps = {
   departments: Department[];
+  degreeTypes: string[];
   newProgram: NewProgramDraft;
   onNewProgramChange: (patch: Partial<NewProgramDraft>) => void;
 };
@@ -33,11 +34,10 @@ type CurriculumBuilderHeaderProps = {
 /** Program-identity step of the Curriculum Builder: name it, then classify it. */
 export function CurriculumBuilderHeader({
   departments,
+  degreeTypes,
   newProgram,
   onNewProgramChange,
 }: CurriculumBuilderHeaderProps) {
-  const computedYears = PROGRAM_TYPE_YEARS[newProgram.type] ?? 4;
-
   return (
     <Card className="border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-surface-raised/80 sm:p-6">
       <div className="flex flex-col gap-5">
@@ -83,15 +83,15 @@ export function CurriculumBuilderHeader({
           />
           <FieldChrome id="new-prog-type" label="Program Type" required>
             <Select
-              items={PROGRAM_TYPES.map((t) => ({ value: t, label: t }))}
+              items={degreeTypes.map((t) => ({ value: t, label: t }))}
               value={newProgram.type}
               onValueChange={(v) => onNewProgramChange({ type: v as string })}
             >
               <SelectTrigger id="new-prog-type">
-                <SelectValue />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                {PROGRAM_TYPES.map((t) => (
+                {degreeTypes.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
                   </SelectItem>
@@ -99,20 +99,23 @@ export function CurriculumBuilderHeader({
               </SelectContent>
             </Select>
           </FieldChrome>
-          <FieldChrome id="new-prog-years" label="Program Length">
-            <input
-              id="new-prog-years"
-              value={computedYears}
-              readOnly
-              className={`${inputClassName} read-only:cursor-default read-only:bg-slate-100 dark:read-only:bg-white/10`}
-            />
-          </FieldChrome>
+          <Input
+            id="new-prog-years"
+            label="Program Length"
+            required
+            type="number"
+            min={1}
+            max={10}
+            value={newProgram.lengthYears === 0 ? "" : newProgram.lengthYears}
+            onChange={(e) => onNewProgramChange({ lengthYears: Number(e.target.value) })}
+            placeholder="4"
+          />
         </div>
 
         <Textarea
           id="new-prog-description"
           label="Program Description"
-          hint="Optional. Not saved yet — description support is coming to the backend soon."
+          hint="Optional."
           value={newProgram.description ?? ""}
           onChange={(e) => onNewProgramChange({ description: e.target.value })}
           placeholder="Enter program description…"

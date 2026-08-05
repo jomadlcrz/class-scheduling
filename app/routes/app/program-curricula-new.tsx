@@ -41,6 +41,7 @@ function ProgramsNewPage() {
   const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
+  const [degreeTypes, setDegreeTypes] = useState<string[]>([]);
   const [schoolYears, setSchoolYears] = useState<SchoolYearOption[] | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -57,7 +58,10 @@ function ProgramsNewPage() {
       });
     enumService
       .getOptions()
-      .then((options) => setSubjectTypes(options.subjectType))
+      .then((options) => {
+        setSubjectTypes(options.subjectType);
+        setDegreeTypes(options.degreeType);
+      })
       .catch(() => {});
     schoolYearService.list().then(setSchoolYears).catch(() => setSchoolYears([]));
   }, []);
@@ -105,6 +109,7 @@ function ProgramsNewPage() {
           <ProgramWizard
             departments={departments}
             subjectTypes={subjectTypes}
+            degreeTypes={degreeTypes}
             allSubjects={allSubjects}
             isSaving={isSaving}
             onSavingChange={setIsSaving}

@@ -15,6 +15,7 @@ import type { CreateSubjectInput } from "~/types/subject";
 
 type CurriculumBuilderProps = {
   departments: Department[];
+  degreeTypes: string[];
   newProgram: NewProgramDraft;
   onNewProgramChange: (patch: Partial<NewProgramDraft>) => void;
   pending: PendingEntry[];
@@ -47,6 +48,7 @@ function sortRows(rows: CurriculumSubjectRowData[], autoSort: boolean) {
 
 export function CurriculumBuilder({
   departments,
+  degreeTypes,
   newProgram,
   onNewProgramChange,
   pending,
@@ -151,6 +153,7 @@ export function CurriculumBuilder({
       {showHeader && (
         <CurriculumBuilderHeader
           departments={departments}
+          degreeTypes={degreeTypes}
           newProgram={newProgram}
           onNewProgramChange={onNewProgramChange}
         />

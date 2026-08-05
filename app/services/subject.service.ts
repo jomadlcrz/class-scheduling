@@ -150,6 +150,7 @@ async function createCurriculum(
     name: string;
     type: string;
     lengthYears: number;
+    description?: string;
   },
   entries: CurriculumSubjectEntry[],
 ): Promise<string> {
@@ -168,6 +169,7 @@ async function createCurriculum(
     programName: program.name,
     programType: program.type,
     programLength: program.lengthYears,
+    programDescription: program.description || undefined,
     yearLevels: [...yearLevels.entries()].map(([yearName, semesters]) => ({
       yearName,
       semesters: [...semesters.entries()].map(([semesterName, subjects]) => ({
