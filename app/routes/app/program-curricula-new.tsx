@@ -18,7 +18,7 @@ import type { Subject } from "~/types/subject";
 
 export function meta() {
   return [
-    { title: "New Program — GWC Class Scheduling" },
+    { title: "Create Curriculum — GWC Class Scheduling" },
     {
       name: "description",
       content: "Build a new program and its curriculum.",
@@ -71,7 +71,7 @@ function ProgramsNewPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
-        title="Create Program"
+        title="Create Curriculum"
         description="Describe the program, build its curriculum, then review everything before saving."
       />
 
