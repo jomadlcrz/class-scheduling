@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FormError } from "~/components/forms/form-error";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Button } from "~/components/ui/button";
 import { Stepper, type StepDefinition } from "~/components/ui/stepper";
 import {
   emptyNewProgramDraft,
@@ -12,27 +10,16 @@ import type { PendingEntry } from "~/features/subjects/curriculum-structure";
 import { ProgramWizardReview } from "~/features/subjects/program-wizard-review";
 import { ProgramWizardStep1Info } from "~/features/subjects/program-wizard-step1-info";
 import { ProgramWizardStep2Curriculum } from "~/features/subjects/program-wizard-step2-curriculum";
-import { loadJson, removeJson, saveJson } from "~/lib/storage";
 import { programSchema } from "~/schemas/program.schema";
 import { subjectService } from "~/services/subject.service";
 import type { Department } from "~/types/department";
 import type { CreateSubjectInput, Subject } from "~/types/subject";
-
-// Bump this whenever NewProgramDraft's shape changes, so drafts saved under
-// an older shape are simply ignored instead of resurrecting with missing fields.
-const DRAFT_KEY = "program-wizard-draft-v3";
 
 const STEPS: StepDefinition[] = [
   { key: "info", label: "Program Information" },
   { key: "curriculum", label: "Curriculum Builder" },
   { key: "review", label: "Review & Save" },
 ];
-
-type DraftShape = {
-  newProgram: NewProgramDraft;
-  pending: PendingEntry[];
-  currentIndex: number;
-};
 
 type ProgramWizardProps = {
   departments: Department[];
@@ -62,9 +49,7 @@ export function ProgramWizard({
   const [pending, setPending] = useState<PendingEntry[]>([]);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [draftBanner, setDraftBanner] = useState<DraftShape | null>(null);
   const tempIdCounter = useRef(0);
-  const hasCheckedDraft = useRef(false);
 
   // Seed the department/type defaults once each arrives, without clobbering user input.
   // Seeded independently since departments and degree types load via separate requests
@@ -76,16 +61,6 @@ export function ProgramWizard({
       type: current.type || (degreeTypes[0] ?? ""),
     }));
   }, [departments, degreeTypes]);
-
-  // Offer to resume a locally-saved draft — once, on first mount.
-  useEffect(() => {
-    if (hasCheckedDraft.current) return;
-    hasCheckedDraft.current = true;
-    const draft = loadJson<DraftShape>(DRAFT_KEY);
-    if (draft && (draft.pending.length > 0 || draft.newProgram.name.trim() !== "")) {
-      setDraftBanner(draft);
-    }
-  }, []);
 
   const prerequisiteOptions = useMemo(
     () => [
@@ -206,24 +181,6 @@ export function ProgramWizard({
     setCurrentIndex(index);
   }
 
-  function handleSaveDraft() {
-    saveJson(DRAFT_KEY, { newProgram, pending, currentIndex } satisfies DraftShape);
-    toast.success("Draft saved on this device.");
-  }
-
-  function resumeDraft() {
-    if (!draftBanner) return;
-    setNewProgram(draftBanner.newProgram);
-    setPending(draftBanner.pending);
-    setCurrentIndex(draftBanner.currentIndex);
-    setDraftBanner(null);
-  }
-
-  function dismissDraft() {
-    removeJson(DRAFT_KEY);
-    setDraftBanner(null);
-  }
-
   async function handleSave() {
     const result = programSchema.safeParse({
       departmentName: newProgram.departmentName,
@@ -269,7 +226,6 @@ export function ProgramWizard({
         entries,
       );
       if (message) toast.success(message);
-      removeJson(DRAFT_KEY);
       onSaved(result.data.abbrev);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "");
@@ -279,25 +235,6 @@ export function ProgramWizard({
 
   return (
     <div className="flex flex-col gap-6">
-      {draftBanner && (
-        <Alert>
-          <AlertTitle>Resume your saved draft?</AlertTitle>
-          <AlertDescription>
-            You have an unfinished program draft saved on this device from a previous visit.
-          </AlertDescription>
-          <AlertAction>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" block={false} onClick={dismissDraft}>
-                Discard
-              </Button>
-              <Button type="button" block={false} onClick={resumeDraft}>
-                Resume Draft
-              </Button>
-            </div>
-          </AlertAction>
-        </Alert>
-      )}
-
       <Stepper
         steps={STEPS}
         currentIndex={currentIndex}
@@ -315,7 +252,6 @@ export function ProgramWizard({
           onNewProgramChange={handleNewProgramChange}
           canAdvance={step1Valid}
           onNext={() => goToStep(1)}
-          onSaveDraft={handleSaveDraft}
           onCancel={onCancel}
         />
       )}
@@ -346,7 +282,6 @@ export function ProgramWizard({
           canAdvance={step2Valid}
           onBack={() => goToStep(0)}
           onNext={() => goToStep(2)}
-          onSaveDraft={handleSaveDraft}
         />
       )}
 
@@ -357,7 +292,6 @@ export function ProgramWizard({
           isSaving={isSaving}
           canSave={step1Valid && step2Valid}
           onBack={() => goToStep(1)}
-          onSaveDraft={handleSaveDraft}
           onSave={handleSave}
         />
       )}

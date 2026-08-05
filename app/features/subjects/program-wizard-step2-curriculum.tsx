@@ -25,7 +25,6 @@ type ProgramWizardStep2CurriculumProps = {
   canAdvance: boolean;
   onBack: () => void;
   onNext: () => void;
-  onSaveDraft: () => void;
 };
 
 export function ProgramWizardStep2Curriculum({
@@ -33,7 +32,6 @@ export function ProgramWizardStep2Curriculum({
   canAdvance,
   onBack,
   onNext,
-  onSaveDraft,
   newProgram,
   ...builderProps
 }: ProgramWizardStep2CurriculumProps) {
@@ -52,7 +50,6 @@ export function ProgramWizardStep2Curriculum({
       <ProgramWizardFooter
         backLabel="Back to Program Information"
         onBack={onBack}
-        onSaveDraft={onSaveDraft}
         primaryLabel="Next: Review & Save"
         onPrimary={onNext}
         primaryDisabled={!canAdvance}

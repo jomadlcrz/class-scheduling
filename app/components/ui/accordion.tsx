@@ -51,7 +51,7 @@ export function AccordionItem({
           onClick={toggle}
           className={
             isFlat
-              ? "flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-1 py-2 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100"
+              ? "flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left text-sm text-navy-900 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5"
               : "flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-5 py-3 text-left text-sm text-navy-900 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5"
           }
         >

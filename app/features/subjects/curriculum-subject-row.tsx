@@ -124,7 +124,7 @@ function PrerequisitesComboboxField({
           embedded
           id={inputId}
           aria-label={ariaLabel}
-          placeholder={prerequisites.length === 0 ? "Code or e.g. 3rd Year Standing" : "Add another…"}
+          placeholder={prerequisites.length === 0 ? "Type or select…" : "Add another…"}
           onKeyDown={(event) => {
             if (event.key === "Backspace" && query === "" && prerequisites.length > 0) {
               removeValue(prerequisites[prerequisites.length - 1]);

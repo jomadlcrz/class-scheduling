@@ -4,7 +4,6 @@ import { Button } from "~/components/ui/button";
 type ProgramWizardFooterProps = {
   backLabel: string;
   onBack: () => void;
-  onSaveDraft: () => void;
   primaryLabel: string;
   onPrimary: () => void;
   primaryDisabled?: boolean;
@@ -13,11 +12,10 @@ type ProgramWizardFooterProps = {
   leadingContent?: ReactNode;
 };
 
-/** Sticky bottom action bar shared by every wizard step: back/draft on one side, the step's primary action on the other. */
+/** Sticky bottom action bar shared by every wizard step: back on one side, the step's primary action on the other. */
 export function ProgramWizardFooter({
   backLabel,
   onBack,
-  onSaveDraft,
   primaryLabel,
   onPrimary,
   primaryDisabled,
@@ -32,21 +30,16 @@ export function ProgramWizardFooter({
         </Button>
         {leadingContent}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" block={false} onClick={onSaveDraft}>
-          Save as Draft
-        </Button>
-        <Button
-          type="button"
-          block={false}
-          disabled={primaryDisabled}
-          isLoading={isSaving}
-          loadingLabel="Saving…"
-          onClick={onPrimary}
-        >
-          {primaryLabel}
-        </Button>
-      </div>
+      <Button
+        type="button"
+        block={false}
+        disabled={primaryDisabled}
+        isLoading={isSaving}
+        loadingLabel="Saving…"
+        onClick={onPrimary}
+      >
+        {primaryLabel}
+      </Button>
     </div>
   );
 }

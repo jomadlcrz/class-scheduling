@@ -168,7 +168,7 @@ function ProgramCurriculaPage() {
           canManagePrograms && (
             <Button type="button" block={false} onClick={() => navigate("/program-curricula/new")}>
               <PlusIcon />
-              New Curricula
+              New Curriculum
             </Button>
           )
         }
@@ -238,7 +238,7 @@ function ProgramCurriculaPage() {
             action={
               canManagePrograms ? (
                 <Button type="button" block={false} onClick={() => navigate("/program-curricula/new")}>
-                  New Curricula
+                  New Curriculum
                 </Button>
               ) : undefined
             }

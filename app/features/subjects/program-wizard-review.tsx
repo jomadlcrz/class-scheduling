@@ -18,7 +18,6 @@ type ProgramWizardReviewProps = {
   isSaving: boolean;
   canSave: boolean;
   onBack: () => void;
-  onSaveDraft: () => void;
   onSave: () => void;
 };
 
@@ -28,7 +27,6 @@ export function ProgramWizardReview({
   isSaving,
   canSave,
   onBack,
-  onSaveDraft,
   onSave,
 }: ProgramWizardReviewProps) {
   const { yearLevelLabel } = useYearLevels();
@@ -36,9 +34,17 @@ export function ProgramWizardReview({
   const groups = groupPendingByYearAndSemester(pending);
   const totalUnits = groups.reduce((sum, g) => sum + g.totalUnits, 0);
 
+  function semesterKey(yearLevel: number, semester: number) {
+    return `${yearLevel}-${semester}`;
+  }
+
   const [expandedYears, setExpandedYears] = useState<ReadonlySet<number>>(
     () => new Set(groups[0] ? [groups[0].yearLevel] : []),
   );
+  const [expandedSemesters, setExpandedSemesters] = useState<ReadonlySet<string>>(() => {
+    const firstSemester = groups[0]?.semesters[0];
+    return firstSemester ? new Set([semesterKey(groups[0].yearLevel, firstSemester.semester)]) : new Set();
+  });
 
   function toggleYear(yearLevel: number) {
     setExpandedYears((current) => {
@@ -49,10 +55,29 @@ export function ProgramWizardReview({
     });
   }
 
-  const allExpanded = groups.length > 0 && groups.every((g) => expandedYears.has(g.yearLevel));
+  function toggleSemester(key: string) {
+    setExpandedSemesters((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  const allSemesterKeys = groups.flatMap((g) => g.semesters.map((s) => semesterKey(g.yearLevel, s.semester)));
+  const allExpanded =
+    groups.length > 0 &&
+    groups.every((g) => expandedYears.has(g.yearLevel)) &&
+    allSemesterKeys.every((key) => expandedSemesters.has(key));
 
   function toggleExpandAll() {
-    setExpandedYears(allExpanded ? new Set() : new Set(groups.map((g) => g.yearLevel)));
+    if (allExpanded) {
+      setExpandedYears(new Set());
+      setExpandedSemesters(new Set());
+    } else {
+      setExpandedYears(new Set(groups.map((g) => g.yearLevel)));
+      setExpandedSemesters(new Set(allSemesterKeys));
+    }
   }
 
   return (
@@ -93,12 +118,13 @@ export function ProgramWizardReview({
                 }
                 adornment={<Badge tone="gold">{group.totalUnits} Units</Badge>}
               >
-                <div className="flex flex-col gap-2 pb-3">
-                  {group.semesters.map((semester, index) => (
+                <div className="ml-4 flex flex-col gap-2 border-l-2 border-slate-100 pb-3 pl-3 dark:border-white/5">
+                  {group.semesters.map((semester) => (
                     <AccordionItem
                       key={semester.semester}
                       variant="flat"
-                      defaultOpen={index === 0}
+                      open={expandedSemesters.has(semesterKey(group.yearLevel, semester.semester))}
+                      onOpenChange={() => toggleSemester(semesterKey(group.yearLevel, semester.semester))}
                       title={
                         <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
                           {semesterLabel(semester.semester)}
@@ -165,7 +191,6 @@ export function ProgramWizardReview({
       <ProgramWizardFooter
         backLabel="Back to Curriculum Builder"
         onBack={onBack}
-        onSaveDraft={onSaveDraft}
         primaryLabel="Save Program"
         onPrimary={onSave}
         primaryDisabled={!canSave}

@@ -19,7 +19,7 @@ export function emptyNewProgramDraft(departments: Department[], degreeTypes: str
     abbrev: "",
     name: "",
     type: degreeTypes[0] ?? "",
-    lengthYears: 4,
+    lengthYears: 0,
     description: "",
   };
 }

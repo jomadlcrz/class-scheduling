@@ -9,7 +9,6 @@ type ProgramWizardStep1InfoProps = {
   onNewProgramChange: (patch: Partial<NewProgramDraft>) => void;
   canAdvance: boolean;
   onNext: () => void;
-  onSaveDraft: () => void;
   onCancel: () => void;
 };
 
@@ -20,7 +19,6 @@ export function ProgramWizardStep1Info({
   onNewProgramChange,
   canAdvance,
   onNext,
-  onSaveDraft,
   onCancel,
 }: ProgramWizardStep1InfoProps) {
   return (
@@ -40,7 +38,6 @@ export function ProgramWizardStep1Info({
       <ProgramWizardFooter
         backLabel="Cancel"
         onBack={onCancel}
-        onSaveDraft={onSaveDraft}
         primaryLabel="Next: Curriculum Builder"
         onPrimary={onNext}
         primaryDisabled={!canAdvance}
