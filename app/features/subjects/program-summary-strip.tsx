@@ -22,20 +22,16 @@ export function ProgramSummaryStrip({ newProgram, totalUnits }: ProgramSummarySt
 
   return (
     <Card className="border-l-4 border-l-blue-700 p-4 dark:border-l-blue-400 sm:p-5">
-      <dl
-        className={`grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 ${
-          fields.length > 5 ? "lg:grid-cols-6" : "lg:grid-cols-5"
-        }`}
-      >
+      <dl className="flex flex-col divide-y divide-slate-200 sm:flex-row sm:flex-nowrap sm:divide-x sm:divide-y-0 dark:divide-white/10">
         {fields.map((field) => (
-          <div key={field.label} className="min-w-0">
+          <div
+            key={field.label}
+            className="min-w-0 py-2.5 first:pt-0 last:pb-0 sm:flex-1 sm:py-1 sm:px-5 sm:first:pl-0 sm:last:pr-0"
+          >
             <dt className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
               {field.label}
             </dt>
-            <dd
-              className="mt-0.5 truncate font-body text-sm font-semibold text-navy-700 dark:text-mist-100"
-              title={field.value}
-            >
+            <dd className="mt-0.5 break-words font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
               {field.value}
             </dd>
           </div>

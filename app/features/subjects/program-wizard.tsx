@@ -344,7 +344,6 @@ export function ProgramWizard({
           pending={pending}
           isSaving={isSaving}
           canSave={step1Valid && step2Valid}
-          onEditInfo={() => goToStep(0)}
           onBack={() => goToStep(1)}
           onSaveDraft={handleSaveDraft}
           onSave={handleSave}

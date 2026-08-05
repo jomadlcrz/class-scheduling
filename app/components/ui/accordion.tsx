@@ -8,6 +8,8 @@ type AccordionItemProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   adornment?: ReactNode;
+  /** "flat" drops the bordered/rounded card chrome — for nesting inside another AccordionItem without stacking boxes. */
+  variant?: "boxed" | "flat";
 };
 
 export function AccordionItem({
@@ -17,6 +19,7 @@ export function AccordionItem({
   open,
   onOpenChange,
   adornment,
+  variant = "boxed",
 }: AccordionItemProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
@@ -25,6 +28,7 @@ export function AccordionItem({
   const id = useId();
   const triggerId = `accordion-trigger-${id}`;
   const panelId = `accordion-panel-${id}`;
+  const isFlat = variant === "flat";
 
   function toggle() {
     const next = !isOpen;
@@ -33,7 +37,11 @@ export function AccordionItem({
   }
 
   return (
-    <div className="rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
+    <div
+      className={
+        isFlat ? "" : "rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5"
+      }
+    >
       <div className="flex min-h-13 items-stretch">
         <button
           id={triggerId}
@@ -41,7 +49,11 @@ export function AccordionItem({
           aria-expanded={isOpen}
           aria-controls={panelId}
           onClick={toggle}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-5 py-3 text-left text-sm text-navy-900 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5"
+          className={
+            isFlat
+              ? "flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-1 py-2 text-left text-sm text-navy-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100"
+              : "flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-5 py-3 text-left text-sm text-navy-900 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5"
+          }
         >
           <span className="min-w-0 flex-1">{title}</span>
           <svg
@@ -75,7 +87,7 @@ export function AccordionItem({
             transition={{ duration: reduceMotion ? 0 : 0.3, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="border-t border-slate-200 dark:border-white/10">{children}</div>
+            <div className={isFlat ? "" : "border-t border-slate-200 dark:border-white/10"}>{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
