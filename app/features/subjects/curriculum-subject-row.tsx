@@ -168,7 +168,6 @@ export function CurriculumSubjectRow({
 }: CurriculumSubjectRowProps) {
   const isPending = Boolean(row.tempId);
   const isEditable = isPending && mode === "edit";
-  const isViewMode = mode === "view";
   const prerequisiteText = row.prerequisites.join(", ");
 
   return (
@@ -192,7 +191,7 @@ export function CurriculumSubjectRow({
           </span>
         )}
       </TableCell>
-      <TableCell className={`${isViewMode ? "min-w-0" : "md:w-36 min-w-0"} align-middle`}>
+      <TableCell className="md:w-36 min-w-0 max-w-36 align-middle">
         {isEditable && row.tempId ? (
           <TableInput
             value={row.code}
@@ -209,7 +208,7 @@ export function CurriculumSubjectRow({
           </span>
         )}
       </TableCell>
-      <TableCell className="min-w-0 align-middle">
+      <TableCell className="min-w-0 max-w-56 align-middle">
         {isEditable && row.tempId ? (
           <TableInput
             value={row.title}
@@ -241,7 +240,7 @@ export function CurriculumSubjectRow({
           <span className="inline-block tabular-nums">{row.units}</span>
         )}
       </TableCell>
-      <TableCell className={`${isViewMode ? "min-w-0" : "md:w-32 min-w-0"} align-middle`}>
+      <TableCell className="md:w-32 min-w-0 align-middle">
         {isEditable && row.tempId ? (
           <Select
             items={subjectTypes.map((type) => ({
@@ -277,10 +276,7 @@ export function CurriculumSubjectRow({
             ariaLabel={`Prerequisites for ${row.code || "new subject"}`}
           />
         ) : row.prerequisites.length > 0 ? (
-          <span
-            className="block min-w-0 whitespace-normal wrap-break-word leading-5 text-slate-600 dark:text-slate-300"
-            title={prerequisiteText}
-          >
+          <span className="block truncate text-slate-600 dark:text-slate-300" title={prerequisiteText}>
             {prerequisiteText}
           </span>
         ) : (

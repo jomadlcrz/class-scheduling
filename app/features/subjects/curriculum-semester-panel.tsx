@@ -165,10 +165,10 @@ export function CurriculumSemesterPanel({
                     />
                   </TableHeader>
                 )}
-                <TableHeader className={isViewMode ? undefined : "md:w-36"}>Subject Code</TableHeader>
-                <TableHeader>Descriptive Title</TableHeader>
+                <TableHeader className="md:w-36">Subject Code</TableHeader>
+                <TableHeader className="max-w-56">Descriptive Title</TableHeader>
                 <TableHeader className="text-center">Units</TableHeader>
-                <TableHeader className={isViewMode ? undefined : "md:w-32"}>Subject Type</TableHeader>
+                <TableHeader className="md:w-32">Subject Type</TableHeader>
                 <TableHeader className="md:w-56 whitespace-nowrap">Prerequisites</TableHeader>
                 {!isViewMode && <TableHeader className="px-2" />}
               </TableHead>

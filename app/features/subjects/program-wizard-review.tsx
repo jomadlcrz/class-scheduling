@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { AccordionItem } from "~/components/ui/accordion";
+import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import type { NewProgramDraft } from "~/features/subjects/curriculum-builder-header";
 import { groupPendingByYearAndSemester, type PendingEntry } from "~/features/subjects/curriculum-structure";
@@ -84,12 +85,18 @@ export function ProgramWizardReview({
     <div className="flex flex-col gap-5">
       <ProgramSummaryStrip newProgram={newProgram} totalUnits={totalUnits} />
 
-      <Card className="p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-body text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Curriculum Overview
-          </h3>
-          {groups.length > 0 && (
+      {groups.length === 0 ? (
+        <Card className="p-6">
+          <EmptyState title="No subjects added yet">
+            Go back to the Curriculum Builder to add subjects before reviewing.
+          </EmptyState>
+        </Card>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h3 className="font-body text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Curriculum Overview
+            </h3>
             <button
               type="button"
               onClick={toggleExpandAll}
@@ -97,28 +104,22 @@ export function ProgramWizardReview({
             >
               {allExpanded ? "Collapse All" : "Expand All"}
             </button>
-          )}
-        </div>
-        {groups.length === 0 ? (
-          <p className="mt-3 font-body text-sm text-slate-500 dark:text-slate-400">
-            No subjects added yet — go back to the Curriculum Builder to add some.
-          </p>
-        ) : (
-          <div className="mt-3 divide-y divide-slate-200 dark:divide-white/10">
+          </div>
+
+          <Accordion>
             {groups.map((group) => (
               <AccordionItem
                 key={group.yearLevel}
-                variant="flat"
                 open={expandedYears.has(group.yearLevel)}
                 onOpenChange={() => toggleYear(group.yearLevel)}
                 title={
-                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                  <span className="font-body text-base font-semibold text-navy-700 dark:text-mist-100">
                     {yearLevelLabel(group.yearLevel)}
                   </span>
                 }
                 adornment={<Badge tone="gold">{group.totalUnits} Units</Badge>}
               >
-                <div className="ml-4 flex flex-col gap-2 border-l-2 border-slate-100 pb-3 pl-3 dark:border-white/5">
+                <div className="flex flex-col divide-y divide-slate-100 p-2 dark:divide-white/5">
                   {group.semesters.map((semester) => (
                     <AccordionItem
                       key={semester.semester}
@@ -126,38 +127,47 @@ export function ProgramWizardReview({
                       open={expandedSemesters.has(semesterKey(group.yearLevel, semester.semester))}
                       onOpenChange={() => toggleSemester(semesterKey(group.yearLevel, semester.semester))}
                       title={
-                        <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
+                        <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                           {semesterLabel(semester.semester)}
                         </span>
                       }
                       adornment={<Badge tone="slate">{semester.totalUnits} Units</Badge>}
                     >
-                      <div className="pb-2 pl-1">
+                      <div className="px-2 pb-3">
                         <Table>
                           <TableHead>
-                            <TableHeader>Subject Code</TableHeader>
-                            <TableHeader>Descriptive Title</TableHeader>
+                            <TableHeader className="w-28">Subject Code</TableHeader>
+                            <TableHeader className="max-w-56">Descriptive Title</TableHeader>
                             <TableHeader className="text-center">Units</TableHeader>
-                            <TableHeader>Subject Type</TableHeader>
-                            <TableHeader>Prerequisites</TableHeader>
+                            <TableHeader className="w-36">Subject Type</TableHeader>
+                            <TableHeader className="max-w-48">Prerequisites</TableHeader>
                           </TableHead>
                           <TableBody>
                             {semester.subjects.map((subject) => (
                               <TableRow key={subject.tempId}>
-                                <TableCell className="font-medium text-navy-700 dark:text-mist-100">
-                                  {subject.code}
+                                <TableCell className="max-w-28 min-w-0">
+                                  <span
+                                    className="block truncate font-medium text-navy-700 dark:text-mist-100"
+                                    title={subject.code}
+                                  >
+                                    {subject.code}
+                                  </span>
                                 </TableCell>
-                                <TableCell>{subject.title}</TableCell>
+                                <TableCell className="max-w-56 min-w-0">
+                                  <span className="block truncate" title={subject.title}>
+                                    {subject.title}
+                                  </span>
+                                </TableCell>
                                 <TableCell className="text-center tabular-nums">
                                   {subject.units}
                                 </TableCell>
                                 <TableCell>
                                   <SubjectTypeBadge type={subject.subjectType} />
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="max-w-48 min-w-0">
                                   {subject.prerequisites.length > 0 ? (
                                     <span
-                                      className="block min-w-0 whitespace-normal wrap-break-word leading-5 text-slate-600 dark:text-slate-300"
+                                      className="block truncate text-slate-600 dark:text-slate-300"
                                       title={subject.prerequisites.join(", ")}
                                     >
                                       {subject.prerequisites.join(", ")}
@@ -176,9 +186,9 @@ export function ProgramWizardReview({
                 </div>
               </AccordionItem>
             ))}
-          </div>
-        )}
-      </Card>
+          </Accordion>
+        </div>
+      )}
 
       <Alert variant="info">
         <AlertTitle>Please note</AlertTitle>
