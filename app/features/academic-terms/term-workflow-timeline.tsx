@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BookOpenIcon, CalendarIcon, CheckIcon, LockIcon } from "~/components/ui/icons";
+import { BookOpenIcon, CalendarIcon, LockIcon } from "~/components/ui/icons";
 import type { TermWorkflowNextAction, TermWorkflowStep } from "~/types/term-closure";
 
 type TermWorkflowTimelineProps = {
@@ -39,7 +39,7 @@ function StepNode({ step, index }: { step: TermWorkflowStep; index: number }) {
         className="relative z-10 grid size-9 place-items-center rounded-full bg-emerald-500 text-white shadow-sm ring-4 ring-white dark:ring-surface-raised"
         aria-hidden="true"
       >
-        {step.key.startsWith("work_") ? <BookOpenIcon /> : <CheckIcon size={16} strokeWidth={3} />}
+        {step.key.startsWith("work_") ? <BookOpenIcon /> : <LockIcon size={16} />}
       </span>
     );
   }
