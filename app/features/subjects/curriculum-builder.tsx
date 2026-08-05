@@ -26,10 +26,14 @@ type CurriculumBuilderProps = {
   onAddPending: (yearLevel: number, semester: number) => void;
   onRemovePending: (tempId: string) => void;
   onDuplicatePending: (tempId: string) => void;
-  isSaving: boolean;
-  pendingCount: number;
-  onSave: () => void;
-  onCancel: () => void;
+  isSaving?: boolean;
+  pendingCount?: number;
+  onSave?: () => void;
+  onCancel?: () => void;
+  /** Hide the program-info card when a wizard step already owns that form. */
+  showHeader?: boolean;
+  /** Hide the Cancel/Save cluster when a wizard's own footer already owns save/cancel actions. */
+  showSaveActions?: boolean;
 };
 
 function sectionKey(year: number, semester: number) {
@@ -58,6 +62,8 @@ export function CurriculumBuilder({
   pendingCount,
   onSave,
   onCancel,
+  showHeader = true,
+  showSaveActions = true,
 }: CurriculumBuilderProps) {
   const { semesters, semesterLabel } = useSemesters();
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
@@ -142,11 +148,13 @@ export function CurriculumBuilder({
 
   return (
     <div className="flex flex-col gap-5">
-      <CurriculumBuilderHeader
-        departments={departments}
-        newProgram={newProgram}
-        onNewProgramChange={onNewProgramChange}
-      />
+      {showHeader && (
+        <CurriculumBuilderHeader
+          departments={departments}
+          newProgram={newProgram}
+          onNewProgramChange={onNewProgramChange}
+        />
+      )}
 
       <TabList
         ariaLabel="Year level"
@@ -171,6 +179,7 @@ export function CurriculumBuilder({
         isSaving={isSaving}
         onSave={onSave}
         onCancel={onCancel}
+        showSaveActions={showSaveActions}
       />
 
       <Accordion>

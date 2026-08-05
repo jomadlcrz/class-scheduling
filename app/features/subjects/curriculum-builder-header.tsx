@@ -110,7 +110,8 @@ export function CurriculumBuilderHeader({
         </div>
 
         <p className="font-body text-xs text-slate-400 dark:text-slate-500">
-          Add at least one subject below to create it — a program and its first curriculum save together.
+          Continue to the Curriculum Builder to add this program's first subjects — a program and its
+          curriculum are always created together.
         </p>
       </div>
     </Card>
