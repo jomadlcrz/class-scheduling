@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { FormError } from "~/components/forms/form-error";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -70,6 +71,7 @@ function RegularClassPage() {
   const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
   const [dayOptions, setDayOptions] = useState<{ id: number; name: string }[]>([]);
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     dayName: "",
     startTime: "07:00",
@@ -211,6 +213,7 @@ function RegularClassPage() {
       mode: schedule.mode,
     });
     setActionError(null);
+    setEditError(null);
   }
 
   async function handleEditSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -218,6 +221,7 @@ function RegularClassPage() {
     if (!editTarget) return;
     setEditSaving(true);
     setActionError(null);
+    setEditError(null);
     try {
       const message = await scheduleService.updateRegular(Number(editTarget.id), {
         dayOfWeek: editForm.dayName,
@@ -244,7 +248,8 @@ function RegularClassPage() {
       );
       setEditTarget(null);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to update schedule.");
+      const message = err instanceof Error ? err.message : "Unable to update schedule.";
+      setEditError(message);
     } finally {
       setEditSaving(false);
     }
@@ -452,6 +457,7 @@ function RegularClassPage() {
         title={`Edit ${editTarget?.subjectCode ?? "schedule"}`}
       >
         <form className="flex flex-col gap-4" onSubmit={handleEditSubmit}>
+          <FormError message={editError} />
           <p className="font-body text-sm text-slate-600 dark:text-slate-300">
             Update the saved class placement. The backend will validate conflicts and room rules.
           </p>
