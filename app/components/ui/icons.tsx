@@ -320,6 +320,15 @@ export function LockIcon({ size = 18 }: { size?: number } = {}) {
   );
 }
 
+export function UnlockIcon({ size = 18 }: { size?: number } = {}) {
+  return (
+    <IconBase size={size}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 9.5-2" />
+    </IconBase>
+  );
+}
+
 
 export function EditIcon() {
   return (

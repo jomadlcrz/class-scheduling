@@ -22,16 +22,25 @@ import {
 } from "~/features/schedules/schedule-view-toggle";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
+import { timeToMinutes } from "~/lib/time";
+import { enumService } from "~/services/enum.service";
 import {
   scheduleService,
+  type ScheduleRoomOption,
   type ScheduledSetOption,
   type UnseatedIrregularStudent,
 } from "~/services/schedule.service";
 import {
   DAYS,
+  formatTime,
+  generateTimeSlots,
+  parseTime12h,
   type Schedule,
+  SCHEDULE_MODES,
   type ScheduleSemester,
 } from "~/types/schedule";
+
+const TIME_OPTIONS = generateTimeSlots().map(formatTime);
 
 export function meta() {
   return [
@@ -58,6 +67,17 @@ function RegularClassPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [clearTarget, setClearTarget] = useState<ScheduledSetOption | null>(null);
   const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
+  const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
+  const [dayOptions, setDayOptions] = useState<{ id: number; name: string }[]>([]);
+  const [editTarget, setEditTarget] = useState<Schedule | null>(null);
+  const [editForm, setEditForm] = useState({
+    dayName: "",
+    startTime: "07:00",
+    endTime: "08:00",
+    roomId: "",
+    mode: "F2F" as Schedule["mode"],
+  });
+  const [editSaving, setEditSaving] = useState(false);
 
   // Filters — pin the view to a single section's weekly schedule.
   const [schoolYear, setSchoolYear] = useState("");
@@ -86,6 +106,8 @@ function RegularClassPage() {
 
   useEffect(() => {
     scheduleService.getSetWithSchedules().then(setScheduledSets).catch(() => setScheduledSets([]));
+    scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
+    enumService.getOptions().then((options) => setDayOptions(options.dayOfWeek)).catch(() => setDayOptions([]));
   }, []);
 
   const schoolYears = useMemo(
@@ -177,6 +199,55 @@ function RegularClassPage() {
       ),
     );
     setClearTarget(null);
+  }
+
+  function openEdit(schedule: Schedule) {
+    setEditTarget(schedule);
+    setEditForm({
+      dayName: dayOptions.find((option) => DAYS[option.id] === schedule.day)?.name ?? "",
+      startTime: formatTime(schedule.startTime),
+      endTime: formatTime(schedule.endTime),
+      roomId: schedule.roomId,
+      mode: schedule.mode,
+    });
+    setActionError(null);
+  }
+
+  async function handleEditSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editTarget) return;
+    setEditSaving(true);
+    setActionError(null);
+    try {
+      const message = await scheduleService.updateRegular(Number(editTarget.id), {
+        dayOfWeek: editForm.dayName,
+        startTime: formatTime(editForm.startTime),
+        endTime: formatTime(editForm.endTime),
+        roomId: editForm.roomId ? Number(editForm.roomId) : null,
+        mode: editForm.mode,
+      });
+      if (message) toast.success(message);
+      setSchedules((current) =>
+        current?.map((row) =>
+          row.id === editTarget.id
+            ? {
+                ...row,
+                day: DAYS[dayOptions.find((option) => option.name === editForm.dayName)?.id ?? 0],
+                startTime: parseTime12h(editForm.startTime),
+                endTime: parseTime12h(editForm.endTime),
+                roomId: editForm.roomId,
+                roomName: rooms.find((room) => String(room.id) === editForm.roomId)?.roomName ?? row.roomName,
+                mode: editForm.mode,
+              }
+            : row,
+        ) ?? [],
+      );
+      setEditTarget(null);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to update schedule.");
+    } finally {
+      setEditSaving(false);
+    }
   }
 
   const isLoading = schedules === null;
@@ -367,11 +438,101 @@ function RegularClassPage() {
             No schedules match the current filters. Create a schedule to get started.
           </EmptyState>
         ) : viewMode === "grid" ? (
-          <ScheduleGrid schedules={visibleSchedules} />
+          <ScheduleGrid schedules={visibleSchedules} onEdit={openEdit} />
         ) : (
-          <ScheduleTable schedules={visibleSchedules} />
+          <ScheduleTable schedules={visibleSchedules} onEdit={openEdit} />
         )}
       </div>
+
+      <Modal
+        open={editTarget !== null}
+        onClose={() => {
+          if (!editSaving) setEditTarget(null);
+        }}
+        title={`Edit ${editTarget?.subjectCode ?? "schedule"}`}
+      >
+        <form className="flex flex-col gap-4" onSubmit={handleEditSubmit}>
+          <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+            Update the saved class placement. The backend will validate conflicts and room rules.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FieldChrome id="edit-day" label="Day">
+              <Select
+                items={dayOptions.map((option) => ({ value: option.name, label: option.name }))}
+                value={editForm.dayName}
+                onValueChange={(value) => setEditForm((current) => ({ ...current, dayName: value as string }))}
+              >
+                <SelectTrigger id="edit-day"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {dayOptions.map((option) => (
+                    <SelectItem key={option.id} value={option.name}>{option.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="edit-mode" label="Mode">
+              <Select
+                items={SCHEDULE_MODES.map((mode) => ({ value: mode, label: mode }))}
+                value={editForm.mode}
+                onValueChange={(value) => setEditForm((current) => ({ ...current, mode: value as Schedule["mode"] }))}
+              >
+                <SelectTrigger id="edit-mode"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SCHEDULE_MODES.map((mode) => <SelectItem key={mode} value={mode}>{mode}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="edit-start-time" label="Start time">
+              <Select
+                items={TIME_OPTIONS.map((time) => ({ value: time, label: time }))}
+                value={editForm.startTime}
+                onValueChange={(value) => setEditForm((current) => ({ ...current, startTime: value as string }))}
+              >
+                <SelectTrigger id="edit-start-time"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TIME_OPTIONS.map((time) => <SelectItem key={time} value={time}>{time}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="edit-end-time" label="End time">
+              <Select
+                items={TIME_OPTIONS.filter((time) => timeToMinutes(time) > timeToMinutes(editForm.startTime)).map((time) => ({ value: time, label: time }))}
+                value={editForm.endTime}
+                onValueChange={(value) => setEditForm((current) => ({ ...current, endTime: value as string }))}
+              >
+                <SelectTrigger id="edit-end-time"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TIME_OPTIONS.filter((time) => timeToMinutes(time) > timeToMinutes(editForm.startTime)).map((time) => (
+                    <SelectItem key={time} value={time}>{time}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+          </div>
+          <FieldChrome id="edit-room" label="Room">
+            <Select
+              items={rooms.map((room) => ({ value: String(room.id), label: `${room.roomName} (${room.buildingName})` }))}
+              value={editForm.roomId}
+              onValueChange={(value) => setEditForm((current) => ({ ...current, roomId: value as string }))}
+            >
+              <SelectTrigger id="edit-room"><SelectValue placeholder="Select a room" /></SelectTrigger>
+              <SelectContent>
+                {rooms.map((room) => (
+                  <SelectItem key={room.id} value={String(room.id)}>{room.roomName} ({room.buildingName})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" block={false} disabled={editSaving} onClick={() => setEditTarget(null)}>
+              Cancel
+            </Button>
+            <Button type="submit" block={false} isLoading={editSaving} loadingLabel="Saving…">
+              Save changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <ConfirmDialog
         open={clearTarget !== null}

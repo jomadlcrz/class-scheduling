@@ -3,7 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
-import { LockIcon } from "~/components/ui/icons";
+import { LockIcon, UnlockIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
@@ -245,6 +245,7 @@ export function AcademicTermsAuditLogPage() {
                       <Badge tone={auditActionTone(entry.action)}>
                         <span className="inline-flex items-center gap-1">
                           {entry.action === "term_closed" ? <LockIcon size={14} /> : null}
+                          {entry.action === "term_reopened" ? <UnlockIcon size={14} /> : null}
                           {entry.actionLabel}
                         </span>
                       </Badge>
@@ -280,7 +281,13 @@ function AuditLogMobileCard({ entry }: { entry: TermAuditLogEntry }) {
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <Badge tone={auditActionTone(entry.action)}>{entry.actionLabel}</Badge>
+        <Badge tone={auditActionTone(entry.action)}>
+          <span className="inline-flex items-center gap-1">
+            {entry.action === "term_closed" ? <LockIcon size={14} /> : null}
+            {entry.action === "term_reopened" ? <UnlockIcon size={14} /> : null}
+            {entry.actionLabel}
+          </span>
+        </Badge>
         <time className="font-body text-xs text-slate-500 dark:text-slate-400">
           {entry.occurredAtDisplay ?? "—"}
         </time>
