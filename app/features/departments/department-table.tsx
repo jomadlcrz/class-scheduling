@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
+import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
 import { getBuildingTone } from "~/types/building";
 import { DEPARTMENT_TYPE_TONES } from "~/types/department";
 import type { Department } from "~/types/department";
@@ -41,7 +41,7 @@ export function DepartmentTable({ departments, onEdit, onArchive }: DepartmentTa
             <TableCell>
               <div className="flex items-center gap-3">
                 <img
-                  src={departmentLogoUrl(dept.abbrev)}
+                  src={departmentLogoSrc(dept.logoUrl)}
                   alt={`${dept.abbrev} logo`}
                   onError={onDepartmentLogoError}
                   className="size-10 rounded-lg object-contain"

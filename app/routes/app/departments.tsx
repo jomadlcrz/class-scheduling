@@ -82,8 +82,8 @@ function DepartmentsPage() {
     setDepts(await departmentService.list());
   }
 
-  async function handleCreate(input: CreateDepartmentInput) {
-    const message = await departmentService.create(input);
+  async function handleCreate(input: CreateDepartmentInput, logoFile?: File | null) {
+    const message = await departmentService.create(input, logoFile);
     if (message) toast.success(message);
     await refresh();
     setCreateOpen(false);
@@ -222,6 +222,7 @@ function DepartmentsPage() {
             departmentTypes={departmentTypes}
             onSubmit={handleEdit}
             onCancel={() => setEditTarget(null)}
+            onLogoChanged={refresh}
           />
         )}
       </Modal>

@@ -4,7 +4,7 @@ import { Card } from "~/components/ui/card";
 import { EditIcon, ArchiveIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import { actionButtonClassName } from "~/features/departments/department-table";
-import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
+import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
 import { getBuildingTone } from "~/types/building";
 import { DEPARTMENT_TYPE_TONES } from "~/types/department";
 import type { Department } from "~/types/department";
@@ -61,7 +61,7 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
 
               <div className="relative h-28 shrink-0 overflow-hidden bg-slate-100 dark:bg-surface-raised/60">
                 <img
-                  src={departmentLogoUrl(dept.abbrev)}
+                  src={departmentLogoSrc(dept.logoUrl)}
                   alt=""
                   aria-hidden="true"
                   onError={onDepartmentLogoError}
@@ -69,7 +69,7 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
                 />
                 <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
                 <img
-                  src={departmentLogoUrl(dept.abbrev)}
+                  src={departmentLogoSrc(dept.logoUrl)}
                   alt={`${dept.abbrev} logo`}
                   onError={onDepartmentLogoError}
                   className="absolute inset-0 m-auto size-16 object-contain drop-shadow-md transition-transform duration-500 ease-out group-hover:scale-110"

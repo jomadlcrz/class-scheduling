@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
 import { archiveService } from "~/services/archive.service";
 import type { CreateDepartmentInput, Department, DepartmentDeletePreview, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
 import type { Program } from "~/types/program";
@@ -13,6 +13,7 @@ type DepartmentsResponse = {
     department_type: string;
     building_name: string;
     programs: { program_abbrev: string; program_name: string }[];
+    logo_url: string | null;
   }[];
 };
 
@@ -24,6 +25,7 @@ function mapDepartments(data: DepartmentsResponse): Department[] {
     buildingName: d.building_name,
     departmentType: d.department_type,
     programs: (d.programs ?? []).map((p) => ({ abbrev: p.program_abbrev, name: p.program_name })),
+    logoUrl: d.logo_url,
   }));
 }
 
@@ -50,8 +52,22 @@ async function listAcademic(): Promise<Department[]> {
   }
 }
 
-/** POST /departments/ — create one department. Returns the backend message. */
-async function create(input: CreateDepartmentInput): Promise<string> {
+/** POST /departments/ — create one department, with an optional logo.
+ * Plain JSON when no logo is given; multipart/form-data (same camelCase fields, plus
+ * a `logo` file) when one is — the backend accepts either body for this endpoint.
+ * Returns the backend message. */
+async function create(input: CreateDepartmentInput, logoFile?: File | null): Promise<string> {
+  if (logoFile) {
+    const formData = new FormData();
+    formData.append("departmentAbbrev", input.abbrev);
+    formData.append("departmentName", input.name);
+    formData.append("buildingId", String(input.buildingId));
+    if (input.departmentType !== undefined) formData.append("departmentType", input.departmentType);
+    formData.append("logo", logoFile);
+    const data = await apiUpload<{ message?: string }>("/departments/", formData);
+    return apiMessage(data);
+  }
+
   const data = await apiPost<{ message?: string }>("/departments/", {
     departmentAbbrev: input.abbrev,
     departmentName: input.name,
@@ -69,6 +85,20 @@ async function update(id: number, input: UpdateDepartmentInput): Promise<string>
     ...(input.buildingId !== undefined && { buildingId: input.buildingId }),
     ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
   });
+  return apiMessage(data);
+}
+
+/** POST /departments/:id/logo — replace the department logo. Field name `logo`. */
+async function uploadLogo(id: number, file: File): Promise<{ url: string; message: string }> {
+  const formData = new FormData();
+  formData.append("logo", file);
+  const data = await apiUpload<{ message?: string; logo_url: string }>(`/departments/${id}/logo`, formData);
+  return { url: data.logo_url, message: data.message ?? "" };
+}
+
+/** DELETE /departments/:id/logo — remove the current logo, if any. Returns the backend message. */
+async function removeLogo(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/departments/${id}/logo`);
   return apiMessage(data);
 }
 
@@ -132,6 +162,7 @@ async function get(id: number): Promise<DepartmentDetail> {
     department_name: string;
     department_type: string;
     building_id: number;
+    logo_url: string | null;
   }>(`/departments/${id}`);
   return {
     id: d.department_id,
@@ -139,6 +170,7 @@ async function get(id: number): Promise<DepartmentDetail> {
     name: d.department_name,
     buildingId: d.building_id,
     departmentType: d.department_type,
+    logoUrl: d.logo_url,
   };
 }
 
@@ -173,6 +205,8 @@ export const departmentService = {
   listPrograms,
   create,
   update,
+  uploadLogo,
+  removeLogo,
   remove,
   getDeletePreview,
   listDeleted,

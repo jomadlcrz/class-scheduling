@@ -18,6 +18,8 @@ export type Department = {
   departmentType: string;
   /** Programs offered by the department, as returned by GET /departments. */
   programs: { abbrev: string; name: string }[];
+  /** Public S3 URL, or null when no logo has been uploaded yet. */
+  logoUrl: string | null;
 };
 
 /** Buildings are referenced by id on create and update (backend expects buildingId). */
@@ -50,6 +52,7 @@ export type DepartmentDetail = {
   name: string;
   buildingId: number;
   departmentType: string;
+  logoUrl: string | null;
 };
 
 /** Shape of GET /departments/:id/delete-preview and the DELETE /departments/:id payload.
