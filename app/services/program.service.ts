@@ -4,34 +4,57 @@ import type { Program, ProgramDeletePreview, UpdateProgramInput } from "~/types/
 
 /** Programs CRUD against the curriculums module (registrar_admin). */
 
-type ProgramsResponse = {
-  programs: {
-    program_id: number;
-    program_abbrev: string;
-    program_name: string;
-    program_type: string;
-    program_length: number;
-    department: { department_abbrev: string | null };
-  }[];
+type ProgramApiRow = {
+  program_id: number;
+  program_abbrev: string;
+  program_name: string;
+  program_type: string;
+  program_length: number;
+  program_description?: string | null;
+  department?: { department_abbrev: string | null };
 };
 
-/** GET /programs — the backend answers an empty table with 404. */
-async function list(): Promise<Program[]> {
-  let data: ProgramsResponse;
-  try {
-    data = await apiGet<ProgramsResponse>("/programs");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
+type ProgramsResponse = { programs: ProgramApiRow[] };
+
+type DepartmentProgramsResponse = {
+  department_id: number;
+  department_abbrev: string;
+  department_name: string;
+  programs: ProgramApiRow[];
+};
+
+function mapPrograms(
+  data: ProgramsResponse | DepartmentProgramsResponse,
+  departmentAbbrev?: string,
+): Program[] {
   return data.programs.map((p) => ({
     id: p.program_id,
-    departmentAbbrev: p.department?.department_abbrev ?? "",
+    departmentAbbrev: p.department?.department_abbrev ?? departmentAbbrev ?? "",
     abbrev: p.program_abbrev,
     name: p.program_name,
     type: p.program_type,
     lengthYears: p.program_length,
+    description: p.program_description,
   }));
+}
+
+/** GET /programs — the backend answers an empty table with 404. */
+async function list(departmentId?: number): Promise<Program[]> {
+  let data: ProgramsResponse | DepartmentProgramsResponse;
+  try {
+    const query = departmentId == null ? "" : `?departmentId=${departmentId}`;
+    data = await apiGet<ProgramsResponse | DepartmentProgramsResponse>(`/programs${query}`);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return mapPrograms(data, "department_abbrev" in data ? data.department_abbrev : undefined);
+}
+
+/** GET /departments/:id/programs — active programs for one department. */
+async function listByDepartment(departmentId: number): Promise<Program[]> {
+  const data = await apiGet<DepartmentProgramsResponse>(`/departments/${departmentId}/programs`);
+  return mapPrograms(data, data.department_abbrev);
 }
 
 /**
@@ -124,4 +147,4 @@ async function get(id: number): Promise<Program & { departmentId: number }> {
   };
 }
 
-export const programService = { list, update, remove, getDeletePreview, listDeleted, restore, get };
+export const programService = { list, listByDepartment, update, remove, getDeletePreview, listDeleted, restore, get };

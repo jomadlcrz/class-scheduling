@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { programSchema } from "~/schemas/program.schema";
+import { enumService } from "~/services/enum.service";
 import type { Department } from "~/types/department";
 import type { CreateProgramInput, Program } from "~/types/program";
-import { PROGRAM_TYPE_YEARS, PROGRAM_TYPES } from "~/types/program";
 
 type ProgramFormProps = {
   program?: Program;
@@ -18,9 +18,20 @@ type ProgramFormProps = {
 export function ProgramForm({ program, departments, onSubmit, onCancel }: ProgramFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string>(program?.type ?? PROGRAM_TYPES[0]);
+  const [degreeTypes, setDegreeTypes] = useState<string[]>([]);
+  const [selectedType, setSelectedType] = useState<string>(program?.type ?? "");
+  const [lengthYears, setLengthYears] = useState(program?.lengthYears ?? 1);
   const isEdit = Boolean(program);
-  const computedYears = PROGRAM_TYPE_YEARS[selectedType] ?? program?.lengthYears ?? 4;
+
+  useEffect(() => {
+    enumService
+      .getOptions()
+      .then((options) => {
+        setDegreeTypes(options.degreeType);
+        setSelectedType((current) => current || program?.type || options.degreeType[0] || "");
+      })
+      .catch(() => {});
+  }, [program]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,8 +40,6 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
     const abbrev = String(data.get("prog-abbrev") ?? "").trim().toUpperCase();
     const name = String(data.get("prog-name") ?? "").trim();
     const type = String(data.get("prog-type") ?? "");
-    const lengthYears = PROGRAM_TYPE_YEARS[type] ?? computedYears;
-
     const result = programSchema.safeParse({ departmentName, abbrev, name, type, lengthYears });
     if (!result.success) {
       setError(result.error.issues[0].message);
@@ -81,18 +90,18 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           placeholder="BSIS"
           defaultValue={program?.abbrev ?? ""}
         />
-        <FieldChrome id="prog-type" label="Type">
-          <Select
-            items={PROGRAM_TYPES.map((t) => ({ value: t, label: t }))}
+          <FieldChrome id="prog-type" label="Type">
+            <Select
+            items={degreeTypes.map((t) => ({ value: t, label: t }))}
             name="prog-type"
-            defaultValue={program?.type ?? PROGRAM_TYPES[0]}
+            value={selectedType}
             onValueChange={(v) => setSelectedType(v as string)}
           >
             <SelectTrigger id="prog-type">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {PROGRAM_TYPES.map((t) => (
+              {degreeTypes.map((t) => (
                 <SelectItem key={t} value={t}>
                   {t}
                 </SelectItem>
@@ -113,9 +122,10 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           id="prog-years"
           name="prog-years"
           type="number"
-          value={computedYears}
-          readOnly
-          className={`${inputClassName} read-only:cursor-default read-only:bg-slate-100 read-only:dark:bg-white/10`}
+          value={lengthYears}
+          min={1}
+          onChange={(e) => setLengthYears(Number(e.target.value))}
+          className={inputClassName}
         />
       </FieldChrome>
       <div className="flex justify-end gap-2">

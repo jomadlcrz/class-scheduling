@@ -1,6 +1,7 @@
 import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { archiveService } from "~/services/archive.service";
 import type { CreateDepartmentInput, Department, DepartmentDeletePreview, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
+import type { Program } from "~/types/program";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
 
@@ -141,4 +142,40 @@ async function get(id: number): Promise<DepartmentDetail> {
   };
 }
 
-export const departmentService = { list, listAcademic, create, update, remove, getDeletePreview, listDeleted, restore, get };
+/** GET /departments/:id/programs — active programs owned by one department. */
+async function listPrograms(id: number): Promise<Program[]> {
+  const data = await apiGet<{
+    department_abbrev: string;
+    programs: {
+      program_id: number;
+      program_abbrev: string;
+      program_name: string;
+      program_type: string;
+      program_length: number;
+      program_description?: string | null;
+    }[];
+  }>(`/departments/${id}/programs`);
+
+  return data.programs.map((p) => ({
+    id: p.program_id,
+    departmentAbbrev: data.department_abbrev,
+    abbrev: p.program_abbrev,
+    name: p.program_name,
+    type: p.program_type,
+    lengthYears: p.program_length,
+    description: p.program_description,
+  }));
+}
+
+export const departmentService = {
+  list,
+  listAcademic,
+  listPrograms,
+  create,
+  update,
+  remove,
+  getDeletePreview,
+  listDeleted,
+  restore,
+  get,
+};

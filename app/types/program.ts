@@ -1,23 +1,14 @@
-/**
- * The backend stores program_type as a free string, so the values below are
- * what gets saved and displayed — no separate label mapping.
- */
-export const PROGRAM_TYPES = ["Bachelor Degree", "Associate Degree"] as const;
-
-export const PROGRAM_TYPE_YEARS: Record<string, number> = {
-  "Bachelor Degree": 4,
-  "Associate Degree": 2,
-};
-
 export type Program = {
   id: number;
   /** Department abbrev from GET /programs, e.g. "CITE". */
   departmentAbbrev: string;
   abbrev: string;
   name: string;
-  /** Backend program_type string, e.g. "Bachelor Degree". */
+  /** Backend program_type enum value. */
   type: string;
   lengthYears: number;
+  /** Backend program_description, when returned by a program listing. */
+  description?: string | null;
 };
 
 /** Shape of GET /programs/:id/delete-preview and the DELETE /programs/:id payload. */

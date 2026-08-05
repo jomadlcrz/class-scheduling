@@ -324,7 +324,7 @@ type DepartmentProgramResponse = {
       units: number;
       subject_type: string | null;
       year_level: number;
-      semester_category: number;
+      semester_number: number;
     }[];
   }[];
 };
@@ -363,7 +363,7 @@ async function listDepartmentPrograms(semesterNumber?: number): Promise<{
       title: s.descriptive_title,
       units: s.units,
       yearLevel: s.year_level,
-      semesterCategory: s.semester_category,
+      semesterCategory: s.semester_number,
     })),
   }));
 }
