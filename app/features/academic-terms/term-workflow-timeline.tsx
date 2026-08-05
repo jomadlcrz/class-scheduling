@@ -10,7 +10,7 @@ type TermWorkflowTimelineProps = {
 
 function stepIcon(key: string): ReactNode {
   if (key === "close_school_year") return <CalendarIcon />;
-  if (key === "work_second_semester") return <BookOpenIcon />;
+  if (key.startsWith("work_")) return <BookOpenIcon />;
   return <LockIcon size={16} />;
 }
 
@@ -39,7 +39,7 @@ function StepNode({ step, index }: { step: TermWorkflowStep; index: number }) {
         className="relative z-10 grid size-9 place-items-center rounded-full bg-emerald-500 text-white shadow-sm ring-4 ring-white dark:ring-surface-raised"
         aria-hidden="true"
       >
-        <CheckIcon size={16} strokeWidth={3} />
+        {step.key.startsWith("work_") ? <BookOpenIcon /> : <CheckIcon size={16} strokeWidth={3} />}
       </span>
     );
   }
@@ -87,7 +87,7 @@ export function TermWorkflowTimeline({
       </div>
 
       {/* Desktop: horizontal stepper */}
-      <ol className="hidden md:grid md:grid-cols-4 md:gap-0" aria-label="Academic year workflow">
+      <ol className="hidden md:grid md:grid-cols-5 md:gap-0" aria-label="Academic year workflow">
         {steps.map((step, index) => {
           const isLast = index === steps.length - 1;
 
