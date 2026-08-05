@@ -19,7 +19,9 @@ import type { Department } from "~/types/department";
 import { PROGRAM_TYPE_YEARS } from "~/types/program";
 import type { CreateSubjectInput, Subject } from "~/types/subject";
 
-const DRAFT_KEY = "program-wizard-draft-v1";
+// Bump this whenever NewProgramDraft's shape changes, so drafts saved under
+// an older shape are simply ignored instead of resurrecting with missing fields.
+const DRAFT_KEY = "program-wizard-draft-v2";
 
 const STEPS: StepDefinition[] = [
   { key: "info", label: "Program Information" },

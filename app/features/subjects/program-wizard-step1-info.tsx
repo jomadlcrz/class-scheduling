@@ -23,15 +23,6 @@ export function ProgramWizardStep1Info({
 }: ProgramWizardStep1InfoProps) {
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
-          Program Information
-        </h2>
-        <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-          Provide the basic information about the program you want to create.
-        </p>
-      </div>
-
       <CurriculumBuilderHeader
         departments={departments}
         newProgram={newProgram}
@@ -39,8 +30,8 @@ export function ProgramWizardStep1Info({
       />
 
       <p className="font-body text-xs text-slate-400 dark:text-slate-500">
-        A program description and a manual total-units override aren't supported yet — total units are
-        calculated automatically from the subjects you add in the next step.
+        Total units aren't entered here — they're calculated automatically from the subjects you add in
+        the next step.
       </p>
 
       <ProgramWizardFooter

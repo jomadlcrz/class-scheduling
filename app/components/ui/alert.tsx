@@ -12,6 +12,7 @@ const variants = {
     "border-green-200 bg-green-50 text-green-800 [&>svg]:text-green-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:[&>svg]:text-emerald-400",
   warning:
     "border-amber-200 bg-amber-50 text-amber-900 [&>svg]:text-amber-600 dark:border-gold-400/25 dark:bg-gold-400/10 dark:text-gold-300 dark:[&>svg]:text-gold-400",
+  info: "border-blue-200 bg-blue-50 text-blue-900 [&>svg]:text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300 dark:[&>svg]:text-blue-400",
 } as const;
 
 type AlertVariant = keyof typeof variants;

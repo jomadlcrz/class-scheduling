@@ -2,6 +2,7 @@ import { CurriculumBuilder } from "~/features/subjects/curriculum-builder";
 import type { NewProgramDraft } from "~/features/subjects/curriculum-builder-header";
 import type { PendingEntry } from "~/features/subjects/curriculum-structure";
 import type { PrerequisiteOption } from "~/features/subjects/prerequisite-picker";
+import { ProgramSummaryStrip } from "~/features/subjects/program-summary-strip";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import type { Department } from "~/types/department";
 import type { CreateSubjectInput } from "~/types/subject";
@@ -32,20 +33,15 @@ export function ProgramWizardStep2Curriculum({
   onBack,
   onNext,
   onSaveDraft,
+  newProgram,
   ...builderProps
 }: ProgramWizardStep2CurriculumProps) {
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
-          Curriculum Builder
-        </h2>
-        <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-          Create a new program or build on an existing one — both start with at least one subject.
-        </p>
-      </div>
+      <ProgramSummaryStrip newProgram={newProgram} />
 
       <CurriculumBuilder
+        newProgram={newProgram}
         {...builderProps}
         pendingCount={pendingCount}
         showHeader={false}
