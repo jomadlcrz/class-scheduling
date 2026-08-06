@@ -117,9 +117,10 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
   }));
 }
 
-/** POST /students/{id}/enroll — re-enrolls an existing student profile into a new term. Returns the backend message. */
+/** POST /enrollments — re-enrolls an existing student profile into a new term. Returns the backend message. */
 async function enroll(studentProfileId: number, input: EnrollStudentInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>(`/students/${studentProfileId}/enroll`, {
+  const data = await apiPost<{ message?: string }>("/enrollments", {
+    studentProfileId,
     academic: {
       programId: input.programId,
       yearLevel: input.yearLevel,
@@ -219,21 +220,21 @@ async function updateProfile(
   return apiMessage(data);
 }
 
-/** PUT /students/enrollments/<id> — corrects a single term's set/year level/status. */
+/** PUT /enrollments/<id> — corrects a single term's set/year level/status. */
 async function updateEnrollment(studentAcademicId: number, input: UpdateEnrollmentInput): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/students/enrollments/${studentAcademicId}`, input);
+  const data = await apiPut<{ message?: string }>(`/enrollments/${studentAcademicId}`, input);
   return apiMessage(data);
 }
 
-/** DELETE /students/enrollments/<id> — hard delete of a single term's enrollment. */
+/** DELETE /enrollments/<id> — hard delete of a single term's enrollment. */
 async function removeEnrollment(studentAcademicId: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/students/enrollments/${studentAcademicId}`);
+  const data = await apiDelete<{ message?: string }>(`/enrollments/${studentAcademicId}`);
   return apiMessage(data);
 }
 
-/** PATCH /students/enrollments/:id/state — changes enrollment state without deleting history. */
+/** PATCH /enrollments/:id/state — changes enrollment state without deleting history. */
 async function setEnrollmentState(studentAcademicId: number, state: string, reason?: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/students/enrollments/${studentAcademicId}/state`, {
+  const data = await apiPatch<{ message?: string }>(`/enrollments/${studentAcademicId}/state`, {
     state,
     ...(reason ? { reason } : {}),
   });

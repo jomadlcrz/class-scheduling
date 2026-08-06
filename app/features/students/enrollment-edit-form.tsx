@@ -18,7 +18,7 @@ type EnrollmentEditFormProps = {
 
 type EnrollmentEditValue = UpdateEnrollmentInput & { enrollmentState?: string };
 
-/** Edits a single term's set/year level/status (PUT /students/enrollments/<id>) — doesn't touch enrolled subjects. */
+/** Edits a single term's set/year level/status (PUT /enrollments/<id>) — doesn't touch enrolled subjects. */
 export function EnrollmentEditForm({
   record,
   sets,

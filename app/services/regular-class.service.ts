@@ -1,5 +1,6 @@
 import { apiGet } from "~/lib/api";
 import { termScopeQuery } from "~/lib/term-scope";
+import { semesterService } from "~/services/semester.service";
 import type { RegularStudentRow } from "~/types/student";
 
 /** Regular students and their academic records (registrar_admin students module). */
@@ -19,7 +20,8 @@ type RegularStudentsResponse = {
     enrolled_status: string;
     student_type: string;
     school_year: string | null;
-    semester: string | null;
+    /** EnrollmentService._serialize_enrollment sends the raw number, not a display label. */
+    semester_number: number | null;
     enrolled_subjects: {
       subject_id: number;
       subject_code: string;
@@ -29,10 +31,14 @@ type RegularStudentsResponse = {
   }[];
 }[];
 
-/** GET /students/regular — regular students enrolled in the selected term. */
+/** GET /enrollments/regular — regular students enrolled in the selected term. */
 async function listStudents(syId: number, semesterNumber: number): Promise<RegularStudentRow[]> {
-  const data = await apiGet<RegularStudentsResponse>(
-    `/students/regular${termScopeQuery(syId, semesterNumber)}`,
+  const [data, semesters] = await Promise.all([
+    apiGet<RegularStudentsResponse>(`/enrollments/regular${termScopeQuery(syId, semesterNumber)}`),
+    semesterService.list(),
+  ]);
+  const semesterLabels = new Map(
+    semesters.map((semester) => [semester.semesterNumber, semester.displayName ?? semester.semester]),
   );
   return data.map((s) => ({
     studentProfileId: s.student_profile_id,
@@ -52,7 +58,7 @@ async function listStudents(syId: number, semesterNumber: number): Promise<Regul
       enrolledStatus: a.enrolled_status,
       studentType: a.student_type,
       schoolYear: a.school_year,
-      semester: a.semester,
+      semester: a.semester_number != null ? semesterLabels.get(a.semester_number) ?? null : null,
       enrolledSubjects: a.enrolled_subjects.map((es) => ({
         subjectId: es.subject_id,
         subjectCode: es.subject_code,

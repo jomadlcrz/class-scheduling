@@ -25,7 +25,7 @@ type StudentEnrollFormProps = {
   onCancel: () => void;
 };
 
-/** Re-enrolls an existing student into a new school year/semester (POST /students/{id}/enroll). */
+/** Re-enrolls an existing student into a new school year/semester (POST /enrollments). */
 export function StudentEnrollForm({
   student,
   programs,

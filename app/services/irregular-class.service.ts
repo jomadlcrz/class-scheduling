@@ -11,7 +11,8 @@ type IrregularAcademicRecord = {
   enrolled_status: string;
   student_type: string;
   school_year: string | null;
-  semester: string | null;
+  /** EnrollmentService._serialize_enrollment sends the raw number, not a display label. */
+  semester_number: number | null;
   enrolled_subjects: {
     subject_id: number;
     subject_code: string;
@@ -47,18 +48,13 @@ export type IrregularStudent = {
   subjectsEnrolled: { subjectId: number; subjectCode: string; descTitle: string; units: number }[];
 };
 
-/** "2nd Semester" sorts after "1st Semester" — only these two values occur here. */
-function semesterRank(semester: string | null): number {
-  return semester?.startsWith("2") ? 2 : 1;
-}
-
 /** Picks the most recent academic record (by school year, then semester) — that term's subjects are what's shown. */
 function latestAcademic(academics: IrregularAcademicRecord[]): IrregularAcademicRecord | null {
   if (academics.length === 0) return null;
   return [...academics].sort(
     (a, b) =>
       (b.school_year ?? "").localeCompare(a.school_year ?? "") ||
-      semesterRank(b.semester) - semesterRank(a.semester),
+      (b.semester_number ?? 0) - (a.semester_number ?? 0),
   )[0];
 }
 
@@ -86,12 +82,12 @@ function mapIrregularStudents(data: IrregularStudentsResponse): IrregularStudent
   });
 }
 
-/** GET /students/irregular — irregular students enrolled in the selected term. 404 → empty. */
+/** GET /enrollments/irregular — irregular students enrolled in the selected term. 404 → empty. */
 async function listStudents(syId: number, semesterNumber: number): Promise<IrregularStudent[]> {
   let data: IrregularStudentsResponse;
   try {
     data = await apiGet<IrregularStudentsResponse>(
-      `/students/irregular${termScopeQuery(syId, semesterNumber)}`,
+      `/enrollments/irregular${termScopeQuery(syId, semesterNumber)}`,
     );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
@@ -100,10 +96,10 @@ async function listStudents(syId: number, semesterNumber: number): Promise<Irreg
   return mapIrregularStudents(data);
 }
 
-/** GET /students/irregular/pending-schedule — irregular students who still need scheduling for a term. */
+/** GET /enrollments/irregular/pending-schedule — irregular students who still need scheduling for a term. */
 async function listPendingStudents(syId: number, semesterNumber: number): Promise<IrregularStudent[]> {
   const data = await apiGet<IrregularStudentsResponse>(
-    `/students/irregular/pending-schedule${termScopeQuery(syId, semesterNumber)}`,
+    `/enrollments/irregular/pending-schedule${termScopeQuery(syId, semesterNumber)}`,
   );
   return mapIrregularStudents(data);
 }

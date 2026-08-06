@@ -76,7 +76,7 @@ export type UpdateStudentProfileInput = {
   email: string;
 };
 
-/** POST /students/{id}/enroll payload — re-enrolls an existing profile into a new term. */
+/** POST /enrollments payload — re-enrolls an existing profile into a new term. */
 export type EnrollStudentInput = {
   programId: number;
   yearLevel: number;
@@ -88,7 +88,7 @@ export type EnrollStudentInput = {
   subjectIds: number[];
 };
 
-/** GET /students/regular row — same shape as StudentAccountRow but with the backend's display-string account status. */
+/** GET /enrollments/regular row — same shape as StudentAccountRow but with the backend's display-string account status. */
 export type RegularStudentRow = {
   studentProfileId: number;
   studentId: string | null;
@@ -102,7 +102,7 @@ export type RegularStudentRow = {
   academics: StudentAcademicRecord[];
 };
 
-/** PUT /students/enrollments/<id> body — corrects a single term's set/year level/status; doesn't touch enrolled subjects. */
+/** PUT /enrollments/<id> body — corrects a single term's set/year level/status; doesn't touch enrolled subjects. */
 export type UpdateEnrollmentInput = {
   yearLevel?: number;
   setId?: number;
