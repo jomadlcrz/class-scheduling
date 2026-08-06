@@ -29,6 +29,38 @@ export function closedReasonTone(reason: string | null | undefined): BadgeTone {
   return "gold";
 }
 
+export type ScheduleReleaseStatusValue = "draft" | "pending_approval" | "approved" | "rejected";
+
+export function scheduleReleaseStatusTone(status: ScheduleReleaseStatusValue | string): BadgeTone {
+  switch (status) {
+    case "draft":
+      return "gold";
+    case "pending_approval":
+      return "sky";
+    case "approved":
+      return "emerald";
+    case "rejected":
+      return "red";
+    default:
+      return "slate";
+  }
+}
+
+export function scheduleReleaseStatusLabel(status: ScheduleReleaseStatusValue | string): string {
+  switch (status) {
+    case "draft":
+      return "Draft";
+    case "pending_approval":
+      return "Pending Approval";
+    case "approved":
+      return "Approved";
+    case "rejected":
+      return "Rejected";
+    default:
+      return status;
+  }
+}
+
 export function StatusBadge({
   tone,
   children,

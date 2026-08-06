@@ -8,23 +8,28 @@ import { FormError } from "~/components/forms/form-error";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { AlertIcon, PlusIcon, PrinterIcon, TrashIcon } from "~/components/ui/icons";
+import { AlertIcon, EyeIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { openSchedulePrint } from "~/features/schedules/print-schedule";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
+import { scheduleReleaseStatusLabel, scheduleReleaseStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
+import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
+import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
   ScheduleViewToggle,
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
+import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import { timeToMinutes } from "~/lib/time";
 import { enumService } from "~/services/enum.service";
+import { scheduleReleaseService } from "~/services/schedule-release.service";
 import {
   scheduleService,
   type ScheduleRoomOption,
@@ -40,6 +45,7 @@ import {
   SCHEDULE_MODES,
   type ScheduleSemester,
 } from "~/types/schedule";
+import type { ScheduleRelease } from "~/types/schedule-release";
 
 const TIME_OPTIONS = generateTimeSlots().map(formatTime);
 
@@ -80,6 +86,10 @@ function RegularClassPage() {
     mode: "F2F" as Schedule["mode"],
   });
   const [editSaving, setEditSaving] = useState(false);
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [submitTarget, setSubmitTarget] = useState<ScheduleRelease | null>(null);
+  const [withdrawTarget, setWithdrawTarget] = useState<ScheduleRelease | null>(null);
 
   // Filters — pin the view to a single section's weekly schedule.
   const [schoolYear, setSchoolYear] = useState("");
@@ -157,6 +167,13 @@ function RegularClassPage() {
     [scheduledSets, schoolYear, semester, setName],
   );
 
+  const { releases, refresh: refreshReleases } = useScheduleReleases(selectedSchoolYearId, semester);
+
+  const selectedRelease = useMemo(
+    () => releases.find((row) => row.setId === selectedScheduledSet?.setId) ?? null,
+    [releases, selectedScheduledSet],
+  );
+
   useEffect(() => {
     if (!selectedSchoolYearId) return;
     if (
@@ -201,6 +218,22 @@ function RegularClassPage() {
       ),
     );
     setClearTarget(null);
+  }
+
+  async function handleSubmitRelease() {
+    if (!submitTarget) return;
+    const { message } = await scheduleReleaseService.submitRelease(submitTarget.id);
+    if (message) toast.success(message);
+    await refreshReleases();
+    setSubmitTarget(null);
+  }
+
+  async function handleWithdrawRelease() {
+    if (!withdrawTarget) return;
+    const { message } = await scheduleReleaseService.withdrawRelease(withdrawTarget.id);
+    if (message) toast.success(message);
+    await refreshReleases();
+    setWithdrawTarget(null);
   }
 
   function openEdit(schedule: Schedule) {
@@ -266,6 +299,35 @@ function RegularClassPage() {
         description="Class schedules for the current academic term."
         actions={
           <div className="flex flex-wrap justify-end gap-2">
+            {selectedRelease && (
+              <Button type="button" variant="outline" block={false} onClick={() => setPreviewOpen(true)}>
+                <EyeIcon />
+                Preview
+              </Button>
+            )}
+            {selectedRelease &&
+              (selectedRelease.releaseStatus === "draft" || selectedRelease.releaseStatus === "rejected") && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  onClick={() => setSubmitTarget(selectedRelease)}
+                >
+                  <SendIcon />
+                  Submit for Approval
+                </Button>
+              )}
+            {selectedRelease && selectedRelease.releaseStatus === "pending_approval" && (
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                onClick={() => setWithdrawTarget(selectedRelease)}
+              >
+                <RotateIcon />
+                Withdraw
+              </Button>
+            )}
             {selectedScheduledSet && (
               <Button
                 type="button"
@@ -379,6 +441,28 @@ function RegularClassPage() {
             </Select>
           </FieldChrome>
         </Card>
+
+          {selectedRelease && (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
+              <StatusBadge tone={scheduleReleaseStatusTone(selectedRelease.releaseStatus)}>
+                {scheduleReleaseStatusLabel(selectedRelease.releaseStatus)}
+              </StatusBadge>
+              <span className="font-body text-sm text-slate-600 dark:text-slate-300">
+                {selectedRelease.sessionCount} session{selectedRelease.sessionCount === 1 ? "" : "s"} saved
+              </span>
+              {selectedRelease.releaseStatus === "pending_approval" && selectedRelease.submittedBy && (
+                <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                  Submitted by {selectedRelease.submittedBy.name ?? "—"}
+                </span>
+              )}
+            </div>
+          )}
+          {selectedRelease?.releaseStatus === "rejected" && selectedRelease.rejectionReason && (
+            <Alert variant="destructive">
+              <AlertIcon />
+              <AlertDescription>Rejected: {selectedRelease.rejectionReason}</AlertDescription>
+            </Alert>
+          )}
         </div>
       )}
 
@@ -579,6 +663,32 @@ function RegularClassPage() {
           </div>
         </div>
       </Modal>
+
+      <SchedulePreviewModal
+        open={previewOpen}
+        releaseId={selectedRelease?.id ?? null}
+        fetchPreview={scheduleReleaseService.getReleasePreview}
+        onClose={() => setPreviewOpen(false)}
+      />
+
+      <ScheduleSubmitDialog
+        open={submitTarget !== null}
+        release={submitTarget}
+        onClose={() => setSubmitTarget(null)}
+        onConfirm={handleSubmitRelease}
+      />
+
+      <ConfirmDialog
+        open={withdrawTarget !== null}
+        onClose={() => setWithdrawTarget(null)}
+        title="Withdraw submission"
+        confirmLabel="Withdraw"
+        loadingLabel="Withdrawing…"
+        onConfirm={handleWithdrawRelease}
+      >
+        Withdraw {withdrawTarget?.programAbbrev} {withdrawTarget?.setCode} from dean review and return it to
+        draft? You can edit and resubmit it afterward.
+      </ConfirmDialog>
     </div>
   );
 }

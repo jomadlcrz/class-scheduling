@@ -34,6 +34,8 @@ export default [
     route("dean/instructors", "routes/app/dean-instructors.tsx"),
     route("dean/subject-assignments", "routes/app/dean-subject-assignments.tsx"),
     route("dean/teaching-terms/:id", "routes/app/dean-teaching-term.tsx"),
+    route("dean/schedule-approvals", "routes/app/dean-schedule-approvals.tsx"),
+    route("dean/schedule-approvals/:id", "routes/app/dean-schedule-approval-detail.tsx"),
     route("faculty", "routes/app/faculty.tsx"),
     route("faculty/new", "routes/app/faculty-new.tsx"),
     route("faculty-loads", "routes/app/faculty-loads.tsx"),
