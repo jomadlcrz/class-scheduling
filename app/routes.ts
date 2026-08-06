@@ -60,6 +60,13 @@ export default [
     route("students-regular/bulk", "routes/app/students-regular-bulk.tsx"),
     route("students-irregular", "routes/app/students-irregular.tsx"),
     route("students-irregular/bulk", "routes/app/students-irregular-bulk.tsx"),
+
+    // Enrollment — separate from the routes above, which stay as they are.
+    route("enrollment/regular-students", "routes/app/enrollment/regular-students.tsx"),
+    route("enrollment/irregular-students", "routes/app/enrollment/irregular-students.tsx"),
+    route("enrollment/pending-schedule", "routes/app/enrollment/pending-schedule.tsx"),
+    route("enrollment/new", "routes/app/enrollment/new.tsx"),
+    route("enrollment/re-enroll", "routes/app/enrollment/re-enroll.tsx"),
     route("classroom-mapping", "routes/app/classroom-mapping.tsx"),
     route("audit", "routes/app/audit.tsx"),
 

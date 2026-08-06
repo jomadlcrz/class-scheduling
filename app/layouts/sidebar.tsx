@@ -16,6 +16,7 @@ import {
   DashboardIcon,
   FlaskConicalIcon,
   FolderOpenIcon,
+  GraduationCapIcon,
   LayersIcon,
   MapIcon,
   ShieldIcon,
@@ -110,7 +111,19 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Enrollment",
     items: [
+      // Untouched — kept exactly as it was.
       { label: "Students", to: "/students", icon: <UsersIcon />, roles: ["registrar"], matchPaths: ["/students", "/students-regular", "/students-irregular"] },
+      {
+        label: "Enrollment",
+        icon: <GraduationCapIcon />,
+        roles: ["registrar"],
+        subItems: [
+          { label: "Regular Students", to: "/enrollment/regular-students", roles: ["registrar"] },
+          { label: "Irregular Students", to: "/enrollment/irregular-students", roles: ["registrar"] },
+          { label: "Pending Schedule", to: "/enrollment/pending-schedule", roles: ["registrar"] },
+          { label: "Re-enroll Student", to: "/enrollment/re-enroll", roles: ["registrar"] },
+        ],
+      },
     ],
   },
   {
