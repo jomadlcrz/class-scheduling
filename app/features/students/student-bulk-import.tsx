@@ -8,6 +8,7 @@ import { Card } from "~/components/ui/card";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
 import { ConfirmDialog } from "~/components/ui/modal";
+import { Popover } from "~/components/ui/popover";
 import { SectionHeading } from "~/components/ui/section-heading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
@@ -368,6 +369,14 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  /** Opens the native file picker filtered to just the chosen format; handleFileChange still auto-detects by extension either way. */
+  function openFilePicker(accept: ".csv" | ".xlsx") {
+    const input = fileInputRef.current;
+    if (!input) return;
+    input.accept = accept;
+    input.click();
+  }
+
   function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
     const text = e.clipboardData.getData("text");
     if (!text) return;
@@ -541,10 +550,46 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
 
         {/* ── Action buttons ── */}
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" block={false} onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
-            <UploadIcon size={14} />
-            Upload CSV/Excel
-          </Button>
+          <Popover
+            label="Import"
+            trigger={
+              <>
+                <UploadIcon size={14} />
+                Import
+              </>
+            }
+            triggerClassName="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2 font-body text-sm font-medium text-navy-700 transition-all duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
+            className="w-44 p-1.5"
+          >
+            {(close) => (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    close();
+                    openFilePicker(".csv");
+                  }}
+                  disabled={isLoading}
+                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                >
+                  Import CSV
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    close();
+                    openFilePicker(".xlsx");
+                  }}
+                  disabled={isLoading}
+                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                >
+                  Import Excel
+                </button>
+              </>
+            )}
+          </Popover>
           <Button type="button" variant="outline" block={false} onClick={() => setShowPaste((v) => !v)} disabled={isLoading}>
             {showPaste ? "Hide Paste" : "Paste CSV"}
           </Button>
