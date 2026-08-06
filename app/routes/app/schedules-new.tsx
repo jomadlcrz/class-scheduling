@@ -47,6 +47,7 @@ import {
   formatTime,
   type Day,
   type Schedule,
+  type ScheduleMode,
   type ScheduleSemester,
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
@@ -424,6 +425,41 @@ function SchedulesNewPage() {
 
   function handleConfirmMove(suggestion: ScheduleSuggestion) {
     setPendingMove(suggestion);
+  }
+
+  /**
+   * merge_places_at: valid slots for this subject already exist and no other saved
+   * session needs to move — merge suggestion.placesAt straight into the draft slots.
+   * Client-side only, no API call, and never followed by Resolve (moves is empty).
+   */
+  function handleUseSuggestedSlots(suggestion: ScheduleSuggestion) {
+    const placesAt = suggestion.placesAt ?? [];
+    if (placesAt.length === 0) return;
+
+    const newSlots: PendingSlot[] = placesAt.map((p) => {
+      tempIdCounter.current += 1;
+      const subjectId = p.subjectId ?? suggestion.subjectId ?? 0;
+      const subjectCode = p.subjectCode ?? suggestion.subjectCode ?? "";
+      const matchedSubject = subjects.find((s) => s.id === subjectId);
+      return {
+        tempId: `tmp-${tempIdCounter.current}`,
+        subjectId,
+        subjectCode,
+        subjectTitle: matchedSubject?.title ?? subjectCode,
+        day: DAY_LABEL_TO_KEY[p.day] ?? "M",
+        startTime: normalizeTime(p.start),
+        endTime: normalizeTime(p.end),
+        facultyId: p.instructorId ?? suggestion.instructorId ?? null,
+        facultyName: p.instructorName ?? suggestion.instructorName ?? "",
+        roomId: p.roomId ?? null,
+        roomName: p.room ?? "",
+        mode: (p.mode as ScheduleMode) ?? "F2F",
+        sessionType: p.sessionType ?? (p.isLab ? "Lab" : "Lecture"),
+      };
+    });
+
+    setSlots((current) => [...current, ...newSlots]);
+    toast.success(`Added ${newSlots.length} suggested slot(s) to the preview.`);
   }
 
   async function executePendingMove() {
@@ -850,6 +886,7 @@ function SchedulesNewPage() {
                 onEditConflict={openConflictDrawer}
                 onApplySuggestion={handleApplySuggestion}
                 onConfirmMove={handleConfirmMove}
+                onUseSuggestedSlots={handleUseSuggestedSlots}
                 onResolve={() => setResolveOpen(true)}
               />
             )}

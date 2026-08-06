@@ -232,7 +232,11 @@ type RepackMove = {
   apply: { method: string; path: string; body: Record<string, unknown> };
 };
 
-/** Where the previously-unplaceable subject lands once the repack's moves are applied. */
+/**
+ * Where the previously-unplaceable subject lands once the repack's moves are applied
+ * (or, for `merge_places_at`, the ready-to-save slot itself — these rows already carry
+ * every field `createRegular` needs, since there is nothing left to resolve).
+ */
 type RepackPlacement = {
   day: string;
   start: string;
@@ -240,6 +244,12 @@ type RepackPlacement = {
   room: string;
   roomId: number;
   isLab: boolean;
+  subjectId: number;
+  subjectCode: string;
+  instructorId: number;
+  instructorName: string;
+  mode: string;
+  sessionType: "Lecture" | "Lab";
 };
 
 /** A saved session the repack has no legal home for afterwards — the trade-off cost. */
@@ -255,6 +265,8 @@ type RepackDisplaced = {
 
 export type ScheduleSuggestion = {
   type: "subject_hour_override" | "move_existing_session" | "repack_instructor";
+  /** Only present for repack_instructor — which of the three repack flows this is. */
+  strategy?: "merge_places_at" | "repack_instructor" | "move_session_chain";
   subjectId?: number;
   subjectCode?: string;
   setId?: number;
@@ -441,6 +453,12 @@ async function autoGenerate(input: {
           room: p.room,
           roomId: p.room_id,
           isLab: p.is_lab,
+          subjectId: p.subject_id,
+          subjectCode: p.subject_code,
+          instructorId: p.instructor_id,
+          instructorName: p.instructor_name,
+          mode: p.mode,
+          sessionType: p.session_type,
         })) as RepackPlacement[] | undefined,
         displaces: (r.displaces as Record<string, unknown>[] | undefined)?.map((d) => ({
           scheduleId: d.schedule_id,

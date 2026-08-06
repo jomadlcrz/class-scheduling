@@ -35,6 +35,20 @@ export function AutoGenerateIcon() {
   );
 }
 
+/**
+ * A repack_instructor suggestion with no moves is `merge_places_at`: valid slots
+ * already exist for this subject and nothing else needs to move. Resolve applies
+ * zero moves and returns the same incomplete preview every time, so this strategy
+ * gets its own client-side "Use suggested slots" card instead of the Resolve button.
+ */
+function isMergePlacesAt(suggestion: ScheduleSuggestion) {
+  return (
+    suggestion.type === "repack_instructor" &&
+    (suggestion.strategy === "merge_places_at" ||
+      ((suggestion.moves?.length ?? 0) === 0 && (suggestion.placesAt?.length ?? 0) > 0))
+  );
+}
+
 /** Subject-placement failures from the last auto-generate run. Render only when non-empty. */
 export function GenerationConflictsAlert({
   conflicts,
@@ -43,6 +57,7 @@ export function GenerationConflictsAlert({
   onEditConflict,
   onApplySuggestion,
   onConfirmMove,
+  onUseSuggestedSlots,
   onResolve,
 }: {
   conflicts: string[];
@@ -51,11 +66,17 @@ export function GenerationConflictsAlert({
   onEditConflict?: (conflict: string) => void;
   onApplySuggestion?: (suggestion: ScheduleSuggestion) => void;
   onConfirmMove?: (suggestion: ScheduleSuggestion) => void;
+  onUseSuggestedSlots?: (suggestion: ScheduleSuggestion) => void;
   onResolve?: () => void;
 }) {
   const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
   const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
-  const repackSuggestions = (suggestions ?? []).filter((s) => s.type === "repack_instructor");
+  const mergeSuggestions = (suggestions ?? []).filter(isMergePlacesAt);
+  const repackSuggestions = (suggestions ?? []).filter(
+    (s) => s.type === "repack_instructor" && !isMergePlacesAt(s),
+  );
+  // merge_places_at never goes through Resolve — moves is empty, so a Resolve pass
+  // applies nothing and returns the same incomplete preview every time.
   const hasAutoResolvableSuggestion = [...moveSuggestions, ...repackSuggestions].some(
     (suggestion) => suggestion.apply && (suggestion.displaces?.length ?? 0) === 0,
   );
@@ -94,8 +115,16 @@ export function GenerationConflictsAlert({
           </div>
         )}
 
-        {repackSuggestions.length > 0 && (
+        {mergeSuggestions.length > 0 && (
           <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+            {mergeSuggestions.map((s, i) => (
+              <MergePlacesAtCard key={i} suggestion={s} onUse={onUseSuggestedSlots} />
+            ))}
+          </div>
+        )}
+
+        {repackSuggestions.length > 0 && (
+          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 || mergeSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
             {repackSuggestions.map((s, i) => (
               <RepackSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
             ))}
@@ -103,7 +132,7 @@ export function GenerationConflictsAlert({
         )}
 
         {overrideSuggestions.length > 0 && (
-          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 || repackSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 || mergeSuggestions.length > 0 || repackSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
             {overrideSuggestions.map((s, i) => (
               <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
             ))}
@@ -168,6 +197,77 @@ function MoveSuggestionCard({
             Apply &amp; regenerate
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * `merge_places_at`: valid slots for this subject already exist and no other
+ * saved session needs to move. Applying is client-side only (merge into the
+ * preview, then Save) — there is nothing for Resolve to do.
+ */
+function MergePlacesAtCard({
+  suggestion,
+  onUse,
+}: {
+  suggestion: ScheduleSuggestion;
+  onUse?: (suggestion: ScheduleSuggestion) => void;
+}) {
+  const [applied, setApplied] = useState(false);
+  const placesAt = suggestion.placesAt ?? [];
+
+  return (
+    <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 p-3 dark:border-emerald-400/25 dark:bg-emerald-400/5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+            {suggestion.subjectCode}
+            {suggestion.setName && (
+              <span className="ml-1.5 inline-block rounded-full border border-blue-200 bg-blue-100 px-1.5 py-0 font-body text-[0.65rem] font-medium text-blue-700 dark:border-navy-300/30 dark:bg-navy-300/10 dark:text-navy-300">
+                {suggestion.setName}
+              </span>
+            )}
+          </p>
+          <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+            Could not be auto-combined with the rest of this set, but these slots are valid:
+          </p>
+          <div className="mt-1.5 flex flex-col gap-0.5">
+            {placesAt.map((p, i) => (
+              <p key={i} className="font-body text-xs text-slate-600 dark:text-slate-300">
+                {p.day} {p.start}–{p.end} · {p.room}
+                {suggestion.instructorName && <> ({suggestion.instructorName})</>}
+              </p>
+            ))}
+          </div>
+          <p className="mt-1 font-body text-[0.7rem] text-slate-400 dark:text-slate-500">
+            No other sets need to move.
+          </p>
+          {suggestion.reason && (
+            <p className="mt-1 font-body text-[0.7rem] text-slate-400 italic dark:text-slate-500">
+              Why: {suggestion.reason}
+            </p>
+          )}
+        </div>
+        {placesAt.length > 0 &&
+          (applied ? (
+            <span className="shrink-0 font-body text-[0.7rem] font-semibold text-emerald-700 dark:text-emerald-300">
+              Added to preview
+            </span>
+          ) : (
+            onUse && (
+              <button
+                type="button"
+                onClick={() => {
+                  onUse(suggestion);
+                  setApplied(true);
+                }}
+                className="shrink-0 rounded-lg border border-emerald-300 bg-emerald-100 px-2.5 py-1 font-body text-[0.7rem] font-semibold text-emerald-800 transition-colors duration-150 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
+              >
+                Use suggested slots
+              </button>
+            )
+          ))}
       </div>
     </div>
   );
