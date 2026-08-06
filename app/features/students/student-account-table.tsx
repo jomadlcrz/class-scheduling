@@ -1,4 +1,4 @@
-﻿import { Button } from "~/components/ui/button";
+﻿import { Checkbox } from "~/components/ui/checkbox";
 import { ArchiveIcon, EyeIcon, GraduationCapIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
@@ -21,12 +21,18 @@ type StudentAccountTableProps = {
   students: StudentAccountRow[];
   /** Per-row login status fetched from GET /super-admin/student-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
   accountActiveById: Record<number, boolean | undefined>;
-  onCreateAccount: ((student: StudentAccountRow) => void) | null;
   onView: ((student: StudentAccountRow) => void) | null;
   onEnroll: ((student: StudentAccountRow) => void) | null;
   onDeactivateAccount: ((student: StudentAccountRow) => void) | null;
   onReactivateAccount: ((student: StudentAccountRow) => void) | null;
   onArchiveProfile: ((student: StudentAccountRow) => void) | null;
+  /**
+   * Bulk "Create Account" selection — pass all three to render a checkbox column
+   * (only for students that don't already have an account). Omit to hide it entirely.
+   */
+  selectedIds?: Set<number>;
+  onToggleSelect?: (student: StudentAccountRow, checked: boolean) => void;
+  onSelectAll?: (checked: boolean, students: StudentAccountRow[]) => void;
 };
 
 const actionButtonClassName =
@@ -37,16 +43,34 @@ const labeledActionButtonClassName =
 export function StudentAccountTable({
   students,
   accountActiveById,
-  onCreateAccount,
   onView,
   onEnroll,
   onDeactivateAccount,
   onReactivateAccount,
   onArchiveProfile,
+  selectedIds,
+  onToggleSelect,
+  onSelectAll,
 }: StudentAccountTableProps) {
+  const canBulkSelect = Boolean(selectedIds && onToggleSelect && onSelectAll);
+  const selectableStudents = students.filter((s) => !s.hasAccount);
+  const allSelectableSelected =
+    selectableStudents.length > 0 && selectableStudents.every((s) => selectedIds?.has(s.studentProfileId));
+
   return (
     <Table>
       <TableHead>
+        {canBulkSelect && (
+          <TableHeader className="w-10">
+            <Checkbox
+              id="student-account-select-all"
+              ariaLabel="Select all students without an account"
+              inset
+              checked={allSelectableSelected}
+              onChange={(checked) => onSelectAll?.(checked, selectableStudents)}
+            />
+          </TableHeader>
+        )}
         <TableHeader>Student ID</TableHeader>
         <TableHeader>Name</TableHeader>
         <TableHeader className="hidden sm:table-cell">Program</TableHeader>
@@ -60,6 +84,19 @@ export function StudentAccountTable({
           const isActive = accountActiveById[student.studentProfileId];
           return (
           <TableRow key={student.studentProfileId}>
+            {canBulkSelect && (
+              <TableCell>
+                {!student.hasAccount && (
+                  <Checkbox
+                    id={`student-account-select-${student.studentProfileId}`}
+                    ariaLabel={`Select ${displayName(student)}`}
+                    inset
+                    checked={selectedIds?.has(student.studentProfileId) ?? false}
+                    onChange={(checked) => onToggleSelect?.(student, checked)}
+                  />
+                )}
+              </TableCell>
+            )}
             <TableCell className="text-slate-600 dark:text-slate-300">
               {student.studentId ?? "—"}
             </TableCell>
@@ -110,42 +147,29 @@ export function StudentAccountTable({
                     <ArchiveIcon />
                   </button>
                 )}
-                {onDeactivateAccount && onReactivateAccount && (
-                  student.hasAccount ? (
-                    isActive === undefined ? (
-                      <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
-                    ) : isActive ? (
-                      <button
-                        type="button"
-                        onClick={() => onDeactivateAccount(student)}
-                        aria-label={`Deactivate account for ${displayName(student)}`}
-                        title="Deactivate account"
-                        className={actionButtonClassName}
-                      >
-                        <UserOffIcon />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => onReactivateAccount(student)}
-                        aria-label={`Reactivate account for ${displayName(student)}`}
-                        title="Reactivate account"
-                        className={actionButtonClassName}
-                      >
-                        <UserCheckIcon />
-                      </button>
-                    )
+                {onDeactivateAccount && onReactivateAccount && student.hasAccount && (
+                  isActive === undefined ? (
+                    <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
+                  ) : isActive ? (
+                    <button
+                      type="button"
+                      onClick={() => onDeactivateAccount(student)}
+                      aria-label={`Deactivate account for ${displayName(student)}`}
+                      title="Deactivate account"
+                      className={actionButtonClassName}
+                    >
+                      <UserOffIcon />
+                    </button>
                   ) : (
-                    onCreateAccount && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        block={false}
-                        onClick={() => onCreateAccount(student)}
-                      >
-                        Create Account
-                      </Button>
-                    )
+                    <button
+                      type="button"
+                      onClick={() => onReactivateAccount(student)}
+                      aria-label={`Reactivate account for ${displayName(student)}`}
+                      title="Reactivate account"
+                      className={actionButtonClassName}
+                    >
+                      <UserCheckIcon />
+                    </button>
                   )
                 )}
               </div>

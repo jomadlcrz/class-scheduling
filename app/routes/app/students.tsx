@@ -8,12 +8,12 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { SuccessDone } from "~/components/feedback/success-done";
-import { PlusIcon, SearchIcon } from "~/components/ui/icons";
+import { PlusIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
-import { StudentAccountForm } from "~/features/students/student-account-form";
+import { useStudentAccountFilters } from "~/features/students/student-account-filters";
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentArchiveDialog } from "~/features/students/student-archive-dialog";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
@@ -34,7 +34,6 @@ import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
 import type { ClassSet } from "~/types/set";
 import type {
-  CreateStudentAccountInput,
   CreateStudentRecordInput,
   EnrollStudentInput,
   RegularStudentRow,
@@ -129,8 +128,6 @@ export function StudentsPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createdRecord, setCreatedRecord] = useState(false);
-  const [accountTarget, setAccountTarget] = useState<StudentAccountRow | null>(null);
-  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
   const [enrollTarget, setEnrollTarget] = useState<StudentAccountRow | null>(null);
   const [enrolled, setEnrolled] = useState(false);
@@ -140,6 +137,10 @@ export function StudentsPage() {
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
+
+  // Admin-only: bulk "Create Account" selection, scoped per tab (reset on tab change below).
+  const [selectedForAccount, setSelectedForAccount] = useState<Set<number>>(new Set());
+  const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
 
   // Load student lists based on role
   useEffect(() => {
@@ -241,12 +242,31 @@ export function StudentsPage() {
     }));
   }, [irregularStudents, accountLookup]);
 
+  // Program/Year Level/Set/Student Type/Enrollment State filters — one instance per tab,
+  // each fed that tab's own (unfiltered-by-search) row source.
+  const allTabFilters = useStudentAccountFilters(isAdmin ? studentList ?? [] : allStudentsForRegistrar ?? []);
+  const regularTabFilters = useStudentAccountFilters(normalizedRegularStudents ?? []);
+  const irregularTabFilters = useStudentAccountFilters(normalizedIrregularStudents ?? []);
+
+  const activeTabFilters =
+    activeView === "regular" ? regularTabFilters : activeView === "irregular" ? irregularTabFilters : allTabFilters;
+
+  // Reset per-tab filters and the bulk account-creation selection whenever the tab changes —
+  // filter options are tab-specific and a selection from another tab shouldn't carry over.
+  useEffect(() => {
+    allTabFilters.resetFilters();
+    regularTabFilters.resetFilters();
+    irregularTabFilters.resetFilters();
+    setSelectedForAccount(new Set());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeView]);
+
   const visibleStudents = useMemo(() => {
     // For admin: use studentList from super-admin endpoint
     if (isAdmin) {
       if (!studentList) return [];
       const query = search.trim().toLowerCase();
-      return studentList
+      return allTabFilters.filtered
         .filter((s) => {
           if (
             query &&
@@ -264,7 +284,7 @@ export function StudentsPage() {
     // For registrar: use combined list from regular + irregular endpoints
     if (!allStudentsForRegistrar) return [];
     const query = search.trim().toLowerCase();
-    return allStudentsForRegistrar
+    return allTabFilters.filtered
       .filter((s) => {
         const name = s.studentName ?? `${s.lastName}, ${s.firstName}`;
         if (
@@ -282,12 +302,12 @@ export function StudentsPage() {
         const nameB = b.studentName ?? `${b.lastName}, ${b.firstName}`;
         return nameA.localeCompare(nameB);
       });
-  }, [isAdmin, studentList, allStudentsForRegistrar, search]) as StudentAccountRow[];
+  }, [isAdmin, studentList, allStudentsForRegistrar, allTabFilters.filtered, search]) as StudentAccountRow[];
 
   const visibleRegularStudents = useMemo(() => {
     if (!normalizedRegularStudents) return [];
     const query = regularSearch.trim().toLowerCase();
-    return normalizedRegularStudents
+    return regularTabFilters.filtered
       .filter((s) => {
         if (
           query &&
@@ -299,12 +319,12 @@ export function StudentsPage() {
         return true;
       })
       .sort((a, b) => (a.studentName ?? "").localeCompare(b.studentName ?? ""));
-  }, [normalizedRegularStudents, regularSearch]);
+  }, [normalizedRegularStudents, regularTabFilters.filtered, regularSearch]);
 
   const visibleIrregularStudents = useMemo(() => {
     if (!normalizedIrregularStudents) return [];
     const query = irregularSearch.trim().toLowerCase();
-    return normalizedIrregularStudents
+    return irregularTabFilters.filtered
       .filter((s) => {
         if (
           query &&
@@ -316,11 +336,15 @@ export function StudentsPage() {
         return true;
       })
       .sort((a, b) => (a.studentName ?? "").localeCompare(b.studentName ?? ""));
-  }, [normalizedIrregularStudents, irregularSearch]);
+  }, [normalizedIrregularStudents, irregularTabFilters.filtered, irregularSearch]);
 
   const pagination = usePagination(visibleStudents, resetKey);
   const regularPagination = usePagination(visibleRegularStudents, regularSearch);
   const irregularPagination = usePagination(visibleIrregularStudents, irregularSearch);
+  // Full filtered+searched list for the active tab (not just the current page) — bulk
+  // account creation needs to resolve every selected id's email, not just the visible page.
+  const visibleStudentsForCurrentTab =
+    activeView === "regular" ? visibleRegularStudents : activeView === "irregular" ? visibleIrregularStudents : visibleStudents;
   const pageAccountIds = pagination.pageItems
     .filter((s) => s.hasAccount)
     .map((s) => s.studentProfileId)
@@ -416,18 +440,79 @@ export function StudentsPage() {
     setCreatedRecord(false);
   }
 
-  async function handleCreateAccount(input: CreateStudentAccountInput) {
-    if (!accountTarget) return;
-    const message = await studentService.createAccount(accountTarget.studentProfileId, input);
-    if (message) toast.success(message);
-    setCreatedEmail(input.email);
-    // Refresh the list so the account status updates.
-    studentService.listAccounts().then(setStudentList).catch(() => {});
+  function toggleSelectForAccount(student: StudentAccountRow, checked: boolean) {
+    setSelectedForAccount((current) => {
+      const next = new Set(current);
+      if (checked) next.add(student.studentProfileId);
+      else next.delete(student.studentProfileId);
+      return next;
+    });
   }
 
-  function closeAccountModal() {
-    setAccountTarget(null);
-    setCreatedEmail(null);
+  function selectAllForAccount(checked: boolean, students: StudentAccountRow[]) {
+    setSelectedForAccount((current) => {
+      const next = new Set(current);
+      for (const s of students) {
+        if (checked) next.add(s.studentProfileId);
+        else next.delete(s.studentProfileId);
+      }
+      return next;
+    });
+  }
+
+  /** Bulk "Create Account" — each selected student's own email is used (same default the single-create form offers). */
+  async function handleBulkCreateAccounts() {
+    const targets = visibleStudentsForCurrentTab.filter((s) => selectedForAccount.has(s.studentProfileId));
+    if (targets.length === 0) return;
+
+    const withEmail = targets.filter((s) => s.email);
+    const missingEmail = targets.filter((s) => !s.email);
+
+    const results = await Promise.allSettled(
+      withEmail.map((s) =>
+        studentService
+          .createAccount(s.studentProfileId, { email: s.email as string, roleName: "Student" })
+          .then((message) => ({ student: s, message })),
+      ),
+    );
+
+    const succeeded: { student: StudentAccountRow; message: string }[] = [];
+    const failed: { student: StudentAccountRow; error: string }[] = [];
+    results.forEach((result, i) => {
+      if (result.status === "fulfilled") succeeded.push(result.value);
+      else failed.push({ student: withEmail[i], error: result.reason instanceof Error ? result.reason.message : "" });
+    });
+
+    setSelectedForAccount((current) => {
+      const next = new Set(current);
+      for (const { student } of succeeded) next.delete(student.studentProfileId);
+      return next;
+    });
+    refreshStudentList();
+
+    if (missingEmail.length === 0 && failed.length === 0) {
+      toast.success(succeeded.length === 1 ? succeeded[0].message : `Created ${succeeded.length} account(s).`);
+      return;
+    }
+
+    const parts: string[] = [];
+    if (succeeded.length > 0) parts.push(`${succeeded.length} succeeded`);
+    if (failed.length > 0) {
+      parts.push(
+        `${failed.length} failed: ` +
+          failed.map(({ student, error }) => `${displayStudentName(student)} — ${error || "Unable to create account."}`).join("; "),
+      );
+    }
+    if (missingEmail.length > 0) {
+      parts.push(`${missingEmail.length} skipped (no email on file): ${missingEmail.map(displayStudentName).join(", ")}`);
+    }
+    throw new Error(parts.join(". "));
+  }
+
+  function displayStudentName(s: StudentAccountRow) {
+    if (s.studentName) return s.studentName;
+    const parts = [s.firstName, s.midName].filter(Boolean).join(" ");
+    return parts ? `${s.lastName}, ${parts}` : s.lastName;
   }
 
   async function handleEnroll(input: EnrollStudentInput) {
@@ -563,6 +648,11 @@ export function StudentsPage() {
               <PlusIcon />
               New Student
             </Button>
+          ) : selectedForAccount.size > 0 ? (
+            <Button type="button" block={false} onClick={() => setBulkCreateOpen(true)}>
+              <UserCheckIcon />
+              Create Accounts ({selectedForAccount.size})
+            </Button>
           ) : undefined
         }
       />
@@ -609,6 +699,8 @@ export function StudentsPage() {
             </div>
           </div>
 
+          {activeTabFilters.filterBar}
+
           {isAdmin ? (
             // Admin view: uses super-admin endpoint with account info
             loadError ? (
@@ -630,12 +722,14 @@ export function StudentsPage() {
                 <StudentAccountTable
                   students={pagination.pageItems}
                   accountActiveById={accountActiveById}
-                  onCreateAccount={setAccountTarget}
                   onView={setViewTarget}
                   onEnroll={null}
                   onDeactivateAccount={setDeactivateAccountTarget}
                   onReactivateAccount={setReactivateAccountTarget}
                   onArchiveProfile={setArchiveTarget}
+                  selectedIds={selectedForAccount}
+                  onToggleSelect={toggleSelectForAccount}
+                  onSelectAll={selectAllForAccount}
                 />
                 <Pagination
                   page={pagination.page}
@@ -677,7 +771,6 @@ export function StudentsPage() {
                     academics: s.academics,
                   }))}
                   accountActiveById={{}}
-                  onCreateAccount={null}
                   onView={setViewTarget}
                   onEnroll={setEnrollTarget}
                   onDeactivateAccount={null}
@@ -713,6 +806,8 @@ export function StudentsPage() {
             </div>
           </div>
 
+          {activeTabFilters.filterBar}
+
           {regularLoadError ? (
             <ResultState tone="error" title="Unable to load">
               {regularLoadError}
@@ -732,12 +827,14 @@ export function StudentsPage() {
               <StudentAccountTable
                 students={regularPagination.pageItems}
                 accountActiveById={accountActiveById}
-                onCreateAccount={isAdmin ? setAccountTarget : null}
                 onView={setViewTarget}
                 onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
                 onArchiveProfile={setArchiveTarget}
+                selectedIds={isAdmin ? selectedForAccount : undefined}
+                onToggleSelect={isAdmin ? toggleSelectForAccount : undefined}
+                onSelectAll={isAdmin ? selectAllForAccount : undefined}
               />
               <Pagination
                 page={regularPagination.page}
@@ -767,6 +864,8 @@ export function StudentsPage() {
             </div>
           </div>
 
+          {activeTabFilters.filterBar}
+
           {irregularLoadError ? (
             <ResultState tone="error" title="Unable to load">
               {irregularLoadError}
@@ -786,12 +885,14 @@ export function StudentsPage() {
               <StudentAccountTable
                 students={irregularPagination.pageItems}
                 accountActiveById={accountActiveById}
-                onCreateAccount={isAdmin ? setAccountTarget : null}
                 onView={setViewTarget}
                 onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
                 onArchiveProfile={setArchiveTarget}
+                selectedIds={isAdmin ? selectedForAccount : undefined}
+                onToggleSelect={isAdmin ? toggleSelectForAccount : undefined}
+                onSelectAll={isAdmin ? selectAllForAccount : undefined}
               />
               <Pagination
                 page={irregularPagination.page}
@@ -825,28 +926,6 @@ export function StudentsPage() {
           />
         )}
       </Modal>
-
-      {isAdmin && (
-        <Modal
-          open={accountTarget !== null}
-          onClose={closeAccountModal}
-          title="Create Student Account"
-        >
-          {createdEmail ? (
-            <SuccessDone title="Account created" onDone={closeAccountModal}>
-              Login credentials with a temporary password were emailed to {createdEmail}.
-            </SuccessDone>
-          ) : (
-            accountTarget && (
-              <StudentAccountForm
-                student={accountTarget}
-                onSubmit={handleCreateAccount}
-                onCancel={closeAccountModal}
-              />
-            )
-          )}
-        </Modal>
-      )}
 
       <Modal
         open={viewTarget !== null}
@@ -916,6 +995,18 @@ export function StudentsPage() {
               {reactivateAccountTarget?.studentName || `${reactivateAccountTarget?.firstName} ${reactivateAccountTarget?.lastName}`}
             </span>{" "}
             will be able to log in again.
+          </ConfirmDialog>
+
+          <ConfirmDialog
+            open={bulkCreateOpen}
+            onClose={() => setBulkCreateOpen(false)}
+            title="Create student accounts"
+            confirmLabel={`Create ${selectedForAccount.size} account(s)`}
+            loadingLabel="Creating…"
+            onConfirm={handleBulkCreateAccounts}
+          >
+            {selectedForAccount.size} student(s) will each get a login account using the email already on their
+            profile, with a temporary password emailed to them.
           </ConfirmDialog>
         </>
       )}
