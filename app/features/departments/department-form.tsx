@@ -4,6 +4,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { FileChooser } from "~/components/ui/file-chooser";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
 import { departmentSchema } from "~/schemas/department.schema";
@@ -125,9 +126,7 @@ export function DepartmentForm({
       <FormError message={error} />
 
       <div className="flex flex-col gap-1.5">
-        <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
-          Logo{!isEdit && " (optional)"}
-        </span>
+        <Label htmlFor="dept-logo-file">Logo{!isEdit && " (optional)"}</Label>
         <div className="flex items-center gap-3">
           <img
             src={isEdit ? departmentLogoSrc(logoUrl) : departmentLogoSrc(logoPreview)}
@@ -139,15 +138,13 @@ export function DepartmentForm({
             <FileChooser
               id="dept-logo-file"
               accept="image/jpeg,image/png,image/webp"
-              hint={
-                logoSaving
-                  ? "Uploading…"
-                  : "JPG, PNG, or WEBP, up to 5 MB."
-              }
               onChange={isEdit ? handleLogoUpload : handleLogoSelect}
             />
           </div>
         </div>
+        <p className="font-body text-xs text-slate-400 dark:text-slate-500">
+          {logoSaving ? "Uploading…" : "JPG, PNG, or WEBP, up to 5 MB."}
+        </p>
         {logoError && <p className="font-body text-xs text-red-600 dark:text-red-400">{logoError}</p>}
         {isEdit && logoUrl && (
           <Button
