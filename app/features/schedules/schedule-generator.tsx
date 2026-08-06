@@ -1,7 +1,8 @@
+import { motion } from "motion/react";
 import { useCallback, useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { AlertTriangleIcon, EditIcon } from "~/components/ui/icons";
+import { AlertIcon, AlertTriangleIcon, EditIcon } from "~/components/ui/icons";
 import {
   scheduleService,
   type AutoGenerateResolution,
@@ -11,6 +12,12 @@ import {
 import { formatDecimalHour } from "~/lib/time";
 import type { ScheduleSemester } from "~/types/schedule";
 import type { YearLevel } from "~/types/subject";
+
+// Matches app/components/ui/alert.tsx's own transition, so the multi-alert group
+// this component now renders fades in/out the same way a single Alert used to —
+// AnimatePresence in the caller only animates its own direct child (this component's
+// root), not the Alerts nested a level deeper inside it.
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -49,6 +56,57 @@ function isMergePlacesAt(suggestion: ScheduleSuggestion) {
   );
 }
 
+type ConflictSeverity = "error" | "warning" | "info";
+
+/**
+ * Classifies one `conflicts[]` line so the banner matches what actually happened —
+ * backend contract from docs/frontend-api/06-schedules-validated-last-resort.md:
+ *   - "Could not fit …"      → error: the subject is genuinely missing from the grid.
+ *   - "validated last resort" → info: subject IS placed; review is optional.
+ *   - back-to-back / SAME day → warning: placed, but a soft preference was relaxed.
+ * `suggestions[]` are only ever emitted alongside "Could not fit" lines, so action
+ * cards and the Resolve button stay scoped to the error group.
+ */
+function classifyConflict(message: string): ConflictSeverity {
+  if (message.startsWith("Could not fit")) return "error";
+  if (message.includes("validated last resort")) return "info";
+  if (message.includes("back-to-back") || message.includes("SAME day")) return "warning";
+  return "info";
+}
+
+function ConflictList({
+  conflicts,
+  subjectCodes,
+  onEditConflict,
+}: {
+  conflicts: string[];
+  subjectCodes: string[];
+  onEditConflict?: (conflict: string) => void;
+}) {
+  return (
+    <ul className="list-disc space-y-1 pl-4">
+      {conflicts.map((c, i) => (
+        <li key={i}>
+          {highlightSubjectCodes(c, subjectCodes)}
+          {onEditConflict && /\bmoving\b.*\bfrom\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\bto\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\(/i.test(c) && (
+            <>
+              {" "}
+              <button
+                type="button"
+                onClick={() => onEditConflict(c)}
+                className="inline-flex items-center gap-0.5 rounded border border-amber-300 bg-amber-100 px-1.5 py-0 font-body text-[0.6rem] font-semibold text-amber-800 align-baseline transition-colors duration-150 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-gold-400/30 dark:bg-gold-400/15 dark:text-gold-300 dark:hover:bg-gold-400/25"
+              >
+                <EditIcon />
+                Edit
+              </button>
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** Subject-placement failures from the last auto-generate run. Render only when non-empty. */
 export function GenerationConflictsAlert({
   conflicts,
@@ -80,74 +138,139 @@ export function GenerationConflictsAlert({
   const hasAutoResolvableSuggestion = [...moveSuggestions, ...repackSuggestions].some(
     (suggestion) => suggestion.apply && (suggestion.displaces?.length ?? 0) === 0,
   );
+
+  const errorConflicts = conflicts.filter((c) => classifyConflict(c) === "error");
+  const warningConflicts = conflicts.filter((c) => classifyConflict(c) === "warning");
+  const infoConflicts = conflicts.filter((c) => classifyConflict(c) === "info");
+  const hasActions =
+    moveSuggestions.length > 0 ||
+    mergeSuggestions.length > 0 ||
+    repackSuggestions.length > 0 ||
+    overrideSuggestions.length > 0 ||
+    (hasAutoResolvableSuggestion && Boolean(onResolve));
+
   return (
-    <Alert variant="warning">
-      <AlertTriangleIcon />
-      <AlertDescription>
-        {conflicts.length > 0 && (
-          <ul className="list-disc space-y-1 pl-4">
-            {conflicts.map((c, i) => (
-              <li key={i}>
-                {highlightSubjectCodes(c, subjectCodes)}
-                {onEditConflict && /\bmoving\b.*\bfrom\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\bto\b.*\b\d{1,2}:\d{2}\s*(?:AM|PM)\b.*\(/i.test(c) && (
-                  <>
-                    {" "}
-                    <button
-                      type="button"
-                      onClick={() => onEditConflict(c)}
-                      className="inline-flex items-center gap-0.5 rounded border border-amber-300 bg-amber-100 px-1.5 py-0 font-body text-[0.6rem] font-semibold text-amber-800 align-baseline transition-colors duration-150 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-gold-400/30 dark:bg-gold-400/15 dark:text-gold-300 dark:hover:bg-gold-400/25"
-                    >
-                      <EditIcon />
-                      Edit
-                    </button>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+    <motion.div
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+      transition={{ duration: 0.25, ease: EASE_OUT }}
+      className="flex flex-col gap-3"
+    >
+      {errorConflicts.length > 0 && (
+        <Alert variant="destructive">
+          <AlertIcon />
+          <AlertDescription>
+            <ConflictList conflicts={errorConflicts} subjectCodes={subjectCodes} onEditConflict={onEditConflict} />
 
-        {moveSuggestions.length > 0 && (
-          <div className={`${conflicts.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
-            {moveSuggestions.map((s, i) => (
-              <MoveSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
-            ))}
-          </div>
-        )}
+            {moveSuggestions.length > 0 && (
+              <div className="mt-3 flex flex-col gap-2">
+                {moveSuggestions.map((s, i) => (
+                  <MoveSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
+                ))}
+              </div>
+            )}
 
-        {mergeSuggestions.length > 0 && (
-          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
-            {mergeSuggestions.map((s, i) => (
-              <MergePlacesAtCard key={i} suggestion={s} onUse={onUseSuggestedSlots} />
-            ))}
-          </div>
-        )}
+            {mergeSuggestions.length > 0 && (
+              <div className="mt-3 flex flex-col gap-2">
+                {mergeSuggestions.map((s, i) => (
+                  <MergePlacesAtCard key={i} suggestion={s} onUse={onUseSuggestedSlots} />
+                ))}
+              </div>
+            )}
 
-        {repackSuggestions.length > 0 && (
-          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 || mergeSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
-            {repackSuggestions.map((s, i) => (
-              <RepackSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
-            ))}
-          </div>
-        )}
+            {repackSuggestions.length > 0 && (
+              <div className="mt-3 flex flex-col gap-2">
+                {repackSuggestions.map((s, i) => (
+                  <RepackSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
+                ))}
+              </div>
+            )}
 
-        {overrideSuggestions.length > 0 && (
-          <div className={`${conflicts.length > 0 || moveSuggestions.length > 0 || mergeSuggestions.length > 0 || repackSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
-            {overrideSuggestions.map((s, i) => (
-              <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
-            ))}
-          </div>
-        )}
+            {overrideSuggestions.length > 0 && (
+              <div className="mt-3 flex flex-col gap-2">
+                {overrideSuggestions.map((s, i) => (
+                  <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
+                ))}
+              </div>
+            )}
 
-        {conflicts.length > 0 && hasAutoResolvableSuggestion && onResolve && (
-          <div className="mt-3">
-            <Button type="button" variant="outline" block={false} onClick={onResolve}>
-              Resolve conflicts
-            </Button>
-          </div>
-        )}
-      </AlertDescription>
-    </Alert>
+            {hasAutoResolvableSuggestion && onResolve && (
+              <div className="mt-3">
+                <Button type="button" variant="outline" block={false} onClick={onResolve}>
+                  Resolve conflicts
+                </Button>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {warningConflicts.length > 0 && (
+        <Alert variant="warning">
+          <AlertTriangleIcon />
+          <AlertDescription>
+            <ConflictList conflicts={warningConflicts} subjectCodes={subjectCodes} />
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {infoConflicts.length > 0 && (
+        <Alert variant="info">
+          <AlertDescription>
+            <ConflictList conflicts={infoConflicts} subjectCodes={subjectCodes} />
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Backend contract ties every suggestion to a "Could not fit" line, so this
+          should be unreachable — kept as a safety net rather than silently dropping
+          actionable suggestions if that contract ever changes. */}
+      {errorConflicts.length === 0 && hasActions && (
+        <Alert variant="warning">
+          <AlertTriangleIcon />
+          <AlertDescription>
+            {moveSuggestions.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {moveSuggestions.map((s, i) => (
+                  <MoveSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
+                ))}
+              </div>
+            )}
+            {mergeSuggestions.length > 0 && (
+              <div className={`${moveSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+                {mergeSuggestions.map((s, i) => (
+                  <MergePlacesAtCard key={i} suggestion={s} onUse={onUseSuggestedSlots} />
+                ))}
+              </div>
+            )}
+            {repackSuggestions.length > 0 && (
+              <div className={`${moveSuggestions.length > 0 || mergeSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+                {repackSuggestions.map((s, i) => (
+                  <RepackSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
+                ))}
+              </div>
+            )}
+            {overrideSuggestions.length > 0 && (
+              <div
+                className={`${moveSuggestions.length > 0 || mergeSuggestions.length > 0 || repackSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}
+              >
+                {overrideSuggestions.map((s, i) => (
+                  <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
+                ))}
+              </div>
+            )}
+            {hasAutoResolvableSuggestion && onResolve && (
+              <div className="mt-3">
+                <Button type="button" variant="outline" block={false} onClick={onResolve}>
+                  Resolve conflicts
+                </Button>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+    </motion.div>
   );
 }
 
