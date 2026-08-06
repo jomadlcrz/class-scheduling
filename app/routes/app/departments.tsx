@@ -1,5 +1,4 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -13,8 +12,6 @@ import { Spinner } from "~/components/ui/spinner";
 import { DepartmentForm } from "~/features/departments/department-form";
 import { DepartmentArchiveDialog } from "~/features/departments/department-archive-dialog";
 import { DepartmentGridView } from "~/features/departments/department-grid-view";
-import { DepartmentTable } from "~/features/departments/department-table";
-import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
@@ -44,7 +41,6 @@ function DepartmentsPage() {
   const [departmentTypes, setDepartmentTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [buildingFilter, setBuildingFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Department | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Department | null>(null);
@@ -75,7 +71,6 @@ function DepartmentsPage() {
   }, [depts, search, buildingFilter]);
 
   const pagination = usePagination(visibleDepts, resetKey);
-  const reduceMotion = useReducedMotion();
 
   // Mutations return only a message, so the list is refetched afterwards.
   async function refresh() {
@@ -123,39 +118,29 @@ function DepartmentsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="relative w-full sm:w-64">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                <SearchIcon />
-              </span>
-              <input
-                id="dept-search"
-                type="search"
-                placeholder="Code or name…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                aria-label="Search"
-                className={`${inputClassName} pl-9 pr-4`}
-              />
-            </div>
-            <div className="flex w-full items-end justify-between gap-3 sm:w-auto sm:justify-start">
-              <FilterDropdown
-                id="dept-building-filter"
-                label="Building"
-                allLabel="All buildings"
-                options={buildings.map((b) => ({ value: b.name, label: b.name }))}
-                value={buildingFilter}
-                onChange={setBuildingFilter}
-              />
-              <div className="sm:hidden">
-                <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Department view" />
-              </div>
-            </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="relative w-full sm:w-64">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
+              id="dept-search"
+              type="search"
+              placeholder="Code or name…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search"
+              className={`${inputClassName} pl-9 pr-4`}
+            />
           </div>
-          <div className="hidden sm:block">
-            <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Department view" />
-          </div>
+          <FilterDropdown
+            id="dept-building-filter"
+            label="Building"
+            allLabel="All buildings"
+            options={buildings.map((b) => ({ value: b.name, label: b.name }))}
+            value={buildingFilter}
+            onChange={setBuildingFilter}
+          />
         </div>
 
         {depts === null ? (
@@ -172,29 +157,11 @@ function DepartmentsPage() {
           </EmptyState>
         ) : (
           <>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={viewMode}
-                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
-              >
-                {viewMode === "grid" ? (
-                  <DepartmentGridView
-                    departments={pagination.pageItems}
-                    onEdit={setEditTarget}
-                    onArchive={setArchiveTarget}
-                  />
-                ) : (
-                  <DepartmentTable
-                    departments={pagination.pageItems}
-                    onEdit={setEditTarget}
-                    onArchive={setArchiveTarget}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <DepartmentGridView
+              departments={pagination.pageItems}
+              onEdit={setEditTarget}
+              onArchive={setArchiveTarget}
+            />
             <Pagination
               page={pagination.page}
               totalItems={pagination.totalItems}

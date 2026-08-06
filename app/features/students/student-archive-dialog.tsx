@@ -29,7 +29,13 @@ export function StudentArchiveDialog({ student, onClose, onConfirm }: StudentArc
   const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
-    if (!student) return;
+    if (!student) {
+      // Clear the previous student's preview immediately — otherwise a stale
+      // `preview` keeps the render on the "loaded" branch below for one tick
+      // while `student` is already null (e.g. right after a successful archive).
+      setPreview(null);
+      return;
+    }
     setPreview(null);
     setError(null);
     setConfirmValue("");
@@ -79,11 +85,11 @@ export function StudentArchiveDialog({ student, onClose, onConfirm }: StudentArc
             </Button>
           </div>
         </div>
-      ) : preview ? (
+      ) : preview && student ? (
         <div className="flex flex-col gap-4">
           <p className="font-body text-sm text-slate-600 dark:text-slate-300">
             Archiving removes{" "}
-            <span className="font-medium text-navy-700 dark:text-mist-100">{displayName(student!)}</span> from
+            <span className="font-medium text-navy-700 dark:text-mist-100">{displayName(student)}</span> from
             active lists. Academic history is preserved and can be restored from Archive at any time.
           </p>
           <ul className="flex flex-col gap-2 font-body text-sm text-slate-600 dark:text-slate-300">
