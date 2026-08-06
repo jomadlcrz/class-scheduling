@@ -188,50 +188,50 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
       ) : (
         <Table>
           <TableHead>
-            <TableHeader>Student</TableHeader>
-            <TableHeader>Student ID</TableHeader>
-            <TableHeader className="hidden sm:table-cell">Program</TableHeader>
-            <TableHeader className="hidden md:table-cell">Year Level</TableHeader>
-            <TableHeader className="hidden md:table-cell">Set</TableHeader>
-            <TableHeader className="hidden lg:table-cell">Student Type</TableHeader>
-            <TableHeader>Enrollment State</TableHeader>
-            <TableHeader className="hidden xl:table-cell">Contact</TableHeader>
-            <TableHeader className="hidden lg:table-cell">Account</TableHeader>
+            <TableHeader dense>Student</TableHeader>
+            <TableHeader dense>Student ID</TableHeader>
+            <TableHeader dense className="hidden sm:table-cell">Program</TableHeader>
+            <TableHeader dense className="hidden md:table-cell">Year Level</TableHeader>
+            <TableHeader dense className="hidden md:table-cell">Set</TableHeader>
+            <TableHeader dense className="hidden lg:table-cell">Student Type</TableHeader>
+            <TableHeader dense>Enrollment State</TableHeader>
+            <TableHeader dense className="hidden xl:table-cell">Contact</TableHeader>
+            <TableHeader dense className="hidden lg:table-cell">Account</TableHeader>
           </TableHead>
           <TableBody>
             {filtered.map((r) => (
               <TableRow key={r.studentProfileId}>
-                <TableCell>
-                  <div className="flex items-center gap-2.5">
+                <TableCell dense>
+                  <div className="flex items-center gap-2">
                     {r.profilePhotoUrl ? (
-                      <img src={r.profilePhotoUrl} alt={r.name} className="size-8 shrink-0 rounded-full object-cover" />
+                      <img src={r.profilePhotoUrl} alt={r.name} className="size-6 shrink-0 rounded-full object-cover" />
                     ) : (
-                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
+                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
                         <UserIcon />
                       </span>
                     )}
                     <div className="min-w-0">
-                      <p className="truncate font-body text-sm font-medium text-navy-700 dark:text-mist-100">{r.name}</p>
+                      <p className="truncate font-body text-xs font-medium text-navy-700 dark:text-mist-100">{r.name}</p>
                       {r.email && (
-                        <p className="truncate font-body text-xs text-slate-400 dark:text-slate-500">{r.email}</p>
+                        <p className="truncate font-body text-[0.7rem] text-slate-400 dark:text-slate-500">{r.email}</p>
                       )}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-slate-600 dark:text-slate-300">{r.studentId ?? "—"}</TableCell>
-                <TableCell className="hidden sm:table-cell">{r.program || "—"}</TableCell>
-                <TableCell className="hidden md:table-cell">{r.yearLevel || "—"}</TableCell>
-                <TableCell className="hidden md:table-cell">{r.set ?? "—"}</TableCell>
-                <TableCell className="hidden lg:table-cell">{r.studentType || "—"}</TableCell>
-                <TableCell>
+                <TableCell dense className="text-xs text-slate-600 dark:text-slate-300">{r.studentId ?? "—"}</TableCell>
+                <TableCell dense className="hidden text-xs sm:table-cell">{r.program || "—"}</TableCell>
+                <TableCell dense className="hidden text-xs md:table-cell">{r.yearLevel || "—"}</TableCell>
+                <TableCell dense className="hidden text-xs md:table-cell">{r.set ?? "—"}</TableCell>
+                <TableCell dense className="hidden text-xs lg:table-cell">{r.studentType || "—"}</TableCell>
+                <TableCell dense>
                   {r.enrollmentState ? (
                     <Badge tone={ENROLLMENT_STATE_TONES[r.enrollmentState] ?? "slate"}>{r.enrollmentState}</Badge>
                   ) : (
                     "—"
                   )}
                 </TableCell>
-                <TableCell className="hidden xl:table-cell">{r.mobile ?? r.email ?? "—"}</TableCell>
-                <TableCell className="hidden lg:table-cell">
+                <TableCell dense className="hidden text-xs xl:table-cell">{r.mobile ?? r.email ?? "—"}</TableCell>
+                <TableCell dense className="hidden lg:table-cell">
                   <Badge tone={accountStatusTone(r.accountStatus)}>{r.accountStatus}</Badge>
                 </TableCell>
               </TableRow>

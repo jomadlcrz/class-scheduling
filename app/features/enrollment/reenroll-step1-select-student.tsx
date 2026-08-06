@@ -174,7 +174,7 @@ export function ReenrollStep1SelectStudent({
         ) : (
           <Table>
             <TableHead>
-              <TableHeader className="w-10">
+              <TableHeader dense className="w-10">
                 <Checkbox
                   id="reenroll-select-all"
                   ariaLabel="Select all students"
@@ -183,19 +183,19 @@ export function ReenrollStep1SelectStudent({
                   onChange={(checked) => onSelectAll(checked, results)}
                 />
               </TableHeader>
-              <TableHeader>Student ID</TableHeader>
-              <TableHeader>Name</TableHeader>
-              <TableHeader className="hidden sm:table-cell">Program</TableHeader>
-              <TableHeader className="hidden md:table-cell">Year Level</TableHeader>
-              <TableHeader className="hidden md:table-cell">Enrolled Status</TableHeader>
-              <TableHeader className="hidden lg:table-cell">Account</TableHeader>
+              <TableHeader dense>Student ID</TableHeader>
+              <TableHeader dense>Name</TableHeader>
+              <TableHeader dense className="hidden sm:table-cell">Program</TableHeader>
+              <TableHeader dense className="hidden md:table-cell">Year Level</TableHeader>
+              <TableHeader dense className="hidden md:table-cell">Enrolled Status</TableHeader>
+              <TableHeader dense className="hidden lg:table-cell">Account</TableHeader>
             </TableHead>
             <TableBody>
               {results.map((row) => {
                 const isChecked = selectedIds.has(row.studentProfileId);
                 return (
                   <TableRow key={row.studentProfileId}>
-                    <TableCell>
+                    <TableCell dense>
                       <Checkbox
                         id={`reenroll-student-${row.studentProfileId}`}
                         ariaLabel={`Select ${row.name}`}
@@ -204,14 +204,14 @@ export function ReenrollStep1SelectStudent({
                         onChange={(checked) => onToggleSelect(row, checked)}
                       />
                     </TableCell>
-                    <TableCell className="text-slate-600 dark:text-slate-300">{row.studentId ?? "—"}</TableCell>
-                    <TableCell>
+                    <TableCell dense className="text-slate-600 dark:text-slate-300">{row.studentId ?? "—"}</TableCell>
+                    <TableCell dense>
                       <span className="font-medium text-navy-700 dark:text-mist-100">{row.name}</span>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{row.program || "—"}</TableCell>
-                    <TableCell className="hidden md:table-cell">{row.yearLevel || "—"}</TableCell>
-                    <TableCell className="hidden md:table-cell">{row.enrolledStatus || "—"}</TableCell>
-                    <TableCell className="hidden lg:table-cell">
+                    <TableCell dense className="hidden sm:table-cell">{row.program || "—"}</TableCell>
+                    <TableCell dense className="hidden md:table-cell">{row.yearLevel || "—"}</TableCell>
+                    <TableCell dense className="hidden md:table-cell">{row.enrolledStatus || "—"}</TableCell>
+                    <TableCell dense className="hidden lg:table-cell">
                       <Badge tone="slate">{row.accountStatus}</Badge>
                     </TableCell>
                   </TableRow>

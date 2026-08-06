@@ -21,13 +21,16 @@ export function TableHead({ children }: { children: ReactNode }) {
 export function TableHeader({
   children,
   className,
+  dense,
 }: {
   children?: ReactNode;
   className?: string;
+  /** Tighter padding for data-dense tables (many columns, long lists). */
+  dense?: boolean;
 }) {
   return (
     <th
-      className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${className ?? ""}`}
+      className={`${dense ? "px-3 py-1.5" : "px-4 py-2.5"} text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${className ?? ""}`}
     >
       {children}
     </th>
@@ -61,13 +64,19 @@ export function TableCell({
   children,
   className,
   colSpan,
+  dense,
 }: {
   children?: ReactNode;
   className?: string;
   colSpan?: number;
+  /** Tighter padding for data-dense tables (many columns, long lists). */
+  dense?: boolean;
 }) {
   return (
-    <td colSpan={colSpan} className={`px-4 py-2.5 text-gray-700 dark:text-slate-300 ${className ?? ""}`}>
+    <td
+      colSpan={colSpan}
+      className={`${dense ? "px-3 py-1.5" : "px-4 py-2.5"} text-gray-700 dark:text-slate-300 ${className ?? ""}`}
+    >
       {children}
     </td>
   );

@@ -101,22 +101,22 @@ function EnrollmentPendingSchedulePage() {
         ) : (
           <Table>
             <TableHead>
-              <TableHeader>Student ID</TableHeader>
-              <TableHeader>Name</TableHeader>
-              <TableHeader className="hidden sm:table-cell">Program</TableHeader>
-              <TableHeader className="hidden md:table-cell">Subjects Pending</TableHeader>
-              <TableHeader className="hidden lg:table-cell">Contact</TableHeader>
+              <TableHeader dense>Student ID</TableHeader>
+              <TableHeader dense>Name</TableHeader>
+              <TableHeader dense className="hidden sm:table-cell">Program</TableHeader>
+              <TableHeader dense className="hidden md:table-cell">Subjects Pending</TableHeader>
+              <TableHeader dense className="hidden lg:table-cell">Contact</TableHeader>
             </TableHead>
             <TableBody>
               {filtered.map((s) => (
                 <TableRow key={s.studentProfileId}>
-                  <TableCell className="text-slate-600 dark:text-slate-300">{s.studentId ?? "—"}</TableCell>
-                  <TableCell>
+                  <TableCell dense className="text-slate-600 dark:text-slate-300">{s.studentId ?? "—"}</TableCell>
+                  <TableCell dense>
                     <span className="font-medium text-navy-700 dark:text-mist-100">{s.studentName}</span>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">{s.programTaken || "—"}</TableCell>
-                  <TableCell className="hidden md:table-cell">{s.subjectsEnrolled.length}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{s.mobile ?? s.email ?? "—"}</TableCell>
+                  <TableCell dense className="hidden sm:table-cell">{s.programTaken || "—"}</TableCell>
+                  <TableCell dense className="hidden md:table-cell">{s.subjectsEnrolled.length}</TableCell>
+                  <TableCell dense className="hidden lg:table-cell">{s.mobile ?? s.email ?? "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
