@@ -15,7 +15,6 @@ import { CurriculumTable } from "~/features/curriculum/curriculum-table";
 import { openCurriculumPrint } from "~/features/curriculum/print-curriculum";
 import { ProgramArchiveDialog } from "~/features/programs/program-archive-dialog";
 import { ProgramForm } from "~/features/programs/program-form";
-import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { SubjectArchiveDialog } from "~/features/subjects/subject-archive-dialog";
 import { SubjectForm } from "~/features/subjects/subject-form";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -65,7 +64,6 @@ function ProgramCurriculaPage() {
   const [selectedCode, setSelectedCode] = useState("");
   const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
   const [editProgramTarget, setEditProgramTarget] = useState<Program | null>(null);
   const [archiveProgramTarget, setArchiveProgramTarget] = useState<Program | null>(null);
@@ -206,7 +204,6 @@ function ProgramCurriculaPage() {
                   />
                 </div>
                 <div className="flex items-end justify-end gap-3">
-                  <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Curriculum view" />
                   <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-300 dark:border-white/10">
                     <button
                       type="button"
@@ -259,7 +256,7 @@ function ProgramCurriculaPage() {
           <>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
-                key={`${selectedCode}-${viewMode}`}
+                key={selectedCode}
                 initial={reduceMotion ? false : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
@@ -268,7 +265,6 @@ function ProgramCurriculaPage() {
                 <CurriculumTable
                   curriculum={curriculum}
                   search={search}
-                  viewMode={viewMode}
                   onEditSubject={setEditSubjectTarget}
                   onArchiveSubject={setArchiveSubjectTarget}
                 />

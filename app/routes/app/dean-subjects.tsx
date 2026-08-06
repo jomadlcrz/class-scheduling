@@ -9,7 +9,6 @@ import { GraduationCapIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
-import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
 import { programService } from "~/services/program.service";
@@ -39,7 +38,6 @@ function DeanSubjectsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedProgram, setSelectedProgram] = useState("");
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -48,9 +46,16 @@ function DeanSubjectsPage() {
       programService.list().catch(() => []),
     ])
       .then(([data, progs]) => {
-        setSubjects(data);
+        // deanService.listDepartmentSubjects() can't resolve programAbbrev itself (deans may
+        // lack programs:read) — fill it in here from the separately-fetched /programs list,
+        // matched by name, same as departmentCode below.
+        const withAbbrev = data.map((program) => ({
+          ...program,
+          programAbbrev: progs.find((p) => p.name === program.programName)?.abbrev || program.programAbbrev,
+        }));
+        setSubjects(withAbbrev);
         setPrograms(progs);
-        if (data.length > 0) setSelectedProgram(data[0].programName);
+        if (withAbbrev.length > 0) setSelectedProgram(withAbbrev[0].programName);
       })
       .catch((err) => {
         setLoadError(err instanceof Error ? err.message : "Unable to load department subjects.");
@@ -203,39 +208,34 @@ function DeanSubjectsPage() {
               <>
                 <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between">
                   <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in {currentProgram.programAbbrev || currentProgram.programName}
-                    {" — "}
-                    {currentProgram.programTotalUnits} total units
+                    {totalSubjects} subject{totalSubjects !== 1 ? "s" : ""} in this curriculum
                   </p>
-                  <div className="flex items-end gap-3">
-                    <div className="relative w-full sm:w-64">
-                      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                        <SearchIcon />
-                      </span>
-                      <input
-                        id="dean-subject-search"
-                        type="search"
-                        placeholder="Code or title…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        aria-label="Search subjects"
-                        className={`${inputClassName} pl-9 pr-4`}
-                      />
-                    </div>
-                    <ScheduleViewToggle value={viewMode} onChange={setViewMode} ariaLabel="Subjects view" />
+                  <div className="relative w-full sm:w-64">
+                    <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                      <SearchIcon />
+                    </span>
+                    <input
+                      id="dean-subject-search"
+                      type="search"
+                      placeholder="Code or title…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      aria-label="Search subjects"
+                      className={`${inputClassName} pl-9 pr-4`}
+                    />
                   </div>
                 </Card>
 
                 {curriculum && (
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
-                      key={`${selectedProgram}-${viewMode}`}
+                      key={selectedProgram}
                       initial={reduceMotion ? false : { opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
                       transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
                     >
-                      <CurriculumTable curriculum={curriculum} search={search} viewMode={viewMode} />
+                      <CurriculumTable curriculum={curriculum} search={search} />
                     </motion.div>
                   </AnimatePresence>
                 )}
