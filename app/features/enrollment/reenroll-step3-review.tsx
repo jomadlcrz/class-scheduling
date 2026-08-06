@@ -7,7 +7,7 @@ import type { Program } from "~/types/program";
 import type { Subject } from "~/types/subject";
 
 type ReenrollStep3ReviewProps = {
-  student: ReenrollDirectoryRow;
+  students: ReenrollDirectoryRow[];
   academic: AcademicDraft;
   programs: Program[];
   subjects: Subject[];
@@ -21,7 +21,7 @@ type ReenrollStep3ReviewProps = {
 };
 
 export function ReenrollStep3Review({
-  student,
+  students,
   academic,
   programs,
   subjects,
@@ -89,9 +89,13 @@ export function ReenrollStep3Review({
       <Card className="p-4">
         <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Enrollment Summary</h3>
         <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="font-body text-xs text-slate-400 dark:text-slate-500">Student</dt>
-            <dd className="font-body text-slate-700 dark:text-slate-200">{student.name}</dd>
+          <div className="sm:col-span-2">
+            <dt className="font-body text-xs text-slate-400 dark:text-slate-500">
+              Student{students.length !== 1 ? "s" : ""} ({students.length})
+            </dt>
+            <dd className="font-body text-slate-700 dark:text-slate-200">
+              {students.map((s) => s.name).join(", ") || "—"}
+            </dd>
           </div>
           <div>
             <dt className="font-body text-xs text-slate-400 dark:text-slate-500">Program</dt>

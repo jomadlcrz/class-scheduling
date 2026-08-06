@@ -10,6 +10,7 @@ type IrregularAcademicRecord = {
   set: string | null;
   enrolled_status: string;
   student_type: string;
+  enrollment_state: string;
   school_year: string | null;
   /** EnrollmentService._serialize_enrollment sends the raw number, not a display label. */
   semester_number: number | null;
@@ -45,6 +46,17 @@ export type IrregularStudent = {
   email: string | null;
   profilePhotoUrl: string | null;
   programTaken: string;
+  /** Year level of the most recent academic record; 0 when the student has none yet. */
+  yearLevel: number;
+  /** Set name of the most recent academic record; null when the student has none yet (irregular students often have none). */
+  set: string | null;
+  studentType: string;
+  /** "Regular" / "Irregular" as of the most recent academic record; "" when the student has none yet. */
+  enrolledStatus: string;
+  /** "Enrolled" / "Dropped" / "Withdrawn" / "Voided" as of the most recent academic record. */
+  enrollmentState: string;
+  /** Backend display string, e.g. "Has an account" / "No account yet". */
+  accountStatus: string;
   subjectsEnrolled: { subjectId: number; subjectCode: string; descTitle: string; units: number }[];
 };
 
@@ -72,6 +84,12 @@ function mapIrregularStudents(data: IrregularStudentsResponse): IrregularStudent
       email: s.email,
       profilePhotoUrl: s.profile_photo_url,
       programTaken: current?.program ?? "—",
+      yearLevel: current?.year_level ?? 0,
+      set: current?.set ?? null,
+      studentType: current?.student_type ?? "",
+      enrolledStatus: current?.enrolled_status ?? "",
+      enrollmentState: current?.enrollment_state ?? "",
+      accountStatus: s.account_status,
       subjectsEnrolled: (current?.enrolled_subjects ?? []).map((sub) => ({
         subjectId: sub.subject_id,
         subjectCode: sub.subject_code,

@@ -19,6 +19,7 @@ type RegularStudentsResponse = {
     set: string | null;
     enrolled_status: string;
     student_type: string;
+    enrollment_state: string;
     school_year: string | null;
     /** EnrollmentService._serialize_enrollment sends the raw number, not a display label. */
     semester_number: number | null;
@@ -57,6 +58,7 @@ async function listStudents(syId: number, semesterNumber: number): Promise<Regul
       set: a.set,
       enrolledStatus: a.enrolled_status,
       studentType: a.student_type,
+      enrollmentState: a.enrollment_state,
       schoolYear: a.school_year,
       semester: a.semester_number != null ? semesterLabels.get(a.semester_number) ?? null : null,
       enrolledSubjects: a.enrolled_subjects.map((es) => ({

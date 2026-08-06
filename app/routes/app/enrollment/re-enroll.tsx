@@ -64,24 +64,47 @@ function EnrollmentReenrollPage() {
   useEffect(() => {
     if (schoolYears === null || semesters.length === 0) return;
     let cancelled = false;
+    // Oldest-to-newest so the last write per student below reflects their most recent term —
+    // that's what the Year Level/Semester/Enrolled Status filters and table columns show.
+    const orderedSchoolYears = [...schoolYears].sort((a, b) => a.schoolYear.localeCompare(b.schoolYear));
+    const orderedSemesters = [...semesters].sort((a, b) => a.semesterNumber - b.semesterNumber);
     Promise.all(
-      schoolYears.flatMap((sy) =>
-        semesters.map((sem) =>
+      orderedSchoolYears.flatMap((sy) =>
+        orderedSemesters.map((sem) =>
           Promise.all([
             regularClassService.listStudents(sy.id, sem.semesterNumber).catch(() => []),
             irregularClassService.listStudents(sy.id, sem.semesterNumber).catch(() => []),
-          ]),
+          ]).then(([regular, irregular]) => ({ semesterNumber: sem.semesterNumber, regular, irregular })),
         ),
       ),
     ).then((termResults) => {
       if (cancelled) return;
       const byId = new Map<number, ReenrollDirectoryRow>();
-      for (const [regular, irregular] of termResults) {
+      for (const { semesterNumber, regular, irregular } of termResults) {
         for (const s of regular) {
-          byId.set(s.studentProfileId, { studentProfileId: s.studentProfileId, studentId: s.studentId, name: s.studentName });
+          const academic = s.academics[0];
+          byId.set(s.studentProfileId, {
+            studentProfileId: s.studentProfileId,
+            studentId: s.studentId,
+            name: s.studentName,
+            program: academic?.program ?? "",
+            yearLevel: academic?.yearLevel ?? 0,
+            semesterNumber,
+            enrolledStatus: academic?.enrolledStatus ?? "",
+            accountStatus: s.accountStatus,
+          });
         }
         for (const s of irregular) {
-          byId.set(s.studentProfileId, { studentProfileId: s.studentProfileId, studentId: s.studentId, name: s.studentName });
+          byId.set(s.studentProfileId, {
+            studentProfileId: s.studentProfileId,
+            studentId: s.studentId,
+            name: s.studentName,
+            program: s.programTaken,
+            yearLevel: s.yearLevel,
+            semesterNumber,
+            enrolledStatus: s.enrolledStatus,
+            accountStatus: s.accountStatus,
+          });
         }
       }
       setDirectory([...byId.values()].sort((a, b) => a.name.localeCompare(b.name)));

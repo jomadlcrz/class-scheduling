@@ -60,13 +60,14 @@ export function ReenrollWizard({
   onSaved,
 }: ReenrollWizardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedStudent, setSelectedStudent] = useState<ReenrollDirectoryRow | null>(null);
+  // Keyed by studentProfileId so toggling/select-all/removal are all O(1) and order-stable.
+  const [selectedStudents, setSelectedStudents] = useState<Map<number, ReenrollDirectoryRow>>(new Map());
   const [academic, setAcademic] = useState<AcademicDraft>(EMPTY_ACADEMIC);
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<Set<number>>(new Set());
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const isIrregular = academic.enrolledStatus === "Irregular";
-  const isDirty = selectedStudent !== null || academic.programId !== "";
+  const isDirty = selectedStudents.size > 0 || academic.programId !== "";
 
   useEffect(() => {
     onDirtyChange(isDirty);
@@ -78,6 +79,26 @@ export function ReenrollWizard({
 
   function handleAcademicChange(patch: Partial<AcademicDraft>) {
     setAcademic((current) => ({ ...current, ...patch }));
+  }
+
+  function toggleStudent(row: ReenrollDirectoryRow, checked: boolean) {
+    setSelectedStudents((current) => {
+      const next = new Map(current);
+      if (checked) next.set(row.studentProfileId, row);
+      else next.delete(row.studentProfileId);
+      return next;
+    });
+  }
+
+  function selectAllStudents(checked: boolean, rows: ReenrollDirectoryRow[]) {
+    setSelectedStudents((current) => {
+      const next = new Map(current);
+      for (const row of rows) {
+        if (checked) next.set(row.studentProfileId, row);
+        else next.delete(row.studentProfileId);
+      }
+      return next;
+    });
   }
 
   function toggleSubject(subjectId: number, checked: boolean) {
@@ -101,7 +122,7 @@ export function ReenrollWizard({
     academic.syId !== "" &&
     academic.semesterNumber !== "" &&
     (isIrregular || academic.setId !== "");
-  const maxUnlockedIndex = selectedStudent ? (step2Valid ? 2 : 1) : 0;
+  const maxUnlockedIndex = selectedStudents.size > 0 ? (step2Valid ? 2 : 1) : 0;
 
   function goToStep(index: number) {
     if (index > maxUnlockedIndex) return;
@@ -110,7 +131,8 @@ export function ReenrollWizard({
   }
 
   async function handleSave() {
-    if (!selectedStudent) return;
+    const rows = [...selectedStudents.values()];
+    if (rows.length === 0) return;
 
     // Irregular students don't belong to a standard set, but the backend still requires a
     // set_id — fall back to any set matching their program/year level (same rule as
@@ -132,23 +154,50 @@ export function ReenrollWizard({
 
     setSaveError(null);
     onSavingChange(true);
-    try {
-      const message = await studentService.enroll(selectedStudent.studentProfileId, {
-        programId: Number(academic.programId),
-        yearLevel: Number(academic.yearLevel),
-        setId: resolvedSetId,
-        studentType: academic.studentType,
-        enrolledStatus: academic.enrolledStatus,
-        syId: Number(academic.syId),
-        semesterNumber: Number(academic.semesterNumber),
-        subjectIds: [...selectedSubjectIds],
-      });
-      onSaved(message);
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "");
-      onSavingChange(false);
+
+    const input = {
+      programId: Number(academic.programId),
+      yearLevel: Number(academic.yearLevel),
+      setId: resolvedSetId,
+      studentType: academic.studentType,
+      enrolledStatus: academic.enrolledStatus,
+      syId: Number(academic.syId),
+      semesterNumber: Number(academic.semesterNumber),
+      subjectIds: [...selectedSubjectIds],
+    };
+
+    const results = await Promise.allSettled(
+      rows.map((row) => studentService.enroll(row.studentProfileId, input).then((message) => ({ row, message }))),
+    );
+
+    const succeeded: { row: ReenrollDirectoryRow; message: string }[] = [];
+    const failed: { row: ReenrollDirectoryRow; error: string }[] = [];
+    results.forEach((result, i) => {
+      if (result.status === "fulfilled") succeeded.push(result.value);
+      else failed.push({ row: rows[i], error: result.reason instanceof Error ? result.reason.message : "" });
+    });
+
+    onSavingChange(false);
+
+    if (failed.length === 0) {
+      onSaved(succeeded.length === 1 ? succeeded[0].message : `Enrolled ${succeeded.length} student(s).`);
+      return;
     }
+
+    // Partial (or total) failure: drop whoever already succeeded so a retry only targets what's left.
+    setSelectedStudents((current) => {
+      const next = new Map(current);
+      for (const { row } of succeeded) next.delete(row.studentProfileId);
+      return next;
+    });
+    const successNote = succeeded.length > 0 ? `${succeeded.length} succeeded. ` : "";
+    setSaveError(
+      `${successNote}${failed.length} failed: ` +
+        failed.map(({ row, error }) => `${row.name} — ${error || "Unable to enroll."}`).join("; "),
+    );
   }
+
+  const selectedRows = [...selectedStudents.values()];
 
   return (
     <div className="flex flex-col gap-6">
@@ -159,14 +208,18 @@ export function ReenrollWizard({
       {currentIndex === 0 && (
         <ReenrollStep1SelectStudent
           directory={directory}
-          selected={selectedStudent}
-          onSelect={setSelectedStudent}
+          selectedIds={new Set(selectedStudents.keys())}
+          onToggleSelect={toggleStudent}
+          onSelectAll={selectAllStudents}
+          programs={programs}
+          semesters={semesters}
+          academicStatuses={academicStatuses}
           onNext={() => goToStep(1)}
           onCancel={onCancel}
         />
       )}
 
-      {currentIndex === 1 && selectedStudent && (
+      {currentIndex === 1 && selectedStudents.size > 0 && (
         <ReenrollStep2Enrollment
           academic={academic}
           onAcademicChange={handleAcademicChange}
@@ -182,9 +235,9 @@ export function ReenrollWizard({
         />
       )}
 
-      {currentIndex === 2 && selectedStudent && (
+      {currentIndex === 2 && selectedStudents.size > 0 && (
         <ReenrollStep3Review
-          student={selectedStudent}
+          students={selectedRows}
           academic={academic}
           programs={programs}
           subjects={subjects}
