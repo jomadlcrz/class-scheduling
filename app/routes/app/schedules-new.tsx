@@ -156,6 +156,9 @@ function SchedulesNewPage() {
   const [conflictLoading, setConflictLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [pendingMove, setPendingMove] = useState<ScheduleSuggestion | null>(null);
+  // "instructorId:DayName" keys accepted from confirm_daily_hour_increase cards this
+  // session — sent on every subsequent generate/regenerate so the confirm sticks.
+  const [confirmedDailyHourIncreases, setConfirmedDailyHourIncreases] = useState<string[]>([]);
   const [resolveOpen, setResolveOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [isSaving, setIsSaving] = useState(false);
@@ -319,6 +322,7 @@ function SchedulesNewPage() {
     setSets([]);
     setSlots([]);
     resetGeneration();
+    setConfirmedDailyHourIncreases([]);
   }
 
   function handleYearLevelChange(yl: YearLevel | "") {
@@ -326,6 +330,7 @@ function SchedulesNewPage() {
     setSelectedSetId("");
     setSlots([]);
     resetGeneration();
+    setConfirmedDailyHourIncreases([]);
   }
 
   async function handleAutoGenerate() {
@@ -348,6 +353,7 @@ function SchedulesNewPage() {
         yearLevelLabel: yearLevelLabel(selectedYearLevel),
         programId: selectedProgram.id,
         setId: selectedSet.id,
+        confirmedDailyHourIncreases,
       });
       tempIdCounter.current = 0;
       setSlots(
@@ -373,6 +379,7 @@ function SchedulesNewPage() {
         yearLevelLabel: yearLevelLabel(selectedYearLevel),
         programId: selectedProgram.id,
         setId: selectedSet.id,
+        confirmedDailyHourIncreases,
       },
       "resolve",
     );
@@ -410,6 +417,7 @@ function SchedulesNewPage() {
         yearLevelLabel: yearLevelLabel(selectedYearLevel),
         programId: selectedProgram.id,
         setId: selectedSet.id,
+        confirmedDailyHourIncreases,
       });
       tempIdCounter.current = 0;
       setSlots(
@@ -420,6 +428,44 @@ function SchedulesNewPage() {
       );
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Unable to apply suggestion.");
+    }
+  }
+
+  /**
+   * confirm_daily_hour_increase: the subject isn't in the preview yet — the only way
+   * to actually place it is to regenerate with its confirm_keys merged into
+   * confirmedDailyHourIncreases. Never merge suggestion.placesAt client-side here.
+   */
+  async function handleConfirmDailyHourIncrease(suggestion: ScheduleSuggestion) {
+    if (!selectedSet || !selectedProgram || !selectedYearLevel) return;
+    const bodyKeys = (suggestion.apply?.body as Record<string, unknown> | undefined)
+      ?.confirmedDailyHourIncreases as string[] | undefined;
+    const keys = bodyKeys ?? suggestion.confirmKeys ?? [];
+    if (keys.length === 0) return;
+
+    const merged = [...new Set([...confirmedDailyHourIncreases, ...keys])];
+    setConfirmedDailyHourIncreases(merged);
+    setSaveError(null);
+    try {
+      const generated = await generate({
+        schoolYear,
+        semester,
+        semesterLabel: semesterLabel(semester),
+        yearLevel: selectedYearLevel,
+        yearLevelLabel: yearLevelLabel(selectedYearLevel),
+        programId: selectedProgram.id,
+        setId: selectedSet.id,
+        confirmedDailyHourIncreases: merged,
+      });
+      tempIdCounter.current = 0;
+      setSlots(
+        generated.map((slot) => {
+          tempIdCounter.current += 1;
+          return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
+        }),
+      );
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Unable to confirm daily limit increase.");
     }
   }
 
@@ -497,6 +543,7 @@ function SchedulesNewPage() {
         yearLevelLabel: yearLevelLabel(selectedYearLevel),
         programId: selectedProgram.id,
         setId: selectedSet.id,
+        confirmedDailyHourIncreases,
       });
       tempIdCounter.current = 0;
       setSlots(
@@ -683,6 +730,7 @@ function SchedulesNewPage() {
       setSlots([]);
       tempIdCounter.current = 0;
       resetGeneration();
+      setConfirmedDailyHourIncreases([]);
       setEditing(null);
       setDrawerOpen(false);
       setConflictPrefill(null);
@@ -887,6 +935,7 @@ function SchedulesNewPage() {
                 onApplySuggestion={handleApplySuggestion}
                 onConfirmMove={handleConfirmMove}
                 onUseSuggestedSlots={handleUseSuggestedSlots}
+                onConfirmDailyHourIncrease={handleConfirmDailyHourIncrease}
                 onResolve={() => setResolveOpen(true)}
               />
             )}

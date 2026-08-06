@@ -47,13 +47,28 @@ export function AutoGenerateIcon() {
  * already exist for this subject and nothing else needs to move. Resolve applies
  * zero moves and returns the same incomplete preview every time, so this strategy
  * gets its own client-side "Use suggested slots" card instead of the Resolve button.
+ *
+ * `confirm_daily_hour_increase` also has moves: [] + a populated placesAt, but must
+ * NOT be treated as mergeable — merging client-side would show the subject as placed
+ * when the backend hasn't actually committed it yet (it's still gated on a daily-cap
+ * confirm + regenerate). Check that strategy first and exclude it explicitly.
  */
 function isMergePlacesAt(suggestion: ScheduleSuggestion) {
   return (
     suggestion.type === "repack_instructor" &&
+    suggestion.strategy !== "confirm_daily_hour_increase" &&
     (suggestion.strategy === "merge_places_at" ||
       ((suggestion.moves?.length ?? 0) === 0 && (suggestion.placesAt?.length ?? 0) > 0))
   );
+}
+
+/**
+ * Daily-hour-cap block: validated last resort found a legal slot but placing it
+ * would exceed the instructor's weekday cap (weekly cap still OK, times within the
+ * school day). Requires an explicit confirm + regenerate — never merged client-side.
+ */
+function isConfirmDailyHourIncrease(suggestion: ScheduleSuggestion) {
+  return suggestion.type === "repack_instructor" && suggestion.strategy === "confirm_daily_hour_increase";
 }
 
 type ConflictSeverity = "error" | "warning" | "info";
@@ -116,6 +131,7 @@ export function GenerationConflictsAlert({
   onApplySuggestion,
   onConfirmMove,
   onUseSuggestedSlots,
+  onConfirmDailyHourIncrease,
   onResolve,
 }: {
   conflicts: string[];
@@ -125,13 +141,15 @@ export function GenerationConflictsAlert({
   onApplySuggestion?: (suggestion: ScheduleSuggestion) => void;
   onConfirmMove?: (suggestion: ScheduleSuggestion) => void;
   onUseSuggestedSlots?: (suggestion: ScheduleSuggestion) => void;
+  onConfirmDailyHourIncrease?: (suggestion: ScheduleSuggestion) => void;
   onResolve?: () => void;
 }) {
   const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
   const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
+  const confirmDailySuggestions = (suggestions ?? []).filter(isConfirmDailyHourIncrease);
   const mergeSuggestions = (suggestions ?? []).filter(isMergePlacesAt);
   const repackSuggestions = (suggestions ?? []).filter(
-    (s) => s.type === "repack_instructor" && !isMergePlacesAt(s),
+    (s) => s.type === "repack_instructor" && !isMergePlacesAt(s) && !isConfirmDailyHourIncrease(s),
   );
   // merge_places_at never goes through Resolve — moves is empty, so a Resolve pass
   // applies nothing and returns the same incomplete preview every time.
@@ -144,6 +162,7 @@ export function GenerationConflictsAlert({
   const infoConflicts = conflicts.filter((c) => classifyConflict(c) === "info");
   const hasActions =
     moveSuggestions.length > 0 ||
+    confirmDailySuggestions.length > 0 ||
     mergeSuggestions.length > 0 ||
     repackSuggestions.length > 0 ||
     overrideSuggestions.length > 0 ||
@@ -167,6 +186,14 @@ export function GenerationConflictsAlert({
               <div className="mt-3 flex flex-col gap-2">
                 {moveSuggestions.map((s, i) => (
                   <MoveSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
+                ))}
+              </div>
+            )}
+
+            {confirmDailySuggestions.length > 0 && (
+              <div className="mt-3 flex flex-col gap-2">
+                {confirmDailySuggestions.map((s, i) => (
+                  <ConfirmDailyHourIncreaseCard key={i} suggestion={s} onConfirm={onConfirmDailyHourIncrease} />
                 ))}
               </div>
             )}
@@ -237,15 +264,26 @@ export function GenerationConflictsAlert({
                 ))}
               </div>
             )}
-            {mergeSuggestions.length > 0 && (
+            {confirmDailySuggestions.length > 0 && (
               <div className={`${moveSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+                {confirmDailySuggestions.map((s, i) => (
+                  <ConfirmDailyHourIncreaseCard key={i} suggestion={s} onConfirm={onConfirmDailyHourIncrease} />
+                ))}
+              </div>
+            )}
+            {mergeSuggestions.length > 0 && (
+              <div
+                className={`${moveSuggestions.length > 0 || confirmDailySuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}
+              >
                 {mergeSuggestions.map((s, i) => (
                   <MergePlacesAtCard key={i} suggestion={s} onUse={onUseSuggestedSlots} />
                 ))}
               </div>
             )}
             {repackSuggestions.length > 0 && (
-              <div className={`${moveSuggestions.length > 0 || mergeSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}>
+              <div
+                className={`${moveSuggestions.length > 0 || confirmDailySuggestions.length > 0 || mergeSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}
+              >
                 {repackSuggestions.map((s, i) => (
                   <RepackSuggestionCard key={i} suggestion={s} onConfirm={onConfirmMove} />
                 ))}
@@ -253,7 +291,7 @@ export function GenerationConflictsAlert({
             )}
             {overrideSuggestions.length > 0 && (
               <div
-                className={`${moveSuggestions.length > 0 || mergeSuggestions.length > 0 || repackSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}
+                className={`${moveSuggestions.length > 0 || confirmDailySuggestions.length > 0 || mergeSuggestions.length > 0 || repackSuggestions.length > 0 ? "mt-3" : ""} flex flex-col gap-2`}
               >
                 {overrideSuggestions.map((s, i) => (
                   <SuggestionCard key={i} suggestion={s} onApply={onApplySuggestion} />
@@ -391,6 +429,73 @@ function MergePlacesAtCard({
               </button>
             )
           ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * `confirm_daily_hour_increase`: a legal slot exists but placing it would exceed the
+ * instructor's weekday cap (weekly cap OK, times within the school day). The subject
+ * is NOT yet in the preview — confirming POSTs generate again with `confirmedDailyHourIncreases`,
+ * which is the only thing that actually commits the slots server-side.
+ */
+function ConfirmDailyHourIncreaseCard({
+  suggestion,
+  onConfirm,
+}: {
+  suggestion: ScheduleSuggestion;
+  onConfirm?: (suggestion: ScheduleSuggestion) => void;
+}) {
+  const [confirmed, setConfirmed] = useState(false);
+  const increases = suggestion.dailyLimitIncreases ?? [];
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 dark:border-gold-400/25 dark:bg-gold-400/5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+            {suggestion.subjectCode}
+            {suggestion.setName && (
+              <span className="ml-1.5 inline-block rounded-full border border-blue-200 bg-blue-100 px-1.5 py-0 font-body text-[0.65rem] font-medium text-blue-700 dark:border-navy-300/30 dark:bg-navy-300/10 dark:text-navy-300">
+                {suggestion.setName}
+              </span>
+            )}
+          </p>
+          <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+            A legal slot exists, but it would go over {suggestion.instructorName ?? "the instructor"}'s daily hour limit:
+          </p>
+          <div className="mt-1.5 flex flex-col gap-0.5">
+            {increases.map((inc, i) => (
+              <p key={i} className="font-body text-xs text-slate-600 dark:text-slate-300">
+                {inc.day}: {inc.fromHours}h → {inc.toHours}h ({inc.schoolDayWindow})
+              </p>
+            ))}
+          </div>
+          {suggestion.reason && (
+            <p className="mt-1 font-body text-[0.7rem] text-slate-400 italic dark:text-slate-500">
+              Why: {suggestion.reason}
+            </p>
+          )}
+        </div>
+        {confirmed ? (
+          <span className="shrink-0 font-body text-[0.7rem] font-semibold text-emerald-700 dark:text-emerald-300">
+            Confirmed — regenerating…
+          </span>
+        ) : (
+          onConfirm && (
+            <button
+              type="button"
+              onClick={() => {
+                onConfirm(suggestion);
+                setConfirmed(true);
+              }}
+              className="shrink-0 rounded-lg border border-amber-300 bg-amber-100 px-2.5 py-1 font-body text-[0.7rem] font-semibold text-amber-800 transition-colors duration-150 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-gold-400/30 dark:bg-gold-400/10 dark:text-gold-300 dark:hover:bg-gold-400/20"
+            >
+              {suggestion.buttonLabel ?? "Confirm & regenerate"}
+            </button>
+          )
+        )}
       </div>
     </div>
   );
@@ -537,6 +642,8 @@ type AutoGenerateParams = {
   yearLevelLabel: string;
   programId: number;
   setId: number;
+  /** Keys accepted from confirm_daily_hour_increase suggestions so far this session. */
+  confirmedDailyHourIncreases?: string[];
 };
 
 /**

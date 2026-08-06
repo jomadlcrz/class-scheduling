@@ -220,6 +220,11 @@ export type SlotDraft = {
   facultyChoices?: { id: number; fullName: string }[];
   /** Rooms of the correct type (lecture/lab) the algorithm considered viable for this slot. */
   roomChoices?: { id: number; roomName: string }[];
+  /**
+   * True when tier 3 (validated last resort) placed this session after a daily-hour-cap
+   * confirm. Informational only — save auto-bumps the weekday cap regardless of this flag.
+   */
+  validatedLastResortDailyExempt?: boolean;
 };
 
 /** One relocated saved session within a repack_instructor suggestion. */
@@ -250,6 +255,8 @@ type RepackPlacement = {
   instructorName: string;
   mode: string;
   sessionType: "Lecture" | "Lab";
+  /** Present when this slot was placed after a daily-hour-cap confirm (validated last resort). */
+  validatedLastResortDailyExempt?: boolean;
 };
 
 /** A saved session the repack has no legal home for afterwards — the trade-off cost. */
@@ -263,10 +270,23 @@ type RepackDisplaced = {
   end: number;
 };
 
+/** One weekday cap raise a `confirm_daily_hour_increase` suggestion would apply. */
+type DailyLimitIncrease = {
+  instructorId: number;
+  instructorName: string;
+  day: string;
+  fromHours: number;
+  toHours: number;
+  projectedScheduledHours: number;
+  currentScheduledHours: number;
+  withinSchoolDay: boolean;
+  schoolDayWindow: string;
+};
+
 export type ScheduleSuggestion = {
   type: "subject_hour_override" | "move_existing_session" | "repack_instructor";
-  /** Only present for repack_instructor — which of the three repack flows this is. */
-  strategy?: "merge_places_at" | "repack_instructor" | "move_session_chain";
+  /** Only present for repack_instructor — which of the four repack flows this is. */
+  strategy?: "merge_places_at" | "repack_instructor" | "move_session_chain" | "confirm_daily_hour_increase";
   subjectId?: number;
   subjectCode?: string;
   setId?: number;
@@ -295,6 +315,13 @@ export type ScheduleSuggestion = {
   placesAt?: RepackPlacement[];
   displaces?: RepackDisplaced[];
   netGain?: number;
+  /** present for strategy === "confirm_daily_hour_increase" */
+  requiresConfirmation?: boolean;
+  /** "instructorId:DayName" keys — send merged into confirmedDailyHourIncreases on regenerate. */
+  confirmKeys?: string[];
+  dailyLimitIncreases?: DailyLimitIncrease[];
+  /** Backend-provided button copy, e.g. "Confirm John Vianney Manuel daily limit increase (Monday (10→11))". */
+  buttonLabel?: string;
 };
 
 export type AutoGenerateResolution = {
@@ -327,6 +354,8 @@ type AutoGenerateResponse = {
       room_choices: { room_id: number; room_name: string }[];
       start_time: string;
       end_time: string;
+      /** Note: backend sends this one field camelCase even though the rest of the row is snake_case. */
+      validatedLastResortDailyExempt?: boolean;
     }[];
   }[];
   /** Human-readable reasons for subjects the algorithm couldn't place at all. */
@@ -367,6 +396,12 @@ async function autoGenerate(input: {
   setId: number;
   withRebalance?: boolean;
   strategy?: "default" | "greedy" | "resolve";
+  /**
+   * "instructorId:DayName" keys the registrar has accepted from a
+   * confirm_daily_hour_increase suggestion. Omitted entirely when empty —
+   * the backend treats it as optional and this keeps the first generate minimal.
+   */
+  confirmedDailyHourIncreases?: string[];
 }): Promise<AutoGenerateResult> {
   const endpoint =
     input.strategy === "resolve"
@@ -382,6 +417,9 @@ async function autoGenerate(input: {
     yearLevel: input.yearLevelLabel,
     programId: input.programId,
     setId: input.setId,
+    ...(input.confirmedDailyHourIncreases?.length
+      ? { confirmedDailyHourIncreases: input.confirmedDailyHourIncreases }
+      : {}),
   });
 
   const slots = data.day_schedules.flatMap((day) =>
@@ -406,6 +444,7 @@ async function autoGenerate(input: {
       })),
       mode: normalizeMode(s.mode),
       sessionType: s.session_type,
+      validatedLastResortDailyExempt: s.validatedLastResortDailyExempt,
     })),
   );
 
@@ -459,6 +498,7 @@ async function autoGenerate(input: {
           instructorName: p.instructor_name,
           mode: p.mode,
           sessionType: p.session_type,
+          validatedLastResortDailyExempt: p.validatedLastResortDailyExempt as boolean | undefined,
         })) as RepackPlacement[] | undefined,
         displaces: (r.displaces as Record<string, unknown>[] | undefined)?.map((d) => ({
           scheduleId: d.schedule_id,
@@ -469,6 +509,20 @@ async function autoGenerate(input: {
           end: d.end,
         })) as RepackDisplaced[] | undefined,
         netGain: r.net_gain,
+        requiresConfirmation: r.requires_confirmation,
+        confirmKeys: r.confirm_keys as string[] | undefined,
+        dailyLimitIncreases: (r.daily_limit_increases as Record<string, unknown>[] | undefined)?.map((d) => ({
+          instructorId: d.instructor_id,
+          instructorName: d.instructor_name,
+          day: d.day,
+          fromHours: d.from_hours,
+          toHours: d.to_hours,
+          projectedScheduledHours: d.projected_scheduled_hours,
+          currentScheduledHours: d.current_scheduled_hours,
+          withinSchoolDay: d.within_school_day,
+          schoolDayWindow: d.school_day_window,
+        })) as ScheduleSuggestion["dailyLimitIncreases"],
+        buttonLabel: r.button_label,
       };
     }) as ScheduleSuggestion[],
   };
