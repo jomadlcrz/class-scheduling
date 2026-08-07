@@ -1,8 +1,14 @@
-import { Card } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
+import { BookmarkIcon } from "~/components/ui/icons";
 import { Checkbox } from "~/components/ui/checkbox";
 import type { AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
+import {
+  EnrollmentSectionCard,
+  InfoField,
+} from "~/features/enrollment/enrollment-section-card";
 import type { ReenrollDirectoryRow } from "~/features/enrollment/reenroll-step1-select-student";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import type { Program } from "~/types/program";
 import type { Subject } from "~/types/subject";
 
@@ -33,6 +39,7 @@ export function ReenrollStep3Review({
   onBack,
   onSave,
 }: ReenrollStep3ReviewProps) {
+  const { yearLevelLabel } = useYearLevels();
   const selectedProgram = programs.find((p) => String(p.id) === academic.programId);
   const isIrregular = academic.enrolledStatus === "Irregular";
   const semesterNumber = Number(academic.semesterNumber);
@@ -48,73 +55,120 @@ export function ReenrollStep3Review({
             s.semester === semesterNumber,
         );
 
-  const allSelected = filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
-  const totalUnits = filteredSubjects
-    .filter((s) => selectedSubjectIds.has(s.id))
-    .reduce((sum, s) => sum + s.units, 0);
+  const allSelected =
+    filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
+  const selectedSubjects = filteredSubjects.filter((s) => selectedSubjectIds.has(s.id));
+  const totalUnits = isIrregular
+    ? selectedSubjects.reduce((sum, s) => sum + s.units, 0)
+    : filteredSubjects.reduce((sum, s) => sum + s.units, 0);
+
+  const programLabel = selectedProgram
+    ? `${selectedProgram.abbrev} — ${selectedProgram.name}`
+    : "";
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <div className="flex items-center justify-between">
-          <span className="font-body text-sm text-slate-600 dark:text-slate-300">Enrolled Subjects</span>
-          {filteredSubjects.length > 0 && (
-            <Checkbox
-              id="reenroll-subjects-select-all"
-              label="Select All"
-              checked={allSelected}
-              onChange={onToggleSelectAll}
-            />
-          )}
-        </div>
-        <div className="mt-1 flex max-h-56 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10">
-          {filteredSubjects.length === 0 ? (
-            <p className="font-body text-sm text-slate-500 dark:text-slate-400">
-              No curriculum subjects found for this program, year, and semester.
-            </p>
-          ) : (
-            filteredSubjects.map((s) => (
-              <Checkbox
-                key={s.id}
-                id={`reenroll-subject-${s.id}`}
-                label={`${s.code} — ${s.title} (${s.units} units)`}
-                checked={selectedSubjectIds.has(s.id)}
-                onChange={(checked) => onToggleSubject(s.id, checked)}
-              />
-            ))
-          )}
-        </div>
-      </div>
+      <div className={`grid gap-5 ${isIrregular ? "lg:grid-cols-2" : ""}`}>
+        {isIrregular ? (
+          <EnrollmentSectionCard
+            title="Subjects for this term"
+            icon={<BookmarkIcon />}
+            action={
+              filteredSubjects.length > 0 ? (
+                <Checkbox
+                  id="reenroll-subjects-select-all"
+                  label="Select All"
+                  checked={allSelected}
+                  onChange={onToggleSelectAll}
+                />
+              ) : undefined
+            }
+          >
+            <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+              {filteredSubjects.length === 0 ? (
+                <p className="font-body text-sm text-slate-500 dark:text-slate-400">
+                  No subjects found for this program and semester.
+                </p>
+              ) : (
+                filteredSubjects.map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex items-start gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/3"
+                  >
+                    <Checkbox
+                      id={`reenroll-subject-${s.id}`}
+                      hideLabel
+                      ariaLabel={`${s.code} — ${s.title}`}
+                      checked={selectedSubjectIds.has(s.id)}
+                      onChange={(checked) => onToggleSubject(s.id, checked)}
+                    />
+                    <label
+                      htmlFor={`reenroll-subject-${s.id}`}
+                      className="min-w-0 flex-1 cursor-pointer"
+                    >
+                      <span className="block font-body text-sm font-medium text-navy-800 dark:text-mist-100">
+                        {s.code}
+                      </span>
+                      <span className="block font-body text-xs text-slate-500 dark:text-slate-400">
+                        {s.title} · {s.units} units
+                      </span>
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+          </EnrollmentSectionCard>
+        ) : null}
 
-      <Card className="p-4">
-        <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Enrollment Summary</h3>
-        <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <dt className="font-body text-xs text-slate-400 dark:text-slate-500">
-              Student{students.length !== 1 ? "s" : ""} ({students.length})
-            </dt>
-            <dd className="font-body text-slate-700 dark:text-slate-200">
+        <EnrollmentSectionCard title="Enrollment Summary">
+          <dl className="grid gap-4">
+            <InfoField label={`Student${students.length !== 1 ? "s" : ""} (${students.length})`}>
               {students.map((s) => s.name).join(", ") || "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-body text-xs text-slate-400 dark:text-slate-500">Program</dt>
-            <dd className="font-body text-slate-700 dark:text-slate-200">
-              {selectedProgram ? `${selectedProgram.abbrev} — ${selectedProgram.name}` : "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-body text-xs text-slate-400 dark:text-slate-500">Enrolled Status</dt>
-            <dd className="font-body text-slate-700 dark:text-slate-200">{academic.enrolledStatus || "—"}</dd>
-          </div>
-          <div>
-            <dt className="font-body text-xs text-slate-400 dark:text-slate-500">Selected Subjects</dt>
-            <dd className="font-body text-slate-700 dark:text-slate-200">
-              {selectedSubjectIds.size} subject(s) · {totalUnits} unit(s)
-            </dd>
-          </div>
-        </dl>
-      </Card>
+            </InfoField>
+            <InfoField label="Program">{programLabel || "—"}</InfoField>
+            <InfoField label="Year Level">
+              {academic.yearLevel ? yearLevelLabel(Number(academic.yearLevel)) : "—"}
+            </InfoField>
+            <InfoField label="Enrolled Status">
+              {academic.enrolledStatus ? (
+                <Badge tone={isIrregular ? "gold" : "emerald"}>{academic.enrolledStatus}</Badge>
+              ) : (
+                "—"
+              )}
+            </InfoField>
+            <InfoField label="Subjects">
+              <span className="font-medium tabular-nums">
+                {isIrregular
+                  ? `${selectedSubjectIds.size} subject(s) · ${totalUnits} unit(s)`
+                  : `${filteredSubjects.length} subject(s) · ${totalUnits} unit(s)`}
+              </span>
+            </InfoField>
+            {(isIrregular ? selectedSubjects : filteredSubjects).length > 0 ? (
+              <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/3">
+                <ul className="flex flex-col gap-1.5">
+                  {(isIrregular ? selectedSubjects : filteredSubjects).map((s) => (
+                    <li
+                      key={s.id}
+                      className="flex justify-between gap-2 font-body text-xs text-slate-600 dark:text-slate-300"
+                    >
+                      <span className="truncate">
+                        {s.code} — {s.title}
+                      </span>
+                      <span className="shrink-0 tabular-nums text-slate-400">{s.units}u</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="font-body text-sm text-slate-500 dark:text-slate-400">
+                {isIrregular
+                  ? "Select at least one subject."
+                  : "No curriculum subjects found for this program, year, and semester."}
+              </p>
+            )}
+          </dl>
+        </EnrollmentSectionCard>
+      </div>
 
       <ProgramWizardFooter
         backLabel="Back: Enrollment Information"

@@ -79,6 +79,9 @@ export function ReenrollWizard({
 
   function handleAcademicChange(patch: Partial<AcademicDraft>) {
     setAcademic((current) => ({ ...current, ...patch }));
+    if (patch.enrolledStatus === "Regular") {
+      setSelectedSubjectIds(new Set());
+    }
   }
 
   function toggleStudent(row: ReenrollDirectoryRow, checked: boolean) {
@@ -147,7 +150,7 @@ export function ReenrollWizard({
       setSaveError("Select a set.");
       return;
     }
-    if (selectedSubjectIds.size === 0) {
+    if (isIrregular && selectedSubjectIds.size === 0) {
       setSaveError("Select at least one subject.");
       return;
     }
@@ -163,7 +166,8 @@ export function ReenrollWizard({
       enrolledStatus: academic.enrolledStatus,
       syId: Number(academic.syId),
       semesterNumber: Number(academic.semesterNumber),
-      subjectIds: [...selectedSubjectIds],
+      // Regular: server fills from curriculum — send empty list.
+      subjectIds: isIrregular ? [...selectedSubjectIds] : [],
     };
 
     const results = await Promise.allSettled(
@@ -248,19 +252,13 @@ export function ReenrollWizard({
             const semesterNumber = Number(academic.semesterNumber);
             const ids = !selectedProgram
               ? []
-              : (isIrregular
-                  ? subjects.filter((s) => s.program === selectedProgram.abbrev && s.semester === semesterNumber)
-                  : subjects.filter(
-                      (s) =>
-                        s.program === selectedProgram.abbrev &&
-                        String(s.yearLevel) === academic.yearLevel &&
-                        s.semester === semesterNumber,
-                    )
-                ).map((s) => s.id);
+              : subjects
+                  .filter((s) => s.program === selectedProgram.abbrev && s.semester === semesterNumber)
+                  .map((s) => s.id);
             toggleSelectAll(checked, ids);
           }}
           isSaving={isSaving}
-          canSave={step2Valid}
+          canSave={step2Valid && (!isIrregular || selectedSubjectIds.size > 0)}
           onBack={() => goToStep(1)}
           onSave={handleSave}
         />
