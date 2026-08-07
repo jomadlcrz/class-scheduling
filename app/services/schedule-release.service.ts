@@ -47,13 +47,16 @@ function mapPreview(raw: ApiSchedulePreview): SchedulePreview {
   return { release: mapRelease(raw.release), daySchedules: raw.daySchedules };
 }
 
-/** GET /schedule-releases?sy_id=&semester_number=[&releaseStatus=] — registrar's releases for a term. */
+/** GET /schedule-releases?syId=&semester_number=[&releaseStatus=] — registrar's releases for a term. */
 async function listReleases(
   syId: number,
   semesterNumber: number,
   releaseStatus?: ScheduleReleaseStatus,
 ): Promise<ScheduleRelease[]> {
-  const query = appendTermScopeParams(new URLSearchParams(), syId, semesterNumber);
+  const query = new URLSearchParams({
+    syId: String(syId),
+    semester_number: String(semesterNumber),
+  });
   if (releaseStatus) query.set("releaseStatus", releaseStatus);
   const data = await apiGet<ApiScheduleRelease[]>(`/schedule-releases?${query}`);
   return data.map(mapRelease);
