@@ -69,6 +69,8 @@ export function AddStudentWizard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [identity, setIdentity] = useState<IdentityDraft>(EMPTY_IDENTITY);
   const [academic, setAcademic] = useState<AcademicDraft>(EMPTY_ACADEMIC);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<Set<number>>(new Set());
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -79,11 +81,22 @@ export function AddStudentWizard({
     identity.lastName.trim() !== "" ||
     identity.mobile.trim() !== "" ||
     identity.email.trim() !== "" ||
-    academic.programId !== "";
+    academic.programId !== "" ||
+    photoFile !== null;
 
   useEffect(() => {
     onDirtyChange(isDirty);
   }, [isDirty, onDirtyChange]);
+
+  useEffect(() => {
+    if (!photoFile) {
+      setPhotoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(photoFile);
+    setPhotoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photoFile]);
 
   // Subject choices depend on program/year/semester/status — drop stale selections when those change.
   useEffect(() => {
@@ -163,12 +176,27 @@ export function AddStudentWizard({
     setSaveError(null);
     onSavingChange(true);
     try {
-      const message = await studentService.createRecord({
+      const created = await studentService.createRecord({
         ...result.data,
         studentId: result.data.studentId || undefined,
         midName: result.data.midName || undefined,
       });
-      onSaved(message);
+
+      if (photoFile) {
+        try {
+          await studentService.uploadProfilePhoto(created.studentProfileId, photoFile);
+        } catch (photoErr) {
+          // Profile was created — surface photo failure without blocking success navigation.
+          onSaved(
+            `${created.message} Photo upload failed: ${
+              photoErr instanceof Error ? photoErr.message : "unknown error"
+            }`,
+          );
+          return;
+        }
+      }
+
+      onSaved(created.message);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "");
       onSavingChange(false);
@@ -185,6 +213,8 @@ export function AddStudentWizard({
         <AddStudentStep1Identity
           identity={identity}
           onIdentityChange={handleIdentityChange}
+          photoFile={photoFile}
+          onPhotoChange={setPhotoFile}
           canAdvance={step1Valid}
           onNext={() => goToStep(1)}
           onCancel={onCancel}
@@ -212,7 +242,11 @@ export function AddStudentWizard({
           identity={identity}
           academic={academic}
           programs={programs}
+          sets={sets}
+          schoolYears={schoolYears}
+          semesters={semesters}
           subjects={subjects}
+          photoUrl={photoPreviewUrl}
           selectedSubjectIds={selectedSubjectIds}
           onToggleSubject={toggleSubject}
           onToggleSelectAll={(checked) => {
@@ -235,6 +269,8 @@ export function AddStudentWizard({
           canSave={step1Valid && step2Valid}
           onBack={() => goToStep(1)}
           onSave={handleSave}
+          onEditIdentity={() => goToStep(0)}
+          onEditAcademic={() => goToStep(1)}
         />
       )}
     </div>

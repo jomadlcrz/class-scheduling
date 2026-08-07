@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
@@ -17,9 +17,11 @@ import { archiveService } from "~/services/archive.service";
  * Student records (students module) and login accounts (super_admin module).
  */
 
-/** POST /students — creates the profile, academic record, and enrolled subjects. Returns the backend message. */
-async function createRecord(input: CreateStudentRecordInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/students", {
+/** POST /students — creates the profile, academic record, and enrolled subjects. */
+async function createRecord(
+  input: CreateStudentRecordInput,
+): Promise<{ message: string; studentProfileId: number }> {
+  const data = await apiPost<{ message?: string; student_profile_id: number }>("/students", {
     ...(input.studentId && { studentId: input.studentId }),
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
@@ -37,7 +39,24 @@ async function createRecord(input: CreateStudentRecordInput): Promise<string> {
     },
     enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
   });
-  return apiMessage(data);
+  return {
+    message: apiMessage(data),
+    studentProfileId: data.student_profile_id,
+  };
+}
+
+/** POST /students/{id}/profile-photo — registrar upload for a student profile. */
+async function uploadProfilePhoto(
+  studentProfileId: number,
+  file: File,
+): Promise<{ url: string; message: string }> {
+  const formData = new FormData();
+  formData.append("photo", file);
+  const data = await apiUpload<{ message?: string; profile_photo_url: string }>(
+    `/students/${studentProfileId}/profile-photo`,
+    formData,
+  );
+  return { url: data.profile_photo_url, message: data.message ?? "" };
 }
 
 /** POST /super-admin/create-student-accounts — emails temp password. Returns the backend message. */
@@ -295,7 +314,7 @@ async function importRecords(rows: ImportStudentInput[]): Promise<ImportStudentR
       }
       const input = row.input;
       try {
-        const message = await createRecord(input);
+        const { message } = await createRecord(input);
         return {
           row: index + 1,
           student_id: input.studentId,
@@ -381,6 +400,7 @@ async function restoreProfile(studentProfileId: number): Promise<string> {
 
 export const studentService = {
   createRecord,
+  uploadProfilePhoto,
   createAccount,
   listAccounts,
   enroll,

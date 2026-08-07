@@ -429,7 +429,7 @@ export function StudentsPage() {
   }
 
   async function handleCreateRecord(input: CreateStudentRecordInput) {
-    const message = await studentService.createRecord(input);
+    const { message } = await studentService.createRecord(input);
     if (message) toast.success(message);
     setCreatedRecord(true);
     refreshStudentList();
