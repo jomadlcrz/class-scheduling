@@ -1,12 +1,11 @@
 import { Badge } from "~/components/ui/badge";
-import { BookmarkIcon } from "~/components/ui/icons";
-import { Checkbox } from "~/components/ui/checkbox";
 import type { AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
 import type { IdentityDraft } from "~/features/enrollment/add-student-step1-identity";
 import {
   EnrollmentSectionCard,
   InfoField,
 } from "~/features/enrollment/enrollment-section-card";
+import { IrregularSubjectPicker } from "~/features/enrollment/irregular-subject-picker";
 import { StudentInfoSummaryCard } from "~/features/enrollment/student-info-summary-card";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { useYearLevels } from "~/hooks/use-year-levels";
@@ -27,7 +26,6 @@ type AddStudentStep3ReviewProps = {
   photoUrl?: string | null;
   selectedSubjectIds: Set<number>;
   onToggleSubject: (subjectId: number, checked: boolean) => void;
-  onToggleSelectAll: (checked: boolean) => void;
   isSaving: boolean;
   canSave: boolean;
   onBack: () => void;
@@ -47,7 +45,6 @@ export function AddStudentStep3Review({
   photoUrl,
   selectedSubjectIds,
   onToggleSubject,
-  onToggleSelectAll,
   isSaving,
   canSave,
   onBack,
@@ -63,8 +60,6 @@ export function AddStudentStep3Review({
   const isIrregular = academic.enrolledStatus === "Irregular";
   const semesterNumber = Number(academic.semesterNumber);
 
-  // Regular: curriculum slice for program + year + semester (read-only preview).
-  // Irregular: broader program + semester list for manual pick.
   const filteredSubjects = !selectedProgram
     ? []
     : isIrregular
@@ -76,8 +71,6 @@ export function AddStudentStep3Review({
             s.semester === semesterNumber,
         );
 
-  const allSelected =
-    filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
   const selectedSubjects = filteredSubjects.filter((s) => selectedSubjectIds.has(s.id));
   const totalUnits = isIrregular
     ? selectedSubjects.reduce((sum, s) => sum + s.units, 0)
@@ -104,54 +97,12 @@ export function AddStudentStep3Review({
 
       <div className={`grid gap-5 ${isIrregular ? "lg:grid-cols-2" : ""}`}>
         {isIrregular ? (
-          <EnrollmentSectionCard
-            title="Subjects for this term"
-            icon={<BookmarkIcon />}
-            action={
-              filteredSubjects.length > 0 ? (
-                <Checkbox
-                  id="new-student-subjects-select-all"
-                  label="Select All"
-                  checked={allSelected}
-                  onChange={onToggleSelectAll}
-                />
-              ) : undefined
-            }
-          >
-            <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
-              {filteredSubjects.length === 0 ? (
-                <p className="font-body text-sm text-slate-500 dark:text-slate-400">
-                  No subjects found for this program and semester.
-                </p>
-              ) : (
-                filteredSubjects.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex items-start gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/3"
-                  >
-                    <Checkbox
-                      id={`new-student-subject-${s.id}`}
-                      hideLabel
-                      ariaLabel={`${s.code} — ${s.title}`}
-                      checked={selectedSubjectIds.has(s.id)}
-                      onChange={(checked) => onToggleSubject(s.id, checked)}
-                    />
-                    <label
-                      htmlFor={`new-student-subject-${s.id}`}
-                      className="min-w-0 flex-1 cursor-pointer"
-                    >
-                      <span className="block font-body text-sm font-medium text-navy-800 dark:text-mist-100">
-                        {s.code}
-                      </span>
-                      <span className="block font-body text-xs text-slate-500 dark:text-slate-400">
-                        {s.title} · {s.units} units
-                      </span>
-                    </label>
-                  </div>
-                ))
-              )}
-            </div>
-          </EnrollmentSectionCard>
+          <IrregularSubjectPicker
+            idPrefix="new-student"
+            subjects={filteredSubjects}
+            selectedSubjectIds={selectedSubjectIds}
+            onToggleSubject={onToggleSubject}
+          />
         ) : null}
 
         <EnrollmentSectionCard title="Enrollment Summary">

@@ -1,11 +1,10 @@
 import { Badge } from "~/components/ui/badge";
-import { BookmarkIcon } from "~/components/ui/icons";
-import { Checkbox } from "~/components/ui/checkbox";
 import type { AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
 import {
   EnrollmentSectionCard,
   InfoField,
 } from "~/features/enrollment/enrollment-section-card";
+import { IrregularSubjectPicker } from "~/features/enrollment/irregular-subject-picker";
 import type { ReenrollDirectoryRow } from "~/features/enrollment/reenroll-step1-select-student";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { useYearLevels } from "~/hooks/use-year-levels";
@@ -19,7 +18,6 @@ type ReenrollStep3ReviewProps = {
   subjects: Subject[];
   selectedSubjectIds: Set<number>;
   onToggleSubject: (subjectId: number, checked: boolean) => void;
-  onToggleSelectAll: (checked: boolean) => void;
   isSaving: boolean;
   canSave: boolean;
   onBack: () => void;
@@ -33,7 +31,6 @@ export function ReenrollStep3Review({
   subjects,
   selectedSubjectIds,
   onToggleSubject,
-  onToggleSelectAll,
   isSaving,
   canSave,
   onBack,
@@ -55,8 +52,6 @@ export function ReenrollStep3Review({
             s.semester === semesterNumber,
         );
 
-  const allSelected =
-    filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
   const selectedSubjects = filteredSubjects.filter((s) => selectedSubjectIds.has(s.id));
   const totalUnits = isIrregular
     ? selectedSubjects.reduce((sum, s) => sum + s.units, 0)
@@ -70,54 +65,12 @@ export function ReenrollStep3Review({
     <div className="flex flex-col gap-5">
       <div className={`grid gap-5 ${isIrregular ? "lg:grid-cols-2" : ""}`}>
         {isIrregular ? (
-          <EnrollmentSectionCard
-            title="Subjects for this term"
-            icon={<BookmarkIcon />}
-            action={
-              filteredSubjects.length > 0 ? (
-                <Checkbox
-                  id="reenroll-subjects-select-all"
-                  label="Select All"
-                  checked={allSelected}
-                  onChange={onToggleSelectAll}
-                />
-              ) : undefined
-            }
-          >
-            <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
-              {filteredSubjects.length === 0 ? (
-                <p className="font-body text-sm text-slate-500 dark:text-slate-400">
-                  No subjects found for this program and semester.
-                </p>
-              ) : (
-                filteredSubjects.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex items-start gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/3"
-                  >
-                    <Checkbox
-                      id={`reenroll-subject-${s.id}`}
-                      hideLabel
-                      ariaLabel={`${s.code} — ${s.title}`}
-                      checked={selectedSubjectIds.has(s.id)}
-                      onChange={(checked) => onToggleSubject(s.id, checked)}
-                    />
-                    <label
-                      htmlFor={`reenroll-subject-${s.id}`}
-                      className="min-w-0 flex-1 cursor-pointer"
-                    >
-                      <span className="block font-body text-sm font-medium text-navy-800 dark:text-mist-100">
-                        {s.code}
-                      </span>
-                      <span className="block font-body text-xs text-slate-500 dark:text-slate-400">
-                        {s.title} · {s.units} units
-                      </span>
-                    </label>
-                  </div>
-                ))
-              )}
-            </div>
-          </EnrollmentSectionCard>
+          <IrregularSubjectPicker
+            idPrefix="reenroll"
+            subjects={filteredSubjects}
+            selectedSubjectIds={selectedSubjectIds}
+            onToggleSubject={onToggleSubject}
+          />
         ) : null}
 
         <EnrollmentSectionCard title="Enrollment Summary">

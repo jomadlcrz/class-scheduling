@@ -113,10 +113,6 @@ export function ReenrollWizard({
     });
   }
 
-  function toggleSelectAll(checked: boolean, subjectIds: number[]) {
-    setSelectedSubjectIds(checked ? new Set(subjectIds) : new Set());
-  }
-
   const step2Valid =
     academic.programId !== "" &&
     academic.yearLevel !== "" &&
@@ -247,16 +243,6 @@ export function ReenrollWizard({
           subjects={subjects}
           selectedSubjectIds={selectedSubjectIds}
           onToggleSubject={toggleSubject}
-          onToggleSelectAll={(checked) => {
-            const selectedProgram = programs.find((p) => String(p.id) === academic.programId);
-            const semesterNumber = Number(academic.semesterNumber);
-            const ids = !selectedProgram
-              ? []
-              : subjects
-                  .filter((s) => s.program === selectedProgram.abbrev && s.semester === semesterNumber)
-                  .map((s) => s.id);
-            toggleSelectAll(checked, ids);
-          }}
           isSaving={isSaving}
           canSave={step2Valid && (!isIrregular || selectedSubjectIds.size > 0)}
           onBack={() => goToStep(1)}

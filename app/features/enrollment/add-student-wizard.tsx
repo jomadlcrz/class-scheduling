@@ -123,10 +123,6 @@ export function AddStudentWizard({
     });
   }
 
-  function toggleSelectAll(checked: boolean, subjectIds: number[]) {
-    setSelectedSubjectIds(checked ? new Set(subjectIds) : new Set());
-  }
-
   const step1Valid =
     identity.firstName.trim() !== "" && identity.lastName.trim() !== "" && identity.mobile.trim() !== "" && identity.email.trim() !== "";
   const step2Valid =
@@ -254,22 +250,6 @@ export function AddStudentWizard({
           photoUrl={photoPreviewUrl}
           selectedSubjectIds={selectedSubjectIds}
           onToggleSubject={toggleSubject}
-          onToggleSelectAll={(checked) => {
-            const selectedProgram = programs.find((p) => String(p.id) === academic.programId);
-            const semesterNumber = Number(academic.semesterNumber);
-            const ids = !selectedProgram
-              ? []
-              : (isIrregular
-                  ? subjects.filter((s) => s.program === selectedProgram.abbrev && s.semester === semesterNumber)
-                  : subjects.filter(
-                      (s) =>
-                        s.program === selectedProgram.abbrev &&
-                        String(s.yearLevel) === academic.yearLevel &&
-                        s.semester === semesterNumber,
-                    )
-                ).map((s) => s.id);
-            toggleSelectAll(checked, ids);
-          }}
           isSaving={isSaving}
           canSave={step1Valid && step2Valid && (!isIrregular || selectedSubjectIds.size > 0)}
           onBack={() => goToStep(1)}
