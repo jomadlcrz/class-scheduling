@@ -9,7 +9,6 @@ import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/i
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
-import { SectionHeading } from "~/components/ui/section-heading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
@@ -651,11 +650,9 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
 
               {/* Card body — form fields */}
               <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {/* Section divider */}
-                <div className="col-span-full">
-                  <SectionHeading>Student Information</SectionHeading>
-                </div>
-
+                <h3 className="col-span-full font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                  Student Information
+                </h3>
                 <Input id={`s${index}-studentNumber`} label="Student Number" value={row.studentNumber} disabled={isLoading} placeholder="e.g. 2024-0001" onChange={(e) => updateRow(index, (r) => ({ ...r, studentNumber: e.target.value }))} />
                 <Input id={`s${index}-firstName`} label="First Name" value={row.firstName} disabled={isLoading} placeholder="Enter first name" required onChange={(e) => updateRow(index, (r) => ({ ...r, firstName: e.target.value }))} />
                 <Input id={`s${index}-middleName`} label="Middle Name" value={row.middleName} disabled={isLoading} placeholder="Optional" onChange={(e) => updateRow(index, (r) => ({ ...r, middleName: e.target.value }))} />

@@ -4,8 +4,9 @@ import * as XLSX from "xlsx";
 import { FormError } from "~/components/forms/form-error";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
+import { DownloadIcon, HelpCircleIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { Modal } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
@@ -57,7 +58,7 @@ const EMPTY_ROW: RosterRow = {
   subjectCodes: "",
 };
 
-const CSV_HEADERS = [
+const CSV_HEADERS_BASE = [
   "Student Number",
   "First Name",
   "Middle Name",
@@ -70,10 +71,12 @@ const CSV_HEADERS = [
   "Student Type",
   "School Year",
   "Semester",
-  "Subject Codes",
-];
+] as const;
 
-const TEMPLATE_ROW = [
+const CSV_HEADERS_REGULAR = [...CSV_HEADERS_BASE];
+const CSV_HEADERS_IRREGULAR = [...CSV_HEADERS_BASE, "Subject Codes"];
+
+const TEMPLATE_ROW_REGULAR = [
   "2024-0001",
   "Juan",
   "Santos",
@@ -86,13 +89,32 @@ const TEMPLATE_ROW = [
   "New Student",
   "2026-2027",
   "1st Semester",
-  "",
 ];
 
-function downloadTemplate(filename: string) {
+const TEMPLATE_ROW_IRREGULAR = [
+  "2024-0002",
+  "Maria",
+  "Reyes",
+  "Santos",
+  "09179876543",
+  "maria.santos@example.com",
+  "BSIT",
+  "2",
+  "",
+  "New Student",
+  "2026-2027",
+  "1st Semester",
+  "IT101, IT102",
+];
+
+function downloadTemplate(kind: "regular" | "irregular") {
+  const headers = kind === "regular" ? CSV_HEADERS_REGULAR : CSV_HEADERS_IRREGULAR;
+  const row = kind === "regular" ? TEMPLATE_ROW_REGULAR : TEMPLATE_ROW_IRREGULAR;
+  const filename =
+    kind === "regular" ? "enrollment-regular-roster.csv" : "enrollment-irregular-roster.csv";
   const lines = [
-    CSV_HEADERS.map((h) => `"${h}"`).join(","),
-    TEMPLATE_ROW.map((c) => `"${c}"`).join(","),
+    headers.map((h) => `"${h}"`).join(","),
+    row.map((c) => `"${c}"`).join(","),
   ];
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -234,6 +256,7 @@ export function EnrollmentBatchImport({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ImportStudentResponse | null>(null);
+  const [templateHelpOpen, setTemplateHelpOpen] = useState(false);
 
   const isIrregular = enrolledStatus === "Irregular";
 
@@ -545,19 +568,53 @@ export function EnrollmentBatchImport({
                 </>
               )}
             </Popover>
+            <Popover
+              label="Template"
+              trigger={
+                <>
+                  <DownloadIcon size={14} />
+                  Template
+                </>
+              }
+              triggerClassName="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 font-body text-sm font-medium text-navy-700 transition-all duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
+              className="w-48 p-1.5"
+            >
+              {(close) => (
+                <>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      close();
+                      downloadTemplate("regular");
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                  >
+                    Regular Template
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      close();
+                      downloadTemplate("irregular");
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                  >
+                    Irregular Template
+                  </button>
+                </>
+              )}
+            </Popover>
             <button
               type="button"
-              onClick={() =>
-                downloadTemplate(
-                  isIrregular
-                    ? "enrollment-irregular-roster.csv"
-                    : "enrollment-regular-roster.csv",
-                )
-              }
-              className="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-medium text-navy-700 transition-colors hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:text-white"
+              onClick={() => setTemplateHelpOpen(true)}
+              className="grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-mist-100"
+              aria-label="Template help"
             >
-              <DownloadIcon size={14} />
-              Template
+              <span className="scale-90">
+                <HelpCircleIcon />
+              </span>
             </button>
           </div>
         }
@@ -863,6 +920,34 @@ export function EnrollmentBatchImport({
           </span>
         }
       />
+
+      <Modal
+        open={templateHelpOpen}
+        onClose={() => setTemplateHelpOpen(false)}
+        title="Batch templates"
+      >
+        <div className="space-y-4 font-body text-sm leading-relaxed">
+          <div>
+            <p className="font-semibold text-navy-800 dark:text-mist-100">Regular Template</p>
+            <p className="mt-1 text-slate-500 dark:text-slate-400">
+              Includes a Set column. Subject Codes are omitted — subjects come from the curriculum
+              for the student’s program, year level, and semester.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-navy-800 dark:text-mist-100">Irregular Template</p>
+            <p className="mt-1 text-slate-500 dark:text-slate-400">
+              Leave Set blank. Add Subject Codes as a comma-separated list of the subjects to
+              enroll for that student.
+            </p>
+          </div>
+          <div className="flex justify-end pt-1">
+            <Button type="button" block={false} onClick={() => setTemplateHelpOpen(false)}>
+              Got it
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
