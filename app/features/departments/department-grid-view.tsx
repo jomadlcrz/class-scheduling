@@ -2,6 +2,7 @@ import { motion, useReducedMotion, type Variants } from "motion/react";
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
+import { IconButton } from "~/components/ui/icon-button";
 import { ArchiveIcon, ChevronRightIcon, EditIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
@@ -16,9 +17,6 @@ type DepartmentGridViewProps = {
 };
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
-
-export const actionButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 /** Directory-plate grid — one card per department, with its academic programs listed as bullets. */
 export function DepartmentGridView({ departments, onEdit, onArchive }: DepartmentGridViewProps) {
@@ -62,15 +60,14 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
               />
 
               <div className="absolute right-2 top-2 z-10 flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                <button
-                  type="button"
+                <IconButton
                   onClick={() => onEdit(dept)}
-                  aria-label={`Edit ${dept.abbrev}`}
+                  label={`Edit ${dept.abbrev}`}
                   title="Edit"
-                  className={`${actionButtonClassName} bg-white/80 backdrop-blur-sm dark:bg-surface/80`}
+                  className="bg-white/80 backdrop-blur-sm dark:bg-surface/80"
                 >
                   <EditIcon />
-                </button>
+                </IconButton>
                 <button
                   type="button"
                   onClick={() => onArchive(dept)}

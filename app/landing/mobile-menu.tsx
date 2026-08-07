@@ -1,5 +1,7 @@
 import { motion } from "motion/react";
+import { ButtonLink } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme/theme-toggle";
+import { BrandLockup } from "~/landing/brand-lockup";
 
 interface NavLink {
   label: string;
@@ -47,13 +49,9 @@ export function MobileMenu({ links, onClose }: MobileMenuProps) {
 
           <div className="px-5">
             {/* Log In — primary full-width */}
-            <a
-              href="/login"
-              onClick={onClose}
-              className="mt-6 flex w-full cursor-pointer items-center justify-center rounded-lg bg-navy-800 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
-            >
+            <ButtonLink href="/login" onClick={onClose} className="mt-6">
               Log In
-            </a>
+            </ButtonLink>
 
             {/* Nav links — large Vercel-style */}
             <nav className="mt-6 flex flex-col border-t border-slate-200 dark:border-white/10">
@@ -79,46 +77,6 @@ export function MobileMenu({ links, onClose }: MobileMenuProps) {
         </div>
       </motion.div>
     </>
-  );
-}
-
-/** Logo + name lockup — left-aligned. White logo in dark mode only when requested. */
-function BrandLockup({ whiteOnDark = false }: { whiteOnDark?: boolean }) {
-  return (
-    <div className="flex items-center gap-3">
-      <a
-        href="/"
-        aria-label="GWC Class Scheduling — home"
-        className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
-      >
-        <img
-          src="/images/logos/gwc-logo.avif"
-          alt="GWC logo"
-          width={36}
-          height={36}
-          loading="eager"
-          className={`size-8 object-contain sm:size-9 ${whiteOnDark ? "dark:hidden" : ""}`}
-        />
-        {whiteOnDark && (
-          <img
-            src="/images/logos/gwc-logo-white.avif"
-            alt="GWC logo"
-            width={36}
-            height={36}
-            loading="eager"
-            className="hidden size-8 object-contain dark:block sm:size-9"
-          />
-        )}
-      </a>
-      <span className="flex flex-col items-center text-center leading-none">
-        <span className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100 sm:text-[1.7rem]">
-          GWC
-        </span>
-        <span className="-mt-2 font-body text-[0.65rem] tracking-wide text-navy-500 dark:text-navy-300 sm:text-xs">
-          Class Scheduling
-        </span>
-      </span>
-    </div>
   );
 }
 

@@ -1,4 +1,5 @@
 import { Badge } from "~/components/ui/badge";
+import { IconButton } from "~/components/ui/icon-button";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import {
   Table,
@@ -22,9 +23,6 @@ type Props = {
 function fmt(val: number): string {
   return Number.isInteger(val) ? `${val}.0` : String(val);
 }
-
-const actionButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 export function SubjectHourOverrideTable({ overrides, subjects, allocations, onEdit, onDelete }: Props) {
   return (
@@ -106,24 +104,21 @@ export function SubjectHourOverrideTable({ overrides, subjects, allocations, onE
               </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={() => onEdit(o)}
-                    aria-label={`Edit override for ${o.subjectCode}`}
+                    label={`Edit override for ${o.subjectCode}`}
                     title="Edit"
-                    className={actionButtonClassName}
                   >
                     <EditIcon />
-                  </button>
-                  <button
-                    type="button"
+                  </IconButton>
+                  <IconButton
+                    variant="danger"
                     onClick={() => onDelete(o)}
-                    aria-label={`Delete override for ${o.subjectCode}`}
+                    label={`Delete override for ${o.subjectCode}`}
                     title="Delete"
-                    className={actionButtonClassName}
                   >
                     <TrashIcon />
-                  </button>
+                  </IconButton>
                 </div>
               </TableCell>
             </TableRow>

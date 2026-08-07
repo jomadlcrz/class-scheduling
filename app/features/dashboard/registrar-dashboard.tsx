@@ -304,7 +304,7 @@ export function RegistrarDashboard() {
                 className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
               >
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
                     Registration overview
                   </h2>
                 </div>

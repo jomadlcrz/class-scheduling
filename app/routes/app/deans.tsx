@@ -9,7 +9,7 @@ import { PlusIcon } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/feedback/table-skeleton";
 import { DeanForm } from "~/features/deans/dean-form";
 import { DeanTable } from "~/features/deans/dean-table";
 import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
@@ -149,13 +149,7 @@ function DeansPage() {
             {loadError}
           </ResultState>
         ) : deanList === null ? (
-          <div
-            role="status"
-            aria-label="Loading deans"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={4} rows={8} />
         ) : visibleDeans.length === 0 ? (
           <EmptyState title="No deans found">
             No deans match the current filters. Adjust the search or add a new dean.

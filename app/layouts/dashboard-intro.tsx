@@ -59,7 +59,7 @@ export function DashboardIntroOverlay() {
           <motion.div
             aria-hidden="true"
             className="absolute left-1/2 top-1/2 size-160 -translate-x-1/2 -translate-y-1/2"
-            style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
+            style={{ background: "radial-gradient(circle, var(--color-gold-400) 0%, transparent 65%)" }}
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 0.28, scale: 1.2, transition: { duration: reduceMotion ? 0.15 : 0.7, ease: EASE_OUT } }}
           />

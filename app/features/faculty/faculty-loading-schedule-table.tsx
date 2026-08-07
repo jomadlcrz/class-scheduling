@@ -74,7 +74,7 @@ export function FacultyLoadingScheduleTable({ entry, isLoading }: FacultyLoading
   }
 
   return (
-    <table className="w-full border-collapse font-body text-xs">
+    <div className="overflow-x-auto"><table className="w-full border-collapse font-body text-xs">
       <thead>
         <tr>
           <th rowSpan={2} className={thClass}>
@@ -150,6 +150,6 @@ export function FacultyLoadingScheduleTable({ entry, isLoading }: FacultyLoading
           </tr>
         ))}
       </tbody>
-    </table>
+    </table></div>
   );
 }

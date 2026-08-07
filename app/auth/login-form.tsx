@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input, PasswordInput } from "~/components/ui/input";
-import { Spinner } from "~/components/ui/spinner";
 import { LockIcon, MailIcon } from "~/components/ui/icons";
 import { loginSchema } from "~/schemas/auth.schema";
 import { useAuth } from "~/auth/auth-provider";
@@ -68,20 +68,9 @@ export function LoginForm() {
 
       <Checkbox id="remember" label="Remember me" />
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-800 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-navy-800/20 transition-all duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-surface"
-      >
-        {isLoading ? (
-          <>
-            <Spinner />
-            Logging in…
-          </>
-        ) : (
-          "Log In"
-        )}
-      </button>
+      <Button type="submit" pill isLoading={isLoading} loadingLabel="Logging in…">
+        Log In
+      </Button>
 
       {/* OR divider */}
       <div className="my-1 flex items-center gap-3">

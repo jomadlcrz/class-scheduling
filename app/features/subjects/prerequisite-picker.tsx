@@ -86,7 +86,7 @@ export function PrerequisiteCombobox({
       onInputValueChange={setQuery}
       itemToStringLabel={(item) => String(item)}
     >
-      <div className="flex min-h-8.5 min-w-0 cursor-text flex-wrap items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 transition-colors duration-150 focus-within:border-blue-700 focus-within:ring-2 focus-within:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20">
+      <div className="flex min-h-8.5 min-w-0 cursor-text flex-wrap items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 transition-colors duration-150 focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:focus-within:border-gold-400">
         {value.map((prerequisite) => (
           <span key={prerequisite} className={prereqChipClassName}>
             {prerequisite}

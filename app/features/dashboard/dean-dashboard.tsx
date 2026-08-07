@@ -149,8 +149,8 @@ function AttentionTable({ items }: { items: AttentionItem[] }) {
                   <span
                     className="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
                     style={{
-                      backgroundColor: `${SEVERITY_COLORS[item.severity] ?? "#8b8f9c"}1f`,
-                      color: SEVERITY_COLORS[item.severity] ?? "#8b8f9c",
+                      backgroundColor: `color-mix(in srgb, ${SEVERITY_COLORS[item.severity] ?? "var(--status-neutral)"} 12%, transparent)`,
+                      color: SEVERITY_COLORS[item.severity] ?? "var(--status-neutral)",
                     }}
                   >
                     {item.severity}
@@ -237,7 +237,7 @@ export function DeanDashboard() {
                 className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
               >
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
                     {data.meta.department ?? "Department"}
                   </h2>
                 </div>

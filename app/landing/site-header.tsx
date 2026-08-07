@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { BrandLockup } from "~/landing/brand-lockup";
 import { MobileMenu } from "~/landing/mobile-menu";
 
 interface NavLink {
@@ -101,46 +102,6 @@ export function SiteHeader() {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-/** Logo + name lockup — left-aligned. White logo in dark mode only when requested. */
-function BrandLockup({ whiteOnDark = false, scrolled = false }: { whiteOnDark?: boolean; scrolled?: boolean }) {
-  return (
-    <div className="flex items-center gap-3">
-      <a
-        href="/"
-        aria-label="GWC Class Scheduling — home"
-        className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
-      >
-        <img
-          src="/images/logos/gwc-logo.avif"
-          alt="GWC logo"
-          width={36}
-          height={36}
-          loading="eager"
-          className={`size-8 object-contain sm:size-9 ${whiteOnDark ? "dark:hidden" : ""}`}
-        />
-        {whiteOnDark && (
-          <img
-            src="/images/logos/gwc-logo-white.avif"
-            alt="GWC logo"
-            width={36}
-            height={36}
-            loading="eager"
-            className="hidden size-8 object-contain dark:block sm:size-9"
-          />
-        )}
-      </a>
-      <span className="flex flex-col items-center text-center leading-none">
-        <span className={`font-display text-2xl tracking-wide sm:text-[1.7rem] ${scrolled ? "text-white dark:text-mist-100" : "text-navy-700 dark:text-mist-100"}`}>
-          GWC
-        </span>
-        <span className={`-mt-2 font-body text-[0.65rem] tracking-wide sm:text-xs ${scrolled ? "text-gwc-blue-soft dark:text-navy-300" : "text-navy-500 dark:text-navy-300"}`}>
-          Class Scheduling
-        </span>
-      </span>
-    </div>
   );
 }
 

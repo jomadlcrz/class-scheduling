@@ -1,4 +1,5 @@
 import { Checkbox } from "~/components/ui/checkbox";
+import { IconButton } from "~/components/ui/icon-button";
 import { TrashIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { TableCell, TableRow } from "~/components/ui/table";
@@ -29,9 +30,6 @@ type CurriculumSubjectRowProps = {
   onUpdatePending: (tempId: string, patch: Partial<Omit<CreateSubjectInput, "program">>) => void;
   onRemovePending: (tempId: string) => void;
 };
-
-const deleteButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400";
 
 export function CurriculumSubjectRow({
   mode,
@@ -164,15 +162,14 @@ export function CurriculumSubjectRow({
         <TableCell className="px-2 align-middle">
           {isEditable && row.tempId ? (
             <div className="flex justify-center">
-              <button
-                type="button"
+              <IconButton
+                variant="danger"
                 onClick={() => onRemovePending(row.tempId!)}
-                aria-label={`Delete ${row.code || "new subject"}`}
+                label={`Delete ${row.code || "new subject"}`}
                 title="Delete"
-                className={deleteButtonClassName}
               >
                 <TrashIcon />
-              </button>
+              </IconButton>
             </div>
           ) : null}
         </TableCell>

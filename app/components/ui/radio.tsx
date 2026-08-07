@@ -24,7 +24,7 @@ export function Radio({ id, name, label, value, checked, onChange, readOnly, cla
         tabIndex={readOnly ? -1 : undefined}
         onChange={(e) => onChange?.(e.target.checked)}
         aria-label={label}
-        className={`size-4 shrink-0 appearance-none rounded-full border-2 border-slate-300 bg-transparent transition-all duration-150 checked:border-[5px] checked:border-navy-800 dark:border-white/25 dark:checked:border-gold-400 ${
+        className={`size-4 shrink-0 appearance-none rounded-full border-2 border-slate-300 bg-transparent transition-all duration-150 checked:border-[5px] checked:border-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/25 dark:checked:border-gold-400 ${
           readOnly ? "pointer-events-none" : "cursor-pointer"
         }`}
       />

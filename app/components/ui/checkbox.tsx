@@ -19,6 +19,10 @@ type CheckboxProps = {
 const inputClassName =
   "size-4 cursor-pointer accent-navy-800 dark:accent-gold-400";
 
+/** Gold focus ring for the standalone checkbox; the inset variant rings via its wrapper instead. */
+const focusRingClassName =
+  "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400";
+
 /** Only the box itself is clickable — the label text is plain, non-interactive. */
 export function Checkbox({
   id,
@@ -39,7 +43,7 @@ export function Checkbox({
     type: "checkbox" as const,
     value,
     "aria-label": ariaLabel ?? (typeof label === "string" ? label : undefined),
-    className: inputClassName,
+    className: inset ? inputClassName : `${inputClassName} ${focusRingClassName}`,
     ...(isControlled
       ? { checked, onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.checked) }
       : { defaultChecked }),

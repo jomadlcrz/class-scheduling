@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { ResultState } from "~/components/feedback/result-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
@@ -37,6 +38,7 @@ export default function Departments() {
 
 function DepartmentsPage() {
   const [depts, setDepts] = useState<Department[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [departmentTypes, setDepartmentTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -46,7 +48,10 @@ function DepartmentsPage() {
   const [archiveTarget, setArchiveTarget] = useState<Department | null>(null);
 
   useEffect(() => {
-    departmentService.list().then(setDepts).catch(() => setDepts([]));
+    departmentService.list().then(setDepts).catch((err) => {
+      setDepts([]);
+      setLoadError(err instanceof Error ? err.message : "Unable to load departments.");
+    });
     buildingService.list().then(setBuildings).catch(() => setBuildings([]));
     // Department type vocab comes from the backend enums endpoint.
     enumService
@@ -143,7 +148,11 @@ function DepartmentsPage() {
           />
         </div>
 
-        {depts === null ? (
+        {loadError ? (
+          <ResultState tone="error" title="Unable to load">
+            {loadError}
+          </ResultState>
+        ) : depts === null ? (
           <div
             role="status"
             aria-label="Loading departments"

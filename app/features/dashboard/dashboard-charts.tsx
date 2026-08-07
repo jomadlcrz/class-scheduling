@@ -33,11 +33,11 @@ import type {
 /** Status tones — the same four status meanings everywhere (tiles, meters,
  * table severity), always accompanied by a label in the UI. */
 const STATUS_COLORS: Record<string, string> = {
-  good: "#2f9e63",
-  warning: "#d9a026",
-  serious: "#e0744a",
-  critical: "#d64545",
-  neutral: "#8b8f9c",
+  good: "var(--status-good)",
+  warning: "var(--status-warning)",
+  serious: "var(--status-serious)",
+  critical: "var(--status-critical)",
+  neutral: "var(--status-neutral)",
 };
 
 /** One-hue ordinal ramp for the load bands, plus a neutral for Unassigned. */
@@ -207,7 +207,7 @@ export function StatTile({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, ease: EASE_OUT }}
             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-            style={{ backgroundColor: `${color}1f`, color }}
+            style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`, color }}
           >
             {badge}
           </motion.span>
@@ -410,16 +410,16 @@ export function ScheduleCompletionChart({ programs }: { programs: ScheduleComple
 const DONUT_FALLBACK_RAMP = [
   "var(--color-navy-500)",
   "var(--color-navy-300)",
-  "#8b8f9c",
-  "#5b6472",
+  "var(--status-neutral)",
+  "var(--status-muted)",
 ];
 
 /** Irregular gets its own hue ("Midnight Cram") instead of a lighter shade of
  * Regular's green/amber — deep indigo for seated, amber glow for pending.
  * Shared with the "Not yet scheduled" tiles below so the same group reads
  * the same color everywhere on this dashboard. */
-const IRREGULAR_SEATED = "#4c3fa0";
-export const IRREGULAR_PENDING = "#e8a23d";
+const IRREGULAR_SEATED = "var(--enroll-irregular-seated)";
+export const IRREGULAR_PENDING = "var(--enroll-irregular-pending)";
 
 /** This chart answers ONE question — who is enrolled, at all — so every
  * status_breakdown row collapses into its top-level enrollment bucket

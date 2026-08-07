@@ -9,7 +9,7 @@ import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/feedback/table-skeleton";
 import { ActivateAdministratorDialog } from "~/features/administrators/activate-administrator-dialog";
 import { AdministratorEditForm } from "~/features/administrators/administrator-edit-form";
 import { AdministratorTable } from "~/features/administrators/administrator-table";
@@ -160,13 +160,7 @@ function AdministratorsPage() {
             {loadError}
           </ResultState>
         ) : administrators === null ? (
-          <div
-            role="status"
-            aria-label="Loading administrators"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={5} rows={8} />
         ) : visibleAdministrators.length === 0 ? (
           <EmptyState title="No administrators found">
             No administrators match the current search. Adjust the search or add a new administrator.

@@ -274,7 +274,7 @@ export function AssignSubjectModal({
           Grouped by year level and semester. Recently added subjects appear first in each section.
         </p>
       </div>
-      <div className="scrollbar-thin max-h-80 overflow-y-auto rounded-xl border border-slate-300 bg-white pr-1 dark:border-white/10 dark:bg-white/5">
+      <div className="scrollbar-thin max-h-80 overflow-auto rounded-xl border border-slate-300 bg-white pr-1 dark:border-white/10 dark:bg-white/5">
         <table className="w-full table-fixed border-separate border-spacing-0 text-left font-body text-sm">
           <thead>
             <tr>

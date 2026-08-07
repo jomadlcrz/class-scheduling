@@ -1,4 +1,5 @@
 ﻿import { motion, useReducedMotion, type Variants } from "motion/react";
+import { IconButton } from "~/components/ui/icon-button";
 import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import type { Subject } from "~/types/subject";
@@ -11,9 +12,6 @@ type SubjectCardGridProps = {
 };
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
-
-const cardActionButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 /** Per-subject cards for a semester: the unit count reads like a credit stamp. */
 export function SubjectCardGrid({ subjects, onEdit, onArchive }: SubjectCardGridProps) {
@@ -66,15 +64,13 @@ export function SubjectCardGrid({ subjects, onEdit, onArchive }: SubjectCardGrid
             {manageable && (
               <div className="flex items-center gap-0.5">
                 {onEdit && (
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={() => onEdit(subject)}
-                    aria-label={`Edit ${subject.code}`}
+                    label={`Edit ${subject.code}`}
                     title="Edit"
-                    className={cardActionButtonClassName}
                   >
                     <EditIcon />
-                  </button>
+                  </IconButton>
                 )}
                 {onArchive && (
                   <button

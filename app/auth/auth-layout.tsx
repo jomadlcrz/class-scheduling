@@ -15,22 +15,6 @@ function HelpLink() {
   );
 }
 
-/** Fixed radial-gradient backdrop shared by every auth page. */
-function AmbientBackground() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
-      <div
-        className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-20 dark:opacity-[0.12]"
-        style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
-      />
-      <div
-        className="absolute top-1/3 -left-32 size-128 opacity-[0.12] dark:opacity-20"
-        style={{ background: "radial-gradient(circle, rgb(30 58 110) 0%, transparent 65%)" }}
-      />
-    </div>
-  );
-}
-
 type BrandLogoProps = {
   width?: number;
   className?: string;
@@ -86,8 +70,6 @@ export function AuthLayout({ backHref, backLabel = "Back", children }: AuthLayou
   return (
     <ThemeProvider>
       <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-surface">
-        <AmbientBackground />
-
         <HelpLink />
 
         {backHref && (
@@ -130,8 +112,6 @@ export function AuthSplitLayout({ label, backHref, backLabel = "Back", children 
   return (
     <ThemeProvider>
       <div className="relative min-h-dvh overflow-hidden bg-cream-50 dark:bg-surface">
-        <AmbientBackground />
-
         <HelpLink />
 
         {backHref && (

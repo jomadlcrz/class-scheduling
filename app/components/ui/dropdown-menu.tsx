@@ -58,7 +58,7 @@ export function FilterDropdown({
           } ${
             isActive
               ? "border-blue-700 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-400/40 dark:bg-blue-400/10 dark:text-blue-300 dark:hover:bg-blue-400/15"
-              : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50 data-popup-open:border-blue-700 data-popup-open:ring-2 data-popup-open:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:data-popup-open:border-blue-400 dark:data-popup-open:ring-blue-400/20"
+              : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:data-popup-open:border-gold-400"
           }`}
         >
           <span className="min-w-0 truncate">{isActive ? selected?.label : label}</span>

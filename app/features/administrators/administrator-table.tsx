@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { IconButton } from "~/components/ui/icon-button";
 import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { AdministratorRoleBadge } from "~/features/administrators/role-badge";
 import type { Administrator } from "~/types/administrator";
@@ -23,9 +24,6 @@ type AdministratorTableProps = {
   onDeactivate: (admin: Administrator) => void;
   onReactivate: (admin: Administrator) => void;
 };
-
-const actionButtonClassName =
-  "grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
 
 export function AdministratorTable({
   administrators,
@@ -66,38 +64,32 @@ export function AdministratorTable({
               </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={() => onEdit(admin)}
-                    aria-label={`Edit ${admin.firstName} ${admin.lastName}`}
+                    label={`Edit ${admin.firstName} ${admin.lastName}`}
                     title="Edit"
-                    className={actionButtonClassName}
                   >
                     <EditIcon />
-                  </button>
+                  </IconButton>
                   {admin.roleName !== "Super Admin" && (
                     isActive === undefined ? (
                       <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
                     ) : isActive ? (
-                      <button
-                        type="button"
+                      <IconButton
                         onClick={() => onDeactivate(admin)}
-                        aria-label={`Deactivate ${admin.firstName} ${admin.lastName}`}
+                        label={`Deactivate ${admin.firstName} ${admin.lastName}`}
                         title="Deactivate"
-                        className={actionButtonClassName}
                       >
                         <UserOffIcon />
-                      </button>
+                      </IconButton>
                     ) : (
-                      <button
-                        type="button"
+                      <IconButton
                         onClick={() => onReactivate(admin)}
-                        aria-label={`Reactivate ${admin.firstName} ${admin.lastName}`}
+                        label={`Reactivate ${admin.firstName} ${admin.lastName}`}
                         title="Reactivate"
-                        className={actionButtonClassName}
                       >
                         <UserCheckIcon />
-                      </button>
+                      </IconButton>
                     )
                   )}
                 </div>

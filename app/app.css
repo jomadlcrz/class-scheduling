@@ -71,6 +71,21 @@
   --chart-4: hsl(200 90% 46%);
   --chart-5: hsl(347 80% 55%);
   --chart-6: hsl(270 60% 58%);
+
+  /* Dashboard status tones — semantic (good→critical), always paired with a
+     text label in the UI. Referenced via var() from chart fills and severity
+     chips; not exposed as Tailwind utilities. */
+  --status-good: #2f9e63;
+  --status-warning: #d9a026;
+  --status-serious: #e0744a;
+  --status-critical: #d64545;
+  --status-neutral: #8b8f9c;
+  --status-muted: #5b6472;
+
+  /* Irregular-enrollment hues ("Midnight Cram") — deep indigo seated, amber
+     pending — kept distinct from the regular-enrollment status ramp. */
+  --enroll-irregular-seated: #4c3fa0;
+  --enroll-irregular-pending: #e8a23d;
 }
 
 /* :hover only fires for devices with real pointer hover; touch taps use :active instead,

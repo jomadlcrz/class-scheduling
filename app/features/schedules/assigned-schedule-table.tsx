@@ -58,7 +58,7 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
                     {subject.units} unit{subject.units !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <table className="mt-2 w-full text-left font-body text-sm">
+                <div className="overflow-x-auto"><table className="mt-2 w-full text-left font-body text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-white/10">
                       <th className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Day</th>
@@ -89,7 +89,7 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             ))}
           </div>

@@ -62,7 +62,7 @@ export function DeanFacultyLoadsView({
                     value={String(selectedIndex)}
                     onValueChange={(v) => onSelectedIndexChange(Number(v))}
                   >
-                    <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
+                    <SelectTrigger className="border-0 px-2 py-1 font-body text-xs *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -88,7 +88,7 @@ export function DeanFacultyLoadsView({
                   value={selectedSemesterNumber}
                   onValueChange={(v) => onSemesterChange(v as string)}
                 >
-                  <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
+                  <SelectTrigger className="border-0 px-2 py-1 font-body text-xs *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -119,7 +119,7 @@ export function DeanFacultyLoadsView({
                   value={selectedSchoolYearId}
                   onValueChange={(v) => onSchoolYearChange(v as string)}
                 >
-                  <SelectTrigger className="border-0 px-2 py-1 font-body text-xs focus-visible:ring-0 dark:focus-visible:ring-0 *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
+                  <SelectTrigger className="border-0 px-2 py-1 font-body text-xs *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

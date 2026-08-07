@@ -1,4 +1,5 @@
 import { ThemeProvider } from "~/components/theme/theme-provider";
+import { AmbientBackground } from "~/components/ui/ambient-background";
 import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
 
@@ -66,14 +67,7 @@ export default function TermsOfUse() {
   return (
     <ThemeProvider>
       <div className="relative min-h-dvh overflow-x-clip bg-cream-50 dark:bg-surface">
-        {/* Ambient background */}
-        <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
-          <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-mist-100/5" />
-          <div
-            className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 opacity-[0.12] dark:opacity-[0.08]"
-            style={{ background: "radial-gradient(circle, rgb(212 175 55) 0%, transparent 65%)" }}
-          />
-        </div>
+        <AmbientBackground variant="page" />
 
         <SiteHeader />
 

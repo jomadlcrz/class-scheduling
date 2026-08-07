@@ -28,7 +28,7 @@ function CommandInput({
       className={
         embedded
           ? "flex min-w-0 flex-1 items-center gap-2 bg-transparent"
-          : "flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 transition-colors duration-150 has-focus-visible:border-blue-700 has-focus-visible:ring-2 has-focus-visible:ring-blue-700/20 dark:border-white/15 dark:bg-white/5 dark:has-focus-visible:border-blue-400 dark:has-focus-visible:ring-blue-400/20"
+          : "flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 transition-colors duration-150 has-focus-visible:border-gold-400 has-focus-visible:ring-2 has-focus-visible:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:has-focus-visible:border-gold-400"
       }
     >
       <ComboboxPrimitive.Input

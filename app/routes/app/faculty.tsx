@@ -9,7 +9,7 @@ import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/feedback/table-skeleton";
 import { ActivateFacultyDialog } from "~/features/faculty/activate-faculty-dialog";
 import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-dialog";
 import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
@@ -178,13 +178,7 @@ function FacultyPage() {
             {loadError}
           </ResultState>
         ) : facultyList === null ? (
-          <div
-            role="status"
-            aria-label="Loading faculty"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={6} rows={8} />
         ) : visibleFaculty.length === 0 ? (
           <EmptyState title="No faculty found">
             No faculty match the current filters. Adjust the search or add a new faculty member.

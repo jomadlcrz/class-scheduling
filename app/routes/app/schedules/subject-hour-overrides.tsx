@@ -50,6 +50,7 @@ function SubjectHourOverridesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SubjectHourOverride | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SubjectHourOverride | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [pendingOverride, setPendingOverride] = useState<OverrideFormInput | null>(null);
 
   // Subject/set pickers for the form
@@ -189,6 +190,7 @@ function SubjectHourOverridesPage() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
       const message = await scheduleService.deleteSubjectHourOverride(deleteTarget.id);
       if (message) toast.success(message);
@@ -197,6 +199,8 @@ function SubjectHourOverridesPage() {
     } catch (err) {
       if (err instanceof ApiError) toast.error(err.message);
       else throw err;
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -372,7 +376,7 @@ function SubjectHourOverridesPage() {
               type="button"
               variant="danger"
               block={false}
-              isLoading={false}
+              isLoading={isDeleting}
               loadingLabel="Deleting…"
               onClick={handleDelete}
             >
