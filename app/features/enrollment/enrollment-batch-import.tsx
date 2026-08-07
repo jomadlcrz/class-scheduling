@@ -554,7 +554,7 @@ export function EnrollmentBatchImport({
                     : "enrollment-regular-roster.csv",
                 )
               }
-              className="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-medium text-navy-700 hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-gold-300"
+              className="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-medium text-navy-700 transition-colors hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:text-white"
             >
               <DownloadIcon size={14} />
               Template

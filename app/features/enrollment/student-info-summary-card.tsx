@@ -64,7 +64,7 @@ export function StudentInfoSummaryCard({
               <button
                 type="button"
                 onClick={onEditIdentity}
-                className="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-medium text-navy-700 transition-colors hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-gold-300 dark:hover:text-gold-200"
+                className="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-medium text-navy-700 transition-colors hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:text-white"
               >
                 <EditIcon />
                 Edit
@@ -90,7 +90,7 @@ export function StudentInfoSummaryCard({
               <button
                 type="button"
                 onClick={onEditAcademic}
-                className="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-medium text-navy-700 transition-colors hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-gold-300 dark:hover:text-gold-200"
+                className="inline-flex cursor-pointer items-center gap-1.5 font-body text-xs font-medium text-navy-700 transition-colors hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:text-white"
               >
                 <EditIcon />
                 Edit
