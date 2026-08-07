@@ -29,7 +29,6 @@ export default [
     route("program-curricula", "routes/app/program-curricula.tsx"),
     route("program-curricula/new", "routes/app/program-curricula-new.tsx"),
     route("sets", "routes/app/sets.tsx"),
-    route("deans", "routes/app/deans.tsx"),
     route("dean/subjects", "routes/app/dean-subjects.tsx"),
     route("dean/instructors", "routes/app/dean-instructors.tsx"),
     route("dean/subject-assignments", "routes/app/dean-subject-assignments.tsx"),
