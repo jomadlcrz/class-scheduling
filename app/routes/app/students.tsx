@@ -843,21 +843,19 @@ export function StudentsPage() {
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="relative ml-auto w-full sm:w-64">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                <SearchIcon />
-              </span>
-              <input
-                id="irregular-student-search"
-                type="search"
-                placeholder="Search by name or ID…"
-                value={irregularSearch}
-                onChange={(e) => setIrregularSearch(e.target.value)}
-                aria-label="Search irregular students"
-                className={`${inputClassName} pl-9 pr-4`}
-              />
-            </div>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
+              id="irregular-student-search"
+              type="search"
+              placeholder="Search by name or ID…"
+              value={irregularSearch}
+              onChange={(e) => setIrregularSearch(e.target.value)}
+              aria-label="Search irregular students"
+              className={`${inputClassName} pl-9 pr-4`}
+            />
           </div>
 
           {activeTabFilters.filterBar}
