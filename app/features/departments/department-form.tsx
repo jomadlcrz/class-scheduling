@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { FileChooser } from "~/components/ui/file-chooser";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -48,8 +49,8 @@ export function DepartmentForm({
   // Edit mode: the logo has its own endpoints and saves immediately.
   const [logoUrl, setLogoUrl] = useState<string | null>(department?.logoUrl ?? null);
   const [logoSaving, setLogoSaving] = useState(false);
-  const [logoRemoving, setLogoRemoving] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [logoRemoveOpen, setLogoRemoveOpen] = useState(false);
 
   useEffect(() => {
     if (!logoPreview) return;
@@ -79,18 +80,10 @@ export function DepartmentForm({
 
   async function handleLogoRemove() {
     if (!department) return;
-    setLogoError(null);
-    setLogoRemoving(true);
-    try {
-      const message = await departmentService.removeLogo(department.id);
-      setLogoUrl(null);
-      if (message) toast.success(message);
-      onLogoChanged?.();
-    } catch (err) {
-      setLogoError(err instanceof Error ? err.message : "");
-    } finally {
-      setLogoRemoving(false);
-    }
+    const message = await departmentService.removeLogo(department.id);
+    setLogoUrl(null);
+    if (message) toast.success(message);
+    onLogoChanged?.();
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -122,7 +115,8 @@ export function DepartmentForm({
     0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+    <>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
 
       <div className="flex flex-col gap-1.5">
@@ -151,9 +145,7 @@ export function DepartmentForm({
             type="button"
             variant="danger"
             block={false}
-            isLoading={logoRemoving}
-            loadingLabel="Removing…"
-            onClick={handleLogoRemove}
+            onClick={() => setLogoRemoveOpen(true)}
           >
             Remove logo
           </Button>
@@ -220,6 +212,18 @@ export function DepartmentForm({
           {isEdit ? "Save Changes" : "Add Department"}
         </Button>
       </div>
-    </form>
+      </form>
+      <ConfirmDialog
+        open={logoRemoveOpen}
+        onClose={() => setLogoRemoveOpen(false)}
+        title="Remove logo"
+        confirmLabel="Remove"
+        loadingLabel="Removing…"
+        confirmVariant="danger"
+        onConfirm={handleLogoRemove}
+      >
+        The department logo will be removed and replaced with the default placeholder.
+      </ConfirmDialog>
+    </>
   );
 }

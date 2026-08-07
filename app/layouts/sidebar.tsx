@@ -3,7 +3,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router";
 import {
   AuditLogIcon,
-  BookmarkIcon,
   BookOpenIcon,
   Building2Icon,
   CalendarCheckIcon,
@@ -21,6 +20,7 @@ import {
   MapIcon,
   ShieldIcon,
   ShieldUserIcon,
+  UserCheckIcon,
   UserIcon,
   UsersIcon,
   UsersRoundIcon,
@@ -131,7 +131,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Schedule Approvals", to: "/dean/schedule-approvals", icon: <CheckIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
-      { label: "Subject Assignments", to: "/dean/subject-assignments", icon: <BookmarkIcon />, roles: ["dean"], matchPrefix: true },
+      { label: "Subject Assignments", to: "/dean/subject-assignments", icon: <UserCheckIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Department Subjects", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
       { label: "Department Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
     ],
