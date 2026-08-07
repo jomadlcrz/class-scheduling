@@ -63,6 +63,8 @@ export function AddStudentStep3Review({
   const isIrregular = academic.enrolledStatus === "Irregular";
   const semesterNumber = Number(academic.semesterNumber);
 
+  // Regular: curriculum slice for program + year + semester (read-only preview).
+  // Irregular: broader program + semester list for manual pick.
   const filteredSubjects = !selectedProgram
     ? []
     : isIrregular
@@ -77,7 +79,9 @@ export function AddStudentStep3Review({
   const allSelected =
     filteredSubjects.length > 0 && filteredSubjects.every((s) => selectedSubjectIds.has(s.id));
   const selectedSubjects = filteredSubjects.filter((s) => selectedSubjectIds.has(s.id));
-  const totalUnits = selectedSubjects.reduce((sum, s) => sum + s.units, 0);
+  const totalUnits = isIrregular
+    ? selectedSubjects.reduce((sum, s) => sum + s.units, 0)
+    : filteredSubjects.reduce((sum, s) => sum + s.units, 0);
 
   const programLabel = selectedProgram
     ? `${selectedProgram.abbrev} — ${selectedProgram.name}`
@@ -98,55 +102,57 @@ export function AddStudentStep3Review({
         onEditAcademic={onEditAcademic}
       />
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <EnrollmentSectionCard
-          title={isIrregular ? "Subjects for this term" : "Curriculum subjects"}
-          icon={<BookmarkIcon />}
-          action={
-            filteredSubjects.length > 0 ? (
-              <Checkbox
-                id="new-student-subjects-select-all"
-                label="Select All"
-                checked={allSelected}
-                onChange={onToggleSelectAll}
-              />
-            ) : undefined
-          }
-        >
-          <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
-            {filteredSubjects.length === 0 ? (
-              <p className="font-body text-sm text-slate-500 dark:text-slate-400">
-                No curriculum subjects found for this program, year, and semester.
-              </p>
-            ) : (
-              filteredSubjects.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-start gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/[0.03]"
-                >
-                  <Checkbox
-                    id={`new-student-subject-${s.id}`}
-                    hideLabel
-                    ariaLabel={`${s.code} — ${s.title}`}
-                    checked={selectedSubjectIds.has(s.id)}
-                    onChange={(checked) => onToggleSubject(s.id, checked)}
-                  />
-                  <label
-                    htmlFor={`new-student-subject-${s.id}`}
-                    className="min-w-0 flex-1 cursor-pointer"
+      <div className={`grid gap-5 ${isIrregular ? "lg:grid-cols-2" : ""}`}>
+        {isIrregular ? (
+          <EnrollmentSectionCard
+            title="Subjects for this term"
+            icon={<BookmarkIcon />}
+            action={
+              filteredSubjects.length > 0 ? (
+                <Checkbox
+                  id="new-student-subjects-select-all"
+                  label="Select All"
+                  checked={allSelected}
+                  onChange={onToggleSelectAll}
+                />
+              ) : undefined
+            }
+          >
+            <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+              {filteredSubjects.length === 0 ? (
+                <p className="font-body text-sm text-slate-500 dark:text-slate-400">
+                  No subjects found for this program and semester.
+                </p>
+              ) : (
+                filteredSubjects.map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex items-start gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/3"
                   >
-                    <span className="block font-body text-sm font-medium text-navy-800 dark:text-mist-100">
-                      {s.code}
-                    </span>
-                    <span className="block font-body text-xs text-slate-500 dark:text-slate-400">
-                      {s.title} · {s.units} units
-                    </span>
-                  </label>
-                </div>
-              ))
-            )}
-          </div>
-        </EnrollmentSectionCard>
+                    <Checkbox
+                      id={`new-student-subject-${s.id}`}
+                      hideLabel
+                      ariaLabel={`${s.code} — ${s.title}`}
+                      checked={selectedSubjectIds.has(s.id)}
+                      onChange={(checked) => onToggleSubject(s.id, checked)}
+                    />
+                    <label
+                      htmlFor={`new-student-subject-${s.id}`}
+                      className="min-w-0 flex-1 cursor-pointer"
+                    >
+                      <span className="block font-body text-sm font-medium text-navy-800 dark:text-mist-100">
+                        {s.code}
+                      </span>
+                      <span className="block font-body text-xs text-slate-500 dark:text-slate-400">
+                        {s.title} · {s.units} units
+                      </span>
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+          </EnrollmentSectionCard>
+        ) : null}
 
         <EnrollmentSectionCard title="Enrollment Summary">
           <dl className="grid gap-4">
@@ -172,15 +178,17 @@ export function AddStudentStep3Review({
             <InfoField label="Term">
               {[selectedSy?.schoolYear, selectedSem?.semester].filter(Boolean).join(" · ") || "—"}
             </InfoField>
-            <InfoField label="Selected Subjects">
+            <InfoField label="Subjects">
               <span className="font-medium tabular-nums">
-                {selectedSubjectIds.size} subject(s) · {totalUnits} unit(s)
+                {isIrregular
+                  ? `${selectedSubjectIds.size} subject(s) · ${totalUnits} unit(s)`
+                  : `${filteredSubjects.length} subject(s) · ${totalUnits} unit(s)`}
               </span>
             </InfoField>
-            {selectedSubjects.length > 0 ? (
-              <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.03]">
+            {(isIrregular ? selectedSubjects : filteredSubjects).length > 0 ? (
+              <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/3">
                 <ul className="flex flex-col gap-1.5">
-                  {selectedSubjects.map((s) => (
+                  {(isIrregular ? selectedSubjects : filteredSubjects).map((s) => (
                     <li
                       key={s.id}
                       className="flex justify-between gap-2 font-body text-xs text-slate-600 dark:text-slate-300"
@@ -193,7 +201,13 @@ export function AddStudentStep3Review({
                   ))}
                 </ul>
               </div>
-            ) : null}
+            ) : (
+              <p className="font-body text-sm text-slate-500 dark:text-slate-400">
+                {isIrregular
+                  ? "Select at least one subject."
+                  : "No curriculum subjects found for this program, year, and semester."}
+              </p>
+            )}
           </dl>
         </EnrollmentSectionCard>
       </div>

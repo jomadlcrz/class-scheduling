@@ -232,7 +232,7 @@ export function AddStudentStep2Academic({
       <ProgramWizardFooter
         backLabel="Back: Identity Information"
         onBack={onBack}
-        primaryLabel="Next: Subjects & Review"
+        primaryLabel="Next: Review"
         onPrimary={onNext}
         primaryDisabled={!canAdvance}
       />

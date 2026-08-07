@@ -30,7 +30,7 @@ const EMPTY_IDENTITY: IdentityDraft = {
 const EMPTY_ACADEMIC: AcademicDraft = {
   programId: "",
   yearLevel: "",
-  enrolledStatus: "",
+  enrolledStatus: "Regular",
   studentType: "",
   setId: "",
   syId: "",
@@ -109,6 +109,9 @@ export function AddStudentWizard({
 
   function handleAcademicChange(patch: Partial<AcademicDraft>) {
     setAcademic((current) => ({ ...current, ...patch }));
+    if (patch.enrolledStatus === "Regular") {
+      setSelectedSubjectIds(new Set());
+    }
   }
 
   function toggleSubject(subjectId: number, checked: boolean) {
@@ -134,6 +137,7 @@ export function AddStudentWizard({
     academic.syId !== "" &&
     academic.semesterNumber !== "" &&
     (isIrregular || academic.setId !== "");
+  const step3Valid = !isIrregular || selectedSubjectIds.size > 0;
   const maxUnlockedIndex = step1Valid ? (step2Valid ? 2 : 1) : 0;
 
   function goToStep(index: number) {
@@ -166,7 +170,8 @@ export function AddStudentWizard({
       enrolledStatus: academic.enrolledStatus,
       syId: academic.syId,
       semesterNumber: academic.semesterNumber,
-      subjectIds: Array.from(selectedSubjectIds),
+      // Regular: server fills from curriculum — send empty list.
+      subjectIds: isIrregular ? Array.from(selectedSubjectIds) : [],
     });
     if (!result.success) {
       setSaveError(result.error.issues[0].message);
@@ -266,7 +271,7 @@ export function AddStudentWizard({
             toggleSelectAll(checked, ids);
           }}
           isSaving={isSaving}
-          canSave={step1Valid && step2Valid}
+          canSave={step1Valid && step2Valid && (!isIrregular || selectedSubjectIds.size > 0)}
           onBack={() => goToStep(1)}
           onSave={handleSave}
           onEditIdentity={() => goToStep(0)}
