@@ -682,21 +682,19 @@ export function StudentsPage() {
 
       {activeView === "all" ? (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="relative ml-auto w-full sm:w-64">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                <SearchIcon />
-              </span>
-              <input
-                id="student-search"
-                type="search"
-                placeholder="Search by name or ID…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                aria-label="Search students"
-                className={`${inputClassName} pl-9 pr-4`}
-              />
-            </div>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
+              id="student-search"
+              type="search"
+              placeholder="Search by name or ID…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search students"
+              className={`${inputClassName} pl-9 pr-4`}
+            />
           </div>
 
           {activeTabFilters.filterBar}
@@ -789,21 +787,19 @@ export function StudentsPage() {
         </div>
       ) : activeView === "regular" ? (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="relative ml-auto w-full sm:w-64">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                <SearchIcon />
-              </span>
-              <input
-                id="regular-student-search"
-                type="search"
-                placeholder="Search by name or ID…"
-                value={regularSearch}
-                onChange={(e) => setRegularSearch(e.target.value)}
-                aria-label="Search regular students"
-                className={`${inputClassName} pl-9 pr-4`}
-              />
-            </div>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
+              id="regular-student-search"
+              type="search"
+              placeholder="Search by name or ID…"
+              value={regularSearch}
+              onChange={(e) => setRegularSearch(e.target.value)}
+              aria-label="Search regular students"
+              className={`${inputClassName} pl-9 pr-4`}
+            />
           </div>
 
           {activeTabFilters.filterBar}
