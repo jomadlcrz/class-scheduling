@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { AddStudentWizard } from "~/features/enrollment/add-student-wizard";
+import { EnrollmentBatchImport } from "~/features/enrollment/enrollment-batch-import";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
@@ -19,6 +20,8 @@ import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
 import type { ClassSet } from "~/types/set";
 import type { Subject } from "~/types/subject";
+
+type EntryMode = "single" | "batch";
 
 export function meta() {
   return [
@@ -35,8 +38,47 @@ export default function EnrollmentNewStudentRoute() {
   );
 }
 
+function EntryModeTabs({
+  mode,
+  onChange,
+}: {
+  mode: EntryMode;
+  onChange: (mode: EntryMode) => void;
+}) {
+  return (
+    <div
+      className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-white/10 dark:bg-white/5"
+      role="tablist"
+      aria-label="Add student method"
+    >
+      {(
+        [
+          { key: "single", label: "Single" },
+          { key: "batch", label: "Batch" },
+        ] as const
+      ).map((tab) => (
+        <button
+          key={tab.key}
+          type="button"
+          role="tab"
+          aria-selected={mode === tab.key}
+          onClick={() => onChange(tab.key)}
+          className={`cursor-pointer rounded-md px-3.5 py-1.5 font-body text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+            mode === tab.key
+              ? "bg-navy-800 text-white dark:bg-gold-400 dark:text-navy-900"
+              : "text-slate-500 hover:text-navy-800 dark:text-slate-400 dark:hover:text-mist-100"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function EnrollmentNewStudentPage() {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<EntryMode>("single");
   const [programs, setPrograms] = useState<Program[] | null>(null);
   const [sets, setSets] = useState<ClassSet[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -65,7 +107,22 @@ function EnrollmentNewStudentPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Add New Student"
-        description="Create a student profile and first-term enrollment — identity, academics, then review."
+        description={
+          mode === "batch"
+            ? "Upload a roster, review the rows, then enroll the batch."
+            : "Create a student profile and first-term enrollment — identity, academics, then review."
+        }
+        actions={
+          !noAcademicTerm && !isLoading ? (
+            <EntryModeTabs
+              mode={mode}
+              onChange={(next) => {
+                setMode(next);
+                setIsDirty(false);
+              }}
+            />
+          ) : undefined
+        }
       />
 
       {noAcademicTerm ? (
@@ -88,6 +145,24 @@ function EnrollmentNewStudentPage() {
           className="mt-6 grid place-items-center py-12 text-navy-700 dark:text-slate-200"
         >
           <Spinner />
+        </div>
+      ) : mode === "batch" ? (
+        <div className="mt-6">
+          <EnrollmentBatchImport
+            programs={programs}
+            sets={sets}
+            subjects={subjects}
+            schoolYears={schoolYears}
+            semesters={semesters}
+            studentTypes={enumOptions?.studentType ?? []}
+            academicStatuses={enumOptions?.academicStatus ?? []}
+            onDirtyChange={setIsDirty}
+            onCancel={() => navigate(-1)}
+            onFinished={(message) => {
+              if (message) toast.success(message);
+              navigate("/enrollment/regular-students");
+            }}
+          />
         </div>
       ) : (
         <div className="mt-6">
