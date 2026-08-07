@@ -99,7 +99,7 @@ export function InstructorCard({
           )}
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-body text-base font-bold text-navy-900 dark:text-white">
+              <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 {instructor.name}
               </h3>
               <Badge tone="emerald">{instructor.statusBadge}</Badge>

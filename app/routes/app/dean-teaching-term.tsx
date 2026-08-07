@@ -184,7 +184,7 @@ function SessionsDropdown({ sessions }: { sessions: TeachingTermDetailScheduledS
   const reduceMotion = useReducedMotion();
   return (
     <tr>
-      <td colSpan={9} className="bg-slate-50/70 p-0 dark:bg-white/[0.03]">
+      <td colSpan={9} className="bg-slate-50/70 p-0 dark:bg-white/3">
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
@@ -405,7 +405,7 @@ function DeanTeachingTermPage() {
             </div>
           )}
           <div>
-            <h1 className="font-body text-xl font-bold text-navy-900 dark:text-white">
+            <h1 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
               {instructor.full_name ?? "Instructor"}
             </h1>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
@@ -495,7 +495,7 @@ function DeanTeachingTermPage() {
         className="mt-6 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/5"
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-body text-sm font-bold text-navy-800 dark:text-white">Daily Load (Mon–Sat)</h3>
+          <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Daily Load (Mon–Sat)</h3>
           <span className="font-body text-[11px] text-slate-400 dark:text-slate-500">hours per day</span>
         </div>
         <div className="mt-5">
@@ -518,7 +518,7 @@ function DeanTeachingTermPage() {
         className="mt-6"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-body text-sm font-bold text-navy-800 dark:text-white">
+          <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
             Subject Assignments
             <span className="ml-1.5 font-normal text-slate-400 dark:text-slate-500">({subject_assignments.length})</span>
           </h3>

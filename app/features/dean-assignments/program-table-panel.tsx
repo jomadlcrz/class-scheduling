@@ -43,7 +43,7 @@ export function ProgramTablePanel({
           <span className="text-slate-400">
             {collapsed ? <ChevronRightIcon /> : <ChevronDownIcon />}
           </span>
-          <h4 className="font-body text-xs font-bold text-navy-900 dark:text-white sm:text-sm">
+          <h4 className="font-body text-xs font-bold text-navy-700 dark:text-mist-100 sm:text-sm">
             {program.programAbbrev} - {program.programName}
           </h4>
         </div>

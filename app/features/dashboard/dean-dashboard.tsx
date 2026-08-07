@@ -323,7 +323,7 @@ export function DeanDashboard() {
                     <InstructorLoadMeters loads={data.instructor_loads} />
                   </ChartCard>
                   <div>
-                    <h3 className="mb-3 text-base font-bold text-slate-800 dark:text-slate-200">
+                    <h3 className="mb-3 font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                       Needs attention
                     </h3>
                     <AttentionTable items={data.attention} />

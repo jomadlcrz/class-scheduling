@@ -507,7 +507,7 @@ export function SubjectAssignmentView() {
       {/* Teaching Loads Main Section */}
       <div className="mt-4 sm:mt-6">
         <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-          <h2 className="font-body text-sm font-bold text-navy-900 dark:text-white sm:text-base">
+          <h2 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100 sm:text-base">
             Instructor Subject Assignments
           </h2>
           <Button type="button" variant="primary" block={false} onClick={() => setAddInstructorModalOpen(true)}>
