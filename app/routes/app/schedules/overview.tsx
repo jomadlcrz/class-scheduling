@@ -17,7 +17,6 @@ import {
 } from "~/features/academic-terms/status-badges";
 import { TableActionButton } from "~/features/academic-terms/table-action-button";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
-import { yearLevelStyle } from "~/features/schedules/lab-analysis/year-level-styles";
 import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -334,16 +333,11 @@ function ScheduleOverviewPage() {
                         )}
                       </div>
                       <div className="flex flex-col gap-4">
-                        {program.years.map((year) => {
-                          const yStyle = yearLevelStyle(year.yearLevel);
-                          return (
+                        {program.years.map((year) => (
                           <div key={year.yearLevel}>
                             <div className="mb-2.5 flex items-center gap-3">
                               <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" aria-hidden="true" />
-                              <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-body text-xs font-bold uppercase tracking-wider ${yStyle.chip}`}
-                              >
-                                <span className={`size-1.5 rounded-full ${yStyle.dot}`} aria-hidden="true" />
+                              <span className="font-body text-xs font-bold uppercase tracking-wider text-navy-700 dark:text-mist-200">
                                 {yearLabel(year.yearLevel)}
                               </span>
                               <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" aria-hidden="true" />
@@ -390,8 +384,7 @@ function ScheduleOverviewPage() {
                               </TableBody>
                             </Table>
                           </div>
-                          );
-                        })}
+                        ))}
                       </div>
                     </section>
                   ))}
