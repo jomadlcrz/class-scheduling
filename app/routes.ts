@@ -39,6 +39,7 @@ export default [
     route("faculty/new", "routes/app/faculty-new.tsx"),
     route("faculty-loads", "routes/app/faculty-loads.tsx"),
     route("schedules", "routes/app/schedules/index.tsx"),
+    route("schedules/overview", "routes/app/schedules/overview.tsx"),
     route("schedules/weekly-hour-allocations", "routes/app/schedules/weekly-hour-allocations.tsx"),
     route("schedules/subject-hour-overrides", "routes/app/schedules/subject-hour-overrides.tsx"),
     route("schedules/lab-analysis", "routes/app/schedules/lab-analysis.tsx"),
