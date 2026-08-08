@@ -138,3 +138,25 @@ input[list]::-webkit-list-button {
     linear-gradient(to bottom, color-mix(in srgb, currentColor 100%, transparent) 1px, transparent 1px);
   background-size: 56px 56px;
 }
+
+/* Skeleton shimmer sweep — transform-only so it stays on the compositor and
+   costs no per-frame JS or layout. */
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+@utility skeleton-shimmer {
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+  }
+}
