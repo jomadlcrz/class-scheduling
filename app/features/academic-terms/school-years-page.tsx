@@ -7,7 +7,7 @@ import { HelpCircleIcon, PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { SchoolYearForm } from "~/features/academic-term/school-year-form";
 import { SchoolYearTable } from "~/features/academic-term/school-year-table";
 import { usePagination } from "~/hooks/use-pagination";
@@ -109,9 +109,7 @@ export function SchoolYearsPage() {
 
       <div className="mt-3">
         {loading ? (
-          <div role="status" aria-label="Loading school years" className="grid place-items-center py-12">
-            <Spinner />
-          </div>
+          <TableSkeleton columns={5} rows={8} />
         ) : filtered.length === 0 ? (
           <EmptyState title={search ? "No school years found" : "No school years yet"}>
             {search ? "Try a different search term." : "Create the first school year to get started."}

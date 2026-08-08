@@ -4,7 +4,7 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { SemesterForm, suggestedSemesterNumber, type SemesterFormValue } from "~/features/academic-term/semester-form";
 import { SemesterTable } from "~/features/academic-term/semester-table";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -52,9 +52,7 @@ export function SemestersPage() {
 
       <div className="mt-6">
         {loading ? (
-          <div role="status" aria-label="Loading semesters" className="grid place-items-center py-12">
-            <Spinner />
-          </div>
+          <TableSkeleton columns={3} rows={6} />
         ) : semesters.length === 0 ? (
           <EmptyState
             title="No semesters yet"

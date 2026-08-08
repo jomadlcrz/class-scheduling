@@ -6,7 +6,7 @@ import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { LockIcon, UnlockIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -213,8 +213,8 @@ export function AcademicTermsAuditLogPage() {
       )}
 
       {loading ? (
-        <div role="status" aria-label="Loading audit log" className="mt-4 grid place-items-center py-12">
-          <Spinner />
+        <div className="mt-4">
+          <TableSkeleton columns={5} rows={8} />
         </div>
       ) : entries.length === 0 ? (
         <div className="mt-4">

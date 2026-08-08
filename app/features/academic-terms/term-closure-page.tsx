@@ -7,7 +7,7 @@ import { HelpCircleIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { Textarea } from "~/components/ui/textarea";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermCloseDialog } from "~/features/academic-terms/term-close-dialog";
@@ -145,9 +145,7 @@ export function TermClosurePage() {
 
         <div className="mt-4">
           {loading ? (
-            <div role="status" aria-label="Loading term closures" className="grid place-items-center py-12">
-              <Spinner />
-            </div>
+            <TableSkeleton columns={7} rows={6} />
           ) : filtered.length === 0 ? (
             <EmptyState title={closures.length === 0 ? "No terms posted yet" : "No matches"}>
               {closures.length === 0
