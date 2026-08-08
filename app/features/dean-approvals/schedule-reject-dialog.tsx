@@ -46,6 +46,12 @@ export function ScheduleRejectDialog({ open, release, onClose, onConfirm }: Sche
     }
   }
 
+  const reasonLength = reason.trim().length;
+  const reasonHint =
+    reasonLength < MIN_REASON_LENGTH
+      ? `At least ${MIN_REASON_LENGTH} characters (${reasonLength}/${MIN_REASON_LENGTH}).`
+      : `${reasonLength} characters.`;
+
   return (
     <Modal open={open} onClose={handleClose} title="Reject schedule">
       <div className="flex flex-col gap-4">
@@ -57,6 +63,7 @@ export function ScheduleRejectDialog({ open, release, onClose, onConfirm }: Sche
         <Textarea
           id="schedule-reject-reason"
           label="Reason for rejection"
+          hint={reasonHint}
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder="Explain what needs to change before this can be approved"

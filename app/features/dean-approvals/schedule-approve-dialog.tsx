@@ -14,14 +14,14 @@ export function ScheduleApproveDialog({ open, release, onClose, onConfirm }: Sch
     <ConfirmDialog
       open={open}
       onClose={onClose}
-      title="Approve schedule"
-      confirmLabel="Approve"
+      title="Approve and publish?"
+      confirmLabel="Approve & publish"
       loadingLabel="Approving…"
       onConfirm={onConfirm}
     >
-      Approve {release?.programAbbrev} {release?.setCode} ({release?.sessionCount ?? 0} session
-      {release?.sessionCount === 1 ? "" : "s"})? Approving publishes it to enrolled students and instructors
-      immediately.
+      Approving {release?.programAbbrev} {release?.setCode} ({release?.sessionCount ?? 0} session
+      {release?.sessionCount === 1 ? "" : "s"}) makes it visible to the regular students in this section and
+      the instructors with classes in it — they'll each get a schedule notification.
     </ConfirmDialog>
   );
 }

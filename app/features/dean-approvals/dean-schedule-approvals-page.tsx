@@ -42,18 +42,29 @@ export function DeanScheduleApprovalsPage() {
 
   async function handleApprove() {
     if (!approveTarget) return;
-    const { message } = await scheduleReleaseService.approveRelease(approveTarget.id);
-    if (message) toast.success(message);
-    await refresh();
-    setApproveTarget(null);
+    try {
+      const { message } = await scheduleReleaseService.approveRelease(approveTarget.id);
+      if (message) toast.success(message);
+      await refresh();
+      setApproveTarget(null);
+    } catch (err) {
+      // Already reviewed / term closed: clear the stale row, then re-surface the backend message.
+      await refresh().catch(() => {});
+      throw err instanceof Error ? err : new Error("Unable to approve the schedule.");
+    }
   }
 
   async function handleReject(reason: string) {
     if (!rejectTarget) return;
-    const { message } = await scheduleReleaseService.rejectRelease(rejectTarget.id, reason);
-    if (message) toast.success(message);
-    await refresh();
-    setRejectTarget(null);
+    try {
+      const { message } = await scheduleReleaseService.rejectRelease(rejectTarget.id, reason);
+      if (message) toast.success(message);
+      await refresh();
+      setRejectTarget(null);
+    } catch (err) {
+      await refresh().catch(() => {});
+      throw err instanceof Error ? err : new Error("Unable to reject the schedule.");
+    }
   }
 
   const pending = inbox?.pending ?? [];
@@ -151,8 +162,9 @@ export function DeanScheduleApprovalsPage() {
               </h2>
               <div className="mt-3">
                 {pending.length === 0 ? (
-                  <EmptyState title="Nothing waiting on you">
-                    Schedules the registrar submits for your department will show up here.
+                  <EmptyState title="No section schedules waiting for approval this term">
+                    When the registrar submits a section timetable for this term, it will appear here — you'll
+                    also get a notification.
                   </EmptyState>
                 ) : (
                   <SchedulePendingApprovalsTable

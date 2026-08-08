@@ -751,11 +751,7 @@ function SchedulesNewPage() {
   const canGenerateBase = Boolean(selectedSet) && Boolean(selectedYearLevel) && schoolYearValid;
   const canGenerate = canGenerateBase && !isGenerating;
   const canAddSlot = Boolean(selectedSet) && schoolYearValid && subjects.length > 0;
-  const lockHint = isSaving
-    ? "Saving schedule…"
-    : slots.length > 0
-      ? "Remove all slots to change."
-      : undefined;
+  const lockHint = slots.length > 0 ? "Remove all slots to change." : undefined;
   const isLoading = programs === null || schoolYearsLoading;
   /** Without at least one academic term there's nothing to schedule. */
   const noAcademicTerm = !schoolYearsLoading && schoolYears.length === 0;

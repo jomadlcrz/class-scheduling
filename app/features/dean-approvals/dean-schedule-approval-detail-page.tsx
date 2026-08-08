@@ -54,15 +54,26 @@ export function DeanScheduleApprovalDetailPage() {
   }, [releaseId]);
 
   async function handleApprove() {
-    const { message } = await scheduleReleaseService.approveRelease(releaseId);
-    if (message) toast.success(message);
-    navigate("/dean/schedule-approvals");
+    try {
+      const { message } = await scheduleReleaseService.approveRelease(releaseId);
+      if (message) toast.success(message);
+      navigate("/dean/schedule-approvals");
+    } catch (err) {
+      // Already reviewed / term closed: refresh so the review buttons reflect the new status.
+      await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
+      throw err instanceof Error ? err : new Error("Unable to approve the schedule.");
+    }
   }
 
   async function handleReject(reason: string) {
-    const { message } = await scheduleReleaseService.rejectRelease(releaseId, reason);
-    if (message) toast.success(message);
-    navigate("/dean/schedule-approvals");
+    try {
+      const { message } = await scheduleReleaseService.rejectRelease(releaseId, reason);
+      if (message) toast.success(message);
+      navigate("/dean/schedule-approvals");
+    } catch (err) {
+      await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
+      throw err instanceof Error ? err : new Error("Unable to reject the schedule.");
+    }
   }
 
   if (loading) {
