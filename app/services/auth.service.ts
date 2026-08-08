@@ -1,4 +1,4 @@
-import { apiMessage, apiPatch, apiPost } from "~/lib/api";
+import { apiMessage, apiPatch, apiPost, clearApiCache } from "~/lib/api";
 import {
   clearPending,
   clearSession,
@@ -74,6 +74,7 @@ function logout() {
   }
   clearSession();
   clearPending();
+  clearApiCache();
 }
 
 /**

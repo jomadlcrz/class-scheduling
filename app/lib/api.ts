@@ -17,6 +17,43 @@ import { clearSession, loadSession, updateSessionTokens } from "~/lib/session";
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const REFRESH_ENDPOINT = "/refresh";
 
+// ── Client response cache ──────────────────────────────────────────────────
+// Mirrors the backend's Redis GET cache (app/utils/cache.py, 60s TTL): GET
+// bodies are kept in memory per user, and any successful mutation clears the
+// whole cache so reads never serve data a write just changed. Client-only —
+// SSR requests and the refresh path bypass it. The backend is the invalidation
+// source of truth; the short TTL bounds staleness from other users' writes.
+
+const GET_CACHE_TTL_MS = 60_000;
+const getCache = new Map<string, { data: unknown; expiresAt: number }>();
+
+function cacheKey(endpoint: string): string {
+  const userId = loadSession()?.user?.id;
+  return `${userId ?? "anon"}:${resolveApiUrl(endpoint)}`;
+}
+
+function cacheRead<T>(endpoint: string): T | null {
+  if (typeof window === "undefined") return null;
+  const key = cacheKey(endpoint);
+  const entry = getCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    getCache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+function cacheWrite(endpoint: string, data: unknown): void {
+  if (typeof window === "undefined") return;
+  getCache.set(cacheKey(endpoint), { data, expiresAt: Date.now() + GET_CACHE_TTL_MS });
+}
+
+/** Clears every cached GET — called after any successful mutation and on logout. */
+export function clearApiCache(): void {
+  getCache.clear();
+}
+
 export class ApiError extends Error {
   status: number;
   details: Record<string, unknown> | null;
@@ -205,6 +242,7 @@ async function request<T>(
       const retryData = (await retryResponse.json().catch(() => null)) as Record<string, unknown> | null;
 
       if (retryResponse.ok) {
+        if (method !== "GET") clearApiCache();
         return retryData as T;
       }
 
@@ -238,6 +276,7 @@ async function request<T>(
     throw new ApiError(message, response.status, data);
   }
 
+  if (method !== "GET") clearApiCache();
   return data as T;
 }
 /** Surfaces a mutation response's backend message verbatim; empty string when the response has none. */
@@ -245,8 +284,12 @@ export function apiMessage(data: { message?: unknown } | null | undefined): stri
   return typeof data?.message === "string" ? data.message.trim() : "";
 }
 
-export function apiGet<T>(endpoint: string): Promise<T> {
-  return request<T>(endpoint, "GET");
+export async function apiGet<T>(endpoint: string): Promise<T> {
+  const cached = cacheRead<T>(endpoint);
+  if (cached !== null) return cached;
+  const data = await request<T>(endpoint, "GET");
+  cacheWrite(endpoint, data);
+  return data;
 }
 
 export function apiPost<T>(
@@ -310,6 +353,7 @@ export async function apiUpload<T>(endpoint: string, formData: FormData): Promis
       const retryData = (await retryResponse.json().catch(() => null)) as Record<string, unknown> | null;
 
       if (retryResponse.ok) {
+        clearApiCache();
         return retryData as T;
       }
 
@@ -342,6 +386,7 @@ export async function apiUpload<T>(endpoint: string, formData: FormData): Promis
     throw new ApiError(message, response.status, data);
   }
 
+  clearApiCache();
   return data as T;
 }
 
