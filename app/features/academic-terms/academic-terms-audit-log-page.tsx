@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { termClosureService } from "~/services/term-closure.service";
 import type { TermAuditLogEntry, TermAuditLogFilters } from "~/types/term-closure";
@@ -28,13 +29,6 @@ function auditActionTone(action: string) {
 }
 
 export function AcademicTermsAuditLogPage() {
-  const [filters, setFilters] = useState<TermAuditLogFilters | null>(null);
-  const [entries, setEntries] = useState<TermAuditLogEntry[]>([]);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [loadingFilters, setLoadingFilters] = useState(true);
-  const [loadingEntries, setLoadingEntries] = useState(true);
-
   const [schoolYear, setSchoolYear] = useState("all");
   const [semester, setSemester] = useState("all");
   const [action, setAction] = useState("all");
@@ -42,63 +36,30 @@ export function AcademicTermsAuditLogPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
+
+  const { data: filters } = useCachedData("term-audit-filters", () =>
+    termClosureService.auditLogFilters(),
+  );
+  const loadingFilters = filters === null;
+
+  const entryKey = `term-audit-entries:${schoolYear}:${semester}:${action}:${performedBy}:${dateFrom}:${dateTo}:${page}`;
+  const { data: entryData } = useCachedData(entryKey, () =>
+    termClosureService.listAuditLog({
+      syId: schoolYear !== "all" ? Number(schoolYear) : undefined,
+      semesterNumber: semester !== "all" ? Number(semester) : undefined,
+      action: action !== "all" ? action : undefined,
+      performedBy: performedBy !== "all" ? Number(performedBy) : undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      page,
+      perPage: PAGE_SIZE,
+    }),
+  );
+  const entries = entryData?.items ?? [];
+  const total = entryData?.total ?? 0;
+  const pages = entryData?.pages ?? 1;
+  const loadingEntries = entryData === null;
   const loading = loadingFilters || loadingEntries;
-
-  useEffect(() => {
-    let cancelled = false;
-
-    termClosureService
-      .auditLogFilters()
-      .then((result) => {
-        if (!cancelled) setFilters(result);
-      })
-      .catch(() => {
-        if (!cancelled) setFilters(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingFilters(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoadingEntries(true);
-
-    termClosureService
-      .listAuditLog({
-        syId: schoolYear !== "all" ? Number(schoolYear) : undefined,
-        semesterNumber: semester !== "all" ? Number(semester) : undefined,
-        action: action !== "all" ? action : undefined,
-        performedBy: performedBy !== "all" ? Number(performedBy) : undefined,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
-        page,
-        perPage: PAGE_SIZE,
-      })
-      .then((result) => {
-        if (cancelled) return;
-        setEntries(result.items);
-        setTotal(result.total);
-        setPages(result.pages);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setEntries([]);
-        setTotal(0);
-        setPages(1);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingEntries(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [schoolYear, semester, action, performedBy, dateFrom, dateTo, page]);
 
   const schoolYearOptions = useMemo(
     () => filters?.schoolYears.map((row) => ({ value: String(row.id), label: row.schoolYear })) ?? [],

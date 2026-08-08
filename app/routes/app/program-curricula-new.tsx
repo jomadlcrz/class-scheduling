@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "~/auth/auth-provider";
 import { RoleGuard } from "~/auth/role-guard";
@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { WizardSkeleton } from "~/components/ui/skeleton";
 import { ProgramWizard } from "~/features/subjects/program-wizard";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { departmentService } from "~/services/department.service";
@@ -38,33 +39,17 @@ function ProgramsNewPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const canManageAcademicTerm = user?.role === "admin" || user?.role === "registrar";
-  const [allSubjects, setAllSubjects] = useState<Subject[] | null>(null);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
-  const [degreeTypes, setDegreeTypes] = useState<string[]>([]);
-  const [schoolYears, setSchoolYears] = useState<SchoolYearOption[] | null>(null);
+  const { data: allSubjects } = useCachedData("subjects", () => subjectService.list());
+  const { data: departmentsData } = useCachedData("academic-departments", () =>
+    departmentService.listAcademic(),
+  );
+  const departments = departmentsData ?? [];
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
+  const subjectTypes = enumOptions?.subjectType ?? [];
+  const degreeTypes = enumOptions?.degreeType ?? [];
+  const { data: schoolYears } = useCachedData("school-years", () => schoolYearService.list());
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    Promise.all([subjectService.list(), departmentService.listAcademic()])
-      .then(([s, d]) => {
-        setAllSubjects(s);
-        setDepartments(d);
-      })
-      .catch(() => {
-        setAllSubjects([]);
-        setDepartments([]);
-      });
-    enumService
-      .getOptions()
-      .then((options) => {
-        setSubjectTypes(options.subjectType);
-        setDegreeTypes(options.degreeType);
-      })
-      .catch(() => {});
-    schoolYearService.list().then(setSchoolYears).catch(() => setSchoolYears([]));
-  }, []);
 
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
     useUnsavedChangesGuard(isDirty, !isSaving);

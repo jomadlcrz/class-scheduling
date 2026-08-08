@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EditBuildingSkeleton } from "~/components/ui/skeleton";
 import { EditBuildingWorkspace } from "~/features/facilities/edit-building-workspace";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
@@ -35,35 +36,18 @@ function EditBuildingPage() {
   const { buildingId } = useParams();
   const id = Number(buildingId);
 
-  const [building, setBuilding] = useState<FacilityBuildingDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [roomTypes, setRoomTypes] = useState<string[]>([]);
-
-  const refresh = useCallback(async () => {
-    if (!Number.isFinite(id)) {
-      setBuilding(null);
-      return;
-    }
-    const data = await facilityService.getById(id);
-    setBuilding(data);
-  }, [id]);
+  const { data: building, error, reload: refresh } = useCachedData(
+    `facility-building:${Number.isFinite(id) ? id : "none"}`,
+    () => facilityService.getById(id),
+    { enabled: Number.isFinite(id) },
+  );
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = programsData ?? [];
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
+  const roomTypes = enumOptions?.roomType ?? [];
+  const loading = Number.isFinite(id) && building === null && !error;
 
   useRefreshOnFocus(refresh);
-
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      refresh(),
-      programService.list().then(setPrograms).catch(() => setPrograms([])),
-      enumService
-        .getOptions()
-        .then((options) => setRoomTypes(options.roomType))
-        .catch(() => {}),
-    ])
-      .catch(() => setBuilding(null))
-      .finally(() => setLoading(false));
-  }, [refresh]);
 
   useEffect(() => {
     if (!loading && !building) {

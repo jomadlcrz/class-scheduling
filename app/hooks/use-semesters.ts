@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { semesterService } from "~/services/semester.service";
+import { useCachedData } from "~/hooks/use-cached-data";
 import type { Semester } from "~/types/semester";
 
 type UseSemestersResult = {
@@ -10,19 +11,14 @@ type UseSemestersResult = {
 };
 
 export function useSemesters(): UseSemestersResult {
-  const [semesters, setSemesters] = useState<Semester[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Shared cache key (also primed by other pages) so revisits/reloads skip loading.
+  const { data, reload } = useCachedData("semesters", () => semesterService.list());
+  const semesters = useMemo(() => data ?? [], [data]);
+  const loading = data === null;
 
   const refresh = useCallback(async () => {
-    const data = await semesterService.list();
-    setSemesters(data);
-  }, []);
-
-  useEffect(() => {
-    refresh()
-      .catch(() => setSemesters([]))
-      .finally(() => setLoading(false));
-  }, [refresh]);
+    await reload();
+  }, [reload]);
 
   const semesterMap = useMemo(() => {
     const m = new Map<number, string>();

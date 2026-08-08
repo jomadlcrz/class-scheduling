@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -13,6 +13,7 @@ import { CardGridSkeleton } from "~/components/ui/skeleton";
 import { DepartmentForm } from "~/features/departments/department-form";
 import { DepartmentArchiveDialog } from "~/features/departments/department-archive-dialog";
 import { DepartmentGridView } from "~/features/departments/department-grid-view";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
@@ -37,28 +38,19 @@ export default function Departments() {
 }
 
 function DepartmentsPage() {
-  const [depts, setDepts] = useState<Department[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [departmentTypes, setDepartmentTypes] = useState<string[]>([]);
+  const { data: depts, error: loadError, reload } = useCachedData("departments", () =>
+    departmentService.list(),
+  );
+  const { data: buildingsData } = useCachedData("buildings", () => buildingService.list());
+  const buildings: Building[] = buildingsData ?? [];
+  // Department type vocab comes from the backend enums endpoint.
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
+  const departmentTypes = enumOptions?.departmentType ?? [];
   const [search, setSearch] = useState("");
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Department | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Department | null>(null);
-
-  useEffect(() => {
-    departmentService.list().then(setDepts).catch((err) => {
-      setDepts([]);
-      setLoadError(err instanceof Error ? err.message : "Unable to load departments.");
-    });
-    buildingService.list().then(setBuildings).catch(() => setBuildings([]));
-    // Department type vocab comes from the backend enums endpoint.
-    enumService
-      .getOptions()
-      .then((options) => setDepartmentTypes(options.departmentType))
-      .catch(() => {});
-  }, []);
 
   const resetKey = `${search}|${buildingFilter}`;
 
@@ -78,9 +70,7 @@ function DepartmentsPage() {
   const pagination = usePagination(visibleDepts, resetKey);
 
   // Mutations return only a message, so the list is refetched afterwards.
-  async function refresh() {
-    setDepts(await departmentService.list());
-  }
+  const refresh = reload;
 
   async function handleCreate(input: CreateDepartmentInput, logoFile?: File | null) {
     const message = await departmentService.create(input, logoFile);
@@ -148,7 +138,7 @@ function DepartmentsPage() {
           />
         </div>
 
-        {loadError ? (
+        {loadError && depts === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

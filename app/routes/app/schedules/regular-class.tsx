@@ -22,6 +22,7 @@ import {
   ScheduleViewToggle,
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -68,13 +69,23 @@ function RegularClassPage() {
   const navigate = useNavigate();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
   const { context: termContext, selectTerm } = useTermContext();
-  const [schedules, setSchedules] = useState<Schedule[] | null>(null);
-  const [scheduledSets, setScheduledSets] = useState<ScheduledSetOption[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const { data: schedules, error: loadError, setData: setSchedules } = useCachedData(
+    "regular-class-schedules",
+    () => scheduleService.view(),
+  );
+  const { data: scheduledSetsData, setData: setScheduledSetsData } = useCachedData(
+    "scheduled-sets",
+    () => scheduleService.getSetWithSchedules(),
+  );
+  const scheduledSets = scheduledSetsData ?? [];
+  const { data: roomsData } = useCachedData("schedule-rooms", () =>
+    scheduleService.listScheduleRooms(),
+  );
+  const rooms = roomsData ?? [];
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
+  const dayOptions = enumOptions?.dayOfWeek ?? [];
   const [actionError, setActionError] = useState<string | null>(null);
   const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
-  const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
-  const [dayOptions, setDayOptions] = useState<{ id: number; name: string }[]>([]);
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
@@ -99,49 +110,36 @@ function RegularClassPage() {
 
   // Year-level labels come from the schedule-scoped creation context (same source
   // /schedules/new uses), so the vocabulary matches the backend's own.
-  const [yearLevels, setYearLevels] = useState<ScheduleYearLevelOption[]>([]);
+  const { data: creationContext } = useCachedData("schedule-creation-context", () =>
+    scheduleService.getCreationContext(),
+  );
+  const yearLevels = useMemo(() => creationContext?.yearLevels ?? [], [creationContext]);
   // Program list supplies the full names — schedules only carry the abbrev.
-  const [programs, setPrograms] = useState<Program[]>([]);
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = programsData ?? [];
 
   // Clear Schedule dialog (selection/loading/error live inside the dialog component).
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
+  // Seed the cascading filters (school year → program → year level → set) from
+  // the loaded schedules on first load.
   useEffect(() => {
-    scheduleService
-      .view()
-      .then((result) => {
-        setSchedules(result);
-        // Default to the newest school year, then cascade program → year level → set.
-        const years = [...new Set(result.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
-        const firstYear = years[0] ?? "";
-        setSchoolYear(firstYear);
-        const inTerm = result.filter((s) => s.schoolYear === firstYear && s.semester === 1);
-        const firstProgram = [...new Set(inTerm.map((s) => s.program))].sort()[0] ?? "";
-        setSelectedProgram(firstProgram);
-        const inProgram = inTerm.filter((s) => s.program === firstProgram);
-        const firstYearLevel = [...new Set(inProgram.map((s) => s.yearLevel))].sort((a, b) => a - b)[0];
-        setSelectedYearLevel(firstYearLevel ?? "");
-        const firstSet = inProgram.find((s) => s.yearLevel === firstYearLevel);
-        setSetName(firstSet?.setCode ?? "");
-      })
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load schedules.");
-        setSchedules([]);
-      });
-  }, []);
-
-  useEffect(() => {
-    scheduleService.getSetWithSchedules().then(setScheduledSets).catch(() => setScheduledSets([]));
-    scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-    scheduleService
-      .getCreationContext()
-      .then(({ yearLevels: options }) => setYearLevels(options))
-      .catch(() => setYearLevels([]));
-    enumService.getOptions().then((options) => setDayOptions(options.dayOfWeek)).catch(() => setDayOptions([]));
-  }, []);
+    if (!schedules || schoolYear) return;
+    const years = [...new Set(schedules.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
+    const firstYear = years[0] ?? "";
+    if (!firstYear) return;
+    setSchoolYear(firstYear);
+    const inTerm = schedules.filter((s) => s.schoolYear === firstYear && s.semester === 1);
+    const firstProgram = [...new Set(inTerm.map((s) => s.program))].sort()[0] ?? "";
+    setSelectedProgram(firstProgram);
+    const inProgram = inTerm.filter((s) => s.program === firstProgram);
+    const firstYearLevel = [...new Set(inProgram.map((s) => s.yearLevel))].sort((a, b) => a - b)[0];
+    setSelectedYearLevel(firstYearLevel ?? "");
+    const firstSet = inProgram.find((s) => s.yearLevel === firstYearLevel);
+    setSetName(firstSet?.setCode ?? "");
+  }, [schedules, schoolYear]);
 
   const yearLevelLabel = useMemo(() => {
     const labels = new Map<number, string>();
@@ -361,7 +359,7 @@ function RegularClassPage() {
             ),
         ) ?? [],
       );
-      setScheduledSets((current) => current.filter((row) => !clearedSetIds.has(row.setId)));
+      setScheduledSetsData((current) => (current ?? []).filter((row) => !clearedSetIds.has(row.setId)));
     }
     await refreshReleases();
     if (unseated.length > 0) setUnseatedStudents(unseated);
@@ -446,7 +444,7 @@ function RegularClassPage() {
 
   const isLoading = schedules === null;
   // Filters only make sense once there's at least one schedule to show.
-  const showContent = !loadError && !isLoading && (schedules?.length ?? 0) > 0;
+  const showContent = !isLoading && (schedules?.length ?? 0) > 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -581,8 +579,8 @@ function RegularClassPage() {
           )}
         </AnimatePresence>
 
-        {loadError ? null : isLoading ? (
-          <ScheduleSkeleton rows={8} />
+        {isLoading ? (
+          loadError ? null : <ScheduleSkeleton rows={8} />
         ) : visibleSchedules.length === 0 ? (
           <EmptyState
             title="No schedules found"

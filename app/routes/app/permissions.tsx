@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -14,6 +14,7 @@ import { PermissionEditForm } from "~/features/permissions/permission-edit-form"
 import { PermissionMatrix } from "~/features/permissions/permission-matrix";
 import { PermissionTable } from "~/features/permissions/permission-table";
 import { RolePermissionsForm } from "~/features/permissions/role-permissions-form";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { permissionService } from "~/services/permission.service";
 import type { PermissionSummary, RolePermission } from "~/types/permission";
@@ -37,9 +38,13 @@ export default function Permissions() {
 }
 
 function PermissionsPage() {
-  const [roles, setRoles] = useState<PermissionSummary[] | null>(null);
-  const [catalog, setCatalog] = useState<RolePermission[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { data: roles, error, reload: reloadRoles } = useCachedData("permission-roles", () =>
+    permissionService.list(),
+  );
+  const { data: catalogData, reload: reloadCatalog } = useCachedData("permission-catalog", () =>
+    permissionService.listCatalog(),
+  );
+  const catalog = catalogData ?? [];
   const [addRoleOpen, setAddRoleOpen] = useState(false);
   const [addPermissionOpen, setAddPermissionOpen] = useState(false);
   const [assignTarget, setAssignTarget] = useState<PermissionSummary | null>(null);
@@ -50,16 +55,9 @@ function PermissionsPage() {
   const [archivePermissionTarget, setArchivePermissionTarget] = useState<RolePermission | null>(null);
 
   function refresh() {
-    permissionService
-      .list()
-      .then(setRoles)
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : ""),
-      );
-    permissionService.listCatalog().then(setCatalog).catch(() => setCatalog([]));
+    void reloadRoles();
+    void reloadCatalog();
   }
-
-  useEffect(refresh, []);
 
   const revokeTargetRole = roles?.find((r) => r.id === revokeTarget?.roleId);
   const revokeTargetPermission = catalog.find((p) => p.id === revokeTarget?.permissionId);
@@ -83,7 +81,7 @@ function PermissionsPage() {
         }
       />
 
-      {error ? (
+      {error && roles === null ? (
         <EmptyState title="Couldn't load permissions">{error}</EmptyState>
       ) : roles === null ? (
         <TableSkeleton columns={5} rows={8} />

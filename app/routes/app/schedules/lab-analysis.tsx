@@ -13,6 +13,7 @@ import { LabAnalysisVerdict } from "~/features/schedules/lab-analysis/lab-analys
 import { LabProgramAccessCards } from "~/features/schedules/lab-analysis/lab-program-access-cards";
 import { LabRoomPlates } from "~/features/schedules/lab-analysis/lab-room-plates";
 import { LabSubjectTable } from "~/features/schedules/lab-analysis/lab-subject-table";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -42,51 +43,33 @@ function LabAnalysisPage() {
 
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState(1);
-  const [programs, setPrograms] = useState<Program[]>([]);
   const [programFilter, setProgramFilter] = useState("all");
 
-  const [analysis, setAnalysis] = useState<LabAnalysis | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = programsData ?? [];
 
   const matchedSy = schoolYears.find((s) => s.schoolYear === schoolYear);
   const matchedSem = semesters.find((s) => s.semesterNumber === semester);
+  const termReady = Boolean(matchedSy && matchedSem);
 
   useEffect(() => {
     if (schoolYear || schoolYears.length === 0) return;
     setSchoolYear(defaultSchoolYear);
   }, [schoolYear, schoolYears, defaultSchoolYear]);
 
-  useEffect(() => {
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-  }, []);
-
-  useEffect(() => {
-    if (!matchedSy || !matchedSem) {
-      setAnalysis(null);
-      return;
-    }
-    let stale = false;
-    setAnalysis(null);
-    setLoadError(null);
-    labAnalysisService
-      .analyze({
-        syId: matchedSy.id,
-        semesterNumber: matchedSem.semesterNumber,
+  // Term + program scoped; cached per combination so revisits skip the skeleton.
+  const analysisKey = `lab-analysis:${matchedSy?.id ?? "none"}:${matchedSem?.semesterNumber ?? "none"}:${programFilter}`;
+  const { data: analysis, error: loadError } = useCachedData(
+    analysisKey,
+    () =>
+      labAnalysisService.analyze({
+        syId: matchedSy!.id,
+        semesterNumber: matchedSem!.semesterNumber,
         programId: programFilter === "all" ? undefined : Number(programFilter),
-      })
-      .then((data) => {
-        if (!stale) setAnalysis(data);
-      })
-      .catch((err) => {
-        if (stale) return;
-        setLoadError(err instanceof Error ? err.message : "Unable to load laboratory analysis.");
-      });
-    return () => {
-      stale = true;
-    };
-  }, [matchedSy?.id, matchedSem?.semesterNumber, programFilter]);
+      }),
+    { enabled: termReady },
+  );
 
-  const termReady = Boolean(matchedSy && matchedSem);
   const subjectRows = analysis ? aggregateLabSubjects(analysis.laboratories) : [];
 
   return (
@@ -192,7 +175,7 @@ function LabAnalysisPage() {
       <div className="mt-6 flex flex-col gap-6">
         {!termReady ? (
           <EmptyState title="Select a term">Pick a school year and semester to view laboratory capacity.</EmptyState>
-        ) : loadError ? (
+        ) : loadError && analysis === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -8,6 +8,7 @@ import { ConfirmDialog } from "~/components/ui/modal";
 import { WizardSkeleton } from "~/components/ui/skeleton";
 import { AddStudentWizard } from "~/features/enrollment/add-student-wizard";
 import { EnrollmentBatchImport } from "~/features/enrollment/enrollment-batch-import";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
@@ -79,23 +80,17 @@ function EntryModeTabs({
 function EnrollmentNewStudentPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<EntryMode>("single");
-  const [programs, setPrograms] = useState<Program[] | null>(null);
-  const [sets, setSets] = useState<ClassSet[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [schoolYears, setSchoolYears] = useState<SchoolYearOption[] | null>(null);
-  const [semesters, setSemesters] = useState<Semester[]>([]);
-  const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
+  const { data: programs } = useCachedData("programs", () => programService.list());
+  const { data: setsData } = useCachedData("sets", () => setService.list());
+  const sets = setsData ?? [];
+  const { data: subjectsData } = useCachedData("subjects", () => subjectService.list());
+  const subjects = subjectsData ?? [];
+  const { data: schoolYears } = useCachedData("school-years", () => schoolYearService.list());
+  const { data: semestersData } = useCachedData("semesters", () => semesterService.list());
+  const semesters = semestersData ?? [];
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-    setService.list().then(setSets).catch(() => setSets([]));
-    subjectService.list().then(setSubjects).catch(() => setSubjects([]));
-    schoolYearService.list().then(setSchoolYears).catch(() => setSchoolYears([]));
-    semesterService.list().then(setSemesters).catch(() => setSemesters([]));
-    enumService.getOptions().then(setEnumOptions).catch(() => setEnumOptions(null));
-  }, []);
 
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
     useUnsavedChangesGuard(isDirty, !isSaving);

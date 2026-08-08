@@ -15,6 +15,7 @@ import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-d
 import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
 import { FacultyEditForm } from "~/features/faculty/faculty-edit-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { facultyService } from "~/services/faculty.service";
@@ -37,9 +38,11 @@ export default function FacultyRoute() {
 
 function FacultyPage() {
   const navigate = useNavigate();
-  const [facultyList, setFacultyList] = useState<Faculty[] | null>(null);
+  const { data: facultyList, error: loadError, reload: refreshFacultyList } = useCachedData(
+    "faculty",
+    () => facultyService.list(),
+  );
 
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
 
@@ -49,13 +52,6 @@ function FacultyPage() {
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
-
-  useEffect(() => {
-    facultyService.list().then(setFacultyList).catch((err) => {
-      setLoadError(err instanceof Error ? err.message : "Unable to load faculty.");
-      setFacultyList([]);
-    });
-  }, []);
 
   /** Unique department codes derived from the faculty list. */
   const departmentCodes = useMemo(() => {
@@ -109,10 +105,6 @@ function FacultyPage() {
       cancelled = true;
     };
   }, [pageAccountIds]);
-
-  function refreshFacultyList() {
-    facultyService.list().then(setFacultyList).catch(() => {});
-  }
 
   async function handleEdit(input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) {
     if (!editTarget) return;
@@ -173,7 +165,7 @@ function FacultyPage() {
           </div>
         </div>
 
-        {loadError ? (
+        {loadError && facultyList === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

@@ -24,6 +24,7 @@ import {
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
 import { SlotEntryForm, type PendingSlot } from "~/features/schedules/slot-entry-form";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useDays } from "~/hooks/use-days";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -116,7 +117,10 @@ function SchedulesNewPage() {
   // Sourced from the schedule-scoped GET /regular_schedule/create-regular-class-schedules
   // rather than the general year-level enum, so the label sent to auto-generate always
   // matches this module's own vocabulary (YEAR_LEVEL_INT_TO_NAME on the backend).
-  const [yearLevels, setYearLevels] = useState<ScheduleYearLevelOption[]>([]);
+  const { data: creationContext } = useCachedData("schedule-creation-context", () =>
+    scheduleService.getCreationContext(),
+  );
+  const yearLevels = useMemo(() => creationContext?.yearLevels ?? [], [creationContext]);
   const yearLevelIds = useMemo(() => yearLevels.map((yl) => yl.id), [yearLevels]);
   const yearLevelLabelMap = useMemo(() => {
     const m = new Map<number, string>();
@@ -128,11 +132,16 @@ function SchedulesNewPage() {
     [yearLevelLabelMap],
   );
 
-  const [programs, setPrograms] = useState<Program[] | null>(null);
+  const { data: programs } = useCachedData("programs", () => programService.list());
   const [sets, setSets] = useState<ClassSet[]>([]);
-  const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
+  const { data: roomsData } = useCachedData("schedule-rooms", () =>
+    scheduleService.listScheduleRooms(),
+  );
+  const rooms = roomsData ?? [];
   const [subjects, setSubjects] = useState<ScheduleSubjectOption[]>([]);
-  const [allocations, setAllocations] = useState<WeeklyHourAllocation[] | null>(null);
+  const { data: allocations } = useCachedData("weekly-hour-allocations", () =>
+    weeklyHourService.list(),
+  );
 
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
@@ -181,16 +190,6 @@ function SchedulesNewPage() {
   const isDirty = slots.length > 0 || isGenerating;
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
     useUnsavedChangesGuard(isDirty, !isSaving);
-
-  useEffect(() => {
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-    scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
-    scheduleService
-      .getCreationContext()
-      .then(({ yearLevels }) => setYearLevels(yearLevels))
-      .catch(() => setYearLevels([]));
-    weeklyHourService.list().then(setAllocations).catch(() => setAllocations([]));
-  }, []);
 
   // Default to the most recent school year once the list loads; a manual pick isn't overridden.
   useEffect(() => {

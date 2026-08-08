@@ -10,6 +10,7 @@ import { AssignSchedulePanel } from "~/features/schedules/assign-schedule-panel"
 import { AssignedScheduleTable } from "~/features/schedules/assigned-schedule-table";
 import { IrregularStudentList } from "~/features/schedules/irregular-student-list";
 import { IrregularStudentPanel } from "~/features/schedules/irregular-student-panel";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -38,7 +39,6 @@ export default function IrregularClassRoute() {
 type Tab = "students" | "assigned";
 
 function IrregularClassPage() {
-  const [students, setStudents] = useState<IrregularStudent[] | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<IrregularStudent | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("students");
 
@@ -46,8 +46,28 @@ function IrregularClassPage() {
   const { semesters } = useSemesters();
   const [schoolYear, setSchoolYear] = useState("");
   const [semesterNumber, setSemesterNumber] = useState("");
-  const [pending, setPending] = useState<StudentPendingSchedule[] | null>(null);
-  const [assigned, setAssigned] = useState<StudentAssignedSchedule[] | null>(null);
+
+  const matchedSy = schoolYears.find((sy) => sy.schoolYear === schoolYear);
+  const matchedSem = semesters.find((s) => String(s.semesterNumber) === semesterNumber);
+  const termReady = Boolean(matchedSy && matchedSem);
+
+  // Term-scoped lists; cached per term so revisits skip the skeleton.
+  const termSuffix = `${matchedSy?.id ?? "none"}:${matchedSem?.semesterNumber ?? "none"}`;
+  const { data: students, reload: reloadStudents } = useCachedData(
+    `irregular-pending-students:${termSuffix}`,
+    () => irregularClassService.listPendingStudents(matchedSy!.id, matchedSem!.semesterNumber),
+    { enabled: termReady },
+  );
+  const { data: pending, reload: reloadPending } = useCachedData(
+    `irregular-pending-schedule:${termSuffix}`,
+    () => irregularClassService.listPendingSchedule(matchedSy!.id, matchedSem!.semesterNumber),
+    { enabled: termReady },
+  );
+  const { data: assigned, reload: reloadAssigned } = useCachedData(
+    `irregular-assigned-schedule:${termSuffix}`,
+    () => irregularClassService.listAssignedSchedule(matchedSy!.id, matchedSem!.semesterNumber),
+    { enabled: termReady },
+  );
 
   useEffect(() => {
     if (schoolYear || schoolYears.length === 0) return;
@@ -59,30 +79,7 @@ function IrregularClassPage() {
     setSemesterNumber(String(semesters[0].semesterNumber));
   }, [semesterNumber, semesters]);
 
-  const matchedSy = schoolYears.find((sy) => sy.schoolYear === schoolYear);
-  const matchedSem = semesters.find((s) => String(s.semesterNumber) === semesterNumber);
-
-  useEffect(() => {
-    if (!matchedSy || !matchedSem) {
-      setPending(null);
-      setAssigned(null);
-      return;
-    }
-    irregularClassService
-      .listPendingStudents(matchedSy.id, matchedSem.semesterNumber)
-      .then(setStudents)
-      .catch(() => {});
-    irregularClassService
-      .listPendingSchedule(matchedSy.id, matchedSem.semesterNumber)
-      .then(setPending)
-      .catch(() => setPending([]));
-    irregularClassService
-      .listAssignedSchedule(matchedSy.id, matchedSem.semesterNumber)
-      .then(setAssigned)
-      .catch(() => setAssigned([]));
-  }, [matchedSy?.id, matchedSem?.semesterNumber]);
-
-  const selectedPending = !matchedSy || !matchedSem
+  const selectedPending = !termReady
     ? undefined
     : pending?.find((p) => p.studentProfileId === selectedStudent?.studentProfileId) ?? null;
 
@@ -95,9 +92,9 @@ function IrregularClassPage() {
       semesterNumber: matchedSem.semesterNumber,
     });
     if (message) toast.success(message);
-    irregularClassService.listPendingStudents(matchedSy.id, matchedSem.semesterNumber).then(setStudents).catch(() => {});
-    irregularClassService.listPendingSchedule(matchedSy.id, matchedSem.semesterNumber).then(setPending).catch(() => {});
-    irregularClassService.listAssignedSchedule(matchedSy.id, matchedSem.semesterNumber).then(setAssigned).catch(() => {});
+    void reloadStudents();
+    void reloadPending();
+    void reloadAssigned();
     setSelectedStudent(null);
   }
 

@@ -1,7 +1,8 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { deanService } from "~/services/dean.service";
 import type {
   TeachingTermDetail,
@@ -336,36 +337,20 @@ function UnassignedSubjectsWarning({ subjects }: { subjects: TeachingTermDetailU
 function DeanTeachingTermPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [detail, setDetail] = useState<TeachingTermDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const teachingTermId = Number(id);
 
-  useEffect(() => {
-    if (!teachingTermId) return;
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    deanService
-      .getTeachingTermDetail(teachingTermId)
-      .then((data) => {
-        if (!cancelled) setDetail(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Unable to load teaching term.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [teachingTermId]);
+  const { data: detail, error } = useCachedData(
+    `dean-teaching-term:${teachingTermId || "none"}`,
+    () => deanService.getTeachingTermDetail(teachingTermId),
+    { enabled: !!teachingTermId },
+  );
+  const loading = !!teachingTermId && detail === null && !error;
 
   if (loading) {
     return <TermSkeleton />;
   }
 
-  if (error || !detail) {
+  if (!detail) {
     return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <PageHeader

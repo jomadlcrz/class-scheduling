@@ -189,7 +189,7 @@ export function DeanDashboard() {
     refreshing,
     years,
     sems,
-  } = useTermData<DeanAnalyticsResponse>((sy, sem) => deanService.getAnalytics(sy, sem));
+  } = useTermData<DeanAnalyticsResponse>("dean-analytics", (sy, sem) => deanService.getAnalytics(sy, sem));
 
   const tiles = data ? buildTiles(data.summary) : [];
 

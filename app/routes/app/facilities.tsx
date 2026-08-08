@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -9,6 +9,7 @@ import { FacilitiesSkeleton } from "~/components/ui/skeleton";
 import { PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
 import { BuildingArchiveDialog } from "~/features/facilities/buildings/building-archive-dialog";
 import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
@@ -37,50 +38,34 @@ export default function Facilities() {
 function FacilitiesPage() {
   const navigate = useNavigate();
   const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
-  const [buildings, setBuildings] = useState<FacilityBuildingDetail[] | null>(null);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [roomTypes, setRoomTypes] = useState<string[]>([]);
-  const [roomStatuses, setRoomStatuses] = useState<string[]>([]);
+  const { data: buildings, error: loadError, reload: reloadFacilities } = useCachedData(
+    "facilities",
+    () => facilityService.list(),
+  );
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = programsData ?? [];
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
+  const roomTypes = enumOptions?.roomType ?? [];
+  const roomStatuses = enumOptions?.classroomStatus ?? [];
   const [archiveTarget, setArchiveTarget] = useState<Building | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
-    setLoadError(null);
-    let data: FacilityBuildingDetail[];
-    try {
-      data = await facilityService.list();
-    } catch (error) {
-      setBuildings([]);
-      setLoadError(error instanceof Error ? error.message : "");
-      return;
-    }
-    setBuildings(data);
+  // Keep a valid building selected as the list loads or changes.
+  useEffect(() => {
+    if (!buildings) return;
     setSelectedBuildingId((current) => {
-      if (data.length === 0) return null;
-      if (current === null || !data.some((b) => b.id === current)) return data[0].id;
+      if (buildings.length === 0) return null;
+      if (current === null || !buildings.some((b) => b.id === current)) return buildings[0].id;
       return current;
     });
-  }, []);
+  }, [buildings]);
 
-  useRefreshOnFocus(refresh);
-
-  useEffect(() => {
-    void refresh();
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-    enumService
-      .getOptions()
-      .then((options) => {
-        setRoomTypes(options.roomType);
-        setRoomStatuses(options.classroomStatus);
-      })
-      .catch(() => {});
-  }, [refresh]);
+  useRefreshOnFocus(reloadFacilities);
 
   async function handleArchiveBuilding(building: Building) {
     const message = await buildingService.archive(building.id, building.name);
     if (message) toast.success(message);
     setArchiveTarget(null);
-    await refresh();
+    await reloadFacilities();
   }
 
   return (
@@ -98,29 +83,30 @@ function FacilitiesPage() {
 
       <div className="mt-6">
         {buildings === null ? (
-          <FacilitiesSkeleton />
-        ) : loadError !== null ? (
-          <Card className="p-2">
-            <EmptyState
-              title="Unable to load facilities"
-              action={
-                <Button
-                  type="button"
-                  variant="outline"
-                  block={false}
-                  onClick={() => {
-                    setBuildings(null);
-                    void refresh();
-                  }}
-                >
-                  <RefreshCwIcon />
-                  Try again
-                </Button>
-              }
-            >
-              {loadError}
-            </EmptyState>
-          </Card>
+          loadError !== null ? (
+            <Card className="p-2">
+              <EmptyState
+                title="Unable to load facilities"
+                action={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    onClick={() => {
+                      void reloadFacilities();
+                    }}
+                  >
+                    <RefreshCwIcon />
+                    Try again
+                  </Button>
+                }
+              >
+                {loadError}
+              </EmptyState>
+            </Card>
+          ) : (
+            <FacilitiesSkeleton />
+          )
         ) : (
           <FacilitiesViewWorkspace
             buildings={buildings}

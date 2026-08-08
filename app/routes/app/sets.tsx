@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -15,8 +15,8 @@ import { SetTable } from "~/features/sets/set-table";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
 import { setService } from "~/services/set.service";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
-import type { Program } from "~/types/program";
 import type { ClassSet, CreateSetInput } from "~/types/set";
 import { useYearLevels } from "~/hooks/use-year-levels";
 
@@ -37,8 +37,8 @@ export default function Sets() {
 
 function SetsPage() {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
-  const [sets, setSets] = useState<ClassSet[] | null>(null);
-  const [programs, setPrograms] = useState<Program[] | null>(null);
+  const { data: sets, error, reload } = useCachedData("sets", () => setService.list());
+  const { data: programs } = useCachedData("programs", () => programService.list());
 
   const [search, setSearch] = useState("");
   const [program, setProgram] = useState("all");
@@ -47,11 +47,6 @@ function SetsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ClassSet | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<ClassSet | null>(null);
-
-  useEffect(() => {
-    setService.list().then(setSets).catch(() => setSets([]));
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-  }, []);
 
   const resetKey = `${search}|${program}|${yearLevel}`;
 
@@ -76,9 +71,7 @@ function SetsPage() {
   const pagination = usePagination(visibleSets, resetKey);
 
   // Mutations return only a message, so the list is refetched afterwards.
-  async function refresh() {
-    setSets(await setService.list());
-  }
+  const refresh = reload;
 
   async function handleCreate(inputs: CreateSetInput[]) {
     const message = await setService.create(inputs);
@@ -148,7 +141,7 @@ function SetsPage() {
           />
         </div>
 
-        {sets === null ? (
+        {sets === null && !error ? (
           <TableSkeleton columns={4} rows={8} />
         ) : visibleSets.length === 0 ? (
           <EmptyState title="No sets found">

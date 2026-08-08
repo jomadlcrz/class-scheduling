@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
+import { useCachedData } from "~/hooks/use-cached-data";
 
 type UseSchoolYearsResult = {
   schoolYears: SchoolYearOption[];
@@ -9,25 +10,24 @@ type UseSchoolYearsResult = {
 };
 
 export function useSchoolYears(): UseSchoolYearsResult {
-  const [schoolYears, setSchoolYears] = useState<SchoolYearOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Shared cache key (also primed by other pages) so revisits/reloads skip loading.
+  const { data, reload } = useCachedData("school-years", () => schoolYearService.list());
 
-  const refresh = useCallback(async () => {
-    const data = await schoolYearService.list();
-    setSchoolYears(
-      [...data].sort((a, b) => {
+  const schoolYears = useMemo(
+    () =>
+      [...(data ?? [])].sort((a, b) => {
         if (a.isCurrent && !b.isCurrent) return -1;
         if (!a.isCurrent && b.isCurrent) return 1;
         return b.schoolYear.localeCompare(a.schoolYear);
       }),
-    );
-  }, []);
+    [data],
+  );
 
-  useEffect(() => {
-    refresh()
-      .catch(() => setSchoolYears([]))
-      .finally(() => setLoading(false));
-  }, [refresh]);
+  const loading = data === null;
+
+  const refresh = useCallback(async () => {
+    await reload();
+  }, [reload]);
 
   const defaultSchoolYear = useMemo(
     () =>

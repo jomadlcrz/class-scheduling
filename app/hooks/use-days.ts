@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { enumService, type DayOfWeekOption } from "~/services/enum.service";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { DAYS, DAY_LABELS as STATIC_DAY_LABELS, type Day } from "~/types/schedule";
 
 type UseDaysResult = {
@@ -15,16 +16,10 @@ type UseDaysResult = {
  * the backend enum carries full names/ids, not the short codes used as grid keys.
  */
 export function useDays(): UseDaysResult {
-  const [days, setDays] = useState<DayOfWeekOption[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    enumService
-      .getOptions()
-      .then((opts) => setDays(opts.dayOfWeek ?? []))
-      .catch(() => setDays([]))
-      .finally(() => setLoading(false));
-  }, []);
+  // Derived from the shared enums cache so revisits/reloads skip the loading state.
+  const { data } = useCachedData("enums", () => enumService.getOptions());
+  const days = useMemo(() => data?.dayOfWeek ?? [], [data]);
+  const loading = data === null;
 
   const dayLabels = useMemo(() => {
     if (days.length !== DAYS.length) return STATIC_DAY_LABELS;

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { scheduleService } from "~/services/schedule.service";
-import { DAYS, type Schedule, type ScheduleSemester } from "~/types/schedule";
+import { DAYS, type ScheduleSemester } from "~/types/schedule";
 
 /**
  * Loads the caller's own schedule (student or faculty — the backend scopes rows via
@@ -9,28 +10,22 @@ import { DAYS, type Schedule, type ScheduleSemester } from "~/types/schedule";
  * consumers of this data.
  */
 export function useMySchedule() {
-  const [schedules, setSchedules] = useState<Schedule[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const { data: schedules, error: loadError } = useCachedData("my-schedule", () =>
+    scheduleService.view(),
+  );
 
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
 
+  // Default the term filter to the latest school year and its first semester once loaded.
   useEffect(() => {
-    scheduleService
-      .view()
-      .then((result) => {
-        setSchedules(result);
-        const years = [...new Set(result.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
-        const firstYear = years[0] ?? "";
-        setSchoolYear(firstYear);
-        const firstSemester = result.find((s) => s.schoolYear === firstYear)?.semester;
-        if (firstSemester) setSemester(firstSemester);
-      })
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load your schedule.");
-        setSchedules([]);
-      });
-  }, []);
+    if (!schedules || schedules.length === 0 || schoolYear) return;
+    const years = [...new Set(schedules.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
+    const firstYear = years[0] ?? "";
+    if (firstYear) setSchoolYear(firstYear);
+    const firstSemester = schedules.find((s) => s.schoolYear === firstYear)?.semester;
+    if (firstSemester) setSemester(firstSemester);
+  }, [schedules, schoolYear]);
 
   const schoolYears = useMemo(
     () => [...new Set((schedules ?? []).map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a)),

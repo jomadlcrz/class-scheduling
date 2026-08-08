@@ -11,6 +11,7 @@ import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
 import { filterClassrooms } from "~/features/classroom-mapping/mapping-model";
 import { MappingTableView } from "~/features/classroom-mapping/mapping-table-view";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { classroomMappingService } from "~/services/classroom-mapping.service";
@@ -36,56 +37,42 @@ export default function ClassroomMappingRoute() {
 }
 
 function ClassroomMappingPage() {
-  const [classrooms, setClassrooms] = useState<Classroom[] | null>(null);
-  const [schoolYears, setSchoolYears] = useState<string[]>([]);
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [semesters, setSemesters] = useState<Semester[]>([]);
   const [schoolYear, setSchoolYear] = useState("");
   const [semesterNumber, setSemesterNumber] = useState<number | null>(null);
   const [buildingFilter, setBuildingFilter] = useState("all");
-  const buildingName = buildings.find((b) => String(b.id) === buildingFilter)?.name;
   const [rawSearch, setRawSearch] = useState("");
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [contextLoading, setContextLoading] = useState(true);
 
-  useEffect(() => {
-    Promise.all([semesterService.list(), schoolYearService.list()])
-      .then(([semesterList, schoolYearList]) => {
-        setSemesters(semesterList);
-        if (semesterList.length > 0 && semesterNumber === null) {
-          setSemesterNumber(semesterList[0].semesterNumber);
-        }
-        setSchoolYears(schoolYearList.map((o) => o.schoolYear));
-        if (schoolYearList.length > 0 && !schoolYear) setSchoolYear(schoolYearList[0].schoolYear);
-      })
-      .catch(() => {
-        setSemesters([]);
-        setSchoolYears([]);
-      })
-      .finally(() => setContextLoading(false));
-  }, []);
+  const { data: semestersData } = useCachedData("semesters", () => semesterService.list());
+  const { data: schoolYearsData } = useCachedData("school-years", () => schoolYearService.list());
+  const { data: buildingsData } = useCachedData("buildings", () => buildingService.list());
+  const semesters = useMemo(() => semestersData ?? [], [semestersData]);
+  const schoolYears = useMemo(
+    () => (schoolYearsData ?? []).map((o) => o.schoolYear),
+    [schoolYearsData],
+  );
+  const buildings = buildingsData ?? [];
+  const contextLoading = semestersData === null || schoolYearsData === null;
+  const buildingName = buildings.find((b) => String(b.id) === buildingFilter)?.name;
 
+  // Default the term selectors to the first available option once loaded.
   useEffect(() => {
-    if (semesterNumber === null || !schoolYear) return;
-    let stale = false;
-    setLoadError(null);
-    setClassrooms(null);
-    Promise.all([
-      classroomMappingService.list({ schoolYear, semesterNumber, building: buildingName }),
-      buildingService.list(),
-    ])
-      .then(([result, buildingList]) => {
-        if (stale) return;
-        setClassrooms(result.classrooms);
-        setBuildings(buildingList);
-      })
-      .catch((err) => {
-        if (stale) return;
-        setLoadError(err instanceof Error ? err.message : "Unable to load classroom mapping.");
-      });
-    return () => { stale = true; };
-  }, [semesterNumber, schoolYear, buildingName]);
+    if (semesters.length > 0 && semesterNumber === null) setSemesterNumber(semesters[0].semesterNumber);
+  }, [semesters, semesterNumber]);
+  useEffect(() => {
+    if (schoolYears.length > 0 && !schoolYear) setSchoolYear(schoolYears[0]);
+  }, [schoolYears, schoolYear]);
+
+  // Term + building scoped; cached per combination so revisits skip the skeleton.
+  const mappingKey = `classroom-mapping:${schoolYear}:${semesterNumber ?? "none"}:${buildingName ?? "all"}`;
+  const { data: classrooms, error: loadError } = useCachedData(
+    mappingKey,
+    () =>
+      classroomMappingService
+        .list({ schoolYear, semesterNumber: semesterNumber as number, building: buildingName })
+        .then((result) => result.classrooms),
+    { enabled: schoolYear !== "" && semesterNumber !== null },
+  );
 
   const search = useDeferredValue(rawSearch);
 
@@ -207,7 +194,7 @@ function ClassroomMappingPage() {
           <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
         </div>
 
-        {loadError ? (
+        {loadError && classrooms === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

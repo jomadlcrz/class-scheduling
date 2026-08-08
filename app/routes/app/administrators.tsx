@@ -14,6 +14,7 @@ import { ActivateAdministratorDialog } from "~/features/administrators/activate-
 import { AdministratorEditForm } from "~/features/administrators/administrator-edit-form";
 import { AdministratorTable } from "~/features/administrators/administrator-table";
 import { DeactivateAdministratorDialog } from "~/features/administrators/deactivate-administrator-dialog";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { administratorService } from "~/services/administrator.service";
@@ -36,8 +37,10 @@ export default function AdministratorsRoute() {
 
 function AdministratorsPage() {
   const navigate = useNavigate();
-  const [administrators, setAdministrators] = useState<Administrator[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const { data: administrators, error: loadError, reload: refresh } = useCachedData(
+    "administrators",
+    () => administratorService.list(),
+  );
   const [search, setSearch] = useState("");
 
   const [editTarget, setEditTarget] = useState<Administrator | null>(null);
@@ -46,20 +49,6 @@ function AdministratorsPage() {
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
-
-  function refresh() {
-    administratorService
-      .list()
-      .then(setAdministrators)
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load administrators.");
-        setAdministrators([]);
-      });
-  }
-
-  useEffect(() => {
-    refresh();
-  }, []);
 
   const visibleAdministrators = useMemo(() => {
     if (!administrators) return [];
@@ -155,7 +144,7 @@ function AdministratorsPage() {
           </div>
         </div>
 
-        {loadError ? (
+        {loadError && administrators === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { SubjectHourOverrideForm, type OverrideFormInput } from "~/features/schedules/subject-hour-override-form";
 import { SubjectHourOverrideTable } from "~/features/schedules/subject-hour-override-table";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -44,8 +45,6 @@ function SubjectHourOverridesPage() {
 
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState(1);
-  const [overrides, setOverrides] = useState<SubjectHourOverride[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SubjectHourOverride | null>(null);
@@ -53,14 +52,10 @@ function SubjectHourOverridesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [pendingOverride, setPendingOverride] = useState<OverrideFormInput | null>(null);
 
-  // Subject/set pickers for the form
-  const [subjects, setSubjects] = useState<{ id: number; code: string; title: string; subjectType: string }[]>([]);
-  const [sets, setSets] = useState<ClassSet[]>([]);
-  const [allocations, setAllocations] = useState<WeeklyHourAllocation[]>([]);
-
   // Resolve the selected school year and semester number from labels.
   const matchedSy = schoolYears.find((s) => s.schoolYear === schoolYear);
   const matchedSem = semesters.find((s) => s.semesterNumber === semester);
+  const termReady = Boolean(matchedSy && matchedSem);
 
   // Default to most recent school year
   useEffect(() => {
@@ -68,53 +63,39 @@ function SubjectHourOverridesPage() {
     setSchoolYear(defaultSchoolYear);
   }, [schoolYear, schoolYears, defaultSchoolYear]);
 
-  // Load overrides when term is selected
-  useEffect(() => {
-    if (!matchedSy || !matchedSem) {
-      setOverrides(null);
-      return;
-    }
-    setOverrides(null);
-    setLoadError(null);
-    scheduleService
-      .listSubjectHourOverrides({ syId: matchedSy.id, semesterNumber: matchedSem.semesterNumber })
-      .then(setOverrides)
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load overrides.");
-        setOverrides([]);
-      });
-  }, [matchedSy?.id, matchedSem?.semesterNumber]);
+  // Overrides + sets are term-scoped; cached per term so revisits skip the skeleton.
+  const overrideKey = `subject-hour-overrides:${matchedSy?.id ?? "none"}:${matchedSem?.semesterNumber ?? "none"}`;
+  const { data: overrides, error: loadError, reload } = useCachedData(
+    overrideKey,
+    () =>
+      scheduleService.listSubjectHourOverrides({
+        syId: matchedSy!.id,
+        semesterNumber: matchedSem!.semesterNumber,
+      }),
+    { enabled: termReady },
+  );
 
-  // Load subjects and sets for the form pickers (independent of term for browsing)
-  useEffect(() => {
-    subjectService
-      .list()
-      .then((subs) => setSubjects(subs.map((s) => ({ id: s.id, code: s.code, title: s.title, subjectType: s.subjectType }))))
-      .catch(() => setSubjects([]));
-  }, []);
+  // Subject/allocation pickers for the form (independent of term for browsing).
+  const { data: subjectsData } = useCachedData("subjects", () => subjectService.list());
+  const subjects = useMemo(
+    () => (subjectsData ?? []).map((s) => ({ id: s.id, code: s.code, title: s.title, subjectType: s.subjectType })),
+    [subjectsData],
+  );
+  const { data: allocationsData } = useCachedData("weekly-hour-allocations", () =>
+    weeklyHourService.list(),
+  );
+  const allocations = allocationsData ?? [];
 
-  useEffect(() => {
-    weeklyHourService.list().then(setAllocations).catch(() => setAllocations([]));
-  }, []);
-
-  useEffect(() => {
-    if (!matchedSy || !matchedSem) {
-      setSets([]);
-      return;
-    }
-    setService
-      .list({ syId: matchedSy.id, semesterNumber: matchedSem.semesterNumber })
-      .then(setSets)
-      .catch(() => setSets([]));
-  }, [matchedSy?.id, matchedSem?.semesterNumber]);
+  const setsKey = `sets-term:${matchedSy?.id ?? "none"}:${matchedSem?.semesterNumber ?? "none"}`;
+  const { data: setsData } = useCachedData(
+    setsKey,
+    () => setService.list({ syId: matchedSy!.id, semesterNumber: matchedSem!.semesterNumber }),
+    { enabled: termReady },
+  );
+  const sets = setsData ?? [];
 
   async function refresh() {
-    if (!matchedSy || !matchedSem) return;
-    const data = await scheduleService.listSubjectHourOverrides({
-      syId: matchedSy.id,
-      semesterNumber: matchedSem.semesterNumber,
-    });
-    setOverrides(data);
+    await reload();
   }
 
   async function handleCreate(input: OverrideFormInput) {
@@ -204,8 +185,6 @@ function SubjectHourOverridesPage() {
     }
   }
 
-  const termReady = Boolean(matchedSy && matchedSem);
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
@@ -237,7 +216,7 @@ function SubjectHourOverridesPage() {
                     : schoolYears.map((y) => ({ value: y.schoolYear, label: y.schoolYear }))
               }
               value={schoolYear}
-              onValueChange={(v) => { setSchoolYear(v as string); setOverrides(null); }}
+              onValueChange={(v) => setSchoolYear(v as string)}
             >
               <SelectTrigger id="sho-school-year">
                 <SelectValue />
@@ -269,7 +248,7 @@ function SubjectHourOverridesPage() {
                         .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))
               }
               value={semLoading ? "" : String(semester)}
-              onValueChange={(v) => { setSemester(Number(v)); setOverrides(null); }}
+              onValueChange={(v) => setSemester(Number(v))}
             >
               <SelectTrigger id="sho-semester">
                 <SelectValue />
@@ -298,7 +277,7 @@ function SubjectHourOverridesPage() {
           <EmptyState title="Select a term">
             Pick a school year and semester to view overrides.
           </EmptyState>
-        ) : loadError ? (
+        ) : loadError && overrides === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -7,6 +7,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { StudentDirectoryTable, type StudentDirectoryRow } from "~/features/enrollment/student-directory-table";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { irregularClassService, type IrregularStudent } from "~/services/irregular-class.service";
 
@@ -48,28 +49,11 @@ function EnrollmentIrregularStudentsPage() {
   const syId = termContext?.selection.syId ?? null;
   const semesterNumber = termContext?.selection.semesterNumber ?? null;
 
-  const [students, setStudents] = useState<IrregularStudent[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (syId == null || semesterNumber == null) return;
-    let cancelled = false;
-    setStudents(null);
-    setLoadError(null);
-    irregularClassService
-      .listStudents(syId, semesterNumber)
-      .then((data) => {
-        if (!cancelled) setStudents(data);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setLoadError(err instanceof Error ? err.message : "Unable to load irregular students.");
-        setStudents([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [syId, semesterNumber]);
+  const { data: students, error: loadError } = useCachedData(
+    `enrollment-irregular-students:${syId ?? "none"}:${semesterNumber ?? "none"}`,
+    () => irregularClassService.listStudents(syId as number, semesterNumber as number),
+    { enabled: syId != null && semesterNumber != null },
+  );
 
   const rows = useMemo(() => (students ?? []).map(toDirectoryRow), [students]);
 
@@ -87,10 +71,10 @@ function EnrollmentIrregularStudentsPage() {
       />
 
       <div className="mt-6">
-        {students === null ? (
-          <TableSkeleton columns={9} rows={8} />
-        ) : loadError ? (
+        {loadError && students === null ? (
           <EmptyState title="Unable to load students">{loadError}</EmptyState>
+        ) : students === null ? (
+          <TableSkeleton columns={9} rows={8} />
         ) : (
           <StudentDirectoryTable rows={rows} emptyMessage="No irregular student enrollments for this term yet." />
         )}

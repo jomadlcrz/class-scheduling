@@ -29,6 +29,7 @@ import { semesterService } from "~/services/semester.service";
 import { setService } from "~/services/set.service";
 import { studentService } from "~/services/student.service";
 import { subjectService } from "~/services/subject.service";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
@@ -103,15 +104,27 @@ export function StudentsPage() {
   const syId = termContext?.selection.syId ?? null;
   const semesterNumber = termContext?.selection.semesterNumber ?? null;
 
-  const [studentList, setStudentList] = useState<StudentAccountRow[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  // Admin-only account list (super-admin endpoint). Registrars use the
+  // term-scoped regular/irregular lists below instead, so this stays disabled.
+  const { data: studentList, error: loadError, reload: reloadAccounts } = useCachedData(
+    "student-accounts",
+    () => studentService.listAccounts(),
+    { enabled: isAdmin },
+  );
 
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [sets, setSets] = useState<ClassSet[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [schoolYears, setSchoolYears] = useState<SchoolYearOption[]>([]);
-  const [semesters, setSemesters] = useState<Semester[]>([]);
-  const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
+  // Shared reference data for the create/enroll forms — cached under keys reused
+  // across the app so revisits and reloads skip the loading state.
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = programsData ?? [];
+  const { data: setsData } = useCachedData("sets", () => setService.list());
+  const sets = setsData ?? [];
+  const { data: subjectsData } = useCachedData("subjects", () => subjectService.list());
+  const subjects = subjectsData ?? [];
+  const { data: schoolYearsData } = useCachedData("school-years", () => schoolYearService.list());
+  const schoolYears = schoolYearsData ?? [];
+  const { data: semestersData } = useCachedData("semesters", () => semesterService.list());
+  const semesters = semestersData ?? [];
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
 
   const [search, setSearch] = useState("");
   const [regularSearch, setRegularSearch] = useState("");
@@ -141,28 +154,6 @@ export function StudentsPage() {
   // Admin-only: bulk "Create Account" selection, scoped per tab (reset on tab change below).
   const [selectedForAccount, setSelectedForAccount] = useState<Set<number>>(new Set());
   const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
-
-  // Load student lists based on role
-  useEffect(() => {
-    if (isAdmin) {
-      // Admin: use super-admin endpoint with account info
-      studentService
-        .listAccounts()
-        .then(setStudentList)
-        .catch((err) => {
-          setLoadError(err instanceof Error ? err.message : "Unable to load students.");
-          setStudentList([]);
-        });
-    }
-    // Dropdown data for the new-student form; failures just leave the
-    // dropdowns empty (validation reports the missing selection).
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-    setService.list().then(setSets).catch(() => setSets([]));
-    subjectService.list().then(setSubjects).catch(() => setSubjects([]));
-    schoolYearService.list().then(setSchoolYears).catch(() => setSchoolYears([]));
-    semesterService.list().then(setSemesters).catch(() => setSemesters([]));
-    enumService.getOptions().then(setEnumOptions).catch(() => setEnumOptions(null));
-  }, [isAdmin]);
 
   const resetKey = search;
 
@@ -425,7 +416,7 @@ export function StudentsPage() {
   }, [irregularAccountIds]);
 
   function refreshStudentList() {
-    studentService.listAccounts().then(setStudentList).catch(() => {});
+    void reloadAccounts();
   }
 
   async function handleCreateRecord(input: CreateStudentRecordInput) {
@@ -520,7 +511,7 @@ export function StudentsPage() {
     const message = await studentService.enroll(enrollTarget.studentProfileId, input);
     if (message) toast.success(message);
     setEnrolled(true);
-    studentService.listAccounts().then(setStudentList).catch(() => {});
+    void reloadAccounts();
   }
 
   function closeEnrollModal() {
@@ -542,7 +533,7 @@ export function StudentsPage() {
 
   async function reloadStudentLists() {
     if (isAdmin) {
-      studentService.listAccounts().then(setStudentList).catch(() => setStudentList([]));
+      void reloadAccounts();
     } else {
       if (syId == null || semesterNumber == null) return;
       regularClassService.listStudents(syId, semesterNumber).then(setRegularStudents).catch(() => setRegularStudents([]));
@@ -701,7 +692,7 @@ export function StudentsPage() {
 
           {isAdmin ? (
             // Admin view: uses super-admin endpoint with account info
-            loadError ? (
+            loadError && studentList === null ? (
               <ResultState tone="error" title="Unable to load">
                 {loadError}
               </ResultState>

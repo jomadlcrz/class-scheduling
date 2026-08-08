@@ -44,7 +44,7 @@ function FacultyLoadsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      {loadError ? (
+      {loadError && isLoading ? (
         <EmptyState title="Couldn't load faculty loads">{loadError}</EmptyState>
       ) : !contextReady || termsLoading || semestersLoading ? (
         <div className="mt-8">

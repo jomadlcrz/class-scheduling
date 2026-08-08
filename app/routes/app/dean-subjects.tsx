@@ -9,6 +9,7 @@ import { GraduationCapIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
 import { programService } from "~/services/program.service";
@@ -33,35 +34,34 @@ export default function DeanSubjectsRoute() {
 }
 
 function DeanSubjectsPage() {
-  const [subjects, setSubjects] = useState<DepartmentSubjectProgram[] | null>(null);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedProgram, setSelectedProgram] = useState("");
   const [search, setSearch] = useState("");
   const reduceMotion = useReducedMotion();
 
+  const { data: rawSubjects, error: loadError } = useCachedData(
+    "dean-department-subjects",
+    () => deanService.listDepartmentSubjects(),
+  );
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = useMemo(() => programsData ?? [], [programsData]);
+
+  // deanService.listDepartmentSubjects() can't resolve programAbbrev itself (deans may
+  // lack programs:read) — fill it in here from the separately-fetched /programs list,
+  // matched by name, same as departmentCode below.
+  const subjects = useMemo<DepartmentSubjectProgram[] | null>(() => {
+    if (!rawSubjects) return null;
+    return rawSubjects.map((program) => ({
+      ...program,
+      programAbbrev: programs.find((p) => p.name === program.programName)?.abbrev || program.programAbbrev,
+    }));
+  }, [rawSubjects, programs]);
+
+  // Default the program selector to the first program once loaded.
   useEffect(() => {
-    Promise.all([
-      deanService.listDepartmentSubjects(),
-      programService.list().catch(() => []),
-    ])
-      .then(([data, progs]) => {
-        // deanService.listDepartmentSubjects() can't resolve programAbbrev itself (deans may
-        // lack programs:read) — fill it in here from the separately-fetched /programs list,
-        // matched by name, same as departmentCode below.
-        const withAbbrev = data.map((program) => ({
-          ...program,
-          programAbbrev: progs.find((p) => p.name === program.programName)?.abbrev || program.programAbbrev,
-        }));
-        setSubjects(withAbbrev);
-        setPrograms(progs);
-        if (withAbbrev.length > 0) setSelectedProgram(withAbbrev[0].programName);
-      })
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load department subjects.");
-        setSubjects([]);
-      });
-  }, []);
+    if (subjects && subjects.length > 0 && !selectedProgram) {
+      setSelectedProgram(subjects[0].programName);
+    }
+  }, [subjects, selectedProgram]);
 
   const currentProgram = subjects?.find((p) => p.programName === selectedProgram) ?? null;
 
@@ -116,7 +116,7 @@ function DeanSubjectsPage() {
       />
 
       <div className="mt-6 flex flex-col gap-5">
-        {loadError ? (
+        {loadError && subjects === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

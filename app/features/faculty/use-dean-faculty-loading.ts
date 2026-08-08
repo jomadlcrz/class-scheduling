@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { deanService } from "~/services/dean.service";
@@ -17,8 +18,13 @@ export function useDeanFacultyLoading() {
   const [selectedSemesterNumber, setSelectedSemesterNumber] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const [entries, setEntries] = useState<FacultyLoadingEntry[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  // Term-scoped faculty loading; cached per term so revisits skip the skeleton.
+  const loadKey = `dean-faculty-loading:${selectedSchoolYearId || "none"}:${selectedSemesterNumber || "none"}`;
+  const { data: entries, error: loadError } = useCachedData(
+    loadKey,
+    () => deanService.getFacultyLoading(Number(selectedSchoolYearId), Number(selectedSemesterNumber)),
+    { enabled: Boolean(selectedSchoolYearId && selectedSemesterNumber) },
+  );
 
   // Default school year
   useEffect(() => {
@@ -34,26 +40,9 @@ export function useDeanFacultyLoading() {
     if (first) setSelectedSemesterNumber(String(first.semesterNumber));
   }, [semesters, selectedSemesterNumber]);
 
-  // Fetch loading data when term changes
+  // Reset the selected instructor whenever the term changes.
   useEffect(() => {
-    if (!selectedSchoolYearId || !selectedSemesterNumber) return;
-    let cancelled = false;
-    setEntries(null);
-    setLoadError(null);
     setSelectedIndex(0);
-
-    deanService
-      .getFacultyLoading(Number(selectedSchoolYearId), Number(selectedSemesterNumber))
-      .then((data) => {
-        if (!cancelled) setEntries(data);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setLoadError(err instanceof Error ? err.message : "Unable to load faculty loading.");
-        setEntries([]);
-      });
-
-    return () => { cancelled = true; };
   }, [selectedSchoolYearId, selectedSemesterNumber]);
 
   const matchedSy = schoolYears.find((s) => String(s.id) === selectedSchoolYearId);

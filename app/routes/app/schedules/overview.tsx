@@ -18,6 +18,7 @@ import {
 import { TableActionButton } from "~/features/academic-terms/table-action-button";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -90,12 +91,19 @@ function ScheduleOverviewPage() {
 
   const [syId, setSyId] = useState<number | null>(null);
   const [semester, setSemester] = useState<number>(1);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [yearLevels, setYearLevels] = useState<ScheduleYearLevelOption[]>([]);
-  const [deptMeta, setDeptMeta] = useState<Map<string, { name: string; logoUrl: string | null }>>(
-    new Map(),
-  );
   const [previewTarget, setPreviewTarget] = useState<ScheduleRelease | null>(null);
+
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = useMemo(() => programsData ?? [], [programsData]);
+  const { data: deptList } = useCachedData("departments", () => departmentService.list());
+  const deptMeta = useMemo(
+    () => new Map((deptList ?? []).map((d) => [d.abbrev, { name: d.name, logoUrl: d.logoUrl }])),
+    [deptList],
+  );
+  const { data: creationContext } = useCachedData("schedule-creation-context", () =>
+    scheduleService.getCreationContext(),
+  );
+  const yearLevels = useMemo(() => creationContext?.yearLevels ?? [], [creationContext]);
 
   const schoolYears = termContext?.schoolYears ?? [];
 
@@ -108,20 +116,6 @@ function ScheduleOverviewPage() {
       if (selection.semesterNumber) setSemester(selection.semesterNumber);
     }
   }, [termContext, syId]);
-
-  useEffect(() => {
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-    departmentService
-      .list()
-      .then((depts) =>
-        setDeptMeta(new Map(depts.map((d) => [d.abbrev, { name: d.name, logoUrl: d.logoUrl }]))),
-      )
-      .catch(() => setDeptMeta(new Map()));
-    scheduleService
-      .getCreationContext()
-      .then(({ yearLevels: options }) => setYearLevels(options))
-      .catch(() => setYearLevels([]));
-  }, []);
 
   const { releases, loading } = useScheduleReleases(syId, semester);
 

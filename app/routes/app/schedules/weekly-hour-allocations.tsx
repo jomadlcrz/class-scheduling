@@ -1,15 +1,15 @@
-﻿import { useEffect, useState } from "react";
-import { toast } from "sonner";
+﻿import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { ResultState } from "~/components/feedback/result-state";
 import { Card } from "~/components/ui/card";
 import { AllocationListSkeleton } from "~/components/ui/skeleton";
 import { WeeklyHourAllocationForm } from "~/features/schedules/weekly-hour-allocation-form";
 import { WeeklyHourAllocationList } from "~/features/schedules/weekly-hour-allocation-list";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService } from "~/services/enum.service";
 import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
-import type { CreateWeeklyHourAllocationInput, WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
+import type { CreateWeeklyHourAllocationInput } from "~/types/weekly-hour-allocation";
 
 export function meta() {
   return [
@@ -27,29 +27,18 @@ export default function WeeklyHoursRoute() {
 }
 
 function WeeklyHoursPage() {
-  const [types, setTypes] = useState<string[]>([]);
-  const [allocations, setAllocations] = useState<WeeklyHourAllocation[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    enumService
-      .getOptions()
-      .then((o) => setTypes(o.subjectType))
-      .catch(() => setTypes([]));
-    weeklyHourService
-      .list()
-      .then(setAllocations)
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load allocations.");
-        setAllocations([]);
-      });
-  }, []);
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
+  const types = enumOptions?.subjectType ?? [];
+  const { data: allocations, error: loadError, reload } = useCachedData(
+    "weekly-hour-allocations",
+    () => weeklyHourService.list(),
+  );
 
   async function handleCreate(input: CreateWeeklyHourAllocationInput) {
     const message = await weeklyHourService.create(input);
     if (message) toast.success(message);
     // The backend upserts per subject type — refetch for the saved state.
-    weeklyHourService.list().then(setAllocations).catch(() => {});
+    void reload();
   }
 
   return (
@@ -71,7 +60,7 @@ function WeeklyHoursPage() {
           <h2 className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
             Current Allocations
           </h2>
-          {loadError ? (
+          {loadError && allocations === null ? (
             <ResultState tone="error" title="Unable to load">
               {loadError}
             </ResultState>

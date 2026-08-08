@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { clearDataCache } from "~/lib/data-cache";
 import { clearPending, clearSession } from "~/lib/session";
 import { useCrossTabAuthSync } from "~/hooks/use-cross-tab-auth-sync";
 import { authService, type LoginResult } from "~/services/auth.service";
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleRemoteLogout = useCallback(() => {
     clearSession();
     clearPending();
+    clearDataCache();
     setUser(null);
   }, []);
 
@@ -78,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     authService.logout();
+    clearDataCache();
     setUser(null);
     announceLogout();
   }, [announceLogout]);

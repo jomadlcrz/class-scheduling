@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useCachedData } from "~/hooks/use-cached-data";
+import { peekCache } from "~/lib/data-cache";
 import {
   Select,
   SelectContent,
@@ -37,73 +39,52 @@ export type TermOption = { id: number; schoolYear: string };
 export type SemOption = { id: number; semester: string; semesterNumber: number };
 
 /** Loads school years + semesters, defaults to the current term, then fetches
- * the given analytics payload whenever the term selectors change. The fetch
- * callback may be recreated every render; a ref keeps the latest while the
- * effect only watches the selected term. */
-export function useTermData<T>(fetch: (syId: number, semesterNumber: number) => Promise<T>) {
-  const [data, setData] = useState<T | null>(null);
-  const [syId, setSyId] = useState<number>(0);
-  const [semesterNumber, setSemesterNumber] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [years, setYears] = useState<TermOption[]>([]);
-  const [sems, setSems] = useState<SemOption[]>([]);
+ * the given analytics payload whenever the term selectors change. Term lists and
+ * the per-term payload are cached (keyed by `cacheKey` + term), so revisiting a
+ * dashboard or reloading the page shows it instantly and revalidates in the
+ * background. `loading` covers the cold state; `refreshing` the background one. */
+export function useTermData<T>(
+  cacheKey: string,
+  fetch: (syId: number, semesterNumber: number) => Promise<T>,
+) {
+  // Seed the default term synchronously from the cached lists so a cached
+  // dashboard renders data on first paint instead of flashing the skeleton.
+  const [syId, setSyId] = useState<number>(
+    () => peekCache<TermOption[]>("school-years")?.at(0)?.id ?? 0,
+  );
+  const [semesterNumber, setSemesterNumber] = useState<number>(() => {
+    const cachedSems = peekCache<SemOption[]>("semesters");
+    const first = cachedSems?.find((s) => s.semesterNumber !== 3) ?? cachedSems?.at(0);
+    return first?.semesterNumber ?? 0;
+  });
 
-  const fetchRef = useRef(fetch);
-  const dataRef = useRef<T | null>(null);
-  fetchRef.current = fetch;
+  const { data: yearsData } = useCachedData("school-years", () => schoolYearService.list());
+  const { data: semsData } = useCachedData("semesters", () => semesterService.list());
+  const years: TermOption[] = useMemo(() => yearsData ?? [], [yearsData]);
+  const sems: SemOption[] = useMemo(() => semsData ?? [], [semsData]);
 
-  const fetchTerms = useCallback(async () => {
-    try {
-      const [y, s] = await Promise.all([
-        schoolYearService.list(),
-        semesterService.list(),
-      ]);
-      setYears(y);
-      setSems(s);
-      const current = y.at(0);
-      const first = s.find((sem) => sem.semesterNumber !== 3) ?? s.at(0);
-      if (current) setSyId(current.id);
-      if (first) setSemesterNumber(first.semesterNumber);
-    } catch {
-      setYears([]);
-      setSems([]);
-    }
-  }, []);
-
+  // Default the term selectors once the lists load (cold case).
   useEffect(() => {
-    fetchTerms();
-  }, [fetchTerms]);
-
+    if (syId || years.length === 0) return;
+    const current = years.at(0);
+    if (current) setSyId(current.id);
+  }, [years, syId]);
   useEffect(() => {
-    if (!syId || !semesterNumber) return;
-    let cancelled = false;
-    const isInitial = !dataRef.current;
-    if (!isInitial) setRefreshing(true);
-    if (isInitial) setLoading(true);
-    setError(null);
-    fetchRef
-      .current(syId, semesterNumber)
-      .then((d) => {
-        if (!cancelled) {
-          dataRef.current = d;
-          setData(d);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load dashboard data.");
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-          setRefreshing(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [syId, semesterNumber]);
+    if (semesterNumber || sems.length === 0) return;
+    const first = sems.find((s) => s.semesterNumber !== 3) ?? sems.at(0);
+    if (first) setSemesterNumber(first.semesterNumber);
+  }, [sems, semesterNumber]);
+
+  const termReady = Boolean(syId && semesterNumber);
+  const dataKey = `${cacheKey}:${syId || "none"}:${semesterNumber || "none"}`;
+  const { data, error, isValidating } = useCachedData(
+    dataKey,
+    () => fetch(syId, semesterNumber),
+    { enabled: termReady },
+  );
+
+  const loading = !termReady || (data === null && !error);
+  const refreshing = isValidating && data !== null;
 
   return { data, syId, semesterNumber, setSyId, setSemesterNumber, loading, error, refreshing, years, sems };
 }

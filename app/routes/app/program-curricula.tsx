@@ -17,6 +17,7 @@ import { ProgramArchiveDialog } from "~/features/programs/program-archive-dialog
 import { ProgramForm } from "~/features/programs/program-form";
 import { SubjectArchiveDialog } from "~/features/subjects/subject-archive-dialog";
 import { SubjectForm } from "~/features/subjects/subject-form";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
@@ -57,58 +58,50 @@ function ProgramCurriculaPage() {
   const { yearLevelLabel } = useYearLevels();
   const reduceMotion = useReducedMotion();
 
-  const [programs, setPrograms] = useState<Program[] | null>(null);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [allSubjects, setAllSubjects] = useState<Subject[]>([]);
-  const [subjectTypes, setSubjectTypes] = useState<string[]>([]);
   const [selectedCode, setSelectedCode] = useState("");
-  const [curriculum, setCurriculum] = useState<ProgramCurriculum | null | "loading">(null);
   const [search, setSearch] = useState("");
+
+  const { data: programs, reload: refreshPrograms } = useCachedData("programs", () =>
+    programService.list(),
+  );
+  const { data: departmentsData } = useCachedData("academic-departments", () =>
+    departmentService.listAcademic(),
+  );
+  const departments = departmentsData ?? [];
+  const { data: allSubjectsData, reload: refreshSubjects } = useCachedData("subjects", () =>
+    subjectService.list(),
+  );
+  const allSubjects = allSubjectsData ?? [];
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
+  const subjectTypes = enumOptions?.subjectType ?? [];
+
+  const { data: curriculum, reload: reloadCurriculum } = useCachedData(
+    `curriculum:${selectedCode || "none"}`,
+    () => curriculumService.getByProgram(selectedCode),
+    { enabled: selectedCode !== "" },
+  );
+  const curriculumLoading = selectedCode !== "" && curriculum === null;
 
   const [editProgramTarget, setEditProgramTarget] = useState<Program | null>(null);
   const [archiveProgramTarget, setArchiveProgramTarget] = useState<Program | null>(null);
   const [editSubjectTarget, setEditSubjectTarget] = useState<Subject | null>(null);
   const [archiveSubjectTarget, setArchiveSubjectTarget] = useState<Subject | null>(null);
 
+  // Default the selected program from the ?program= param (or the first one) once loaded.
   useEffect(() => {
-    programService.list().then((list) => {
-      setPrograms(list);
+    if (programs && selectedCode === "") {
       const requested = searchParams.get("program");
       const initial =
-        requested && list.some((p) => p.abbrev === requested) ? requested : (list[0]?.abbrev ?? "");
-      setSelectedCode(initial);
-    }).catch(() => setPrograms([]));
-    departmentService.listAcademic().then(setDepartments).catch(() => setDepartments([]));
-    subjectService.list().then(setAllSubjects).catch(() => setAllSubjects([]));
-    enumService
-      .getOptions()
-      .then((options) => setSubjectTypes(options.subjectType))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (!selectedCode) {
-      setCurriculum(null);
-      return;
+        requested && programs.some((p) => p.abbrev === requested)
+          ? requested
+          : (programs[0]?.abbrev ?? "");
+      if (initial) setSelectedCode(initial);
     }
-    setCurriculum("loading");
-    curriculumService
-      .getByProgram(selectedCode)
-      .then(setCurriculum)
-      .catch(() => setCurriculum(null));
-  }, [selectedCode]);
-
-  async function refreshPrograms() {
-    setPrograms(await programService.list());
-  }
+  }, [programs, selectedCode, searchParams]);
 
   async function refreshCurriculum() {
     if (!selectedCode) return;
-    setCurriculum(await curriculumService.getByProgram(selectedCode));
-  }
-
-  async function refreshSubjects() {
-    setAllSubjects(await subjectService.list());
+    await reloadCurriculum();
   }
 
   async function handleEditProgram(input: CreateProgramInput) {
@@ -131,7 +124,7 @@ function ProgramCurriculaPage() {
     const message = await programService.remove(target.id, target.abbrev);
     if (message) toast.success(message);
     const remaining = await programService.list();
-    setPrograms(remaining);
+    await refreshPrograms();
     setSelectedCode(target.abbrev === selectedCode ? (remaining[0]?.abbrev ?? "") : selectedCode);
   }
 
@@ -150,7 +143,7 @@ function ProgramCurriculaPage() {
     setArchiveSubjectTarget(null);
   }
 
-  const isLoaded = curriculum !== null && curriculum !== "loading";
+  const isLoaded = curriculum !== null;
   const hasSubjects = isLoaded && curriculum.groups.length > 0;
   const totalSubjects = isLoaded
     ? curriculum.groups.reduce((sum, g) => sum + g.subjects.length, 0)
@@ -178,7 +171,7 @@ function ProgramCurriculaPage() {
             programs={programs ?? []}
             selected={selectedCode}
             onChange={setSelectedCode}
-            curriculum={curriculum}
+            curriculum={curriculumLoading ? "loading" : curriculum}
             onEditProgram={canManagePrograms && selectedProgram ? () => setEditProgramTarget(selectedProgram) : undefined}
             onArchiveProgram={canManagePrograms && selectedProgram ? () => setArchiveProgramTarget(selectedProgram) : undefined}
           />
@@ -221,7 +214,7 @@ function ProgramCurriculaPage() {
           )}
         </div>
 
-        {curriculum === "loading" || programs === null ? (
+        {curriculumLoading || programs === null ? (
           <TableSkeleton columns={6} rows={8} />
         ) : programs.length === 0 ? (
           <EmptyState

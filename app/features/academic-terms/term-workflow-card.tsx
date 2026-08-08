@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -12,6 +12,7 @@ import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermCloseDialog } from "~/features/academic-terms/term-close-dialog";
 import { TermWorkflowTimeline } from "~/features/academic-terms/term-workflow-timeline";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { termClosureService } from "~/services/term-closure.service";
 import type { TermWorkflow } from "~/types/term-closure";
 
@@ -25,8 +26,12 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
   const { context, refresh, selectTerm } = useTermContext();
   const schoolYears = context?.schoolYears ?? [];
   const [syId, setSyId] = useState<number | null>(context?.selection.syId ?? null);
-  const [workflow, setWorkflow] = useState<TermWorkflow | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { data: workflow, error: workflowError, reload: reloadWorkflow } = useCachedData(
+    `term-workflow:${syId ?? "none"}`,
+    () => termClosureService.getTermWorkflow(syId as number),
+    { enabled: syId != null },
+  );
+  const loading = syId != null && workflow === null && !workflowError;
   const [closeSemester, setCloseSemester] = useState<number | null>(null);
   const [closeSchoolYearOpen, setCloseSchoolYearOpen] = useState(false);
   const [reopenSchoolYearOpen, setReopenSchoolYearOpen] = useState(false);
@@ -38,38 +43,20 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
     }
   }, [context?.selection.syId, syId]);
 
+  // Refetch when the parent bumps refreshKey (after a mutation elsewhere).
+  const initialRefreshKey = useRef(refreshKey);
   useEffect(() => {
-    if (syId == null) {
-      setWorkflow(null);
-      return;
-    }
+    if (refreshKey !== initialRefreshKey.current) void reloadWorkflow();
+  }, [refreshKey, reloadWorkflow]);
 
-    let cancelled = false;
-    setLoading(true);
-    termClosureService
-      .getTermWorkflow(syId)
-      .then((data) => {
-        if (!cancelled) setWorkflow(data);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setWorkflow(null);
-          toast.error(err instanceof Error ? err.message : "Unable to load workflow.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [syId, refreshKey]);
+  // Surface a load failure the same way the previous fetch did.
+  useEffect(() => {
+    if (workflowError) toast.error(workflowError);
+  }, [workflowError]);
 
   async function reload() {
     if (syId == null) return;
-    const data = await termClosureService.getTermWorkflow(syId);
-    setWorkflow(data);
+    await reloadWorkflow();
     await Promise.all([refresh(), onChanged?.()]);
   }
 

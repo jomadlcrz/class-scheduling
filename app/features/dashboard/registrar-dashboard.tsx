@@ -255,7 +255,7 @@ export function RegistrarDashboard() {
     refreshing,
     years,
     sems,
-  } = useTermData<RegistrarAnalyticsResponse>((sy, sem) => registrarService.getAnalytics(sy, sem));
+  } = useTermData<RegistrarAnalyticsResponse>("registrar-analytics", (sy, sem) => registrarService.getAnalytics(sy, sem));
 
   const tiles = data ? buildTiles(data) : [];
   const notYetScheduledTiles = data ? buildNotYetScheduledTiles(data) : [];

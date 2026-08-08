@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
@@ -13,8 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
-import { deanService, type DepartmentInstructor } from "~/services/dean.service";
+import { deanService } from "~/services/dean.service";
 
 export function meta() {
   return [
@@ -32,19 +33,11 @@ export default function DeanInstructorsRoute() {
 }
 
 function DeanInstructorsPage() {
-  const [instructors, setInstructors] = useState<DepartmentInstructor[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const { data: instructors, error: loadError } = useCachedData(
+    "dean-department-instructors",
+    () => deanService.listDepartmentInstructors(),
+  );
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    deanService
-      .listDepartmentInstructors()
-      .then(setInstructors)
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : "Unable to load instructors.");
-        setInstructors([]);
-      });
-  }, []);
 
   const visible = useMemo(() => {
     if (!instructors) return [];
@@ -81,7 +74,7 @@ function DeanInstructorsPage() {
           />
         </div>
 
-        {loadError ? (
+        {loadError && instructors === null ? (
           <ResultState tone="error" title="Unable to load">
             {loadError}
           </ResultState>

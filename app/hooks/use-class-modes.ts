@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { enumService } from "~/services/enum.service";
+import { useCachedData } from "~/hooks/use-cached-data";
 
 type useClassModesResult = {
   classModes: string[];
@@ -7,16 +7,7 @@ type useClassModesResult = {
 };
 
 export function useClassModes(): useClassModesResult {
-  const [classModes, setClassModes] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    enumService
-      .getOptions()
-      .then((opts) => setClassModes(opts.classMode ?? []))
-      .catch(() => setClassModes([]))
-      .finally(() => setLoading(false));
-  }, []);
-
-  return { classModes, loading };
+  // Derived from the shared enums cache so revisits/reloads skip the loading state.
+  const { data } = useCachedData("enums", () => enumService.getOptions());
+  return { classModes: data?.classMode ?? [], loading: data === null };
 }

@@ -90,7 +90,7 @@ function FacultySchedulePage() {
         }
       />
 
-      {loadError ? (
+      {loadError && isLoading ? (
         <EmptyState title="Couldn't load your schedule">{loadError}</EmptyState>
       ) : (
         <>

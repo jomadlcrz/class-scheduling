@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { enumService, type YearLevelOption } from "~/services/enum.service";
+import { useCachedData } from "~/hooks/use-cached-data";
 
 type UseYearLevelsResult = {
   yearLevels: YearLevelOption[];
@@ -9,16 +10,10 @@ type UseYearLevelsResult = {
 };
 
 export function useYearLevels(): UseYearLevelsResult {
-  const [yearLevels, setYearLevels] = useState<YearLevelOption[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    enumService
-      .getOptions()
-      .then((opts) => setYearLevels(opts.yearLevels ?? []))
-      .catch(() => setYearLevels([]))
-      .finally(() => setLoading(false));
-  }, []);
+  // Derived from the shared enums cache so revisits/reloads skip the loading state.
+  const { data } = useCachedData("enums", () => enumService.getOptions());
+  const yearLevels = useMemo(() => data?.yearLevels ?? [], [data]);
+  const loading = data === null;
 
   const labelMap = useMemo(() => {
     const m = new Map<number, string>();
