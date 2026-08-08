@@ -17,6 +17,7 @@ import {
 } from "~/features/academic-terms/status-badges";
 import { TableActionButton } from "~/features/academic-terms/table-action-button";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
+import { yearLevelStyle } from "~/features/schedules/lab-analysis/year-level-styles";
 import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -282,26 +283,24 @@ function ScheduleOverviewPage() {
                   </span>
                 }
                 title={
-                  <span className="flex items-center gap-3">
-                    <img
-                      src={departmentLogoSrc(logoByDept.get(dept.abbrev) ?? null)}
-                      alt=""
-                      aria-hidden="true"
-                      onError={onDepartmentLogoError}
-                      className="size-9 shrink-0 object-contain"
-                    />
-                    <span className="min-w-0">
-                      <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                        <span className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-                          {dept.abbrev}
-                        </span>
-                        <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                          {dept.total} set{dept.total === 1 ? "" : "s"}
-                        </span>
+                  <span className="flex flex-col gap-2">
+                    <span className="flex items-center gap-2.5">
+                      <img
+                        src={departmentLogoSrc(logoByDept.get(dept.abbrev) ?? null)}
+                        alt=""
+                        aria-hidden="true"
+                        onError={onDepartmentLogoError}
+                        className="size-8 shrink-0 object-contain"
+                      />
+                      <span className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                        {dept.abbrev}
                       </span>
-                      <span className="mt-2 block sm:hidden">
-                        <StatusSummary counts={dept.counts} />
+                      <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                        {dept.total} set{dept.total === 1 ? "" : "s"}
                       </span>
+                    </span>
+                    <span className="sm:hidden">
+                      <StatusSummary counts={dept.counts} />
                     </span>
                   </span>
                 }
@@ -320,11 +319,20 @@ function ScheduleOverviewPage() {
                         )}
                       </div>
                       <div className="flex flex-col gap-4">
-                        {program.years.map((year) => (
+                        {program.years.map((year) => {
+                          const yStyle = yearLevelStyle(year.yearLevel);
+                          return (
                           <div key={year.yearLevel}>
-                            <p className="mb-1.5 font-body text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                              {yearLabel(year.yearLevel)}
-                            </p>
+                            <div className="mb-2.5 flex items-center gap-3">
+                              <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" aria-hidden="true" />
+                              <span
+                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-body text-xs font-bold uppercase tracking-wider ${yStyle.chip}`}
+                              >
+                                <span className={`size-1.5 rounded-full ${yStyle.dot}`} aria-hidden="true" />
+                                {yearLabel(year.yearLevel)}
+                              </span>
+                              <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" aria-hidden="true" />
+                            </div>
                             <Table>
                               <TableHead>
                                 <TableHeader>Set</TableHeader>
@@ -367,7 +375,8 @@ function ScheduleOverviewPage() {
                               </TableBody>
                             </Table>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </section>
                   ))}
