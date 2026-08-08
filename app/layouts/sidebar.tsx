@@ -126,7 +126,6 @@ const NAV_GROUPS: NavGroup[] = [
         subItems: [
           { label: "Regular Students", to: "/enrollment/regular-students", roles: ["registrar"] },
           { label: "Irregular Students", to: "/enrollment/irregular-students", roles: ["registrar"] },
-          { label: "Pending Schedule", to: "/enrollment/pending-schedule", roles: ["registrar"] },
           { label: "Re-enroll Student", to: "/enrollment/re-enroll", roles: ["registrar"] },
         ],
       },
