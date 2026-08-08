@@ -5,14 +5,10 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ArrowLeftIcon, CheckIcon, CloseIcon } from "~/components/ui/icons";
 import { Spinner } from "~/components/ui/spinner";
-import {
-  scheduleReleaseStatusLabel,
-  scheduleReleaseStatusTone,
-  StatusBadge,
-} from "~/features/academic-terms/status-badges";
 import { ScheduleApproveDialog } from "~/features/dean-approvals/schedule-approve-dialog";
 import { ScheduleRejectDialog } from "~/features/dean-approvals/schedule-reject-dialog";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
+import { ScheduleLifecycleRail } from "~/features/schedules/schedule-lifecycle-rail";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { PageHeader } from "~/layouts/page-header";
@@ -132,18 +128,8 @@ export function DeanScheduleApprovalDetailPage() {
         }
       />
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <StatusBadge tone={scheduleReleaseStatusTone(release.releaseStatus)}>
-          {scheduleReleaseStatusLabel(release.releaseStatus)}
-        </StatusBadge>
-        <span className="font-body text-sm text-slate-600 dark:text-slate-300">
-          {release.sessionCount} session{release.sessionCount === 1 ? "" : "s"}
-        </span>
-        {release.submittedBy && (
-          <span className="font-body text-sm text-slate-500 dark:text-slate-400">
-            Submitted by {release.submittedBy.name ?? "—"}
-          </span>
-        )}
+      <div className="mt-4">
+        <ScheduleLifecycleRail release={release} audience="dean" />
       </div>
 
       <div className="mt-4 flex justify-end">

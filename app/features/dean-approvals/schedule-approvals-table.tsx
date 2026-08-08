@@ -1,14 +1,31 @@
-import { CheckIcon, CloseIcon, EyeIcon } from "~/components/ui/icons";
+import { CheckIcon, ClockIcon, CloseIcon, EyeIcon } from "~/components/ui/icons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { scheduleReleaseStatusLabel, scheduleReleaseStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
 import { TableActionButton } from "~/features/academic-terms/table-action-button";
+import { daysSince, formatDateTime, formatRelativeTime } from "~/lib/time";
 import type { ScheduleRelease } from "~/types/schedule-release";
 
-function formatDateTime(iso: string | null): string {
-  if (!iso) return "—";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+/** Relative "submitted N ago", tinted amber once a release has been waiting three days or more. */
+function WaitingCell({ iso }: { iso: string | null }) {
+  const relative = formatRelativeTime(iso);
+  const days = daysSince(iso);
+  const stale = days != null && days >= 3;
+
+  if (!relative) return <span className="text-slate-400 dark:text-slate-500">—</span>;
+
+  return (
+    <span
+      title={formatDateTime(iso)}
+      className={
+        stale
+          ? "inline-flex items-center gap-1 font-medium text-amber-700 dark:text-gold-300"
+          : "text-slate-600 dark:text-slate-300"
+      }
+    >
+      {stale && <ClockIcon size={14} />}
+      {relative}
+    </span>
+  );
 }
 
 type PendingTableProps = {
@@ -25,7 +42,7 @@ export function SchedulePendingApprovalsTable({ releases, onPreview, onApprove, 
         <TableHeader>Set</TableHeader>
         <TableHeader className="text-center">Sessions</TableHeader>
         <TableHeader>Submitted By</TableHeader>
-        <TableHeader className="hidden md:table-cell">Submitted At</TableHeader>
+        <TableHeader className="hidden md:table-cell">Waiting</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -43,12 +60,14 @@ export function SchedulePendingApprovalsTable({ releases, onPreview, onApprove, 
             </TableCell>
             <TableCell className="text-center">{row.sessionCount}</TableCell>
             <TableCell>{row.submittedBy?.name ?? "—"}</TableCell>
-            <TableCell className="hidden md:table-cell">{formatDateTime(row.submittedAt)}</TableCell>
+            <TableCell className="hidden md:table-cell">
+              <WaitingCell iso={row.submittedAt} />
+            </TableCell>
             <TableCell>
               <div className="flex justify-end gap-2">
                 <TableActionButton onClick={() => onPreview(row)}>
                   <EyeIcon />
-                  Preview
+                  Review
                 </TableActionButton>
                 <TableActionButton tone="amber" onClick={() => onApprove(row)}>
                   <CheckIcon size={14} />
@@ -77,7 +96,7 @@ export function ScheduleRecentlyReviewedTable({ releases }: ReviewedTableProps) 
       <TableHead>
         <TableHeader>Set</TableHeader>
         <TableHeader>Decision</TableHeader>
-        <TableHeader className="hidden md:table-cell">Reviewed At</TableHeader>
+        <TableHeader className="hidden md:table-cell">Reviewed</TableHeader>
         <TableHeader className="hidden lg:table-cell">Note</TableHeader>
       </TableHead>
       <TableBody>
@@ -93,7 +112,9 @@ export function ScheduleRecentlyReviewedTable({ releases }: ReviewedTableProps) 
                 {scheduleReleaseStatusLabel(row.releaseStatus)}
               </StatusBadge>
             </TableCell>
-            <TableCell className="hidden md:table-cell">{formatDateTime(row.reviewedAt)}</TableCell>
+            <TableCell className="hidden md:table-cell text-slate-600 dark:text-slate-300">
+              <span title={formatDateTime(row.reviewedAt)}>{formatRelativeTime(row.reviewedAt) || "—"}</span>
+            </TableCell>
             <TableCell className="hidden lg:table-cell">{row.rejectionReason ?? "—"}</TableCell>
           </TableRow>
         ))}

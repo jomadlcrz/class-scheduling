@@ -60,6 +60,41 @@ export function formatDecimalHour(value: number): string {
   return `${hour12}:${String(minute).padStart(2, "0")} ${meridiem}`;
 }
 
+/** Absolute "Aug 8, 2026, 2:30 PM"-style stamp for an ISO timestamp. Empty string for null/invalid. */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+/** Human "time ago" for an ISO timestamp (e.g. "2 days ago", "just now"). Empty string for null/invalid. */
+export function formatRelativeTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const diffMs = Date.now() - then;
+  const abs = Math.abs(diffMs);
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const suffix = diffMs < 0 ? "from now" : "ago";
+  const unit = (n: number, name: string) => `${n} ${name}${n === 1 ? "" : "s"} ${suffix}`;
+  if (abs < minute) return "just now";
+  if (abs < hour) return unit(Math.round(abs / minute), "minute");
+  if (abs < day) return unit(Math.round(abs / hour), "hour");
+  if (abs < 30 * day) return unit(Math.round(abs / day), "day");
+  return formatDateTime(iso);
+}
+
+/** Whole days elapsed since an ISO timestamp; null for null/invalid input. */
+export function daysSince(iso: string | null | undefined): number | null {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
+  return Math.floor((Date.now() - then) / (24 * 60 * 60 * 1000));
+}
+
 /** Minutes-since-midnight for a time string ("7:00 AM", "07:00", "13:30"). Useful as a sort key. */
 export function timeToMinutes(time: string): number {
   const [hourText, minuteText = "0"] = normalizeTime(time).split(":");

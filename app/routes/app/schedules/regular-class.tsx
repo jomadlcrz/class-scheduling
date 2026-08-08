@@ -9,13 +9,13 @@ import { Button } from "~/components/ui/button";
 import { AlertIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
-import { scheduleReleaseStatusLabel, scheduleReleaseStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { openSchedulePrint } from "~/features/schedules/print-schedule";
 import { RegularClassFilters } from "~/features/schedules/regular-class-filters";
 import { ScheduleClearDialog } from "~/features/schedules/schedule-clear-dialog";
 import { ScheduleEditDialog } from "~/features/schedules/schedule-edit-dialog";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
+import { ScheduleLifecycleRail } from "~/features/schedules/schedule-lifecycle-rail";
 import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -455,31 +455,6 @@ function RegularClassPage() {
         description="Class schedules for the current academic term."
         actions={
           <div className="flex flex-wrap justify-end gap-2">
-            {selectedRelease &&
-              (selectedRelease.releaseStatus === "draft" || selectedRelease.releaseStatus === "rejected") && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  block={false}
-                  disabled={termClosed}
-                  onClick={() => setSubmitTarget(selectedRelease)}
-                >
-                  <SendIcon />
-                  Submit for Approval
-                </Button>
-              )}
-            {selectedRelease && selectedRelease.releaseStatus === "pending_approval" && (
-              <Button
-                type="button"
-                variant="outline"
-                block={false}
-                disabled={termClosed}
-                onClick={() => setWithdrawTarget(selectedRelease)}
-              >
-                <RotateIcon />
-                Withdraw
-              </Button>
-            )}
             {clearableSets.length > 0 && (
               <Button
                 type="button"
@@ -533,28 +508,35 @@ function RegularClassPage() {
           )}
 
           {selectedRelease && (
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
-              <StatusBadge tone={scheduleReleaseStatusTone(selectedRelease.releaseStatus)}>
-                {scheduleReleaseStatusLabel(selectedRelease.releaseStatus)}
-              </StatusBadge>
-              <span className="font-body text-sm text-slate-600 dark:text-slate-300">
-                {selectedRelease.sessionCount} session{selectedRelease.sessionCount === 1 ? "" : "s"} saved
-              </span>
-              {selectedRelease.releaseStatus === "pending_approval" && selectedRelease.submittedBy && (
-                <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                  Submitted by {selectedRelease.submittedBy.name ?? "—"}
-                </span>
-              )}
-            </div>
-          )}
-          {selectedRelease?.releaseStatus === "rejected" && selectedRelease.rejectionReason && (
-            <Alert variant="destructive">
-              <AlertIcon />
-              <AlertDescription>
-                Rejected: {selectedRelease.rejectionReason}
-                {selectedRelease.reviewedAt ? ` · ${selectedRelease.reviewedAt}` : ""}
-              </AlertDescription>
-            </Alert>
+            <ScheduleLifecycleRail
+              release={selectedRelease}
+              audience="registrar"
+              action={
+                (selectedRelease.releaseStatus === "draft" ||
+                  selectedRelease.releaseStatus === "rejected") ? (
+                  <Button
+                    type="button"
+                    block={false}
+                    disabled={termClosed}
+                    onClick={() => setSubmitTarget(selectedRelease)}
+                  >
+                    <SendIcon />
+                    {selectedRelease.releaseStatus === "rejected" ? "Resubmit for Approval" : "Submit for Approval"}
+                  </Button>
+                ) : selectedRelease.releaseStatus === "pending_approval" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    disabled={termClosed}
+                    onClick={() => setWithdrawTarget(selectedRelease)}
+                  >
+                    <RotateIcon />
+                    Withdraw
+                  </Button>
+                ) : undefined
+              }
+            />
           )}
         </div>
       )}
