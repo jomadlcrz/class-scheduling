@@ -625,8 +625,13 @@ export function StudentsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
-        title="Students"
-
+        title={
+          activeView === "regular"
+            ? "Regular Students"
+            : activeView === "irregular"
+              ? "Irregular Students"
+              : "All Students"
+        }
         actions={
           !isAdmin ? (
             <Button

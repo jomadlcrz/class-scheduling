@@ -64,6 +64,41 @@ export function TableSkeleton({ columns, rows = 6 }: TableSkeletonProps) {
   );
 }
 
+/** Term closure history loading placeholder — horizontal table rows on
+ * desktop (matching TermClosureTable) and stacked vertical cards on mobile,
+ * so the placeholder never shows vertical rows on desktop. */
+export function TermClosureSkeleton() {
+  return (
+    <div role="status" aria-label="Loading">
+      <div aria-hidden="true">
+        <div className="hidden md:block">
+          <TableSkeleton columns={7} rows={6} />
+        </div>
+        <div className="flex flex-col gap-3 md:hidden">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 space-y-1.5">
+                  <Skeleton className="h-3.5 w-28" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <Skeleton className="h-5 w-16 shrink-0 rounded-full" />
+              </div>
+              <div className="mt-3 flex justify-end gap-2">
+                <Skeleton className="h-8 w-20 rounded-lg" />
+                <Skeleton className="h-8 w-20 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type CardGridSkeletonProps = {
   /** Placeholder card count (default 6). */
   cards?: number;
@@ -647,8 +682,9 @@ type TimelineSkeletonProps = {
   steps?: number;
 };
 
-/** Term workflow loading placeholder — S.Y. header and a vertical step rail
- * with title/status lines, mirroring TermWorkflowTimeline. */
+/** Term workflow loading placeholder — S.Y. header, a horizontal stepper on
+ * desktop / vertical step rail on mobile, and a next-up card, mirroring
+ * TermWorkflowTimeline. */
 export function TimelineSkeleton({ steps = 5 }: TimelineSkeletonProps) {
   return (
     <div role="status" aria-label="Loading">
@@ -657,20 +693,34 @@ export function TimelineSkeleton({ steps = 5 }: TimelineSkeletonProps) {
           <Skeleton className="h-3 w-20" />
           <Skeleton className="h-3 w-24" />
         </div>
-        <div className="flex flex-col">
+
+        <div className="hidden grid-cols-5 gap-0 md:grid">
+          {Array.from({ length: steps }).map((_, i) => (
+            <div key={i} className="flex min-w-0 flex-col items-center px-2 text-center">
+              <Skeleton className="size-9 rounded-full" />
+              <div className="mt-3 w-full space-y-2">
+                <Skeleton className="mx-auto h-3.5 w-3/4" />
+                <Skeleton className="mx-auto h-3 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-0 md:hidden">
           {Array.from({ length: steps }).map((_, i) => (
             <div key={i} className="flex gap-4 pb-6 last:pb-0">
               <div className="flex flex-col items-center">
                 <Skeleton className="size-9 rounded-full" />
                 {i < steps - 1 && <Skeleton className="mt-1 h-10 w-0.5" />}
               </div>
-              <div className="flex-1 space-y-2 pt-1">
+              <div className="min-w-0 flex-1 space-y-2 pt-1">
                 <Skeleton className="h-3.5 w-1/3" />
                 <Skeleton className="h-3 w-20" />
               </div>
             </div>
           ))}
         </div>
+
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
           <Skeleton className="h-3 w-16" />
           <Skeleton className="mt-2 h-3.5 w-2/3" />

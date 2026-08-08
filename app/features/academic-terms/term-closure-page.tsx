@@ -7,7 +7,7 @@ import { HelpCircleIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
-import { TableSkeleton } from "~/components/ui/skeleton";
+import { TermClosureSkeleton } from "~/components/ui/skeleton";
 import { Textarea } from "~/components/ui/textarea";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
 import { TermCloseDialog } from "~/features/academic-terms/term-close-dialog";
@@ -145,7 +145,7 @@ export function TermClosurePage() {
 
         <div className="mt-4">
           {loading ? (
-            <TableSkeleton columns={7} rows={6} />
+            <TermClosureSkeleton />
           ) : filtered.length === 0 ? (
             <EmptyState title={closures.length === 0 ? "No terms posted yet" : "No matches"}>
               {closures.length === 0
