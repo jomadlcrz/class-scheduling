@@ -26,6 +26,7 @@ async function createRecord(
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
     lastName: input.lastName,
+    ...(input.suffix && { nameSuffix: input.suffix }),
     mobile: input.mobile,
     email: input.email,
     academic: {
@@ -83,12 +84,14 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     email: string | null;
     has_account: boolean;
     academics: {
+      enrollment_id?: number;
       student_academic_id: number;
       year_level: number;
       program: string;
       set: string | null;
       enrolled_status: string;
-      student_type: string;
+      // Dropped from this endpoint's payload on 2026-08-08; kept optional for resilience.
+      student_type?: string | null;
       school_year: string | null;
       semester: string | null;
       enrolled_subjects: {
@@ -118,12 +121,12 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     email: s.email,
     hasAccount: s.has_account,
     academics: s.academics.map((a) => ({
-      studentAcademicId: a.student_academic_id,
+      studentAcademicId: a.enrollment_id ?? a.student_academic_id,
       yearLevel: a.year_level,
       program: a.program,
       set: a.set,
       enrolledStatus: a.enrolled_status,
-      studentType: a.student_type,
+      studentType: a.student_type ?? null,
       schoolYear: a.school_year,
       semester: a.semester,
       enrolledSubjects: a.enrolled_subjects.map((es) => ({
@@ -154,23 +157,28 @@ async function enroll(studentProfileId: number, input: EnrollStudentInput): Prom
   return apiMessage(data);
 }
 
+type EnrollmentSubjectResponse = {
+  subject_id: number;
+  subject_code: string;
+  descriptive_title: string;
+  units: number;
+};
+
 type EnrollmentHistoryResponse = {
+  enrollment_id?: number;
   student_academic_id: number;
   year_level: number;
   program: string;
   set: string | null;
   enrolled_status: string;
   enrollment_state?: string | null;
-  student_type: string;
+  student_type?: string | null;
   school_year: string | null;
   semester?: string | null;
   semester_number?: number | null;
-  enrolled_subjects: {
-    subject_id: number;
-    subject_code: string;
-    descriptive_title: string;
-    units: number;
-  }[];
+  // `subjects` is the current key; `enrolled_subjects` is the retained alias.
+  subjects?: EnrollmentSubjectResponse[];
+  enrolled_subjects?: EnrollmentSubjectResponse[];
 }[];
 
 /** GET /students/{id}/enrollments — every term this student has been enrolled in. */
@@ -183,18 +191,18 @@ async function getEnrollments(studentProfileId: number): Promise<StudentAcademic
     semesters.map((semester) => [semester.semesterNumber, semester.displayName ?? semester.semester]),
   );
   return data.map((a) => ({
-    studentAcademicId: a.student_academic_id,
+    studentAcademicId: a.enrollment_id ?? a.student_academic_id,
     yearLevel: a.year_level,
     program: a.program,
     set: a.set,
     enrolledStatus: a.enrolled_status,
     enrollmentState: a.enrollment_state ?? null,
-    studentType: a.student_type,
+    studentType: a.student_type ?? null,
     schoolYear: a.school_year,
     semester:
       a.semester ??
       (a.semester_number != null ? semesterLabels.get(a.semester_number) ?? null : null),
-    enrolledSubjects: a.enrolled_subjects.map((es) => ({
+    enrolledSubjects: (a.subjects ?? a.enrolled_subjects ?? []).map((es) => ({
       subjectId: es.subject_id,
       subjectCode: es.subject_code,
       descriptiveTitle: es.descriptive_title,
@@ -211,6 +219,7 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
     first_name: string;
     mid_name: string | null;
     last_name: string;
+    suffix: string | null;
     mobile: string | null;
     email: string | null;
     account_status: string;
@@ -223,6 +232,7 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
     firstName: row.first_name,
     midName: row.mid_name,
     lastName: row.last_name,
+    suffix: row.suffix ?? null,
     mobile: row.mobile,
     email: row.email,
     accountStatus: row.account_status,
@@ -235,28 +245,32 @@ async function updateProfile(
   studentProfileId: number,
   input: UpdateStudentProfileInput,
 ): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/students/${studentProfileId}`, input);
+  const { suffix, ...personal } = input;
+  const data = await apiPut<{ message?: string }>(`/students/${studentProfileId}`, {
+    ...personal,
+    // Backend reads the suffix under `nameSuffix`; send null to clear it.
+    ...(suffix !== undefined && { nameSuffix: suffix }),
+  });
   return apiMessage(data);
 }
 
-/** PUT /enrollments/<id> — corrects a single term's set/year level/status. */
-async function updateEnrollment(studentAcademicId: number, input: UpdateEnrollmentInput): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/enrollments/${studentAcademicId}`, input);
+/** PUT /enrollments/<id> — reassigns a regular enrollment's section (set). */
+async function updateEnrollment(enrollmentId: number, input: UpdateEnrollmentInput): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/enrollments/${enrollmentId}`, {
+    ...(input.setId != null && { setId: input.setId }),
+  });
   return apiMessage(data);
 }
 
 /** DELETE /enrollments/<id> — hard delete of a single term's enrollment. */
-async function removeEnrollment(studentAcademicId: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/enrollments/${studentAcademicId}`);
+async function removeEnrollment(enrollmentId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/enrollments/${enrollmentId}`);
   return apiMessage(data);
 }
 
 /** PATCH /enrollments/:id/state — changes enrollment state without deleting history. */
-async function setEnrollmentState(studentAcademicId: number, state: string, reason?: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/enrollments/${studentAcademicId}/state`, {
-    state,
-    ...(reason ? { reason } : {}),
-  });
+async function setEnrollmentState(enrollmentId: number, state: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/enrollments/${enrollmentId}/state`, { state });
   return apiMessage(data);
 }
 

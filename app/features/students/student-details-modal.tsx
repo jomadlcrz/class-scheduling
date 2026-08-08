@@ -17,21 +17,20 @@ import type {
   StudentAcademicRecord,
   StudentAccountRow,
   StudentProfileDetail,
-  UpdateEnrollmentInput,
 } from "~/types/student";
 
 type StudentDetailsModalProps = {
   student: StudentAccountRow;
   sets: ClassSet[];
-  academicStatuses: string[];
   enrollmentStates: string[];
+  nameSuffixes: string[];
 };
 
 export function StudentDetailsModal({
   student,
   sets,
-  academicStatuses,
   enrollmentStates,
+  nameSuffixes,
 }: StudentDetailsModalProps) {
   const { yearLevelLabel } = useYearLevels();
   // Fetched fresh via GET /students/{id}/enrollments rather than reused from the
@@ -66,7 +65,7 @@ export function StudentDetailsModal({
   }, [student.studentProfileId]);
 
   const displayName = profile
-    ? [profile.firstName, profile.midName, profile.lastName].filter(Boolean).join(" ")
+    ? [profile.firstName, profile.midName, profile.lastName, profile.suffix].filter(Boolean).join(" ")
     : student.studentName || [student.firstName, student.midName, student.lastName].filter(Boolean).join(" ");
 
   const records = academics ?? [];
@@ -125,7 +124,7 @@ export function StudentDetailsModal({
                       <Field label="Set" value={a.set ?? "—"} />
                       <Field label="Academic Status" value={a.enrolledStatus} />
                       {a.enrollmentState && <Field label="Enrollment State" value={a.enrollmentState} />}
-                      <Field label="Student Type" value={a.studentType} />
+                      <Field label="Student Type" value={a.studentType ?? "—"} />
                       <Field label="School Year" value={a.schoolYear ?? "—"} />
                       <Field label="Semester" value={a.semester ?? "—"} />
                     </div>
@@ -195,6 +194,7 @@ export function StudentDetailsModal({
         {profile && (
           <StudentProfileForm
             profile={profile}
+            nameSuffixes={nameSuffixes}
             onSubmit={async (input) => {
               const message = await studentService.updateProfile(student.studentProfileId, input);
               if (message) toast.success(message);
@@ -211,7 +211,6 @@ export function StudentDetailsModal({
           <EnrollmentEditForm
             record={editTarget}
             sets={sets}
-            academicStatuses={academicStatuses}
             enrollmentStates={enrollmentStates}
             onSubmit={async (input) => {
               if (
@@ -225,22 +224,10 @@ export function StudentDetailsModal({
                 if (message) toast.success(message);
               }
 
-              const correction: UpdateEnrollmentInput = {};
-              if (input.yearLevel != null && input.yearLevel !== editTarget.yearLevel) {
-                correction.yearLevel = input.yearLevel;
-              }
-              if (input.setId != null) correction.setId = input.setId;
-              if (
-                input.enrolledStatus != null &&
-                input.enrolledStatus !== editTarget.enrolledStatus
-              ) {
-                correction.enrolledStatus = input.enrolledStatus;
-              }
-              if (Object.keys(correction).length > 0) {
-                const message = await studentService.updateEnrollment(
-                  editTarget.studentAcademicId,
-                  correction,
-                );
+              if (input.setId != null) {
+                const message = await studentService.updateEnrollment(editTarget.studentAcademicId, {
+                  setId: input.setId,
+                });
                 if (message) toast.success(message);
               }
               setEditTarget(null);

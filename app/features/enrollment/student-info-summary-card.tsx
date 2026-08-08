@@ -22,7 +22,9 @@ type StudentInfoSummaryCardProps = {
 };
 
 function displayName(identity: IdentityDraft): string {
-  return [identity.firstName, identity.midName, identity.lastName].filter(Boolean).join(" ") || "—";
+  return (
+    [identity.firstName, identity.midName, identity.lastName, identity.suffix].filter(Boolean).join(" ") || "—"
+  );
 }
 
 /** Read-only Student Information card matching the enrollment mockup (review step). */

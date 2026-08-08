@@ -160,6 +160,7 @@ function EnrollmentNewStudentPage() {
             semesters={semesters}
             studentTypes={enumOptions?.studentType ?? []}
             academicStatuses={enumOptions?.academicStatus ?? []}
+            nameSuffixes={enumOptions?.nameSuffix ?? []}
             isSaving={isSaving}
             onSavingChange={setIsSaving}
             onDirtyChange={setIsDirty}

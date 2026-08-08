@@ -16,6 +16,7 @@ export const studentSchema = z
       .string()
       .min(1, "Enter the last name.")
       .max(100, "Last name must be at most 100 characters."),
+    suffix: z.string().max(10, "Suffix must be at most 10 characters.").optional(),
     mobile: z
       .string()
       .regex(/^\+?[0-9]{7,15}$/, "Enter a valid mobile number (7-15 digits, optional leading +)."),

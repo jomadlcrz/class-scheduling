@@ -877,6 +877,7 @@ export function StudentsPage() {
             semesters={semesters}
             studentTypes={enumOptions?.studentType ?? []}
             academicStatuses={enumOptions?.academicStatus ?? []}
+            nameSuffixes={enumOptions?.nameSuffix ?? []}
             onSubmit={handleCreateRecord}
             onCancel={closeCreate}
           />
@@ -893,8 +894,8 @@ export function StudentsPage() {
           <StudentDetailsModal
             student={viewTarget}
             sets={sets}
-            academicStatuses={enumOptions?.academicStatus ?? []}
             enrollmentStates={enumOptions?.enrollmentState ?? []}
+            nameSuffixes={enumOptions?.nameSuffix ?? []}
           />
         )}
       </Modal>

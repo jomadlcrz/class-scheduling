@@ -305,7 +305,7 @@ export function RegistrarDashboard() {
               >
                 <div>
                   <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
-                    Registration overview
+                    Overview
                   </h2>
                 </div>
                 <TermSelectors

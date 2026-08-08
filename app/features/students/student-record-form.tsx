@@ -22,6 +22,7 @@ type StudentRecordFormProps = {
   /** Backend enum values (enumService). */
   studentTypes: string[];
   academicStatuses: string[];
+  nameSuffixes: string[];
   onSubmit: (input: CreateStudentRecordInput) => Promise<void>;
   onCancel: () => void;
 };
@@ -35,6 +36,7 @@ export function StudentRecordForm({
   semesters,
   studentTypes,
   academicStatuses,
+  nameSuffixes,
   onSubmit,
   onCancel,
 }: StudentRecordFormProps) {
@@ -122,6 +124,7 @@ export function StudentRecordForm({
       firstName: String(data.get("student-first-name") ?? "").trim(),
       midName: String(data.get("student-mid-name") ?? "").trim(),
       lastName: String(data.get("student-last-name") ?? "").trim(),
+      suffix: String(data.get("student-suffix") ?? "").trim(),
       mobile: String(data.get("student-mobile") ?? "").trim(),
       email: String(data.get("student-email") ?? "").trim(),
       programId,
@@ -145,6 +148,7 @@ export function StudentRecordForm({
         ...result.data,
         studentId: result.data.studentId || undefined,
         midName: result.data.midName || undefined,
+        suffix: result.data.suffix || undefined,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
@@ -171,7 +175,28 @@ export function StudentRecordForm({
             <Input id="student-mid-name" label="Middle Name" type="text" placeholder="Enter middle name" />
           </div>
 
-          <Input id="student-last-name" label="Last Name" type="text" required placeholder="Enter last name" />
+          <div className="grid grid-cols-[1fr_auto] gap-3">
+            <Input id="student-last-name" label="Last Name" type="text" required placeholder="Enter last name" />
+            <FieldChrome id="student-suffix" label="Suffix">
+              <Select
+                items={[{ value: "", label: "None" }, ...nameSuffixes.map((s) => ({ value: s, label: s }))]}
+                name="student-suffix"
+                defaultValue=""
+              >
+                <SelectTrigger id="student-suffix" className="min-w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {nameSuffixes.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+          </div>
 
           <Input
             id="student-email"

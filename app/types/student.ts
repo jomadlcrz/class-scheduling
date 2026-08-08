@@ -11,6 +11,8 @@ export type CreateStudentRecordInput = {
   firstName: string;
   midName?: string;
   lastName: string;
+  /** Backend NameSuffix enum value (Jr., Sr., II, III, IV) — sent as `nameSuffix`. */
+  suffix?: string;
   mobile: string;
   email: string;
   programId: number;
@@ -37,7 +39,8 @@ export type StudentAcademicRecord = {
   set: string | null;
   enrolledStatus: string;
   enrollmentState?: string | null;
-  studentType: string;
+  /** Nullable: the enrollment endpoints return it, but the super-admin account list no longer does. */
+  studentType: string | null;
   schoolYear: string | null;
   semester: string | null;
   enrolledSubjects: EnrolledSubjectRow[];
@@ -62,6 +65,7 @@ export type StudentProfileDetail = {
   firstName: string;
   midName: string | null;
   lastName: string;
+  suffix: string | null;
   mobile: string | null;
   email: string | null;
   accountStatus: string;
@@ -72,6 +76,8 @@ export type UpdateStudentProfileInput = {
   firstName: string;
   midName: string | null;
   lastName: string;
+  /** Backend NameSuffix enum value or null to clear — sent as `nameSuffix`. */
+  suffix?: string | null;
   mobile: string;
   email: string;
 };
@@ -102,11 +108,13 @@ export type RegularStudentRow = {
   academics: StudentAcademicRecord[];
 };
 
-/** PUT /enrollments/<id> body — corrects a single term's set/year level/status; doesn't touch enrolled subjects. */
+/**
+ * PUT /enrollments/<id> body — section (set) assignment only.
+ * Year level and academic status are derived server-side and no longer editable here;
+ * use PATCH /enrollments/<id>/state for enrollment state.
+ */
 export type UpdateEnrollmentInput = {
-  yearLevel?: number;
   setId?: number;
-  enrolledStatus?: string;
 };
 
 /** GET /super-admin/student-accounts/<id> response, camelCased. */

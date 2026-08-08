@@ -22,6 +22,7 @@ export type EnumOptions = {
   classroomStatus: string[];
   roleName: string[];
   studentType: string[];
+  nameSuffix: string[];
   academicStatus: string[];
   enrollmentState: string[];
   personnelType: string[];
@@ -40,6 +41,7 @@ type EnumOptionsResponse = {
   classroom_status: string[];
   role_name: string[];
   student_type: string[];
+  name_suffix: string[];
   academic_status: string[];
   enrollment_state: string[];
   personnel_type: string[];
@@ -63,6 +65,7 @@ function getOptions(): Promise<EnumOptions> {
       classroomStatus: data.classroom_status,
       roleName: data.role_name,
       studentType: data.student_type,
+      nameSuffix: data.name_suffix,
       academicStatus: data.academic_status,
       enrollmentState: data.enrollment_state,
       personnelType: data.personnel_type,

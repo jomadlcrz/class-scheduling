@@ -23,6 +23,7 @@ const EMPTY_IDENTITY: IdentityDraft = {
   firstName: "",
   midName: "",
   lastName: "",
+  suffix: "",
   mobile: "",
   email: "",
 };
@@ -45,6 +46,7 @@ type AddStudentWizardProps = {
   semesters: Semester[];
   studentTypes: string[];
   academicStatuses: string[];
+  nameSuffixes: string[];
   isSaving: boolean;
   onSavingChange: (saving: boolean) => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -60,6 +62,7 @@ export function AddStudentWizard({
   semesters,
   studentTypes,
   academicStatuses,
+  nameSuffixes,
   isSaving,
   onSavingChange,
   onDirtyChange,
@@ -157,6 +160,7 @@ export function AddStudentWizard({
       firstName: identity.firstName.trim(),
       midName: identity.midName.trim(),
       lastName: identity.lastName.trim(),
+      suffix: identity.suffix.trim(),
       mobile: identity.mobile.trim(),
       email: identity.email.trim(),
       programId: academic.programId,
@@ -181,6 +185,7 @@ export function AddStudentWizard({
         ...result.data,
         studentId: result.data.studentId || undefined,
         midName: result.data.midName || undefined,
+        suffix: result.data.suffix || undefined,
       });
 
       if (photoFile) {
@@ -214,6 +219,7 @@ export function AddStudentWizard({
         <AddStudentStep1Identity
           identity={identity}
           onIdentityChange={handleIdentityChange}
+          nameSuffixes={nameSuffixes}
           photoFile={photoFile}
           onPhotoChange={setPhotoFile}
           canAdvance={step1Valid}

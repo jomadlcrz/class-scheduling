@@ -1,19 +1,23 @@
 import { useState, type FormEvent } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { StudentProfileDetail, UpdateStudentProfileInput } from "~/types/student";
 
 type StudentProfileFormProps = {
   profile: StudentProfileDetail;
+  /** Backend NameSuffix enum values (enumService). */
+  nameSuffixes: string[];
   onSubmit: (input: UpdateStudentProfileInput) => Promise<void>;
   onCancel: () => void;
 };
 
 /** Edits only the personal fields accepted by PUT /students/:id. */
-export function StudentProfileForm({ profile, onSubmit, onCancel }: StudentProfileFormProps) {
+export function StudentProfileForm({ profile, nameSuffixes, onSubmit, onCancel }: StudentProfileFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suffix, setSuffix] = useState(profile.suffix ?? "");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,6 +30,7 @@ export function StudentProfileForm({ profile, onSubmit, onCancel }: StudentProfi
         firstName: String(form.get("student-profile-first-name") ?? "").trim(),
         midName: middleName || null,
         lastName: String(form.get("student-profile-last-name") ?? "").trim(),
+        suffix: suffix || null,
         mobile: String(form.get("student-profile-mobile") ?? "").trim(),
         email: String(form.get("student-profile-email") ?? "").trim(),
       });
@@ -60,6 +65,29 @@ export function StudentProfileForm({ profile, onSubmit, onCancel }: StudentProfi
           required
           disabled={isSaving}
         />
+        <FieldChrome id="student-profile-suffix" label="Suffix">
+          <Select
+            items={[
+              { value: "", label: "No suffix" },
+              ...nameSuffixes.map((s) => ({ value: s, label: s })),
+            ]}
+            value={suffix}
+            onValueChange={(v) => setSuffix(v as string)}
+            disabled={isSaving}
+          >
+            <SelectTrigger id="student-profile-suffix">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">No suffix</SelectItem>
+              {nameSuffixes.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
         <Input
           id="student-profile-mobile"
           label="Mobile"

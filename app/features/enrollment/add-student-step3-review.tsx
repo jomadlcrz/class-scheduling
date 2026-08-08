@@ -108,7 +108,7 @@ export function AddStudentStep3Review({
         <EnrollmentSectionCard title="Enrollment Summary">
           <dl className="grid gap-4">
             <InfoField label="Student">
-              {[identity.lastName, [identity.firstName, identity.midName].filter(Boolean).join(" ")]
+              {[identity.lastName, [identity.firstName, identity.midName, identity.suffix].filter(Boolean).join(" ")]
                 .filter(Boolean)
                 .join(", ") || "—"}
             </InfoField>

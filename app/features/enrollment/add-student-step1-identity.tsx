@@ -1,5 +1,6 @@
-import { Input } from "~/components/ui/input";
+import { FieldChrome, Input } from "~/components/ui/input";
 import { UserIcon } from "~/components/ui/icons";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
 import { PhotoUploadField } from "~/features/enrollment/photo-upload-field";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
@@ -9,6 +10,7 @@ export type IdentityDraft = {
   firstName: string;
   midName: string;
   lastName: string;
+  suffix: string;
   mobile: string;
   email: string;
 };
@@ -16,6 +18,8 @@ export type IdentityDraft = {
 type AddStudentStep1IdentityProps = {
   identity: IdentityDraft;
   onIdentityChange: (patch: Partial<IdentityDraft>) => void;
+  /** Backend NameSuffix enum values (enumService). */
+  nameSuffixes: string[];
   photoFile: File | null;
   onPhotoChange: (file: File | null) => void;
   canAdvance: boolean;
@@ -26,6 +30,7 @@ type AddStudentStep1IdentityProps = {
 export function AddStudentStep1Identity({
   identity,
   onIdentityChange,
+  nameSuffixes,
   photoFile,
   onPhotoChange,
   canAdvance,
@@ -83,15 +88,36 @@ export function AddStudentStep1Identity({
                 />
               </div>
 
-              <Input
-                id="new-student-last-name"
-                label="Last Name"
-                type="text"
-                required
-                placeholder="e.g. Dela Cruz"
-                value={identity.lastName}
-                onChange={(e) => onIdentityChange({ lastName: e.target.value })}
-              />
+              <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
+                <Input
+                  id="new-student-last-name"
+                  label="Last Name"
+                  type="text"
+                  required
+                  placeholder="e.g. Dela Cruz"
+                  value={identity.lastName}
+                  onChange={(e) => onIdentityChange({ lastName: e.target.value })}
+                />
+                <FieldChrome id="new-student-suffix" label="Suffix (Optional)">
+                  <Select
+                    items={[{ value: "", label: "None" }, ...nameSuffixes.map((s) => ({ value: s, label: s }))]}
+                    value={identity.suffix}
+                    onValueChange={(v) => onIdentityChange({ suffix: v as string })}
+                  >
+                    <SelectTrigger id="new-student-suffix">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {nameSuffixes.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+              </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input
