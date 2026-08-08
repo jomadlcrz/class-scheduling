@@ -38,36 +38,46 @@ export function StudentDetailsModal({
   // bulk list, so a just-completed enrollment shows up without a full page reload.
   const [academics, setAcademics] = useState<StudentAcademicRecord[] | null>(null);
   const [profile, setProfile] = useState<StudentProfileDetail | null>(null);
+  const [loading, setLoading] = useState(true);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<StudentAcademicRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StudentAcademicRecord | null>(null);
 
   function refreshEnrollments() {
-    studentService
+    return studentService
       .getEnrollments(student.studentProfileId)
       .then(setAcademics)
       .catch(() => setAcademics(student.academics));
   }
 
-  async function refreshProfile() {
-    try {
-      setProfile(await studentService.getProfile(student.studentProfileId));
-    } catch {
-      setProfile(null);
-    }
+  function refreshProfile() {
+    return studentService
+      .getProfile(student.studentProfileId)
+      .then(setProfile)
+      .catch(() => setProfile(null));
   }
 
   useEffect(() => {
     setAcademics(null);
     setProfile(null);
     setProfileEditOpen(false);
-    refreshEnrollments();
-    void refreshProfile();
+    setLoading(true);
+    void Promise.all([refreshEnrollments(), refreshProfile()]).finally(() => setLoading(false));
   }, [student.studentProfileId]);
 
   const displayName = profile
     ? [profile.firstName, profile.midName, profile.lastName].filter(Boolean).join(" ")
     : student.studentName || [student.firstName, student.midName, student.lastName].filter(Boolean).join(" ");
+
+  const records = academics ?? [];
+
+  if (loading) {
+    return (
+      <div role="status" aria-label="Loading student details" className="grid place-items-center py-10">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -97,17 +107,13 @@ export function StudentDetailsModal({
       <section>
         <SectionHeading>Academic Records</SectionHeading>
         <Card className="mt-2 p-4">
-          {academics === null ? (
-            <div role="status" aria-label="Loading academic records" className="grid place-items-center py-6">
-              <Spinner />
-            </div>
-          ) : academics.length === 0 ? (
+          {records.length === 0 ? (
             <p className="text-sm text-slate-500 dark:text-slate-400">
               No academic records found.
             </p>
           ) : (
             <div className="flex flex-col gap-3">
-              {academics.map((a, i) => (
+              {records.map((a, i) => (
                 <div
                   key={a.studentAcademicId}
                   className={i > 0 ? "border-t border-slate-200 pt-3 dark:border-white/10" : ""}
@@ -149,12 +155,13 @@ export function StudentDetailsModal({
             </div>
           )}
         </Card>
+      </section>
 
-        {academics && academics.length > 0 && (
+      {records.length > 0 && (
+        <section>
+          <SectionHeading>Enrolled Subjects</SectionHeading>
           <div className="mt-2">
-            <SectionHeading>Enrolled Subjects</SectionHeading>
-            {academics.some((a) => a.enrolledSubjects.length > 0) ? (
-              <div className="mt-2">
+            {records.some((a) => a.enrolledSubjects.length > 0) ? (
               <Table>
                 <TableHead>
                   <TableHeader>Code</TableHeader>
@@ -162,7 +169,7 @@ export function StudentDetailsModal({
                   <TableHeader className="text-center">Units</TableHeader>
                 </TableHead>
                 <TableBody>
-                  {academics.flatMap((a) =>
+                  {records.flatMap((a) =>
                     a.enrolledSubjects.map((es) => (
                       <TableRow key={`${a.studentAcademicId}-${es.subjectId}`}>
                         <TableCell className="text-slate-600 dark:text-slate-300">
@@ -175,15 +182,14 @@ export function StudentDetailsModal({
                   )}
                 </TableBody>
               </Table>
-              </div>
             ) : (
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 No enrolled subjects found.
               </p>
             )}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <Modal open={profileEditOpen} onClose={() => setProfileEditOpen(false)} title="Edit Student Profile">
         {profile && (
