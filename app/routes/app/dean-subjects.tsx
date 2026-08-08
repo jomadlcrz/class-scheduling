@@ -7,7 +7,7 @@ import { Card } from "~/components/ui/card";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { GraduationCapIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
@@ -121,13 +121,7 @@ function DeanSubjectsPage() {
             {loadError}
           </ResultState>
         ) : subjects === null ? (
-          <div
-            role="status"
-            aria-label="Loading department subjects"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={6} rows={8} />
         ) : subjects.length === 0 ? (
           <EmptyState title="No subjects found">
             Your department has no curriculum subjects yet.

@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 import { PlusIcon, PrinterIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
 import { openCurriculumPrint } from "~/features/curriculum/print-curriculum";
@@ -222,13 +222,7 @@ function ProgramCurriculaPage() {
         </div>
 
         {curriculum === "loading" || programs === null ? (
-          <div
-            role="status"
-            aria-label="Loading curriculum"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={6} rows={8} />
         ) : programs.length === 0 ? (
           <EmptyState
             title="No programs yet"

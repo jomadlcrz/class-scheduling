@@ -5,7 +5,7 @@ import { ResultState } from "~/components/feedback/result-state";
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+import { LabAnalysisSkeleton } from "~/components/ui/skeleton";
 import { aggregateLabSubjects } from "~/features/schedules/lab-analysis/aggregate-subjects";
 import { LabAnalysisKpis } from "~/features/schedules/lab-analysis/lab-analysis-kpis";
 import { LabAnalysisLegend } from "~/features/schedules/lab-analysis/lab-analysis-legend";
@@ -197,13 +197,7 @@ function LabAnalysisPage() {
             {loadError}
           </ResultState>
         ) : analysis === null ? (
-          <div
-            role="status"
-            aria-label="Loading laboratory analysis"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <LabAnalysisSkeleton />
         ) : analysis.laboratories.length === 0 ? (
           <EmptyState title="No laboratory rooms">No active laboratory rooms are configured yet.</EmptyState>
         ) : (

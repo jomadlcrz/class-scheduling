@@ -1,6 +1,6 @@
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { DeanFacultyLoadsView } from "~/features/faculty/dean-faculty-loads-view";
 import { useDeanFacultyLoading } from "~/features/faculty/use-dean-faculty-loading";
 
@@ -47,12 +47,8 @@ function FacultyLoadsPage() {
       {loadError ? (
         <EmptyState title="Couldn't load faculty loads">{loadError}</EmptyState>
       ) : !contextReady || termsLoading || semestersLoading ? (
-        <div
-          role="status"
-          aria-label="Loading"
-          className="mt-8 grid place-items-center text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
+        <div className="mt-8">
+          <TableSkeleton columns={6} rows={8} />
         </div>
       ) : (
         <DeanFacultyLoadsView

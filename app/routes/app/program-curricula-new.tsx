@@ -5,7 +5,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
+import { WizardSkeleton } from "~/components/ui/skeleton";
 import { ProgramWizard } from "~/features/subjects/program-wizard";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
@@ -97,12 +97,8 @@ function ProgramsNewPage() {
           </EmptyState>
         </div>
       ) : isLoading ? (
-        <div
-          role="status"
-          aria-label="Loading curriculum"
-          className="mt-6 grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
+        <div className="mt-6">
+          <WizardSkeleton />
         </div>
       ) : (
         <div className="mt-6">

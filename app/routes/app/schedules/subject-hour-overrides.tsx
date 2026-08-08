@@ -9,7 +9,7 @@ import { PlusIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { SubjectHourOverrideForm, type OverrideFormInput } from "~/features/schedules/subject-hour-override-form";
 import { SubjectHourOverrideTable } from "~/features/schedules/subject-hour-override-table";
 import { useSchoolYears } from "~/hooks/use-school-years";
@@ -303,13 +303,7 @@ function SubjectHourOverridesPage() {
             {loadError}
           </ResultState>
         ) : overrides === null ? (
-          <div
-            role="status"
-            aria-label="Loading overrides"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={9} rows={8} />
         ) : overrides.length === 0 ? (
           <EmptyState title="No overrides">
             Every subject uses the hours set for its subject type.

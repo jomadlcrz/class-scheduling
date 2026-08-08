@@ -5,7 +5,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { Spinner } from "~/components/ui/spinner";
+import { FacilitiesSkeleton } from "~/components/ui/skeleton";
 import { PlusIcon, RefreshCwIcon } from "~/components/ui/icons";
 import { BuildingArchiveDialog } from "~/features/facilities/buildings/building-archive-dialog";
 import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
@@ -98,13 +98,7 @@ function FacilitiesPage() {
 
       <div className="mt-6">
         {buildings === null ? (
-          <div
-            role="status"
-            aria-label="Loading facilities"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <FacilitiesSkeleton />
         ) : loadError !== null ? (
           <Card className="p-2">
             <EmptyState

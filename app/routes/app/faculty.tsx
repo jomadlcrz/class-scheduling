@@ -9,7 +9,7 @@ import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { TableSkeleton } from "~/components/feedback/table-skeleton";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { ActivateFacultyDialog } from "~/features/faculty/activate-faculty-dialog";
 import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-dialog";
 import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";

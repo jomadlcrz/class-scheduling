@@ -3,8 +3,8 @@ import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
-import { Spinner } from "~/components/ui/spinner";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { StudentDirectoryTable, type StudentDirectoryRow } from "~/features/enrollment/student-directory-table";
 import { PageHeader } from "~/layouts/page-header";
@@ -88,9 +88,7 @@ function EnrollmentIrregularStudentsPage() {
 
       <div className="mt-6">
         {students === null ? (
-          <div className="flex justify-center py-12">
-            <Spinner />
-          </div>
+          <TableSkeleton columns={9} rows={8} />
         ) : loadError ? (
           <EmptyState title="Unable to load students">{loadError}</EmptyState>
         ) : (

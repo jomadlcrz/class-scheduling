@@ -1,6 +1,6 @@
 ﻿import type { ReactNode } from "react";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Spinner } from "~/components/ui/spinner";
+import { ScheduleSkeleton } from "~/components/ui/skeleton";
 import type { Schedule } from "~/types/schedule";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
@@ -53,13 +53,7 @@ export function ScheduleViewer({
 
       <div className="mt-4">
         {isLoading ? (
-          <div
-            role="status"
-            aria-label="Loading schedule"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <ScheduleSkeleton rows={8} />
         ) : schedules.length === 0 ? (
           <EmptyState title={emptyTitle}>{emptyMessage}</EmptyState>
         ) : (

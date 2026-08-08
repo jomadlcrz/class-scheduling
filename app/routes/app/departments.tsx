@@ -9,7 +9,7 @@ import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Spinner } from "~/components/ui/spinner";
+import { CardGridSkeleton } from "~/components/ui/skeleton";
 import { DepartmentForm } from "~/features/departments/department-form";
 import { DepartmentArchiveDialog } from "~/features/departments/department-archive-dialog";
 import { DepartmentGridView } from "~/features/departments/department-grid-view";
@@ -153,13 +153,7 @@ function DepartmentsPage() {
             {loadError}
           </ResultState>
         ) : depts === null ? (
-          <div
-            role="status"
-            aria-label="Loading departments"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <CardGridSkeleton cards={6} />
         ) : visibleDepts.length === 0 ? (
           <EmptyState title="No departments found">
             No departments match the current filters. Adjust the search or add a new department.

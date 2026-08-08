@@ -5,7 +5,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+import { IrregularStudentsSkeleton, TableSkeleton } from "~/components/ui/skeleton";
 import { AssignSchedulePanel } from "~/features/schedules/assign-schedule-panel";
 import { AssignedScheduleTable } from "~/features/schedules/assigned-schedule-table";
 import { IrregularStudentList } from "~/features/schedules/irregular-student-list";
@@ -126,13 +126,7 @@ function IrregularClassPage() {
       </div>
 
       {students === null ? (
-        <div
-          role="status"
-          aria-label="Loading irregular students"
-          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
-        </div>
+        <IrregularStudentsSkeleton />
       ) : (
         <div className="mt-6 flex flex-col gap-6">
           <Card className="grid grid-cols-2 gap-3 p-4 sm:max-w-md">
@@ -212,13 +206,7 @@ function IrregularClassPage() {
               Pick a school year and semester to see assigned schedules.
             </EmptyState>
           ) : assigned === null ? (
-            <div
-              role="status"
-              aria-label="Loading assigned schedules"
-              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-            >
-              <Spinner />
-            </div>
+            <TableSkeleton columns={6} rows={8} />
           ) : assigned.length === 0 ? (
             <EmptyState title="No assigned schedules">
               No irregular students have an assigned schedule for this term yet.

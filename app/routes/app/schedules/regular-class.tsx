@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
+import { ScheduleSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { openSchedulePrint } from "~/features/schedules/print-schedule";
 import { RegularClassFilters } from "~/features/schedules/regular-class-filters";
@@ -582,13 +582,7 @@ function RegularClassPage() {
         </AnimatePresence>
 
         {loadError ? null : isLoading ? (
-          <div
-            role="status"
-            aria-label="Loading schedules"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <ScheduleSkeleton rows={8} />
         ) : visibleSchedules.length === 0 ? (
           <EmptyState
             title="No schedules found"

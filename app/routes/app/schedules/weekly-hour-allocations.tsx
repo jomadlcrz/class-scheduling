@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { ResultState } from "~/components/feedback/result-state";
 import { Card } from "~/components/ui/card";
-import { Spinner } from "~/components/ui/spinner";
+import { AllocationListSkeleton } from "~/components/ui/skeleton";
 import { WeeklyHourAllocationForm } from "~/features/schedules/weekly-hour-allocation-form";
 import { WeeklyHourAllocationList } from "~/features/schedules/weekly-hour-allocation-list";
 import { PageHeader } from "~/layouts/page-header";
@@ -76,13 +76,7 @@ function WeeklyHoursPage() {
               {loadError}
             </ResultState>
           ) : allocations === null ? (
-            <div
-              role="status"
-              aria-label="Loading allocations"
-              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-            >
-              <Spinner />
-            </div>
+            <AllocationListSkeleton rows={5} />
           ) : (
             <WeeklyHourAllocationList allocations={allocations} />
           )}

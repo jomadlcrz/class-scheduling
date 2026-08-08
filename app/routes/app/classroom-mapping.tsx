@@ -4,7 +4,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+import { MappingSkeleton } from "~/components/ui/skeleton";
 import { ResultState } from "~/components/feedback/result-state";
 import { MappingGridView } from "~/features/classroom-mapping/mapping-grid-view";
 import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
@@ -220,13 +220,7 @@ function ClassroomMappingPage() {
             No semester has been configured yet.
           </EmptyState>
         ) : classrooms === null ? (
-          <div
-            role="status"
-            aria-label="Loading classroom mapping"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <MappingSkeleton rooms={4} />
         ) : filtered.length === 0 ? (
           <EmptyState title="No classrooms found">
             No classrooms match the current filters.

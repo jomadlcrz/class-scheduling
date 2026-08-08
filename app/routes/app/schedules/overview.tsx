@@ -8,7 +8,7 @@ import { EyeIcon, PlusIcon } from "~/components/ui/icons";
 import { Button } from "~/components/ui/button";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import {
   scheduleReleaseStatusLabel,
@@ -266,9 +266,7 @@ function ScheduleOverviewPage() {
 
       <div className="mt-4">
         {!contextReady || loading ? (
-          <div role="status" aria-label="Loading schedules" className="grid place-items-center py-12">
-            <Spinner />
-          </div>
+          <TableSkeleton columns={6} rows={8} />
         ) : releases.length === 0 ? (
           <EmptyState title="No schedules for this term">
             No section timetables have been created for this school year and semester yet. Create one to get

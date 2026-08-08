@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { MobileScheduleSkeleton } from "~/components/ui/skeleton";
 import { BookIcon, CalendarIcon, PrinterIcon, UsersIcon } from "~/components/ui/icons";
-import { Spinner } from "~/components/ui/spinner";
 import { Tooltip } from "~/components/ui/tooltip";
 import { MobileWeeklySchedule } from "~/features/schedules/mobile-weekly-schedule";
 import { openInstructorSchedulePrint } from "~/features/schedules/print-instructor-schedule";
@@ -95,12 +95,8 @@ function FacultySchedulePage() {
       ) : (
         <>
           {isLoading ? (
-            <div
-              role="status"
-              aria-label="Loading schedule"
-              className="mt-8 grid place-items-center text-navy-700 sm:hidden dark:text-slate-200"
-            >
-              <Spinner />
+            <div className="mt-8 sm:hidden">
+              <MobileScheduleSkeleton rows={4} />
             </div>
           ) : visibleSchedules.length === 0 ? (
             <div className="mt-6 sm:hidden">

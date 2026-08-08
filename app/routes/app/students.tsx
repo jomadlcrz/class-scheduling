@@ -12,7 +12,7 @@ import { PlusIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { useStudentAccountFilters } from "~/features/students/student-account-filters";
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentArchiveDialog } from "~/features/students/student-archive-dialog";
@@ -706,13 +706,7 @@ export function StudentsPage() {
                 {loadError}
               </ResultState>
             ) : studentList === null ? (
-              <div
-                role="status"
-                aria-label="Loading students"
-                className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-              >
-                <Spinner />
-              </div>
+              <TableSkeleton columns={6} rows={8} />
             ) : visibleStudents.length === 0 ? (
               <StudentListEmptyState searchQuery={search} variant="all" />
             ) : (
@@ -740,13 +734,7 @@ export function StudentsPage() {
           ) : (
             // Registrar view: combined regular + irregular
             (regularStudents === null || irregularStudents === null) ? (
-              <div
-                role="status"
-                aria-label="Loading students"
-                className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-              >
-                <Spinner />
-              </div>
+              <TableSkeleton columns={6} rows={8} />
             ) : (regularLoadError || irregularLoadError) ? (
               <ResultState tone="error" title="Unable to load">
                 {regularLoadError || irregularLoadError}
@@ -809,13 +797,7 @@ export function StudentsPage() {
               {regularLoadError}
             </ResultState>
           ) : regularStudents === null ? (
-            <div
-              role="status"
-              aria-label="Loading regular students"
-              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-            >
-              <Spinner />
-            </div>
+            <TableSkeleton columns={6} rows={8} />
           ) : visibleRegularStudents.length === 0 ? (
             <StudentListEmptyState searchQuery={regularSearch} variant="regular" />
           ) : (
@@ -865,13 +847,7 @@ export function StudentsPage() {
               {irregularLoadError}
             </ResultState>
           ) : irregularStudents === null ? (
-            <div
-              role="status"
-              aria-label="Loading irregular students"
-              className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-            >
-              <Spinner />
-            </div>
+            <TableSkeleton columns={6} rows={8} />
           ) : visibleIrregularStudents.length === 0 ? (
             <StudentListEmptyState searchQuery={irregularSearch} variant="irregular" />
           ) : (

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
-import { Spinner } from "~/components/ui/spinner";
+import { EditBuildingSkeleton } from "~/components/ui/skeleton";
 import { EditBuildingWorkspace } from "~/features/facilities/edit-building-workspace";
 import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
 import { buildingService } from "~/services/building.service";
@@ -99,9 +99,7 @@ function EditBuildingPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <div role="status" aria-label="Loading building" className="grid place-items-center py-12">
-          <Spinner />
-        </div>
+        <EditBuildingSkeleton />
       </div>
     );
   }

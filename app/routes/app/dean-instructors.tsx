@@ -4,7 +4,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -86,13 +86,7 @@ function DeanInstructorsPage() {
             {loadError}
           </ResultState>
         ) : instructors === null ? (
-          <div
-            role="status"
-            aria-label="Loading instructors"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={6} rows={8} />
         ) : visible.length === 0 ? (
           <EmptyState title="No instructors found">
             {instructors.length === 0

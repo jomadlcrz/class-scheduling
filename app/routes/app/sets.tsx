@@ -8,7 +8,7 @@ import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { SetArchiveDialog } from "~/features/sets/set-archive-dialog";
 import { SetForm } from "~/features/sets/set-form";
 import { SetTable } from "~/features/sets/set-table";
@@ -149,13 +149,7 @@ function SetsPage() {
         </div>
 
         {sets === null ? (
-          <div
-            role="status"
-            aria-label="Loading sets"
-            className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
+          <TableSkeleton columns={4} rows={8} />
         ) : visibleSets.length === 0 ? (
           <EmptyState title="No sets found">
             No sets match the current filters. Adjust the search or add a new set.

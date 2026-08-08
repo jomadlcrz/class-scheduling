@@ -5,7 +5,7 @@ import { Card } from "~/components/ui/card";
 import { LockIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+import { TimelineSkeleton } from "~/components/ui/skeleton";
 import { Textarea } from "~/components/ui/textarea";
 import { SchoolYearCloseDialog } from "~/features/academic-terms/school-year-close-dialog";
 import { StatusBadge } from "~/features/academic-terms/status-badges";
@@ -174,9 +174,7 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
 
         <div className="p-5">
           {loading ? (
-            <div role="status" aria-label="Loading workflow" className="grid place-items-center py-12">
-              <Spinner />
-            </div>
+            <TimelineSkeleton steps={5} />
           ) : workflow ? (
             <div className="space-y-6">
               <TermWorkflowTimeline

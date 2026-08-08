@@ -5,7 +5,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
+import { WizardSkeleton } from "~/components/ui/skeleton";
 import { AddStudentWizard } from "~/features/enrollment/add-student-wizard";
 import { EnrollmentBatchImport } from "~/features/enrollment/enrollment-batch-import";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
@@ -139,12 +139,8 @@ function EnrollmentNewStudentPage() {
           </EmptyState>
         </div>
       ) : isLoading ? (
-        <div
-          role="status"
-          aria-label="Loading enrollment form"
-          className="mt-6 grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
+        <div className="mt-6">
+          <WizardSkeleton />
         </div>
       ) : mode === "batch" ? (
         <div className="mt-6">

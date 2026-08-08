@@ -9,7 +9,7 @@ import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
-import { TableSkeleton } from "~/components/feedback/table-skeleton";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { ActivateAdministratorDialog } from "~/features/administrators/activate-administrator-dialog";
 import { AdministratorEditForm } from "~/features/administrators/administrator-edit-form";
 import { AdministratorTable } from "~/features/administrators/administrator-table";

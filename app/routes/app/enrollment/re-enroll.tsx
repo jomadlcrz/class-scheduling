@@ -5,7 +5,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
+import { WizardSkeleton } from "~/components/ui/skeleton";
 import type { ReenrollDirectoryRow } from "~/features/enrollment/reenroll-step1-select-student";
 import { ReenrollWizard } from "~/features/enrollment/reenroll-wizard";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
@@ -141,12 +141,8 @@ function EnrollmentReenrollPage() {
           </EmptyState>
         </div>
       ) : isLoading ? (
-        <div
-          role="status"
-          aria-label="Loading re-enrollment form"
-          className="mt-6 grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
+        <div className="mt-6">
+          <WizardSkeleton />
         </div>
       ) : (
         <div className="mt-6">

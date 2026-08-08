@@ -10,6 +10,7 @@ import { Drawer } from "~/components/ui/drawer";
 import { AlertIcon, PlusIcon, RefreshCwIcon, RotateIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
+import { ScheduleBuilderSkeleton } from "~/components/ui/skeleton";
 import { ScheduleContextForm } from "~/features/schedules/schedule-context-form";
 import {
   AutoGenerateIcon,
@@ -836,12 +837,8 @@ function SchedulesNewPage() {
       />
 
       {isLoading ? (
-        <div
-          role="status"
-          aria-label="Loading schedule builder"
-          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
+        <div className="mt-6">
+          <ScheduleBuilderSkeleton />
         </div>
       ) : noAcademicTerm ? (
         <div className="mt-6">

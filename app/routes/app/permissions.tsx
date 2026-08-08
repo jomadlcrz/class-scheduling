@@ -5,7 +5,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { AddPermissionForm } from "~/features/permissions/add-permission-form";
 import { AddRoleForm } from "~/features/permissions/add-role-form";
 import { PermissionArchiveDialog } from "~/features/permissions/permission-archive-dialog";
@@ -86,13 +86,7 @@ function PermissionsPage() {
       {error ? (
         <EmptyState title="Couldn't load permissions">{error}</EmptyState>
       ) : roles === null ? (
-        <div
-          role="status"
-          aria-label="Loading permissions"
-          className="grid place-items-center py-12 text-navy-700 dark:text-slate-200"
-        >
-          <Spinner />
-        </div>
+        <TableSkeleton columns={5} rows={8} />
       ) : roles.length === 0 ? (
         <EmptyState title="No roles yet">
           No roles exist in the system yet.
