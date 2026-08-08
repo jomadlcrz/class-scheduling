@@ -8,14 +8,15 @@ import { FormError } from "~/components/forms/form-error";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import { AlertIcon, EyeIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
-import { openSchedulePrint } from "~/features/schedules/print-schedule";
-import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { scheduleReleaseStatusLabel, scheduleReleaseStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
+import { useTermContext } from "~/features/academic-terms/term-context-provider";
+import { openSchedulePrint } from "~/features/schedules/print-schedule";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
 import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
@@ -32,8 +33,9 @@ import { enumService } from "~/services/enum.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import {
   scheduleService,
-  type ScheduleRoomOption,
   type ScheduledSetOption,
+  type ScheduleRoomOption,
+  type ScheduleYearLevelOption,
   type UnseatedIrregularStudent,
 } from "~/services/schedule.service";
 import {
@@ -41,11 +43,12 @@ import {
   formatTime,
   generateTimeSlots,
   parseTime12h,
-  type Schedule,
   SCHEDULE_MODES,
+  type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
 import type { ScheduleRelease } from "~/types/schedule-release";
+import type { YearLevel } from "~/types/subject";
 
 const TIME_OPTIONS = generateTimeSlots().map(formatTime);
 
@@ -72,7 +75,6 @@ function RegularClassPage() {
   const [scheduledSets, setScheduledSets] = useState<ScheduledSetOption[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [clearTarget, setClearTarget] = useState<ScheduledSetOption | null>(null);
   const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
   const [rooms, setRooms] = useState<ScheduleRoomOption[]>([]);
   const [dayOptions, setDayOptions] = useState<{ id: number; name: string }[]>([]);
@@ -92,9 +94,22 @@ function RegularClassPage() {
   const [withdrawTarget, setWithdrawTarget] = useState<ScheduleRelease | null>(null);
 
   // Filters — pin the view to a single section's weekly schedule.
+  // Same cascade as /schedules/new: school year → semester → program → year level → set.
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
+  const [selectedProgram, setSelectedProgram] = useState("");
+  const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">("");
   const [setName, setSetName] = useState("");
+
+  // Year-level labels come from the schedule-scoped creation context (same source
+  // /schedules/new uses), so the vocabulary matches the backend's own.
+  const [yearLevels, setYearLevels] = useState<ScheduleYearLevelOption[]>([]);
+
+  // Clear Schedule dialog: pick one or more sets (with "select all") to clear.
+  const [selectedSetIds, setSelectedSetIds] = useState<Set<number>>(new Set());
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState<string | null>(null);
 
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
@@ -103,11 +118,17 @@ function RegularClassPage() {
       .view()
       .then((result) => {
         setSchedules(result);
-        // Default to the newest school year and its first set.
+        // Default to the newest school year, then cascade program → year level → set.
         const years = [...new Set(result.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
         const firstYear = years[0] ?? "";
         setSchoolYear(firstYear);
-        const firstSet = result.find((s) => s.schoolYear === firstYear && s.semester === 1);
+        const inTerm = result.filter((s) => s.schoolYear === firstYear && s.semester === 1);
+        const firstProgram = [...new Set(inTerm.map((s) => s.program))].sort()[0] ?? "";
+        setSelectedProgram(firstProgram);
+        const inProgram = inTerm.filter((s) => s.program === firstProgram);
+        const firstYearLevel = [...new Set(inProgram.map((s) => s.yearLevel))].sort((a, b) => a - b)[0];
+        setSelectedYearLevel(firstYearLevel ?? "");
+        const firstSet = inProgram.find((s) => s.yearLevel === firstYearLevel);
         setSetName(firstSet?.setCode ?? "");
       })
       .catch((err) => {
@@ -119,12 +140,51 @@ function RegularClassPage() {
   useEffect(() => {
     scheduleService.getSetWithSchedules().then(setScheduledSets).catch(() => setScheduledSets([]));
     scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
+    scheduleService
+      .getCreationContext()
+      .then(({ yearLevels: options }) => setYearLevels(options))
+      .catch(() => setYearLevels([]));
     enumService.getOptions().then((options) => setDayOptions(options.dayOfWeek)).catch(() => setDayOptions([]));
   }, []);
+
+  const yearLevelLabel = useMemo(() => {
+    const labels = new Map<number, string>();
+    for (const option of yearLevels) labels.set(option.id, option.name);
+    return (n: number) => labels.get(n) ?? `${n}th Year`;
+  }, [yearLevels]);
 
   const schoolYears = useMemo(
     () => [...new Set((schedules ?? []).map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a)),
     [schedules],
+  );
+
+  const availablePrograms = useMemo(
+    () =>
+      [
+        ...new Set(
+          (schedules ?? [])
+            .filter((s) => s.schoolYear === schoolYear && s.semester === semester)
+            .map((s) => s.program),
+        ),
+      ].sort(),
+    [schedules, schoolYear, semester],
+  );
+
+  const availableYearLevels = useMemo(
+    () =>
+      [
+        ...new Set(
+          (schedules ?? [])
+            .filter(
+              (s) =>
+                s.schoolYear === schoolYear &&
+                s.semester === semester &&
+                s.program === selectedProgram,
+            )
+            .map((s) => s.yearLevel),
+        ),
+      ].sort((a, b) => a - b),
+    [schedules, schoolYear, semester, selectedProgram],
   );
 
   const availableSets = useMemo(
@@ -132,24 +192,35 @@ function RegularClassPage() {
       [
         ...new Set(
           (schedules ?? [])
-            .filter((s) => s.schoolYear === schoolYear && s.semester === semester)
+            .filter(
+              (s) =>
+                s.schoolYear === schoolYear &&
+                s.semester === semester &&
+                s.program === selectedProgram &&
+                s.yearLevel === selectedYearLevel,
+            )
             .map((s) => s.setCode),
         ),
       ].sort(),
-    [schedules, schoolYear, semester],
+    [schedules, schoolYear, semester, selectedProgram, selectedYearLevel],
   );
 
   const visibleSchedules = useMemo(() => {
     if (!schedules) return [];
     return schedules
       .filter(
-        (s) => s.setCode === setName && s.schoolYear === schoolYear && s.semester === semester,
+        (s) =>
+          s.setCode === setName &&
+          s.schoolYear === schoolYear &&
+          s.semester === semester &&
+          s.program === selectedProgram &&
+          s.yearLevel === selectedYearLevel,
       )
       .sort(
         (a, b) =>
           DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.startTime.localeCompare(b.startTime),
       );
-  }, [schedules, setName, schoolYear, semester]);
+  }, [schedules, setName, schoolYear, semester, selectedProgram, selectedYearLevel]);
 
   const selectedSchoolYearId = useMemo(
     () => termContext?.schoolYears.find((row) => row.schoolYear === schoolYear)?.id ?? null,
@@ -174,6 +245,36 @@ function RegularClassPage() {
     [releases, selectedScheduledSet],
   );
 
+  // Sets matching the current program + year level, for the bulk-clear panel.
+  const bulkSets = useMemo(
+    () =>
+      releases
+        .filter(
+          (row) =>
+            row.programAbbrev === selectedProgram && row.yearLevel === selectedYearLevel,
+        )
+        .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? "")),
+    [releases, selectedProgram, selectedYearLevel],
+  );
+
+  // Drop any selections that no longer match the visible set list.
+  useEffect(() => {
+    setSelectedSetIds((prev) => {
+      const valid = new Set(bulkSets.map((row) => row.setId));
+      const next = new Set([...prev].filter((id) => valid.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [bulkSets]);
+
+  const allBulkSelected = bulkSets.length > 0 && bulkSets.every((row) => selectedSetIds.has(row.setId));
+
+  // Closed terms reject writes on the backend — disable the actions and explain why.
+  const termClosed = termContext?.term?.status === "Closed";
+  const termClosureReason = termContext?.term?.closedReasonLabel ?? null;
+  const termClosedNote = termClosureReason
+    ? `This term is closed — ${termClosureReason}.`
+    : "This term is closed.";
+
   useEffect(() => {
     if (!selectedSchoolYearId) return;
     if (
@@ -185,55 +286,148 @@ function RegularClassPage() {
     void selectTerm(selectedSchoolYearId, semester);
   }, [selectedSchoolYearId, semester, selectTerm, termContext]);
 
-  // Keep the set selection valid when the year/semester filters change.
+  // Keep the cascading selection valid as upstream filters change (program → year → set).
+  useEffect(() => {
+    if (selectedProgram && !availablePrograms.includes(selectedProgram)) {
+      setSelectedProgram(availablePrograms[0] ?? "");
+    }
+  }, [availablePrograms, selectedProgram]);
+
+  useEffect(() => {
+    if (selectedYearLevel !== "" && !availableYearLevels.includes(selectedYearLevel)) {
+      setSelectedYearLevel(availableYearLevels[0] ?? "");
+    }
+  }, [availableYearLevels, selectedYearLevel]);
+
   useEffect(() => {
     if (setName && !availableSets.includes(setName)) {
       setSetName(availableSets[0] ?? "");
     }
   }, [availableSets, setName]);
 
-  async function handleClearSchedule() {
-    if (!clearTarget || !selectedSchoolYearId) return;
-    const result = await scheduleService.removeSetSchedules(
-      clearTarget.setId,
-      selectedSchoolYearId,
-      semester,
+  // Changing program re-seats year level and set to the first available option.
+  function handleProgramChange(program: string) {
+    setSelectedProgram(program);
+    const inProgram = (schedules ?? []).filter(
+      (s) => s.schoolYear === schoolYear && s.semester === semester && s.program === program,
     );
-    if (result.message) toast.success(result.message);
-    setUnseatedStudents(result.irregularStudentsUnseated);
-    setSchedules((current) =>
-      current?.filter(
-        (row) =>
-          row.setCode !== clearTarget.setCode ||
-          row.schoolYear !== schoolYear ||
-          row.semester !== semester,
-      ) ?? [],
+    const firstYearLevel = [...new Set(inProgram.map((s) => s.yearLevel))].sort((a, b) => a - b)[0];
+    setSelectedYearLevel(firstYearLevel ?? "");
+    setSetName(firstYearLevel == null ? "" : inProgram.find((s) => s.yearLevel === firstYearLevel)?.setCode ?? "");
+  }
+
+  function handleYearLevelChange(yearLevel: YearLevel | "") {
+    setSelectedYearLevel(yearLevel);
+    setSetName(
+      yearLevel === ""
+        ? ""
+        : (schedules ?? []).find(
+            (s) =>
+              s.schoolYear === schoolYear &&
+              s.semester === semester &&
+              s.program === selectedProgram &&
+              s.yearLevel === yearLevel,
+          )?.setCode ?? "",
     );
-    setScheduledSets((current) =>
-      current.filter(
-        (row) =>
-          row.setId !== clearTarget.setId ||
-          row.schoolYear !== schoolYear ||
-          row.semesterNumber !== semester,
-      ),
+  }
+
+  // Open the Clear Schedule dialog, defaulting the selection to the viewed set.
+  function openClearDialog() {
+    setSelectedSetIds(
+      selectedScheduledSet ? new Set([selectedScheduledSet.setId]) : new Set(),
     );
-    setClearTarget(null);
+    setClearError(null);
+    setClearDialogOpen(true);
+  }
+
+  // Clear every selected set, one call each; keep going if one fails.
+  async function handleClearSelected() {
+    if (!selectedSchoolYearId || selectedSetIds.size === 0 || termClosed) return;
+    setClearing(true);
+    setClearError(null);
+    const targets = bulkSets.filter((row) => selectedSetIds.has(row.setId));
+    const unseated: UnseatedIrregularStudent[] = [];
+    const clearedSetCodes = new Set<string>();
+    const clearedSetIds = new Set<number>();
+    const failed: string[] = [];
+    for (const target of targets) {
+      try {
+        const result = await scheduleService.removeSetSchedules(
+          target.setId,
+          selectedSchoolYearId,
+          semester,
+        );
+        unseated.push(...result.irregularStudentsUnseated);
+        if (target.setCode) clearedSetCodes.add(target.setCode);
+        clearedSetIds.add(target.setId);
+      } catch {
+        failed.push(target.setCode ?? `Set ${target.setId}`);
+      }
+    }
+    if (clearedSetCodes.size > 0) {
+      setSchedules((current) =>
+        current?.filter(
+          (row) =>
+            !(
+              row.schoolYear === schoolYear &&
+              row.semester === semester &&
+              row.program === selectedProgram &&
+              row.yearLevel === selectedYearLevel &&
+              clearedSetCodes.has(row.setCode)
+            ),
+        ) ?? [],
+      );
+      setScheduledSets((current) => current.filter((row) => !clearedSetIds.has(row.setId)));
+    }
+    await refreshReleases();
+    if (unseated.length > 0) setUnseatedStudents(unseated);
+    setClearing(false);
+    if (failed.length > 0) {
+      // Keep the dialog open; the prune effect drops the cleared sets, leaving the failures selected to retry.
+      setClearError(
+        `Could not clear ${failed.length} set${failed.length === 1 ? "" : "s"}: ${failed.join(", ")}.`,
+      );
+    } else {
+      setSelectedSetIds(new Set());
+      setClearDialogOpen(false);
+    }
+  }
+
+  function toggleSelectAll() {
+    setSelectedSetIds(allBulkSelected ? new Set() : new Set(bulkSets.map((row) => row.setId)));
+  }
+
+  function toggleSet(setId: number) {
+    setSelectedSetIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(setId)) next.delete(setId);
+      else next.add(setId);
+      return next;
+    });
   }
 
   async function handleSubmitRelease() {
-    if (!submitTarget) return;
-    const { message } = await scheduleReleaseService.submitRelease(submitTarget.id);
-    if (message) toast.success(message);
-    await refreshReleases();
-    setSubmitTarget(null);
+    if (!submitTarget || termClosed) return;
+    try {
+      const { message } = await scheduleReleaseService.submitRelease(submitTarget.id);
+      if (message) toast.success(message);
+      await refreshReleases();
+      setSubmitTarget(null);
+    } catch (err) {
+      throw err instanceof Error ? err : new Error("Unable to submit the schedule.");
+    }
   }
 
   async function handleWithdrawRelease() {
-    if (!withdrawTarget) return;
-    const { message } = await scheduleReleaseService.withdrawRelease(withdrawTarget.id);
-    if (message) toast.success(message);
-    await refreshReleases();
-    setWithdrawTarget(null);
+    if (!withdrawTarget || termClosed) return;
+    try {
+      const { message } = await scheduleReleaseService.withdrawRelease(withdrawTarget.id);
+      if (message) toast.success(message);
+      await refreshReleases();
+      setWithdrawTarget(null);
+    } catch (err) {
+      throw err instanceof Error ? err : new Error("Unable to withdraw the submission.");
+    }
   }
 
   function openEdit(schedule: Schedule) {
@@ -251,7 +445,7 @@ function RegularClassPage() {
 
   async function handleEditSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editTarget) return;
+    if (!editTarget || termClosed) return;
     setEditSaving(true);
     setActionError(null);
     setEditError(null);
@@ -311,6 +505,7 @@ function RegularClassPage() {
                   type="button"
                   variant="outline"
                   block={false}
+                  disabled={termClosed}
                   onClick={() => setSubmitTarget(selectedRelease)}
                 >
                   <SendIcon />
@@ -322,18 +517,20 @@ function RegularClassPage() {
                 type="button"
                 variant="outline"
                 block={false}
+                disabled={termClosed}
                 onClick={() => setWithdrawTarget(selectedRelease)}
               >
                 <RotateIcon />
                 Withdraw
               </Button>
             )}
-            {selectedScheduledSet && (
+            {bulkSets.length > 0 && (
               <Button
                 type="button"
                 variant="outline"
                 block={false}
-                onClick={() => setClearTarget(selectedScheduledSet)}
+                disabled={termClosed}
+                onClick={openClearDialog}
               >
                 <TrashIcon />
                 Clear Schedule
@@ -350,7 +547,7 @@ function RegularClassPage() {
       {/* Filters */}
       {showContent && (
         <div className="mt-4 flex flex-col gap-4">
-          <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
+          <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
           <FieldChrome id="rc-school-year" label="School Year">
             <Select
               items={
@@ -413,12 +610,88 @@ function RegularClassPage() {
               </SelectContent>
             </Select>
           </FieldChrome>
+          <FieldChrome id="rc-program" label="Program">
+            <Select
+              items={[
+                {
+                  value: "",
+                  label: isLoading
+                    ? "Loading…"
+                    : availablePrograms.length === 0
+                      ? "No program"
+                      : "Select a program",
+                },
+                ...availablePrograms.map((p) => ({ value: p, label: p })),
+              ]}
+              value={selectedProgram}
+              onValueChange={(v) => handleProgramChange(v as string)}
+            >
+              <SelectTrigger id="rc-program">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">
+                  {isLoading
+                    ? "Loading…"
+                    : availablePrograms.length === 0
+                      ? "No program"
+                      : "Select a program"}
+                </SelectItem>
+                {availablePrograms.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
+          <FieldChrome id="rc-year-level" label="Year Level">
+            <Select
+              items={[
+                {
+                  value: "",
+                  label: !selectedProgram
+                    ? "Select a program first"
+                    : availableYearLevels.length === 0
+                      ? "No year level"
+                      : "Select a year level",
+                },
+                ...availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) })),
+              ]}
+              value={selectedYearLevel === "" ? "" : String(selectedYearLevel)}
+              onValueChange={(v) => handleYearLevelChange(v === "" ? "" : (Number(v) as YearLevel))}
+            >
+              <SelectTrigger id="rc-year-level">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">
+                  {!selectedProgram
+                    ? "Select a program first"
+                    : availableYearLevels.length === 0
+                      ? "No year level"
+                      : "Select a year level"}
+                </SelectItem>
+                {availableYearLevels.map((yl) => (
+                  <SelectItem key={yl} value={String(yl)}>
+                    {yearLevelLabel(yl)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
           <FieldChrome id="rc-set" label="Set">
             <Select
               items={[
                 {
                   value: "",
-                  label: isLoading ? "Loading…" : availableSets.length === 0 ? "No set" : "Select a set",
+                  label: isLoading
+                    ? "Loading…"
+                    : !selectedYearLevel
+                      ? "Select a year level first"
+                      : availableSets.length === 0
+                        ? "No set"
+                        : "Select a set",
                 },
                 ...availableSets.map((s) => ({ value: s, label: s })),
               ]}
@@ -430,7 +703,13 @@ function RegularClassPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">
-                  {isLoading ? "Loading…" : availableSets.length === 0 ? "No set" : "Select a set"}
+                  {isLoading
+                    ? "Loading…"
+                    : !selectedYearLevel
+                      ? "Select a year level first"
+                      : availableSets.length === 0
+                        ? "No set"
+                        : "Select a set"}
                 </SelectItem>
                 {availableSets.map((s) => (
                   <SelectItem key={s} value={s}>
@@ -441,6 +720,12 @@ function RegularClassPage() {
             </Select>
           </FieldChrome>
         </Card>
+
+          {termClosed && (
+            <p className="font-body text-xs text-amber-700 dark:text-amber-400">
+              {termClosedNote} Submissions, edits, and deletions are disabled for this term.
+            </p>
+          )}
 
           {selectedRelease && (
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
@@ -460,7 +745,10 @@ function RegularClassPage() {
           {selectedRelease?.releaseStatus === "rejected" && selectedRelease.rejectionReason && (
             <Alert variant="destructive">
               <AlertIcon />
-              <AlertDescription>Rejected: {selectedRelease.rejectionReason}</AlertDescription>
+              <AlertDescription>
+                Rejected: {selectedRelease.rejectionReason}
+                {selectedRelease.reviewedAt ? ` · ${selectedRelease.reviewedAt}` : ""}
+              </AlertDescription>
             </Alert>
           )}
         </div>
@@ -542,6 +830,21 @@ function RegularClassPage() {
       >
         <form className="flex flex-col gap-4" onSubmit={handleEditSubmit}>
           <FormError message={editError} />
+          {selectedRelease?.releaseStatus === "approved" && (
+            <Alert variant="warning">
+              <AlertIcon />
+              <AlertDescription>
+                Saving will unpublish this schedule. Students and instructors will lose access until the
+                dean approves it again.
+              </AlertDescription>
+            </Alert>
+          )}
+          {termClosed && (
+            <Alert variant="warning">
+              <AlertIcon />
+              <AlertDescription>{termClosedNote} You cannot save changes.</AlertDescription>
+            </Alert>
+          )}
           <p className="font-body text-sm text-slate-600 dark:text-slate-300">
             Update the saved class placement. The backend will validate conflicts and room rules.
           </p>
@@ -617,25 +920,98 @@ function RegularClassPage() {
             <Button type="button" variant="outline" block={false} disabled={editSaving} onClick={() => setEditTarget(null)}>
               Cancel
             </Button>
-            <Button type="submit" block={false} isLoading={editSaving} loadingLabel="Saving…">
+            <Button
+              type="submit"
+              block={false}
+              disabled={termClosed}
+              isLoading={editSaving}
+              loadingLabel="Saving…"
+            >
               Save changes
             </Button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmDialog
-        open={clearTarget !== null}
-        onClose={() => setClearTarget(null)}
+      <Modal
+        open={clearDialogOpen}
+        onClose={() => {
+          if (!clearing) setClearDialogOpen(false);
+        }}
         title="Clear set schedule"
-        confirmLabel="Clear schedule"
-        loadingLabel="Clearing…"
-        confirmVariant="danger"
-        onConfirm={handleClearSchedule}
       >
-        Clear the complete {clearTarget?.setCode} schedule for S.Y. {schoolYear}, {semesterLabel(semester)}?
-        Instructor and subject hour ledgers will be released with the saved sessions.
-      </ConfirmDialog>
+        <div className="flex flex-col gap-4">
+          <FormError message={clearError} />
+          <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+            Select the sets to clear for S.Y. {schoolYear}, {semesterLabel(semester)}. Instructor and
+            subject hour ledgers will be released, and any irregular students seated in these sets will be
+            unseated.
+          </p>
+          <div className="overflow-hidden rounded-xl border border-slate-300 dark:border-white/10">
+            <div className="flex items-center gap-3 border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
+              <Checkbox
+                id="rc-clear-select-all"
+                ariaLabel="Select all sets"
+                hideLabel
+                checked={allBulkSelected}
+                onChange={toggleSelectAll}
+              />
+              <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
+                {selectedSetIds.size > 0
+                  ? `${selectedSetIds.size} of ${bulkSets.length} selected`
+                  : "Select all"}
+              </span>
+            </div>
+            <ul className="scrollbar-thin max-h-64 divide-y divide-slate-200 overflow-y-auto dark:divide-white/10">
+              {bulkSets.map((row) => (
+                <li key={row.setId} className="flex items-center gap-3 px-3 py-2">
+                  <Checkbox
+                    id={`rc-clear-${row.setId}`}
+                    ariaLabel={`Select ${row.setCode ?? "set"}`}
+                    hideLabel
+                    checked={selectedSetIds.has(row.setId)}
+                    onChange={() => toggleSet(row.setId)}
+                  />
+                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                    {row.setCode}
+                  </span>
+                  <StatusBadge tone={scheduleReleaseStatusTone(row.releaseStatus)}>
+                    {scheduleReleaseStatusLabel(row.releaseStatus)}
+                  </StatusBadge>
+                  <span className="ml-auto font-body text-xs text-slate-500 dark:text-slate-400">
+                    {row.sessionCount} session{row.sessionCount === 1 ? "" : "s"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              disabled={clearing}
+              onClick={() => setClearDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              block={false}
+              disabled={termClosed || selectedSetIds.size === 0}
+              isLoading={clearing}
+              loadingLabel="Clearing…"
+              onClick={handleClearSelected}
+            >
+              Clear{" "}
+              {selectedSetIds.size > 0
+                ? `${selectedSetIds.size} set${selectedSetIds.size === 1 ? "" : "s"}`
+                : "schedule"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         open={unseatedStudents.length > 0}
