@@ -93,7 +93,9 @@ function ScheduleOverviewPage() {
   const [semester, setSemester] = useState<number>(1);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [yearLevels, setYearLevels] = useState<ScheduleYearLevelOption[]>([]);
-  const [logoByDept, setLogoByDept] = useState<Map<string, string | null>>(new Map());
+  const [deptMeta, setDeptMeta] = useState<Map<string, { name: string; logoUrl: string | null }>>(
+    new Map(),
+  );
   const [previewTarget, setPreviewTarget] = useState<ScheduleRelease | null>(null);
 
   const schoolYears = termContext?.schoolYears ?? [];
@@ -112,8 +114,10 @@ function ScheduleOverviewPage() {
     programService.list().then(setPrograms).catch(() => setPrograms([]));
     departmentService
       .list()
-      .then((depts) => setLogoByDept(new Map(depts.map((d) => [d.abbrev, d.logoUrl]))))
-      .catch(() => setLogoByDept(new Map()));
+      .then((depts) =>
+        setDeptMeta(new Map(depts.map((d) => [d.abbrev, { name: d.name, logoUrl: d.logoUrl }]))),
+      )
+      .catch(() => setDeptMeta(new Map()));
     scheduleService
       .getCreationContext()
       .then(({ yearLevels: options }) => setYearLevels(options))
@@ -273,7 +277,9 @@ function ScheduleOverviewPage() {
           </EmptyState>
         ) : (
           <Accordion>
-            {departments.map((dept, index) => (
+            {departments.map((dept, index) => {
+              const meta = deptMeta.get(dept.abbrev);
+              return (
               <AccordionItem
                 key={dept.abbrev}
                 defaultOpen={index === 0}
@@ -286,17 +292,26 @@ function ScheduleOverviewPage() {
                   <span className="flex flex-col gap-2">
                     <span className="flex items-center gap-2.5">
                       <img
-                        src={departmentLogoSrc(logoByDept.get(dept.abbrev) ?? null)}
+                        src={departmentLogoSrc(meta?.logoUrl ?? null)}
                         alt=""
                         aria-hidden="true"
                         onError={onDepartmentLogoError}
-                        className="size-8 shrink-0 object-contain"
+                        className="size-9 shrink-0 object-contain"
                       />
-                      <span className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-                        {dept.abbrev}
-                      </span>
-                      <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                        {dept.total} set{dept.total === 1 ? "" : "s"}
+                      <span className="min-w-0">
+                        <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                          <span className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                            {dept.abbrev}
+                          </span>
+                          <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                            {dept.total} set{dept.total === 1 ? "" : "s"}
+                          </span>
+                        </span>
+                        {meta?.name && (
+                          <span className="mt-0.5 block truncate font-body text-xs text-slate-500 dark:text-slate-400">
+                            {meta.name}
+                          </span>
+                        )}
                       </span>
                     </span>
                     <span className="sm:hidden">
@@ -382,7 +397,8 @@ function ScheduleOverviewPage() {
                   ))}
                 </div>
               </AccordionItem>
-            ))}
+              );
+            })}
           </Accordion>
         )}
       </div>
