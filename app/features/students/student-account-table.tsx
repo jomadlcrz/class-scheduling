@@ -1,6 +1,6 @@
 ﻿import { Checkbox } from "~/components/ui/checkbox";
 import { IconButton } from "~/components/ui/icon-button";
-import { ArchiveIcon, FileSearchIcon, GraduationCapIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { ArchiveIcon, FileSearchIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Table,
@@ -23,7 +23,6 @@ type StudentAccountTableProps = {
   /** Per-row login status fetched from GET /super-admin/student-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
   accountActiveById: Record<number, boolean | undefined>;
   onView: ((student: StudentAccountRow) => void) | null;
-  onEnroll: ((student: StudentAccountRow) => void) | null;
   onDeactivateAccount: ((student: StudentAccountRow) => void) | null;
   onReactivateAccount: ((student: StudentAccountRow) => void) | null;
   onArchiveProfile: ((student: StudentAccountRow) => void) | null;
@@ -40,7 +39,6 @@ export function StudentAccountTable({
   students,
   accountActiveById,
   onView,
-  onEnroll,
   onDeactivateAccount,
   onReactivateAccount,
   onArchiveProfile,
@@ -116,15 +114,6 @@ export function StudentAccountTable({
                     title="View details"
                   >
                     <FileSearchIcon />
-                  </IconButton>
-                )}
-                {onEnroll && (
-                  <IconButton
-                    onClick={() => onEnroll(student)}
-                    label={`Enroll ${displayName(student)} for a new term`}
-                    title="Enroll for a new term"
-                  >
-                    <GraduationCapIcon />
                   </IconButton>
                 )}
                 {onArchiveProfile && (

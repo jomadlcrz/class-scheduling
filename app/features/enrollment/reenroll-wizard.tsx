@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Stepper, type StepDefinition } from "~/components/ui/stepper";
 import type { AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
@@ -42,6 +42,8 @@ type ReenrollWizardProps = {
   onDirtyChange: (dirty: boolean) => void;
   onCancel: () => void;
   onSaved: (message: string) => void;
+  /** Student profile ids to pre-select once the directory loads (e.g. deep link from a table row). */
+  initialSelectedIds?: number[];
 };
 
 export function ReenrollWizard({
@@ -58,6 +60,7 @@ export function ReenrollWizard({
   onDirtyChange,
   onCancel,
   onSaved,
+  initialSelectedIds,
 }: ReenrollWizardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   // Keyed by studentProfileId so toggling/select-all/removal are all O(1) and order-stable.
@@ -65,6 +68,33 @@ export function ReenrollWizard({
   const [academic, setAcademic] = useState<AcademicDraft>(EMPTY_ACADEMIC);
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<Set<number>>(new Set());
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Deep-linked students only seed once — re-running the directory effect below would
+  // otherwise re-add anyone the registrar already unchecked.
+  const appliedInitialSelection = useRef(false);
+
+  // Pre-select the deep-linked student(s) once the directory resolves, so the registrar
+  // can confirm the batch or extend it before continuing.
+  useEffect(() => {
+    if (
+      directory === null ||
+      appliedInitialSelection.current ||
+      !initialSelectedIds ||
+      initialSelectedIds.length === 0
+    ) {
+      return;
+    }
+    appliedInitialSelection.current = true;
+    const ids = new Set(initialSelectedIds);
+    const seeds = directory.filter((row) => ids.has(row.studentProfileId));
+    if (seeds.length === 0) return;
+    setSelectedStudents((current) => {
+      const next = new Map(current);
+      for (const row of seeds) next.set(row.studentProfileId, row);
+      return next;
+    });
+    // Run once when the directory first resolves; seed ids don't change on this screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [directory]);
 
   const isIrregular = academic.enrolledStatus === "Irregular";
   const isDirty = selectedStudents.size > 0 || academic.programId !== "";

@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { SuccessDone } from "~/components/feedback/success-done";
-import { PlusIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
+import { PlusIcon, GraduationCapIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
@@ -17,7 +17,6 @@ import { useStudentAccountFilters } from "~/features/students/student-account-fi
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentArchiveDialog } from "~/features/students/student-archive-dialog";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
-import { StudentEnrollForm } from "~/features/students/student-enroll-form";
 import { StudentRecordForm } from "~/features/students/student-record-form";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
@@ -36,7 +35,6 @@ import type { Semester } from "~/types/semester";
 import type { ClassSet } from "~/types/set";
 import type {
   CreateStudentRecordInput,
-  EnrollStudentInput,
   RegularStudentRow,
   StudentAccountRow,
 } from "~/types/student";
@@ -142,8 +140,6 @@ export function StudentsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createdRecord, setCreatedRecord] = useState(false);
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
-  const [enrollTarget, setEnrollTarget] = useState<StudentAccountRow | null>(null);
-  const [enrolled, setEnrolled] = useState(false);
   const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<StudentAccountRow | null>(null);
@@ -506,19 +502,6 @@ export function StudentsPage() {
     return parts ? `${s.lastName}, ${parts}` : s.lastName;
   }
 
-  async function handleEnroll(input: EnrollStudentInput) {
-    if (!enrollTarget) return;
-    const message = await studentService.enroll(enrollTarget.studentProfileId, input);
-    if (message) toast.success(message);
-    setEnrolled(true);
-    void reloadAccounts();
-  }
-
-  function closeEnrollModal() {
-    setEnrollTarget(null);
-    setEnrolled(false);
-  }
-
   async function handleDeactivateAccount(student: StudentAccountRow) {
     const message = await studentService.deactivateAccount(student.studentProfileId);
     if (message) toast.success(message);
@@ -634,16 +617,27 @@ export function StudentsPage() {
         }
         actions={
           !isAdmin ? (
-            <Button
-              type="button"
-              block={false}
-              onClick={() =>
-                navigate(activeView === "irregular" ? "/students-irregular/bulk" : "/students-regular/bulk")
-              }
-            >
-              <PlusIcon />
-              New Student
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                onClick={() => navigate("/students/re-enroll")}
+              >
+                <GraduationCapIcon />
+                Re-enroll
+              </Button>
+              <Button
+                type="button"
+                block={false}
+                onClick={() =>
+                  navigate(activeView === "irregular" ? "/students-irregular/bulk" : "/students-regular/bulk")
+                }
+              >
+                <PlusIcon />
+                New Student
+              </Button>
+            </>
           ) : selectedForAccount.size > 0 ? (
             <Button type="button" block={false} onClick={() => setBulkCreateOpen(true)}>
               <UserCheckIcon />
@@ -711,7 +705,6 @@ export function StudentsPage() {
                   students={pagination.pageItems}
                   accountActiveById={accountActiveById}
                   onView={setViewTarget}
-                  onEnroll={null}
                   onDeactivateAccount={setDeactivateAccountTarget}
                   onReactivateAccount={setReactivateAccountTarget}
                   onArchiveProfile={setArchiveTarget}
@@ -754,7 +747,6 @@ export function StudentsPage() {
                   }))}
                   accountActiveById={{}}
                   onView={setViewTarget}
-                  onEnroll={setEnrollTarget}
                   onDeactivateAccount={null}
                   onReactivateAccount={null}
                   onArchiveProfile={setArchiveTarget}
@@ -802,7 +794,6 @@ export function StudentsPage() {
                 students={regularPagination.pageItems}
                 accountActiveById={accountActiveById}
                 onView={setViewTarget}
-                onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
                 onArchiveProfile={setArchiveTarget}
@@ -852,7 +843,6 @@ export function StudentsPage() {
                 students={irregularPagination.pageItems}
                 accountActiveById={accountActiveById}
                 onView={setViewTarget}
-                onEnroll={isAdmin ? null : setEnrollTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
                 onArchiveProfile={setArchiveTarget}
@@ -906,29 +896,6 @@ export function StudentsPage() {
             academicStatuses={enumOptions?.academicStatus ?? []}
             enrollmentStates={enumOptions?.enrollmentState ?? []}
           />
-        )}
-      </Modal>
-
-      <Modal open={enrollTarget !== null} onClose={closeEnrollModal} title="Enroll Student" wide={!enrolled}>
-        {enrolled ? (
-          <SuccessDone title="Student enrolled" onDone={closeEnrollModal}>
-            The student was enrolled for the selected term.
-          </SuccessDone>
-        ) : (
-          enrollTarget && (
-            <StudentEnrollForm
-              student={enrollTarget}
-              programs={programs}
-              sets={sets}
-              subjects={subjects}
-              schoolYears={schoolYears}
-              semesters={semesters}
-              studentTypes={enumOptions?.studentType ?? []}
-              academicStatuses={enumOptions?.academicStatus ?? []}
-              onSubmit={handleEnroll}
-              onCancel={closeEnrollModal}
-            />
-          )
         )}
       </Modal>
 

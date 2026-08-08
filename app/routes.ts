@@ -56,6 +56,7 @@ export default [
     route("faculty-schedule", "routes/app/faculty-schedule.tsx"),
     route("student-schedule", "routes/app/student-schedule.tsx"),
     route("students", "routes/app/students.tsx"),
+    route("students/re-enroll", "routes/app/students-re-enroll.tsx"),
     route("students-regular", "routes/app/students-regular.tsx"),
     route("students-regular/bulk", "routes/app/students-regular-bulk.tsx"),
     route("students-irregular", "routes/app/students-irregular.tsx"),
