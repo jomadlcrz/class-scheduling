@@ -28,7 +28,7 @@ const SETTINGS_GROUPS: SettingsGroup[] = [
         icon: UserIcon,
       },
       {
-        label: "Account & Security",
+        label: "Security",
         description: "Change the password you use to sign in.",
         href: "/settings/security",
         icon: KeyIcon,

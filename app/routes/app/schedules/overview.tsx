@@ -186,7 +186,7 @@ function ScheduleOverviewPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Schedule Overview"
-        description="Every section timetable for the term, grouped by department, program, and year level — with its approval status at a glance."
+
         actions={
           <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
             <PlusIcon />

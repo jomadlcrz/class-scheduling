@@ -45,7 +45,7 @@ import type { Subject } from "~/types/subject";
 export function meta() {
   return [
     { title: "Students — GWC Class Scheduling" },
-    { name: "description", content: "Manage student records and their login accounts." },
+    { name: "description", content: "Manage student records, enrollments, and schedules." },
   ];
 }
 
@@ -626,7 +626,7 @@ export function StudentsPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Students"
-        description="Student records and their login accounts."
+
         actions={
           !isAdmin ? (
             <Button

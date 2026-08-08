@@ -61,7 +61,7 @@ function EnrollmentIrregularStudentsPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Irregular Students"
-        description="Students enrolled as Irregular for the selected term."
+
         actions={
           <Button type="button" block={false} onClick={() => navigate("/enrollment/new")}>
             <PlusIcon />

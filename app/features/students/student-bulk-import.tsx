@@ -204,9 +204,6 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
   const isIrregular = enrolledStatus === "Irregular";
   const listRoute = isIrregular ? "/students-irregular" : "/students-regular";
   const pageTitle = `Bulk Import ${enrolledStatus} Students`;
-  const pageDescription = isIrregular
-    ? "Import irregular students with their own subject list from a CSV file or pasted data."
-    : "Import regular students into a class set from a CSV file or pasted data.";
   const templateFilename = isIrregular
     ? "irregular-student-import-template.csv"
     : "regular-student-import-template.csv";
@@ -435,7 +432,6 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <PageHeader
           title={pageTitle}
-          description={pageDescription}
         />
 
         <div className="mt-6">
@@ -529,7 +525,6 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title={pageTitle}
-        description={pageDescription}
       />
 
       <div className="mt-6">

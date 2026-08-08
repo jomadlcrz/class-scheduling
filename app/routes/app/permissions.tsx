@@ -66,7 +66,7 @@ function PermissionsPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Permissions"
-        description="System roles and what each one can do."
+
         actions={
           <div className="flex gap-2">
             <Button type="button" block={false} onClick={() => setAddRoleOpen(true)}>

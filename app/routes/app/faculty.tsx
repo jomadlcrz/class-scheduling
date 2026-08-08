@@ -132,7 +132,7 @@ function FacultyPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Instructors & Deans"
-        description="Instructors and deans with their department assignments."
+
         actions={
           <Button type="button" block={false} onClick={() => navigate("/faculty/new")}>
             <PlusIcon />

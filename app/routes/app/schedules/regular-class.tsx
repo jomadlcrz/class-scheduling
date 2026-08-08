@@ -450,7 +450,7 @@ function RegularClassPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Regular Schedule Builder"
-        description="Class schedules for the current academic term."
+
         actions={
           <div className="flex flex-wrap justify-end gap-2">
             {clearableSets.length > 0 && (

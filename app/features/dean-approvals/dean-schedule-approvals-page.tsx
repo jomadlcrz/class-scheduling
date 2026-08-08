@@ -74,7 +74,7 @@ export function DeanScheduleApprovalsPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Schedule Approvals"
-        description="Review schedules submitted by the registrar for your department, then approve or reject them."
+
       />
 
       <Card className="mt-4 grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">

@@ -1,5 +1,6 @@
 ﻿import { useState, type ReactNode } from "react";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
+import { Card } from "~/components/ui/card";
 import { CheckIcon, ChevronRightIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
@@ -66,9 +67,9 @@ export function SecuritySettings() {
 
   return (
     <div>
-      <SettingsPageHeader title="Account & Security" />
+      <SettingsPageHeader title="Security" />
 
-      <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">
+      <Card className="mt-6 divide-y divide-slate-200 dark:divide-white/10">
         <SecurityRow
           label="Password"
           description="Change the password you use to sign in."
@@ -79,7 +80,7 @@ export function SecuritySettings() {
           }
           onClick={() => setPasswordModalOpen(true)}
         />
-      </div>
+      </Card>
 
       <Modal open={passwordModalOpen} onClose={closePasswordModal} title="Change Password">
         {done ? (

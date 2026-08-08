@@ -93,7 +93,7 @@ export function TermClosurePage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Term Closure"
-        description="Post a semester when scheduling is complete. Destructive deletes are blocked; views and reports stay available."
+
         actions={
           <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
             <HelpCircleIcon />

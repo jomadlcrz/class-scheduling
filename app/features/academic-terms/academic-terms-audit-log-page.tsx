@@ -96,7 +96,7 @@ export function AcademicTermsAuditLogPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Academic Terms Audit Log"
-        description="Complete history of actions performed on academic terms."
+
       />
 
       {!loadingFilters && (

@@ -73,7 +73,7 @@ function StudentSchedulePage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="My Class Schedule"
-        description="Your enrolled subjects and weekly class times."
+
         actions={
           <Tooltip label="Print schedule">
             <button

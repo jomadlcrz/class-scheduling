@@ -11,7 +11,7 @@ export default function AuditLog() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Audit Log"
-        description="Track system activity and user actions."
+
       />
     </div>
   );

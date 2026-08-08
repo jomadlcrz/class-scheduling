@@ -62,7 +62,7 @@ function CreateFacilityPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="New Facility"
-        description="Create a facility with its building and rooms in one submission."
+
         actions={
           <Button type="button" variant="outline" block={false} onClick={() => navigate("/facilities")}>
             <ArrowLeftIcon />

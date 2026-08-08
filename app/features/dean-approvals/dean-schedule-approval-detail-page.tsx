@@ -87,7 +87,7 @@ export function DeanScheduleApprovalDetailPage() {
       <div className="mx-auto max-w-6xl px-4 py-8">
         <PageHeader
           title="Schedule Not Found"
-          description={error ?? "The requested schedule could not be loaded."}
+
           actions={
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/schedule-approvals")}>
               <ArrowLeftIcon /> Back
@@ -106,7 +106,7 @@ export function DeanScheduleApprovalDetailPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title={`${release.programAbbrev ?? ""} ${release.setCode ?? ""}`.trim()}
-        description="Review the full weekly schedule before approving or rejecting it."
+
         actions={
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/schedule-approvals")}>

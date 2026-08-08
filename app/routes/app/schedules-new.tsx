@@ -795,7 +795,7 @@ function SchedulesNewPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="New Schedule"
-        description="Select a set, add time slots for its subjects, then save the whole week at once."
+
         actions={
           noAcademicTerm ? undefined : (
             <>

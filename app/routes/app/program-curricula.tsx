@@ -154,7 +154,7 @@ function ProgramCurriculaPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Program Curricula"
-        description="Programs and the subjects that make up each one, organized by year and semester."
+
         actions={
           canManagePrograms && (
             <Button type="button" block={false} onClick={() => navigate("/program-curricula/new")}>

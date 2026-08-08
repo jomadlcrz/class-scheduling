@@ -474,7 +474,6 @@ export function SubjectAssignmentView() {
       <div className="mx-auto max-w-7xl px-4 py-8">
         <PageHeader
           title="Subject Assignments"
-          description="Assign and manage instructors' subject loads for the selected academic term."
         />
         <div className="flex items-center justify-center py-20">
           <Spinner />
@@ -488,7 +487,6 @@ export function SubjectAssignmentView() {
       {/* Page Header */}
       <PageHeader
         title="Subject Assignments"
-        description="Assign and manage instructors' subject loads for the selected academic term."
       />
 
       {/* Toolbar */}

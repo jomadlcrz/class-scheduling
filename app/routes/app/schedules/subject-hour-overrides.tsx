@@ -189,7 +189,7 @@ function SubjectHourOverridesPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Subject Hour Overrides"
-        description="Override weekly hours for individual subjects. These take effect the next time you generate a schedule."
+
         actions={
           <Button
             type="button"

@@ -64,7 +64,7 @@ function FacultyNewPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="New Faculty"
-        description="Create an instructor or dean account and assign its department."
+
       />
 
       <div className="mt-6">

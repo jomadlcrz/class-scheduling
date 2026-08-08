@@ -119,7 +119,7 @@ function EnrollmentReenrollPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Re-enroll Existing Student"
-        description="Enroll a returning student profile into a new term."
+
       />
 
       {noAcademicTerm ? (

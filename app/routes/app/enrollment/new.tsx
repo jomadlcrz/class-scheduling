@@ -102,11 +102,6 @@ function EnrollmentNewStudentPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Add New Student"
-        description={
-          mode === "batch"
-            ? "Upload a roster, review the rows, then enroll the batch."
-            : "Create a student profile and first-term enrollment — identity, academics, then review."
-        }
         actions={
           !noAcademicTerm && !isLoading ? (
             <EntryModeTabs

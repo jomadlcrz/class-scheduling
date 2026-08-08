@@ -39,7 +39,7 @@ export function SemestersPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Semesters"
-        description="Define semester periods used across scheduling and term operations."
+
         actions={
           !loading ? (
             <Button type="button" block={false} onClick={() => setCreateOpen(true)}>

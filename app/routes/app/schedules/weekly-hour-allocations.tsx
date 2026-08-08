@@ -45,7 +45,7 @@ function WeeklyHoursPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Weekly Hour Allocations"
-        description="Set the maximum weekly hours for each subject type. These limits are enforced when building class schedules."
+
       />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">

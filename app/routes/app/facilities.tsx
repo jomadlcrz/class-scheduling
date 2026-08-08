@@ -72,7 +72,7 @@ function FacilitiesPage() {
     <div className="mx-auto max-w-400 px-4 py-8 sm:px-6">
       <PageHeader
         title="Facilities"
-        description="Browse campus buildings and rooms by floor."
+
         actions={
           <Button type="button" block={false} onClick={() => navigate("/facilities/new")}>
             <PlusIcon />

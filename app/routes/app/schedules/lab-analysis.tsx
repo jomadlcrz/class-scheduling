@@ -76,7 +76,7 @@ function LabAnalysisPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Laboratory Analysis"
-        description="Every computer lab window for the term, and who holds it. A lab class only fits where a whole window is open."
+
       />
 
       <div className="mt-4 flex flex-col gap-4">

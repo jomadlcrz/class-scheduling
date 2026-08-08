@@ -98,7 +98,7 @@ function SetsPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Sets"
-        description="Class sets grouped by program and year level."
+
         actions={
           <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
             <PlusIcon />

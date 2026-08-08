@@ -102,7 +102,7 @@ function IrregularClassPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Irregular Class"
-        description="Review irregular students and the subjects they're currently enrolled in."
+
       />
 
       <div className="mt-6 flex gap-2 border-b border-slate-200 dark:border-white/10">

@@ -88,7 +88,7 @@ function ClassroomMappingPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Classroom Mapping"
-        description="Weekly schedule and availability for all classrooms by room."
+
       />
 
       <div className="mt-4 flex flex-col gap-4">

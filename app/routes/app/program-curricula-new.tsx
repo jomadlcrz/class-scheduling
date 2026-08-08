@@ -61,7 +61,7 @@ function ProgramsNewPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
         title="Create Curriculum"
-        description="Describe the program, build its curriculum, then review everything before saving."
+
       />
 
       {noAcademicTerm ? (

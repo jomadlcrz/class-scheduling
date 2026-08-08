@@ -103,7 +103,7 @@ function DepartmentsPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="Departments"
-        description="Academic departments and their assigned buildings."
+
         actions={
           <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
             <PlusIcon />

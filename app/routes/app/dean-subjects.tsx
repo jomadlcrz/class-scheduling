@@ -112,7 +112,7 @@ function DeanSubjectsPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Department Subjects"
-        description="Curriculum subjects for your department, organized by program."
+
       />
 
       <div className="mt-6 flex flex-col gap-5">

@@ -355,7 +355,7 @@ function DeanTeachingTermPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <PageHeader
           title="Teaching Term Not Found"
-          description={error ?? "The requested teaching term could not be loaded."}
+
           actions={
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/subject-assignments")}>
               <ArrowLeftIcon /> Back to Assignments

@@ -117,7 +117,7 @@ function AdministratorsPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
         title="Administrators"
-        description="Super Admin and Registrar Admin accounts."
+
         actions={
           <Button type="button" block={false} onClick={() => navigate("/administrators/new")}>
             <PlusIcon />
