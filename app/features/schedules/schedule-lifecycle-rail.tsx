@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Card } from "~/components/ui/card";
 import { AlertTriangleIcon, CheckIcon, ClockIcon, EditIcon } from "~/components/ui/icons";
 import {
   scheduleReleaseStatusLabel,
@@ -9,6 +11,7 @@ import { formatRelativeTime } from "~/lib/time";
 import type { ScheduleRelease, ScheduleReleaseStatus } from "~/types/schedule-release";
 
 type Audience = "registrar" | "dean";
+type AlertVariant = "info" | "warning" | "success" | "destructive" | "default";
 
 type ScheduleLifecycleRailProps = {
   release: ScheduleRelease;
@@ -20,7 +23,6 @@ type ScheduleLifecycleRailProps = {
 
 type NodeState = "done" | "current" | "rejected" | "upcoming";
 type StopView = { label: string; state: NodeState; sub: string };
-type PanelTone = "gold" | "sky" | "emerald" | "red" | "slate";
 
 /**
  * The schedule's honest three-stop pipeline: Draft → Dean Review → Approved.
@@ -57,30 +59,7 @@ function stopsFor(status: ScheduleReleaseStatus): StopView[] {
   }
 }
 
-const panelAccent: Record<PanelTone, { box: string; eyebrow: string }> = {
-  gold: {
-    box: "border-amber-200 bg-amber-50/70 dark:border-gold-400/20 dark:bg-gold-400/5",
-    eyebrow: "text-amber-700 dark:text-gold-300",
-  },
-  sky: {
-    box: "border-sky-200 bg-sky-50/70 dark:border-sky-400/20 dark:bg-sky-400/5",
-    eyebrow: "text-sky-700 dark:text-sky-300",
-  },
-  emerald: {
-    box: "border-emerald-200 bg-emerald-50/70 dark:border-emerald-400/20 dark:bg-emerald-400/5",
-    eyebrow: "text-emerald-700 dark:text-emerald-300",
-  },
-  red: {
-    box: "border-red-200 bg-red-50/70 dark:border-red-400/20 dark:bg-red-400/5",
-    eyebrow: "text-red-700 dark:text-red-300",
-  },
-  slate: {
-    box: "border-slate-200 bg-slate-50/70 dark:border-white/10 dark:bg-white/5",
-    eyebrow: "text-slate-600 dark:text-slate-300",
-  },
-};
-
-type Guidance = { tone: PanelTone; eyebrow: string; description: string };
+type Guidance = { variant: AlertVariant; icon: ReactNode; eyebrow: string; description: string };
 
 /** Audience-aware "what's the state, and what happens next" copy. Status vocabulary stays backend-owned. */
 function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
@@ -93,7 +72,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
     switch (release.releaseStatus) {
       case "pending_approval":
         return {
-          tone: "sky",
+          variant: "info",
+          icon: <ClockIcon />,
           eyebrow: "Needs your review",
           description: `Submitted${submittedAgo ? ` ${submittedAgo}` : ""}${
             submitter ? ` by ${submitter}` : ""
@@ -101,7 +81,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
         };
       case "approved":
         return {
-          tone: "emerald",
+          variant: "success",
+          icon: <CheckIcon />,
           eyebrow: "Approved",
           description: `You approved this${
             approvedAgo || reviewedAgo ? ` ${approvedAgo || reviewedAgo}` : ""
@@ -109,7 +90,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
         };
       case "rejected":
         return {
-          tone: "red",
+          variant: "destructive",
+          icon: <AlertTriangleIcon />,
           eyebrow: "Returned to registrar",
           description: `You sent this back${
             reviewedAgo ? ` ${reviewedAgo}` : ""
@@ -117,7 +99,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
         };
       default:
         return {
-          tone: "slate",
+          variant: "default",
+          icon: <EditIcon />,
           eyebrow: "Not yet submitted",
           description: "The registrar hasn't submitted this timetable for approval.",
         };
@@ -127,7 +110,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
   switch (release.releaseStatus) {
     case "pending_approval":
       return {
-        tone: "sky",
+        variant: "info",
+        icon: <ClockIcon />,
         eyebrow: "Awaiting the dean",
         description: `Submitted${
           submittedAgo ? ` ${submittedAgo}` : ""
@@ -135,7 +119,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
       };
     case "approved":
       return {
-        tone: "emerald",
+        variant: "success",
+        icon: <CheckIcon />,
         eyebrow: "Published",
         description: `Approved${
           approvedAgo ? ` ${approvedAgo}` : ""
@@ -143,7 +128,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
       };
     case "rejected":
       return {
-        tone: "red",
+        variant: "destructive",
+        icon: <AlertTriangleIcon />,
         eyebrow: "Changes requested",
         description:
           "The dean returned this to draft with a note. Revise the sessions, then resubmit for approval.",
@@ -151,7 +137,8 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
     case "draft":
     default:
       return {
-        tone: "gold",
+        variant: "warning",
+        icon: <EditIcon />,
         eyebrow: "Ready to submit",
         description: `${release.sessionCount} session${
           release.sessionCount === 1 ? "" : "s"
@@ -225,19 +212,16 @@ function subTone(state: NodeState): string {
 
 /**
  * Shared status header for a schedule release — a branded three-stop rail plus an
- * audience-aware next-step panel. Used by the registrar builder, the dean's inbox
- * detail, and the preview surfaces so the lifecycle reads the same everywhere.
+ * audience-aware next-step callout. Used by the registrar builder and the dean's
+ * inbox detail so the lifecycle reads the same everywhere.
  */
 export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLifecycleRailProps) {
   const stops = stopsFor(release.releaseStatus);
   const guidance = guidanceFor(release, audience);
-  const accent = panelAccent[guidance.tone];
+  const showNote = release.releaseStatus === "rejected" && Boolean(release.rejectionReason);
 
   return (
-    <section
-      aria-label="Schedule approval status"
-      className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 dark:border-white/10 dark:bg-surface-raised/60"
-    >
+    <Card className="p-4 sm:p-5">
       {/* Desktop: horizontal three-stop rail */}
       <ol className="hidden grid-cols-3 sm:grid" aria-label="Approval progress">
         {stops.map((stop, index) => {
@@ -262,7 +246,7 @@ export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLif
         })}
       </ol>
 
-      {/* Mobile: compact node bar — the panel below carries the words. */}
+      {/* Mobile: compact node bar — the callout below carries the words. */}
       <div className="flex items-center gap-2 sm:hidden" aria-hidden="true">
         {stops.map((stop, index) => {
           const isLast = index === stops.length - 1;
@@ -275,36 +259,27 @@ export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLif
         })}
       </div>
 
-      {/* Next-step panel */}
-      <div className={`mt-5 rounded-lg border px-4 py-3.5 ${accent.box}`}>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className={`font-body text-xs font-semibold uppercase tracking-wider ${accent.eyebrow}`}>
-                {guidance.eyebrow}
-              </p>
-              <StatusBadge tone={scheduleReleaseStatusTone(release.releaseStatus)}>
-                {scheduleReleaseStatusLabel(release.releaseStatus)}
-              </StatusBadge>
-            </div>
-            <p className="mt-1.5 font-body text-sm leading-relaxed text-navy-700 dark:text-mist-100">
-              {guidance.description}
+      {/* Next-step callout */}
+      <Alert variant={guidance.variant} className="mt-5">
+        {guidance.icon}
+        <AlertTitle>
+          <span className="inline-flex flex-wrap items-center gap-2">
+            {guidance.eyebrow}
+            <StatusBadge tone={scheduleReleaseStatusTone(release.releaseStatus)}>
+              {scheduleReleaseStatusLabel(release.releaseStatus)}
+            </StatusBadge>
+          </span>
+        </AlertTitle>
+        <AlertDescription>
+          {guidance.description}
+          {showNote && (
+            <p className="mt-2 font-semibold">
+              Dean's note: <span className="font-normal">{release.rejectionReason}</span>
             </p>
-          </div>
-          {action && <div className="flex shrink-0 flex-wrap gap-2">{action}</div>}
-        </div>
-
-        {release.releaseStatus === "rejected" && release.rejectionReason && (
-          <div className="mt-3 rounded-md border border-red-200 bg-white/70 px-3 py-2 dark:border-red-400/20 dark:bg-red-950/20">
-            <p className="font-body text-xs font-semibold uppercase tracking-wider text-red-700 dark:text-red-300">
-              Dean's note
-            </p>
-            <p className="mt-1 font-body text-sm leading-relaxed text-navy-700 dark:text-mist-100">
-              {release.rejectionReason}
-            </p>
-          </div>
-        )}
-      </div>
-    </section>
+          )}
+        </AlertDescription>
+        {action && <AlertAction>{action}</AlertAction>}
+      </Alert>
+    </Card>
   );
 }
