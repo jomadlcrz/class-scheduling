@@ -4,21 +4,18 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { FormError } from "~/components/forms/form-error";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
-import { Checkbox } from "~/components/ui/checkbox";
-import { AlertIcon, EyeIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
-import { FieldChrome } from "~/components/ui/input";
+import { AlertIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { scheduleReleaseStatusLabel, scheduleReleaseStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { openSchedulePrint } from "~/features/schedules/print-schedule";
+import { RegularClassFilters } from "~/features/schedules/regular-class-filters";
+import { ScheduleClearDialog } from "~/features/schedules/schedule-clear-dialog";
+import { ScheduleEditDialog } from "~/features/schedules/schedule-edit-dialog";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
-import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
 import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import {
@@ -28,8 +25,8 @@ import {
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
-import { timeToMinutes } from "~/lib/time";
 import { enumService } from "~/services/enum.service";
+import { programService } from "~/services/program.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import {
   scheduleService,
@@ -43,10 +40,10 @@ import {
   formatTime,
   generateTimeSlots,
   parseTime12h,
-  SCHEDULE_MODES,
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
+import type { Program } from "~/types/program";
 import type { ScheduleRelease } from "~/types/schedule-release";
 import type { YearLevel } from "~/types/subject";
 
@@ -89,7 +86,6 @@ function RegularClassPage() {
   });
   const [editSaving, setEditSaving] = useState(false);
 
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [submitTarget, setSubmitTarget] = useState<ScheduleRelease | null>(null);
   const [withdrawTarget, setWithdrawTarget] = useState<ScheduleRelease | null>(null);
 
@@ -104,12 +100,11 @@ function RegularClassPage() {
   // Year-level labels come from the schedule-scoped creation context (same source
   // /schedules/new uses), so the vocabulary matches the backend's own.
   const [yearLevels, setYearLevels] = useState<ScheduleYearLevelOption[]>([]);
+  // Program list supplies the full names — schedules only carry the abbrev.
+  const [programs, setPrograms] = useState<Program[]>([]);
 
-  // Clear Schedule dialog: pick one or more sets (with "select all") to clear.
-  const [selectedSetIds, setSelectedSetIds] = useState<Set<number>>(new Set());
+  // Clear Schedule dialog (selection/loading/error live inside the dialog component).
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
-  const [clearing, setClearing] = useState(false);
-  const [clearError, setClearError] = useState<string | null>(null);
 
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
@@ -140,6 +135,7 @@ function RegularClassPage() {
   useEffect(() => {
     scheduleService.getSetWithSchedules().then(setScheduledSets).catch(() => setScheduledSets([]));
     scheduleService.listScheduleRooms().then(setRooms).catch(() => setRooms([]));
+    programService.list().then(setPrograms).catch(() => setPrograms([]));
     scheduleService
       .getCreationContext()
       .then(({ yearLevels: options }) => setYearLevels(options))
@@ -152,6 +148,16 @@ function RegularClassPage() {
     for (const option of yearLevels) labels.set(option.id, option.name);
     return (n: number) => labels.get(n) ?? `${n}th Year`;
   }, [yearLevels]);
+
+  // "BSIT — Bachelor of Science in Information Technology", like /schedules/new.
+  const programLabel = useMemo(() => {
+    const names = new Map<string, string>();
+    for (const program of programs) names.set(program.abbrev, program.name);
+    return (abbrev: string) => {
+      const name = names.get(abbrev);
+      return name ? `${abbrev} — ${name}` : abbrev;
+    };
+  }, [programs]);
 
   const schoolYears = useMemo(
     () => [...new Set((schedules ?? []).map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a)),
@@ -245,8 +251,8 @@ function RegularClassPage() {
     [releases, selectedScheduledSet],
   );
 
-  // Sets matching the current program + year level, for the bulk-clear panel.
-  const bulkSets = useMemo(
+  // Sets matching the current program + year level — the candidates for Clear Schedule.
+  const clearableSets = useMemo(
     () =>
       releases
         .filter(
@@ -256,17 +262,6 @@ function RegularClassPage() {
         .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? "")),
     [releases, selectedProgram, selectedYearLevel],
   );
-
-  // Drop any selections that no longer match the visible set list.
-  useEffect(() => {
-    setSelectedSetIds((prev) => {
-      const valid = new Set(bulkSets.map((row) => row.setId));
-      const next = new Set([...prev].filter((id) => valid.has(id)));
-      return next.size === prev.size ? prev : next;
-    });
-  }, [bulkSets]);
-
-  const allBulkSelected = bulkSets.length > 0 && bulkSets.every((row) => selectedSetIds.has(row.setId));
 
   // Closed terms reject writes on the backend — disable the actions and explain why.
   const termClosed = termContext?.term?.status === "Closed";
@@ -331,21 +326,10 @@ function RegularClassPage() {
     );
   }
 
-  // Open the Clear Schedule dialog, defaulting the selection to the viewed set.
-  function openClearDialog() {
-    setSelectedSetIds(
-      selectedScheduledSet ? new Set([selectedScheduledSet.setId]) : new Set(),
-    );
-    setClearError(null);
-    setClearDialogOpen(true);
-  }
-
-  // Clear every selected set, one call each; keep going if one fails.
-  async function handleClearSelected() {
-    if (!selectedSchoolYearId || selectedSetIds.size === 0 || termClosed) return;
-    setClearing(true);
-    setClearError(null);
-    const targets = bulkSets.filter((row) => selectedSetIds.has(row.setId));
+  // Clear each selected set, one call each; keep going if one fails, and return the failures.
+  async function clearSets(setIds: number[]): Promise<string[]> {
+    if (!selectedSchoolYearId || termClosed) return setIds.map(String);
+    const targets = clearableSets.filter((row) => setIds.includes(row.setId));
     const unseated: UnseatedIrregularStudent[] = [];
     const clearedSetCodes = new Set<string>();
     const clearedSetIds = new Set<number>();
@@ -381,29 +365,7 @@ function RegularClassPage() {
     }
     await refreshReleases();
     if (unseated.length > 0) setUnseatedStudents(unseated);
-    setClearing(false);
-    if (failed.length > 0) {
-      // Keep the dialog open; the prune effect drops the cleared sets, leaving the failures selected to retry.
-      setClearError(
-        `Could not clear ${failed.length} set${failed.length === 1 ? "" : "s"}: ${failed.join(", ")}.`,
-      );
-    } else {
-      setSelectedSetIds(new Set());
-      setClearDialogOpen(false);
-    }
-  }
-
-  function toggleSelectAll() {
-    setSelectedSetIds(allBulkSelected ? new Set() : new Set(bulkSets.map((row) => row.setId)));
-  }
-
-  function toggleSet(setId: number) {
-    setSelectedSetIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(setId)) next.delete(setId);
-      else next.add(setId);
-      return next;
-    });
+    return failed;
   }
 
   async function handleSubmitRelease() {
@@ -493,12 +455,6 @@ function RegularClassPage() {
         description="Class schedules for the current academic term."
         actions={
           <div className="flex flex-wrap justify-end gap-2">
-            {selectedRelease && (
-              <Button type="button" variant="outline" block={false} onClick={() => setPreviewOpen(true)}>
-                <EyeIcon />
-                Preview
-              </Button>
-            )}
             {selectedRelease &&
               (selectedRelease.releaseStatus === "draft" || selectedRelease.releaseStatus === "rejected") && (
                 <Button
@@ -524,13 +480,13 @@ function RegularClassPage() {
                 Withdraw
               </Button>
             )}
-            {bulkSets.length > 0 && (
+            {clearableSets.length > 0 && (
               <Button
                 type="button"
                 variant="outline"
                 block={false}
                 disabled={termClosed}
-                onClick={openClearDialog}
+                onClick={() => setClearDialogOpen(true)}
               >
                 <TrashIcon />
                 Clear Schedule
@@ -547,179 +503,28 @@ function RegularClassPage() {
       {/* Filters */}
       {showContent && (
         <div className="mt-4 flex flex-col gap-4">
-          <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
-          <FieldChrome id="rc-school-year" label="School Year">
-            <Select
-              items={
-                isLoading
-                  ? [{ value: "", label: "Loading…" }]
-                  : schoolYears.length === 0
-                    ? [{ value: "", label: "No school year" }]
-                    : schoolYears.map((y) => ({ value: y, label: y }))
-              }
-              value={schoolYear}
-              onValueChange={(v) => setSchoolYear(v as string)}
-            >
-              <SelectTrigger id="rc-school-year">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {isLoading ? (
-                  <SelectItem value="">Loading…</SelectItem>
-                ) : schoolYears.length === 0 ? (
-                  <SelectItem value="">No school year</SelectItem>
-                ) : (
-                  schoolYears.map((y) => (
-                    <SelectItem key={y} value={y}>
-                      {y}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
-          <FieldChrome id="rc-semester" label="Semester">
-            <Select
-              items={
-                semestersLoading
-                  ? [{ value: "", label: "Loading…" }]
-                  : semesters.length === 0
-                    ? [{ value: "", label: "No semester" }]
-                    : semesters
-                        .filter((s) => s.semesterNumber !== 3)
-                        .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))
-              }
-              value={semestersLoading ? "" : String(semester)}
-              onValueChange={(v) => setSemester(Number(v) as ScheduleSemester)}
-            >
-              <SelectTrigger id="rc-semester">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {semestersLoading ? (
-                  <SelectItem value="">Loading…</SelectItem>
-                ) : semesters.length === 0 ? (
-                  <SelectItem value="">No semester</SelectItem>
-                ) : (
-                  semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
-                    <SelectItem key={s.id} value={String(s.semesterNumber)}>
-                      {semesterLabel(s.semesterNumber)}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
-          <FieldChrome id="rc-program" label="Program">
-            <Select
-              items={[
-                {
-                  value: "",
-                  label: isLoading
-                    ? "Loading…"
-                    : availablePrograms.length === 0
-                      ? "No program"
-                      : "Select a program",
-                },
-                ...availablePrograms.map((p) => ({ value: p, label: p })),
-              ]}
-              value={selectedProgram}
-              onValueChange={(v) => handleProgramChange(v as string)}
-            >
-              <SelectTrigger id="rc-program">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">
-                  {isLoading
-                    ? "Loading…"
-                    : availablePrograms.length === 0
-                      ? "No program"
-                      : "Select a program"}
-                </SelectItem>
-                {availablePrograms.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
-          <FieldChrome id="rc-year-level" label="Year Level">
-            <Select
-              items={[
-                {
-                  value: "",
-                  label: !selectedProgram
-                    ? "Select a program first"
-                    : availableYearLevels.length === 0
-                      ? "No year level"
-                      : "Select a year level",
-                },
-                ...availableYearLevels.map((yl) => ({ value: String(yl), label: yearLevelLabel(yl) })),
-              ]}
-              value={selectedYearLevel === "" ? "" : String(selectedYearLevel)}
-              onValueChange={(v) => handleYearLevelChange(v === "" ? "" : (Number(v) as YearLevel))}
-            >
-              <SelectTrigger id="rc-year-level">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">
-                  {!selectedProgram
-                    ? "Select a program first"
-                    : availableYearLevels.length === 0
-                      ? "No year level"
-                      : "Select a year level"}
-                </SelectItem>
-                {availableYearLevels.map((yl) => (
-                  <SelectItem key={yl} value={String(yl)}>
-                    {yearLevelLabel(yl)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
-          <FieldChrome id="rc-set" label="Set">
-            <Select
-              items={[
-                {
-                  value: "",
-                  label: isLoading
-                    ? "Loading…"
-                    : !selectedYearLevel
-                      ? "Select a year level first"
-                      : availableSets.length === 0
-                        ? "No set"
-                        : "Select a set",
-                },
-                ...availableSets.map((s) => ({ value: s, label: s })),
-              ]}
-              value={setName}
-              onValueChange={(v) => setSetName(v as string)}
-            >
-              <SelectTrigger id="rc-set">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">
-                  {isLoading
-                    ? "Loading…"
-                    : !selectedYearLevel
-                      ? "Select a year level first"
-                      : availableSets.length === 0
-                        ? "No set"
-                        : "Select a set"}
-                </SelectItem>
-                {availableSets.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
-        </Card>
+          <RegularClassFilters
+            isLoading={isLoading}
+            schoolYears={schoolYears}
+            schoolYear={schoolYear}
+            onSchoolYearChange={setSchoolYear}
+            semesters={semesters}
+            semestersLoading={semestersLoading}
+            semester={semester}
+            onSemesterChange={setSemester}
+            semesterLabel={semesterLabel}
+            programs={availablePrograms}
+            selectedProgram={selectedProgram}
+            onProgramChange={handleProgramChange}
+            programLabel={programLabel}
+            yearLevels={availableYearLevels}
+            selectedYearLevel={selectedYearLevel}
+            onYearLevelChange={handleYearLevelChange}
+            yearLevelLabel={yearLevelLabel}
+            sets={availableSets}
+            setName={setName}
+            onSetChange={setSetName}
+          />
 
           {termClosed && (
             <p className="font-body text-xs text-amber-700 dark:text-amber-400">
@@ -821,197 +626,33 @@ function RegularClassPage() {
         )}
       </div>
 
-      <Modal
+      <ScheduleEditDialog
         open={editTarget !== null}
-        onClose={() => {
-          if (!editSaving) setEditTarget(null);
-        }}
         title={`Edit ${editTarget?.subjectCode ?? "schedule"}`}
-      >
-        <form className="flex flex-col gap-4" onSubmit={handleEditSubmit}>
-          <FormError message={editError} />
-          {selectedRelease?.releaseStatus === "approved" && (
-            <Alert variant="warning">
-              <AlertIcon />
-              <AlertDescription>
-                Saving will unpublish this schedule. Students and instructors will lose access until the
-                dean approves it again.
-              </AlertDescription>
-            </Alert>
-          )}
-          {termClosed && (
-            <Alert variant="warning">
-              <AlertIcon />
-              <AlertDescription>{termClosedNote} You cannot save changes.</AlertDescription>
-            </Alert>
-          )}
-          <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-            Update the saved class placement. The backend will validate conflicts and room rules.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FieldChrome id="edit-day" label="Day">
-              <Select
-                items={dayOptions.map((option) => ({ value: option.name, label: option.name }))}
-                value={editForm.dayName}
-                onValueChange={(value) => setEditForm((current) => ({ ...current, dayName: value as string }))}
-              >
-                <SelectTrigger id="edit-day"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {dayOptions.map((option) => (
-                    <SelectItem key={option.id} value={option.name}>{option.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="edit-mode" label="Mode">
-              <Select
-                items={SCHEDULE_MODES.map((mode) => ({ value: mode, label: mode }))}
-                value={editForm.mode}
-                onValueChange={(value) => setEditForm((current) => ({ ...current, mode: value as Schedule["mode"] }))}
-              >
-                <SelectTrigger id="edit-mode"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {SCHEDULE_MODES.map((mode) => <SelectItem key={mode} value={mode}>{mode}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="edit-start-time" label="Start time">
-              <Select
-                items={TIME_OPTIONS.map((time) => ({ value: time, label: time }))}
-                value={editForm.startTime}
-                onValueChange={(value) => setEditForm((current) => ({ ...current, startTime: value as string }))}
-              >
-                <SelectTrigger id="edit-start-time"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {TIME_OPTIONS.map((time) => <SelectItem key={time} value={time}>{time}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-            <FieldChrome id="edit-end-time" label="End time">
-              <Select
-                items={TIME_OPTIONS.filter((time) => timeToMinutes(time) > timeToMinutes(editForm.startTime)).map((time) => ({ value: time, label: time }))}
-                value={editForm.endTime}
-                onValueChange={(value) => setEditForm((current) => ({ ...current, endTime: value as string }))}
-              >
-                <SelectTrigger id="edit-end-time"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {TIME_OPTIONS.filter((time) => timeToMinutes(time) > timeToMinutes(editForm.startTime)).map((time) => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-          </div>
-          <FieldChrome id="edit-room" label="Room">
-            <Select
-              items={rooms.map((room) => ({ value: String(room.id), label: `${room.roomName} (${room.buildingName})` }))}
-              value={editForm.roomId}
-              onValueChange={(value) => setEditForm((current) => ({ ...current, roomId: value as string }))}
-            >
-              <SelectTrigger id="edit-room"><SelectValue placeholder="Select a room" /></SelectTrigger>
-              <SelectContent>
-                {rooms.map((room) => (
-                  <SelectItem key={room.id} value={String(room.id)}>{room.roomName} ({room.buildingName})</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" block={false} disabled={editSaving} onClick={() => setEditTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              block={false}
-              disabled={termClosed}
-              isLoading={editSaving}
-              loadingLabel="Saving…"
-            >
-              Save changes
-            </Button>
-          </div>
-        </form>
-      </Modal>
+        onClose={() => setEditTarget(null)}
+        onSubmit={handleEditSubmit}
+        form={editForm}
+        onFormChange={setEditForm}
+        dayOptions={dayOptions}
+        rooms={rooms}
+        timeOptions={TIME_OPTIONS}
+        saving={editSaving}
+        error={editError}
+        approvedWarning={selectedRelease?.releaseStatus === "approved"}
+        disabled={termClosed}
+        disabledNote={termClosedNote}
+      />
 
-      <Modal
+      <ScheduleClearDialog
         open={clearDialogOpen}
-        onClose={() => {
-          if (!clearing) setClearDialogOpen(false);
-        }}
-        title="Clear set schedule"
-      >
-        <div className="flex flex-col gap-4">
-          <FormError message={clearError} />
-          <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-            Select the sets to clear for S.Y. {schoolYear}, {semesterLabel(semester)}. Instructor and
-            subject hour ledgers will be released, and any irregular students seated in these sets will be
-            unseated.
-          </p>
-          <div className="overflow-hidden rounded-xl border border-slate-300 dark:border-white/10">
-            <div className="flex items-center gap-3 border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
-              <Checkbox
-                id="rc-clear-select-all"
-                ariaLabel="Select all sets"
-                hideLabel
-                checked={allBulkSelected}
-                onChange={toggleSelectAll}
-              />
-              <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
-                {selectedSetIds.size > 0
-                  ? `${selectedSetIds.size} of ${bulkSets.length} selected`
-                  : "Select all"}
-              </span>
-            </div>
-            <ul className="scrollbar-thin max-h-64 divide-y divide-slate-200 overflow-y-auto dark:divide-white/10">
-              {bulkSets.map((row) => (
-                <li key={row.setId} className="flex items-center gap-3 px-3 py-2">
-                  <Checkbox
-                    id={`rc-clear-${row.setId}`}
-                    ariaLabel={`Select ${row.setCode ?? "set"}`}
-                    hideLabel
-                    checked={selectedSetIds.has(row.setId)}
-                    onChange={() => toggleSet(row.setId)}
-                  />
-                  <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                    {row.setCode}
-                  </span>
-                  <StatusBadge tone={scheduleReleaseStatusTone(row.releaseStatus)}>
-                    {scheduleReleaseStatusLabel(row.releaseStatus)}
-                  </StatusBadge>
-                  <span className="ml-auto font-body text-xs text-slate-500 dark:text-slate-400">
-                    {row.sessionCount} session{row.sessionCount === 1 ? "" : "s"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              disabled={clearing}
-              onClick={() => setClearDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              block={false}
-              disabled={termClosed || selectedSetIds.size === 0}
-              isLoading={clearing}
-              loadingLabel="Clearing…"
-              onClick={handleClearSelected}
-            >
-              Clear{" "}
-              {selectedSetIds.size > 0
-                ? `${selectedSetIds.size} set${selectedSetIds.size === 1 ? "" : "s"}`
-                : "schedule"}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onClose={() => setClearDialogOpen(false)}
+        sets={clearableSets}
+        defaultSetId={selectedScheduledSet?.setId ?? null}
+        schoolYear={schoolYear}
+        semesterLabel={semesterLabel(semester)}
+        disabled={termClosed}
+        onConfirm={clearSets}
+      />
 
       <Modal
         open={unseatedStudents.length > 0}
@@ -1039,13 +680,6 @@ function RegularClassPage() {
           </div>
         </div>
       </Modal>
-
-      <SchedulePreviewModal
-        open={previewOpen}
-        releaseId={selectedRelease?.id ?? null}
-        fetchPreview={scheduleReleaseService.getReleasePreview}
-        onClose={() => setPreviewOpen(false)}
-      />
 
       <ScheduleSubmitDialog
         open={submitTarget !== null}
