@@ -1,6 +1,6 @@
 ﻿import { Checkbox } from "~/components/ui/checkbox";
 import { IconButton } from "~/components/ui/icon-button";
-import { ArchiveIcon, EyeIcon, GraduationCapIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { ArchiveIcon, FileSearchIcon, GraduationCapIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import {
   Table,
@@ -35,9 +35,6 @@ type StudentAccountTableProps = {
   onToggleSelect?: (student: StudentAccountRow, checked: boolean) => void;
   onSelectAll?: (checked: boolean, students: StudentAccountRow[]) => void;
 };
-
-const labeledActionButtonClassName =
-  "flex h-8 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white";
 
 export function StudentAccountTable({
   students,
@@ -113,16 +110,13 @@ export function StudentAccountTable({
             <TableCell>
               <div className="flex justify-end gap-1">
                 {onView && (
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={() => onView(student)}
-                    aria-label={`View ${displayName(student)}`}
+                    label={`View ${displayName(student)}`}
                     title="View details"
-                    className={labeledActionButtonClassName}
                   >
-                    <EyeIcon />
-                    <span>View details</span>
-                  </button>
+                    <FileSearchIcon />
+                  </IconButton>
                 )}
                 {onEnroll && (
                   <IconButton

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { IconButton } from "~/components/ui/icon-button";
 import { EditIcon, TrashIcon } from "~/components/ui/icons";
 import { Label } from "~/components/ui/label";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
@@ -72,27 +72,25 @@ export function StudentDetailsModal({
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <div className="flex items-end justify-between gap-3">
-          <SectionHeading>Personal Information</SectionHeading>
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            disabled={!profile}
-            onClick={() => setProfileEditOpen(true)}
-          >
-            <EditIcon />
-            Edit Profile
-          </Button>
-        </div>
+        <SectionHeading>Personal Information</SectionHeading>
         <Card className="mt-2 p-4">
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Student ID" value={profile?.studentId || student.studentId || "—"} />
-            <Field label="Name" value={displayName} />
-            <Field label="Email" value={profile?.email ?? student.email ?? "—"} />
-            <Field label="Mobile" value={profile?.mobile ?? student.mobile ?? "—"} />
-            {profile && <Field label="Account Status" value={profile.accountStatus} />}
-          </dl>
+          <div className="flex items-start justify-between gap-3">
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Student ID" value={profile?.studentId || student.studentId || "—"} />
+              <Field label="Name" value={displayName} />
+              <Field label="Email" value={profile?.email ?? student.email ?? "—"} />
+              <Field label="Mobile" value={profile?.mobile ?? student.mobile ?? "—"} />
+              {profile && <Field label="Account Status" value={profile.accountStatus} />}
+            </dl>
+            <IconButton
+              onClick={() => setProfileEditOpen(true)}
+              label="Edit profile"
+              title="Edit profile"
+              disabled={!profile}
+            >
+              <EditIcon />
+            </IconButton>
+          </div>
         </Card>
       </section>
 

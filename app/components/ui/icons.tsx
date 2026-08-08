@@ -63,6 +63,17 @@ export function EyeOffIcon() {
   );
 }
 
+export function FileSearchIcon() {
+  return (
+    <IconBase>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <circle cx="11.5" cy="14.5" r="2.5" />
+      <path d="m13.5 16.5 2 2" />
+    </IconBase>
+  );
+}
+
 export function ArrowLeftIcon() {
   return (
     <svg
