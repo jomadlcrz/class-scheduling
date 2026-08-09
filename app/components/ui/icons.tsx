@@ -216,6 +216,19 @@ export function CalendarIcon() {
   );
 }
 
+export function SchedulingHubIcon() {
+  return (
+    <IconBase>
+      <rect x="3" y="4" width="18" height="17" rx="2" />
+      <path d="M8 2v4M16 2v4M3 9h18" />
+      <circle cx="12" cy="15" r="2" />
+      <circle cx="7" cy="15" r="1" />
+      <circle cx="17" cy="15" r="1" />
+      <path d="M8 15h2M14 15h2" />
+    </IconBase>
+  );
+}
+
 export function AlertTriangleIcon() {
   return (
     <IconBase>
