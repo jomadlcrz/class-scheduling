@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Card } from "~/components/ui/card";
@@ -14,7 +14,9 @@ import {
 } from "~/features/dean-approvals/schedule-approvals-table";
 import { useDeanScheduleApprovals } from "~/features/dean-approvals/use-dean-schedule-approvals";
 import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
+import { programService } from "~/services/program.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { ScheduleRelease } from "~/types/schedule-release";
 
@@ -41,6 +43,15 @@ export function DeanScheduleApprovalsPage() {
   const [approveCohort, setApproveCohort] = useState<{ label: string; releases: ScheduleRelease[] } | null>(null);
 
   const contextReady = Boolean(selectedSchoolYearId && selectedSemesterNumber);
+
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programInfo = useMemo(() => {
+    const map = new Map<string, { name: string; departmentCode: string }>();
+    for (const p of programsData ?? []) {
+      map.set(p.abbrev, { name: p.name, departmentCode: p.departmentAbbrev ?? "" });
+    }
+    return map;
+  }, [programsData]);
 
   async function handleApprove() {
     if (!approveTarget) return;
@@ -197,6 +208,7 @@ export function DeanScheduleApprovalsPage() {
                 ) : (
                   <GroupedPendingApprovals
                     releases={pending}
+                    programInfo={programInfo}
                     onPreview={setPreviewTarget}
                     onApprove={setApproveTarget}
                     onReject={setRejectTarget}

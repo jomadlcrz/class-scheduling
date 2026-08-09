@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { CheckIcon, ClockIcon, CloseIcon, EyeIcon } from "~/components/ui/icons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { scheduleReleaseStatusLabel, scheduleReleaseStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
 import { TableActionButton } from "~/features/academic-terms/table-action-button";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { daysSince, formatDateTime, formatRelativeTime } from "~/lib/time";
 import type { ScheduleRelease } from "~/types/schedule-release";
 
@@ -121,6 +123,8 @@ function groupByProgramYear(releases: ScheduleRelease[]): ProgramGroup[] {
 type GroupedPendingProps = PendingTableProps & {
   /** Approve every section in a Program→Year cohort at once. */
   onApproveCohort: (label: string, releases: ScheduleRelease[]) => void;
+  /** Program abbrev → full name + department code, for the group header logo/label. */
+  programInfo?: Map<string, { name: string; departmentCode: string }>;
 };
 
 /**
@@ -130,6 +134,7 @@ type GroupedPendingProps = PendingTableProps & {
  */
 export function GroupedPendingApprovals({
   releases,
+  programInfo,
   onPreview,
   onApprove,
   onReject,
@@ -141,16 +146,29 @@ export function GroupedPendingApprovals({
     <div className="flex flex-col gap-8">
       {programs.map((program) => (
         <section key={program.abbrev} aria-label={program.abbrev}>
-          <div className="mb-3 flex flex-wrap items-baseline gap-x-2">
-            <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-              {program.abbrev}
-            </h3>
-            <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-              {program.total} pending
-            </span>
-          </div>
+          <Card className="flex items-center gap-3 p-4">
+            <img
+              src={departmentLogoUrl(programInfo?.get(program.abbrev)?.departmentCode ?? "")}
+              onError={onDepartmentLogoError}
+              alt=""
+              className="size-9 shrink-0 rounded-md object-contain"
+            />
+            <div className="min-w-0">
+              <h3 className="truncate font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                {program.abbrev}
+                {programInfo?.get(program.abbrev)?.name && (
+                  <span className="ml-2 font-body text-sm font-normal text-slate-500 dark:text-slate-400">
+                    {programInfo.get(program.abbrev)?.name}
+                  </span>
+                )}
+              </h3>
+              <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                {program.total} pending
+              </span>
+            </div>
+          </Card>
 
-          <div className="flex flex-col gap-5">
+          <div className="mt-4 flex flex-col gap-5">
             {program.years.map((cohort) => {
               const label = `${program.abbrev} Year ${cohort.yearLevel}`;
               return (
