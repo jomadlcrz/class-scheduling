@@ -58,6 +58,10 @@ function buildTiles(data: StudentAnalytics): Tile[] {
   const m = data.meta;
   const units = data.subjects.reduce((sum, subject) => sum + subject.units, 0);
   const scheduledPct = pct(s.subjects_scheduled, s.total_subjects);
+  const section =
+    [m.set_name, m.year_level != null ? `Year ${m.year_level}` : null]
+      .filter(Boolean)
+      .join(" · ") || m.program_abbrev;
   return [
     {
       title: "Subjects scheduled",
@@ -89,9 +93,8 @@ function buildTiles(data: StudentAnalytics): Tile[] {
     {
       title: "Enrollment",
       displayValue: m.enrolled_status,
-      unit: `${m.set_name} · Year ${m.year_level}`,
+      unit: section || "no section assigned",
       tone: m.enrolled_status === "Regular" ? "good" : "warning",
-      badge: m.program_abbrev,
     },
     {
       title: "Schedule release",
@@ -307,10 +310,15 @@ export function StudentDashboard() {
               >
                 <div>
                   <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
-                    {data.meta.student_name ?? "My schedule"}
+                    Overview
                   </h2>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    {data.meta.program_abbrev} · {data.meta.set_name} · Year {data.meta.year_level}
+                    {[
+                      data.meta.student_name,
+                      [data.meta.set_name, data.meta.year_level != null ? `Year ${data.meta.year_level}` : null]
+                        .filter(Boolean)
+                        .join(" · ") || data.meta.program_abbrev,
+                    ].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <TermSelectors

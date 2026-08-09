@@ -8,14 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { selfAnalyticsService } from "~/services/self-analytics.service";
-import type { DailyLoadHour } from "~/types/dean-analytics";
-import type {
-  InstructorAnalytics,
-  InstructorScheduleEntry,
-  InstructorSubject,
-  InstructorSummary,
-} from "~/types/instructor-analytics";
 import {
   ChartCard,
   DailyHoursChart,
@@ -34,6 +26,14 @@ import {
   staggerWidgets,
   useTermData,
 } from "~/features/dashboard/dashboard-shared";
+import { selfAnalyticsService } from "~/services/self-analytics.service";
+import type { DailyLoadHour } from "~/types/dean-analytics";
+import type {
+  InstructorAnalytics,
+  InstructorScheduleEntry,
+  InstructorSubject,
+  InstructorSummary,
+} from "~/types/instructor-analytics";
 
 const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -318,10 +318,10 @@ export function FacultyDashboard() {
               >
                 <div>
                   <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
-                    {data.meta.instructor_name ?? "My load"}
+                    Overview
                   </h2>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    {data.meta.school_year} · {data.meta.semester_name}
+                    {[data.meta.instructor_name, data.meta.school_year, data.meta.semester_name].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <TermSelectors
