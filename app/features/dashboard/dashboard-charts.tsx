@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { useTheme } from "~/hooks/use-theme";
 import { EASE_OUT } from "~/features/dashboard/dashboard-shared";
+import type { InstructorSubject } from "~/types/instructor-analytics";
 import type {
   CoverageByProgram,
   DailyLoadHour,
@@ -685,6 +686,26 @@ export function PermissionsDonut({ rbac }: { rbac: SuperAdminRbac }) {
         </div>
       )}
     </div>
+  );
+}
+
+// ── Instructor: subject coverage donut ───────────────────────────────────────
+
+export function SubjectCoverageDonut({ subjects }: { subjects: InstructorSubject[] }) {
+  const scheduled = subjects.filter((s) => s.is_scheduled).length;
+  const unscheduled = subjects.length - scheduled;
+  const slices = [
+    { name: "Scheduled", value: scheduled, color: STATUS_COLORS.good },
+    { name: "Unscheduled", value: unscheduled, color: STATUS_COLORS.serious },
+  ].filter((d) => d.value > 0);
+  return (
+    <Donut
+      slices={slices}
+      centerValue={String(subjects.length)}
+      centerLabel="subjects"
+      emptyMessage="No subjects assigned this term."
+      formatter={(v) => `${v} subject${v === 1 ? "" : "s"}`}
+    />
   );
 }
 

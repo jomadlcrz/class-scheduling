@@ -4,6 +4,7 @@ import { useAuth } from "~/hooks/use-auth";
 import { staggerContainer } from "~/landing/motion";
 import { fetchDashboardGreeting, type DashboardGreeting } from "~/services/dashboard.service";
 import { DeanDashboard } from "~/features/dashboard/dean-dashboard";
+import { FacultyDashboard } from "~/features/dashboard/faculty-dashboard";
 import { GreetingsCard } from "~/features/dashboard/greetings-card";
 import { RegistrarDashboard } from "~/features/dashboard/registrar-dashboard";
 import { SelfAnalyticsDashboard } from "~/features/dashboard/self-analytics-dashboard";
@@ -42,9 +43,8 @@ export default function Dashboard() {
       {user?.role === "dean" && <DeanDashboard />}
       {user?.role === "registrar" && <RegistrarDashboard />}
       {user?.role === "admin" && <SuperAdminDashboard />}
-      {(user?.role === "faculty" || user?.role === "student") && (
-        <SelfAnalyticsDashboard />
-      )}
+      {user?.role === "faculty" && <FacultyDashboard />}
+      {user?.role === "student" && <SelfAnalyticsDashboard />}
     </motion.div>
   );
 }

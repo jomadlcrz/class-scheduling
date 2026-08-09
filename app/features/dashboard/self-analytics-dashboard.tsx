@@ -22,7 +22,7 @@ function displayValue(value: string | number | boolean) {
   return value;
 }
 
-/** Renders the role's self-scoped analytics summary returned by the backend. */
+/** Renders the student's self-scoped analytics summary returned by the backend. */
 export function SelfAnalyticsDashboard() {
   const { user } = useAuth();
   const { context, loading: termLoading } = useTermContext();
@@ -32,11 +32,10 @@ export function SelfAnalyticsDashboard() {
 
   const syId = context?.selection.syId ?? null;
   const semesterNumber = context?.selection.semesterNumber ?? null;
-  const needsTerm = user?.role === "faculty" || user?.role === "student";
 
   useEffect(() => {
-    if (!user || (user.role !== "faculty" && user.role !== "student")) return;
-    if (needsTerm && (syId == null || semesterNumber == null)) {
+    if (!user || user.role !== "student") return;
+    if (syId == null || semesterNumber == null) {
       setAnalytics(null);
       return;
     }
@@ -44,12 +43,8 @@ export function SelfAnalyticsDashboard() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    const request =
-      user.role === "faculty"
-        ? selfAnalyticsService.getFaculty(syId!, semesterNumber!)
-        : selfAnalyticsService.getStudent(syId!, semesterNumber!);
-
-    request
+    selfAnalyticsService
+      .getStudent(syId, semesterNumber)
       .then((result) => {
         if (!cancelled) setAnalytics(result);
       })
@@ -66,7 +61,7 @@ export function SelfAnalyticsDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [needsTerm, semesterNumber, syId, user]);
+  }, [semesterNumber, syId, user]);
 
   const summary = useMemo(() => {
     const raw = analytics?.summary;
@@ -84,7 +79,7 @@ export function SelfAnalyticsDashboard() {
       ? (analytics.definitions as Record<string, unknown>)
       : {};
 
-  if (!user || (user.role !== "faculty" && user.role !== "student")) return null;
+  if (!user || user.role !== "student") return null;
 
   return (
     <section className="mt-6" aria-labelledby="dashboard-summary-title">
@@ -97,11 +92,11 @@ export function SelfAnalyticsDashboard() {
 
       <div className="mt-3">
         <FormError message={error} />
-        {loading || (needsTerm && termLoading) ? (
+        {loading || termLoading ? (
           <div role="status" aria-label="Loading dashboard analytics" className="grid place-items-center py-12">
             <Spinner />
           </div>
-        ) : needsTerm && (syId == null || semesterNumber == null) ? (
+        ) : syId == null || semesterNumber == null ? (
           <EmptyState title="Select an academic term">
             Choose a school year and semester in the navigation bar to load this dashboard.
           </EmptyState>
