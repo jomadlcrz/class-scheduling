@@ -188,35 +188,49 @@ function LabAnalysisPage() {
             <LabAnalysisVerdict totals={analysis.totals} />
             <LabAnalysisKpis totals={analysis.totals} />
 
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <section>
               <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Room by Room</h2>
-              <p className="font-body text-xs text-slate-500 dark:text-slate-400">
-                Each cell is one {analysis.slotTemplate[0]?.hours ?? "—"}-hour lab window. Shading is the year level
-                taking it.
+              <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">
+                Each cell is one {analysis.slotTemplate[0]?.hours ?? "—"}-hour lab window — shading shows the year
+                level taking it.
               </p>
-            </div>
-            <LabAnalysisLegend />
-            <LabRoomPlates laboratories={analysis.laboratories} />
+              <div className="mt-3">
+                <LabAnalysisLegend />
+              </div>
+              <div className="mt-4">
+                <LabRoomPlates laboratories={analysis.laboratories} />
+              </div>
+            </section>
 
-            <h2 className="mt-2 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
-              Who May Use These Rooms
-            </h2>
-            {analysis.programAccess.length === 0 ? (
-              <EmptyState title="No restricted access configured">
-                Every laboratory here is general-purpose — reachable by any program housed in its building.
-              </EmptyState>
-            ) : (
-              <LabProgramAccessCards programs={analysis.programAccess} />
-            )}
+            <section>
+              <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+                Who May Use These Rooms
+              </h2>
+              <div className="mt-3">
+                {analysis.programAccess.length === 0 ? (
+                  <EmptyState title="No restricted access configured">
+                    Every laboratory here is general-purpose — reachable by any program housed in its building.
+                  </EmptyState>
+                ) : (
+                  <LabProgramAccessCards programs={analysis.programAccess} />
+                )}
+              </div>
+            </section>
 
-            <h2 className="mt-2 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
-              What Is Consuming the Labs
-            </h2>
-            {subjectRows.length === 0 ? (
-              <EmptyState title="No sessions booked">No subject has been scheduled into a lab this term yet.</EmptyState>
-            ) : (
-              <LabSubjectTable rows={subjectRows} />
-            )}
+            <section>
+              <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+                What Is Consuming the Labs
+              </h2>
+              <div className="mt-3">
+                {subjectRows.length === 0 ? (
+                  <EmptyState title="No sessions booked">
+                    No subject has been scheduled into a lab this term yet.
+                  </EmptyState>
+                ) : (
+                  <LabSubjectTable rows={subjectRows} />
+                )}
+              </div>
+            </section>
           </>
         )}
       </div>

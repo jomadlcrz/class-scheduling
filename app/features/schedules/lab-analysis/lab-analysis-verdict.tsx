@@ -22,19 +22,19 @@ export function LabAnalysisVerdict({ totals }: { totals: LabAnalysisTotals }) {
   return (
     <div
       role="status"
-      className={`flex items-start gap-3 rounded-xl border-l-4 bg-white p-4 shadow-sm dark:bg-white/5 ${
-        bad
-          ? "border-l-red-500 border-y border-r border-red-200 dark:border-y-red-400/20 dark:border-r-red-400/20"
-          : "border-l-green-500 border-y border-r border-green-200 dark:border-y-emerald-400/20 dark:border-r-emerald-400/20"
-      }`}
+      className="flex items-start gap-3.5 rounded-xl border border-slate-300 bg-white p-4 dark:border-white/10 dark:bg-white/5"
     >
       <span
         aria-hidden="true"
-        className={`mt-0.5 shrink-0 ${bad ? "text-red-600 dark:text-red-400" : "text-green-700 dark:text-emerald-400"}`}
+        className={`grid size-9 shrink-0 place-items-center rounded-full ${
+          bad
+            ? "bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"
+            : "bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400"
+        }`}
       >
         {bad ? <AlertTriangleIcon /> : <CheckIcon />}
       </span>
-      <div>
+      <div className="min-w-0">
         <p className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">{title}</p>
         <p className="mt-1 font-body text-sm text-slate-600 dark:text-slate-300">{body}</p>
         {(hasConflicts || totals.unslottedSessions > 0) && (
