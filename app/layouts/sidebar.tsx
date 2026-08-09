@@ -130,11 +130,15 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    // Flat items (no submenu), mirroring the reference's Enrollment group.
     label: "Enrollment",
     items: [
-      { label: "Regular Students", to: "/enrollment/regular-students", icon: <UsersIcon />, roles: ["registrar"] },
-      { label: "Irregular Students", to: "/enrollment/irregular-students", icon: <UsersRoundIcon />, roles: ["registrar"] },
+      {
+        label: "Enrollment Records",
+        to: "/enrollment/students",
+        icon: <UsersIcon />,
+        roles: ["registrar"],
+        matchPaths: ["/enrollment/students", "/enrollment/regular-students", "/enrollment/irregular-students"],
+      },
       { label: "Re-enroll Student", to: "/enrollment/re-enroll", icon: <GraduationCapIcon />, roles: ["registrar"] },
     ],
   },
