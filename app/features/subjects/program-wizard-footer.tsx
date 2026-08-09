@@ -23,7 +23,7 @@ export function ProgramWizardFooter({
   leadingContent,
 }: ProgramWizardFooterProps) {
   return (
-    <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur dark:border-white/10 dark:bg-surface/95">
+    <div className="sticky bottom-0 z-10 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-surface/95">
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" variant="outline" block={false} onClick={onBack}>
           {backLabel}

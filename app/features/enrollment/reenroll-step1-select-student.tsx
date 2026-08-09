@@ -1,28 +1,24 @@
 import { useMemo, useState } from "react";
-import { Badge } from "~/components/ui/badge";
+import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
-import { SearchIcon } from "~/components/ui/icons";
+import { LockIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import type { ReenrollDirectoryRow } from "~/types/enrollment";
 import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
 
-export type ReenrollDirectoryRow = {
-  studentProfileId: number;
-  studentId: string | null;
-  name: string;
-  /** Program abbrev, e.g. "BSIT" — from the student's most recent academic record. */
-  program: string;
-  yearLevel: number;
-  semesterNumber: number;
-  /** "Regular" / "Irregular" as of the most recent academic record. */
-  enrolledStatus: string;
-  /** Backend display string, e.g. "Has an account" / "No account yet" — shown verbatim, never reworded. */
-  accountStatus: string;
+export type { ReenrollDirectoryRow };
+
+const STATE_TONES: Record<string, BadgeTone> = {
+  Enrolled: "emerald",
+  Dropped: "red",
+  Withdrawn: "gold",
+  Voided: "slate",
 };
 
 type ReenrollStep1SelectStudentProps = {
@@ -70,7 +66,10 @@ export function ReenrollStep1SelectStudent({
     });
   }, [directory, search, programFilter, yearLevelFilter, semesterFilter, statusFilter]);
 
-  const allVisibleSelected = results.length > 0 && results.every((s) => selectedIds.has(s.studentProfileId));
+  const isSelectable = (row: ReenrollDirectoryRow) => row.reEnrollEligible && !row.enrolledInTargetTerm;
+  const selectableResults = results.filter(isSelectable);
+  const allVisibleSelected =
+    selectableResults.length > 0 && selectableResults.every((s) => selectedIds.has(s.studentProfileId));
 
   return (
     <div className="flex flex-col gap-5">
@@ -177,42 +176,65 @@ export function ReenrollStep1SelectStudent({
               <TableHeader dense className="w-10">
                 <Checkbox
                   id="reenroll-select-all"
-                  ariaLabel="Select all students"
+                  ariaLabel="Select all eligible students"
                   inset
                   checked={allVisibleSelected}
-                  onChange={(checked) => onSelectAll(checked, results)}
+                  onChange={(checked) => onSelectAll(checked, selectableResults)}
                 />
               </TableHeader>
               <TableHeader dense>Student ID</TableHeader>
               <TableHeader dense>Name</TableHeader>
               <TableHeader dense className="hidden sm:table-cell">Program</TableHeader>
-              <TableHeader dense className="hidden md:table-cell">Year Level</TableHeader>
-              <TableHeader dense className="hidden md:table-cell">Enrolled Status</TableHeader>
-              <TableHeader dense className="hidden lg:table-cell">Account</TableHeader>
+              <TableHeader dense className="hidden md:table-cell">Year</TableHeader>
+              <TableHeader dense className="hidden lg:table-cell">Last term</TableHeader>
+              <TableHeader dense>Last state</TableHeader>
             </TableHead>
             <TableBody>
               {results.map((row) => {
+                const selectable = isSelectable(row);
                 const isChecked = selectedIds.has(row.studentProfileId);
+                const blockReason = row.enrolledInTargetTerm
+                  ? "Already enrolled this term"
+                  : row.reEnrollBlockReason;
                 return (
-                  <TableRow key={row.studentProfileId}>
+                  <TableRow key={row.studentProfileId} className={selectable ? "" : "opacity-60"}>
                     <TableCell dense>
-                      <Checkbox
-                        id={`reenroll-student-${row.studentProfileId}`}
-                        ariaLabel={`Select ${row.name}`}
-                        inset
-                        checked={isChecked}
-                        onChange={(checked) => onToggleSelect(row, checked)}
-                      />
+                      {selectable ? (
+                        <Checkbox
+                          id={`reenroll-student-${row.studentProfileId}`}
+                          ariaLabel={`Select ${row.name}`}
+                          inset
+                          checked={isChecked}
+                          onChange={(checked) => onToggleSelect(row, checked)}
+                        />
+                      ) : (
+                        <span
+                          className="grid size-4 place-items-center text-slate-300 dark:text-slate-600"
+                          title={blockReason ?? "Not eligible for re-enrollment"}
+                          aria-label={blockReason ?? "Not eligible"}
+                        >
+                          <LockIcon />
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell dense className="text-slate-600 dark:text-slate-300">{row.studentId ?? "—"}</TableCell>
                     <TableCell dense>
                       <span className="font-medium text-navy-700 dark:text-mist-100">{row.name}</span>
+                      {!selectable && blockReason && (
+                        <span className="block font-body text-[0.7rem] text-slate-400 dark:text-slate-500">
+                          {blockReason}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell dense className="hidden sm:table-cell">{row.program || "—"}</TableCell>
                     <TableCell dense className="hidden md:table-cell">{row.yearLevel || "—"}</TableCell>
-                    <TableCell dense className="hidden md:table-cell">{row.enrolledStatus || "—"}</TableCell>
-                    <TableCell dense className="hidden lg:table-cell">
-                      <Badge tone="slate">{row.accountStatus}</Badge>
+                    <TableCell dense className="hidden text-xs text-slate-500 lg:table-cell dark:text-slate-400">
+                      {row.lastSchoolYear ? `${row.lastSchoolYear} · Sem ${row.semesterNumber}` : "—"}
+                    </TableCell>
+                    <TableCell dense>
+                      <Badge tone={STATE_TONES[row.lastEnrollmentState] ?? "slate"}>
+                        {row.lastEnrollmentState || "—"}
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 );

@@ -19,6 +19,7 @@ import {
   LayersIcon,
   ListIcon,
   MapIcon,
+  RefreshCwIcon,
   SchedulingHubIcon,
   ShieldIcon,
   ShieldUserIcon,
@@ -139,7 +140,8 @@ const NAV_GROUPS: NavGroup[] = [
         roles: ["registrar"],
         matchPaths: ["/enrollment/students", "/enrollment/regular-students", "/enrollment/irregular-students"],
       },
-      { label: "Re-enroll Student", to: "/enrollment/re-enroll", icon: <GraduationCapIcon />, roles: ["registrar"] },
+      { label: "New Enrollment", to: "/enrollment/new", icon: <GraduationCapIcon />, roles: ["registrar"] },
+      { label: "Re-enroll Student", to: "/enrollment/re-enroll", icon: <RefreshCwIcon />, roles: ["registrar"] },
     ],
   },
   {

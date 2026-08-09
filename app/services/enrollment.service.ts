@@ -5,6 +5,7 @@ import type {
   EnrollmentRow,
   EnrollmentStudent,
   EnrollmentSubjectLine,
+  ReenrollDirectoryRow,
 } from "~/types/enrollment";
 
 // --- Backend (snake_case) shapes, mapped to camelCase below (api.ts does not auto-convert). ---
@@ -101,6 +102,58 @@ async function getFacets(syId: number, semesterNumber: number): Promise<Enrollme
   return { programs: data.programs ?? [], sets: data.sets ?? [], counts: data.counts };
 }
 
+type ApiReenrollRow = {
+  student_profile_id: number;
+  student_id: string | null;
+  student_full_name: string;
+  program: string | null;
+  program_abbrev: string;
+  year_level: number;
+  set: string | null;
+  last_school_year: string | null;
+  last_semester_number: number;
+  last_enrollment_state: string;
+  enrolled_in_target_term: boolean;
+  re_enroll_eligible: boolean;
+  re_enroll_block_reason: string | null;
+  enrolled_status: string;
+  student_type: string | null;
+  account_status: string;
+  profile_photo_url: string | null;
+};
+
+/**
+ * GET /enrollments/directory — returning students (one row per profile), with eligibility for the
+ * target term. Pass the target term so `reEnrollEligible` / `enrolledInTargetTerm` reflect it.
+ */
+async function getReenrollDirectory(
+  targetSyId: number | null,
+  targetSemesterNumber: number | null,
+): Promise<ReenrollDirectoryRow[]> {
+  const query = targetSyId != null && targetSemesterNumber != null
+    ? termScopeQuery(targetSyId, targetSemesterNumber)
+    : "";
+  const data = await apiGet<ApiReenrollRow[]>(`/enrollments/directory${query}`);
+  return (data ?? []).map((r) => ({
+    studentProfileId: r.student_profile_id,
+    studentId: r.student_id,
+    name: r.student_full_name,
+    program: r.program_abbrev || (r.program ?? ""),
+    yearLevel: r.year_level,
+    semesterNumber: r.last_semester_number,
+    enrolledStatus: r.enrolled_status,
+    studentType: r.student_type,
+    set: r.set,
+    lastSchoolYear: r.last_school_year,
+    lastEnrollmentState: r.last_enrollment_state,
+    reEnrollEligible: r.re_enroll_eligible,
+    reEnrollBlockReason: r.re_enroll_block_reason,
+    enrolledInTargetTerm: r.enrolled_in_target_term,
+    accountStatus: r.account_status,
+    profilePhotoUrl: r.profile_photo_url,
+  }));
+}
+
 /** GET /enrollments/{id} — one enrollment row with its subject load. */
 async function getEnrollment(enrollmentId: number): Promise<EnrollmentRow> {
   const data = await apiGet<ApiEnrollment>(`/enrollments/${enrollmentId}`);
@@ -140,6 +193,7 @@ async function deleteEnrollment(enrollmentId: number): Promise<string> {
 export const enrollmentService = {
   listTermEnrollments,
   getFacets,
+  getReenrollDirectory,
   getEnrollment,
   updateEnrollment,
   setEnrollmentState,

@@ -55,3 +55,34 @@ export type EnrollmentFacets = {
   sets: string[];
   counts: EnrollmentFacetCounts;
 };
+
+/**
+ * One returning-student row from GET /enrollments/directory — a student's latest enrollment
+ * plus whether they can be re-enrolled into the selected target term.
+ */
+export type ReenrollDirectoryRow = {
+  studentProfileId: number;
+  studentId: string | null;
+  name: string;
+  /** Program abbrev, e.g. "BSIT" — from the latest enrollment. */
+  program: string;
+  yearLevel: number;
+  /** Semester number of the student's most recent enrollment. */
+  semesterNumber: number;
+  /** "Regular" / "Irregular" as of the latest enrollment. */
+  enrolledStatus: string;
+  studentType: string | null;
+  set: string | null;
+  lastSchoolYear: string | null;
+  /** Backend state string of the latest enrollment, shown verbatim. */
+  lastEnrollmentState: string;
+  /** Whether this student can be re-enrolled into the target term. */
+  reEnrollEligible: boolean;
+  /** Backend reason they can't be re-enrolled (verbatim), when reEnrollEligible is false. */
+  reEnrollBlockReason: string | null;
+  /** Already has an enrollment in the selected target term. */
+  enrolledInTargetTerm: boolean;
+  /** "Has an account" / "No account yet" — backend display string. */
+  accountStatus: string;
+  profilePhotoUrl: string | null;
+};
