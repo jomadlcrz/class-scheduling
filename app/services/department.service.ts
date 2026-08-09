@@ -1,7 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
-import { archiveService } from "~/services/archive.service";
-import type { CreateDepartmentInput, Department, DepartmentDeletePreview, DepartmentDetail, UpdateDepartmentInput } from "~/types/department";
-import type { Program } from "~/types/program";
+import type { CreateDepartmentInput, Department, DepartmentDeletePreview, UpdateDepartmentInput } from "~/types/department";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
 
@@ -124,92 +122,13 @@ async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
   };
 }
 
-type DeletedDepartment = {
-  id: number;
-  abbrev: string;
-  name: string;
-  deactivatedAt: string | null;
-  cascadeArchived?: { programs: number };
-};
-
-/** GET /archive?category=departments. */
-async function listDeleted(): Promise<DeletedDepartment[]> {
-  const items = await archiveService.listCategoryItems("departments");
-  return items.map((item) => {
-    const [abbrev = "", ...nameParts] = item.label.split(" — ");
-    return {
-      id: item.entityId,
-      abbrev,
-      name: nameParts.join(" — ") || item.label,
-      deactivatedAt: item.archivedAt,
-      cascadeArchived: item.summary
-        ? { programs: Number(item.summary.programs ?? 0) }
-        : undefined,
-    };
-  });
-}
-
-/** PATCH /archive/department/:id/restore */
-async function restore(id: number): Promise<string> {
-  return archiveService.restore("department", id);
-}
-
-/** GET /departments/:id */
-async function get(id: number): Promise<DepartmentDetail> {
-  const d = await apiGet<{
-    department_id: number;
-    department_abbrev: string;
-    department_name: string;
-    department_type: string;
-    building_id: number;
-    logo_url: string | null;
-  }>(`/departments/${id}`);
-  return {
-    id: d.department_id,
-    abbrev: d.department_abbrev,
-    name: d.department_name,
-    buildingId: d.building_id,
-    departmentType: d.department_type,
-    logoUrl: d.logo_url,
-  };
-}
-
-/** GET /departments/:id/programs — active programs owned by one department. */
-async function listPrograms(id: number): Promise<Program[]> {
-  const data = await apiGet<{
-    department_abbrev: string;
-    programs: {
-      program_id: number;
-      program_abbrev: string;
-      program_name: string;
-      program_type: string;
-      program_length: number;
-      program_description?: string | null;
-    }[];
-  }>(`/departments/${id}/programs`);
-
-  return data.programs.map((p) => ({
-    id: p.program_id,
-    departmentAbbrev: data.department_abbrev,
-    abbrev: p.program_abbrev,
-    name: p.program_name,
-    type: p.program_type,
-    lengthYears: p.program_length,
-    description: p.program_description,
-  }));
-}
-
 export const departmentService = {
   list,
   listAcademic,
-  listPrograms,
   create,
   update,
   uploadLogo,
   removeLogo,
   remove,
   getDeletePreview,
-  listDeleted,
-  restore,
-  get,
 };

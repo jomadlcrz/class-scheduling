@@ -1,9 +1,7 @@
 import { ApiError, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
-import { archiveService } from "~/services/archive.service";
 import type {
   Building,
   BuildingArchivePreview,
-  DeletedBuilding,
   UpdateBuildingInput,
 } from "~/types/building";
 
@@ -45,34 +43,6 @@ async function getArchivePreview(id: number): Promise<BuildingArchivePreview> {
   return apiGet<BuildingArchivePreview>(`/buildings/${id}/archive-preview`);
 }
 
-/** GET /archive?category=buildings. Archiving a building cascades to its rooms. */
-async function listDeleted(): Promise<DeletedBuilding[]> {
-  const items = await archiveService.listCategoryItems("buildings");
-  return items.map((item) => ({
-    id: item.entityId,
-    name: item.label,
-    deactivatedAt: item.archivedAt,
-    cascadeArchived: item.summary
-      ? {
-          rooms: Number(item.summary.rooms ?? 0),
-          departments: Number(item.summary.departments ?? 0),
-          programs: Number(item.summary.programs ?? 0),
-        }
-      : undefined,
-  }));
-}
-
-/** PATCH /archive/building/:id/restore — also restores rows archived in the same cascade. */
-async function restore(id: number): Promise<string> {
-  return archiveService.restore("building", id);
-}
-
-/** GET /buildings/:id */
-async function get(id: number): Promise<Building> {
-  const b = await apiGet<{ building_id: number; building_name: string; floor_count: number }>(`/buildings/${id}`);
-  return { id: b.building_id, name: b.building_name, floorCount: b.floor_count };
-}
-
 /** PUT /buildings/:id — partial update (buildingName, floorCount). */
 async function update(id: number, input: UpdateBuildingInput): Promise<string> {
   const body: Record<string, unknown> = {};
@@ -82,4 +52,4 @@ async function update(id: number, input: UpdateBuildingInput): Promise<string> {
   return apiMessage(data);
 }
 
-export const buildingService = { list, archive, getArchivePreview, listDeleted, restore, get, update };
+export const buildingService = { list, archive, getArchivePreview, update };

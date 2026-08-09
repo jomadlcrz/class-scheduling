@@ -71,8 +71,4 @@ async function getByProgram(programCode: string): Promise<ProgramCurriculum | nu
   };
 }
 
-async function listPrograms() {
-  return programService.list();
-}
-
-export const curriculumService = { getByProgram, listPrograms };
+export const curriculumService = { getByProgram };

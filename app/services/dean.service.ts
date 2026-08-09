@@ -243,42 +243,6 @@ async function listTeachingTerms(params?: {
   }));
 }
 
-/** GET /deans/teaching-terms/<id> — one instructor's term-scoped load record. */
-async function getTeachingTerm(id: number): Promise<TeachingTerm> {
-  const data = await apiGet<TeachingTermDetail>(`/deans/teaching-terms/${id}`);
-  return {
-    id: data.teaching_term_id,
-    instructorProfileId: data.instructor?.instructor_profile_id ?? 0,
-    instructorName: data.instructor?.full_name ?? "",
-    employeeId: data.instructor?.employee_id ?? null,
-    department: data.instructor?.department ?? "",
-    syId: data.term?.sy_id ?? 0,
-    semesterNumber: data.term?.semester_number ?? 0,
-    maxWeeklyHours: data.hours?.max_weekly_hours ?? 0,
-    currentWeeklyHours: data.hours?.current_weekly_hours ?? 0,
-    subjectAssignments: (data.subject_assignments ?? []).map((sa) => ({
-      subjectAssignmentId: sa.subject_assignment_id,
-      curriculumDetailId: sa.curriculum_detail_id,
-      subjectCode: sa.subject_code ?? "",
-      programAbbrev: sa.program_abbrev ?? "",
-      descriptiveTitle: sa.descriptive_title ?? "",
-      units: sa.units ?? 0,
-      lecHours: sa.lec_hours ?? 0,
-      labHours: sa.lab_hours ?? 0,
-    })),
-    programs: (data.programs ?? []).map((p) => ({
-      programId: p.program_id,
-      programAbbrev: p.program_abbrev ?? "",
-      programName: p.program_name ?? "",
-      subjects: (p.subjects ?? []).map((s) => ({
-        subjectAssignmentId: s.subject_assignment_id,
-        curriculumDetailId: s.curriculum_detail_id,
-        subjectCode: s.subject_code ?? "",
-      })),
-    })),
-  };
-}
-
 /** DELETE /deans/teaching-terms/<id>[?cascade=true] — removes term and optionally its assignments. */
 async function deleteTeachingTerm(id: number, cascade = false): Promise<string> {
   const qs = cascade ? "?cascade=true" : "";
@@ -405,7 +369,6 @@ export const deanService = {
   getFacultyLoading,
   createSubjectAssignments,
   listTeachingTerms,
-  getTeachingTerm,
   getTeachingTermDetail,
   updateMaxWeeklyHours,
   deleteTeachingTerm,

@@ -393,20 +393,6 @@ async function archiveProfile(studentProfileId: number, confirmFullName: string)
   return apiMessage(data);
 }
 
-/** GET /archive?category=students. */
-async function listDeletedProfiles(): Promise<DeletedStudentProfile[]> {
-  const items = await archiveService.listCategoryItems("students");
-  return items.map((item) => ({
-    studentProfileId: item.entityId,
-    firstName: String(item.extra.first_name ?? ""),
-    lastName: String(item.extra.last_name ?? ""),
-    deactivatedAt: item.archivedAt,
-    academicTerms: Number(item.summary?.academic_terms ?? 0),
-    enrolledSubjects: Number(item.summary?.enrolled_subjects ?? 0),
-    hasLoginAccount: Boolean(item.summary?.has_login_account),
-  }));
-}
-
 /** PATCH /archive/student/:id/restore — restores an archived student profile. */
 async function restoreProfile(studentProfileId: number): Promise<string> {
   return archiveService.restore("student", studentProfileId);
@@ -430,6 +416,5 @@ export const studentService = {
   importRecords,
   getArchivePreview,
   archiveProfile,
-  listDeletedProfiles,
   restoreProfile,
 };

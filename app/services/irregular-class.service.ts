@@ -403,24 +403,10 @@ async function assign(input: {
   return apiMessage(data);
 }
 
-/** DELETE /irregular_schedule/<id> — hard delete (unassigns the schedule from the irregular student). */
-async function removeIrregular(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/irregular_schedule/${id}`);
-  return apiMessage(data);
-}
-
-/** PUT /irregular_schedule/:id — updates an existing irregular assignment. */
-async function updateIrregular(id: number, payload: Record<string, unknown>): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/irregular_schedule/${id}`, payload);
-  return apiMessage(data);
-}
-
 export const irregularClassService = {
   listStudents,
   listPendingStudents,
   listPendingSchedule,
   listAssignedSchedule,
   assign,
-  removeIrregular,
-  updateIrregular,
 };

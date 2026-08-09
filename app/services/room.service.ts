@@ -1,26 +1,7 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
-import { archiveService } from "~/services/archive.service";
-import type { Room, RoomArchivePreview, RoomDetail, RoomProgram, UpdateRoomInput } from "~/types/room";
+import { apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
+import type { RoomArchivePreview, RoomDetail, RoomProgram, UpdateRoomInput } from "~/types/room";
 
 /** Rooms read + archive against the facilities module (registrar_admin). */
-
-type FacilitiesResponse = {
-  buildings: {
-    building_id: number;
-    building_name: string;
-    floor_count: number;
-    rooms: {
-      room_id: number;
-      floor_level: number;
-      room_name: string;
-      room_type: string;
-      room_capacity: number;
-      room_status: string;
-      time_remaining: string;
-      programs: { program_id: number; program_abbrev: string; program_name: string }[];
-    }[];
-  }[];
-};
 
 function mapPrograms(programs: { program_id: number; program_abbrev: string; program_name: string }[]): RoomProgram[] {
   return programs.map((p) => ({
@@ -28,31 +9,6 @@ function mapPrograms(programs: { program_id: number; program_abbrev: string; pro
     programAbbrev: p.program_abbrev,
     programName: p.program_name,
   }));
-}
-
-/** GET /get-facilities — rooms come nested per building; flattened here. 404 → empty. */
-async function list(): Promise<Room[]> {
-  let data: FacilitiesResponse;
-  try {
-    data = await apiGet<FacilitiesResponse>("/get-facilities");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
-  return data.buildings.flatMap((b) =>
-    b.rooms.map((r) => ({
-      id: r.room_id,
-      buildingId: b.building_id,
-      buildingName: b.building_name,
-      floor: r.floor_level,
-      name: r.room_name,
-      capacity: r.room_capacity,
-      type: r.room_type,
-      status: r.room_status,
-      timeRemaining: r.time_remaining,
-      programs: mapPrograms(r.programs),
-    })),
-  );
 }
 
 /** PATCH /rooms/:id/archive — soft delete; the backend requires the room's own name
@@ -65,19 +21,6 @@ async function archive(id: number, confirmText: string): Promise<string> {
 /** GET /rooms/:id/archive-preview — read-only: whether the room is archivable and what blocks it. */
 async function getArchivePreview(id: number): Promise<RoomArchivePreview> {
   return apiGet<RoomArchivePreview>(`/rooms/${id}/archive-preview`);
-}
-
-type DeletedRoom = { id: number; name: string; deactivatedAt: string | null };
-
-/** GET /archive?category=rooms. */
-async function listDeleted(): Promise<DeletedRoom[]> {
-  const items = await archiveService.listCategoryItems("rooms");
-  return items.map((item) => ({ id: item.entityId, name: item.label, deactivatedAt: item.archivedAt }));
-}
-
-/** PATCH /archive/room/:id/restore */
-async function restore(id: number): Promise<string> {
-  return archiveService.restore("room", id);
 }
 
 type RoomDetailResponse = {
@@ -106,15 +49,10 @@ function mapRoomDetail(raw: RoomDetailResponse): RoomDetail {
   };
 }
 
-/** GET /rooms/:id — populate edit forms including program_ids. */
-async function get(id: number): Promise<RoomDetail> {
-  return mapRoomDetail(await apiGet<RoomDetailResponse>(`/rooms/${id}`));
-}
-
 /** PUT /rooms/:id — partial update; never send read-only statuses like Occupied. */
 async function update(id: number, input: UpdateRoomInput): Promise<{ message: string; room: RoomDetail }> {
   const data = await apiPut<{ message?: string; room: RoomDetailResponse }>(`/rooms/${id}`, input);
   return { message: apiMessage(data), room: mapRoomDetail(data.room) };
 }
 
-export const roomService = { list, archive, getArchivePreview, listDeleted, restore, get, update };
+export const roomService = { archive, getArchivePreview, update };

@@ -1,6 +1,5 @@
 import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { appendTermScopeParams } from "~/lib/term-scope";
-import { archiveService } from "~/services/archive.service";
 import type { ClassSet, CreateSetInput, SetDeletePreview } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
@@ -126,31 +125,6 @@ async function getDeletePreview(id: number): Promise<SetDeletePreview> {
   return { set: data.set, will_delete: data.willArchive };
 }
 
-type DeletedSet = {
-  id: number;
-  setCode: string;
-  setName: string;
-  deactivatedAt: string | null;
-  studentsAffected: number;
-};
-
-/** GET /archive?category=sets. */
-async function listDeleted(): Promise<DeletedSet[]> {
-  const items = await archiveService.listCategoryItems("sets");
-  return items.map((item) => ({
-    id: item.entityId,
-    setCode: String(item.extra.set_code ?? ""),
-    setName: String(item.extra.set_name ?? item.label),
-    deactivatedAt: item.archivedAt,
-    studentsAffected: Number(item.summary?.students_affected ?? 0),
-  }));
-}
-
-/** PATCH /archive/set/:id/restore */
-async function restore(id: number): Promise<string> {
-  return archiveService.restore("set", id);
-}
-
 export const setService = {
   list,
   listUnscheduled,
@@ -158,6 +132,4 @@ export const setService = {
   update,
   remove,
   getDeletePreview,
-  listDeleted,
-  restore,
 };

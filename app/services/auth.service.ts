@@ -77,31 +77,6 @@ function logout() {
   clearApiCache();
 }
 
-/**
- * Trades a refresh token for a new access+refresh pair.
- * Called transparently by the api interceptor on 401 — you typically do not
- * need to call this directly.
- */
-async function refreshToken(): Promise<{ access_token: string; refresh_token: string; remember_me: boolean } | null> {
-  const session = loadSession();
-  if (!session?.refreshToken) return null;
-
-  try {
-    const data = await apiPost<RefreshResponse>("/refresh", {
-      refreshToken: session.refreshToken,
-    });
-    return {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      remember_me: data.remember_me,
-    };
-  } catch {
-    // Refresh failed (expired, revoked, etc.) — session is dead.
-    clearSession();
-    return null;
-  }
-}
-
 /** Synchronous read of the persisted session; null during SSR, logged out, or expired. */
 function getStoredSession(): AuthSession | null {
   return loadSession();
@@ -156,7 +131,6 @@ async function changePassword(newPassword: string, _currentPassword?: string): P
 export const authService = {
   login,
   logout,
-  refreshToken,
   getStoredSession,
   requestPasswordReset,
   resetPassword,

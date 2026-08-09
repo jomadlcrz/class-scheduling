@@ -82,16 +82,10 @@ async function update(id: number, schoolYear: string): Promise<string> {
   return apiMessage(data);
 }
 
-/** GET /school-years/:id */
-async function get(id: number): Promise<SchoolYearOption> {
-  const s = await apiGet<SchoolYearEntry>(`/school-years/${id}`);
-  return mapSchoolYear(s);
-}
-
 /** GET /school-years/current — calendar-derived default school year. */
 async function getCurrent(): Promise<SchoolYearOption & { existsForToday?: boolean; expectedSchoolYear?: string | null }> {
   const entry = await apiGet<SchoolYearEntry & { exists_for_today?: boolean; expected_school_year?: string | null }>("/school-years/current");
   return { ...mapSchoolYear(entry), existsForToday: entry.exists_for_today, expectedSchoolYear: entry.expected_school_year };
 }
 
-export const schoolYearService = { list, create, update, get, getCurrent, invalidateCache };
+export const schoolYearService = { list, create, update, getCurrent, invalidateCache };

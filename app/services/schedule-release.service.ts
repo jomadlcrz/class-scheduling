@@ -62,11 +62,6 @@ async function listReleases(
   return data.map(mapRelease);
 }
 
-/** GET /schedule-releases/{id} */
-async function getRelease(id: number): Promise<ScheduleRelease> {
-  return mapRelease(await apiGet<ApiScheduleRelease>(`/schedule-releases/${id}`));
-}
-
 /** GET /schedule-releases/{id}/preview — read-only weekly grid for the registrar to review before submitting. */
 async function getReleasePreview(id: number): Promise<SchedulePreview> {
   return mapPreview(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`));
@@ -97,11 +92,6 @@ async function listApprovals(syId: number, semesterNumber: number): Promise<Dean
     pending: data.pending.map(mapRelease),
     recentlyReviewed: data.recentlyReviewed.map(mapRelease),
   };
-}
-
-/** GET /deans/schedule-approvals/{id} — 403 if the release belongs to another department. */
-async function getApproval(id: number): Promise<ScheduleRelease> {
-  return mapRelease(await apiGet<ApiScheduleRelease>(`/deans/schedule-approvals/${id}`));
 }
 
 /** GET /deans/schedule-approvals/{id}/preview */
@@ -166,12 +156,10 @@ function mapPreviewToSchedules(preview: SchedulePreview): Schedule[] {
 
 export const scheduleReleaseService = {
   listReleases,
-  getRelease,
   getReleasePreview,
   submitRelease,
   withdrawRelease,
   listApprovals,
-  getApproval,
   getApprovalPreview,
   approveRelease,
   rejectRelease,

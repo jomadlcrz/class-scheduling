@@ -390,11 +390,6 @@ async function listClosures(): Promise<TermClosureListResult> {
   };
 }
 
-/** GET /terms/closures/:id — detail for one registrar-posted closure. */
-async function getClosure(closureId: number): Promise<TermClosureItem> {
-  return mapClosureItem(await apiGet<ApiTermClosureItem>(`/terms/closures/${closureId}`));
-}
-
 /** GET /terms/audit-log/filters */
 async function auditLogFilters(): Promise<TermAuditLogFilters> {
   const data = await apiGet<{
@@ -479,11 +474,6 @@ async function getTermWorkflow(syId: number): Promise<TermWorkflow> {
   return lifecycleToTermWorkflow(await getLifecycle(syId));
 }
 
-/** GET /school-years/:id/state. */
-async function getSchoolYearState(syId: number): Promise<SchoolYearLifecycleState> {
-  return mapSchoolYearState(await apiGet<ApiSchoolYearState>(`/school-years/${syId}/state`));
-}
-
 /** GET /school-years/:id/state/preview. */
 async function getSchoolYearStatePreview(syId: number): Promise<SchoolYearClosePreview> {
   const raw = await apiGet<{
@@ -523,12 +513,6 @@ async function patchSchoolYearState(syId: number, status: "open" | "closed", rea
     ...(reason ? { reason } : {}),
   });
   return apiMessage(data);
-}
-
-/** GET /school-years/:id/terms/:semester/state. */
-async function getTermState(syId: number, semesterNumber: number): Promise<TermLifecycleState> {
-  const raw = await apiGet<ApiTermState>(`/school-years/${syId}/terms/${semesterNumber}/state`);
-  return mapTermState(raw);
 }
 
 /** GET /school-years/:id/terms/:semester/state/preview. */
@@ -596,15 +580,12 @@ async function patchTermState(
 export const termClosureService = {
   getContext,
   listClosures,
-  getClosure,
   auditLogFilters,
   listAuditLog,
   getTermWorkflow,
   getLifecycle,
-  getSchoolYearState,
   getSchoolYearStatePreview,
   patchSchoolYearState,
-  getTermState,
   getTermStatePreview,
   patchTermState,
 };

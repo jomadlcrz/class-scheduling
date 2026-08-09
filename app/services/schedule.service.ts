@@ -576,17 +576,6 @@ async function createRegular(input: {
 }
 
 
-/**
- * GET /schedule/subject-type-options — subject-type vocabulary scoped to the
- * schedule module. Same values as enumService.getOptions().subjectType, kept
- * as a separate call for consumers that specifically need the schedule-scoped
- * (registrar:subject-hours:read) endpoint rather than the general enums one.
- */
-async function getSubjectTypeOptions(): Promise<string[]> {
-  const data = await apiGet<{ subject_types: string }[]>("/schedule/subject-type-options");
-  return data.map((d) => d.subject_types);
-}
-
 export type ScheduleYearLevelOption = { id: number; name: string };
 
 type CreationContextResponse = {
@@ -606,63 +595,6 @@ async function getCreationContext(): Promise<{ yearLevels: ScheduleYearLevelOpti
   );
   return {
     yearLevels: data.year_levels.map((y) => ({ id: y.year_level_int, name: y.year_level_name })),
-  };
-}
-
-type ScheduleProgramOption = { id: number; abbrev: string; name: string };
-
-type ScheduleProgramsResponse = {
-  program_id: number;
-  program_abbrev: string;
-  program_name: string;
-}[];
-
-/**
- * GET /schedule/programs — lightweight program list scoped to schedule creation
- * (id/abbrev/name only, no department join). Not swapped in for programService.list()
- * on the New Schedule page: that page also needs each program's departmentCode for
- * the built schedule's display metadata, which this endpoint doesn't return.
- */
-async function listPrograms(): Promise<ScheduleProgramOption[]> {
-  const data = await apiGet<ScheduleProgramsResponse>("/schedule/programs");
-  return data.map((p) => ({ id: p.program_id, abbrev: p.program_abbrev, name: p.program_name }));
-}
-
-type RegularScheduleResponse = {
-  id: number;
-  sy_id: number;
-  semester: number;
-  program_id: number;
-  set_id: number;
-  subject_id: number;
-  subject_code: string;
-  mode: string;
-  instructor_id: number | null;
-  room_id: number | null;
-  room_name: string | null;
-  day_of_week: string;
-  start_time: string;
-  end_time: string;
-};
-
-/** GET /regular_schedule/<id> — a single saved regular-schedule slot. */
-async function getRegular(id: number): Promise<RegularScheduleDetail> {
-  const r = await apiGet<RegularScheduleResponse>(`/regular_schedule/${id}`);
-  return {
-    id: r.id,
-    syId: r.sy_id,
-    semester: r.semester,
-    programId: r.program_id,
-    setId: r.set_id,
-    subjectId: r.subject_id,
-    subjectCode: r.subject_code,
-    mode: r.mode,
-    instructorId: r.instructor_id,
-    roomId: r.room_id,
-    roomName: r.room_name,
-    dayOfWeek: r.day_of_week,
-    startTime: parseTime12h(r.start_time),
-    endTime: parseTime12h(r.end_time),
   };
 }
 
@@ -791,15 +723,6 @@ async function deleteSubjectHourOverride(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** Advanced scheduler endpoints retained for operator tools and conflict-resolution UIs. */
-async function resolveGeneratedSchedule(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
-  return apiPost<Record<string, unknown>>("/regular_schedule/auto-generate-schedule/resolve", payload);
-}
-
-async function generateGreedySchedule(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
-  return apiPost<Record<string, unknown>>("/regular_schedule/auto-generate-schedule/greedy", payload);
-}
-
 export type UnseatedIrregularStudent = {
   studentProfileId: number;
   studentId: string | null;
@@ -914,17 +837,12 @@ export const scheduleService = {
   listScheduleRooms,
   autoGenerate,
   createRegular,
-  getSubjectTypeOptions,
   getCreationContext,
-  listPrograms,
-  getRegular,
   updateRegular,
   updateRegularSlot,
   listSubjectHourOverrides,
   upsertSubjectHourOverride,
   deleteSubjectHourOverride,
-  resolveGeneratedSchedule,
-  generateGreedySchedule,
   removeSetSchedules,
   getSetWithSchedules,
   reconcileInstructorLedgers,

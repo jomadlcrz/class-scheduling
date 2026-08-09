@@ -87,17 +87,6 @@ function mapItem(raw: RawArchiveItem): ArchiveItem {
   };
 }
 
-/** GET /archive/categories — navigation metadata only. */
-async function listCategories(): Promise<ArchiveCategoryMeta[]> {
-  const data = await apiGet<{ categories: ArchiveCategoryMeta[] }>("/archive/categories");
-  return data.categories;
-}
-
-/** Compatibility alias for callers that still use recycle-bin terminology. */
-async function listRecycleBin(category?: ArchiveCategoryKey): Promise<ArchiveCategory[]> {
-  return list(category);
-}
-
 /** GET /archive — full index, optionally filtered by category. */
 async function list(category?: ArchiveCategoryKey): Promise<ArchiveCategory[]> {
   const query = category ? `?category=${category}` : "";
@@ -136,8 +125,6 @@ async function listCategoryItems(category: ArchiveCategoryKey): Promise<ArchiveI
 }
 
 export const archiveService = {
-  listCategories,
-  listRecycleBin,
   list,
   getDetail,
   restore,

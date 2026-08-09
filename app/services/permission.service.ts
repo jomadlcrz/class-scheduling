@@ -1,6 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
-import { archiveService } from "~/services/archive.service";
-import type { DeletedPermission, PermissionSummary, RolePermission, UpdatePermissionInput } from "~/types/permission";
+import type { PermissionSummary, RolePermission, UpdatePermissionInput } from "~/types/permission";
 
 /**
  * Roles + permissions (super_admin RBAC module). The backend has no single
@@ -42,45 +41,6 @@ async function list(): Promise<PermissionSummary[]> {
   }
 }
 
-/**
- * Creates a role (or reuses it if it already exists), creates the given
- * permission slugs, and grants them all to that role. If the permission
- * slugs step fails (e.g. a slug already exists elsewhere), the role may
- * already have been created with no permissions yet — the backend has no
- * transaction spanning all three calls, so a retry only needs to redo the
- * permissions/grant steps.
- */
-async function create(input: {
-  roleName: string;
-  permissions: { permissionSlug: string; description: string }[];
-}): Promise<string> {
-  let roleId: number;
-  try {
-    const created = await apiPost<{ role: { role_id: number } }>("/roles", {
-      roleName: input.roleName,
-    });
-    roleId = created.role.role_id;
-  } catch (err) {
-    if (!(err instanceof ApiError) || err.status !== 409) throw err;
-    const roles = await list();
-    const existing = roles.find((r) => r.name === input.roleName);
-    if (!existing) throw err;
-    roleId = existing.id;
-  }
-
-  const createdPermissions = await apiPost<{
-    permissions: { permission_id: number }[];
-  }>(
-    "/permissions",
-    input.permissions.map((p) => ({ permissionSlug: p.permissionSlug, description: p.description })),
-  );
-
-  const data = await apiPost<{ message?: string }>(`/roles/${roleId}/permissions`, {
-    permissionIds: createdPermissions.permissions.map((p) => p.permission_id),
-  });
-  return typeof data.message === "string" ? data.message : "";
-}
-
 type PermissionCatalogResponse = {
   permission_id: number;
   permission_slug: string;
@@ -116,12 +76,6 @@ async function revoke(roleId: number, permissionId: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** POST /roles/{roleId}/permissions — idempotent add-only grant, unlike `replace` (PUT) which sets the full grant set. */
-async function grant(roleId: number, permissionIds: number[]): Promise<string> {
-  const data = await apiPost<{ message?: string }>(`/roles/${roleId}/permissions`, { permissionIds });
-  return apiMessage(data);
-}
-
 export type PermissionArchivePreview = {
   permission: { permission_id: number; permission_slug: string };
   archivable: boolean;
@@ -129,36 +83,9 @@ export type PermissionArchivePreview = {
   willArchive: Record<string, never>;
 };
 
-/** GET /archive?category=permissions. */
-async function listDeleted(): Promise<DeletedPermission[]> {
-  const items = await archiveService.listCategoryItems("permissions");
-  return items.map((item) => ({
-    id: item.entityId,
-    slug: String(item.extra.permission_slug ?? item.label),
-    deactivatedAt: item.archivedAt,
-  }));
-}
-
-/** GET /permissions/<id> */
-async function get(id: number): Promise<RolePermission> {
-  const p = await apiGet<{ permission_id: number; permission_slug: string; description: string | null }>(
-    `/permissions/${id}`,
-  );
-  return { id: p.permission_id, slug: p.permission_slug, description: p.description ?? "" };
-}
-
 /** PUT /permissions/<id> */
 async function update(id: number, input: UpdatePermissionInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/permissions/${id}`, input);
-  return apiMessage(data);
-}
-
-/** POST /permissions — create a single permission. */
-async function createPermission(input: { permissionSlug: string; description?: string }): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/permissions", {
-    permissionSlug: input.permissionSlug,
-    description: input.description ?? null,
-  });
   return apiMessage(data);
 }
 
@@ -181,11 +108,6 @@ async function archive(id: number, confirm: string): Promise<string> {
   return apiMessage(data);
 }
 
-/** PATCH /archive/permission/<id>/restore */
-async function restore(id: number): Promise<string> {
-  return archiveService.restore("permission", id);
-}
-
 /** POST /roles — create multiple roles in bulk (JSON array body). */
 async function createRoleBulk(input: { roleName: string }[]): Promise<string> {
   const data = await apiPost<{ message?: string }>("/roles", input);
@@ -194,18 +116,12 @@ async function createRoleBulk(input: { roleName: string }[]): Promise<string> {
 
 export const permissionService = {
   list,
-  create,
   createRoleBulk,
-  createPermission,
   createPermissionBulk,
   listCatalog,
   replace,
   revoke,
-  grant,
-  listDeleted,
-  get,
   update,
   getArchivePreview,
   archive,
-  restore,
 };
