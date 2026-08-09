@@ -17,6 +17,7 @@ import {
   FolderOpenIcon,
   GraduationCapIcon,
   LayersIcon,
+  LayoutGridIcon,
   ListIcon,
   MapIcon,
   ShieldIcon,
@@ -64,6 +65,7 @@ const NAV_GROUPS: NavGroup[] = [
     // Timetable pipeline + personal schedules.
     label: "Scheduling",
     items: [
+      { label: "Scheduling Hub", to: "/schedules", icon: <LayoutGridIcon />, roles: ["registrar"] },
       { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
       { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
       { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
