@@ -1,6 +1,6 @@
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -186,6 +186,13 @@ function SchedulesNewPage() {
     reset: resetGeneration,
   } = useAutoGenerate();
   const tempIdCounter = useRef(0);
+  const [searchParams] = useSearchParams();
+  const prefillAppliedRef = useRef(false);
+  const pendingSetCodeRef = useRef<string | null>(null);
+  const isPrefill = useMemo(
+    () => Boolean(searchParams.get("set") || searchParams.get("program")),
+    [searchParams],
+  );
 
   const isDirty = slots.length > 0 || isGenerating;
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
@@ -196,6 +203,44 @@ function SchedulesNewPage() {
     if (schoolYear || schoolYears.length === 0) return;
     setSchoolYear(defaultSchoolYear);
   }, [schoolYear, schoolYears, defaultSchoolYear]);
+
+  // Deep-link prefill (from the hub's "Needs your attention" queue): seed term/program/year
+  // from ?sy&sem&program&yl once reference data loads, then resolve the set below.
+  useEffect(() => {
+    if (prefillAppliedRef.current) return;
+    if (!programs || schoolYears.length === 0 || semesters.length === 0) return;
+    const program = searchParams.get("program");
+    const set = searchParams.get("set");
+    if (!program && !set) return;
+    prefillAppliedRef.current = true;
+
+    const sy = searchParams.get("sy");
+    if (sy && schoolYears.some((s) => s.schoolYear === sy)) setSchoolYear(sy);
+    const sem = searchParams.get("sem");
+    if (sem) {
+      const semNum = Number(sem);
+      if (semesters.some((s) => s.semesterNumber === semNum)) setSemester(semNum as ScheduleSemester);
+    }
+    const matchedProgram = programs.find((p) => p.abbrev === program);
+    if (matchedProgram) setSelectedProgramId(String(matchedProgram.id));
+    const yl = searchParams.get("yl");
+    if (yl) setSelectedYearLevel(Number(yl) as YearLevel);
+    pendingSetCodeRef.current = set;
+  }, [programs, schoolYears, semesters, searchParams]);
+
+  // Once the seeded program/term's unscheduled sets arrive, select the target section.
+  useEffect(() => {
+    const pending = pendingSetCodeRef.current;
+    if (!pending || sets.length === 0) return;
+    // `set` param is the full set_name (e.g. "BSIT-3F") = program-abbrev + year + set-code (uppercased).
+    const match = sets.find(
+      (s) => `${s.program}-${s.yearLevel}${(s.setCode ?? "").toUpperCase()}` === pending.toUpperCase(),
+    );
+    if (match) {
+      setSelectedSetId(String(match.id));
+      pendingSetCodeRef.current = null;
+    }
+  }, [sets]);
 
   // Re-fetch sets whenever the context changes so already-scheduled sets are excluded.
   const matchedSy = schoolYears.find((s) => s.schoolYear === schoolYear);
@@ -246,6 +291,7 @@ function SchedulesNewPage() {
         programId: selectedProgram.id,
         yearLevel: selectedYearLevel,
         semester,
+        includeScheduledSets: isPrefill,
       })
       .then((result) => {
         if (!stale) setSubjects(result);
@@ -256,7 +302,7 @@ function SchedulesNewPage() {
     return () => {
       stale = true;
     };
-  }, [selectedProgram, selectedYearLevel, semester, schoolYear, schoolYearValid]);
+  }, [selectedProgram, selectedYearLevel, semester, schoolYear, schoolYearValid, isPrefill]);
 
   // Subject types the selected subjects need but no weekly hour allocation
   // covers — the backend silently drops those subjects when auto-generating

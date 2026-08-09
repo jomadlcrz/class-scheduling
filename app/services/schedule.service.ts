@@ -133,6 +133,9 @@ async function listScheduleSubjects(params: {
   programId: number;
   yearLevel?: number;
   semester: ScheduleSemester;
+  /** Include subjects from already-scheduled sets (backend `include_scheduled_sets`) — used when
+   *  deep-linking the generator to a section that may already have a saved timetable. */
+  includeScheduledSets?: boolean;
 }): Promise<ScheduleSubjectOption[]> {
   const query = new URLSearchParams({
     school_year: params.schoolYear,
@@ -140,6 +143,7 @@ async function listScheduleSubjects(params: {
     semester: String(params.semester),
   });
   if (params.yearLevel != null) query.set("year_level", String(params.yearLevel));
+  if (params.includeScheduledSets) query.set("include_scheduled_sets", "true");
   const data = await apiGet<ScheduleSubjectsResponse | []>(`/schedule/subjects?${query}`);
   if (Array.isArray(data)) return [];
   return data.subjects.map((s) => ({

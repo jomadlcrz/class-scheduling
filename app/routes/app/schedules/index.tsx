@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
-import { HubModuleGrid } from "~/features/schedules/hub/hub-module-grid";
+import { HubActionQueue } from "~/features/schedules/hub/hub-action-queue";
 import { HubNextStepCard } from "~/features/schedules/hub/hub-next-step-card";
 import { HubStatStrip } from "~/features/schedules/hub/hub-stat-strip";
 import { useSchedulingHubData } from "~/features/schedules/hub/use-scheduling-hub-data";
@@ -32,7 +31,6 @@ export default function SchedulesHubRoute() {
 }
 
 function SchedulingHubPage() {
-  const navigate = useNavigate();
   const { context: termContext, loading: termLoading } = useTermContext();
   const { semesters, semesterLabel } = useSemesters();
 
@@ -115,9 +113,14 @@ function SchedulingHubPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-5">
-            <HubNextStepCard stage={hub.stage} onGo={(to) => navigate(to)} />
             <HubStatStrip built={hub.built} total={hub.total} counts={hub.counts} />
-            <HubModuleGrid onOpen={(to) => navigate(to)} />
+            <HubNextStepCard stage={hub.stage} />
+            <HubActionQueue
+              releases={hub.releases}
+              unscheduledSets={hub.unscheduledSets}
+              schoolYear={schoolYears.find((y) => y.id === syId)?.schoolYear ?? ""}
+              semester={semester}
+            />
           </div>
         )}
       </div>

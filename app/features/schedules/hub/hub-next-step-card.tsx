@@ -1,13 +1,6 @@
 import type { ReactNode } from "react";
-import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import {
-  CalendarCheckIcon,
-  CalendarIcon,
-  CheckIcon,
-  ChevronRightIcon,
-  ClockIcon,
-} from "~/components/ui/icons";
+import { CalendarCheckIcon, CalendarIcon, CheckIcon, ClockIcon } from "~/components/ui/icons";
 import type { HubStage, HubTone } from "~/features/schedules/hub/scheduling-stages";
 
 const TONE_ACCENT: Record<HubTone, string> = {
@@ -25,40 +18,21 @@ const TONE_ICON: Record<HubTone, ReactNode> = {
 };
 
 /** Dominant "do this next" card. Tone accent carries the workflow state (no decorative color). */
-export function HubNextStepCard({
-  stage,
-  onGo,
-}: {
-  stage: HubStage;
-  onGo: (to: string) => void;
-}) {
+export function HubNextStepCard({ stage }: { stage: HubStage }) {
   return (
     <Card className={`border-2 p-5 sm:p-6 ${TONE_ACCENT[stage.tone]}`}>
       <p className="font-body text-xs font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
         {stage.eyebrow}
       </p>
-      <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3.5">
-          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-navy-700 shadow-sm dark:bg-white/10 dark:text-mist-100">
-            {TONE_ICON[stage.tone]}
-          </span>
-          <div className="min-w-0">
-            <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
-              {stage.title}
-            </h2>
-            <p className="mt-1 font-body text-sm text-slate-600 dark:text-slate-300">{stage.line}</p>
-          </div>
-        </div>
-        <div className="shrink-0">
-          <Button
-            type="button"
-            variant={stage.tone === "action" ? "primary" : "outline"}
-            block={false}
-            onClick={() => onGo(stage.to)}
-          >
-            {stage.actionLabel}
-            <ChevronRightIcon />
-          </Button>
+      <div className="mt-2 flex min-w-0 items-start gap-3.5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-navy-700 shadow-sm dark:bg-white/10 dark:text-mist-100">
+          {TONE_ICON[stage.tone]}
+        </span>
+        <div className="min-w-0">
+          <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
+            {stage.title}
+          </h2>
+          <p className="mt-1 font-body text-sm text-slate-600 dark:text-slate-300">{stage.line}</p>
         </div>
       </div>
     </Card>
