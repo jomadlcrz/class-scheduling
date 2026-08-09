@@ -3,12 +3,13 @@ import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleApproveDialog } from "~/features/dean-approvals/schedule-approve-dialog";
 import { ScheduleRejectDialog } from "~/features/dean-approvals/schedule-reject-dialog";
 import {
-  SchedulePendingApprovalsTable,
+  GroupedPendingApprovals,
   ScheduleRecentlyReviewedTable,
 } from "~/features/dean-approvals/schedule-approvals-table";
 import { useDeanScheduleApprovals } from "~/features/dean-approvals/use-dean-schedule-approvals";
@@ -37,6 +38,7 @@ export function DeanScheduleApprovalsPage() {
   const [previewTarget, setPreviewTarget] = useState<ScheduleRelease | null>(null);
   const [approveTarget, setApproveTarget] = useState<ScheduleRelease | null>(null);
   const [rejectTarget, setRejectTarget] = useState<ScheduleRelease | null>(null);
+  const [approveCohort, setApproveCohort] = useState<{ label: string; releases: ScheduleRelease[] } | null>(null);
 
   const contextReady = Boolean(selectedSchoolYearId && selectedSemesterNumber);
 
@@ -65,6 +67,32 @@ export function DeanScheduleApprovalsPage() {
       await refresh().catch(() => {});
       throw err instanceof Error ? err : new Error("Unable to reject the schedule.");
     }
+  }
+
+  /**
+   * Approve every section in a Program→Year cohort. No atomic batch endpoint exists, so
+   * approve sequentially and keep going on failure — then summarise the outcome once, since
+   * one toast per section would drown the dean. Refresh reconciles whatever actually landed.
+   */
+  async function handleApproveCohort() {
+    if (!approveCohort) return;
+    const { releases } = approveCohort;
+    let approved = 0;
+    const failed: string[] = [];
+    for (const release of releases) {
+      try {
+        await scheduleReleaseService.approveRelease(release.id);
+        approved += 1;
+      } catch {
+        failed.push(`${release.programAbbrev ?? ""} ${release.setCode ?? ""}`.trim() || `#${release.id}`);
+      }
+    }
+    if (approved > 0) toast.success(`Approved ${approved} section${approved === 1 ? "" : "s"}.`);
+    if (failed.length > 0) {
+      toast.error(`Couldn't approve ${failed.length}: ${failed.join(", ")}. They may already be reviewed.`);
+    }
+    await refresh().catch(() => {});
+    setApproveCohort(null);
   }
 
   const pending = inbox?.pending ?? [];
@@ -167,11 +195,12 @@ export function DeanScheduleApprovalsPage() {
                     also get a notification.
                   </EmptyState>
                 ) : (
-                  <SchedulePendingApprovalsTable
+                  <GroupedPendingApprovals
                     releases={pending}
                     onPreview={setPreviewTarget}
                     onApprove={setApproveTarget}
                     onReject={setRejectTarget}
+                    onApproveCohort={(label, releases) => setApproveCohort({ label, releases })}
                   />
                 )}
               </div>
@@ -214,6 +243,18 @@ export function DeanScheduleApprovalsPage() {
         onClose={() => setRejectTarget(null)}
         onConfirm={handleReject}
       />
+
+      <ConfirmDialog
+        open={approveCohort !== null}
+        onClose={() => setApproveCohort(null)}
+        title={`Approve all of ${approveCohort?.label ?? ""}?`}
+        confirmLabel={`Approve ${approveCohort?.releases.length ?? 0} section${approveCohort?.releases.length === 1 ? "" : "s"}`}
+        loadingLabel="Approving…"
+        onConfirm={handleApproveCohort}
+      >
+        This publishes every one of these section timetables to their students and instructors. Each is
+        approved individually, so any already reviewed elsewhere are simply skipped.
+      </ConfirmDialog>
     </div>
   );
 }

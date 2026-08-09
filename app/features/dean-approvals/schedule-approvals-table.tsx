@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { Button } from "~/components/ui/button";
 import { CheckIcon, ClockIcon, CloseIcon, EyeIcon } from "~/components/ui/icons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { scheduleReleaseStatusLabel, scheduleReleaseStatusTone, StatusBadge } from "~/features/academic-terms/status-badges";
@@ -83,6 +85,109 @@ export function SchedulePendingApprovalsTable({ releases, onPreview, onApprove, 
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+type YearCohort = { yearLevel: number; releases: ScheduleRelease[]; sessions: number };
+type ProgramGroup = { abbrev: string; total: number; years: YearCohort[] };
+
+/** Bucket pending releases into Program → Year-level cohorts, both sorted for stable display. */
+function groupByProgramYear(releases: ScheduleRelease[]): ProgramGroup[] {
+  const byProgram = new Map<string, Map<number, ScheduleRelease[]>>();
+  for (const release of releases) {
+    const abbrev = release.programAbbrev ?? "—";
+    const year = release.yearLevel ?? 0;
+    const years = byProgram.get(abbrev) ?? new Map<number, ScheduleRelease[]>();
+    const rows = years.get(year) ?? [];
+    rows.push(release);
+    years.set(year, rows);
+    byProgram.set(abbrev, years);
+  }
+
+  return [...byProgram.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([abbrev, years]) => {
+      const cohorts: YearCohort[] = [...years.entries()]
+        .sort(([a], [b]) => a - b)
+        .map(([yearLevel, rows]) => ({
+          yearLevel,
+          releases: [...rows].sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? "")),
+          sessions: rows.reduce((sum, r) => sum + r.sessionCount, 0),
+        }));
+      return { abbrev, total: cohorts.reduce((sum, c) => sum + c.releases.length, 0), years: cohorts };
+    });
+}
+
+type GroupedPendingProps = PendingTableProps & {
+  /** Approve every section in a Program→Year cohort at once. */
+  onApproveCohort: (label: string, releases: ScheduleRelease[]) => void;
+};
+
+/**
+ * Pending approvals grouped Program → Year level. Each cohort carries a rollup and an
+ * "Approve all" so the dean can clear a whole year at once, while the per-row Review /
+ * Approve / Reject controls stay exactly as before.
+ */
+export function GroupedPendingApprovals({
+  releases,
+  onPreview,
+  onApprove,
+  onReject,
+  onApproveCohort,
+}: GroupedPendingProps) {
+  const programs = useMemo(() => groupByProgramYear(releases), [releases]);
+
+  return (
+    <div className="flex flex-col gap-8">
+      {programs.map((program) => (
+        <section key={program.abbrev} aria-label={program.abbrev}>
+          <div className="mb-3 flex flex-wrap items-baseline gap-x-2">
+            <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+              {program.abbrev}
+            </h3>
+            <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+              {program.total} pending
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-5">
+            {program.years.map((cohort) => {
+              const label = `${program.abbrev} Year ${cohort.yearLevel}`;
+              return (
+                <div key={cohort.yearLevel}>
+                  <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2 dark:border-white/10">
+                    <span className="flex items-baseline gap-2">
+                      <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                        Year {cohort.yearLevel}
+                      </span>
+                      <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                        {cohort.releases.length} section{cohort.releases.length === 1 ? "" : "s"} ·{" "}
+                        {cohort.sessions} session{cohort.sessions === 1 ? "" : "s"}
+                      </span>
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      block={false}
+                      onClick={() => onApproveCohort(label, cohort.releases)}
+                    >
+                      <CheckIcon size={14} />
+                      Approve all ({cohort.releases.length})
+                    </Button>
+                  </div>
+                  <SchedulePendingApprovalsTable
+                    releases={cohort.releases}
+                    onPreview={onPreview}
+                    onApprove={onApprove}
+                    onReject={onReject}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
 
