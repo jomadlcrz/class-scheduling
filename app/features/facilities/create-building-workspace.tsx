@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
+import { StickyFooter } from "~/components/ui/sticky-footer";
 import { Card } from "~/components/ui/card";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import {
@@ -492,7 +493,7 @@ export function CreateBuildingWorkspace({
         <BuildingSummaryPanel summary={summary} programs={programs} />
       </div>
 
-      <div className="sticky bottom-0 z-10 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-surface/95">
+      <StickyFooter>
         <p className="font-body text-sm text-slate-600 dark:text-mist-100">
           Total Rooms Created:{" "}
           <span className="font-semibold text-navy-700 dark:text-mist-100">{summary.totalRooms}</span>
@@ -505,7 +506,7 @@ export function CreateBuildingWorkspace({
             Save Facility
           </Button>
         </div>
-      </div>
+      </StickyFooter>
     </form>
   );
 }

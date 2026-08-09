@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { StickyFooter } from "~/components/ui/sticky-footer";
 import { Card } from "~/components/ui/card";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
@@ -510,11 +511,11 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
             </Card>
           )}
 
-          <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-slate-50/95 py-4 backdrop-blur dark:border-white/10 dark:bg-surface/95">
+          <StickyFooter layoutClassName="flex justify-end gap-2">
             <Button type="button" variant="outline" block={false} onClick={() => { setResult(null); setSubmittedRows([]); setRows([{ ...EMPTY_ROW }]); }}>
               Import Another
             </Button>
-          </div>
+          </StickyFooter>
         </div>
       </div>
     );
@@ -808,14 +809,14 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
           </p>
         </Card>
 
-        <div className="sticky bottom-0 flex justify-between border-t border-slate-200 bg-slate-50/95 py-4 backdrop-blur dark:border-white/10 dark:bg-surface/95">
+        <StickyFooter>
           <Button type="button" variant="outline" block={false} onClick={() => navigate(listRoute)} disabled={isLoading}>
             Cancel
           </Button>
           <Button type="submit" block={false} isLoading={isLoading} loadingLabel="Creating records…" disabled={validRows.length === 0}>
             Create Records
           </Button>
-        </div>
+        </StickyFooter>
       </form>
 
       <ConfirmDialog

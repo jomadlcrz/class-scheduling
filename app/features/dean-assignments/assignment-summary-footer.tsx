@@ -6,6 +6,7 @@ import {
   LayersIcon,
   UserIcon,
 } from "~/components/ui/icons";
+import { StickyFooter } from "~/components/ui/sticky-footer";
 
 type AssignmentSummaryFooterProps = {
   totalInstructors: number;
@@ -23,7 +24,7 @@ export function AssignmentSummaryFooter({
   exceedingInstructorsCount,
 }: AssignmentSummaryFooterProps) {
   return (
-    <div className="sticky bottom-0 z-10 mt-6 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-surface/95 sm:gap-4 sm:px-6 sm:py-3.5 md:flex-row md:items-center md:justify-between">
+    <StickyFooter layoutClassName="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 font-body text-xs sm:grid-cols-3 sm:gap-x-6 md:flex md:flex-wrap md:items-center md:gap-6 md:text-sm">
         <div className="flex items-center gap-2">
           <span className="text-slate-400 dark:text-slate-500">
@@ -72,6 +73,6 @@ export function AssignmentSummaryFooter({
           )}
         </div>
       </div>
-    </div>
+    </StickyFooter>
   );
 }
