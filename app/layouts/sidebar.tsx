@@ -61,7 +61,20 @@ const NAV_GROUPS: NavGroup[] = [
     items: [{ label: "Dashboard", to: "/dashboard", icon: <DashboardIcon />, roles: ALL_ROLES }],
   },
   {
+    // Timetable pipeline + personal schedules.
     label: "Scheduling",
+    items: [
+      { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
+      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
+      { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
+      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
+      { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
+      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
+    ],
+  },
+  {
+    // Step 1 — everything configured before building timetables.
+    label: "Term Setup",
     items: [
       {
         label: "Academic Terms",
@@ -79,16 +92,16 @@ const NAV_GROUPS: NavGroup[] = [
           { label: "Audit Log", to: "/academic-terms/audit-log", roles: ["registrar"] },
         ],
       },
-      { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
-      { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["dean", "registrar"] },
       { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", icon: <CalendarClockIcon />, roles: ["registrar"] },
       { label: "Subject Hour Overrides", to: "/schedules/subject-hour-overrides", icon: <ClockIcon />, roles: ["registrar"] },
-      { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
-      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
-      { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
-      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
+    ],
+  },
+  {
+    // Advisory capacity tools — shared with the dean.
+    label: "Rooms & Capacity",
+    items: [
+      { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["dean", "registrar"] },
+      { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
     ],
   },
   {
@@ -115,20 +128,12 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    // Flat items (no submenu), mirroring the reference's Enrollment group.
     label: "Enrollment",
     items: [
-      // Untouched — kept exactly as it was.
-      { label: "Students", to: "/students", icon: <UsersIcon />, roles: ["registrar"], matchPaths: ["/students", "/students-regular", "/students-irregular"] },
-      {
-        label: "Enrollment",
-        icon: <GraduationCapIcon />,
-        roles: ["registrar"],
-        subItems: [
-          { label: "Regular Students", to: "/enrollment/regular-students", roles: ["registrar"] },
-          { label: "Irregular Students", to: "/enrollment/irregular-students", roles: ["registrar"] },
-          { label: "Re-enroll Student", to: "/enrollment/re-enroll", roles: ["registrar"] },
-        ],
-      },
+      { label: "Regular Students", to: "/enrollment/regular-students", icon: <UsersIcon />, roles: ["registrar"] },
+      { label: "Irregular Students", to: "/enrollment/irregular-students", icon: <UsersRoundIcon />, roles: ["registrar"] },
+      { label: "Re-enroll Student", to: "/enrollment/re-enroll", icon: <GraduationCapIcon />, roles: ["registrar"] },
     ],
   },
   {
@@ -151,7 +156,7 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 const itemClassName = (isActive: boolean) =>
-  `group flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left font-body text-[0.82rem] text-white/95 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+  `group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left font-body text-[0.78rem] text-white/95 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
     isActive ? "bg-gwc-blue-bright font-extrabold" : "hover:bg-gwc-blue-bright"
   }`;
 
@@ -262,17 +267,17 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
   return (
     <motion.aside
       aria-label="Portal navigation"
-      animate={{ width: collapsed ? 68 : 256 }}
+      animate={{ width: collapsed ? 60 : 220 }}
       transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
       className="flex h-dvh flex-col overflow-hidden border-r border-white/10 bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-white"
     >
       <header
-        className={`flex items-center gap-2.5 px-4 pb-3 pt-4 ${collapsed ? "justify-center px-0" : ""}`}
+        className={`flex items-center gap-2 px-3 pb-2.5 pt-3.5 ${collapsed ? "justify-center px-0" : ""}`}
       >
         <img
           src="/images/logos/gwc-logo.avif"
           alt="GWC logo"
-          className="size-9 shrink-0 object-contain"
+          className="size-8 shrink-0 object-contain"
         />
         <AnimatePresence mode="wait">
           {!collapsed && (
@@ -284,8 +289,8 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
               transition={{ duration: 0.15 }}
               className="min-w-0 overflow-hidden font-body leading-[1.05]"
             >
-              <span className="block truncate text-[1rem] font-black">GWC</span>
-              <span className="mt-0.5 block truncate border-t-2 border-white/20 pt-0.5 text-[1rem] font-black">
+              <span className="block truncate text-[0.9rem] font-black">GWC</span>
+              <span className="mt-0.5 block truncate border-t-2 border-white/20 pt-0.5 text-[0.9rem] font-black">
                 Class Scheduling
               </span>
             </motion.div>
@@ -295,7 +300,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
 
       <nav
         aria-label="Sidebar navigation"
-        className={`flex-1 overflow-y-auto pb-4 scrollbar-none ${collapsed ? "px-1.5" : "px-3"}`}
+        className={`flex-1 overflow-y-auto pb-3 scrollbar-none ${collapsed ? "px-1" : "px-2"}`}
       >
         {groups.map((group) => (
           <div key={group.label || "_"} className="mt-3 first:mt-1">
@@ -307,7 +312,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.12 }}
-                  className="px-2 pb-0.5 pt-1 font-body text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-gwc-blue-soft"
+                  className="px-1.5 pb-0.5 pt-1 font-body text-[0.58rem] font-semibold uppercase tracking-[0.08em] text-gwc-blue-soft"
                 >
                   {group.label}
                 </motion.p>
@@ -357,7 +362,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                           initial="hidden"
                           animate="visible"
                           exit="exit"
-                          className="ml-[1.35rem] mt-0.5 flex flex-col gap-0.5 overflow-hidden border-l border-white/15 pl-2.5"
+                          className="ml-[1.15rem] mt-0.5 flex flex-col gap-0.5 overflow-hidden border-l border-white/15 pl-2"
                         >
                           {item.subItems.map((sub, i) => {
                             const active = isSubItemActive(location.pathname, sub);
@@ -373,7 +378,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                                   to={sub.to}
                                   end
                                   onClick={onNavigate}
-                                  className={`relative block truncate rounded-md px-2.5 py-1.5 font-body text-[0.8rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                                  className={`relative block truncate rounded-md px-2 py-1 font-body text-[0.75rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
                                     active
                                       ? "bg-gwc-blue-bright font-extrabold text-white before:absolute before:left-[-0.85rem] before:top-1/2 before:size-1.5 before:-translate-y-1/2 before:rounded-full before:bg-white"
                                       : "text-white/85 hover:bg-gwc-blue-bright hover:text-white"
