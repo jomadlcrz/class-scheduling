@@ -162,9 +162,6 @@ export function GroupedPendingApprovals({
                   </span>
                 )}
               </h3>
-              <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                {program.total} pending
-              </span>
             </div>
           </Card>
 
@@ -173,14 +170,29 @@ export function GroupedPendingApprovals({
               const label = `${program.abbrev} Year ${cohort.yearLevel}`;
               return (
                 <div key={cohort.yearLevel}>
-                  <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2 dark:border-white/10">
-                    <span className="flex items-baseline gap-2">
-                      <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                        Year {cohort.yearLevel}
+                  <div className="mb-2.5 flex items-center gap-3">
+                    <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" aria-hidden="true" />
+                    <span className="font-body text-xs font-bold uppercase tracking-wider text-navy-700 dark:text-mist-200">
+                      Year {cohort.yearLevel}
+                    </span>
+                    <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" aria-hidden="true" />
+                  </div>
+                  <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                    <span className="flex flex-wrap items-center gap-x-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                      <span>
+                        <span className="font-semibold tabular-nums text-navy-700 dark:text-mist-100">
+                          {cohort.releases.length}
+                        </span>{" "}
+                        section{cohort.releases.length === 1 ? "" : "s"}
                       </span>
-                      <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                        {cohort.releases.length} section{cohort.releases.length === 1 ? "" : "s"} ·{" "}
-                        {cohort.sessions} session{cohort.sessions === 1 ? "" : "s"}
+                      <span aria-hidden="true" className="text-slate-300 dark:text-slate-600">
+                        ·
+                      </span>
+                      <span>
+                        <span className="font-semibold tabular-nums text-navy-700 dark:text-mist-100">
+                          {cohort.sessions}
+                        </span>{" "}
+                        session{cohort.sessions === 1 ? "" : "s"}
                       </span>
                     </span>
                     <Button

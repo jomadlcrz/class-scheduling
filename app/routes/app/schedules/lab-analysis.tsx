@@ -19,8 +19,6 @@ import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import { labAnalysisService } from "~/services/lab-analysis.service";
 import { programService } from "~/services/program.service";
-import type { LabAnalysis } from "~/types/lab-analysis";
-import type { Program } from "~/types/program";
 
 export function meta() {
   return [
