@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
+import { UserIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { enrollmentService } from "~/services/enrollment.service";
 import type { EnrollmentRow, EnrollmentStudent } from "~/types/enrollment";
@@ -13,6 +14,10 @@ const STATE_TONES: Record<string, BadgeTone> = {
   Withdrawn: "gold",
   Voided: "slate",
 };
+
+function accountTone(accountStatus: string): BadgeTone {
+  return accountStatus.toLowerCase().includes("no") ? "slate" : "emerald";
+}
 
 /** State transitions the registrar can apply. Backend-owned vocabulary — shown verbatim. */
 const STATES = ["Enrolled", "Dropped", "Withdrawn", "Voided"] as const;
@@ -25,13 +30,13 @@ type Props = {
   onChanged: () => void;
 };
 
-function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+function Field({ label, value, wide }: { label: string; value: React.ReactNode; wide?: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 py-1.5">
-      <span className="font-body text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">
+    <div className={wide ? "col-span-2" : "min-w-0"}>
+      <dt className="font-body text-[0.7rem] uppercase tracking-wide text-slate-400 dark:text-slate-500">
         {label}
-      </span>
-      <span className="text-right font-body text-sm text-navy-700 dark:text-mist-100">{value}</span>
+      </dt>
+      <dd className="mt-0.5 font-body text-sm text-navy-700 dark:text-mist-100">{value}</dd>
     </div>
   );
 }
@@ -68,21 +73,48 @@ export function EnrollmentDetailDrawer({ student, enrollment, onClose, onChanged
       >
         {enrollment && student && (
           <div className="flex flex-col gap-6">
-            <section className="rounded-xl border border-slate-200 px-4 py-2 dark:border-white/10">
-              <DetailRow label="Term" value={`${enrollment.schoolYear ?? "—"} · Sem ${enrollment.semesterNumber}`} />
-              <DetailRow label="Program" value={enrollment.program ?? "—"} />
-              <DetailRow label="Year level" value={enrollment.yearLevel || "—"} />
-              <DetailRow label="Type" value={enrollment.enrolledStatus} />
-              <DetailRow label="Section" value={enrollment.set ?? <span className="text-slate-400">No section (irregular)</span>} />
-              <DetailRow label="Student type" value={enrollment.studentType ?? "—"} />
-              <DetailRow
-                label="State"
-                value={
+            <section className="flex items-center gap-4">
+              {student.profilePhotoUrl ? (
+                <img
+                  src={student.profilePhotoUrl}
+                  alt={student.name}
+                  className="size-16 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="grid size-16 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500 [&_svg]:size-7">
+                  <UserIcon />
+                </span>
+              )}
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <Badge tone={STATE_TONES[enrollment.enrollmentState] ?? "slate"}>
                     {enrollment.enrollmentState}
                   </Badge>
-                }
-              />
+                  <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
+                </div>
+                {(student.email || student.mobile) && (
+                  <p className="truncate font-body text-xs text-slate-500 dark:text-slate-400">
+                    {[student.mobile, student.email].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h3 className="mb-2 font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                Enrollment
+              </h3>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-slate-200 p-4 dark:border-white/10">
+                <Field label="Term" value={`${enrollment.schoolYear ?? "—"} · Sem ${enrollment.semesterNumber}`} wide />
+                <Field label="Program" value={enrollment.program ?? "—"} wide />
+                <Field label="Year level" value={enrollment.yearLevel || "—"} />
+                <Field label="Type" value={enrollment.enrolledStatus} />
+                <Field
+                  label="Section"
+                  value={enrollment.set ?? <span className="text-slate-400">No section (irregular)</span>}
+                />
+                <Field label="Student type" value={enrollment.studentType ?? "—"} />
+              </dl>
             </section>
 
             <section>
