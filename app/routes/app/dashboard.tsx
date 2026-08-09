@@ -7,6 +7,7 @@ import { DeanDashboard } from "~/features/dashboard/dean-dashboard";
 import { GreetingsCard } from "~/features/dashboard/greetings-card";
 import { RegistrarDashboard } from "~/features/dashboard/registrar-dashboard";
 import { SelfAnalyticsDashboard } from "~/features/dashboard/self-analytics-dashboard";
+import { SuperAdminDashboard } from "~/features/dashboard/super-admin-dashboard";
 
 export function meta() {
   return [
@@ -40,7 +41,8 @@ export default function Dashboard() {
 
       {user?.role === "dean" && <DeanDashboard />}
       {user?.role === "registrar" && <RegistrarDashboard />}
-      {(user?.role === "admin" || user?.role === "faculty" || user?.role === "student") && (
+      {user?.role === "admin" && <SuperAdminDashboard />}
+      {(user?.role === "faculty" || user?.role === "student") && (
         <SelfAnalyticsDashboard />
       )}
     </motion.div>

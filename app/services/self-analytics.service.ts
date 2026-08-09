@@ -1,11 +1,14 @@
 import { apiGet } from "~/lib/api";
 import { termScopeQuery } from "~/lib/term-scope";
+import type { SuperAdminAnalytics } from "~/types/super-admin-analytics";
 
+/** The term-scoped self-analytics payload (student / faculty) is an unknown
+ * shape on purpose — only the super-admin snapshot is strongly typed. */
 export type SelfAnalytics = Record<string, unknown>;
 
 /** GET /super-admin/analytics — system-wide account and RBAC snapshot. */
-async function getAdmin(): Promise<SelfAnalytics> {
-  return apiGet<SelfAnalytics>("/super-admin/analytics");
+async function getAdmin(): Promise<SuperAdminAnalytics> {
+  return apiGet<SuperAdminAnalytics>("/super-admin/analytics");
 }
 
 /** GET /students/me/analytics — current student's term-scoped summary. */

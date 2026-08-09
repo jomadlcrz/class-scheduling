@@ -35,7 +35,7 @@ export function SelfAnalyticsDashboard() {
   const needsTerm = user?.role === "faculty" || user?.role === "student";
 
   useEffect(() => {
-    if (!user || !["admin", "faculty", "student"].includes(user.role)) return;
+    if (!user || (user.role !== "faculty" && user.role !== "student")) return;
     if (needsTerm && (syId == null || semesterNumber == null)) {
       setAnalytics(null);
       return;
@@ -45,11 +45,9 @@ export function SelfAnalyticsDashboard() {
     setLoading(true);
     setError(null);
     const request =
-      user.role === "admin"
-        ? selfAnalyticsService.getAdmin()
-        : user.role === "faculty"
-          ? selfAnalyticsService.getFaculty(syId!, semesterNumber!)
-          : selfAnalyticsService.getStudent(syId!, semesterNumber!);
+      user.role === "faculty"
+        ? selfAnalyticsService.getFaculty(syId!, semesterNumber!)
+        : selfAnalyticsService.getStudent(syId!, semesterNumber!);
 
     request
       .then((result) => {
@@ -86,7 +84,7 @@ export function SelfAnalyticsDashboard() {
       ? (analytics.definitions as Record<string, unknown>)
       : {};
 
-  if (!user || !["admin", "faculty", "student"].includes(user.role)) return null;
+  if (!user || (user.role !== "faculty" && user.role !== "student")) return null;
 
   return (
     <section className="mt-6" aria-labelledby="dashboard-summary-title">

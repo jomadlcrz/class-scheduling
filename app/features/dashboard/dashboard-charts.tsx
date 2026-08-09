@@ -29,6 +29,12 @@ import type {
   LabSummary,
   ScheduleCompletionProgram,
 } from "~/types/registrar-analytics";
+import type {
+  SuperAdminAccountCounts,
+  SuperAdminRbac,
+  SuperAdminRole,
+  SuperAdminRoleCount,
+} from "~/types/super-admin-analytics";
 
 /** Status tones — the same four status meanings everywhere (tiles, meters,
  * table severity), always accompanied by a label in the UI. */
@@ -504,6 +510,180 @@ export function EnrollmentDonut({ enrollment }: { enrollment: Enrollment }) {
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Generic donut (donut-ready slices) ──────────────────────────────────────
+
+type DonutSlice = { name: string; value: number; color: string };
+
+function Donut({
+  slices,
+  centerValue,
+  centerLabel,
+  emptyMessage,
+  formatter,
+}: {
+  slices: DonutSlice[];
+  centerValue: string;
+  centerLabel: string;
+  emptyMessage: string;
+  formatter?: (value: number) => string;
+}) {
+  const c = useChartColors();
+  const total = slices.reduce((sum, d) => sum + d.value, 0);
+  if (total === 0) {
+    return <ChartEmpty message={emptyMessage} />;
+  }
+  return (
+    <div className="flex flex-col items-center justify-center gap-5 sm:flex-row">
+      <div className="relative h-44 w-44 shrink-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={slices}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={54}
+              outerRadius={76}
+              paddingAngle={3}
+              cornerRadius={6}
+              strokeWidth={0}
+              animationDuration={600}
+            >
+              {slices.map((d) => (
+                <Cell key={d.name} fill={d.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<ChartTip formatter={formatter} />} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white">{centerValue}</span>
+          <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            {centerLabel}
+          </span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {slices.map((d) => (
+          <div key={d.name} className="flex items-center gap-2 text-xs">
+            <span className="size-2.5 shrink-0 rounded-full" style={{ background: d.color }} />
+            <span className="text-slate-600 dark:text-slate-400">{d.name}</span>
+            <span className={`ml-4 font-medium tabular-nums ${c.label}`}>{d.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Super admin: accounts & RBAC charts ─────────────────────────────────────
+
+/** Backend RoleName enum → display label (Super Admin, Registrar Admin, …). */
+export function superAdminRoleLabel(role: string): string {
+  const labels: Record<string, string> = {
+    SUPER_ADMIN: "Super Admin",
+    REGISTRAR_ADMIN: "Registrar Admin",
+    DEAN: "Dean",
+    INSTRUCTOR: "Instructor",
+    STUDENT: "Student",
+  };
+  return (
+    labels[role] ??
+    role
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase())
+  );
+}
+
+/** One hue per role — gold for the top privilege down through the ranks, so a
+ * glance at a slice says which role it belongs to. Unknown roles fall back to
+ * the shared rotating ramp. */
+const ROLE_COLORS: Record<SuperAdminRole, string> = {
+  SUPER_ADMIN: "var(--color-gold-500)",
+  REGISTRAR_ADMIN: "var(--color-navy-300)",
+  DEAN: "var(--status-good)",
+  INSTRUCTOR: "var(--color-navy-500)",
+  STUDENT: "var(--status-critical)",
+};
+
+export function RoleAccountsDonut({ roles }: { roles: SuperAdminRoleCount[] }) {
+  const slices = roles.map((r, i) => ({
+    name: superAdminRoleLabel(r.role),
+    value: r.active,
+    color: ROLE_COLORS[r.role] ?? DONUT_FALLBACK_RAMP[i % DONUT_FALLBACK_RAMP.length],
+  }));
+  const total = slices.reduce((sum, d) => sum + d.value, 0);
+  return (
+    <Donut
+      slices={slices}
+      centerValue={String(total)}
+      centerLabel="active"
+      emptyMessage="No active accounts yet."
+      formatter={(v) => `${v} account${v === 1 ? "" : "s"}`}
+    />
+  );
+}
+
+export function LoginStatusDonut({ counts }: { counts: SuperAdminAccountCounts }) {
+  const slices = [
+    {
+      name: "Logged in",
+      value: Math.max(counts.active - counts.pending_first_login, 0),
+      color: STATUS_COLORS.good,
+    },
+    { name: "Pending first login", value: counts.pending_first_login, color: STATUS_COLORS.warning },
+    { name: "Deactivated", value: counts.deactivated, color: STATUS_COLORS.critical },
+  ].filter((d) => d.value > 0);
+  return (
+    <Donut
+      slices={slices}
+      centerValue={String(counts.total)}
+      centerLabel="accounts"
+      emptyMessage="No accounts in the system yet."
+      formatter={(v) => `${v} account${v === 1 ? "" : "s"}`}
+    />
+  );
+}
+
+export function PermissionsDonut({ rbac }: { rbac: SuperAdminRbac }) {
+  const granted = Math.max(rbac.permissions_total - rbac.permissions_ungranted_count, 0);
+  const slices = [
+    { name: "Granted", value: granted, color: STATUS_COLORS.good },
+    { name: "Ungranted", value: rbac.permissions_ungranted_count, color: STATUS_COLORS.serious },
+  ].filter((d) => d.value > 0);
+  return (
+    <div className="space-y-3">
+      <Donut
+        slices={slices}
+        centerValue={`${granted} / ${rbac.permissions_total}`}
+        centerLabel="granted"
+        emptyMessage="No permission grants configured."
+        formatter={(v) => `${v} permission${v === 1 ? "" : "s"}`}
+      />
+      {rbac.permissions_ungranted.length > 0 && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Ungranted
+          </p>
+          <ul className="space-y-1.5">
+            {rbac.permissions_ungranted.map((p) => (
+              <li
+                key={p.permission_id}
+                className="flex items-baseline justify-between gap-3 text-xs"
+              >
+                <span className="text-slate-600 dark:text-slate-300">{p.description}</span>
+                <code className="shrink-0 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                  {p.permission_slug}
+                </code>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
