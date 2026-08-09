@@ -16,7 +16,6 @@ import {
 } from "recharts";
 import { useTheme } from "~/hooks/use-theme";
 import { EASE_OUT } from "~/features/dashboard/dashboard-shared";
-import type { InstructorSubject } from "~/types/instructor-analytics";
 import type {
   CoverageByProgram,
   DailyLoadHour,
@@ -691,7 +690,7 @@ export function PermissionsDonut({ rbac }: { rbac: SuperAdminRbac }) {
 
 // ── Instructor: subject coverage donut ───────────────────────────────────────
 
-export function SubjectCoverageDonut({ subjects }: { subjects: InstructorSubject[] }) {
+export function SubjectCoverageDonut({ subjects }: { subjects: { is_scheduled: boolean }[] }) {
   const scheduled = subjects.filter((s) => s.is_scheduled).length;
   const unscheduled = subjects.length - scheduled;
   const slices = [
