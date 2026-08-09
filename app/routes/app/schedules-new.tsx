@@ -557,12 +557,6 @@ function SchedulesNewPage() {
     }
   }
 
-  function openAddDrawer() {
-    setEditing(null);
-    setConflictPrefill(null);
-    setDrawerOpen(true);
-  }
-
   function openConflictDrawer(conflictText: string) {
     const parsed = parseConflictSlot(conflictText);
     if (!parsed) return;
@@ -750,7 +744,6 @@ function SchedulesNewPage() {
   const contextLocked = slots.length > 0 || isGenerating || isSaving;
   const canGenerateBase = Boolean(selectedSet) && Boolean(selectedYearLevel) && schoolYearValid;
   const canGenerate = canGenerateBase && !isGenerating;
-  const canAddSlot = Boolean(selectedSet) && schoolYearValid && subjects.length > 0;
   const lockHint = slots.length > 0 ? "Remove all slots to change." : undefined;
   const isLoading = programs === null || schoolYearsLoading;
   /** Without at least one academic term there's nothing to schedule. */
@@ -974,10 +967,6 @@ function SchedulesNewPage() {
                   >
                     <RotateIcon />
                     Regenerate
-                  </Button>
-                  <Button type="button" block={false} disabled={!canAddSlot || isGenerating || isSaving} onClick={openAddDrawer}>
-                    <PlusIcon />
-                    Add Slot
                   </Button>
                 </>
               )}

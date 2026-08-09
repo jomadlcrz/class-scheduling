@@ -16,9 +16,7 @@ import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import {
   irregularClassService,
-  type IrregularStudent,
-  type StudentAssignedSchedule,
-  type StudentPendingSchedule,
+  type IrregularStudent
 } from "~/services/irregular-class.service";
 
 export function meta() {
@@ -101,8 +99,7 @@ function IrregularClassPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <PageHeader
-        title="Irregular Class"
-
+        title="Irregular Schedule Builder"
       />
 
       <div className="mt-6 flex gap-2 border-b border-slate-200 dark:border-white/10">
