@@ -12,6 +12,7 @@ import { TableSkeleton } from "~/components/ui/skeleton";
 import { SetArchiveDialog } from "~/features/sets/set-archive-dialog";
 import { SetForm } from "~/features/sets/set-form";
 import { SetTable } from "~/features/sets/set-table";
+import { AcademicStructureTabs } from "~/layouts/academic-structure-tabs";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
 import { setService } from "~/services/set.service";
@@ -106,6 +107,8 @@ function SetsPage() {
           </Button>
         }
       />
+
+      <AcademicStructureTabs className="mt-4" />
 
       <div className="mt-6 flex flex-col gap-4">
         <div className="flex flex-wrap items-end gap-3">

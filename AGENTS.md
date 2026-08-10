@@ -118,6 +118,16 @@ Tokens are defined in `app/app.css` under `@theme` — use the Tailwind names, n
 - **Dark mode:** class-based (`.dark` on `<html>`, toggled by `ThemeProvider`, persisted as `localStorage["gwc-theme"]`, pre-paint init script in `root.tsx`). **Every visual class needs a `dark:` counterpart** — light: `bg-cream-50`, borders `slate-300`; dark: `bg-navy-950`, borders `white/10–15`.
 - **Recurring patterns:** primary button = `bg-navy-800 … dark:bg-white dark:text-navy-900`; ambient radial-gradient backdrops; `blueprint-grid` utility for the timetable texture; `rounded-lg` inputs/buttons, `rounded-full` icon buttons; `motion/react` with `AnimatePresence` for enter/exit animation, durations 150–250ms.
 
+## Layout & visual hierarchy
+
+Depth and emphasis come from **typography and spacing first**, not from stacking chrome. Every screen should read top-to-bottom with one obvious focal point per section.
+
+- **Typography carries the hierarchy.** Signal levels with size / weight / color, not borders or fills. Page title = `font-display` heading with `tracking-wide`; section heading = `font-display` (or `font-body` semibold) one step down; body = `font-body text-sm`; supporting text = `text-slate-500 dark:text-slate-400`. Don't invent new sizes when an existing step communicates the level.
+- **No nested cards or tables.** A `Card` is the outermost container for a block — never put a `Card` inside a `Card`, and never wrap a `Table` in a bordered/`Card` shell (the table owns its own edges). Nesting produces a boxed-in-a-box look and doubles padding. Separate sub-blocks with spacing (`gap-*`, dividers `divide-y divide-slate-100 dark:divide-white/8`), not another border.
+- **No nested borders.** A bordered container must not hold bordered children flush against it — the two lines read as one thick smudge. Use one border at the boundary and lean on background, spacing, or a single divider inside.
+- **Restraint on color.** Hue is reserved for meaning — status (approved/rejected/pending) and day accents only. No decorative or per-item coloring, no rainbow rows, no accent stripes. In particular, **don't add a 2px colored left border to cards** to categorize them; use a `Badge` or heading label instead. (See the timetable grid: accent-only.)
+- **Tables never cause horizontal page scroll.** Wrap a wide table in an `overflow-x-auto` container so scrolling stays *inside* the table, and hide low-priority columns responsively (`hidden sm:table-cell` / `hidden lg:table-cell`) — same pattern as `StudentAccountTable`. Don't force `min-w-*` that pushes the page body past the viewport; the page must never scroll sideways.
+
 ## Adding a page (checklist)
 
 1. Create the route module in `app/routes/public/` (or `app/routes/app/` once that area is live) — default export + `meta()` returning a `"… — GWC Class Scheduling"` title.

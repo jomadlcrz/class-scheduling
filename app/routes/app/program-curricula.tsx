@@ -20,6 +20,7 @@ import { SubjectForm } from "~/features/subjects/subject-form";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import { AcademicStructureTabs } from "~/layouts/academic-structure-tabs";
 import { PageHeader } from "~/layouts/page-header";
 import { curriculumService } from "~/services/curriculum.service";
 import { departmentService } from "~/services/department.service";
@@ -164,6 +165,8 @@ function ProgramCurriculaPage() {
           )
         }
       />
+
+      <AcademicStructureTabs className="mt-4" />
 
       <div className="mt-6 flex flex-col gap-5">
         <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised/80">

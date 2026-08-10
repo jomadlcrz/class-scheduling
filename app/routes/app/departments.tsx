@@ -15,6 +15,7 @@ import { DepartmentArchiveDialog } from "~/features/departments/department-archi
 import { DepartmentGridView } from "~/features/departments/department-grid-view";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
+import { AcademicStructureTabs } from "~/layouts/academic-structure-tabs";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { departmentService } from "~/services/department.service";
@@ -111,6 +112,8 @@ function DepartmentsPage() {
           </Button>
         }
       />
+
+      <AcademicStructureTabs className="mt-4" />
 
       <div className="mt-6 flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
