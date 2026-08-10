@@ -201,6 +201,7 @@ type AcademicDetailResponse = Omit<DepartmentOverviewResponse, "programs"> & {
     full_name: string;
     email: string | null;
     mobile: string | null;
+    profile_photo_url: string | null;
   } | null;
   total_students: number;
   programs: (ProgramSummaryResponse & { total_sets: number })[];
@@ -217,6 +218,7 @@ type AcademicDetailResponse = Omit<DepartmentOverviewResponse, "programs"> & {
     student_type: string | null;
     email: string | null;
     mobile: string | null;
+    profile_photo_url: string | null;
   }[];
 };
 
@@ -237,6 +239,7 @@ async function getAcademicDetail(id: number): Promise<AcademicDepartmentDetail> 
           fullName: d.dean.full_name,
           email: d.dean.email,
           mobile: d.dean.mobile,
+          profilePhotoUrl: d.dean.profile_photo_url,
         }
       : null,
     totalPrograms: d.total_programs,
@@ -255,6 +258,7 @@ async function getAcademicDetail(id: number): Promise<AcademicDepartmentDetail> 
       studentType: s.student_type,
       email: s.email,
       mobile: s.mobile,
+      profilePhotoUrl: s.profile_photo_url,
     })),
   };
 }

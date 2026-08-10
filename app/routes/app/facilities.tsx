@@ -11,6 +11,7 @@ import { BuildingArchiveDialog } from "~/features/facilities/buildings/building-
 import { FacilitiesViewWorkspace } from "~/features/facilities/facilities-view-workspace";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
+import { AcademicStructureTabs } from "~/layouts/academic-structure-tabs";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
@@ -80,6 +81,8 @@ function FacilitiesPage() {
           </Button>
         }
       />
+
+      <AcademicStructureTabs className="mt-4" />
 
       <div className="mt-6">
         {buildings === null ? (

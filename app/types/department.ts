@@ -110,6 +110,7 @@ export type DepartmentStudent = {
   studentType: string | null;
   email: string | null;
   mobile: string | null;
+  profilePhotoUrl: string | null;
 };
 
 /** GET /departments/:id/academic-detail — dean, programs (with set counts), and students. */
@@ -126,6 +127,7 @@ export type AcademicDepartmentDetail = {
     fullName: string;
     email: string | null;
     mobile: string | null;
+    profilePhotoUrl: string | null;
   } | null;
   totalPrograms: number;
   totalStudents: number;

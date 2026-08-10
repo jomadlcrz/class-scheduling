@@ -34,9 +34,17 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
           {detail.dean ? (
             <>
               <div className="flex items-center gap-3">
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 text-white dark:bg-white dark:text-navy-900">
-                  <UserIcon />
-                </span>
+                {detail.dean.profilePhotoUrl ? (
+                  <img
+                    src={detail.dean.profilePhotoUrl}
+                    alt={detail.dean.fullName}
+                    className="size-11 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 text-white dark:bg-white dark:text-navy-900">
+                    <UserIcon />
+                  </span>
+                )}
                 <div className="min-w-0">
                   <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                     {detail.dean.fullName}
@@ -142,9 +150,22 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                 {detail.students.map((student) => (
                   <TableRow key={student.studentProfileId}>
                     <TableCell>
-                      <span className="font-medium text-navy-700 dark:text-mist-100">
-                        {student.fullName}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {student.profilePhotoUrl ? (
+                          <img
+                            src={student.profilePhotoUrl}
+                            alt={student.fullName}
+                            className="size-6 shrink-0 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
+                            <UserIcon />
+                          </span>
+                        )}
+                        <span className="font-medium text-navy-700 dark:text-mist-100">
+                          {student.fullName}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="hidden font-mono text-xs text-slate-500 dark:text-slate-400 sm:table-cell">
                       {student.studentId}

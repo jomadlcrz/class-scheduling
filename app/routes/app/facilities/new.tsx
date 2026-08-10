@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
-import { ArrowLeftIcon } from "~/components/ui/icons";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { CreateBuildingWorkspace } from "~/features/facilities/create-building-workspace";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
@@ -60,23 +60,21 @@ function CreateFacilityPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <PageHeader
-        title="New Facility"
-
-        actions={
-          <Button type="button" variant="outline" block={false} onClick={() => navigate("/facilities")}>
-            <ArrowLeftIcon />
-            Back
-          </Button>
-        }
+      <Breadcrumb
+        items={[
+          { label: "Facilities", href: "/facilities" },
+          { label: "New Facility" },
+        ]}
+        className="mb-4"
       />
+
+      <PageHeader title="New Facility" />
 
       <div className="mt-6">
         <CreateBuildingWorkspace
           roomTypes={roomTypes}
           programs={programs}
           onSubmit={handleCreate}
-          onCancel={() => navigate("/facilities")}
           onDirtyChange={setIsDirty}
         />
       </div>

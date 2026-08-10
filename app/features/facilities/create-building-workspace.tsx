@@ -22,7 +22,6 @@ type CreateBuildingWorkspaceProps = {
   roomTypes: string[];
   programs: Program[];
   onSubmit: (input: CreateFacilitiesInput) => Promise<void>;
-  onCancel: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
 };
 
@@ -110,7 +109,6 @@ export function CreateBuildingWorkspace({
   roomTypes,
   programs,
   onSubmit,
-  onCancel,
   onDirtyChange,
 }: CreateBuildingWorkspaceProps) {
   const defaultRoomType = roomTypes[0] ?? "";
@@ -499,9 +497,6 @@ export function CreateBuildingWorkspace({
           <span className="font-semibold text-navy-700 dark:text-mist-100">{summary.totalRooms}</span>
         </p>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" block={false} onClick={onCancel}>
-            Cancel
-          </Button>
           <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
             Save Facility
           </Button>
