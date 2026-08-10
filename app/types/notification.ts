@@ -46,6 +46,8 @@ export type NotificationPayload = Record<string, unknown> & {
   subject_code?: string | null;
   subject_codes?: string[];
   action?: "added" | "removed";
+  release_id?: number;
+  set_id?: number;
   old?: NotificationTimeBlock;
   new?: NotificationTimeBlock;
   submission_note?: string | null;

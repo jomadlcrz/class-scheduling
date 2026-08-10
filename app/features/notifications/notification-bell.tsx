@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { BellIcon, CheckIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Spinner } from "~/components/ui/spinner";
+import { resolveNotificationTarget } from "~/features/notifications/notification-navigation";
+import { useAuth } from "~/hooks/use-auth";
 import { programSetLabel } from "~/lib/section-label";
 import { notificationService } from "~/services/notification.service";
 import type { NotificationItem, NotificationPayload } from "~/types/notification";
@@ -91,6 +94,8 @@ function relativeTime(iso: string): string {
 
 /** Navbar bell — real inbox from GET /notifications, self-scoped per user. */
 export function NotificationBell() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -111,14 +116,21 @@ export function NotificationBell() {
     refresh();
   }, [refresh]);
 
-  async function handleMarkRead(notification: NotificationItem) {
-    if (notification.isRead) return;
-    setNotifications((items) => items.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)));
-    setUnreadCount((count) => Math.max(0, count - 1));
-    try {
-      await notificationService.markRead(notification.id);
-    } catch {
-      refresh();
+  async function handleOpen(notification: NotificationItem, close: () => void) {
+    if (!notification.isRead) {
+      setNotifications((items) => items.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)));
+      setUnreadCount((count) => Math.max(0, count - 1));
+      try {
+        await notificationService.markRead(notification.id);
+      } catch {
+        refresh();
+      }
+    }
+
+    const target = resolveNotificationTarget(notification, user?.role);
+    if (target) {
+      close();
+      navigate(target);
     }
   }
 
@@ -155,7 +167,7 @@ export function NotificationBell() {
       triggerClassName={iconButtonClassName}
       className="w-80 px-1.5"
     >
-      {(_close) => (
+      {(close) => (
         <>
           <div className="mb-1 flex items-center justify-between border-b border-slate-100 px-2.5 py-2.5 dark:border-white/10">
             <span className="font-body text-sm font-semibold text-slate-800 dark:text-mist-100">Notifications</span>
@@ -185,7 +197,7 @@ export function NotificationBell() {
                   key={notification.id}
                   type="button"
                   role="menuitem"
-                  onClick={() => handleMarkRead(notification)}
+                  onClick={() => handleOpen(notification, close)}
                   className={`${itemClassName} ${notification.isRead ? "opacity-60" : ""}`}
                 >
                   <span className="min-w-0">
