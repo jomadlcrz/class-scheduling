@@ -1,6 +1,6 @@
 import { AnimatePresence } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -67,6 +67,10 @@ export default function RegularClassRoute() {
 
 function RegularClassPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Deep-link prefill from the hub's "Needs your attention" queue (?sy&sem&program&yl&set).
+  const prefillAppliedRef = useRef(false);
+  const hasSectionPrefill = Boolean(searchParams.get("set") || searchParams.get("program"));
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
   const { context: termContext, selectTerm } = useTermContext();
   const { data: schedules, error: loadError, setData: setSchedules } = useCachedData(
@@ -123,10 +127,28 @@ function RegularClassPage() {
 
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
-  // Seed the cascading filters (school year → program → year level → set) from
-  // the loaded schedules on first load.
+  // Deep-link prefill: seed the cascade from ?sy&sem&program&yl&set (from the hub
+  // action queue's Revise/Review/View). Runs once, before the default seeding below.
   useEffect(() => {
-    if (!schedules || schoolYear) return;
+    if (prefillAppliedRef.current || !schedules) return;
+    const setParam = searchParams.get("set");
+    const programParam = searchParams.get("program");
+    if (!setParam && !programParam) return;
+    prefillAppliedRef.current = true;
+    const sy = searchParams.get("sy");
+    if (sy) setSchoolYear(sy);
+    const sem = searchParams.get("sem");
+    if (sem === "1" || sem === "2") setSemester(Number(sem) as ScheduleSemester);
+    if (programParam) setSelectedProgram(programParam);
+    const yl = searchParams.get("yl");
+    if (yl && [1, 2, 3, 4].includes(Number(yl))) setSelectedYearLevel(Number(yl) as YearLevel);
+    if (setParam) setSetName(setParam);
+  }, [schedules, searchParams]);
+
+  // Seed the cascading filters (school year → program → year level → set) from
+  // the loaded schedules on first load. Skipped when a deep link is pre-selecting a section.
+  useEffect(() => {
+    if (!schedules || schoolYear || hasSectionPrefill) return;
     const years = [...new Set(schedules.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
     const firstYear = years[0] ?? "";
     if (!firstYear) return;
@@ -139,7 +161,7 @@ function RegularClassPage() {
     setSelectedYearLevel(firstYearLevel ?? "");
     const firstSet = inProgram.find((s) => s.yearLevel === firstYearLevel);
     setSetName(firstSet?.setCode ?? "");
-  }, [schedules, schoolYear]);
+  }, [schedules, schoolYear, hasSectionPrefill]);
 
   const yearLevelLabel = useMemo(() => {
     const labels = new Map<number, string>();

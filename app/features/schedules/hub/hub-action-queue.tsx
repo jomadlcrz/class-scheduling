@@ -60,6 +60,18 @@ function schedulingNewPath(schoolYear: string, semester: number, set: ClassSet):
   return `/schedules/new?${params.toString()}`;
 }
 
+/** Deep-links Section Schedules with the release's section pre-selected (program → year → set). */
+function regularClassPath(schoolYear: string, r: ScheduleRelease): string {
+  const params = new URLSearchParams();
+  if (schoolYear) params.set("sy", schoolYear);
+  params.set("sem", String(r.semesterNumber));
+  if (r.programAbbrev) params.set("program", r.programAbbrev);
+  if (r.yearLevel != null) params.set("yl", String(r.yearLevel));
+  const name = sectionLabel(r.programAbbrev, r.yearLevel, r.setCode);
+  if (name) params.set("set", name);
+  return `/schedules/regular-class?${params.toString()}`;
+}
+
 /** Most-urgent-first queue: rejected → unscheduled → drafts → pending. */
 function buildQueue(
   releases: ScheduleRelease[],
@@ -76,7 +88,7 @@ function buildQueue(
       kind: "rejected",
       title: releaseTitle(r),
       detail: r.rejectionReason ? `Dean returned this — ${r.rejectionReason}` : "Dean returned this for changes.",
-      to: "/schedules/regular-class",
+      to: regularClassPath(schoolYear, r),
       actionLabel: "Revise",
     });
   }
@@ -97,7 +109,7 @@ function buildQueue(
       kind: "draft",
       title: releaseTitle(r),
       detail: `${r.sessionCount} session${r.sessionCount === 1 ? "" : "s"} saved — submit to the dean when ready.`,
-      to: "/schedules/regular-class",
+      to: regularClassPath(schoolYear, r),
       actionLabel: "Review",
     });
   }
@@ -108,7 +120,7 @@ function buildQueue(
       kind: "pending",
       title: releaseTitle(r),
       detail: "Waiting in the dean's review queue.",
-      to: "/schedules/regular-class",
+      to: regularClassPath(schoolYear, r),
       actionLabel: "View",
     });
   }
