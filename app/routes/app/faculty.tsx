@@ -49,9 +49,10 @@ function FacultyPage() {
   const [editTarget, setEditTarget] = useState<Faculty | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Faculty | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<Faculty | null>(null);
-  // The list endpoint has no account_active field — fetched per-row (page-bounded
-  // by pagination) so Deactivate/Reactivate can show only the one that applies.
-  const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
+  // The list endpoint has no account status — fetched per-row (page-bounded
+  // by pagination) from GET /super-admin/faculty-accounts/<id>, which returns
+  // accountActive true/false for a login and null when the profile has none.
+  const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | null | undefined>>({});
 
   /** Unique department codes derived from the faculty list. */
   const departmentCodes = useMemo(() => {
@@ -84,7 +85,7 @@ function FacultyPage() {
   }, [facultyList, search, department]);
 
   const pagination = usePagination(visibleFaculty, resetKey);
-  const pageAccountIds = pagination.pageItems.filter((f) => f.hasAccount).map((f) => f.id).join(",");
+  const pageAccountIds = pagination.pageItems.map((f) => f.id).join(",");
 
   useEffect(() => {
     if (!pageAccountIds) return;
@@ -94,8 +95,8 @@ function FacultyPage() {
       ids.map((id) =>
         facultyService
           .get(id)
-          .then((detail) => [id, detail.accountActive ?? true] as const)
-          .catch(() => [id, true] as const),
+          .then((detail): [number, boolean | null] => [id, detail.accountActive])
+          .catch((): [number, boolean | null] => [id, null]),
       ),
     ).then((results) => {
       if (cancelled) return;

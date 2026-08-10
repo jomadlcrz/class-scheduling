@@ -18,8 +18,10 @@ function displayName(member: Faculty) {
 
 type FacultyTableProps = {
   faculty: Faculty[];
-  /** Per-row login status fetched from GET /super-admin/faculty-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
-  accountActiveById: Record<number, boolean | undefined>;
+  /** Per-row login status from GET /super-admin/faculty-accounts/<id> (the list
+   * endpoint doesn't include it); `true`/`false` = has a login, `null` = no login,
+   * `undefined` while still loading. */
+  accountActiveById: Record<number, boolean | null | undefined>;
   onEdit: (member: Faculty) => void;
   onDeactivate: (member: Faculty) => void;
   onReactivate: (member: Faculty) => void;
@@ -79,26 +81,25 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                 >
                   <EditIcon />
                 </IconButton>
-                {member.hasAccount &&
-                  (isActive === undefined ? (
-                    <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
-                  ) : isActive ? (
-                    <IconButton
-                      onClick={() => onDeactivate(member)}
-                      label={`Deactivate ${member.firstName} ${member.lastName}`}
-                      title="Deactivate"
-                    >
-                      <UserOffIcon />
-                    </IconButton>
-                  ) : (
-                    <IconButton
-                      onClick={() => onReactivate(member)}
-                      label={`Reactivate ${member.firstName} ${member.lastName}`}
-                      title="Reactivate"
-                    >
-                      <UserCheckIcon />
-                    </IconButton>
-                  ))}
+                {isActive === undefined ? (
+                  <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
+                ) : isActive === null ? null : isActive ? (
+                  <IconButton
+                    onClick={() => onDeactivate(member)}
+                    label={`Deactivate ${member.firstName} ${member.lastName}`}
+                    title="Deactivate"
+                  >
+                    <UserOffIcon />
+                  </IconButton>
+                ) : (
+                  <IconButton
+                    onClick={() => onReactivate(member)}
+                    label={`Reactivate ${member.firstName} ${member.lastName}`}
+                    title="Reactivate"
+                  >
+                    <UserCheckIcon />
+                  </IconButton>
+                )}
               </div>
             </TableCell>
           </TableRow>

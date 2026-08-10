@@ -1,5 +1,14 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
-import type { CreateDepartmentInput, Department, DepartmentDeletePreview, UpdateDepartmentInput } from "~/types/department";
+import type {
+  AcademicDepartmentDetail,
+  CreateDepartmentInput,
+  Department,
+  DepartmentDeletePreview,
+  DepartmentOverview,
+  OfficeStaffPayload,
+  ProgramSummary,
+  UpdateDepartmentInput,
+} from "~/types/department";
 
 /** Departments CRUD against the facilities module (registrar_admin). */
 
@@ -106,6 +115,150 @@ async function remove(id: number, confirmCode: string): Promise<string> {
   return apiMessage(data);
 }
 
+type ProgramSummaryResponse = {
+  program_id: number;
+  program_abbrev: string;
+  program_name: string;
+  program_type: string;
+  program_length: number | null;
+  program_description: string | null;
+};
+
+function mapProgramSummary(p: ProgramSummaryResponse): ProgramSummary {
+  return {
+    id: p.program_id,
+    abbrev: p.program_abbrev,
+    name: p.program_name,
+    programType: p.program_type,
+    length: p.program_length,
+    description: p.program_description,
+  };
+}
+
+type DepartmentOverviewResponse = {
+  department_id: number;
+  department_abbrev: string;
+  department_name: string;
+  department_type: string;
+  building_id: number | null;
+  building_name: string | null;
+  logo_url: string | null;
+  total_programs: number;
+  programs: ProgramSummaryResponse[];
+};
+
+/** GET /departments/:id/overview — detail-page header, building, and nested programs. */
+async function getOverview(id: number): Promise<DepartmentOverview> {
+  const d = await apiGet<DepartmentOverviewResponse>(`/departments/${id}/overview`);
+  return {
+    id: d.department_id,
+    abbrev: d.department_abbrev,
+    name: d.department_name,
+    departmentType: d.department_type,
+    buildingId: d.building_id,
+    buildingName: d.building_name,
+    logoUrl: d.logo_url,
+    totalPrograms: d.total_programs,
+    programs: d.programs.map(mapProgramSummary),
+  };
+}
+
+type OfficeStaffResponse = {
+  department_id: number;
+  department_abbrev: string;
+  staff: {
+    key: string;
+    first_name: string;
+    mid_name: string | null;
+    last_name: string;
+    role_name: string;
+    email: string | null;
+    mobile: string | null;
+  }[];
+};
+
+/** GET /departments/:id/office-staff — staff directory for administrative departments. */
+async function getOfficeStaff(id: number): Promise<OfficeStaffPayload> {
+  const d = await apiGet<OfficeStaffResponse>(`/departments/${id}/office-staff`);
+  return {
+    departmentId: d.department_id,
+    departmentAbbrev: d.department_abbrev,
+    staff: d.staff.map((m) => ({
+      key: m.key,
+      firstName: m.first_name,
+      midName: m.mid_name,
+      lastName: m.last_name,
+      roleName: m.role_name,
+      email: m.email,
+      mobile: m.mobile,
+    })),
+  };
+}
+
+type AcademicDetailResponse = Omit<DepartmentOverviewResponse, "programs"> & {
+  dean: {
+    dean_profile_id: number;
+    full_name: string;
+    email: string | null;
+    mobile: string | null;
+  } | null;
+  total_students: number;
+  programs: (ProgramSummaryResponse & { total_sets: number })[];
+  students: {
+    student_profile_id: number;
+    student_id: string;
+    full_name: string;
+    program_id: number;
+    program_abbrev: string;
+    program_name: string;
+    year_level: number;
+    set: string | null;
+    enrolled_status: string;
+    student_type: string | null;
+    email: string | null;
+    mobile: string | null;
+  }[];
+};
+
+/** GET /departments/:id/academic-detail — dean, programs with set counts, and enrolled students. */
+async function getAcademicDetail(id: number): Promise<AcademicDepartmentDetail> {
+  const d = await apiGet<AcademicDetailResponse>(`/departments/${id}/academic-detail`);
+  return {
+    departmentId: d.department_id,
+    departmentAbbrev: d.department_abbrev,
+    departmentName: d.department_name,
+    departmentType: d.department_type,
+    buildingId: d.building_id,
+    buildingName: d.building_name,
+    logoUrl: d.logo_url,
+    dean: d.dean
+      ? {
+          deanProfileId: d.dean.dean_profile_id,
+          fullName: d.dean.full_name,
+          email: d.dean.email,
+          mobile: d.dean.mobile,
+        }
+      : null,
+    totalPrograms: d.total_programs,
+    totalStudents: d.total_students,
+    programs: d.programs.map((p) => ({ ...mapProgramSummary(p), totalSets: p.total_sets })),
+    students: d.students.map((s) => ({
+      studentProfileId: s.student_profile_id,
+      studentId: s.student_id,
+      fullName: s.full_name,
+      programId: s.program_id,
+      programAbbrev: s.program_abbrev,
+      programName: s.program_name,
+      yearLevel: s.year_level,
+      set: s.set,
+      enrolledStatus: s.enrolled_status,
+      studentType: s.student_type,
+      email: s.email,
+      mobile: s.mobile,
+    })),
+  };
+}
+
 /** GET /departments/:id/delete-preview — read-only breakdown of what the delete would affect. */
 async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
   const data = await apiGet<{
@@ -131,4 +284,7 @@ export const departmentService = {
   removeLogo,
   remove,
   getDeletePreview,
+  getOverview,
+  getOfficeStaff,
+  getAcademicDetail,
 };

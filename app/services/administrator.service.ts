@@ -1,4 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import type { AccountsPayload } from "~/types/account";
 import type {
   Administrator,
   AdministratorDetail,
@@ -113,4 +114,74 @@ async function reactivate(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-export const administratorService = { list, create, get, update, deactivate, reactivate };
+/** DELETE /super-admin/accounts/<userId> — deactivate any login by its User id (all-accounts screen). */
+async function deactivateAccount(userId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/super-admin/accounts/${userId}`);
+  return apiMessage(data);
+}
+
+/** PATCH /super-admin/accounts/<userId>/restore — reactivate any login by its User id (all-accounts screen). */
+async function reactivateAccount(userId: number): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/super-admin/accounts/${userId}/restore`);
+  return apiMessage(data);
+}
+
+type AccountsResponse = {
+  active: {
+    user_id: number;
+    email: string;
+    roles: string[];
+    pending_first_login: boolean;
+  }[];
+  deactivated: {
+    user_id: number;
+    email: string;
+    roles: string[];
+    deactivated_at: string | null;
+  }[];
+  counts: {
+    active: number;
+    deactivated: number;
+    total: number;
+    pending_first_login: number;
+  };
+};
+
+/** GET /super-admin/accounts — every login (active and deactivated) across all roles. */
+async function listAccounts(): Promise<AccountsPayload> {
+  const data = await apiGet<AccountsResponse>("/super-admin/accounts");
+  return {
+    active: data.active.map((a) => ({
+      userId: a.user_id,
+      email: a.email,
+      roles: a.roles,
+      pendingFirstLogin: a.pending_first_login,
+      deactivatedAt: null,
+    })),
+    deactivated: data.deactivated.map((a) => ({
+      userId: a.user_id,
+      email: a.email,
+      roles: a.roles,
+      pendingFirstLogin: false,
+      deactivatedAt: a.deactivated_at,
+    })),
+    counts: {
+      active: data.counts.active,
+      deactivated: data.counts.deactivated,
+      total: data.counts.total,
+      pendingFirstLogin: data.counts.pending_first_login,
+    },
+  };
+}
+
+export const administratorService = {
+  list,
+  create,
+  get,
+  update,
+  deactivate,
+  reactivate,
+  listAccounts,
+  deactivateAccount,
+  reactivateAccount,
+};
