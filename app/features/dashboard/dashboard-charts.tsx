@@ -223,7 +223,7 @@ export function StatTile({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE_OUT }}
-        className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white"
+        className="text-3xl font-bold tracking-tight text-navy-800 dark:text-mist-100"
       >
         {displayValue}
       </motion.span>
@@ -489,7 +489,7 @@ export function EnrollmentDonut({ enrollment }: { enrollment: Enrollment }) {
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-slate-900 dark:text-white">{total}</span>
+          <span className="text-2xl font-bold text-navy-800 dark:text-mist-100">{total}</span>
           <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
             on roster
           </span>
@@ -560,7 +560,7 @@ function Donut({
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-slate-900 dark:text-white">{centerValue}</span>
+          <span className="text-2xl font-bold text-navy-800 dark:text-mist-100">{centerValue}</span>
           <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
             {centerLabel}
           </span>

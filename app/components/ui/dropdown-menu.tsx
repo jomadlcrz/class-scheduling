@@ -1,4 +1,4 @@
-﻿import { Menu } from "@base-ui/react/menu";
+import { Menu } from "@base-ui/react/menu";
 import type { ReactNode } from "react";
 import { CheckIcon, ChevronDownIcon, CloseIcon } from "~/components/ui/icons";
 
@@ -17,7 +17,7 @@ type FilterDropdownProps = {
 };
 
 const itemClassName =
-  "relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-[highlighted]:bg-slate-100 dark:text-mist-100 dark:data-[highlighted]:bg-white/10";
+  "relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-navy-800 outline-none data-[highlighted]:bg-slate-100 dark:text-mist-100 dark:data-[highlighted]:bg-white/10";
 
 function FilterMenuItem({ children }: { children: ReactNode }) {
   return (

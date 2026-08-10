@@ -26,7 +26,7 @@ export function AmbientBackground({ variant = "page" }: { variant?: AmbientVaria
       )}
 
       {/* Blueprint timetable grid — the signature texture, now on every surface. */}
-      <div className="blueprint-grid absolute inset-0 text-navy-900/6 dark:text-mist-100/5" />
+      <div className="blueprint-grid absolute inset-0 text-navy-800/6 dark:text-mist-100/5" />
 
       {/* Gold radial glow, top-center. */}
       <div

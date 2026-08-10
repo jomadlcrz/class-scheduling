@@ -8,7 +8,7 @@ import type { Subject } from "~/types/subject";
 /** Catalog code, styled like a call number — the same treatment subject codes
  * and their prerequisites share, so a glance tells you which cells cross-reference the catalog. */
 const codeChipClassName =
-  "inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[0.8rem] font-semibold tracking-wide text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-mist-100";
+  "inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-body text-[0.8rem] font-semibold tracking-wide text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-mist-100";
 
 type CurriculumSubjectsProps = {
   group: CurriculumGroup;

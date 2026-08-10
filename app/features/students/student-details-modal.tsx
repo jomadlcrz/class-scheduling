@@ -134,7 +134,7 @@ export function StudentDetailsModal({
                         onClick={() => setEditTarget(a)}
                         aria-label={`Edit enrollment for ${a.schoolYear ?? ""} ${a.semester ?? ""}`}
                         title="Edit enrollment"
-                        className="grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white"
+                        className="grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-mist-100"
                       >
                         <EditIcon />
                       </button>
@@ -143,7 +143,7 @@ export function StudentDetailsModal({
                         onClick={() => setDeleteTarget(a)}
                         aria-label={`Remove enrollment for ${a.schoolYear ?? ""} ${a.semester ?? ""}`}
                         title="Remove enrollment"
-                        className="grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white"
+                        className="grid size-8 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-mist-100"
                       >
                         <TrashIcon />
                       </button>

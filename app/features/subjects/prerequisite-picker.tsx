@@ -94,7 +94,7 @@ export function PrerequisiteCombobox({
               type="button"
               onClick={() => removeValue(prerequisite)}
               aria-label={`Remove ${prerequisite}`}
-              className="cursor-pointer leading-none text-navy-400 transition-colors duration-150 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-white"
+              className="cursor-pointer leading-none text-navy-400 transition-colors duration-150 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-mist-100"
             >
               ×
             </button>

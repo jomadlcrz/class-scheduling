@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
   ChevronDownIcon,
@@ -21,7 +21,7 @@ const iconButtonClassName =
   "flex cursor-pointer items-center rounded-lg px-1 py-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8";
 
 const menuItemClassName =
-  "flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white [&>svg]:size-3.5";
+  "flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100 [&>svg]:size-3.5";
 
 export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { user, logout } = useAuth();
@@ -112,7 +112,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               ) : (
                 <span
                   aria-hidden="true"
-                  className="grid size-7 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xs font-medium text-white dark:bg-white dark:text-navy-900"
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xs font-medium text-mist-100 dark:bg-white dark:text-navy-800"
                 >
                   {initials(user.name)}
                 </span>
@@ -146,7 +146,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 ) : (
                   <span
                     aria-hidden="true"
-                    className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-white dark:bg-white dark:text-navy-900"
+                    className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-mist-100 dark:bg-white dark:text-navy-800"
                   >
                     {initials(user.name)}
                   </span>
@@ -238,8 +238,8 @@ function ThemeRow() {
               onClick={() => setPreference(value)}
               className={`grid size-5 cursor-pointer place-items-center rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                 isActive
-                  ? "bg-navy-800 text-white dark:bg-white dark:text-navy-900"
-                  : "text-slate-400 hover:text-navy-700 dark:text-slate-500 dark:hover:text-white"
+                  ? "bg-navy-800 text-mist-100 dark:bg-white dark:text-navy-800"
+                  : "text-slate-400 hover:text-navy-700 dark:text-slate-500 dark:hover:text-mist-100"
               }`}
             >
               <Icon size={12} />

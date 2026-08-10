@@ -365,7 +365,7 @@ export function AssignSubjectModal({
                             />
                           )}
                         </td>
-                        <td className="w-24 px-3 py-2 align-middle leading-none font-semibold text-navy-800 dark:text-white">
+                        <td className="w-24 px-3 py-2 align-middle leading-none font-semibold text-navy-800 dark:text-mist-100">
                           {s.subjectCode}
                         </td>
                         <td className="px-3 py-2 align-middle leading-none text-slate-500 dark:text-slate-400">

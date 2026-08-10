@@ -93,7 +93,7 @@ export function InstructorCard({
               className="size-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-white/10"
             />
           ) : (
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-bold text-white dark:bg-white dark:text-navy-900">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-bold text-mist-100 dark:bg-white dark:text-navy-800">
               {instructor.name.charAt(0)}
             </span>
           )}
@@ -131,7 +131,7 @@ export function InstructorCard({
                   const v = e.target.value;
                   onMaxHoursChange(v === "" ? null : Math.max(0, parseInt(v) || 0));
                 }}
-                className="w-12 py-1 text-center font-body text-xs font-bold text-navy-800 placeholder:text-slate-300 focus:outline-none dark:text-white dark:placeholder:text-slate-600"
+                className="w-12 py-1 text-center font-body text-xs font-bold text-navy-800 placeholder:text-slate-300 focus:outline-none dark:text-mist-100 dark:placeholder:text-slate-600"
               />
               <span className="border-l border-slate-200 px-2 py-1 font-body text-xs text-slate-400 dark:border-white/10">
                 hrs
@@ -142,7 +142,7 @@ export function InstructorCard({
           <div className="flex flex-col min-w-0 sm:min-w-36 sm:flex-1">
             <div className="flex items-center justify-between font-body text-xs">
               <span className="text-slate-500 dark:text-slate-400">Assigned Hours</span>
-              <span className="font-bold text-navy-800 dark:text-white">
+              <span className="font-bold text-navy-800 dark:text-mist-100">
                 {assignedHours}{maxHours != null ? ` / ${maxHours}` : ""} hrs
               </span>
             </div>

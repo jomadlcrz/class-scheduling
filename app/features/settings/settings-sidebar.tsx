@@ -55,7 +55,7 @@ export function SettingsSidebar() {
               className="size-9 shrink-0 rounded-full object-cover"
             />
           ) : (
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-white dark:bg-white dark:text-navy-900">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-mist-100 dark:bg-white dark:text-navy-800">
               {(user.firstName[0] ?? "").toUpperCase()}
             </span>
           )}

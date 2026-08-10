@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { BrandLockup } from "~/landing/brand-lockup";
 import { MobileMenu } from "~/landing/mobile-menu";
@@ -54,7 +54,7 @@ export function SiteHeader() {
                 href={link.href}
                 className={`text-sm font-medium transition-colors duration-200 focus-visible:outline-none ${
                   scrolled
-                    ? "text-white hover:text-gold-300 focus-visible:text-gold-300 dark:text-slate-300 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
+                    ? "text-mist-100 hover:text-gold-300 focus-visible:text-gold-300 dark:text-slate-300 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
                     : "text-navy-700 hover:text-gold-600 focus-visible:text-gold-600 dark:text-slate-300 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
                 }`}
               >
@@ -69,8 +69,8 @@ export function SiteHeader() {
               href="/login"
               className={`flex items-center rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                 scrolled
-                  ? "bg-white text-navy-800 hover:bg-slate-100 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
-                  : "bg-navy-800 text-white hover:bg-navy-700 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100"
+                  ? "bg-white text-navy-800 hover:bg-slate-100 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100"
+                  : "bg-navy-800 text-mist-100 hover:bg-navy-700 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100"
               }`}
             >
               Log In
@@ -85,7 +85,7 @@ export function SiteHeader() {
               aria-label="Open menu"
               className={`grid size-9 shrink-0 cursor-pointer place-items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                 scrolled
-                  ? "text-white hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/5"
+                  ? "text-mist-100 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/5"
                   : "text-navy-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/5"
               }`}
             >

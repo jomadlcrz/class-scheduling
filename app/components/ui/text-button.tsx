@@ -12,7 +12,7 @@ export function TextButton({ children, onClick, type = "button" }: TextButtonPro
     <button
       type={type}
       onClick={onClick}
-      className="cursor-pointer font-body text-sm font-semibold text-navy-700 transition-colors hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-gold-400 dark:hover:text-gold-300"
+      className="cursor-pointer font-body text-sm font-semibold text-navy-700 transition-colors hover:text-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-gold-400 dark:hover:text-gold-300"
     >
       {children}
     </button>

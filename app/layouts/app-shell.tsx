@@ -1,4 +1,4 @@
-﻿import { motion } from "motion/react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import { AuthGuard } from "~/auth/auth-guard";
@@ -117,7 +117,7 @@ function Shell() {
               type="button"
               aria-label="Close sidebar"
               onClick={() => setMobileOpen(false)}
-              className="absolute right-3 top-3 z-50 flex cursor-pointer items-center rounded-lg px-1 py-1 text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="absolute right-3 top-3 z-50 flex cursor-pointer items-center rounded-lg px-1 py-1 text-mist-100/80 transition-colors duration-150 hover:bg-white/10 hover:text-mist-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
             >
               <span className="flex size-7 items-center justify-center">
                 <LayoutSidebarIcon size={16} />

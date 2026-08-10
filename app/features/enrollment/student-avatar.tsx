@@ -27,7 +27,7 @@ export function StudentAvatar({ firstName, lastName, photoUrl, size = "lg" }: St
   }
   return (
     <div
-      className={`grid ${dim} place-items-center rounded-full bg-linear-to-br from-navy-700 to-navy-900 font-display font-semibold tracking-wide text-white ring-4 ring-slate-100 dark:from-navy-600 dark:to-navy-800 dark:ring-white/10`}
+      className={`grid ${dim} place-items-center rounded-full bg-linear-to-br from-navy-700 to-navy-900 font-display font-semibold tracking-wide text-mist-100 ring-4 ring-slate-100 dark:from-navy-600 dark:to-navy-800 dark:ring-white/10`}
       aria-hidden="true"
     >
       {initials(firstName, lastName)}

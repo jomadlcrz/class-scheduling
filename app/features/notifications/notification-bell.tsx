@@ -10,7 +10,7 @@ const iconButtonClassName =
   "flex cursor-pointer items-center rounded-lg px-1 py-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8";
 
 const itemClassName =
-  "flex w-full cursor-pointer items-center justify-between gap-3 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white";
+  "flex w-full cursor-pointer items-center justify-between gap-3 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100";
 
 /** Renders one notification's title/detail from its type + payload. */
 function notificationText(notification: NotificationItem): { title: string; detail: string } {
@@ -145,7 +145,7 @@ export function NotificationBell() {
           {unreadCount > 0 && (
             <span
               aria-hidden="true"
-              className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-red-600 font-body text-[0.6rem] font-bold text-white"
+              className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-red-600 font-body text-[0.6rem] font-bold text-mist-100"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
@@ -163,7 +163,7 @@ export function NotificationBell() {
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 font-body text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+                className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 font-body text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-mist-100"
               >
                 <CheckIcon size={12} /> Mark all read
               </button>

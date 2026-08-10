@@ -77,7 +77,7 @@ export function PhotoUploadField({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-navy-800 px-3 py-1.5 font-body text-xs font-medium text-white transition-colors hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-200"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-navy-800 px-3 py-1.5 font-body text-xs font-medium text-mist-100 transition-colors hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-200"
         >
           <UploadIcon size={14} />
           {photoFile ? "Change Photo" : "Upload Photo"}

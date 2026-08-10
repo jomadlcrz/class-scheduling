@@ -1,4 +1,4 @@
-﻿import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
@@ -24,7 +24,7 @@ type ScheduleTableProps = {
 };
 
 const actionBtn =
-  "grid size-7 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+  "grid size-7 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-mist-100";
 
 const th =
   "px-3 py-2 font-body text-[0.65rem] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400";
@@ -337,7 +337,7 @@ function DuplicateButton({
                   close();
                   onPick(d);
                 }}
-                className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100"
               >
                 {dayLabels[d]}
               </button>

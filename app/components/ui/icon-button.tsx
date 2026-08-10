@@ -5,7 +5,7 @@ const baseClassName =
 
 const variants = {
   neutral:
-    "text-slate-400 hover:bg-slate-200/60 hover:text-navy-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white",
+    "text-slate-400 hover:bg-slate-200/60 hover:text-navy-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-mist-100",
   danger:
     "text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400",
   // Persistent light red — for account state toggles (deactivate/reactivate).

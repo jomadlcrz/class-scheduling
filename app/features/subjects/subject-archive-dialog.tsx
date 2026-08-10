@@ -187,7 +187,7 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
             placeholder={preview.subject.subject_code}
-            className={`${inputClassName} font-mono uppercase tracking-wide`}
+            className={`${inputClassName} font-body uppercase tracking-wide`}
           />
         </div>
 

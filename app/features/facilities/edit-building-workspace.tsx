@@ -671,7 +671,7 @@ export function EditBuildingWorkspace({
                         <Menu.Root modal={false}>
                           <Menu.Trigger
                             id={`existing-room-programs-${room.id}`}
-                            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-gray-900 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400"
+                            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400"
                           >
                             <span className="min-w-0 truncate">
                               {room.programIds.length === 0
@@ -699,7 +699,7 @@ export function EditBuildingWorkspace({
                                     checked={room.programIds.includes(p.id)}
                                     onCheckedChange={() => toggleExistingProgram(room.id, p.id)}
                                     closeOnClick={false}
-                                    className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
+                                    className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-navy-800 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
                                   >
                                     <span className="min-w-0 truncate">
                                       {p.abbrev} — {p.name}
@@ -804,7 +804,7 @@ export function EditBuildingWorkspace({
                         <Menu.Root modal={false}>
                           <Menu.Trigger
                             id={`new-room-programs-${room.key}`}
-                            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-gray-900 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400"
+                            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400"
                           >
                             <span className="min-w-0 truncate">
                               {room.programIds.length === 0
@@ -832,7 +832,7 @@ export function EditBuildingWorkspace({
                                     checked={room.programIds.includes(p.id)}
                                     onCheckedChange={() => toggleProgram(selectedFloor, room.key, p.id)}
                                     closeOnClick={false}
-                                    className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
+                                    className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-navy-800 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
                                   >
                                     <span className="min-w-0 truncate">
                                       {p.abbrev} — {p.name}

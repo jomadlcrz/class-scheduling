@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Card } from "~/components/ui/card";
 import { BriefcaseIcon, CalendarIcon, ClockIcon, MapPinIcon, UserSmallIcon } from "~/components/ui/icons";
 import { DAYS, formatTime, type Schedule } from "~/types/schedule";
@@ -67,7 +67,7 @@ export function MobileWeeklySchedule({ schedules, hideInstructor, showSet = true
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-500 px-4 py-3 font-body text-sm font-semibold text-white shadow-lg shadow-navy-500/25 transition-colors duration-150 hover:bg-navy-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-500 px-4 py-3 font-body text-sm font-semibold text-mist-100 shadow-lg shadow-navy-500/25 transition-colors duration-150 hover:bg-navy-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
       >
         <CalendarIcon />
         <span>{expanded ? "Hide Weekly Schedule" : "View Weekly Schedule"}</span>

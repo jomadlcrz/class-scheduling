@@ -6,9 +6,9 @@ const baseClassName =
 
 const variants = {
   primary:
-    "bg-navy-800 text-white hover:bg-navy-700 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-200",
+    "bg-navy-800 text-mist-100 hover:bg-navy-700 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-200",
   danger:
-    "bg-red-600 text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400",
+    "bg-red-600 text-mist-100 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400",
   outline:
     "border border-slate-300 text-navy-700 hover:bg-slate-100 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10",
 } as const;

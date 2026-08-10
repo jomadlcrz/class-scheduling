@@ -34,7 +34,7 @@ export function TabList<T extends string | number>({
           onClick={() => onChange(tab.value)}
           className={`cursor-pointer rounded-lg px-4 py-2 font-body text-sm font-semibold transition-colors duration-150 ${
             value === tab.value
-              ? "bg-navy-700 text-white dark:bg-gold-400 dark:text-navy-900"
+              ? "bg-navy-700 text-mist-100 dark:bg-gold-400 dark:text-navy-800"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
           }`}
         >

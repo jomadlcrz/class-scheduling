@@ -60,7 +60,7 @@ export function MobileMenu({ links, onClose }: MobileMenuProps) {
                   key={link.href}
                   href={link.href}
                   onClick={onClose}
-                  className="flex cursor-pointer items-center justify-between border-b border-slate-200 py-4 text-base font-medium text-slate-900 transition-colors duration-200 hover:text-gold-600 dark:border-white/10 dark:text-mist-100 dark:hover:text-gold-300"
+                  className="flex cursor-pointer items-center justify-between border-b border-slate-200 py-4 text-base font-medium text-navy-800 transition-colors duration-200 hover:text-gold-600 dark:border-white/10 dark:text-mist-100 dark:hover:text-gold-300"
                 >
                   {link.label}
                   <ChevronRightIcon size={16} />

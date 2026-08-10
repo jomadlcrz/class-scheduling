@@ -31,7 +31,7 @@ function accountTone(status: string): BadgeTone {
 function segmentClass(active: boolean): string {
   return `rounded-full border px-3 py-1 font-body text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gwc-blue/40 ${
     active
-      ? "border-gwc-blue bg-gwc-blue text-white"
+      ? "border-gwc-blue bg-gwc-blue text-mist-100"
       : "border-slate-300 text-slate-600 hover:border-gwc-blue/50 hover:text-navy-700 dark:border-white/15 dark:text-slate-300 dark:hover:text-mist-100"
   }`;
 }

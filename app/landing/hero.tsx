@@ -1,4 +1,4 @@
-﻿import { motion } from "motion/react";
+import { motion } from "motion/react";
 import { fadeUp, staggerContainer } from "~/landing/motion";
 import { ScheduleCard } from "~/landing/schedule-card";
 
@@ -44,7 +44,7 @@ export function Hero() {
         >
           <a
             href="/login"
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-gold-400 px-7 text-sm font-semibold text-navy-900 shadow-lg shadow-gold-400/30 transition-colors duration-200 hover:bg-gold-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:focus-visible:ring-offset-surface sm:w-auto"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-gold-400 px-7 text-sm font-semibold text-navy-800 shadow-lg shadow-gold-400/30 transition-colors duration-200 hover:bg-gold-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:focus-visible:ring-offset-surface sm:w-auto"
           >
             Get started
           </a>

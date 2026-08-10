@@ -1,4 +1,4 @@
-﻿import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
+import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { useState, type ComponentProps } from "react";
 import { CheckIcon, ChevronDownIcon, SearchIcon } from "~/components/ui/icons";
 
@@ -42,7 +42,7 @@ function CommandInput({
           setFocused(false);
           onBlur?.(e);
         }}
-        className={`w-full bg-transparent font-body text-sm text-gray-900 outline-none placeholder-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-mist-100 dark:placeholder-slate-500 ${className}`.trim()}
+        className={`w-full bg-transparent font-body text-sm text-navy-800 outline-none placeholder-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-mist-100 dark:placeholder-slate-500 ${className}`.trim()}
         {...props}
       />
       <span className="shrink-0 text-slate-400 dark:text-slate-500">
@@ -90,7 +90,7 @@ function CommandItem({ className = "", children, ...props }: ComboboxPrimitive.I
   return (
     <ComboboxPrimitive.Item
       data-slot="command-item"
-      className={`relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-gray-900 outline-none data-highlighted:bg-slate-100 data-disabled:pointer-events-none data-disabled:opacity-50 dark:text-mist-100 dark:data-highlighted:bg-white/10 ${className}`.trim()}
+      className={`relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-navy-800 outline-none data-highlighted:bg-slate-100 data-disabled:pointer-events-none data-disabled:opacity-50 dark:text-mist-100 dark:data-highlighted:bg-white/10 ${className}`.trim()}
       {...props}
     >
       <span className="truncate">{children}</span>

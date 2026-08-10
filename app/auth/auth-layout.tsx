@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { ArrowLeftIcon, HelpCircleIcon } from "~/components/ui/icons";
 
@@ -118,7 +118,7 @@ export function AuthSplitLayout({ label, backHref, backLabel = "Back", children 
           <a
             href={backHref}
             aria-label={backLabel}
-            className="fixed left-4 top-4 z-50 grid size-9 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10 lg:text-white lg:hover:bg-white/10 lg:dark:text-mist-100 lg:dark:hover:bg-white/10"
+            className="fixed left-4 top-4 z-50 grid size-9 cursor-pointer place-items-center rounded-full text-navy-700 transition-colors duration-150 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-200 dark:hover:bg-white/10 lg:text-mist-100 lg:hover:bg-white/10 lg:dark:text-mist-100 lg:dark:hover:bg-white/10"
           >
             <ArrowLeftIcon />
           </a>
@@ -152,7 +152,7 @@ export function AuthSplitLayout({ label, backHref, backLabel = "Back", children 
 /** Left branding panel, desktop only. */
 function AuthBrandingPanel({ label }: { label: string }) {
   return (
-    <aside className="relative hidden flex-col items-center justify-center overflow-hidden bg-navy-800 dark:bg-surface-raised px-12 text-white lg:flex lg:w-[45%] xl:w-1/2">
+    <aside className="relative hidden flex-col items-center justify-center overflow-hidden bg-navy-800 dark:bg-surface-raised px-12 text-mist-100 lg:flex lg:w-[45%] xl:w-1/2">
       {/* Dot grid */}
       <div
         aria-hidden="true"

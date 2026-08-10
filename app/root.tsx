@@ -1,4 +1,4 @@
-﻿import {
+import {
   isRouteErrorResponse,
   Links,
   Meta,
@@ -72,7 +72,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center bg-cream-50 px-6 text-center dark:bg-surface">
-      <p className="select-none font-display text-[8rem] leading-none tracking-tight text-navy-900/10 dark:text-mist-100/10">
+      <p className="select-none font-display text-[8rem] leading-none tracking-tight text-navy-800/10 dark:text-mist-100/10">
         {status}
       </p>
       <h1 className="-mt-6 font-display text-3xl tracking-wide text-navy-700 dark:text-mist-100">
@@ -81,12 +81,12 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <p className="mt-3 font-body text-base text-slate-500 dark:text-slate-400">{details}</p>
       <a
         href="/"
-        className="mt-8 inline-flex w-72 items-center justify-center rounded-full bg-navy-800 py-3 font-body text-sm font-semibold text-white shadow-lg shadow-navy-800/20 transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-surface"
+        className="mt-8 inline-flex w-72 items-center justify-center rounded-full bg-navy-800 py-3 font-body text-sm font-semibold text-mist-100 shadow-lg shadow-navy-800/20 transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-surface"
       >
         Go to Homepage
       </a>
       {stack && (
-        <pre className="mt-8 w-full max-w-2xl overflow-x-auto rounded-lg bg-slate-100 p-4 text-left font-mono text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300">
+        <pre className="mt-8 w-full max-w-2xl overflow-x-auto rounded-lg bg-slate-100 p-4 text-left font-body text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300">
           {stack}
         </pre>
       )}

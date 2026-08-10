@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 /* Manual (class-based) dark mode so the theme toggle controls it, not the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -103,7 +103,7 @@
 
 html,
 body {
-  @apply bg-cream-50 font-body text-slate-900 dark:bg-surface dark:text-mist-100;
+  @apply bg-cream-50 font-body text-navy-800 dark:bg-surface dark:text-mist-100;
   touch-action: manipulation;
 }
 

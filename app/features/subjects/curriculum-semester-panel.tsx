@@ -197,7 +197,7 @@ export function CurriculumSemesterPanel({
               {!isViewMode && <TextButton onClick={onAddRow}>+ Add New Subject</TextButton>}
               <p className="font-body text-sm text-slate-600 dark:text-slate-300">
                 Total Units:{" "}
-                <span className="font-bold tabular-nums text-slate-900 dark:text-white">{totalUnits}</span>
+                <span className="font-bold tabular-nums text-navy-800 dark:text-mist-100">{totalUnits}</span>
               </p>
             </div>
           </>

@@ -129,10 +129,10 @@ function StatCard({ icon, label, value, children }: { icon: React.ReactNode; lab
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <span className="shrink-0 text-navy-700 dark:text-white">{icon}</span>
+          <span className="shrink-0 text-navy-700 dark:text-mist-100">{icon}</span>
           <div>
             <p className="font-body text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
-            <p className="font-body text-xl font-bold tracking-tight text-navy-800 dark:text-white">{value}</p>
+            <p className="font-body text-xl font-bold tracking-tight text-navy-800 dark:text-mist-100">{value}</p>
           </div>
         </div>
       </div>
@@ -168,7 +168,7 @@ function DailyLoadStrip({ dailyLoads }: { dailyLoads: TeachingTermDetail["daily_
                 className={`absolute bottom-0 left-0 right-0 rounded-lg ${meta.bar} min-h-1`}
               />
               {day.current_daily_hours > 0 && (
-                <span className="relative z-10 mt-auto pb-1 font-body text-[11px] font-bold text-slate-700 dark:text-white">
+                <span className="relative z-10 mt-auto pb-1 font-body text-[11px] font-bold text-slate-700 dark:text-mist-100">
                   {day.current_daily_hours}h
                 </span>
               )}
@@ -199,7 +199,7 @@ function SessionsDropdown({ sessions }: { sessions: TeachingTermDetailScheduledS
                 key={sess.regular_sched_id}
                 className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-white/5"
               >
-                <p className="font-body text-sm font-semibold text-navy-800 dark:text-white">
+                <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   {sess.day} · {sess.start_time}–{sess.end_time}
                 </p>
                 <div className="mt-0.5 flex flex-wrap items-center gap-2 font-body text-xs text-slate-500 dark:text-slate-400">
@@ -248,7 +248,7 @@ function SubjectAssignmentRow({
         className={`group/row transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${hasSessions ? "cursor-pointer" : ""}`}
       >
         <TableCell className="py-3.5">
-          <span className="flex items-center gap-1.5 font-body text-sm font-semibold text-navy-800 dark:text-white">
+          <span className="flex items-center gap-1.5 font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
             {hasSessions && (
               <span className="shrink-0 text-slate-400">
                 {expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
@@ -385,7 +385,7 @@ function DeanTeachingTermPage() {
               className="size-12 shrink-0 rounded-full bg-slate-100 object-cover dark:bg-white/10"
             />
           ) : (
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy-800 text-sm font-bold text-white dark:bg-white/10 dark:text-white">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy-800 text-sm font-bold text-mist-100 dark:bg-white/10 dark:text-mist-100">
               {instructor.full_name?.split(" ").map((n) => n[0]).join("").slice(0, 2) ?? "IN"}
             </div>
           )}
@@ -436,11 +436,11 @@ function DeanTeachingTermPage() {
           <div className="mt-4 space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Total units</span>
-              <span className="font-semibold text-navy-700 dark:text-white">{totals.total_units}</span>
+              <span className="font-semibold text-navy-700 dark:text-mist-100">{totals.total_units}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Expected / week</span>
-              <span className="font-semibold text-navy-700 dark:text-white">{hours.expected_weekly_hours}h</span>
+              <span className="font-semibold text-navy-700 dark:text-mist-100">{hours.expected_weekly_hours}h</span>
             </div>
           </div>
         </StatCard>
@@ -449,7 +449,7 @@ function DeanTeachingTermPage() {
           <div className="mt-4 space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Booked sessions</span>
-              <span className="font-semibold text-navy-700 dark:text-white">{totals.scheduled_sessions}</span>
+              <span className="font-semibold text-navy-700 dark:text-mist-100">{totals.scheduled_sessions}</span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
               <motion.div
@@ -466,7 +466,7 @@ function DeanTeachingTermPage() {
           <div className="mt-4 space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Current weekly</span>
-              <span className="font-semibold text-navy-700 dark:text-white">{hours.current_weekly_hours}h</span>
+              <span className="font-semibold text-navy-700 dark:text-mist-100">{hours.current_weekly_hours}h</span>
             </div>
           </div>
         </StatCard>

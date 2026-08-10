@@ -31,7 +31,7 @@ export function AssignmentSummaryFooter({
             <UserIcon />
           </span>
           <span className="text-slate-500 dark:text-slate-400">Instructors</span>
-          <span className="font-bold text-navy-900 dark:text-white">{totalInstructors}</span>
+          <span className="font-bold text-navy-800 dark:text-mist-100">{totalInstructors}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -39,7 +39,7 @@ export function AssignmentSummaryFooter({
             <LayersIcon />
           </span>
           <span className="text-slate-500 dark:text-slate-400">Programs</span>
-          <span className="font-bold text-navy-900 dark:text-white">{totalPrograms}</span>
+          <span className="font-bold text-navy-800 dark:text-mist-100">{totalPrograms}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ export function AssignmentSummaryFooter({
             <BookOpenIcon />
           </span>
           <span className="text-slate-500 dark:text-slate-400">Subjects</span>
-          <span className="font-bold text-navy-900 dark:text-white">{totalSubjectsAssigned}</span>
+          <span className="font-bold text-navy-800 dark:text-mist-100">{totalSubjectsAssigned}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export function AssignmentSummaryFooter({
             <ClockIcon size={16} />
           </span>
           <span className="text-slate-500 dark:text-slate-400">Hours</span>
-          <span className="font-bold text-navy-900 dark:text-white">{totalWeeklyHours}</span>
+          <span className="font-bold text-navy-800 dark:text-mist-100">{totalWeeklyHours}</span>
         </div>
 
         <div className="col-span-2 flex items-center gap-1.5 font-medium sm:col-span-3 md:col-auto">

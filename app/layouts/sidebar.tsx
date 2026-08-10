@@ -165,7 +165,7 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 const itemClassName = (isActive: boolean) =>
-  `group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left font-body text-[0.78rem] text-white/95 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+  `group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left font-body text-[0.78rem] text-mist-100/95 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
     isActive ? "bg-gwc-blue-bright font-extrabold" : "hover:bg-gwc-blue-bright"
   }`;
 
@@ -278,7 +278,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
       aria-label="Portal navigation"
       animate={{ width: collapsed ? 60 : 220 }}
       transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-      className="flex h-dvh flex-col overflow-hidden border-r border-white/10 bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-white"
+      className="flex h-dvh flex-col overflow-hidden border-r border-white/10 bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-mist-100"
     >
       <header
         className={`flex items-center gap-2 px-3 pb-2.5 pt-3.5 ${collapsed ? "justify-center px-0" : ""}`}
@@ -389,8 +389,8 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                                   onClick={onNavigate}
                                   className={`relative block truncate rounded-md px-2 py-1 font-body text-[0.75rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
                                     active
-                                      ? "bg-gwc-blue-bright font-extrabold text-white before:absolute before:left-[-0.85rem] before:top-1/2 before:size-1.5 before:-translate-y-1/2 before:rounded-full before:bg-white"
-                                      : "text-white/85 hover:bg-gwc-blue-bright hover:text-white"
+                                      ? "bg-gwc-blue-bright font-extrabold text-mist-100 before:absolute before:left-[-0.85rem] before:top-1/2 before:size-1.5 before:-translate-y-1/2 before:rounded-full before:bg-white"
+                                      : "text-mist-100/85 hover:bg-gwc-blue-bright hover:text-mist-100"
                                   }`}
                                 >
                                   {sub.label}
@@ -427,7 +427,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                         </span>
                         {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
                         {!collapsed && item.to === SCHEDULE_APPROVALS_PATH && pendingApprovals > 0 && (
-                          <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold tabular-nums text-white">
+                          <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold tabular-nums text-mist-100">
                             {pendingApprovals}
                           </span>
                         )}

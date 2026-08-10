@@ -1,4 +1,4 @@
-﻿import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
@@ -23,7 +23,7 @@ type ScheduleGridProps = {
 
 const GRID_TEMPLATE = "5.75rem repeat(6, minmax(8.25rem, 1fr))";
 const actionBtn =
-  "grid size-6 cursor-pointer place-items-center rounded-md text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white";
+  "grid size-6 cursor-pointer place-items-center rounded-md text-slate-400 transition-colors duration-150 hover:bg-slate-200/60 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-mist-100";
 
 export function ScheduleGrid({ schedules, onEdit, onDelete, onDuplicate, showSet, hideInstructor, facultyLoadMap }: ScheduleGridProps) {
   const { dayLabels } = useDays();
@@ -204,7 +204,7 @@ function GridClassCard({
                           close();
                           onDuplicate(entry, d);
                         }}
-                        className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                        className="flex w-full cursor-pointer items-center px-3 py-1.5 text-left font-body text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100"
                       >
                         {dayLabels[d]}
                       </button>

@@ -36,7 +36,7 @@ export function EnrolledStatusPicker({ value, options, onChange }: EnrolledStatu
               <span
                 className={`grid size-9 shrink-0 place-items-center rounded-lg ${
                   isSelected
-                    ? "bg-navy-700 text-white dark:bg-gold-400 dark:text-navy-900"
+                    ? "bg-navy-700 text-mist-100 dark:bg-gold-400 dark:text-navy-800"
                     : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"
                 }`}
               >

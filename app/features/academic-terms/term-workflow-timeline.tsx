@@ -36,7 +36,7 @@ function StepNode({ step, index }: { step: TermWorkflowStep; index: number }) {
   if (status === "completed") {
     return (
       <span
-        className="relative z-10 grid size-9 place-items-center rounded-full bg-emerald-500 text-white shadow-sm ring-4 ring-white dark:ring-surface-raised"
+        className="relative z-10 grid size-9 place-items-center rounded-full bg-emerald-500 text-mist-100 shadow-sm ring-4 ring-white dark:ring-surface-raised"
         aria-hidden="true"
       >
         {step.key.startsWith("work_") ? <BookOpenIcon /> : <LockIcon size={16} />}
@@ -47,7 +47,7 @@ function StepNode({ step, index }: { step: TermWorkflowStep; index: number }) {
   if (status === "current") {
     return (
       <span
-        className="relative z-10 grid size-10 place-items-center rounded-full bg-amber-500 text-white shadow-md ring-4 ring-amber-100 dark:bg-gold-500 dark:ring-gold-400/20"
+        className="relative z-10 grid size-10 place-items-center rounded-full bg-amber-500 text-mist-100 shadow-md ring-4 ring-amber-100 dark:bg-gold-500 dark:ring-gold-400/20"
         aria-hidden="true"
       >
         <span className="absolute inset-0 animate-ping rounded-full bg-amber-400/30 dark:bg-gold-400/25" />

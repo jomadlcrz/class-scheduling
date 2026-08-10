@@ -195,7 +195,7 @@ export function UpdateIndicator({ visible }: { visible: boolean }) {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-navy-800 px-3 py-1.5 text-xs text-white shadow-lg dark:bg-navy-600"
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-navy-800 px-3 py-1.5 text-xs text-mist-100 shadow-lg dark:bg-navy-600"
         >
           <motion.div
             animate={{ rotate: 360 }}

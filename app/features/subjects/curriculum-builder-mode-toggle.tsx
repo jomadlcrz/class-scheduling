@@ -33,8 +33,8 @@ export function CurriculumBuilderModeToggle({
             onClick={() => onChange(mode)}
             className={`inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 px-3 font-body text-xs font-medium transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 [&+button]:border-l [&+button]:border-slate-300 dark:[&+button]:border-white/15 ${
               isActive
-                ? "bg-navy-800 text-white dark:bg-white dark:text-navy-900"
-                : "text-slate-500 hover:bg-slate-50 hover:text-navy-700 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                ? "bg-navy-800 text-mist-100 dark:bg-white dark:text-navy-800"
+                : "text-slate-500 hover:bg-slate-50 hover:text-navy-700 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
             }`}
           >
             <Icon />

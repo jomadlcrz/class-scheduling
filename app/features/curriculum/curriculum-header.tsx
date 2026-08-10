@@ -1,4 +1,4 @@
-﻿import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { IconButton } from "~/components/ui/icon-button";
 import { ArchiveIcon, EditIcon, GraduationCapIcon } from "~/components/ui/icons";
@@ -90,7 +90,7 @@ export function CurriculumHeader({
           <>
             <div
               aria-hidden="true"
-              className="blueprint-grid pointer-events-none absolute inset-0 -z-10 text-navy-900/5 dark:text-mist-100/8"
+              className="blueprint-grid pointer-events-none absolute inset-0 -z-10 text-navy-800/5 dark:text-mist-100/8"
             />
             <div
               aria-hidden="true"

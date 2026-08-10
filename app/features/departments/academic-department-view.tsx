@@ -41,7 +41,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                     className="size-11 shrink-0 rounded-full object-cover"
                   />
                 ) : (
-                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 text-white dark:bg-white dark:text-navy-900">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 text-mist-100 dark:bg-white dark:text-navy-800">
                     <UserIcon />
                   </span>
                 )}
@@ -162,7 +162,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden font-mono text-xs text-slate-500 dark:text-slate-400 sm:table-cell">
+                    <TableCell className="hidden font-body text-xs text-slate-500 dark:text-slate-400 sm:table-cell">
                       {student.studentId}
                     </TableCell>
                     <TableCell className="text-slate-600 dark:text-slate-300">

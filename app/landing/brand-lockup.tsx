@@ -35,7 +35,7 @@ export function BrandLockup({ whiteOnDark = false, scrolled = false }: BrandLock
         )}
       </a>
       <span className="flex flex-col items-center text-center leading-none">
-        <span className={`font-display text-2xl tracking-wide sm:text-[1.7rem] ${scrolled ? "text-white dark:text-mist-100" : "text-navy-700 dark:text-mist-100"}`}>
+        <span className={`font-display text-2xl tracking-wide sm:text-[1.7rem] ${scrolled ? "text-mist-100 dark:text-mist-100" : "text-navy-700 dark:text-mist-100"}`}>
           GWC
         </span>
         <span className={`-mt-2 font-body text-[0.65rem] tracking-wide sm:text-xs ${scrolled ? "text-gwc-blue-soft dark:text-navy-300" : "text-navy-500 dark:text-navy-300"}`}>

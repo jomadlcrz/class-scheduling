@@ -119,7 +119,7 @@ export function ProfilePictureModal({
               />
             </button>
           ) : (
-            <span className="flex size-24 items-center justify-center rounded-full bg-navy-800 font-body text-3xl font-medium text-white dark:bg-white dark:text-navy-900">
+            <span className="flex size-24 items-center justify-center rounded-full bg-navy-800 font-body text-3xl font-medium text-mist-100 dark:bg-white dark:text-navy-800">
               {initials}
             </span>
           )}

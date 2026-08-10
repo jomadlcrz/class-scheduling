@@ -66,7 +66,7 @@ function EntryModeTabs({
           onClick={() => onChange(tab.key)}
           className={`cursor-pointer rounded-md px-3.5 py-1.5 font-body text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
             mode === tab.key
-              ? "bg-navy-800 text-white dark:bg-gold-400 dark:text-navy-900"
+              ? "bg-navy-800 text-mist-100 dark:bg-gold-400 dark:text-navy-800"
               : "text-slate-500 hover:text-navy-800 dark:text-slate-400 dark:hover:text-mist-100"
           }`}
         >

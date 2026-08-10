@@ -24,7 +24,7 @@ export function EnrollmentSectionCard({
       <div className="flex items-center justify-between gap-3 border-b border-slate-200/80 bg-slate-50/80 px-5 py-3.5 dark:border-white/10 dark:bg-white/3">
         <div className="flex items-center gap-2.5">
           {icon ? (
-            <span className="grid size-8 place-items-center rounded-lg bg-navy-800 text-white dark:bg-gold-400 dark:text-navy-900">
+            <span className="grid size-8 place-items-center rounded-lg bg-navy-800 text-mist-100 dark:bg-gold-400 dark:text-navy-800">
               {icon}
             </span>
           ) : null}

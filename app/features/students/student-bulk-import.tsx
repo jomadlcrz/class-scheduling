@@ -553,7 +553,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     openFilePicker(".csv");
                   }}
                   disabled={isLoading}
-                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100"
                 >
                   Import CSV
                 </button>
@@ -565,7 +565,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     openFilePicker(".xlsx");
                   }}
                   disabled={isLoading}
-                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100"
                 >
                   Import Excel
                 </button>
@@ -582,7 +582,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
           <button
             type="button"
             onClick={() => downloadTemplate(templateFilename)}
-            className="ml-auto flex items-center gap-1.5 font-body text-xs text-navy-700 underline decoration-navy-300 underline-offset-2 hover:text-navy-900 dark:text-mist-100 dark:decoration-white/30 dark:hover:text-white"
+            className="ml-auto flex items-center gap-1.5 font-body text-xs text-navy-700 underline decoration-navy-300 underline-offset-2 hover:text-navy-800 dark:text-mist-100 dark:decoration-white/30 dark:hover:text-mist-100"
           >
             <DownloadIcon size={14} />
             Download template

@@ -50,7 +50,7 @@ export function ProgramTablePanel({
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3" onClick={(e) => e.stopPropagation()}>
           <span className="font-body text-xs font-semibold text-slate-600 dark:text-slate-300">
-            Total: <span className="font-bold text-navy-800 dark:text-white">{totalHours} units</span>
+            Total: <span className="font-bold text-navy-800 dark:text-mist-100">{totalHours} units</span>
           </span>
 
           <Button type="button" variant="outline" block={false} onClick={onAssignSubject}>
@@ -97,7 +97,7 @@ export function ProgramTablePanel({
               ) : (
                 program.subjects.map((subj) => (
                   <tr key={subj.subjectCode} className="hover:bg-slate-50/50 dark:hover:bg-white/5">
-                    <td className="px-3 py-2 font-semibold text-navy-900 dark:text-white sm:px-4 sm:py-2.5">
+                    <td className="px-3 py-2 font-semibold text-navy-800 dark:text-mist-100 sm:px-4 sm:py-2.5">
                       {subj.subjectCode}
                     </td>
                     <td className="max-w-50 truncate px-3 py-2 text-slate-600 dark:text-slate-300 sm:max-w-none sm:px-4 sm:py-2.5">
@@ -110,7 +110,7 @@ export function ProgramTablePanel({
                     <td className="px-2 py-2 text-center text-slate-600 dark:text-slate-300 sm:px-3 sm:py-2.5">
                       {subj.labHours}
                     </td>
-                    <td className="px-2 py-2 text-center font-semibold text-navy-800 dark:text-white sm:px-3 sm:py-2.5">
+                    <td className="px-2 py-2 text-center font-semibold text-navy-800 dark:text-mist-100 sm:px-3 sm:py-2.5">
                       {subj.weeklyHours}
                     </td>
                     <td className="px-3 py-2 text-right sm:px-4 sm:py-2.5">

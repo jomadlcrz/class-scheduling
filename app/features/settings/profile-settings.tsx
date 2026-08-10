@@ -71,7 +71,7 @@ export function ProfileSettings() {
               ) : (
                 <span
                   aria-hidden="true"
-                  className="flex size-full items-center justify-center rounded-full bg-navy-800 font-body text-2xl font-medium text-white transition-opacity duration-150 group-hover:opacity-90 dark:bg-white dark:text-navy-900"
+                  className="flex size-full items-center justify-center rounded-full bg-navy-800 font-body text-2xl font-medium text-mist-100 transition-opacity duration-150 group-hover:opacity-90 dark:bg-white dark:text-navy-800"
                 >
                   {photoLoading ? "…" : initials}
                 </span>

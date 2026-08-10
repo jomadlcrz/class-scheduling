@@ -49,7 +49,7 @@ export function FacultyLoadingLetterhead({
               if (entry) openFacultyLoadingPrint(entry, { schoolYear: schoolYearLabel, semesterLabel: semesterName });
             }}
             disabled={!entry}
-            className="no-print absolute right-4 grid size-9 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-navy-100 hover:text-navy-800 disabled:cursor-default disabled:opacity-40 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+            className="no-print absolute right-4 grid size-9 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-navy-100 hover:text-navy-800 disabled:cursor-default disabled:opacity-40 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
             aria-label="Print faculty loading"
             title="Print"
           >

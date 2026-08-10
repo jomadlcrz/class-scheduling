@@ -213,7 +213,7 @@ export function ProgramArchiveDialog({ program, onClose, onConfirm }: ProgramArc
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
             placeholder={preview.program.program_abbrev}
-            className={`${inputClassName} font-mono uppercase tracking-wide`}
+            className={`${inputClassName} font-body uppercase tracking-wide`}
           />
         </div>
 

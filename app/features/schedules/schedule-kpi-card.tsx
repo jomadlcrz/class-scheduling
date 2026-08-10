@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Card } from "~/components/ui/card";
 
 type ScheduleKpiCardProps = {
@@ -10,7 +10,7 @@ type ScheduleKpiCardProps = {
 export function ScheduleKpiCard({ icon, label, value }: ScheduleKpiCardProps) {
   return (
     <Card className="flex items-center gap-3 p-4">
-      <span aria-hidden="true" className="text-navy-700 dark:text-white">
+      <span aria-hidden="true" className="text-navy-700 dark:text-mist-100">
         {icon}
       </span>
       <span className="min-w-0">

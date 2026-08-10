@@ -131,7 +131,7 @@ export function SetArchiveDialog({ set, onClose, onConfirm }: SetArchiveDialogPr
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
             placeholder={preview.set.set_code}
-            className={`${inputClassName} font-mono uppercase tracking-wide`}
+            className={`${inputClassName} font-body uppercase tracking-wide`}
           />
         </div>
 
