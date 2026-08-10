@@ -2,8 +2,8 @@ import { SecuritySettings } from "~/features/settings/security-settings";
 
 export function meta() {
   return [
-    { title: "Security — GWC Class Scheduling" },
-    { name: "description", content: "Manage your account security and change your password." },
+    { title: "Password — GWC Class Scheduling" },
+    { name: "description", content: "Change the password you use to sign in." },
   ];
 }
 

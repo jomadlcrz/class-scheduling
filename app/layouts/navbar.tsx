@@ -2,11 +2,11 @@
 import { Link, useLocation, useNavigate } from "react-router";
 import {
   ChevronDownIcon,
+  KeyIcon,
   LogoutIcon,
   MenuIcon,
   MonitorIcon,
   MoonIcon,
-  SettingsIcon,
   SunIcon,
   UserIcon,
 } from "~/components/ui/icons";
@@ -166,10 +166,10 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 className={menuItemClassName}
                 onClick={() => {
                   close();
-                  navigate("/settings/profile");
+                  navigate("/settings/account-details");
                 }}
               >
-                Profile <UserIcon />
+                Account Details <UserIcon />
               </button>
               <button
                 type="button"
@@ -177,10 +177,10 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 className={menuItemClassName}
                 onClick={() => {
                   close();
-                  navigate("/settings/profile");
+                  navigate("/settings/security");
                 }}
               >
-                Settings <SettingsIcon />
+                Password <KeyIcon />
               </button>
               <ThemeRow />
               <button

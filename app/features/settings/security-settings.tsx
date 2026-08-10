@@ -67,7 +67,7 @@ export function SecuritySettings() {
 
   return (
     <div>
-      <SettingsPageHeader title="Security" />
+      <SettingsPageHeader title="Password" />
 
       <Card className="mt-6 divide-y divide-slate-200 dark:divide-white/10">
         <SecurityRow

@@ -51,7 +51,7 @@ export function ProfileSettings() {
 
   return (
     <div>
-      <SettingsPageHeader title="Profile" />
+      <SettingsPageHeader title="Account Details" />
 
       <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">
         <SettingsRow label="Profile Picture">

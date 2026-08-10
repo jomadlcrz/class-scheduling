@@ -22,13 +22,13 @@ const SETTINGS_GROUPS: SettingsGroup[] = [
     label: "Account",
     sections: [
       {
-        label: "Profile",
+        label: "Account Details",
         description: "Your account details and profile picture.",
-        href: "/settings/profile",
+        href: "/settings/account-details",
         icon: UserIcon,
       },
       {
-        label: "Security",
+        label: "Password",
         description: "Change the password you use to sign in.",
         href: "/settings/security",
         icon: KeyIcon,

@@ -75,7 +75,7 @@ export default [
 
     layout("layouts/settings-layout.tsx", [
       route("settings", "routes/app/settings/index.tsx"),
-      route("settings/profile", "routes/app/settings/profile.tsx"),
+      route("settings/account-details", "routes/app/settings/account-details.tsx"),
       route("settings/security", "routes/app/settings/security.tsx"),
       route("settings/archive", "routes/app/settings/archive.tsx"),
     ]),
