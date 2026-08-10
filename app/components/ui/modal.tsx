@@ -177,7 +177,7 @@ function ModalContent({
       />
 
       {/* Panel — top-aligned, not vertically centered; on small screens use nearly full viewport height so content scrolls inside. */}
-      <div className="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-2 pb-2 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
+      <div className="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
         <motion.div
           role="dialog"
           aria-modal="true"
@@ -186,7 +186,7 @@ function ModalContent({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className={`pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl dark:border-white/10 dark:bg-surface-raised ${
+          className={`pointer-events-auto flex max-h-[calc(100dvh-3rem)] w-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl sm:max-h-[calc(100dvh-2rem)] dark:border-white/10 dark:bg-surface-raised ${
             xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
           }`}
         >

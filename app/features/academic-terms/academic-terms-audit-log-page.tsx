@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
-import { LockIcon, UnlockIcon } from "~/components/ui/icons";
+import { IconButton } from "~/components/ui/icon-button";
+import { LockIcon, RotateIcon, UnlockIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { Tooltip } from "~/components/ui/tooltip";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { termClosureService } from "~/services/term-closure.service";
@@ -167,9 +168,11 @@ export function AcademicTermsAuditLogPage() {
               className={`${inputClassName} w-auto py-1.5`}
             />
           </label>
-          <Button type="button" variant="outline" block={false} onClick={resetFilters}>
-            Reset
-          </Button>
+          <Tooltip label="Reset filter">
+            <IconButton label="Reset filter" title="" onClick={resetFilters}>
+              <RotateIcon />
+            </IconButton>
+          </Tooltip>
         </div>
       )}
 
