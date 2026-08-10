@@ -68,9 +68,10 @@ async function getReleasePreview(id: number): Promise<SchedulePreview> {
 }
 
 /** POST /schedule-releases/{id}/submit — draft/rejected → pending_approval. Notifies the department's deans. */
-async function submitRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
+async function submitRelease(id: number, note?: string): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/schedule-releases/${id}/submit`,
+    note ? { note } : undefined,
   );
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }

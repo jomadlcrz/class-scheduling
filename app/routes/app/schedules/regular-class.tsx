@@ -388,10 +388,10 @@ function RegularClassPage() {
     return failed;
   }
 
-  async function handleSubmitRelease() {
+  async function handleSubmitRelease(note: string) {
     if (!submitTarget || termClosed) return;
     try {
-      const { message } = await scheduleReleaseService.submitRelease(submitTarget.id);
+      const { message } = await scheduleReleaseService.submitRelease(submitTarget.id, note);
       if (message) toast.success(message);
       await refreshReleases();
       setSubmitTarget(null);
