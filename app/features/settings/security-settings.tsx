@@ -1,6 +1,7 @@
 ﻿import { useState, type ReactNode } from "react";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { Card } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { CheckIcon, ChevronRightIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
@@ -113,6 +114,16 @@ export function SecuritySettings() {
               submitLabel="Update Password"
               loadingLabel="Updating…"
               onSubmit={handleSubmit}
+              footerExtra={
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  onClick={closePasswordModal}
+                >
+                  Cancel
+                </Button>
+              }
             />
           </div>
         )}

@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input, inputClassName, PasswordInput } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { SettingsRow } from "~/components/ui/settings-row";
 import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { useAuth } from "~/hooks/use-auth";
 import { profilePhotoService } from "~/services/profile-photo.service";
 
-export function ProfileSettings() {
+export function AccountDetails() {
   const { user } = useAuth();
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [profilePictureModalOpen, setProfilePictureModalOpen] = useState(false);
@@ -151,7 +151,17 @@ export function ProfileSettings() {
             label="Current Password"
             autoComplete="current-password"
           />
-          <Button type="button" pill>Change Email</Button>
+          <ModalActions>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => setEmailModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" block={false}>Change Email</Button>
+          </ModalActions>
         </div>
       </Modal>
     </div>

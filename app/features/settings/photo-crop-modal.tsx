@@ -3,7 +3,7 @@ import Cropper from "react-easy-crop";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { FileChooser } from "~/components/ui/file-chooser";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 
 type ProfilePictureModalProps = {
   open: boolean;
@@ -142,7 +142,7 @@ export function ProfilePictureModal({
             />
           </div>
 
-          <div className="flex w-full items-center justify-between gap-2">
+          <ModalActions>
             {photoUrl && (
               <Button
                 type="button"
@@ -165,7 +165,7 @@ export function ProfilePictureModal({
             >
               Cancel
             </Button>
-          </div>
+          </ModalActions>
         </div>
       </Modal>
 
@@ -208,7 +208,7 @@ export function ProfilePictureModal({
             />
           </div>
 
-          <div className="flex w-full justify-end gap-2">
+          <ModalActions>
             <Button
               type="button"
               variant="outline"
@@ -227,7 +227,7 @@ export function ProfilePictureModal({
             >
               Save Photo
             </Button>
-          </div>
+          </ModalActions>
         </div>
       </Modal>
 

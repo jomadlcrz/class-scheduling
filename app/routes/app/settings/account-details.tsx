@@ -1,4 +1,4 @@
-import { ProfileSettings } from "~/features/settings/profile-settings";
+import { AccountDetails } from "~/features/settings/account-details";
 
 export function meta() {
   return [
@@ -8,5 +8,5 @@ export function meta() {
 }
 
 export default function AccountDetailsRoute() {
-  return <ProfileSettings />;
+  return <AccountDetails />;
 }

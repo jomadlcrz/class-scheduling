@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { FormError } from "~/components/forms/form-error";
+import { Button } from "~/components/ui/button";
 import { CheckIcon } from "~/components/ui/icons";
 import { PasswordInput } from "~/components/ui/input";
+import { ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { ApiError } from "~/lib/api";
 import { makeChangePasswordSchema } from "~/schemas/auth.schema";
@@ -17,6 +19,8 @@ type PasswordFormProps = {
   submitLabel: string;
   loadingLabel: string;
   onSubmit: (values: PasswordFormValues) => Promise<void>;
+  /** Extra actions shown beside the submit button in a footer band (modal context). */
+  footerExtra?: ReactNode;
 };
 
 function RequirementItem({ satisfied, label }: { satisfied: boolean; label: string }) {
@@ -54,6 +58,7 @@ export function PasswordForm({
   submitLabel,
   loadingLabel,
   onSubmit,
+  footerExtra,
 }: PasswordFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,20 +152,29 @@ export function PasswordForm({
         autoComplete="new-password"
       />
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-800 px-8 py-2.5 text-sm font-semibold text-mist-100 shadow-lg shadow-navy-800/20 transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-surface"
-      >
-        {isLoading ? (
-          <>
-            <Spinner />
-            {loadingLabel}
-          </>
-        ) : (
-          submitLabel
-        )}
-      </button>
+      {footerExtra ? (
+        <ModalActions>
+          {footerExtra}
+          <Button type="submit" block={false} isLoading={isLoading} loadingLabel={loadingLabel}>
+            {submitLabel}
+          </Button>
+        </ModalActions>
+      ) : (
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-800 px-8 py-2.5 text-sm font-semibold text-mist-100 shadow-lg shadow-navy-800/20 transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-surface"
+        >
+          {isLoading ? (
+            <>
+              <Spinner />
+              {loadingLabel}
+            </>
+          ) : (
+            submitLabel
+          )}
+        </button>
+      )}
     </form>
   );
 }
