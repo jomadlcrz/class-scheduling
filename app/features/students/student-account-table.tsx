@@ -1,7 +1,6 @@
 ﻿import { Checkbox } from "~/components/ui/checkbox";
 import { IconButton } from "~/components/ui/icon-button";
-import { ArchiveIcon, FileSearchIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
-import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
+import { FileSearchIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -25,7 +24,6 @@ type StudentAccountTableProps = {
   onView: ((student: StudentAccountRow) => void) | null;
   onDeactivateAccount: ((student: StudentAccountRow) => void) | null;
   onReactivateAccount: ((student: StudentAccountRow) => void) | null;
-  onArchiveProfile: ((student: StudentAccountRow) => void) | null;
   /**
    * Bulk "Create Account" selection — pass all three to render a checkbox column
    * (only for students that don't already have an account). Omit to hide it entirely.
@@ -41,7 +39,6 @@ export function StudentAccountTable({
   onView,
   onDeactivateAccount,
   onReactivateAccount,
-  onArchiveProfile,
   selectedIds,
   onToggleSelect,
   onSelectAll,
@@ -115,17 +112,6 @@ export function StudentAccountTable({
                   >
                     <FileSearchIcon />
                   </IconButton>
-                )}
-                {onArchiveProfile && (
-                  <button
-                    type="button"
-                    onClick={() => onArchiveProfile(student)}
-                    aria-label={`Archive profile for ${displayName(student)}`}
-                    title="Archive student profile"
-                    className={archiveActionButtonClassName}
-                  >
-                    <ArchiveIcon />
-                  </button>
                 )}
                 {onDeactivateAccount && onReactivateAccount && student.hasAccount && (
                   isActive === undefined ? (

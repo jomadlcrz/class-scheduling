@@ -15,7 +15,6 @@ import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { useStudentAccountFilters } from "~/features/students/student-account-filters";
 import { StudentAccountTable } from "~/features/students/student-account-table";
-import { StudentArchiveDialog } from "~/features/students/student-archive-dialog";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
 import { StudentRecordForm } from "~/features/students/student-record-form";
 import { PageHeader } from "~/layouts/page-header";
@@ -142,7 +141,6 @@ export function StudentsPage() {
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
   const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
-  const [archiveTarget, setArchiveTarget] = useState<StudentAccountRow | null>(null);
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
@@ -514,21 +512,6 @@ export function StudentsPage() {
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: true }));
   }
 
-  async function reloadStudentLists() {
-    if (isAdmin) {
-      void reloadAccounts();
-    } else {
-      if (syId == null || semesterNumber == null) return;
-      regularClassService.listStudents(syId, semesterNumber).then(setRegularStudents).catch(() => setRegularStudents([]));
-      irregularClassService.listStudents(syId, semesterNumber).then(setIrregularStudents).catch(() => setIrregularStudents([]));
-    }
-  }
-
-  async function handleArchiveProfile(_student: StudentAccountRow) {
-    await reloadStudentLists();
-    setArchiveTarget(null);
-  }
-
   // Cohort membership is term-specific. Clear cached rows whenever the global
   // academic-term selector changes so the effects below fetch the new scope.
   useEffect(() => {
@@ -707,7 +690,6 @@ export function StudentsPage() {
                   onView={setViewTarget}
                   onDeactivateAccount={setDeactivateAccountTarget}
                   onReactivateAccount={setReactivateAccountTarget}
-                  onArchiveProfile={setArchiveTarget}
                   selectedIds={selectedForAccount}
                   onToggleSelect={toggleSelectForAccount}
                   onSelectAll={selectAllForAccount}
@@ -749,7 +731,6 @@ export function StudentsPage() {
                   onView={setViewTarget}
                   onDeactivateAccount={null}
                   onReactivateAccount={null}
-                  onArchiveProfile={setArchiveTarget}
                 />
                 <Pagination
                   page={pagination.page}
@@ -796,7 +777,6 @@ export function StudentsPage() {
                 onView={setViewTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
-                onArchiveProfile={setArchiveTarget}
                 selectedIds={isAdmin ? selectedForAccount : undefined}
                 onToggleSelect={isAdmin ? toggleSelectForAccount : undefined}
                 onSelectAll={isAdmin ? selectAllForAccount : undefined}
@@ -845,7 +825,6 @@ export function StudentsPage() {
                 onView={setViewTarget}
                 onDeactivateAccount={isAdmin ? setDeactivateAccountTarget : null}
                 onReactivateAccount={isAdmin ? setReactivateAccountTarget : null}
-                onArchiveProfile={setArchiveTarget}
                 selectedIds={isAdmin ? selectedForAccount : undefined}
                 onToggleSelect={isAdmin ? toggleSelectForAccount : undefined}
                 onSelectAll={isAdmin ? selectAllForAccount : undefined}
@@ -944,12 +923,6 @@ export function StudentsPage() {
           </ConfirmDialog>
         </>
       )}
-
-      <StudentArchiveDialog
-        student={archiveTarget}
-        onClose={() => setArchiveTarget(null)}
-        onConfirm={handleArchiveProfile}
-      />
 
     </div>
   );

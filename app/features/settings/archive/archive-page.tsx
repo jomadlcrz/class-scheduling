@@ -14,7 +14,6 @@ import {
 } from "~/features/settings/archive/constants";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { archiveService, type ArchiveItem } from "~/services/archive.service";
-import { studentService } from "~/services/student.service";
 
 /** Settings screen backed by GET/PATCH /archive/*. */
 export function ArchivePage() {
@@ -87,11 +86,7 @@ export function ArchivePage() {
   }
 
   function handleRestore(item: ArchiveItem) {
-    askRestore(item.label, async () =>
-      item.entityType === "student"
-        ? studentService.restoreProfile(item.entityId)
-        : archiveService.restore(item.entityType, item.entityId),
-    );
+    askRestore(item.label, async () => archiveService.restore(item.entityType, item.entityId));
   }
 
   return (

@@ -7,7 +7,6 @@ import {
   GraduationCapIcon,
   KeyIcon,
   LayersIcon,
-  UsersIcon,
   UsersRoundIcon,
 } from "~/components/ui/icons";
 import type { ArchiveCategoryKey } from "~/services/archive.service";
@@ -19,7 +18,6 @@ export type ArchiveTabKey =
   | "programs"
   | "sets"
   | "subjects"
-  | "students"
   | "school-years"
   | "semesters"
   | "permissions";
@@ -31,7 +29,6 @@ export const ARCHIVE_TAB_TO_CATEGORY: Record<ArchiveTabKey, ArchiveCategoryKey> 
   programs: "programs",
   sets: "sets",
   subjects: "subjects",
-  students: "students",
   "school-years": "school_years",
   semesters: "semesters",
   permissions: "permissions",
@@ -52,7 +49,6 @@ export const ARCHIVE_TABS: ArchiveTabConfig[] = [
   { key: "programs", label: "Programs", icon: GraduationCapIcon, roles: ["registrar"] },
   { key: "sets", label: "Sets", icon: UsersRoundIcon, roles: ["registrar"] },
   { key: "subjects", label: "Subjects", icon: BookIcon, roles: ["registrar"] },
-  { key: "students", label: "Students", icon: UsersIcon, roles: ["registrar"] },
   { key: "school-years", label: "School years", icon: CalendarIcon, roles: ["registrar"] },
   { key: "semesters", label: "Semesters", icon: CalendarClockIcon, roles: ["registrar"] },
   { key: "permissions", label: "Permissions", icon: KeyIcon, roles: ["admin"] },

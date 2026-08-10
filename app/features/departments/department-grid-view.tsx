@@ -46,11 +46,7 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
       {departments.map((dept) => (
         <motion.div key={dept.id} variants={item} whileHover={reduceMotion ? undefined : { y: -4 }} className="h-full">
           <Card className="group relative flex h-full flex-col overflow-hidden p-0 shadow-sm transition-shadow duration-200 hover:shadow-lg">
-            <Link
-              to={`/departments/${dept.id}`}
-              aria-label={`View ${dept.name}`}
-              className="flex flex-1 flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
-            >
+            <div className="flex flex-1 flex-col">
               <div className="relative h-28 shrink-0 overflow-hidden bg-slate-100 dark:bg-surface-raised/60">
                 <img
                   src={departmentLogoSrc(dept.logoUrl)}
@@ -98,7 +94,7 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
                   </div>
                 )}
               </div>
-            </Link>
+            </div>
 
             <div className="absolute right-2 top-2 z-10 flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
               <IconButton

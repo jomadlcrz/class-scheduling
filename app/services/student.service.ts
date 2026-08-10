@@ -11,7 +11,6 @@ import type {
   UpdateEnrollmentInput,
 } from "~/types/student";
 import { semesterService } from "~/services/semester.service";
-import { archiveService } from "~/services/archive.service";
 
 /**
  * Student records (students module) and login accounts (super_admin module).
@@ -354,50 +353,6 @@ async function importRecords(rows: ImportStudentInput[]): Promise<ImportStudentR
   };
 }
 
-export type StudentArchivePreview = {
-  student: {
-    student_profile_id: number;
-    first_name: string;
-    last_name: string;
-  };
-  archivable: boolean;
-  blockers: Record<string, unknown>;
-  willArchive: {
-    academic_terms: number;
-    enrolled_subjects: number;
-    has_login_account: boolean;
-    has_profile_photo?: boolean;
-  };
-};
-
-type DeletedStudentProfile = {
-  studentProfileId: number;
-  firstName: string;
-  lastName: string;
-  deactivatedAt: string | null;
-  academicTerms: number;
-  enrolledSubjects: number;
-  hasLoginAccount: boolean;
-};
-
-/** GET /students/:id/archive-preview */
-async function getArchivePreview(studentProfileId: number): Promise<StudentArchivePreview> {
-  return apiGet<StudentArchivePreview>(`/students/${studentProfileId}/archive-preview`);
-}
-
-/** PATCH /students/:id/archive — requires typing the student's full name. */
-async function archiveProfile(studentProfileId: number, confirmFullName: string): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/students/${studentProfileId}/archive`, {
-    confirm: confirmFullName,
-  });
-  return apiMessage(data);
-}
-
-/** PATCH /archive/student/:id/restore — restores an archived student profile. */
-async function restoreProfile(studentProfileId: number): Promise<string> {
-  return archiveService.restore("student", studentProfileId);
-}
-
 export const studentService = {
   createRecord,
   uploadProfilePhoto,
@@ -414,7 +369,4 @@ export const studentService = {
   deactivateAccount,
   reactivateAccount,
   importRecords,
-  getArchivePreview,
-  archiveProfile,
-  restoreProfile,
 };
