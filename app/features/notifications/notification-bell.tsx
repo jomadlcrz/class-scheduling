@@ -46,6 +46,19 @@ function notificationText(notification: NotificationItem): { title: string; deta
         detail: [when, label].filter(Boolean).join(" · "),
       };
     }
+    case "schedule_approval_requested": {
+      const count = typeof p.session_count === "number" ? p.session_count : 0;
+      return {
+        title: label ? `Approval requested for ${label}` : "Schedule approval requested",
+        detail: [count > 0 ? `${count} session${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
+      };
+    }
+    case "schedule_approval_rejected": {
+      return {
+        title: label ? `Schedule returned for ${label}` : "Schedule returned",
+        detail: p.rejection_reason ? p.rejection_reason : period,
+      };
+    }
     case "subject_assignment_changed": {
       const codes = Array.isArray(p.subject_codes) ? p.subject_codes : [];
       return {

@@ -5,13 +5,15 @@ import type { Role } from "~/types/user";
  * (app/enums.py) and the payload shapes NotificationService builds per event.
  * The bell only makes sense for roles the backend ever notifies.
  */
-export const NOTIFICATION_RECIPIENT_ROLES: Role[] = ["dean", "faculty", "student"];
+export const NOTIFICATION_RECIPIENT_ROLES: Role[] = ["registrar", "dean", "faculty", "student"];
 
 export type NotificationType =
   | "schedule_published"
   | "schedule_published_summary"
   | "schedule_rescheduled"
   | "schedule_rescheduled_summary"
+  | "schedule_approval_requested"
+  | "schedule_approval_rejected"
   | "subject_assignment_changed"
   | "student_enrolled"
   | "account_reactivated";
@@ -46,6 +48,8 @@ export type NotificationPayload = Record<string, unknown> & {
   action?: "added" | "removed";
   old?: NotificationTimeBlock;
   new?: NotificationTimeBlock;
+  submission_note?: string | null;
+  rejection_reason?: string | null;
 };
 
 export type NotificationItem = {
