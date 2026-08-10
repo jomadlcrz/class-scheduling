@@ -878,7 +878,7 @@ export function StudentsPage() {
             confirmVariant="danger"
             onConfirm={() => handleDeactivateAccount(deactivateAccountTarget!)}
           >
-            <span className="font-medium text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {deactivateAccountTarget?.studentName || `${deactivateAccountTarget?.firstName} ${deactivateAccountTarget?.lastName}`}
             </span>{" "}
             will no longer be able to log in. Their student record is kept.
@@ -892,7 +892,7 @@ export function StudentsPage() {
             loadingLabel="Reactivating…"
             onConfirm={() => handleReactivateAccount(reactivateAccountTarget!)}
           >
-            <span className="font-medium text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {reactivateAccountTarget?.studentName || `${reactivateAccountTarget?.firstName} ${reactivateAccountTarget?.lastName}`}
             </span>{" "}
             will be able to log in again.

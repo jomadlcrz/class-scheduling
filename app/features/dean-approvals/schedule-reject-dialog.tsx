@@ -56,7 +56,7 @@ export function ScheduleRejectDialog({ open, release, onClose, onConfirm }: Sche
     <Modal open={open} onClose={handleClose} title="Reject schedule">
       <div className="flex flex-col gap-4">
         <FormError message={error} />
-        <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+        <p className="font-body text-sm text-slate-500 dark:text-slate-400">
           Reject {release?.programAbbrev} {release?.setCode}? It returns to the registrar as a draft with
           your reason attached so they can revise and resubmit it.
         </p>

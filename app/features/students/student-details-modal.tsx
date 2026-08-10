@@ -265,7 +265,7 @@ function Field({ label, value }: { label: string; value: string }) {
       <dt>
         <Label>{label}</Label>
       </dt>
-      <dd className="mt-1.5 font-body text-sm text-gray-900 dark:text-mist-100">{value}</dd>
+      <dd className="mt-1.5 font-body text-sm text-slate-500 dark:text-slate-400">{value}</dd>
     </div>
   );
 }

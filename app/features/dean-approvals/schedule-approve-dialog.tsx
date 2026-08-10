@@ -34,7 +34,7 @@ export function ScheduleApproveDialog({ open, release, onClose, onConfirm }: Sch
     >
       <p>
         Approving{" "}
-        <span className="font-semibold text-navy-700 dark:text-mist-100">
+        <span className="font-semibold text-navy-800 dark:text-mist-100">
           {release?.programAbbrev} {release?.setCode}
         </span>{" "}
         ({release?.sessionCount ?? 0} session{release?.sessionCount === 1 ? "" : "s"}) publishes it. This will:

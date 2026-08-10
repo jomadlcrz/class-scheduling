@@ -1099,7 +1099,7 @@ function SchedulesNewPage() {
       >
         {deleteTarget && (
           <>
-            <span className="font-medium text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {deleteTarget.subjectCode}
             </span>{" "}
             on {dayLabels[deleteTarget.day]} ({formatTime(deleteTarget.startTime)}–
@@ -1140,7 +1140,7 @@ function SchedulesNewPage() {
       >
         {pendingMove && pendingMove.type === "repack_instructor" ? (
           <div className="flex flex-col gap-3">
-            <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+            <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
               {pendingMove.setName} · {pendingMove.subjectCode} · {pendingMove.instructorName}
             </p>
             <div className="flex flex-col gap-1.5">
@@ -1149,10 +1149,10 @@ function SchedulesNewPage() {
                   key={i}
                   className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-white/10 dark:bg-white/5"
                 >
-                  <p className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
+                  <p className="font-body text-xs font-semibold text-navy-800 dark:text-mist-100">
                     {m.subjectCode} ({m.setName})
                   </p>
-                  <div className="mt-1 flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
+                  <div className="mt-1 flex items-center gap-2 font-body text-xs text-slate-500 dark:text-slate-400">
                     <span>{m.from.day} {m.from.start}–{m.from.end}, {m.from.room}</span>
                     <span className="text-slate-400">→</span>
                     <span>{m.to.day} {m.to.start}–{m.to.end}, {m.to.room}</span>
@@ -1162,10 +1162,10 @@ function SchedulesNewPage() {
             </div>
             {(pendingMove.placesAt ?? []).length > 0 && (
               <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 p-2.5 dark:border-emerald-400/25 dark:bg-emerald-400/5">
-                <p className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
+                <p className="font-body text-xs font-semibold text-navy-800 dark:text-mist-100">
                   {pendingMove.subjectCode} then takes
                 </p>
-                <p className="mt-1 font-body text-xs text-slate-600 dark:text-slate-300">
+                <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">
                   {(pendingMove.placesAt ?? [])
                     .map((p) => `${p.day} ${p.start}–${p.end} in ${p.room}${p.isLab ? " (lab)" : ""}`)
                     .join(", ")}
@@ -1186,16 +1186,16 @@ function SchedulesNewPage() {
           pendingMove && (
             <div className="flex flex-col gap-3">
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-                <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   {pendingMove.setName} · {pendingMove.subjectCode} · {pendingMove.instructorName}
                 </p>
-                <div className="mt-2 flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
+                <div className="mt-2 flex items-center gap-2 font-body text-xs text-slate-500 dark:text-slate-400">
                   <span>{String(pendingMove.from?.day)} {String(pendingMove.from?.start)}–{String(pendingMove.from?.end)}, {String(pendingMove.from?.room)}</span>
                   <span className="text-slate-400">→</span>
                   <span>{String(pendingMove.to?.day)} {String(pendingMove.to?.start)}–{String(pendingMove.to?.end)}, {String(pendingMove.to?.room)}</span>
                 </div>
               </div>
-              <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+              <p className="font-body text-sm text-slate-500 dark:text-slate-400">
                 This frees the slot for {pendingMove.enables?.subject_code}.
                 <span className="ml-1 font-semibold">{pendingMove.setName}'s</span> timetable changes immediately.
               </p>

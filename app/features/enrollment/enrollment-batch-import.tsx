@@ -9,6 +9,14 @@ import { FieldChrome, Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
 import { EnrolledStatusPicker } from "~/features/enrollment/enrolled-status-picker";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
@@ -925,6 +933,7 @@ export function EnrollmentBatchImport({
         open={templateHelpOpen}
         onClose={() => setTemplateHelpOpen(false)}
         title="Batch templates"
+        wide
       >
         <div className="space-y-4 font-body text-sm leading-relaxed">
           <div>
@@ -933,6 +942,7 @@ export function EnrollmentBatchImport({
               Includes a Set column. Subject Codes are omitted — subjects come from the curriculum
               for the student’s program, year level, and semester.
             </p>
+            <TemplateExample headers={CSV_HEADERS_REGULAR} row={TEMPLATE_ROW_REGULAR} />
           </div>
           <div>
             <p className="font-semibold text-navy-800 dark:text-mist-100">Irregular Template</p>
@@ -940,6 +950,7 @@ export function EnrollmentBatchImport({
               Leave Set blank. Add Subject Codes as a comma-separated list of the subjects to
               enroll for that student.
             </p>
+            <TemplateExample headers={CSV_HEADERS_IRREGULAR} row={TEMPLATE_ROW_IRREGULAR} />
           </div>
           <div className="flex justify-end pt-1">
             <Button type="button" block={false} onClick={() => setTemplateHelpOpen(false)}>
@@ -948,6 +959,31 @@ export function EnrollmentBatchImport({
           </div>
         </div>
       </Modal>
+    </div>
+  );
+}
+
+function TemplateExample({ headers, row }: { headers: readonly string[]; row: string[] }) {
+  return (
+    <div className="mt-3">
+      <Table>
+        <TableHead>
+          {headers.map((h) => (
+            <TableHeader key={h} dense>
+              {h}
+            </TableHeader>
+          ))}
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            {row.map((cell, i) => (
+              <TableCell key={i} dense>
+                {cell}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableBody>
+      </Table>
     </div>
   );
 }

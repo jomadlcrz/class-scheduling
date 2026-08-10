@@ -656,13 +656,13 @@ function RegularClassPage() {
         title="Irregular students unseated"
       >
         <div className="flex flex-col gap-4">
-          <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Clearing the set removed these students from borrowed class offerings. They now need to be seated again.
           </p>
           <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-white/10 dark:border-white/10">
             {unseatedStudents.map((student) => (
               <li key={student.studentProfileId} className="px-3 py-2 font-body text-sm">
-                <span className="font-medium text-navy-700 dark:text-mist-100">{student.name}</span>
+                <span className="font-semibold text-navy-800 dark:text-mist-100">{student.name}</span>
                 {student.studentId && (
                   <span className="ml-2 text-slate-500 dark:text-slate-400">{student.studentId}</span>
                 )}

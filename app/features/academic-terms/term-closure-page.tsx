@@ -210,13 +210,13 @@ export function TermClosurePage() {
       </ConfirmDialog>
 
       <Modal open={helpOpen} onClose={() => setHelpOpen(false)} title="Term closure" wide>
-        <div className="space-y-5 font-body text-sm text-slate-600 dark:text-slate-300">
+        <div className="space-y-5 font-body text-sm text-slate-500 dark:text-slate-400">
           <p>
             Post a term when scheduling is complete. This blocks destructive deletes for that semester
             while views and reports still work.
           </p>
           <div>
-            <p className="mb-2 font-medium text-navy-700 dark:text-mist-100">What posting a term does</p>
+            <p className="mb-2 font-semibold text-navy-800 dark:text-mist-100">What posting a term does</p>
             <p className="text-sm">
               Posting locks destructive deletes — schedules, enrollments, faculty loads, and seat bookings.
               Views, reports, and exports remain available. You can reopen a posted term while the school year
@@ -224,7 +224,7 @@ export function TermClosurePage() {
             </p>
           </div>
           <div>
-            <p className="mb-2 font-medium text-navy-700 dark:text-mist-100">Status badges</p>
+            <p className="mb-2 font-semibold text-navy-800 dark:text-mist-100">Status badges</p>
             <ul className="space-y-2">
               <li className="flex items-center gap-2">
                 <StatusBadge tone="emerald">Open</StatusBadge>

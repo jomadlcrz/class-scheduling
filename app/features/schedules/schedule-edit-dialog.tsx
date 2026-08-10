@@ -79,7 +79,7 @@ export function ScheduleEditDialog({
             <AlertDescription>{disabledNote} You cannot save changes.</AlertDescription>
           </Alert>
         )}
-        <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+        <p className="font-body text-sm text-slate-500 dark:text-slate-400">
           Update the saved class placement. The backend will validate conflicts and room rules.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">

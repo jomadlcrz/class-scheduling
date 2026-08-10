@@ -50,7 +50,7 @@ export function FacultyEditForm({ member, onSubmit, onCancel }: FacultyEditFormP
       </div>
       <Input id="edit-faculty-last-name" label="Last Name" type="text" required defaultValue={member.lastName} />
       <div className="flex flex-col gap-1.5">
-        <label className="font-body text-sm font-semibold text-gray-600 dark:text-slate-400">Email Address</label>
+        <label className="font-body text-sm font-semibold text-slate-600 dark:text-slate-400">Email Address</label>
         <div className="flex items-center gap-3">
           <p className="min-w-0 truncate font-body text-sm text-navy-700 dark:text-mist-100">
             {email}

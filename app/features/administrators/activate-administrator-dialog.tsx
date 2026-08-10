@@ -21,7 +21,7 @@ export function ActivateAdministratorDialog({
       loadingLabel="Activating…"
       onConfirm={() => onConfirm(admin!)}
     >
-      <span className="font-medium text-navy-700 dark:text-mist-100">
+      <span className="font-semibold text-navy-800 dark:text-mist-100">
         {admin?.firstName} {admin?.lastName}
       </span>{" "}
       will be able to log in again with their existing password.

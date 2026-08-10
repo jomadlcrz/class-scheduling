@@ -22,7 +22,7 @@ export function DeactivateAdministratorDialog({
       confirmVariant="danger"
       onConfirm={() => onConfirm(admin!)}
     >
-      <span className="font-medium text-navy-700 dark:text-mist-100">
+      <span className="font-semibold text-navy-800 dark:text-mist-100">
         {admin?.firstName} {admin?.lastName}
       </span>{" "}
       will no longer be able to log in. Their data is kept and the account can be reactivated anytime.

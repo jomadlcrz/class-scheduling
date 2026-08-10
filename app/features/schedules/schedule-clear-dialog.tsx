@@ -97,7 +97,7 @@ export function ScheduleClearDialog({
     >
       <div className="flex flex-col gap-4">
         <FormError message={error} />
-        <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+        <p className="font-body text-sm text-slate-500 dark:text-slate-400">
           Select the sets to clear for S.Y. {schoolYear}, {semesterLabel}. Instructor and subject hour
           ledgers will be released, and any irregular students seated in these sets will be unseated.
         </p>
@@ -110,7 +110,7 @@ export function ScheduleClearDialog({
               checked={allSelected}
               onChange={toggleAll}
             />
-            <span className="font-body text-sm font-medium text-navy-700 dark:text-mist-100">
+            <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
               {selectedIds.size > 0 ? `${selectedIds.size} of ${sets.length} selected` : "Select all"}
             </span>
           </div>
@@ -124,7 +124,7 @@ export function ScheduleClearDialog({
                   checked={selectedIds.has(row.setId)}
                   onChange={() => toggleSet(row.setId)}
                 />
-                <span className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   {row.setCode}
                 </span>
                 <StatusBadge tone={scheduleReleaseStatusTone(row.releaseStatus)}>

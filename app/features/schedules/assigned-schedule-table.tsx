@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Label } from "~/components/ui/label";
 import { Modal } from "~/components/ui/modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import type { StudentAssignedSchedule } from "~/services/irregular-class.service";
@@ -49,47 +48,37 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
               </p>
             )}
             {selected.assignedSubjects.map((subject) => (
-              <div key={subject.subjectId} className="rounded-lg border border-slate-200 p-3 dark:border-white/10">
+              <div key={subject.subjectId} className="flex flex-col gap-2">
                 <div className="flex items-baseline justify-between gap-2">
-                  <Label className="text-navy-800 dark:text-mist-100">
+                  <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                     {subject.subjectCode} — {subject.descTitle}
-                  </Label>
+                  </p>
                   <span className="shrink-0 font-body text-xs text-slate-500 dark:text-slate-400">
                     {subject.units} unit{subject.units !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <div className="overflow-x-auto"><table className="mt-2 w-full text-left font-body text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-white/10">
-                      <th className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Day</th>
-                      <th className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Time</th>
-                      <th className="hidden px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:table-cell">Room</th>
-                      <th className="hidden px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:table-cell">Instructor</th>
-                      <th className="hidden px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:table-cell">Set</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                    {subject.schedules.map((sched) => (
-                      <tr key={sched.id}>
-                        <td className="px-2 py-1.5 text-slate-600 dark:text-slate-300">
-                          {sched.dayOfWeek}
-                        </td>
-                        <td className="px-2 py-1.5 text-slate-600 dark:text-slate-300">
-                          {sched.startTime} - {sched.endTime}
-                        </td>
-                        <td className="hidden px-2 py-1.5 text-slate-500 dark:text-slate-400 sm:table-cell">
-                          {sched.room ?? "—"}
-                        </td>
-                        <td className="hidden px-2 py-1.5 text-slate-500 dark:text-slate-400 sm:table-cell">
-                          {sched.instructor ?? "—"}
-                        </td>
-                        <td className="hidden px-2 py-1.5 text-slate-500 dark:text-slate-400 sm:table-cell">
-                          {sched.set ?? "—"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table></div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHead>
+                      <TableHeader dense>Day</TableHeader>
+                      <TableHeader dense>Time</TableHeader>
+                      <TableHeader dense className="hidden sm:table-cell">Room</TableHeader>
+                      <TableHeader dense className="hidden sm:table-cell">Instructor</TableHeader>
+                      <TableHeader dense className="hidden sm:table-cell">Set</TableHeader>
+                    </TableHead>
+                    <TableBody>
+                      {subject.schedules.map((sched) => (
+                        <TableRow key={sched.id}>
+                          <TableCell dense>{sched.dayOfWeek}</TableCell>
+                          <TableCell dense>{sched.startTime} - {sched.endTime}</TableCell>
+                          <TableCell dense className="hidden sm:table-cell">{sched.room ?? "—"}</TableCell>
+                          <TableCell dense className="hidden sm:table-cell">{sched.instructor ?? "—"}</TableCell>
+                          <TableCell dense className="hidden sm:table-cell">{sched.set ?? "—"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             ))}
           </div>

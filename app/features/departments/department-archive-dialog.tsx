@@ -100,7 +100,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
               </span>
             </AlertDescription>
           </Alert>
-          <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             User accounts are never touched by this feature — instructors, deans,
             registrars, and super-admins assigned here must be moved or reassigned
             first, then you can retry.
@@ -155,7 +155,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
-            <span className="font-semibold text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.department.department_abbrev}
             </span>{" "}
             to confirm archival

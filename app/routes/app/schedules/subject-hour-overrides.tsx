@@ -335,8 +335,8 @@ function SubjectHourOverridesPage() {
       {/* Delete confirmation */}
       <Modal open={deleteTarget !== null} onClose={() => setDeleteTarget(null)} title="Delete override">
         <div className="flex flex-col gap-4">
-          <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-            <span className="font-medium text-navy-700 dark:text-mist-100">
+          <p className="font-body text-sm text-slate-500 dark:text-slate-400">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {deleteTarget?.subjectCode}
             </span>{" "}
             will go back to using the hours configured for its subject type. This takes effect the next time you generate.
@@ -369,9 +369,9 @@ function SubjectHourOverridesPage() {
         onConfirm={confirmOverwrite}
       >
         {pendingOverride && (
-          <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+          <p className="font-body text-sm text-slate-500 dark:text-slate-400">
             An override already exists for{" "}
-            <span className="font-medium text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {subjects.find((s) => s.id === pendingOverride.subjectId)?.code}
             </span>
             {pendingOverride.setId != null && (

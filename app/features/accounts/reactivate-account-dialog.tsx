@@ -21,7 +21,7 @@ export function ReactivateAccountDialog({
       loadingLabel="Reactivating…"
       onConfirm={() => onConfirm(account!)}
     >
-      <span className="font-medium text-navy-700 dark:text-mist-100">{account?.email}</span>{" "}
+      <span className="font-semibold text-navy-800 dark:text-mist-100">{account?.email}</span>{" "}
       will be able to log in again with their existing password.
     </ConfirmDialog>
   );

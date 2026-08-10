@@ -17,7 +17,7 @@ export function ActivateFacultyDialog({ member, onClose, onConfirm }: ActivateFa
       loadingLabel="Activating…"
       onConfirm={() => onConfirm(member!)}
     >
-      <span className="font-medium text-navy-700 dark:text-mist-100">
+      <span className="font-semibold text-navy-800 dark:text-mist-100">
         {member?.firstName} {member?.lastName}
       </span>{" "}
       will be restored to active status.

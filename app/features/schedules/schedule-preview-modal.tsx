@@ -74,8 +74,8 @@ export function SchedulePreviewModal({ open, releaseId, fetchPreview, onClose }:
         ) : release ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2 font-body text-sm text-slate-600 dark:text-slate-300">
-                <span className="font-semibold text-navy-700 dark:text-mist-100">
+              <div className="flex flex-wrap items-center gap-2 font-body text-sm text-slate-500 dark:text-slate-400">
+                <span className="font-semibold text-navy-800 dark:text-mist-100">
                   {release.programAbbrev} {release.setCode}
                 </span>
                 <StatusBadge tone={scheduleReleaseStatusTone(release.releaseStatus)}>

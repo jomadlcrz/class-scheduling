@@ -118,7 +118,7 @@ export function ConfirmDialog({
     >
       <div className="flex flex-col gap-4">
         <FormError message={error} />
-        <div className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        <div className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           {children}
         </div>
       </div>

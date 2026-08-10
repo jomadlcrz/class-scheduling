@@ -87,9 +87,9 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
     const { programs, faculty_assignments } = preview.will_delete;
     return (
       <div className="flex flex-col gap-4">
-        <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           Archiving{" "}
-          <span className="font-medium text-navy-700 dark:text-mist-100">
+          <span className="font-semibold text-navy-800 dark:text-mist-100">
             {preview.subject.subject_code} — {preview.subject.descriptive_title}
           </span>{" "}
           reaches into every program whose curriculum it sits on. It can be restored from Archive at any time.
@@ -175,7 +175,7 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
-            <span className="font-semibold text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.subject.subject_code}
             </span>{" "}
             to confirm archival

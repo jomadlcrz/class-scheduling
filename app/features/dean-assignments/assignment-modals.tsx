@@ -346,7 +346,7 @@ export function AssignSubjectModal({
                         }`}
                         onClick={() => toggle(s.subjectCode)}
                       >
-                        <td className="w-10 px-3 py-2 align-middle leading-none text-gray-700 dark:text-slate-300">
+                        <td className="w-10 px-3 py-2 align-middle leading-none text-slate-600 dark:text-slate-300">
                           {isAssigned ? (
                             <Checkbox
                               id={`subj-${s.subjectCode}`}

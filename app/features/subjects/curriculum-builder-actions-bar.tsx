@@ -137,7 +137,7 @@ export function CurriculumBuilderActionsBar({
             Upload an .xlsx, .xls, or .csv file with one subject per row. The header row must use
             these columns:
           </p>
-          <ul className="list-inside list-disc space-y-1.5 text-slate-600 dark:text-slate-300">
+          <ul className="list-inside list-disc space-y-1.5 text-slate-500 dark:text-slate-400">
             <li>
               <span className="font-semibold text-navy-800 dark:text-mist-100">Year Level</span> —
               the year slot (1, 2, 3, …)

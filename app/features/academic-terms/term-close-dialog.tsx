@@ -89,7 +89,7 @@ export function TermCloseDialog({ open, syId, semesterNumber, onClose, onConfirm
           </div>
         ) : preview ? (
           <>
-            <p className="font-body text-sm text-slate-600 dark:text-slate-300">{preview.confirmation.message}</p>
+            <p className="font-body text-sm text-slate-500 dark:text-slate-400">{preview.confirmation.message}</p>
 
             {preview.closureEffects.length > 0 && (
               <ClosureEffectsPanel effects={preview.closureEffects} variant="compact" />

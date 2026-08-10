@@ -153,7 +153,7 @@ export function SchoolYearsPage() {
       </Modal>
 
       <Modal open={helpOpen} onClose={() => setHelpOpen(false)} title="School years" wide>
-        <div className="space-y-4 font-body text-sm text-slate-600 dark:text-slate-300">
+        <div className="space-y-4 font-body text-sm text-slate-500 dark:text-slate-400">
           <p>
             Each row is one academic year (e.g. 2026-2027). Calendar status — Ongoing, Ended, or
             Upcoming — is computed from today&apos;s date.

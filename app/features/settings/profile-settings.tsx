@@ -151,7 +151,7 @@ export function ProfileSettings() {
             label="Current Password"
             autoComplete="current-password"
           />
-          <Button type="button">Change Email</Button>
+          <Button type="button" pill>Change Email</Button>
         </div>
       </Modal>
     </div>

@@ -134,7 +134,7 @@ export function StudentEnrollForm({
       <FormError message={error} />
 
       <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-        Enrolling <span className="font-medium text-navy-700 dark:text-mist-100">
+        Enrolling <span className="font-semibold text-navy-800 dark:text-mist-100">
           {student.lastName}, {student.firstName}
         </span>{" "}
         into a new term.

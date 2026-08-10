@@ -116,7 +116,7 @@ export function ClosureEffectsPanel({ effects, variant = "default", className = 
   if (variant === "compact") {
     return (
       <section className={className}>
-        <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
+        <h3 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
           What happens when you post a term
         </h3>
         <ul className="mt-3 space-y-2">

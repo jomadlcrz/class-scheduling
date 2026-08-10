@@ -83,7 +83,7 @@ export function SchoolYearCloseDialog({ open, syId, onClose, onConfirm }: School
           </div>
         ) : preview ? (
           <>
-            <p className="font-body text-sm text-slate-600 dark:text-slate-300">{preview.confirmation.message}</p>
+            <p className="font-body text-sm text-slate-500 dark:text-slate-400">{preview.confirmation.message}</p>
 
             {preview.missingSemesters.length > 0 && (
               <p className="font-body text-sm text-amber-700 dark:text-amber-300">

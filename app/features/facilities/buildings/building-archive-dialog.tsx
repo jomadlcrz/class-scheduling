@@ -129,7 +129,7 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
             </ul>
           )}
 
-          <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Move classes to another room and reassign staff first — then you can retry.
           </p>
           <div className="flex justify-end">
@@ -147,7 +147,7 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           Archiving{" "}
-          <span className="font-medium text-navy-700 dark:text-mist-100">
+          <span className="font-semibold text-navy-800 dark:text-mist-100">
             {preview.building.buildingName}
           </span>{" "}
           soft-deletes the building, its {rooms.length} active{" "}
@@ -184,7 +184,7 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
-            <span className="font-semibold text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.building.buildingName}
             </span>{" "}
             to confirm archival

@@ -98,7 +98,7 @@ export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialo
               </span>
             </AlertDescription>
           </Alert>
-          <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Move those classes to another room first, then retry.
           </p>
           <div className="flex justify-end">
@@ -114,7 +114,7 @@ export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialo
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           Archiving{" "}
-          <span className="font-medium text-navy-700 dark:text-mist-100">
+          <span className="font-semibold text-navy-800 dark:text-mist-100">
             {preview.room.roomName}
           </span>{" "}
           only soft-deletes the room — no curriculum or schedule is touched. It can be restored from Archive at any time.
@@ -126,7 +126,7 @@ export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialo
             className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
           >
             Type{" "}
-            <span className="font-semibold text-navy-700 dark:text-mist-100">
+            <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.room.roomName}
             </span>{" "}
             to confirm archival
