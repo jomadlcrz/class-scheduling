@@ -108,7 +108,7 @@ function IrregularClassPage() {
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`-mb-px border-b-2 px-4 py-2 font-body text-sm font-medium transition-colors duration-150 ${
+            className={`-mb-px border-b-2 px-4 py-2.5 font-body text-sm font-semibold transition-colors duration-150 ${
               activeTab === tab
                 ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
                 : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"

@@ -33,7 +33,7 @@ export function AcademicStructureTabs({ className }: { className?: string }) {
           className={({ isActive }) =>
             `-mb-px rounded-t-sm border-b-2 px-4 py-2.5 font-body text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
               isActive
-                ? "border-navy-700 text-navy-700 dark:border-gold-400 dark:text-mist-100"
+                ? "border-navy-700 text-navy-700 dark:border-white dark:text-mist-100"
                 : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-mist-100"
             }`
           }
