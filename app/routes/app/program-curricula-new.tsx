@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "~/auth/auth-provider";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { WizardSkeleton } from "~/components/ui/skeleton";
@@ -59,6 +60,14 @@ function ProgramsNewPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
+      <Breadcrumb
+        items={[
+          { label: "Program Curricula", href: "/program-curricula" },
+          { label: "Create Curriculum" },
+        ]}
+        className="mb-4"
+      />
+
       <PageHeader
         title="Create Curriculum"
 
