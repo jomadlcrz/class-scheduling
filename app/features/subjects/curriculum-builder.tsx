@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Accordion } from "~/components/ui/accordion";
 import { TabList } from "~/components/ui/tabs";
+import type { CurriculumImportRow } from "~/lib/curriculum-excel";
 import { CurriculumBuilderActionsBar } from "~/features/subjects/curriculum-builder-actions-bar";
 import { CurriculumBuilderHeader, type NewProgramDraft } from "~/features/subjects/curriculum-builder-header";
 import type { CurriculumBuilderMode } from "~/features/subjects/curriculum-builder-mode-toggle";
@@ -31,6 +32,8 @@ type CurriculumBuilderProps = {
   pendingCount?: number;
   onSave?: () => void;
   onCancel?: () => void;
+  /** Append subjects parsed from an imported Excel/CSV file to the draft. */
+  onImport?: (rows: CurriculumImportRow[]) => void;
   /** Hide the program-info card when a wizard step already owns that form. */
   showHeader?: boolean;
   /** Hide the Cancel/Save cluster when a wizard's own footer already owns save/cancel actions. */
@@ -64,6 +67,7 @@ export function CurriculumBuilder({
   pendingCount,
   onSave,
   onCancel,
+  onImport,
   showHeader = true,
   showSaveActions = true,
 }: CurriculumBuilderProps) {
@@ -182,6 +186,7 @@ export function CurriculumBuilder({
         isSaving={isSaving}
         onSave={onSave}
         onCancel={onCancel}
+        onImport={onImport}
         showSaveActions={showSaveActions}
       />
 

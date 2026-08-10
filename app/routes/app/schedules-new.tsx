@@ -6,6 +6,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Drawer } from "~/components/ui/drawer";
 import { AlertIcon, PlusIcon, RefreshCwIcon, RotateIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
@@ -832,6 +833,14 @@ function SchedulesNewPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
+      <Breadcrumb
+        items={[
+          { label: "Regular Class", href: "/schedules/regular-class" },
+          { label: "New Schedule" },
+        ]}
+        className="mb-4"
+      />
+
       <PageHeader
         title="New Schedule"
 
@@ -849,15 +858,6 @@ function SchedulesNewPage() {
               >
                 <RefreshCwIcon />
                 Check Ledgers
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                block={false}
-                disabled={isSaving || isGenerating}
-                onClick={() => navigate("/schedules/regular-class")}
-              >
-                Cancel
               </Button>
               <Button
                 type="button"

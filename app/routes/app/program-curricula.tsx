@@ -6,12 +6,13 @@ import { useAuth } from "~/auth/auth-provider";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
-import { PlusIcon, PrinterIcon, SearchIcon } from "~/components/ui/icons";
+import { PlusIcon, PrinterIcon, DownloadIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { CurriculumHeader } from "~/features/curriculum/curriculum-header";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
+import { exportCurriculumToExcel } from "~/lib/curriculum-excel";
 import { openCurriculumPrint } from "~/features/curriculum/print-curriculum";
 import { ProgramArchiveDialog } from "~/features/programs/program-archive-dialog";
 import { ProgramForm } from "~/features/programs/program-form";
@@ -209,6 +210,15 @@ function ProgramCurriculaPage() {
                       className="grid h-8 w-9 cursor-pointer place-items-center bg-white text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300"
                     >
                       <PrinterIcon size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Export curriculum to Excel"
+                      aria-label="Export curriculum to Excel"
+                      onClick={() => exportCurriculumToExcel(curriculum)}
+                      className="grid h-8 w-9 cursor-pointer place-items-center border-l border-slate-300 bg-white text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300"
+                    >
+                      <DownloadIcon size={15} />
                     </button>
                   </div>
                 </div>

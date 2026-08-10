@@ -10,6 +10,7 @@ import type { PendingEntry } from "~/features/subjects/curriculum-structure";
 import { ProgramWizardReview } from "~/features/subjects/program-wizard-review";
 import { ProgramWizardStep1Info } from "~/features/subjects/program-wizard-step1-info";
 import { ProgramWizardStep2Curriculum } from "~/features/subjects/program-wizard-step2-curriculum";
+import type { CurriculumImportRow } from "~/lib/curriculum-excel";
 import { programSchema } from "~/schemas/program.schema";
 import { subjectService } from "~/services/subject.service";
 import type { Department } from "~/types/department";
@@ -138,6 +139,34 @@ export function ProgramWizard({
           ...p,
           prerequisites: p.prerequisites.filter((code) => code !== removed?.code),
         }));
+    });
+  }
+
+  function handleImport(rows: CurriculumImportRow[]) {
+    setPending((current) => {
+      const existingCodes = new Set(current.map((p) => p.code.trim().toLowerCase()));
+      const additions = rows
+        .filter((row) => !existingCodes.has(row.code.trim().toLowerCase()))
+        .map((row) => {
+          tempIdCounter.current += 1;
+          return {
+            tempId: `tmp-${tempIdCounter.current}`,
+            program: "",
+            yearLevel: row.yearLevel,
+            semester: row.semester,
+            code: row.code.trim(),
+            title: row.title.trim(),
+            units: row.units,
+            subjectType: row.subjectType,
+            prerequisites: row.prerequisites,
+          };
+        });
+      return [...current, ...additions];
+    });
+    setCollapsed((current) => {
+      const next = new Set(current);
+      for (const row of rows) next.delete(`y${row.yearLevel}s${row.semester}`);
+      return next;
     });
   }
 
@@ -278,6 +307,7 @@ export function ProgramWizard({
           onAddPending={handleAddPending}
           onRemovePending={handleRemovePending}
           onDuplicatePending={handleDuplicatePending}
+          onImport={handleImport}
           pendingCount={pending.length}
           canAdvance={step2Valid}
           onBack={() => goToStep(0)}

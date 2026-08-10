@@ -4,6 +4,7 @@ import type { PendingEntry } from "~/features/subjects/curriculum-structure";
 import type { PrerequisiteOption } from "~/features/subjects/prerequisite-picker";
 import { ProgramSummaryStrip } from "~/features/subjects/program-summary-strip";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
+import type { CurriculumImportRow } from "~/lib/curriculum-excel";
 import type { Department } from "~/types/department";
 import type { CreateSubjectInput } from "~/types/subject";
 
@@ -25,6 +26,7 @@ type ProgramWizardStep2CurriculumProps = {
   canAdvance: boolean;
   onBack: () => void;
   onNext: () => void;
+  onImport?: (rows: CurriculumImportRow[]) => void;
 };
 
 export function ProgramWizardStep2Curriculum({
