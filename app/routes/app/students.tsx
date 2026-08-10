@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { useAuth } from "~/hooks/use-auth";
@@ -13,6 +13,7 @@ import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
+import { TabLinks } from "~/components/ui/underline-tabs";
 import { useStudentAccountFilters } from "~/features/students/student-account-filters";
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
@@ -630,28 +631,15 @@ export function StudentsPage() {
         }
       />
 
-      <div className="mt-6 flex gap-2 border-b border-slate-200 dark:border-white/10">
-        {[
-          { to: "/students", label: "All Students" },
-          { to: "/students-regular", label: "Regular Students" },
-          { to: "/students-irregular", label: "Irregular Students" },
-        ].map((tab) => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end
-            className={({ isActive }) =>
-              `-mb-px border-b-2 px-4 py-2 font-body text-sm font-medium transition-colors duration-150 ${
-                isActive
-                  ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
-                  : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
-              }`
-            }
-          >
-            {tab.label}
-          </NavLink>
-        ))}
-      </div>
+      <TabLinks
+        ariaLabel="Students"
+        className="mt-6"
+        tabs={[
+          { to: "/students", label: "All Students", end: true },
+          { to: "/students-regular", label: "Regular Students", end: true },
+          { to: "/students-irregular", label: "Irregular Students", end: true },
+        ]}
+      />
 
       {activeView === "all" ? (
         <div className="mt-6 flex flex-col gap-4">

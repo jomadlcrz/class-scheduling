@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { FormError } from "~/components/forms/form-error";
@@ -12,6 +12,7 @@ import { ConfirmDialog } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { TabLinks } from "~/components/ui/underline-tabs";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
@@ -176,27 +177,13 @@ function parseCsv(text: string): StudentRow[] {
 
 function BulkStatusTabs() {
   return (
-    <div className="flex gap-2 border-b border-slate-200 dark:border-white/10">
-      {[
-        { to: "/students-regular/bulk", label: "Regular Students" },
-        { to: "/students-irregular/bulk", label: "Irregular Students" },
-      ].map((tab) => (
-        <NavLink
-          key={tab.to}
-          to={tab.to}
-          end
-          className={({ isActive }) =>
-            `-mb-px border-b-2 px-4 py-2 font-body text-sm font-medium transition-colors duration-150 ${
-              isActive
-                ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
-                : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
-            }`
-          }
-        >
-          {tab.label}
-        </NavLink>
-      ))}
-    </div>
+    <TabLinks
+      ariaLabel="Student type"
+      tabs={[
+        { to: "/students-regular/bulk", label: "Regular Students", end: true },
+        { to: "/students-irregular/bulk", label: "Irregular Students", end: true },
+      ]}
+    />
   );
 }
 

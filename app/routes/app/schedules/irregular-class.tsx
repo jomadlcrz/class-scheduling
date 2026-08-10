@@ -6,6 +6,7 @@ import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { IrregularStudentsSkeleton, TableSkeleton } from "~/components/ui/skeleton";
+import { TabButtons } from "~/components/ui/underline-tabs";
 import { AssignSchedulePanel } from "~/features/schedules/assign-schedule-panel";
 import { AssignedScheduleTable } from "~/features/schedules/assigned-schedule-table";
 import { IrregularStudentList } from "~/features/schedules/irregular-student-list";
@@ -102,22 +103,16 @@ function IrregularClassPage() {
         title="Irregular Schedule Builder"
       />
 
-      <div className="mt-6 flex gap-2 border-b border-slate-200 dark:border-white/10">
-        {(["students", "assigned"] as const).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`-mb-px border-b-2 px-4 py-2.5 font-body text-sm font-semibold transition-colors duration-150 ${
-              activeTab === tab
-                ? "border-navy-800 text-navy-800 dark:border-white dark:text-mist-100"
-                : "border-transparent text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-slate-200"
-            }`}
-          >
-            {tab === "students" ? "Irregular Students" : "Irregular Schedules"}
-          </button>
-        ))}
-      </div>
+      <TabButtons
+        ariaLabel="Irregular class"
+        className="mt-6"
+        value={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { value: "students", label: "Irregular Students" },
+          { value: "assigned", label: "Irregular Schedules" },
+        ]}
+      />
 
       {students === null ? (
         <IrregularStudentsSkeleton />
