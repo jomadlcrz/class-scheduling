@@ -730,6 +730,91 @@ export function TimelineSkeleton({ steps = 5 }: TimelineSkeletonProps) {
   );
 }
 
+/** Permissions page loading placeholder — role cards, the permission-matrix
+ * table, and the catalog table, mirroring the page layout. */
+export function PermissionsSkeleton() {
+  return (
+    <div role="status" aria-label="Loading">
+      <div aria-hidden="true" className="mt-6 flex flex-col gap-6">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5"
+            >
+              <Skeleton className="h-8 w-28" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-24 rounded-full" />
+                <Skeleton className="size-8 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <Skeleton className="h-7 w-56" />
+          <div className="mt-3 overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
+            <div
+              className="grid border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-surface-raised"
+              style={{ gridTemplateColumns: "minmax(0,1fr) repeat(4, minmax(0,1fr))" }}
+            >
+              {Array.from({ length: 5 }).map((_, c) => (
+                <div key={c} className="min-w-0 overflow-hidden px-4 py-2.5">
+                  <Skeleton className="h-3.5 w-16 max-w-full" />
+                </div>
+              ))}
+            </div>
+            {Array.from({ length: 6 }).map((_, r) => (
+              <div
+                key={r}
+                className="grid border-b border-slate-200 last:border-b-0 dark:border-white/8"
+                style={{ gridTemplateColumns: "minmax(0,1fr) repeat(4, minmax(0,1fr))" }}
+              >
+                <div className="px-4 py-2.5">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="mt-1 h-3 w-1/3" />
+                </div>
+                {Array.from({ length: 4 }).map((_, c) => (
+                  <div key={c} className="px-4 py-2.5">
+                    <Skeleton className="size-4" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Skeleton className="h-7 w-56" />
+          <div className="mt-3 overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
+            <div className="grid grid-cols-3 border-b-2 border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-surface-raised">
+              {Array.from({ length: 3 }).map((_, c) => (
+                <div key={c} className="min-w-0 overflow-hidden px-4 py-2.5">
+                  <Skeleton className="h-3.5 w-16 max-w-full" />
+                </div>
+              ))}
+            </div>
+            {Array.from({ length: 6 }).map((_, r) => (
+              <div key={r} className="grid grid-cols-3 border-b border-slate-200 last:border-b-0 dark:border-white/8">
+                <div className="min-w-0 px-4 py-2.5">
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="min-w-0 px-4 py-2.5">
+                  <Skeleton className="h-4 w-full" />
+                </div>
+                <div className="flex justify-end gap-1 px-4 py-2.5">
+                  <Skeleton className="size-8 rounded-full" />
+                  <Skeleton className="size-8 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Scheduling hub loading placeholder — stat strip, next-step card, and the
  * action queue, mirroring the hub page layout. */
 export function SchedulingHubSkeleton() {

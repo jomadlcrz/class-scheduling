@@ -5,7 +5,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
-import { TableSkeleton } from "~/components/ui/skeleton";
+import { PermissionsSkeleton } from "~/components/ui/skeleton";
 import { AddPermissionForm } from "~/features/permissions/add-permission-form";
 import { AddRoleForm } from "~/features/permissions/add-role-form";
 import { PermissionArchiveDialog } from "~/features/permissions/permission-archive-dialog";
@@ -84,7 +84,7 @@ function PermissionsPage() {
       {error && roles === null ? (
         <EmptyState title="Couldn't load permissions">{error}</EmptyState>
       ) : roles === null ? (
-        <TableSkeleton columns={5} rows={8} />
+        <PermissionsSkeleton />
       ) : roles.length === 0 ? (
         <EmptyState title="No roles yet">
           No roles exist in the system yet.
