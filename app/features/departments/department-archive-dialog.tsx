@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon, FolderOpenIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { departmentService } from "~/services/department.service";
 import type { Department, DepartmentDeletePreview } from "~/types/department";
@@ -173,7 +173,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
           />
         </div>
 
-        <div className="flex justify-end gap-2">
+        <ModalActions>
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
@@ -188,7 +188,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
           >
             Archive department
           </Button>
-        </div>
+        </ModalActions>
       </div>
     );
   }

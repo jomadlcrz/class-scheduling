@@ -118,6 +118,7 @@ export function StudentAccountTable({
                     <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
                   ) : isActive ? (
                     <IconButton
+                      variant="dangerSoft"
                       onClick={() => onDeactivateAccount(student)}
                       label={`Deactivate account for ${displayName(student)}`}
                       title="Deactivate account"
@@ -126,6 +127,7 @@ export function StudentAccountTable({
                     </IconButton>
                   ) : (
                     <IconButton
+                      variant="dangerSoft"
                       onClick={() => onReactivateAccount(student)}
                       label={`Reactivate account for ${displayName(student)}`}
                       title="Reactivate account"

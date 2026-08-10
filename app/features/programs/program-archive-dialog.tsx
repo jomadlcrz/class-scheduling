@@ -3,7 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { BookIcon, LayersIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { programService } from "~/services/program.service";
 import type { Program, ProgramDeletePreview } from "~/types/program";
@@ -219,7 +219,7 @@ export function ProgramArchiveDialog({ program, onClose, onConfirm }: ProgramArc
           />
         </div>
 
-        <div className="flex justify-end gap-2">
+        <ModalActions>
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
@@ -234,7 +234,7 @@ export function ProgramArchiveDialog({ program, onClose, onConfirm }: ProgramArc
           >
             Archive program
           </Button>
-        </div>
+        </ModalActions>
       </div>
     );
   }

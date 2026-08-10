@@ -12,18 +12,39 @@ type ModalProps = {
   wide?: boolean;
   /** Full-width panel for data tables (e.g. audit logs). */
   xl?: boolean;
+  /** Pinned action bar rendered in a distinct footer band below the body. */
+  footer?: ReactNode;
   children: ReactNode;
 };
 
-export function Modal({ open, onClose, title, wide, xl, children }: ModalProps) {
+export function Modal({ open, onClose, title, wide, xl, footer, children }: ModalProps) {
   return (
     <AnimatePresence>
       {open && (
-        <ModalContent key="modal" onClose={onClose} title={title} wide={wide} xl={xl}>
+        <ModalContent key="modal" onClose={onClose} title={title} wide={wide} xl={xl} footer={footer}>
           {children}
         </ModalContent>
       )}
     </AnimatePresence>
+  );
+}
+
+/**
+ * Bordered footer action row for modals that render their buttons inside the body
+ * (forms especially, where the submit button must stay within the `<form>`). Full-bleeds
+ * to the panel edges and matches the pinned `footer` band's border + tint, so every modal
+ * gets the same header/footer framing whether or not it uses the `footer` prop.
+ *
+ * Must be the LAST child of the modal body — the negative margins cancel the body's
+ * `px-4 py-4 sm:px-5` padding so the band sits flush to the panel's bottom and sides.
+ */
+export function ModalActions({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div
+      className={`-mx-4 -mb-4 flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3 sm:-mx-5 sm:px-5 dark:border-white/10 dark:bg-white/5 ${className ?? ""}`.trim()}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -73,13 +94,12 @@ export function ConfirmDialog({
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title={title}>
-      <div className="flex flex-col gap-4">
-        <FormError message={error} />
-        <div className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          {children}
-        </div>
-        <div className="flex justify-end gap-2">
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title={title}
+      footer={
+        <>
           <Button type="button" variant="outline" block={false} onClick={handleClose}>
             Cancel
           </Button>
@@ -93,6 +113,13 @@ export function ConfirmDialog({
           >
             {confirmLabel}
           </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <FormError message={error} />
+        <div className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          {children}
         </div>
       </div>
     </Modal>
@@ -104,12 +131,14 @@ function ModalContent({
   title,
   wide,
   xl,
+  footer,
   children,
 }: {
   onClose: () => void;
   title: string;
   wide?: boolean;
   xl?: boolean;
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   // Freeze body scroll while the modal is open; tall content scrolls
@@ -143,12 +172,12 @@ function ModalContent({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-40 bg-navy-950/40"
+        className="fixed inset-0 z-40 bg-navy-950/40 backdrop-blur-sm"
         aria-hidden="true"
       />
 
-      {/* Panel — on small screens use nearly full viewport height so content scrolls inside. */}
-      <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+      {/* Panel — top-aligned, not vertically centered; on small screens use nearly full viewport height so content scrolls inside. */}
+      <div className="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-2 pb-2 pt-2 sm:px-4 sm:pb-4 sm:pt-4">
         <motion.div
           role="dialog"
           aria-modal="true"
@@ -157,11 +186,12 @@ function ModalContent({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className={`pointer-events-auto flex max-h-[calc(100dvh-1rem)] w-full flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-xl sm:max-h-[calc(100dvh-2rem)] sm:p-5 dark:border-white/10 dark:bg-surface-raised ${
+          className={`pointer-events-auto flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl sm:max-h-[calc(100dvh-2rem)] dark:border-white/10 dark:bg-surface-raised ${
             xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
           }`}
         >
-          <div className="flex shrink-0 items-start justify-between gap-3">
+          {/* Header band */}
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-5 dark:border-white/10 dark:bg-white/5">
             <h2 className="min-w-0 font-display text-lg tracking-wide text-navy-700 sm:text-xl dark:text-mist-100">
               {title}
             </h2>
@@ -174,10 +204,16 @@ function ModalContent({
               <CloseIcon />
             </button>
           </div>
-          {/* -mx matches panel padding so focus rings stay visible at scroll edges. */}
-          <div className="scrollbar-thin -mx-4 mt-4 min-h-0 flex-1 overflow-y-auto px-4 sm:-mx-5 sm:px-5">
+          {/* Body — scrolls when tall; its own padding keeps focus rings clear of the edges. */}
+          <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
             {children}
           </div>
+          {/* Footer band — pinned action bar, set apart from the body. */}
+          {footer && (
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-5 dark:border-white/10 dark:bg-white/5">
+              {footer}
+            </div>
+          )}
         </motion.div>
       </div>
     </>

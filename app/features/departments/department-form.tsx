@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { ConfirmDialog } from "~/components/ui/modal";
+import { ConfirmDialog, ModalActions } from "~/components/ui/modal";
 import { FileChooser } from "~/components/ui/file-chooser";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -204,14 +204,14 @@ export function DepartmentForm({
           </SelectContent>
         </Select>
       </FieldChrome>
-      <div className="flex justify-end gap-2">
+      <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
           {isEdit ? "Save Changes" : "Add Department"}
         </Button>
-      </div>
+      </ModalActions>
       </form>
       <ConfirmDialog
         open={logoRemoveOpen}

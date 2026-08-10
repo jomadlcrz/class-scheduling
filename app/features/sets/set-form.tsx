@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { FieldChrome } from "~/components/ui/input";
+import { ModalActions } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import type { Program } from "~/types/program";
@@ -113,14 +114,14 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         hint={isEdit ? undefined : "One code per line — each line creates a separate set."}
       />
 
-      <div className="flex justify-end gap-2">
+      <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
           {isEdit ? "Save Changes" : "Add Sets"}
         </Button>
-      </div>
+      </ModalActions>
     </form>
   );
 }

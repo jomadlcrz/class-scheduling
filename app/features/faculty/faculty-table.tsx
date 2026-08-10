@@ -85,6 +85,7 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                   <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
                 ) : isActive === null ? null : isActive ? (
                   <IconButton
+                    variant="dangerSoft"
                     onClick={() => onDeactivate(member)}
                     label={`Deactivate ${member.firstName} ${member.lastName}`}
                     title="Deactivate"
@@ -93,6 +94,7 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                   </IconButton>
                 ) : (
                   <IconButton
+                    variant="dangerSoft"
                     onClick={() => onReactivate(member)}
                     label={`Reactivate ${member.firstName} ${member.lastName}`}
                     title="Reactivate"

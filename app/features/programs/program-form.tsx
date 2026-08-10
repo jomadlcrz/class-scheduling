@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { ModalActions } from "~/components/ui/modal";
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { programSchema } from "~/schemas/program.schema";
@@ -128,14 +129,14 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           className={inputClassName}
         />
       </FieldChrome>
-      <div className="flex justify-end gap-2">
+      <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
           {isEdit ? "Save Changes" : "Add Program"}
         </Button>
-      </div>
+      </ModalActions>
     </form>
   );
 }

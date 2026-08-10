@@ -76,6 +76,7 @@ export function AdministratorTable({
                       <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
                     ) : isActive ? (
                       <IconButton
+                        variant="dangerSoft"
                         onClick={() => onDeactivate(admin)}
                         label={`Deactivate ${admin.firstName} ${admin.lastName}`}
                         title="Deactivate"
@@ -84,6 +85,7 @@ export function AdministratorTable({
                       </IconButton>
                     ) : (
                       <IconButton
+                        variant="dangerSoft"
                         onClick={() => onReactivate(admin)}
                         label={`Reactivate ${admin.firstName} ${admin.lastName}`}
                         title="Reactivate"

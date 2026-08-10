@@ -3,7 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { BlocksIcon, BookIcon, CalendarIcon, LayersIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { subjectService } from "~/services/subject.service";
 import type { Subject, SubjectDeletePreview } from "~/types/subject";
@@ -193,7 +193,7 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
           />
         </div>
 
-        <div className="flex justify-end gap-2">
+        <ModalActions>
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
@@ -208,7 +208,7 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
           >
             Archive subject
           </Button>
-        </div>
+        </ModalActions>
       </div>
     );
   }

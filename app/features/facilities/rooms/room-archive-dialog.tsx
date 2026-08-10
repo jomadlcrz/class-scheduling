@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon, CalendarIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { roomService } from "~/services/room.service";
 import type { Room, RoomArchivePreview } from "~/types/room";
@@ -143,7 +143,7 @@ export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialo
           />
         </div>
 
-        <div className="flex justify-end gap-2">
+        <ModalActions>
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
@@ -158,7 +158,7 @@ export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialo
           >
             Archive room
           </Button>
-        </div>
+        </ModalActions>
       </div>
     );
   }

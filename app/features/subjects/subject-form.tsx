@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { ModalActions } from "~/components/ui/modal";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -126,14 +127,14 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
         labelled
       />
 
-      <div className="flex justify-end gap-2">
+      <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
           Save Changes
         </Button>
-      </div>
+      </ModalActions>
     </form>
   );
 }

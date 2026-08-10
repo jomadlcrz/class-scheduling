@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import {
   permissionService,
@@ -87,9 +87,9 @@ export function PermissionArchiveDialog({
                   Revoke it from every assigned role before archiving it.
                 </AlertDescription>
               </Alert>
-              <div className="flex justify-end">
+              <ModalActions>
                 <Button type="button" variant="outline" block={false} onClick={onClose}>Close</Button>
-              </div>
+              </ModalActions>
             </>
           ) : (
             <>
@@ -115,7 +115,7 @@ export function PermissionArchiveDialog({
                 />
               </div>
               <FormError message={error} />
-              <div className="flex justify-end gap-2">
+              <ModalActions>
                 <Button type="button" variant="outline" block={false} onClick={onClose}>Cancel</Button>
                 <Button
                   type="button"
@@ -128,7 +128,7 @@ export function PermissionArchiveDialog({
                 >
                   Archive permission
                 </Button>
-              </div>
+              </ModalActions>
             </>
           )}
         </div>

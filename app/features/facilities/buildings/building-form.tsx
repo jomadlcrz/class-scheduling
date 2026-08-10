@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { ModalActions } from "~/components/ui/modal";
 import { buildingSchema } from "~/schemas/building.schema";
 import type { Building, CreateBuildingInput } from "~/types/building";
 
@@ -63,14 +64,14 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
             : "You can add rooms to each floor after creating the building."
         }
       />
-      <div className="flex justify-end gap-2 pt-2">
+      <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
           {isEdit ? "Save Changes" : "Create Building"}
         </Button>
-      </div>
+      </ModalActions>
     </form>
   );
 }

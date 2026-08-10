@@ -8,6 +8,10 @@ const variants = {
     "text-slate-400 hover:bg-slate-200/60 hover:text-navy-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-white",
   danger:
     "text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-400",
+  // Persistent light red — for account state toggles (deactivate/reactivate).
+  // Distinct from the archive action's orange so the two never read as the same control.
+  dangerSoft:
+    "text-red-400 hover:bg-red-50 hover:text-red-500 dark:text-red-300 dark:hover:bg-red-500/10 dark:hover:text-red-200",
 } as const;
 
 type IconButtonProps = {

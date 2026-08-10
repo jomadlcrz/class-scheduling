@@ -3,7 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CalendarIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { setService } from "~/services/set.service";
 import type { ClassSet, SetDeletePreview } from "~/types/set";
@@ -137,7 +137,7 @@ export function SetArchiveDialog({ set, onClose, onConfirm }: SetArchiveDialogPr
           />
         </div>
 
-        <div className="flex justify-end gap-2">
+        <ModalActions>
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
@@ -152,7 +152,7 @@ export function SetArchiveDialog({ set, onClose, onConfirm }: SetArchiveDialogPr
           >
             Archive set
           </Button>
-        </div>
+        </ModalActions>
       </div>
     );
   }
