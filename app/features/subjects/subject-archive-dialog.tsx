@@ -3,6 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { BlocksIcon, BookIcon, CalendarIcon, LayersIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { subjectService } from "~/services/subject.service";
@@ -170,16 +171,13 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
         </ul>
 
         <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="subject-archive-confirm"
-            className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
-          >
+          <Label htmlFor="subject-archive-confirm">
             Type{" "}
             <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.subject.subject_code}
             </span>{" "}
             to confirm archival
-          </label>
+          </Label>
           <input
             id="subject-archive-confirm"
             type="text"

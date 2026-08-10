@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon, DoorOpenIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { buildingService } from "~/services/building.service";
@@ -145,7 +146,7 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
 
     return (
       <div className="flex flex-col gap-4">
-        <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           Archiving{" "}
           <span className="font-semibold text-navy-800 dark:text-mist-100">
             {preview.building.buildingName}
@@ -179,16 +180,13 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="building-archive-confirm"
-            className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
-          >
+          <Label htmlFor="building-archive-confirm">
             Type{" "}
             <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.building.buildingName}
             </span>{" "}
             to confirm archival
-          </label>
+          </Label>
           <input
             id="building-archive-confirm"
             type="text"

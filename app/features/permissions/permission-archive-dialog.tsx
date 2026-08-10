@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import {
@@ -97,12 +98,9 @@ export function PermissionArchiveDialog({
                 Archiving <span className="font-semibold text-navy-800 dark:text-mist-100">{slug}</span> removes it from the active permission catalog. It can be restored from Archive.
               </p>
               <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="permission-archive-confirm"
-                  className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
-                >
-                  Type <span className="font-semibold">{slug}</span> to confirm archival
-                </label>
+                <Label htmlFor="permission-archive-confirm">
+                  Type <span className="font-semibold text-navy-800 dark:text-mist-100">{slug}</span> to confirm archival
+                </Label>
                 <input
                   id="permission-archive-confirm"
                   type="text"

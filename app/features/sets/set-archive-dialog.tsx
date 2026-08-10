@@ -3,6 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CalendarIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { setService } from "~/services/set.service";
@@ -114,16 +115,13 @@ export function SetArchiveDialog({ set, onClose, onConfirm }: SetArchiveDialogPr
         </ul>
 
         <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="set-archive-confirm"
-            className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
-          >
+          <Label htmlFor="set-archive-confirm">
             Type{" "}
             <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.set.set_code}
             </span>{" "}
             to confirm archival
-          </label>
+          </Label>
           <input
             id="set-archive-confirm"
             type="text"

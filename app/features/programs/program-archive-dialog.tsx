@@ -3,6 +3,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { BookIcon, LayersIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { programService } from "~/services/program.service";
@@ -196,16 +197,13 @@ export function ProgramArchiveDialog({ program, onClose, onConfirm }: ProgramArc
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="program-archive-confirm"
-            className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
-          >
+          <Label htmlFor="program-archive-confirm">
             Type{" "}
             <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.program.program_abbrev}
             </span>{" "}
             to confirm archival
-          </label>
+          </Label>
           <input
             id="program-archive-confirm"
             type="text"

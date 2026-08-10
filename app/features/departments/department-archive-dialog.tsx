@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertTriangleIcon, FolderOpenIcon, UsersIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { departmentService } from "~/services/department.service";
@@ -117,9 +118,9 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
     const programs = preview.will_delete.programs;
     return (
       <div className="flex flex-col gap-4">
-        <p className="font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           Archiving{" "}
-          <span className="font-medium text-navy-700 dark:text-mist-100">
+          <span className="font-semibold text-navy-800 dark:text-mist-100">
             {preview.department.department_abbrev} — {preview.department.department_name}
           </span>{" "}
           cascades through every program below. It can be restored from Archive at any time.
@@ -150,16 +151,13 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
         </ul>
 
         <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="department-archive-confirm"
-            className="font-body text-sm font-medium text-navy-700 dark:text-mist-100"
-          >
+          <Label htmlFor="department-archive-confirm">
             Type{" "}
             <span className="font-semibold text-navy-800 dark:text-mist-100">
               {preview.department.department_abbrev}
             </span>{" "}
             to confirm archival
-          </label>
+          </Label>
           <input
             id="department-archive-confirm"
             type="text"

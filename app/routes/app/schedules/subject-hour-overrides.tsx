@@ -49,7 +49,6 @@ function SubjectHourOverridesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SubjectHourOverride | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SubjectHourOverride | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [pendingOverride, setPendingOverride] = useState<OverrideFormInput | null>(null);
 
   // Resolve the selected school year and semester number from labels.
@@ -171,17 +170,13 @@ function SubjectHourOverridesPage() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    setIsDeleting(true);
     try {
       const message = await scheduleService.deleteSubjectHourOverride(deleteTarget.id);
       if (message) toast.success(message);
       await refresh();
-      setDeleteTarget(null);
     } catch (err) {
       if (err instanceof ApiError) toast.error(err.message);
       else throw err;
-    } finally {
-      setIsDeleting(false);
     }
   }
 
@@ -333,31 +328,20 @@ function SubjectHourOverridesPage() {
       </Modal>
 
       {/* Delete confirmation */}
-      <Modal open={deleteTarget !== null} onClose={() => setDeleteTarget(null)} title="Delete override">
-        <div className="flex flex-col gap-4">
-          <p className="font-body text-sm text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-navy-800 dark:text-mist-100">
-              {deleteTarget?.subjectCode}
-            </span>{" "}
-            will go back to using the hours configured for its subject type. This takes effect the next time you generate.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" block={false} onClick={() => setDeleteTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              block={false}
-              isLoading={isDeleting}
-              loadingLabel="Deleting…"
-              onClick={handleDelete}
-            >
-              Delete
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete override"
+        confirmLabel="Delete"
+        loadingLabel="Deleting…"
+        confirmVariant="danger"
+        onConfirm={handleDelete}
+      >
+        <span className="font-semibold text-navy-800 dark:text-mist-100">
+          {deleteTarget?.subjectCode}
+        </span>{" "}
+        will go back to using the hours configured for its subject type. This takes effect the next time you generate.
+      </ConfirmDialog>
 
       {/* Overwrite confirmation */}
       <ConfirmDialog
