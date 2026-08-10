@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { BookOpenIcon, ChevronRightIcon, LayersIcon, MailIcon, UserIcon } from "~/components/ui/icons";
+import { ChevronRightIcon, LayersIcon, MailIcon, UserIcon } from "~/components/ui/icons";
 import {
   Table,
   TableBody,
@@ -97,12 +97,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
           <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {detail.programs.map((program) => (
               <Card key={program.id} className="flex flex-col gap-2 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-navy-800 text-white dark:bg-white dark:text-navy-900">
-                    <BookOpenIcon />
-                  </span>
-                  <Badge tone="slate">{program.programType}</Badge>
-                </div>
+                <Badge tone="slate">{program.programType}</Badge>
                 <div>
                   <p className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">
                     {program.abbrev}

@@ -96,7 +96,7 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
               </div>
             </div>
 
-            <div className="absolute right-2 top-2 z-10 flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <div className="absolute right-2 top-2 z-10 flex gap-1 lg:opacity-0 lg:transition-opacity lg:duration-200 lg:group-hover:opacity-100">
               <IconButton
                 onClick={() => onEdit(dept)}
                 label={`Edit ${dept.abbrev}`}
