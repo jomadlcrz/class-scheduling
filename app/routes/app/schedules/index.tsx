@@ -3,7 +3,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+import { SchedulingHubSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { HubActionQueue } from "~/features/schedules/hub/hub-action-queue";
 import { HubNextStepCard } from "~/features/schedules/hub/hub-next-step-card";
@@ -108,9 +108,7 @@ function SchedulingHubPage() {
 
       <div className="mt-6">
         {termLoading || hub.loading ? (
-          <div role="status" aria-label="Loading scheduling status" className="grid place-items-center py-16">
-            <Spinner />
-          </div>
+          <SchedulingHubSkeleton />
         ) : (
           <div className="flex flex-col gap-5">
             <HubStatStrip built={hub.built} total={hub.total} counts={hub.counts} />

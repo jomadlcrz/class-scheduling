@@ -729,3 +729,55 @@ export function TimelineSkeleton({ steps = 5 }: TimelineSkeletonProps) {
     </div>
   );
 }
+
+/** Scheduling hub loading placeholder — stat strip, next-step card, and the
+ * action queue, mirroring the hub page layout. */
+export function SchedulingHubSkeleton() {
+  return (
+    <div role="status" aria-label="Loading">
+      <div aria-hidden="true" className="flex flex-col gap-5">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5"
+            >
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="mt-2 h-6 w-14" />
+              <Skeleton className="mt-1.5 h-3 w-32" />
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-xl border-2 border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-white/10 dark:bg-white/5">
+          <Skeleton className="h-3 w-28" />
+          <div className="mt-2 flex items-start gap-3.5">
+            <Skeleton className="size-11 shrink-0 rounded-full" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <Skeleton className="h-5 w-1/2" />
+              <Skeleton className="h-3.5 w-2/3" />
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-white/10 dark:bg-white/5">
+          <Skeleton className="h-4 w-40" />
+          <div className="mt-3 flex flex-col divide-y divide-slate-100 dark:divide-white/8">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="mt-1.5 h-3 w-52" />
+                </div>
+                <Skeleton className="h-9 w-24 rounded-lg" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
