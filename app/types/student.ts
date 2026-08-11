@@ -56,6 +56,7 @@ export type StudentAccountRow = {
   mobile: string | null;
   email: string | null;
   hasAccount: boolean;
+  profilePhotoUrl?: string | null;
   academics: StudentAcademicRecord[];
 };
 
