@@ -2,6 +2,8 @@
 import { Checkbox } from "~/components/ui/checkbox";
 import { IconButton } from "~/components/ui/icon-button";
 import { FileSearchIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { ImageViewer } from "~/components/ui/image-viewer";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -45,11 +47,13 @@ export function StudentAccountTable({
   onSelectAll,
 }: StudentAccountTableProps) {
   const canBulkSelect = Boolean(selectedIds && onToggleSelect && onSelectAll);
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
   const selectableStudents = students.filter((s) => !s.hasAccount);
   const allSelectableSelected =
     selectableStudents.length > 0 && selectableStudents.every((s) => selectedIds?.has(s.studentProfileId));
 
   return (
+    <>
     <Table>
       <TableHead>
         {canBulkSelect && (
@@ -94,7 +98,8 @@ export function StudentAccountTable({
                   <img
                     src={student.profilePhotoUrl}
                     alt=""
-                    className="size-8 shrink-0 rounded-full object-cover"
+                    className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
+                    onClick={() => setViewerSrc(student.profilePhotoUrl!)}
                   />
                 ) : (
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 font-body text-xs font-medium text-mist-100 dark:bg-white dark:text-navy-800">
@@ -106,7 +111,7 @@ export function StudentAccountTable({
                     {displayName(student)}
                   </span>
                   <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
-                    {student.studentId ?? "—"}
+                    {student.studentId || "No ID"}
                   </span>
                 </div>
               </div>
@@ -166,5 +171,14 @@ export function StudentAccountTable({
         })}
       </TableBody>
     </Table>
+    {viewerSrc && (
+      <ImageViewer
+        open={viewerSrc !== null}
+        onClose={() => setViewerSrc(null)}
+        src={viewerSrc}
+        alt="Profile photo"
+      />
+    )}
+    </>
   );
 }

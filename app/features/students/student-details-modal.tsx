@@ -67,7 +67,7 @@ export function StudentDetailsModal({
         <SectionHeading>Personal Information</SectionHeading>
         <Card className="mt-2 p-4">
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Student ID" value={profile?.studentId || student.studentId || "—"} />
+            <Field label="Student ID" value={profile?.studentId || student.studentId || "No ID"} />
             <Field label="Name" value={displayName} />
             <Field label="Email" value={profile?.email ?? student.email ?? "—"} />
             <Field label="Mobile" value={profile?.mobile ?? student.mobile ?? "—"} />

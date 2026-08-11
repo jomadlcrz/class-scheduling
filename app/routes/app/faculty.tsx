@@ -47,6 +47,7 @@ function FacultyPage() {
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
   const [role, setRole] = useState("all");
+  const [status, setStatus] = useState("all");
 
   const [editTarget, setEditTarget] = useState<Faculty | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Faculty | null>(null);
@@ -63,7 +64,7 @@ function FacultyPage() {
     return [...codes].sort();
   }, [facultyList]);
 
-  const resetKey = `${search}|${department}|${role}`;
+  const resetKey = `${search}|${department}|${role}|${status}`;
 
   const visibleFaculty = useMemo(() => {
     if (!facultyList) return [];
@@ -72,6 +73,8 @@ function FacultyPage() {
       .filter((member) => {
         if (department !== "all" && member.departmentCode !== department) return false;
         if (role !== "all" && !member.roles.some((r) => r.name === role)) return false;
+        if (status === "active" && !member.hasAccount) return false;
+        if (status === "no_account" && member.hasAccount) return false;
         const hasMatchingRole = member.roles.some((r) => r.name === "Dean" || r.name === "Instructor");
         if (!hasMatchingRole) return false;
         if (
@@ -85,7 +88,7 @@ function FacultyPage() {
         return true;
       })
       .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
-  }, [facultyList, search, department, role]);
+  }, [facultyList, search, department, role, status]);
 
   const pagination = usePagination(visibleFaculty, resetKey);
   const pageAccountIds = pagination.pageItems.map((f) => f.id).join(",");
@@ -163,6 +166,17 @@ function FacultyPage() {
             ]}
             value={role}
             onChange={setRole}
+          />
+          <FilterDropdown
+            id="faculty-status-filter"
+            label="Status"
+            allLabel="All"
+            options={[
+              { value: "active", label: "Active" },
+              { value: "no_account", label: "No account" },
+            ]}
+            value={status}
+            onChange={setStatus}
           />
           <div className="relative order-first w-full sm:order-0 sm:ml-auto sm:w-64">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">

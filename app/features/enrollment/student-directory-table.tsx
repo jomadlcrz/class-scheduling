@@ -218,7 +218,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
                     </div>
                   </div>
                 </TableCell>
-                <TableCell dense className="text-xs text-slate-600 dark:text-slate-300">{r.studentId ?? "—"}</TableCell>
+                <TableCell dense className="text-xs text-slate-600 dark:text-slate-300">{r.studentId || "No ID"}</TableCell>
                 <TableCell dense className="hidden text-xs sm:table-cell">{r.program || "—"}</TableCell>
                 <TableCell dense className="hidden text-xs md:table-cell">{r.yearLevel || "—"}</TableCell>
                 <TableCell dense className="hidden text-xs md:table-cell">{r.set ?? "—"}</TableCell>

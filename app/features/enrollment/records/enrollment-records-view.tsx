@@ -258,7 +258,7 @@ export function EnrollmentRecordsView({ students, facets, onChanged, initialType
                     </div>
                   </TableCell>
                   <TableCell dense className="text-xs text-slate-600 dark:text-slate-300">
-                    {student.studentId ?? "—"}
+                    {student.studentId || "No ID"}
                   </TableCell>
                   <TableCell dense className="hidden text-xs sm:table-cell">
                     {enrollment.program || "—"}

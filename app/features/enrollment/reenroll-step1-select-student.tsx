@@ -217,7 +217,7 @@ export function ReenrollStep1SelectStudent({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell dense className="text-slate-600 dark:text-slate-300">{row.studentId ?? "—"}</TableCell>
+                    <TableCell dense className="text-slate-600 dark:text-slate-300">{row.studentId || "No ID"}</TableCell>
                     <TableCell dense>
                       <span className="font-medium text-navy-700 dark:text-mist-100">{row.name}</span>
                       {!selectable && blockReason && (

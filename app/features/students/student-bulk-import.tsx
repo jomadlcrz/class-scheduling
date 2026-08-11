@@ -468,7 +468,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                         ? [original.lastName, original.firstName].filter(Boolean).join(", ") || "—"
                         : "—";
                       const email = original?.email || "—";
-                      const studentId = r.student_id || original?.studentNumber || "—";
+                      const studentId = r.student_id || original?.studentNumber || "No ID";
                       return (
                       <tr key={r.row} className="border-b border-slate-100 dark:border-white/5">
                         <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400">{r.row}</td>

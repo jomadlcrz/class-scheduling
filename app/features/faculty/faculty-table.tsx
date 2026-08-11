@@ -1,5 +1,7 @@
 ﻿import { Badge } from "~/components/ui/badge";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
+import { ImageViewer } from "~/components/ui/image-viewer";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -30,7 +32,10 @@ type FacultyTableProps = {
 };
 
 export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate, onReactivate }: FacultyTableProps) {
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
+
   return (
+    <>
     <Table>
       <TableHead>
         <TableHeader>Faculty</TableHeader>
@@ -52,7 +57,8 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                   <img
                     src={member.profilePhotoUrl}
                     alt=""
-                    className="size-8 shrink-0 rounded-full object-cover"
+                    className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
+                    onClick={() => setViewerSrc(member.profilePhotoUrl)}
                   />
                 ) : (
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 font-body text-xs font-medium text-mist-100 dark:bg-white dark:text-navy-800">
@@ -137,5 +143,14 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
         })}
       </TableBody>
     </Table>
+    {viewerSrc && (
+      <ImageViewer
+        open={viewerSrc !== null}
+        onClose={() => setViewerSrc(null)}
+        src={viewerSrc}
+        alt="Profile photo"
+      />
+    )}
+    </>
   );
 }

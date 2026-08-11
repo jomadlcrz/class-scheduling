@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { StudentAccountRow } from "~/types/student";
 
-/** Most recent academic record — same "last one wins" convention StudentAccountTable already uses for Program. */
 function latest(student: StudentAccountRow) {
   return student.academics[student.academics.length - 1];
 }
@@ -20,8 +19,14 @@ export const EMPTY_STUDENT_ACCOUNT_FILTERS: StudentAccountFiltersState = {
   set: "all",
 };
 
-/** Program / Year Level / Set filter row — reset per tab by the caller. */
-export function useStudentAccountFilters(rows: StudentAccountRow[]) {
+type UseStudentAccountFiltersOptions = {
+  statusFilter: string;
+  onStatusFilterChange: (value: string) => void;
+};
+
+export function useStudentAccountFilters(rows: StudentAccountRow[], options?: UseStudentAccountFiltersOptions) {
+  const statusFilter = options?.statusFilter ?? "all";
+  const onStatusFilterChange = options?.onStatusFilterChange ?? (() => {});
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [filters, setFilters] = useState<StudentAccountFiltersState>(EMPTY_STUDENT_ACCOUNT_FILTERS);
 
@@ -44,65 +49,49 @@ export function useStudentAccountFilters(rows: StudentAccountRow[]) {
       if (filters.program !== "all" && academic?.program !== filters.program) return false;
       if (filters.yearLevel !== "all" && String(academic?.yearLevel ?? "") !== filters.yearLevel) return false;
       if (filters.set !== "all" && academic?.set !== filters.set) return false;
+      if (statusFilter === "active" && !r.hasAccount) return false;
+      if (statusFilter === "no_account" && r.hasAccount) return false;
       return true;
     });
-  }, [rows, filters]);
+  }, [rows, filters, statusFilter]);
 
   const filterBar = (
-    <div className="grid gap-2 sm:grid-cols-3">
-      <Select
-        items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
+    <div className="flex flex-wrap items-end gap-2">
+      <FilterDropdown
+        id="student-program-filter"
+        label="Program"
+        allLabel="All"
+        options={programs.map((p) => ({ value: p, label: p }))}
         value={filters.program}
-        onValueChange={(v) => setFilters((f) => ({ ...f, program: v as string }))}
-      >
-        <SelectTrigger aria-label="Filter by program">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Programs</SelectItem>
-          {programs.map((p) => (
-            <SelectItem key={p} value={p}>
-              {p}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        items={[{ value: "all", label: "All Years" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
+        onChange={(v) => setFilters((f) => ({ ...f, program: v as string }))}
+      />
+      <FilterDropdown
+        id="student-year-filter"
+        label="Year"
+        allLabel="All"
+        options={yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))}
         value={filters.yearLevel}
-        onValueChange={(v) => setFilters((f) => ({ ...f, yearLevel: v as string }))}
-      >
-        <SelectTrigger aria-label="Filter by year level">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Years</SelectItem>
-          {yearLevelIds.map((y) => (
-            <SelectItem key={y} value={String(y)}>
-              {yearLevelLabel(y)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        items={[{ value: "all", label: "All Sets" }, ...sets.map((s) => ({ value: s, label: s }))]}
+        onChange={(v) => setFilters((f) => ({ ...f, yearLevel: v as string }))}
+      />
+      <FilterDropdown
+        id="student-set-filter"
+        label="Set"
+        allLabel="All"
+        options={sets.map((s) => ({ value: s, label: s }))}
         value={filters.set}
-        onValueChange={(v) => setFilters((f) => ({ ...f, set: v as string }))}
-      >
-        <SelectTrigger aria-label="Filter by set">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Sets</SelectItem>
-          {sets.map((s) => (
-            <SelectItem key={s} value={s}>
-              {s}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        onChange={(v) => setFilters((f) => ({ ...f, set: v as string }))}
+      />
+      <FilterDropdown
+        id="student-status-filter"
+        label="Status"
+        allLabel="All"
+        options={[
+          { value: "active", label: "Active" },
+          { value: "no_account", label: "No account" },
+        ]}
+        value={statusFilter}
+        onChange={onStatusFilterChange}
+      />
     </div>
   );
 
