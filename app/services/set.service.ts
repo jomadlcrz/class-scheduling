@@ -125,6 +125,12 @@ async function getDeletePreview(id: number): Promise<SetDeletePreview> {
   return { set: data.set, will_delete: data.willArchive };
 }
 
+/** GET /sets/:id/students — students enrolled in one set for a term. */
+async function getStudents(setId: number, syId: number, semesterNumber: number): Promise<unknown> {
+  const query = appendTermScopeParams(new URLSearchParams(), syId, semesterNumber);
+  return apiGet(`/sets/${setId}/students?${query}`);
+}
+
 export const setService = {
   list,
   listUnscheduled,
@@ -132,4 +138,5 @@ export const setService = {
   update,
   remove,
   getDeletePreview,
+  getStudents,
 };

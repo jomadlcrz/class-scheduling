@@ -636,6 +636,11 @@ async function updateRegular(
   return apiMessage(data);
 }
 
+/** GET /regular_schedule/<id> — one regular session detail. */
+async function getRegularSchedule(id: number): Promise<unknown> {
+  return apiGet(`/regular_schedule/${id}`);
+}
+
 export type SubjectHourOverride = {
   id: number;
   subjectId: number;
@@ -835,6 +840,47 @@ async function reconcileInstructorLedgers(
   );
 }
 
+/** GET /schedule/subject-type-options — subject type dropdown for weekly hour allocation. */
+async function listSubjectTypeOptions(): Promise<{ value: string; label: string }[]> {
+  return apiGet("/schedule/subject-type-options");
+}
+
+/** GET /schedule/programs — program dropdown for schedule generation. */
+async function listSchedulePrograms(): Promise<unknown> {
+  return apiGet("/schedule/programs");
+}
+
+/** GET /schedule/audit-log/filters */
+async function scheduleAuditLogFilters(): Promise<unknown> {
+  return apiGet("/schedule/audit-log/filters");
+}
+
+/** GET /schedule/audit-log */
+async function listScheduleAuditLog(params: {
+  syId?: number;
+  semesterNumber?: number;
+  action?: string;
+  performedBy?: number;
+  setCode?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  perPage?: number;
+} = {}): Promise<unknown> {
+  const query = new URLSearchParams();
+  if (params.syId != null) query.set("sy_id", String(params.syId));
+  if (params.semesterNumber != null) query.set("semester_number", String(params.semesterNumber));
+  if (params.action) query.set("action", params.action);
+  if (params.performedBy != null) query.set("performed_by", String(params.performedBy));
+  if (params.setCode) query.set("set_code", params.setCode);
+  if (params.dateFrom) query.set("date_from", params.dateFrom);
+  if (params.dateTo) query.set("date_to", params.dateTo);
+  if (params.page != null) query.set("page", String(params.page));
+  if (params.perPage != null) query.set("per_page", String(params.perPage));
+  const qs = query.toString();
+  return apiGet(`/schedule/audit-log${qs ? `?${qs}` : ""}`);
+}
+
 export const scheduleService = {
   view,
   listScheduleSubjects,
@@ -842,6 +888,7 @@ export const scheduleService = {
   autoGenerate,
   createRegular,
   getCreationContext,
+  getRegularSchedule,
   updateRegular,
   updateRegularSlot,
   listSubjectHourOverrides,
@@ -850,4 +897,8 @@ export const scheduleService = {
   removeSetSchedules,
   getSetWithSchedules,
   reconcileInstructorLedgers,
+  listSubjectTypeOptions,
+  listSchedulePrograms,
+  scheduleAuditLogFilters,
+  listScheduleAuditLog,
 };

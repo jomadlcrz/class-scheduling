@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
+import { apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { termScopeQuery } from "~/lib/term-scope";
 import type {
   EnrollmentFacets,
@@ -190,6 +190,24 @@ async function deleteEnrollment(enrollmentId: number): Promise<string> {
   return apiMessage(data);
 }
 
+/** POST /enrollments/prerequisite-check — advisory prerequisite check (non-blocking). */
+async function checkPrerequisites(input: {
+  studentProfileId: number;
+  syId: number;
+  semesterNumber: number;
+  subjectIds: number[];
+}): Promise<{ warnings: { subjectId: number; subjectCode: string; message: string }[] }> {
+  const data = await apiPost<{
+    warnings: { subjectId: number; subjectCode: string; message: string }[];
+  }>("/enrollments/prerequisite-check", {
+    studentProfileId: input.studentProfileId,
+    syId: input.syId,
+    semesterNumber: input.semesterNumber,
+    subjectIds: input.subjectIds,
+  });
+  return data;
+}
+
 export const enrollmentService = {
   listTermEnrollments,
   getFacets,
@@ -198,6 +216,7 @@ export const enrollmentService = {
   updateEnrollment,
   setEnrollmentState,
   deleteEnrollment,
+  checkPrerequisites,
 };
 
 export type { UpdateEnrollmentInput };

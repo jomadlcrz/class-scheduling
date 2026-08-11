@@ -62,6 +62,11 @@ async function listReleases(
   return data.map(mapRelease);
 }
 
+/** GET /schedule-releases/{id} — one release detail. */
+async function getRelease(id: number): Promise<ScheduleRelease> {
+  return mapRelease(await apiGet<ApiScheduleRelease>(`/schedule-releases/${id}`));
+}
+
 /** GET /schedule-releases/{id}/preview — read-only weekly grid for the registrar to review before submitting. */
 async function getReleasePreview(id: number): Promise<SchedulePreview> {
   return mapPreview(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`));
@@ -157,6 +162,7 @@ function mapPreviewToSchedules(preview: SchedulePreview): Schedule[] {
 
 export const scheduleReleaseService = {
   listReleases,
+  getRelease,
   getReleasePreview,
   submitRelease,
   withdrawRelease,

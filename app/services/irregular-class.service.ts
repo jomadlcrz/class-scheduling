@@ -403,10 +403,26 @@ async function assign(input: {
   return apiMessage(data);
 }
 
+/** PUT /irregular_schedule/:id — changes the offering an irregular student is seated in. */
+async function updateSchedule(irregularSchedId: number, regularSchedId: number): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/irregular_schedule/${irregularSchedId}`, {
+    regularSchedId,
+  });
+  return apiMessage(data);
+}
+
+/** DELETE /irregular_schedule/:id — removes an irregular student's seat assignment. */
+async function deleteSchedule(irregularSchedId: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/irregular_schedule/${irregularSchedId}`);
+  return apiMessage(data);
+}
+
 export const irregularClassService = {
   listStudents,
   listPendingStudents,
   listPendingSchedule,
   listAssignedSchedule,
   assign,
+  updateSchedule,
+  deleteSchedule,
 };

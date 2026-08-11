@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
@@ -9,13 +8,10 @@ import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { TabList } from "~/components/ui/tabs";
 import { AccountsTable } from "~/features/accounts/accounts-table";
-import { DeactivateAccountDialog } from "~/features/accounts/deactivate-account-dialog";
-import { ReactivateAccountDialog } from "~/features/accounts/reactivate-account-dialog";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { administratorService } from "~/services/administrator.service";
-import type { Account } from "~/types/account";
 
 type AccountTab = "active" | "deactivated";
 
@@ -43,11 +39,9 @@ function AccountsPage() {
   );
   const [tab, setTab] = useState<AccountTab>("active");
   const [search, setSearch] = useState("");
-  const [deactivateTarget, setDeactivateTarget] = useState<Account | null>(null);
-  const [reactivateTarget, setReactivateTarget] = useState<Account | null>(null);
 
   const counts = data?.counts;
-  const accounts: Account[] = tab === "active" ? data?.active ?? [] : data?.deactivated ?? [];
+  const accounts = (tab === "active" ? data?.active ?? [] : data?.deactivated ?? []);
 
   const visibleAccounts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -56,20 +50,6 @@ function AccountsPage() {
   }, [accounts, search]);
 
   const pagination = usePagination(visibleAccounts, `${tab}|${search}`);
-
-  async function handleDeactivate(account: Account) {
-    const message = await administratorService.deactivateAccount(account.userId);
-    if (message) toast.success(message);
-    setDeactivateTarget(null);
-    await reload();
-  }
-
-  async function handleReactivate(account: Account) {
-    const message = await administratorService.reactivateAccount(account.userId);
-    if (message) toast.success(message);
-    setReactivateTarget(null);
-    await reload();
-  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -154,8 +134,6 @@ function AccountsPage() {
             <AccountsTable
               accounts={pagination.pageItems}
               showDeactivatedAt={tab === "deactivated"}
-              onDeactivate={setDeactivateTarget}
-              onReactivate={setReactivateTarget}
             />
             <Pagination
               page={pagination.page}
@@ -166,18 +144,6 @@ function AccountsPage() {
           </>
         )}
       </div>
-
-      <DeactivateAccountDialog
-        account={deactivateTarget}
-        onClose={() => setDeactivateTarget(null)}
-        onConfirm={handleDeactivate}
-      />
-
-      <ReactivateAccountDialog
-        account={reactivateTarget}
-        onClose={() => setReactivateTarget(null)}
-        onConfirm={handleReactivate}
-      />
     </div>
   );
 }

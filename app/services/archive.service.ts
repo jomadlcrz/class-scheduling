@@ -45,12 +45,18 @@ type ArchiveCategory = {
   items: ArchiveItem[];
 };
 
-type ArchiveCategoryMeta = {
+export type ArchiveCategoryMeta = {
   key: ArchiveCategoryKey;
   label: string;
   description: string;
   entityType: ArchiveEntityType;
 };
+
+/** GET /archive/categories — category metadata for building archive navigation. */
+async function listCategories(): Promise<ArchiveCategoryMeta[]> {
+  const data = await apiGet<{ categories: ArchiveCategoryMeta[] }>("/archive/categories");
+  return data.categories;
+}
 
 type RawArchiveItem = {
   entity_type: ArchiveEntityType;
@@ -126,6 +132,7 @@ async function listCategoryItems(category: ArchiveCategoryKey): Promise<ArchiveI
 
 export const archiveService = {
   list,
+  listCategories,
   getDetail,
   restore,
   listCategoryItems,

@@ -89,4 +89,23 @@ async function getDeletePreview(id: number): Promise<ProgramDeletePreview> {
   return { program: data.program, will_delete: data.willArchive };
 }
 
-export const programService = { list, update, remove, getDeletePreview };
+/** GET /programs/:id — one program metadata. */
+async function get(id: number): Promise<Program> {
+  const p = await apiGet<ProgramApiRow & { department?: { department_abbrev: string | null } }>(`/programs/${id}`);
+  return {
+    id: p.program_id,
+    departmentAbbrev: p.department?.department_abbrev ?? "",
+    abbrev: p.program_abbrev,
+    name: p.program_name,
+    type: p.program_type,
+    lengthYears: p.program_length,
+    description: p.program_description,
+  };
+}
+
+/** GET /programs/:id/curriculum — program curriculum tree (year → semester → subjects). */
+async function getCurriculum(programId: number): Promise<unknown> {
+  return apiGet(`/programs/${programId}/curriculum`);
+}
+
+export const programService = { list, get, getCurriculum, update, remove, getDeletePreview };

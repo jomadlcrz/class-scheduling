@@ -390,6 +390,12 @@ async function listClosures(): Promise<TermClosureListResult> {
   };
 }
 
+/** GET /terms/closures/:id — one closure record detail. */
+async function getClosure(closureId: number): Promise<TermClosureItem> {
+  const data = await apiGet<ApiTermClosureItem>(`/terms/closures/${closureId}`);
+  return mapClosureItem(data);
+}
+
 /** GET /terms/audit-log/filters */
 async function auditLogFilters(): Promise<TermAuditLogFilters> {
   const data = await apiGet<{
@@ -580,6 +586,7 @@ async function patchTermState(
 export const termClosureService = {
   getContext,
   listClosures,
+  getClosure,
   auditLogFilters,
   listAuditLog,
   getTermWorkflow,

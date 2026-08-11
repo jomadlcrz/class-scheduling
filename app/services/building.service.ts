@@ -31,6 +31,11 @@ async function list(): Promise<Building[]> {
   }));
 }
 
+/** GET /buildings/:id — one building detail. */
+async function get(id: number): Promise<Building & { rooms?: unknown[] }> {
+  return apiGet(`/buildings/${id}`);
+}
+
 /** PATCH /buildings/:id/archive — soft-deletes the building and its active rooms after
  * the caller echoes the building's own name (case-sensitively). Returns the backend message. */
 async function archive(id: number, confirmText: string): Promise<string> {
@@ -52,4 +57,4 @@ async function update(id: number, input: UpdateBuildingInput): Promise<string> {
   return apiMessage(data);
 }
 
-export const buildingService = { list, archive, getArchivePreview, update };
+export const buildingService = { list, get, archive, getArchivePreview, update };

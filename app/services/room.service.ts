@@ -11,6 +11,12 @@ function mapPrograms(programs: { program_id: number; program_abbrev: string; pro
   }));
 }
 
+/** GET /rooms/:id — one room detail. */
+async function get(id: number): Promise<RoomDetail> {
+  const data = await apiGet<RoomDetailResponse>(`/rooms/${id}`);
+  return mapRoomDetail(data);
+}
+
 /** PATCH /rooms/:id/archive — soft delete; the backend requires the room's own name
  * (case-sensitively) as confirmation. Returns the backend message. */
 async function archive(id: number, confirmText: string): Promise<string> {
@@ -55,4 +61,4 @@ async function update(id: number, input: UpdateRoomInput): Promise<{ message: st
   return { message: apiMessage(data), room: mapRoomDetail(data.room) };
 }
 
-export const roomService = { archive, getArchivePreview, update };
+export const roomService = { get, archive, getArchivePreview, update };

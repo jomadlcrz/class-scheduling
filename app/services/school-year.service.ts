@@ -88,4 +88,10 @@ async function getCurrent(): Promise<SchoolYearOption & { existsForToday?: boole
   return { ...mapSchoolYear(entry), existsForToday: entry.exists_for_today, expectedSchoolYear: entry.expected_school_year };
 }
 
-export const schoolYearService = { list, create, update, getCurrent, invalidateCache };
+/** GET /school-years/:id — one school year detail. */
+async function get(id: number): Promise<SchoolYearOption> {
+  const entry = await apiGet<SchoolYearEntry>(`/school-years/${id}`);
+  return mapSchoolYear(entry);
+}
+
+export const schoolYearService = { list, get, create, update, getCurrent, invalidateCache };

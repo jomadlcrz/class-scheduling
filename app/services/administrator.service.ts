@@ -114,17 +114,6 @@ async function reactivate(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /super-admin/accounts/<userId> — deactivate any login by its User id (all-accounts screen). */
-async function deactivateAccount(userId: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/super-admin/accounts/${userId}`);
-  return apiMessage(data);
-}
-
-/** PATCH /super-admin/accounts/<userId>/restore — reactivate any login by its User id (all-accounts screen). */
-async function reactivateAccount(userId: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/super-admin/accounts/${userId}/restore`);
-  return apiMessage(data);
-}
 
 type AccountsResponse = {
   active: {
@@ -182,6 +171,4 @@ export const administratorService = {
   deactivate,
   reactivate,
   listAccounts,
-  deactivateAccount,
-  reactivateAccount,
 };
