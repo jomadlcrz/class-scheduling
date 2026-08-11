@@ -1,6 +1,9 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { AccountsPayload } from "~/types/account";
 import type {
+  AdminAuditResult,
+} from "~/types/admin-audit";
+import type {
   Administrator,
   AdministratorDetail,
   AdministratorRole,
@@ -136,6 +139,54 @@ type AccountsResponse = {
   };
 };
 
+type AuditApiEntry = {
+  id: number;
+  occurred_at: string | null;
+  occurred_at_display: string | null;
+  action: string;
+  action_label: string;
+  account: { user_id: number; email: string | null; display: string | null };
+  performed_by: { user_id: number; email: string | null; display: string | null } | null;
+  reason: string | null;
+};
+
+type AuditApiResponse = {
+  items: AuditApiEntry[];
+  pagination: { page: number; per_page: number; total: number; pages: number };
+};
+
+/** GET /super-admin/audit-log — account deactivation/reactivation audit trail. */
+async function listAuditLog(page: number, perPage: number): Promise<AdminAuditResult> {
+  const query = new URLSearchParams({ page: String(page), per_page: String(perPage) });
+  const data = await apiGet<AuditApiResponse>(`/super-admin/audit-log?${query}`);
+  return {
+    items: data.items.map((i) => ({
+      id: i.id,
+      occurredAt: i.occurred_at,
+      occurredAtDisplay: i.occurred_at_display,
+      action: i.action,
+      actionLabel: i.action_label,
+      account: {
+        userId: i.account.user_id,
+        email: i.account.email,
+        display: i.account.display,
+      },
+      performedBy: i.performed_by
+        ? {
+            userId: i.performed_by.user_id,
+            email: i.performed_by.email,
+            display: i.performed_by.display,
+          }
+        : null,
+      reason: i.reason,
+    })),
+    page: data.pagination.page,
+    perPage: data.pagination.per_page,
+    total: data.pagination.total,
+    pages: data.pagination.pages,
+  };
+}
+
 /** GET /super-admin/accounts — every login (active and deactivated) across all roles. */
 async function listAccounts(): Promise<AccountsPayload> {
   const data = await apiGet<AccountsResponse>("/super-admin/accounts");
@@ -171,4 +222,5 @@ export const administratorService = {
   deactivate,
   reactivate,
   listAccounts,
+  listAuditLog,
 };

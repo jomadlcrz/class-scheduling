@@ -1,4 +1,5 @@
-import { PageHeader } from "~/layouts/page-header";
+import { RoleGuard } from "~/auth/role-guard";
+import { AdminAuditLogPage } from "~/features/admin/admin-audit-log-page";
 
 export function meta() {
   return [
@@ -8,11 +9,8 @@ export function meta() {
 
 export default function AuditLog() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <PageHeader
-        title="Audit Log"
-
-      />
-    </div>
+    <RoleGuard allow={["admin"]}>
+      <AdminAuditLogPage />
+    </RoleGuard>
   );
 }
