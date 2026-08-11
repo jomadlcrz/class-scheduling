@@ -1,3 +1,4 @@
+import { Badge } from "~/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -35,10 +36,10 @@ export function AdministratorTable({
   return (
     <Table>
       <TableHead>
-        <TableHeader>Name</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Email</TableHeader>
+        <TableHeader>Administrator</TableHeader>
         <TableHeader>Department</TableHeader>
         <TableHeader>Role</TableHeader>
+        <TableHeader>Status</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -49,18 +50,31 @@ export function AdministratorTable({
           return (
             <TableRow key={admin.id}>
               <TableCell>
-                <span className="font-medium text-navy-700 dark:text-mist-100">
-                  {displayName(admin)}
-                </span>
-              </TableCell>
-              <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-                {admin.email}
+                <div className="min-w-0">
+                  <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
+                    {displayName(admin)}
+                  </span>
+                  {admin.email && (
+                    <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
+                      {admin.email}
+                    </span>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-slate-600 dark:text-slate-300">
                 {admin.departmentCode || "—"}
               </TableCell>
               <TableCell>
                 <AdministratorRoleBadge role={admin.roleName} />
+              </TableCell>
+              <TableCell>
+                {isActive === undefined ? (
+                  <span className="text-xs text-slate-400 dark:text-slate-500">…</span>
+                ) : isActive ? (
+                  <Badge tone="emerald">Active</Badge>
+                ) : (
+                  <Badge tone="red">Deactivated</Badge>
+                )}
               </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">

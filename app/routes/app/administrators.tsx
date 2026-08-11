@@ -5,6 +5,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { PlusIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
@@ -42,6 +43,8 @@ function AdministratorsPage() {
     () => administratorService.list(),
   );
   const [search, setSearch] = useState("");
+  const [role, setRole] = useState("all");
+  const [status, setStatus] = useState("all");
 
   const [editTarget, setEditTarget] = useState<Administrator | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Administrator | null>(null);
@@ -55,6 +58,9 @@ function AdministratorsPage() {
     const query = search.trim().toLowerCase();
     return administrators
       .filter((admin) => {
+        if (role !== "all" && admin.roleName !== role) return false;
+        if (status === "active" && accountActiveById[admin.id] === false) return false;
+        if (status === "deactivated" && accountActiveById[admin.id] !== false) return false;
         if (
           query &&
           !admin.firstName.toLowerCase().includes(query) &&
@@ -66,9 +72,9 @@ function AdministratorsPage() {
         return true;
       })
       .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
-  }, [administrators, search]);
+  }, [administrators, search, role, status, accountActiveById]);
 
-  const pagination = usePagination(visibleAdministrators, search);
+  const pagination = usePagination(visibleAdministrators, `${search}|${role}|${status}`);
   const pageIds = pagination.pageItems.map((a) => a.id).join(",");
 
   useEffect(() => {
@@ -128,6 +134,28 @@ function AdministratorsPage() {
 
       <div className="mt-6 flex flex-col gap-4">
         <div className="flex flex-wrap items-end gap-3">
+          <FilterDropdown
+            id="admin-role-filter"
+            label="Role"
+            allLabel="All"
+            options={[
+              { value: "Super Admin", label: "Super Admin" },
+              { value: "Registrar Admin", label: "Registrar Admin" },
+            ]}
+            value={role}
+            onChange={setRole}
+          />
+          <FilterDropdown
+            id="admin-status-filter"
+            label="Status"
+            allLabel="All"
+            options={[
+              { value: "active", label: "Active" },
+              { value: "deactivated", label: "Deactivated" },
+            ]}
+            value={status}
+            onChange={setStatus}
+          />
           <div className="relative ml-auto w-full sm:w-64">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
               <SearchIcon />
