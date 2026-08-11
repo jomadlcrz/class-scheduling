@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+import { AlertTriangleIcon } from "~/components/ui/icons";
 import { Button } from "~/components/ui/button";
 import { Modal } from "~/components/ui/modal";
-import { Textarea } from "~/components/ui/textarea";
+import { DeactivateConfirmInput, DeactivateReasonSelect } from "~/features/deactivate-reason-select";
 import type { Administrator } from "~/types/administrator";
 
 type DeactivateAdministratorDialogProps = {
@@ -16,6 +18,7 @@ export function DeactivateAdministratorDialog({
   onConfirm,
 }: DeactivateAdministratorDialogProps) {
   const [reason, setReason] = useState("");
+  const [confirmText, setConfirmText] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleConfirm() {
@@ -24,6 +27,7 @@ export function DeactivateAdministratorDialog({
     try {
       await onConfirm(admin, reason);
       setReason("");
+      setConfirmText("");
     } finally {
       setLoading(false);
     }
@@ -31,31 +35,34 @@ export function DeactivateAdministratorDialog({
 
   function handleClose() {
     setReason("");
+    setConfirmText("");
     onClose();
   }
 
+  const confirmValid = confirmText === "DEACTIVATE" && reason.trim().length > 0;
+
   return (
     <Modal open={admin !== null} onClose={handleClose} title="Deactivate administrator">
-      <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-        <span className="font-semibold text-navy-800 dark:text-mist-100">
-          {admin?.firstName} {admin?.lastName}
-        </span>{" "}
-        will no longer be able to log in. Their data is kept and the account can be reactivated anytime.
-      </p>
+      <Alert variant="destructive">
+        <AlertTriangleIcon />
+        <AlertDescription>
+          <span className="font-semibold">
+            {admin?.firstName} {admin?.lastName}
+          </span>{" "}
+          will no longer be able to log in. Their data is preserved and the account can be reactivated later.
+        </AlertDescription>
+      </Alert>
       <div className="mt-4">
-        <Textarea
-          id="deactivate-admin-reason"
-          label="Reason"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Explain why this account is being deactivated"
-        />
+        <DeactivateReasonSelect id="deactivate-admin" reason={reason} onReasonChange={setReason} />
+      </div>
+      <div className="mt-4">
+        <DeactivateConfirmInput id="deactivate-admin-confirm" value={confirmText} onChange={setConfirmText} />
       </div>
       <div className="mt-4 flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={handleClose}>
           Cancel
         </Button>
-        <Button type="button" block={false} variant="primary" onClick={handleConfirm} disabled={!reason.trim()} isLoading={loading} loadingLabel="Deactivating…">
+        <Button type="button" block={false} variant="danger" onClick={handleConfirm} disabled={!confirmValid} isLoading={loading} loadingLabel="Deactivating…">
           Deactivate
         </Button>
       </div>

@@ -6,12 +6,14 @@ import { useAuth } from "~/hooks/use-auth";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { ResultState } from "~/components/feedback/result-state";
 import { SuccessDone } from "~/components/feedback/success-done";
-import { PlusIcon, GraduationCapIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
+import { AlertTriangleIcon, PlusIcon, GraduationCapIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";
+import { DeactivateConfirmInput, DeactivateReasonSelect } from "~/features/deactivate-reason-select";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { TabLinks } from "~/components/ui/underline-tabs";
@@ -144,6 +146,7 @@ export function StudentsPage() {
   const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [deactivateReason, setDeactivateReason] = useState("");
+  const [deactivateConfirmText, setDeactivateConfirmText] = useState("");
   const [reactivateReason, setReactivateReason] = useState("");
   const [accountActionLoading, setAccountActionLoading] = useState(false);
   // The list endpoint has no account_active field — fetched per-row (page-bounded
@@ -872,44 +875,45 @@ export function StudentsPage() {
         <>
           <Modal
             open={deactivateAccountTarget !== null}
-            onClose={() => { setDeactivateAccountTarget(null); setDeactivateReason(""); }}
+            onClose={() => { setDeactivateAccountTarget(null); setDeactivateReason(""); setDeactivateConfirmText(""); }}
             title="Deactivate account"
           >
-            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-              <span className="font-semibold text-navy-800 dark:text-mist-100">
-                {deactivateAccountTarget?.studentName || `${deactivateAccountTarget?.firstName} ${deactivateAccountTarget?.lastName}`}
-              </span>{" "}
-              will no longer be able to log in. Their student record is kept.
-            </p>
+            <Alert variant="destructive">
+              <AlertTriangleIcon />
+              <AlertDescription>
+                <span className="font-semibold">
+                  {deactivateAccountTarget?.studentName || `${deactivateAccountTarget?.firstName} ${deactivateAccountTarget?.lastName}`}
+                </span>{" "}
+                will no longer be able to log in. The student record is preserved and the account can be reactivated later.
+              </AlertDescription>
+            </Alert>
             <div className="mt-4">
-            <Textarea
-              id="deactivate-student-reason"
-              label="Reason"
-              value={deactivateReason}
-              onChange={(e) => setDeactivateReason(e.target.value)}
-              placeholder="Explain why this account is being deactivated"
-            />
+              <DeactivateReasonSelect id="deactivate-student" reason={deactivateReason} onReasonChange={setDeactivateReason} />
+            </div>
+            <div className="mt-4">
+              <DeactivateConfirmInput id="deactivate-student-confirm" value={deactivateConfirmText} onChange={setDeactivateConfirmText} />
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <Button type="button" variant="outline" block={false} onClick={() => { setDeactivateAccountTarget(null); setDeactivateReason(""); }}>
+              <Button type="button" variant="outline" block={false} onClick={() => { setDeactivateAccountTarget(null); setDeactivateReason(""); setDeactivateConfirmText(""); }}>
                 Cancel
               </Button>
               <Button
                 type="button"
                 block={false}
-                variant="primary"
+                variant="danger"
                 onClick={async () => {
                   if (!deactivateAccountTarget) return;
                   setAccountActionLoading(true);
                   try {
                     await handleDeactivateAccount(deactivateAccountTarget, deactivateReason);
                     setDeactivateReason("");
+                    setDeactivateConfirmText("");
                     setDeactivateAccountTarget(null);
                   } finally {
                     setAccountActionLoading(false);
                   }
                 }}
-                disabled={!deactivateReason.trim()}
+                disabled={deactivateConfirmText !== "DEACTIVATE" || !deactivateReason.trim()}
                 isLoading={accountActionLoading}
                 loadingLabel="Deactivating…"
               >
@@ -923,7 +927,7 @@ export function StudentsPage() {
             onClose={() => { setReactivateAccountTarget(null); setReactivateReason(""); }}
             title="Reactivate account"
           >
-            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+            <p className="font-body text-sm text-slate-500 dark:text-slate-400">
               <span className="font-semibold text-navy-800 dark:text-mist-100">
                 {reactivateAccountTarget?.studentName || `${reactivateAccountTarget?.firstName} ${reactivateAccountTarget?.lastName}`}
               </span>{" "}
