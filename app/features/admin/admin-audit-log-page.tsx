@@ -13,6 +13,7 @@ import {
 } from "~/components/ui/table";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
+import { formatDateTime } from "~/lib/time";
 import { administratorService } from "~/services/administrator.service";
 import type { AdminAuditEntry } from "~/types/admin-audit";
 
@@ -70,7 +71,7 @@ export function AdminAuditLogPage() {
               <TableBody>
                 {entries.map((entry) => (
                   <TableRow key={entry.id}>
-                    <TableCell className="whitespace-nowrap">{entry.occurredAtDisplay ?? "—"}</TableCell>
+                    <TableCell className="whitespace-nowrap">{formatDateTime(entry.occurredAt)}</TableCell>
                     <TableCell>
                       <Badge tone={actionTone(entry.action)}>
                         {entry.actionLabel}
@@ -104,7 +105,7 @@ function AuditLogMobileCard({ entry }: { entry: AdminAuditEntry }) {
           {entry.actionLabel}
         </Badge>
         <time className="font-body text-xs text-slate-500 dark:text-slate-400">
-          {entry.occurredAtDisplay ?? "—"}
+          {formatDateTime(entry.occurredAt)}
         </time>
       </div>
       <p className="mt-3 font-body text-sm font-medium text-navy-700 dark:text-mist-100">

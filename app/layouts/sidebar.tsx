@@ -67,19 +67,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [{ label: "Dashboard", to: "/dashboard", icon: <DashboardIcon />, roles: ALL_ROLES }],
   },
   {
-    // Timetable pipeline + personal schedules.
-    label: "Scheduling",
-    items: [
-      { label: "Scheduling Hub", to: "/schedules", icon: <SchedulingHubIcon />, roles: ["registrar"] },
-      { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
-      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
-      { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
-      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
-    ],
-  },
-  {
     // Step 1 — everything configured before building timetables.
     label: "Term Setup",
     items: [
@@ -104,14 +91,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    // Advisory capacity tools — shared with the dean.
-    label: "Rooms & Capacity",
-    items: [
-      { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["dean", "registrar"] },
-      { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
-    ],
-  },
-  {
     label: "Curriculum & Facilities",
     items: [
       {
@@ -124,6 +103,27 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Departments", to: "/departments", icon: <FolderOpenIcon />, roles: ["registrar"] },
       { label: "Program Curricula", to: "/program-curricula", icon: <BookOpenIcon />, roles: ["registrar"], matchPrefix: true },
       { label: "Sets", to: "/sets", icon: <LayersIcon />, roles: ["registrar"] },
+    ],
+  },
+  {
+    // Timetable pipeline + personal schedules.
+    label: "Scheduling",
+    items: [
+      { label: "Scheduling Hub", to: "/schedules", icon: <SchedulingHubIcon />, roles: ["registrar"] },
+      { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
+      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
+      { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
+      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
+      { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
+      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
+    ],
+  },
+  {
+    // Advisory capacity tools — shared with the dean.
+    label: "Rooms & Capacity",
+    items: [
+      { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
+      { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["dean", "registrar"] },
     ],
   },
   {

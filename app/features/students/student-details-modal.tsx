@@ -109,7 +109,12 @@ export function StudentDetailsModal({
 
       {records.length > 0 && (
         <section>
-          <SectionHeading>Enrolled Subjects</SectionHeading>
+          <div className="flex items-center justify-between">
+            <SectionHeading>Enrolled Subjects</SectionHeading>
+            <span className="font-body text-sm text-slate-400 dark:text-slate-500">
+              {records.reduce((sum, a) => sum + a.enrolledSubjects.reduce((s, es) => s + es.units, 0), 0)} units
+            </span>
+          </div>
           <div className="mt-2">
             {records.some((a) => a.enrolledSubjects.length > 0) ? (
               <Table>
