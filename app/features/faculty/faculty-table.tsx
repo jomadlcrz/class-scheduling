@@ -1,4 +1,5 @@
-﻿import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
+﻿import { Badge } from "~/components/ui/badge";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import {
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
 } from "~/components/ui/table";
 import { IconButton } from "~/components/ui/icon-button";
 import { EditIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
+import { AccountRoleBadge } from "~/features/accounts/account-role-badge";
 import type { Faculty } from "~/types/faculty";
 
 function displayName(member: Faculty) {
@@ -31,11 +33,10 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
   return (
     <Table>
       <TableHead>
-        <TableHeader>Name</TableHeader>
-        <TableHeader className="hidden sm:table-cell">Email</TableHeader>
-        <TableHeader className="hidden lg:table-cell">Mobile</TableHeader>
+        <TableHeader>Faculty</TableHeader>
         <TableHeader>Department</TableHeader>
         <TableHeader>Role</TableHeader>
+        <TableHeader>Status</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -46,15 +47,29 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
           return (
           <TableRow key={member.id}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-mist-100">
-                {displayName(member)}
-              </span>
-            </TableCell>
-            <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-              {member.email ?? "—"}
-            </TableCell>
-            <TableCell className="hidden lg:table-cell text-slate-500 dark:text-slate-400">
-              {member.mobile ?? "—"}
+              <div className="flex min-w-0 items-center gap-3">
+                {member.profilePhotoUrl ? (
+                  <img
+                    src={member.profilePhotoUrl}
+                    alt=""
+                    className="size-8 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 font-body text-xs font-medium text-mist-100 dark:bg-white dark:text-navy-800">
+                    {(member.firstName[0] ?? "").toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
+                    {displayName(member)}
+                  </span>
+                  {member.email && (
+                    <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
+                      {member.email}
+                    </span>
+                  )}
+                </div>
+              </div>
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
@@ -68,9 +83,22 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
               </div>
             </TableCell>
             <TableCell>
-              <span className="text-slate-600 dark:text-slate-300">
-                {member.roles.map((r) => r.name).join(", ") || "—"}
-              </span>
+              <div className="flex flex-wrap gap-1">
+                {member.roles.map((r) => (
+                  <AccountRoleBadge key={r.id} role={r.name} />
+                ))}
+              </div>
+            </TableCell>
+            <TableCell>
+              {isActive === undefined ? (
+                <span className="text-xs text-slate-400 dark:text-slate-500">…</span>
+              ) : isActive === null ? (
+                <Badge tone="slate">No account</Badge>
+              ) : isActive ? (
+                <Badge tone="emerald">Active</Badge>
+              ) : (
+                <Badge tone="red">Deactivated</Badge>
+              )}
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">

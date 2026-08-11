@@ -15,6 +15,7 @@ import { DeactivateFacultyDialog } from "~/features/faculty/deactivate-faculty-d
 import { DepartmentFilterSelect } from "~/features/faculty/department-filter-select";
 import { FacultyEditForm } from "~/features/faculty/faculty-edit-form";
 import { FacultyTable } from "~/features/faculty/faculty-table";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
@@ -45,6 +46,7 @@ function FacultyPage() {
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
+  const [role, setRole] = useState("all");
 
   const [editTarget, setEditTarget] = useState<Faculty | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Faculty | null>(null);
@@ -61,7 +63,7 @@ function FacultyPage() {
     return [...codes].sort();
   }, [facultyList]);
 
-  const resetKey = `${search}|${department}`;
+  const resetKey = `${search}|${department}|${role}`;
 
   const visibleFaculty = useMemo(() => {
     if (!facultyList) return [];
@@ -69,6 +71,7 @@ function FacultyPage() {
     return facultyList
       .filter((member) => {
         if (department !== "all" && member.departmentCode !== department) return false;
+        if (role !== "all" && !member.roles.some((r) => r.name === role)) return false;
         const hasMatchingRole = member.roles.some((r) => r.name === "Dean" || r.name === "Instructor");
         if (!hasMatchingRole) return false;
         if (
@@ -82,7 +85,7 @@ function FacultyPage() {
         return true;
       })
       .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
-  }, [facultyList, search, department]);
+  }, [facultyList, search, department, role]);
 
   const pagination = usePagination(visibleFaculty, resetKey);
   const pageAccountIds = pagination.pageItems.map((f) => f.id).join(",");
@@ -149,6 +152,17 @@ function FacultyPage() {
             departmentCodes={departmentCodes}
             value={department}
             onValueChange={setDepartment}
+          />
+          <FilterDropdown
+            id="faculty-role-filter"
+            label="Role"
+            allLabel="All"
+            options={[
+              { value: "Dean", label: "Dean" },
+              { value: "Instructor", label: "Instructor" },
+            ]}
+            value={role}
+            onChange={setRole}
           />
           <div className="relative order-first w-full sm:order-0 sm:ml-auto sm:w-64">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
