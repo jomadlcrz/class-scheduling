@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Input, inputClassName, PasswordInput } from "~/components/ui/input";
-import { Modal, ModalActions } from "~/components/ui/modal";
+import { inputClassName } from "~/components/ui/input";
 import { SettingsRow } from "~/components/ui/settings-row";
 import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
@@ -10,18 +8,21 @@ import { profilePhotoService } from "~/services/profile-photo.service";
 
 export function AccountDetails() {
   const { user } = useAuth();
-  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [profilePictureModalOpen, setProfilePictureModalOpen] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoLoading, setPhotoLoading] = useState(true);
+  const [dbFirstName, setDbFirstName] = useState<string | null>(null);
+  const [dbLastName, setDbLastName] = useState<string | null>(null);
 
   const fetchPhoto = useCallback(async () => {
     if (!user) return;
     try {
       const data = await profilePhotoService.getPhoto(user.role);
       setPhotoUrl(data.profilePhotoUrl);
+      setDbFirstName(data.firstName);
+      setDbLastName(data.lastName);
     } catch {
-      // Photo may not exist yet — that's fine.
+      // photo may not exist yet
     } finally {
       setPhotoLoading(false);
     }
@@ -33,18 +34,18 @@ export function AccountDetails() {
 
   if (!user) return null;
 
-  const initials = `${user.firstName[0] ?? ""}`.toUpperCase();
+  const displayFirstName = dbFirstName ?? user.firstName;
+  const displayLastName = dbLastName ?? user.lastName;
+  const initials = `${displayFirstName[0] ?? ""}${displayLastName[0] ?? ""}`.toUpperCase();
 
   async function handleUpload(file: File): Promise<{ url: string; message: string }> {
-    if (!user) throw new Error("Not logged in.");
-    const result = await profilePhotoService.uploadPhoto(user.role, file);
+    const result = await profilePhotoService.uploadPhoto(user!.role, file);
     setPhotoUrl(result.url);
     return result;
   }
 
   async function handleRemove(): Promise<string> {
-    if (!user) throw new Error("Not logged in.");
-    const message = await profilePhotoService.removePhoto(user.role);
+    const message = await profilePhotoService.removePhoto(user!.role);
     setPhotoUrl(null);
     return message;
   }
@@ -86,9 +87,9 @@ export function AccountDetails() {
         <SettingsRow label="First Name" htmlFor="profile-first-name">
           <input
             id="profile-first-name"
-            name="profile-first-name"
             type="text"
-            defaultValue={user.firstName}
+            readOnly
+            defaultValue={displayFirstName}
             className={inputClassName}
           />
         </SettingsRow>
@@ -96,34 +97,24 @@ export function AccountDetails() {
         <SettingsRow label="Last Name" htmlFor="profile-last-name">
           <input
             id="profile-last-name"
-            name="profile-last-name"
             type="text"
-            defaultValue={user.lastName}
+            readOnly
+            defaultValue={displayLastName}
             className={inputClassName}
           />
         </SettingsRow>
 
         <SettingsRow label="Email Address">
-          <div className="flex items-center gap-3">
-            <p className="min-w-0 truncate font-body text-sm text-navy-700 dark:text-mist-100">
-              {user.email}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              onClick={() => setEmailModalOpen(true)}
-            >
-              Change
-            </Button>
-          </div>
+          <p className="min-w-0 truncate font-body text-sm text-navy-700 dark:text-mist-100">
+            {user.email}
+          </p>
         </SettingsRow>
-      </div>
 
-      <div className="mt-6 flex justify-end">
-        <Button type="button" block={false}>
-          Update Profile
-        </Button>
+        <SettingsRow label="Role">
+          <span className="font-body text-sm capitalize text-navy-700 dark:text-mist-100">
+            {user.role}
+          </span>
+        </SettingsRow>
       </div>
 
       <ProfilePictureModal
@@ -135,35 +126,6 @@ export function AccountDetails() {
         uploadPhoto={handleUpload}
         removePhoto={handleRemove}
       />
-
-      <Modal open={emailModalOpen} onClose={() => setEmailModalOpen(false)} title="Change Email">
-        <div className="flex flex-col gap-4">
-          <Input
-            id="change-email-address"
-            label="New Email Address"
-            type="email"
-            autoComplete="email"
-            placeholder={user.email}
-            hint="If you change your email, you may need to reconfirm your account."
-          />
-          <PasswordInput
-            id="change-email-password"
-            label="Current Password"
-            autoComplete="current-password"
-          />
-          <ModalActions>
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              onClick={() => setEmailModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="button" block={false}>Change Email</Button>
-          </ModalActions>
-        </div>
-      </Modal>
     </div>
   );
 }

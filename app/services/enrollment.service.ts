@@ -90,10 +90,10 @@ function toStudent(s: ApiStudent): EnrollmentStudent {
   };
 }
 
-/** GET /enrollments — the term directory, regular + irregular combined. */
+/** GET /enrollments — the term directory, regular + irregular combined. Returns paginated items. */
 async function listTermEnrollments(syId: number, semesterNumber: number): Promise<EnrollmentStudent[]> {
-  const data = await apiGet<ApiStudent[]>(`/enrollments${termScopeQuery(syId, semesterNumber)}`);
-  return (data ?? []).map(toStudent);
+  const data = await apiGet<{ items: ApiStudent[]; pagination: Record<string, unknown> }>(`/enrollments${termScopeQuery(syId, semesterNumber)}`);
+  return (data.items ?? []).map(toStudent);
 }
 
 /** GET /enrollments/facets — filter options and unfiltered term counts. */
