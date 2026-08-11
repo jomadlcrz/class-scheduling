@@ -1,8 +1,10 @@
 import { Link } from "react-router";
+import { useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ChevronRightIcon, LayersIcon, MailIcon, UserIcon } from "~/components/ui/icons";
+import { ImageViewer } from "~/components/ui/image-viewer";
 import { Pagination } from "~/components/ui/pagination";
 import {
   Table,
@@ -27,6 +29,7 @@ const contactRowClassName = "flex items-center gap-2 font-body text-sm text-slat
 /** Academic-department hub — dean, program cards with set counts, and the student table. */
 export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentDetail }) {
   const pagination = usePagination(detail.students, "students");
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,7 +45,8 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                   <img
                     src={detail.dean.profilePhotoUrl}
                     alt={detail.dean.fullName}
-                    className="size-11 shrink-0 rounded-full object-cover"
+                    className="size-11 shrink-0 cursor-pointer rounded-full object-cover"
+                    onClick={() => setViewerSrc(detail.dean!.profilePhotoUrl)}
                   />
                 ) : (
                   <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 text-mist-100 dark:bg-white dark:text-navy-800">
@@ -154,7 +158,8 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                           <img
                             src={student.profilePhotoUrl}
                             alt={student.fullName}
-                            className="size-6 shrink-0 rounded-full object-cover"
+                            className="size-6 shrink-0 cursor-pointer rounded-full object-cover"
+                            onClick={() => setViewerSrc(student.profilePhotoUrl!)}
                           />
                         ) : (
                           <span className="grid size-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
@@ -198,6 +203,14 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
           </div>
         )}
       </section>
+      {viewerSrc && (
+        <ImageViewer
+          open={viewerSrc !== null}
+          onClose={() => setViewerSrc(null)}
+          src={viewerSrc}
+          alt="Profile photo"
+        />
+      )}
     </div>
   );
 }

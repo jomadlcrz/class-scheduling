@@ -1,4 +1,5 @@
 import { EmptyState } from "~/components/feedback/empty-state";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,6 +9,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { AccountRoleBadge } from "~/features/accounts/account-role-badge";
+import { ImageViewer } from "~/components/ui/image-viewer";
 import { UserIcon } from "~/components/ui/icons";
 import type { OfficeStaffMember } from "~/types/department";
 
@@ -16,8 +18,9 @@ function displayName(member: OfficeStaffMember) {
   return parts ? `${member.lastName}, ${parts}` : member.lastName;
 }
 
-/** Administrative-department staff directory — name, role, and contact. */
 export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) {
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
+
   if (staff.length === 0) {
     return (
       <EmptyState title="No office staff">
@@ -27,6 +30,7 @@ export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) 
   }
 
   return (
+    <>
     <Table>
       <TableHead>
         <TableHeader>Name</TableHeader>
@@ -43,7 +47,8 @@ export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) 
                   <img
                     src={member.profilePhotoUrl}
                     alt=""
-                    className="size-8 shrink-0 rounded-full object-cover"
+                    className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
+                    onClick={() => setViewerSrc(member.profilePhotoUrl!)}
                   />
                 ) : (
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 text-mist-100 dark:bg-white dark:text-navy-800">
@@ -68,5 +73,14 @@ export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) 
         ))}
       </TableBody>
     </Table>
+    {viewerSrc && (
+      <ImageViewer
+        open={viewerSrc !== null}
+        onClose={() => setViewerSrc(null)}
+        src={viewerSrc}
+        alt="Profile photo"
+      />
+    )}
+    </>
   );
 }
