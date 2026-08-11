@@ -99,15 +99,15 @@ function AdministratorsPage() {
     refresh();
   }
 
-  async function handleDeactivate(admin: Administrator) {
-    const message = await administratorService.deactivate(admin.id);
+  async function handleDeactivate(admin: Administrator, reason: string) {
+    const message = await administratorService.deactivate(admin.id, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [admin.id]: false }));
     setDeactivateTarget(null);
   }
 
-  async function handleReactivate(admin: Administrator) {
-    const message = await administratorService.reactivate(admin.id);
+  async function handleReactivate(admin: Administrator, reason: string) {
+    const message = await administratorService.reactivate(admin.id, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [admin.id]: true }));
     setReactivateTarget(null);

@@ -115,15 +115,15 @@ function FacultyPage() {
     refreshFacultyList();
   }
 
-  async function handleDeactivate(member: Faculty) {
-    const message = await facultyService.deactivate(member.id);
+  async function handleDeactivate(member: Faculty, reason: string) {
+    const message = await facultyService.deactivate(member.id, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [member.id]: false }));
     setDeactivateTarget(null);
   }
 
-  async function handleReactivate(member: Faculty) {
-    const message = await facultyService.reactivate(member.id);
+  async function handleReactivate(member: Faculty, reason: string) {
+    const message = await facultyService.reactivate(member.id, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [member.id]: true }));
     setReactivateTarget(null);

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
@@ -11,16 +11,15 @@ import { TableSkeleton } from "~/components/ui/skeleton";
 import { CurriculumTable } from "~/features/curriculum/curriculum-table";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
+import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { deanService } from "~/services/dean.service";
 import { programService } from "~/services/program.service";
-import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
-import type { DepartmentSubjectProgram } from "~/types/faculty-load";
 import type { ProgramCurriculum } from "~/types/curriculum";
-import type { Program } from "~/types/program";
+import type { DepartmentSubjectProgram } from "~/types/faculty-load";
 
 export function meta() {
   return [
-    { title: "Department Subjects — GWC Class Scheduling" },
+    { title: "Curriculum Subjects — GWC Class Scheduling" },
     { name: "description", content: "View curriculum subjects for your department." },
   ];
 }
@@ -111,7 +110,7 @@ function DeanSubjectsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
-        title="Department Subjects"
+        title="Curriculum"
 
       />
 

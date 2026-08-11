@@ -150,7 +150,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Schedule Approvals", to: "/dean/schedule-approvals", icon: <CheckIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
       { label: "Subject Assignments", to: "/dean/subject-assignments", icon: <UserCheckIcon />, roles: ["dean"], matchPrefix: true },
-      { label: "Department Subjects", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
+      { label: "Curriculum", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
       { label: "Department Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
     ],
   },

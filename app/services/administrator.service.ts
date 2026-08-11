@@ -102,15 +102,15 @@ async function update(id: number, input: UpdateAdministratorInput): Promise<stri
   return apiMessage(data);
 }
 
-/** DELETE /super-admin/admin-accounts/<id> — deactivates the login, not the profile. */
-async function deactivate(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/super-admin/admin-accounts/${id}`);
+/** DELETE /super-admin/admin-accounts/<id> — deactivates the login, not the profile. Reason required. */
+async function deactivate(id: number, reason: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/super-admin/admin-accounts/${id}`, { reason });
   return apiMessage(data);
 }
 
-/** PATCH /super-admin/admin-accounts/<id>/restore — reactivates the login. */
-async function reactivate(id: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/super-admin/admin-accounts/${id}/restore`);
+/** PATCH /super-admin/admin-accounts/<id>/restore — reactivates the login. Reason required. */
+async function reactivate(id: number, reason: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/super-admin/admin-accounts/${id}/restore`, { reason });
   return apiMessage(data);
 }
 

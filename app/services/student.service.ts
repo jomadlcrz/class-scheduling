@@ -281,15 +281,15 @@ async function getAccount(studentProfileId: number): Promise<StudentAccountStatu
   return { studentProfileId: d.student_profile_id, hasAccount: d.has_account, accountActive: d.account_active };
 }
 
-/** DELETE /super-admin/student-accounts/<id> — deactivates the login, not the profile. */
-async function deactivateAccount(studentProfileId: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/super-admin/student-accounts/${studentProfileId}`);
+/** DELETE /super-admin/student-accounts/<id> — deactivates the login, not the profile. Reason required. */
+async function deactivateAccount(studentProfileId: number, reason: string): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/super-admin/student-accounts/${studentProfileId}`, { reason });
   return apiMessage(data);
 }
 
-/** PATCH /super-admin/student-accounts/<id>/restore — reactivates the login. */
-async function reactivateAccount(studentProfileId: number): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(`/super-admin/student-accounts/${studentProfileId}/restore`);
+/** PATCH /super-admin/student-accounts/<id>/restore — reactivates the login. Reason required. */
+async function reactivateAccount(studentProfileId: number, reason: string): Promise<string> {
+  const data = await apiPatch<{ message?: string }>(`/super-admin/student-accounts/${studentProfileId}/restore`, { reason });
   return apiMessage(data);
 }
 

@@ -11,6 +11,7 @@ import { SuccessDone } from "~/components/feedback/success-done";
 import { PlusIcon, GraduationCapIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Textarea } from "~/components/ui/textarea";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { TabLinks } from "~/components/ui/underline-tabs";
@@ -142,6 +143,9 @@ export function StudentsPage() {
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
   const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
+  const [deactivateReason, setDeactivateReason] = useState("");
+  const [reactivateReason, setReactivateReason] = useState("");
+  const [accountActionLoading, setAccountActionLoading] = useState(false);
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
   const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
@@ -501,14 +505,14 @@ export function StudentsPage() {
     return parts ? `${s.lastName}, ${parts}` : s.lastName;
   }
 
-  async function handleDeactivateAccount(student: StudentAccountRow) {
-    const message = await studentService.deactivateAccount(student.studentProfileId);
+  async function handleDeactivateAccount(student: StudentAccountRow, reason: string) {
+    const message = await studentService.deactivateAccount(student.studentProfileId, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: false }));
   }
 
-  async function handleReactivateAccount(student: StudentAccountRow) {
-    const message = await studentService.reactivateAccount(student.studentProfileId);
+  async function handleReactivateAccount(student: StudentAccountRow, reason: string) {
+    const message = await studentService.reactivateAccount(student.studentProfileId, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: true }));
   }
@@ -869,34 +873,101 @@ export function StudentsPage() {
 
       {isAdmin && (
         <>
-          <ConfirmDialog
+          <Modal
             open={deactivateAccountTarget !== null}
-            onClose={() => setDeactivateAccountTarget(null)}
+            onClose={() => { setDeactivateAccountTarget(null); setDeactivateReason(""); }}
             title="Deactivate account"
-            confirmLabel="Deactivate"
-            loadingLabel="Deactivating…"
-            confirmVariant="danger"
-            onConfirm={() => handleDeactivateAccount(deactivateAccountTarget!)}
           >
-            <span className="font-semibold text-navy-800 dark:text-mist-100">
-              {deactivateAccountTarget?.studentName || `${deactivateAccountTarget?.firstName} ${deactivateAccountTarget?.lastName}`}
-            </span>{" "}
-            will no longer be able to log in. Their student record is kept.
-          </ConfirmDialog>
+            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+              <span className="font-semibold text-navy-800 dark:text-mist-100">
+                {deactivateAccountTarget?.studentName || `${deactivateAccountTarget?.firstName} ${deactivateAccountTarget?.lastName}`}
+              </span>{" "}
+              will no longer be able to log in. Their student record is kept.
+            </p>
+            <div className="mt-4">
+            <Textarea
+              id="deactivate-student-reason"
+              label="Reason"
+              value={deactivateReason}
+              onChange={(e) => setDeactivateReason(e.target.value)}
+              placeholder="Explain why this account is being deactivated"
+            />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button type="button" variant="outline" block={false} onClick={() => { setDeactivateAccountTarget(null); setDeactivateReason(""); }}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                block={false}
+                variant="primary"
+                onClick={async () => {
+                  if (!deactivateAccountTarget) return;
+                  setAccountActionLoading(true);
+                  try {
+                    await handleDeactivateAccount(deactivateAccountTarget, deactivateReason);
+                    setDeactivateReason("");
+                    setDeactivateAccountTarget(null);
+                  } finally {
+                    setAccountActionLoading(false);
+                  }
+                }}
+                disabled={!deactivateReason.trim()}
+                isLoading={accountActionLoading}
+                loadingLabel="Deactivating…"
+              >
+                Deactivate
+              </Button>
+            </div>
+          </Modal>
 
-          <ConfirmDialog
+          <Modal
             open={reactivateAccountTarget !== null}
-            onClose={() => setReactivateAccountTarget(null)}
+            onClose={() => { setReactivateAccountTarget(null); setReactivateReason(""); }}
             title="Reactivate account"
-            confirmLabel="Reactivate"
-            loadingLabel="Reactivating…"
-            onConfirm={() => handleReactivateAccount(reactivateAccountTarget!)}
           >
-            <span className="font-semibold text-navy-800 dark:text-mist-100">
-              {reactivateAccountTarget?.studentName || `${reactivateAccountTarget?.firstName} ${reactivateAccountTarget?.lastName}`}
-            </span>{" "}
-            will be able to log in again.
-          </ConfirmDialog>
+            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+              <span className="font-semibold text-navy-800 dark:text-mist-100">
+                {reactivateAccountTarget?.studentName || `${reactivateAccountTarget?.firstName} ${reactivateAccountTarget?.lastName}`}
+              </span>{" "}
+              will be able to log in again.
+            </p>
+            <div className="mt-4">
+            <Textarea
+              id="reactivate-student-reason"
+              label="Reason"
+              value={reactivateReason}
+              onChange={(e) => setReactivateReason(e.target.value)}
+              placeholder="Explain why this account is being reactivated"
+            />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button type="button" variant="outline" block={false} onClick={() => { setReactivateAccountTarget(null); setReactivateReason(""); }}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                block={false}
+                variant="primary"
+                onClick={async () => {
+                  if (!reactivateAccountTarget) return;
+                  setAccountActionLoading(true);
+                  try {
+                    await handleReactivateAccount(reactivateAccountTarget, reactivateReason);
+                    setReactivateReason("");
+                    setReactivateAccountTarget(null);
+                  } finally {
+                    setAccountActionLoading(false);
+                  }
+                }}
+                disabled={!reactivateReason.trim()}
+                isLoading={accountActionLoading}
+                loadingLabel="Reactivating…"
+              >
+                Reactivate
+              </Button>
+            </div>
+          </Modal>
 
           <ConfirmDialog
             open={bulkCreateOpen}
