@@ -4,6 +4,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { DatePicker } from "~/components/ui/date-picker";
 import { Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
@@ -194,12 +195,15 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
                     </SelectContent>
                   </Select>
                 </FieldChrome>
-                <Input
+                <DatePicker
                   id="edit-birthdate"
                   label="Birthdate"
-                  type="date"
+                  placeholder="Select birthdate"
                   defaultValue={profile.birthdate ?? ""}
                   disabled={isSaving}
+                  captionLayout="dropdown"
+                  fromYear={1940}
+                  toYear={new Date().getFullYear()}
                 />
                 <Input
                   id="edit-mobile"

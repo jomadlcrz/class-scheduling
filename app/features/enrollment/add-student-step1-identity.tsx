@@ -1,4 +1,6 @@
 import { FieldChrome, Input } from "~/components/ui/input";
+import { DatePicker } from "~/components/ui/date-picker";
+import { formatISODate } from "~/components/ui/calendar";
 import { UserIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
@@ -48,6 +50,10 @@ export function AddStudentStep1Identity({
   onNext,
   onCancel,
 }: AddStudentStep1IdentityProps) {
+  // Students must be at least 18 — cap selectable birthdates at 18 years ago.
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+
   return (
     <div className="flex flex-col gap-5">
       <EnrollmentSectionCard title="Student Information" icon={<UserIcon />}>
@@ -150,14 +156,18 @@ export function AddStudentStep1Identity({
                     </SelectContent>
                   </Select>
                 </FieldChrome>
-                <Input
+                <DatePicker
                   id="new-student-birthdate"
                   label="Birthdate"
-                  type="date"
                   required
                   hint="Must be at least 18 years old"
+                  placeholder="Select birthdate"
                   value={identity.birthdate}
-                  onChange={(e) => onIdentityChange({ birthdate: e.target.value })}
+                  onChange={(v) => onIdentityChange({ birthdate: v })}
+                  captionLayout="dropdown"
+                  fromYear={1940}
+                  toYear={eighteenYearsAgo.getFullYear()}
+                  max={formatISODate(eighteenYearsAgo)}
                 />
               </div>
 
