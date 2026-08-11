@@ -140,7 +140,7 @@ async function listScheduleSubjects(params: {
   const query = new URLSearchParams({
     school_year: params.schoolYear,
     program_id: String(params.programId),
-    semester: String(params.semester),
+    semester_number: String(params.semester),
   });
   if (params.yearLevel != null) query.set("year_level", String(params.yearLevel));
   if (params.includeScheduledSets) query.set("include_scheduled_sets", "true");
@@ -417,7 +417,7 @@ async function autoGenerate(input: {
           : "/regular_schedule/auto-generate-schedule";
   const data = await apiPost<AutoGenerateResponse>(endpoint, {
     schoolYear: input.schoolYear,
-    semester: input.semesterLabel,
+    semesterNumber: input.semester,
     yearLevel: input.yearLevelLabel,
     programId: input.programId,
     setId: input.setId,
@@ -561,7 +561,7 @@ async function createRegular(input: {
 
   return apiPost<{ message?: string; warnings?: string[]; rescheduled?: string[] }>("/regular_schedule/create-regular-class-schedules", {
     schoolYear: input.schoolYear,
-    semester: input.semester,
+    semesterNumber: input.semester,
     programId: input.programId,
     setId: input.setId,
     daySchedules: [...byDay.entries()].map(([day, slots]) => ({

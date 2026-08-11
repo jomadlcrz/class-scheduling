@@ -196,16 +196,39 @@ async function checkPrerequisites(input: {
   syId: number;
   semesterNumber: number;
   subjectIds: number[];
-}): Promise<{ warnings: { subjectId: number; subjectCode: string; message: string }[] }> {
+}): Promise<{
+  warnings: {
+    subjectId: number;
+    subjectCode: string | null;
+    descriptiveTitle: string | null;
+    missing: { subjectId: number; subjectCode: string | null; descriptiveTitle: string | null }[];
+  }[];
+}> {
   const data = await apiPost<{
-    warnings: { subjectId: number; subjectCode: string; message: string }[];
+    warnings: {
+      subject_id: number;
+      subject_code: string | null;
+      descriptive_title: string | null;
+      missing: { subject_id: number; subject_code: string | null; descriptive_title: string | null }[];
+    }[];
   }>("/enrollments/prerequisite-check", {
     studentProfileId: input.studentProfileId,
     syId: input.syId,
     semesterNumber: input.semesterNumber,
     subjectIds: input.subjectIds,
   });
-  return data;
+  return {
+    warnings: data.warnings.map((w) => ({
+      subjectId: w.subject_id,
+      subjectCode: w.subject_code,
+      descriptiveTitle: w.descriptive_title,
+      missing: w.missing.map((m) => ({
+        subjectId: m.subject_id,
+        subjectCode: m.subject_code,
+        descriptiveTitle: m.descriptive_title,
+      })),
+    })),
+  };
 }
 
 export const enrollmentService = {
