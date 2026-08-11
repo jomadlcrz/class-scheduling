@@ -2,10 +2,13 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
 import { EditBuildingSkeleton } from "~/components/ui/skeleton";
 import { EditBuildingWorkspace } from "~/features/facilities/edit-building-workspace";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
+import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
@@ -92,16 +95,27 @@ function EditBuildingPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <EditBuildingWorkspace
-        building={building}
-        roomTypes={roomTypes}
-        programs={programs}
-        onUpdateBuilding={handleUpdateBuilding}
-        onUpdateRoom={handleUpdateRoom}
-        onAddRooms={handleAddRooms}
-        onArchiveRoom={handleArchiveRoom}
-        onCancel={() => navigate("/facilities")}
+      <Breadcrumb
+        items={[
+          { label: "Facilities", href: "/facilities" },
+          { label: building.name },
+        ]}
+        className="mb-4"
       />
+      <PageHeader title={building.name} />
+
+      <div className="mt-6">
+        <EditBuildingWorkspace
+          building={building}
+          roomTypes={roomTypes}
+          programs={programs}
+          onUpdateBuilding={handleUpdateBuilding}
+          onUpdateRoom={handleUpdateRoom}
+          onAddRooms={handleAddRooms}
+          onArchiveRoom={handleArchiveRoom}
+          onCancel={() => navigate("/facilities")}
+        />
+      </div>
     </div>
   );
 }

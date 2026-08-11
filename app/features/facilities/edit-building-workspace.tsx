@@ -7,7 +7,6 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import {
-  ArrowLeftIcon,
   CheckIcon,
   ChevronDownIcon,
   CopyIcon,
@@ -21,6 +20,7 @@ import {
   EditBuildingSummaryPanel,
   type EditBuildingSummaryData,
 } from "~/features/facilities/edit-building-summary-panel";
+import { StickyFooter } from "~/components/ui/sticky-footer";
 import type { AddBuildingRoomsInput, FacilityBuildingDetail, FacilityRoomDetail } from "~/types/facility";
 import type { Program } from "~/types/program";
 import type { UpdateBuildingInput } from "~/types/building";
@@ -430,27 +430,7 @@ export function EditBuildingWorkspace({
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-28">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
-            Manage Building
-          </h1>
-          <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-            Edit building details, update rooms, add new ones, or archive existing rooms.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" block={false} onClick={onCancel}>
-            <ArrowLeftIcon />
-            Back
-          </Button>
-          <Button type="button" block={false} onClick={handleSave} disabled={!hasChanges} isLoading={isSaving} loadingLabel="Saving…">
-            Save Changes
-          </Button>
-        </div>
-      </div>
-
+    <div className="flex flex-col gap-6">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className={statCardClassName}>
             <Input
@@ -863,6 +843,15 @@ export function EditBuildingWorkspace({
         onClose={() => setArchiveTarget(null)}
         onConfirm={handleArchiveRoom}
       />
+
+      <StickyFooter>
+        <Button type="button" variant="outline" block={false} onClick={onCancel}>
+          Back
+        </Button>
+        <Button type="button" block={false} onClick={handleSave} disabled={!hasChanges} isLoading={isSaving} loadingLabel="Saving…">
+          Save Changes
+        </Button>
+      </StickyFooter>
     </div>
   );
 }
