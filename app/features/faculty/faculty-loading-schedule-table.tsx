@@ -115,12 +115,12 @@ export function FacultyLoadingScheduleTable({ entry, isLoading }: FacultyLoading
             className={row.isFirstOfSubject ? "border-t-2 border-t-navy-800 dark:border-t-navy-400" : ""}
           >
             {row.isFirstOfSubject && (
-              <td rowSpan={row.rowspan} className={`${tdClass} font-medium`}>
+              <td rowSpan={row.rowspan} className={`${tdClass} font-semibold`}>
                 {row.subjectCode}
               </td>
             )}
             {row.isFirstOfSubject && (
-              <td rowSpan={row.rowspan} className={tdClass}>
+              <td rowSpan={row.rowspan} className={`${tdClass} font-semibold`}>
                 {row.descriptiveTitle}
               </td>
             )}

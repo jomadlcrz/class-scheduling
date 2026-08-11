@@ -28,8 +28,8 @@ export function openFacultyLoadingPrint(
       const borderClass = isFirst ? 'style="border-top:2px solid #1e3a5f"' : "";
       rows.push(`
         <tr ${borderClass}>
-          ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${safe(subject.subjectCode)}</td>` : ""}
-          ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${safe(subject.descriptiveTitle)}</td>` : ""}
+          ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center bold">${safe(subject.subjectCode)}</td>` : ""}
+          ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center bold">${safe(subject.descriptiveTitle)}</td>` : ""}
           ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${subject.units.lecHours}</td>` : ""}
           ${isFirst ? `<td rowspan="${subject.schedules.length}" class="center">${subject.units.labHours}</td>` : ""}
           <td class="center">${safe(sched.day)}</td>

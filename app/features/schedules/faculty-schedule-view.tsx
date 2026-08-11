@@ -1,5 +1,4 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { FacultyLoadingLetterhead } from "~/features/faculty/faculty-loading-letterhead";
 import { FacultyLoadingScheduleTable } from "~/features/faculty/faculty-loading-schedule-table";
 import type { FacultyLoadingEntry } from "~/types/faculty-load";
 import type { ScheduleSemester } from "~/types/schedule";
@@ -34,14 +33,7 @@ export function FacultyScheduleView({
   semesterLabel,
 }: FacultyScheduleViewProps) {
   return (
-    <div className="mx-auto flex max-w-240 flex-col gap-4">
-      {/* ── Letterhead ── */}
-      <FacultyLoadingLetterhead
-        entry={entry}
-        schoolYearLabel={schoolYearLabel}
-        semesterName={semesterName}
-      />
-
+    <div className="flex flex-col gap-4">
       {/* ── Info grid ── */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse font-body text-xs">

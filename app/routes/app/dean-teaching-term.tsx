@@ -10,6 +10,7 @@ import type {
   TeachingTermDetailScheduledSession,
   TeachingTermDetailUnassignedSubject,
 } from "~/types/faculty-load";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { PageHeader } from "~/layouts/page-header";
 import {
   ArrowLeftIcon,
@@ -22,6 +23,7 @@ import {
 } from "~/components/ui/icons";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { Table, TableHead, TableHeader, TableBody, TableCell } from "~/components/ui/table";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -125,18 +127,19 @@ function StatCard({ icon, label, value, children }: { icon: React.ReactNode; lab
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/5"
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <span className="shrink-0 text-navy-700 dark:text-mist-100">{icon}</span>
-          <div>
-            <p className="font-body text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
-            <p className="font-body text-xl font-bold tracking-tight text-navy-800 dark:text-mist-100">{value}</p>
+      <Card className="p-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <span className="shrink-0 text-navy-700 dark:text-mist-100">{icon}</span>
+            <div>
+              <p className="font-body text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
+              <p className="font-body text-xl font-bold tracking-tight text-navy-800 dark:text-mist-100">{value}</p>
+            </div>
           </div>
         </div>
-      </div>
-      {children}
+        {children}
+      </Card>
     </motion.div>
   );
 }
@@ -371,43 +374,45 @@ function DeanTeachingTermPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      {/* ── Header: Instructor info + actions ── */}
+      <Breadcrumb
+        items={[
+          { label: "Subject Assignments", href: "/dean/subject-assignments" },
+          { label: instructor.full_name ?? "Teaching Term" },
+        ]}
+        className="mb-4"
+      />
+
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        className="rounded-xl border border-slate-300 bg-white px-5 py-4 dark:border-white/10 dark:bg-white/5"
       >
         <div className="flex items-center gap-4">
           {instructor.profile_photo_url ? (
             <img
               src={instructor.profile_photo_url}
               alt=""
-              className="size-12 shrink-0 rounded-full bg-slate-100 object-cover dark:bg-white/10"
+              className="size-14 shrink-0 rounded-full bg-slate-100 object-cover dark:bg-white/10"
             />
           ) : (
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy-800 text-sm font-bold text-mist-100 dark:bg-white/10 dark:text-mist-100">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-navy-800 text-base font-bold text-mist-100 dark:bg-white/10 dark:text-mist-100">
               {instructor.full_name?.split(" ").map((n) => n[0]).join("").slice(0, 2) ?? "IN"}
             </div>
           )}
           <div>
-            <h1 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
+            <h1 className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               {instructor.full_name ?? "Instructor"}
             </h1>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-body text-sm text-slate-500 dark:text-slate-400">
               {instructor.department && <span>{instructor.department}</span>}
               {term.school_year && <><span className="text-slate-300 dark:text-slate-600">·</span><span>{term.school_year} — {term.semester}</span></>}
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/subject-assignments")}>
-            <ArrowLeftIcon /> Back
-          </Button>
-        </div>
       </motion.div>
 
       {/* ── Stats grid ── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<ClockIcon size={19} />} label="Weekly Hours" value={`${hours.max_weekly_hours}h`}>
           <div className="mt-3 flex items-center gap-2">
             {hours.is_overloaded && <Badge tone="red">Overloaded</Badge>}
@@ -477,15 +482,17 @@ function DeanTeachingTermPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="mt-6 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/5"
+        className="mt-6"
       >
-        <div className="flex items-center justify-between">
-          <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Daily Load (Mon–Sat)</h3>
-          <span className="font-body text-[11px] text-slate-400 dark:text-slate-500">hours per day</span>
-        </div>
-        <div className="mt-5">
-          <DailyLoadStrip dailyLoads={daily_loads} />
-        </div>
+        <Card className="p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Daily Load (Mon–Sat)</h3>
+            <span className="font-body text-[11px] text-slate-400 dark:text-slate-500">hours per day</span>
+          </div>
+          <div className="mt-5">
+            <DailyLoadStrip dailyLoads={daily_loads} />
+          </div>
+        </Card>
       </motion.div>
 
       {/* ── Unassigned warning ── */}
