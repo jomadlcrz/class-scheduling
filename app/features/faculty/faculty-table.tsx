@@ -94,7 +94,7 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                   </IconButton>
                 ) : (
                   <IconButton
-                    variant="dangerSoft"
+                    variant="emerald"
                     onClick={() => onReactivate(member)}
                     label={`Reactivate ${member.firstName} ${member.lastName}`}
                     title="Reactivate"

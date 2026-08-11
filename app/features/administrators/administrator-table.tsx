@@ -85,7 +85,7 @@ export function AdministratorTable({
                       </IconButton>
                     ) : (
                       <IconButton
-                        variant="dangerSoft"
+                        variant="emerald"
                         onClick={() => onReactivate(admin)}
                         label={`Reactivate ${admin.firstName} ${admin.lastName}`}
                         title="Reactivate"

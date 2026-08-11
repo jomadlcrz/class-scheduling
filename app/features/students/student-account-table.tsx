@@ -127,7 +127,7 @@ export function StudentAccountTable({
                     </IconButton>
                   ) : (
                     <IconButton
-                      variant="dangerSoft"
+                      variant="emerald"
                       onClick={() => onReactivateAccount(student)}
                       label={`Reactivate account for ${displayName(student)}`}
                       title="Reactivate account"

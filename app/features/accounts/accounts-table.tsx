@@ -68,7 +68,7 @@ export function AccountsTable({
                 <div className="flex justify-end gap-1">
                   {showDeactivatedAt ? (
                     <IconButton
-                      variant="dangerSoft"
+                      variant="emerald"
                       onClick={() => onReactivate?.(account)}
                       label={`Reactivate ${account.email}`}
                       title="Reactivate"
