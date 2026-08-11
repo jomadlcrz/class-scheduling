@@ -30,11 +30,15 @@ import {
 } from "~/components/ui/icons";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useDeanPendingApprovalsCount } from "~/features/dean-approvals/use-dean-pending-count";
+import { useRegistrarPendingScheduleCount } from "~/features/schedules/use-registrar-pending-count";
 import { useAuth } from "~/hooks/use-auth";
 import type { Role } from "~/types/user";
 
 /** Nav item that carries a live pending-count badge (dean approvals inbox). */
 const SCHEDULE_APPROVALS_PATH = "/dean/schedule-approvals";
+
+/** Nav item that carries a live pending-count badge (registrar scheduling hub). */
+const SCHEDULING_HUB_PATH = "/schedules";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
 
@@ -234,6 +238,7 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
   const pendingApprovals = useDeanPendingApprovalsCount();
+  const pendingSchedules = useRegistrarPendingScheduleCount();
   const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
 
   useEffect(() => {
@@ -431,9 +436,20 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
                             {pendingApprovals}
                           </span>
                         )}
+                        {!collapsed && item.to === SCHEDULING_HUB_PATH && pendingSchedules > 0 && (
+                          <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold tabular-nums text-mist-100">
+                            {pendingSchedules}
+                          </span>
+                        )}
                       </NavLink>
                     </Tooltip>
                     {collapsed && item.to === SCHEDULE_APPROVALS_PATH && pendingApprovals > 0 && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute right-1 top-1 size-2 rounded-full bg-white ring-2 ring-gwc-blue"
+                      />
+                    )}
+                    {collapsed && item.to === SCHEDULING_HUB_PATH && pendingSchedules > 0 && (
                       <span
                         aria-hidden="true"
                         className="absolute right-1 top-1 size-2 rounded-full bg-white ring-2 ring-gwc-blue"
