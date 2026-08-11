@@ -16,4 +16,6 @@ export type User = {
   facultyId?: string;
   /** Links a student account to its Student record (drives the student schedule view). */
   studentId?: string;
+  /** Department ID for non-student roles (from JWT). */
+  departmentId?: string;
 };

@@ -103,6 +103,7 @@ export function userFromToken(token: string): User | null {
     mustChangePassword: false,
     ...(payload.instructor_id != null && { facultyId: String(payload.instructor_id) }),
     ...(payload.student_profile_id != null && { studentId: String(payload.student_profile_id) }),
+    ...(payload.department_id != null && { departmentId: String(payload.department_id) }),
   };
 }
 
