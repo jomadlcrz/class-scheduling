@@ -105,32 +105,34 @@ export function ProfilePictureModal({
     <>
       {/* ── Main modal: current photo + upload/delete ── */}
       <Modal open={open && !isCropping} onClose={handleClose} title="Profile Picture">
-        <div className="flex flex-col items-center gap-4">
-          {photoUrl ? (
-            <button
-              type="button"
-              onClick={() => setFullViewOpen(true)}
-              className="cursor-pointer rounded-full transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2"
-            >
-              <img
-                src={photoUrl}
-                alt="Profile"
-                className="size-24 rounded-full object-cover"
-              />
-            </button>
-          ) : (
-            <span className="flex size-24 items-center justify-center rounded-full bg-navy-800 font-body text-3xl font-medium text-mist-100 dark:bg-white dark:text-navy-800">
-              {initials}
-            </span>
-          )}
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-center">
+            {photoUrl ? (
+              <button
+                type="button"
+                onClick={() => setFullViewOpen(true)}
+                className="cursor-pointer rounded-full transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2"
+              >
+                <img
+                  src={photoUrl}
+                  alt="Profile"
+                  className="size-24 rounded-full object-cover"
+                />
+              </button>
+            ) : (
+              <span className="flex size-24 items-center justify-center rounded-full bg-navy-800 font-body text-3xl font-medium text-mist-100 dark:bg-white dark:text-navy-800">
+                {initials}
+              </span>
+            )}
+          </div>
 
           {photoUrl && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
               Click the image to see full view.
             </p>
           )}
 
-          <div className="w-full">
+          <div>
             <p className="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
               Upload new custom profile picture:
             </p>
@@ -143,6 +145,15 @@ export function ProfilePictureModal({
           </div>
 
           <ModalActions>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={handleClose}
+              disabled={removing}
+            >
+              Cancel
+            </Button>
             {photoUrl && (
               <Button
                 type="button"
@@ -155,41 +166,33 @@ export function ProfilePictureModal({
                 Delete
               </Button>
             )}
-            <div className="flex-1" />
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              onClick={handleClose}
-              disabled={removing}
-            >
-              Cancel
-            </Button>
           </ModalActions>
         </div>
       </Modal>
 
       {/* ── Adjust modal: crop + zoom + save ── */}
       <Modal open={open && isCropping} onClose={saving ? () => {} : handleClose} title="Adjust Profile Photo">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative aspect-square w-48 overflow-hidden rounded-full">
-            <Cropper
-              image={cropSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}
-              cropShape="round"
-              showGrid={false}
-              onCropChange={onCropChange}
-              onCropComplete={onCropComplete}
-            />
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-center">
+            <div className="relative aspect-square w-48 overflow-hidden rounded-full">
+              <Cropper
+                image={cropSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={onCropChange}
+                onCropComplete={onCropComplete}
+              />
+            </div>
           </div>
 
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             Drag the image to position it, then click <strong>Save Photo</strong>.
           </p>
 
-          <div className="flex w-full items-center gap-3">
+          <div className="flex items-center gap-3">
             <label
               htmlFor="profile-picture-zoom"
               className="shrink-0 text-xs text-slate-400 dark:text-slate-500"
