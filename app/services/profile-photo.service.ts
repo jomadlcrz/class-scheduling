@@ -21,16 +21,6 @@ type RawPhotoData = {
   last_name: string | null;
   profile_photo_url: string | null;
   has_photo: boolean;
-  gender?: string | null;
-  civil_status?: string | null;
-  suffix?: string | null;
-  student_id?: string | null;
-  employee_id?: string | null;
-  department_id?: number | null;
-  department_name?: string | null;
-  department_abbrev?: string | null;
-  mobile?: string | null;
-  contact_email?: string | null;
 };
 
 export type ProfilePhotoData = {
@@ -40,16 +30,6 @@ export type ProfilePhotoData = {
   lastName: string | null;
   profilePhotoUrl: string | null;
   hasPhoto: boolean;
-  gender?: string | null;
-  civilStatus?: string | null;
-  suffix?: string | null;
-  studentId?: string | null;
-  employeeId?: string | null;
-  departmentId?: number | null;
-  departmentName?: string | null;
-  departmentAbbrev?: string | null;
-  mobile?: string | null;
-  contactEmail?: string | null;
 };
 
 function toProfilePhotoData(raw: RawPhotoData): ProfilePhotoData {
@@ -60,16 +40,6 @@ function toProfilePhotoData(raw: RawPhotoData): ProfilePhotoData {
     lastName: raw.last_name,
     profilePhotoUrl: raw.profile_photo_url,
     hasPhoto: raw.has_photo,
-    gender: raw.gender,
-    civilStatus: raw.civil_status,
-    suffix: raw.suffix,
-    studentId: raw.student_id,
-    employeeId: raw.employee_id,
-    departmentId: raw.department_id,
-    departmentName: raw.department_name,
-    departmentAbbrev: raw.department_abbrev,
-    mobile: raw.mobile,
-    contactEmail: raw.contact_email,
   };
 }
 

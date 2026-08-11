@@ -47,8 +47,6 @@ export function AccountDetails() {
   if (!user) return null;
 
   const initials = `${user.firstName[0] ?? ""}`.toUpperCase();
-  const isStudent = user.role === "student";
-  const isFaculty = user.role === "faculty";
 
   async function handleUpload(file: File): Promise<{ url: string; message: string }> {
     if (!user) throw new Error("Not logged in.");
@@ -155,61 +153,6 @@ export function AccountDetails() {
             </div>
           )}
         </SettingsRow>
-
-        {!photoLoading && (
-          <>
-            {isStudent && profile?.studentId && (
-              <SettingsRow label="Student ID">
-                {readOnlyField(profile.studentId)}
-              </SettingsRow>
-            )}
-
-            {isStudent && profile?.suffix && (
-              <SettingsRow label="Suffix">
-                {readOnlyField(profile.suffix)}
-              </SettingsRow>
-            )}
-
-            {isFaculty && profile?.employeeId && (
-              <SettingsRow label="Employee ID">
-                {readOnlyField(profile.employeeId)}
-              </SettingsRow>
-            )}
-
-            {!isStudent && profile?.departmentName && (
-              <SettingsRow label="Department">
-                {readOnlyField(profile.departmentName)}
-              </SettingsRow>
-            )}
-
-            <SettingsRow label="Gender">
-              {readOnlyField(profile?.gender ?? null)}
-            </SettingsRow>
-
-            {!isStudent && (
-              <SettingsRow label="Civil Status">
-                {readOnlyField(profile?.civilStatus ?? null)}
-              </SettingsRow>
-            )}
-
-            {profile?.mobile && (
-              <SettingsRow label="Mobile">
-                {readOnlyField(profile.mobile)}
-              </SettingsRow>
-            )}
-          </>
-        )}
-
-        {photoLoading && (
-          <>
-            <SettingsRow label="Gender">
-              <ReadOnlySkeleton />
-            </SettingsRow>
-            <SettingsRow label="Mobile">
-              <ReadOnlySkeleton />
-            </SettingsRow>
-          </>
-        )}
       </div>
 
       {!photoLoading && (
