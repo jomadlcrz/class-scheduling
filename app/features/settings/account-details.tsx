@@ -60,6 +60,7 @@ export function AccountDetails() {
     if (!user) throw new Error("Not logged in.");
     const result = await profilePhotoService.uploadPhoto(user.role, file);
     await fetchPhoto();
+    window.dispatchEvent(new CustomEvent("profile-photo-changed"));
     return result;
   }
 
@@ -67,6 +68,7 @@ export function AccountDetails() {
     if (!user) throw new Error("Not logged in.");
     const message = await profilePhotoService.removePhoto(user.role);
     await fetchPhoto();
+    window.dispatchEvent(new CustomEvent("profile-photo-changed"));
     return message;
   }
 
