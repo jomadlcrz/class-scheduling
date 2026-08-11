@@ -2,6 +2,7 @@ import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, api
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
+  CreditedSubject,
   EnrollStudentInput,
   StudentAcademicRecord,
   StudentAccountRow,
@@ -26,8 +27,11 @@ async function createRecord(
     ...(input.midName && { midName: input.midName }),
     lastName: input.lastName,
     ...(input.suffix && { nameSuffix: input.suffix }),
+    ...(input.gender && { gender: input.gender }),
+    ...(input.birthdate && { birthdate: input.birthdate }),
     mobile: input.mobile,
     email: input.email,
+    ...(input.address && { address: input.address }),
     academic: {
       programId: input.programId,
       yearLevel: input.yearLevel,
@@ -221,6 +225,8 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
     mid_name: string | null;
     last_name: string;
     suffix: string | null;
+    gender: string | null;
+    birthdate: string | null;
     mobile: string | null;
     email: string | null;
     account_status: string;
@@ -233,6 +239,11 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
       region: string | null;
       zipCode: string | null;
     } | null;
+    credited_subjects: {
+      subject_id: number;
+      subject_code: string;
+      descriptive_title: string;
+    }[];
   }>(`/students/${studentProfileId}`);
 
   return {
@@ -242,6 +253,8 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
     midName: row.mid_name,
     lastName: row.last_name,
     suffix: row.suffix ?? null,
+    gender: row.gender ?? null,
+    birthdate: row.birthdate ?? null,
     mobile: row.mobile,
     email: row.email,
     accountStatus: row.account_status,
@@ -256,6 +269,11 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
           zipCode: row.address.zipCode,
         }
       : null,
+    creditedSubjects: row.credited_subjects.map((cs): CreditedSubject => ({
+      subjectId: cs.subject_id,
+      subjectCode: cs.subject_code,
+      descriptiveTitle: cs.descriptive_title,
+    })),
   };
 }
 
@@ -264,11 +282,13 @@ async function updateProfile(
   studentProfileId: number,
   input: UpdateStudentProfileInput,
 ): Promise<string> {
-  const { suffix, ...personal } = input;
+  const { suffix, gender, birthdate, address, ...personal } = input;
   const data = await apiPut<{ message?: string }>(`/students/${studentProfileId}`, {
     ...personal,
-    // Backend reads the suffix under `nameSuffix`; send null to clear it.
     ...(suffix !== undefined && { nameSuffix: suffix }),
+    ...(gender !== undefined && { gender }),
+    ...(birthdate !== undefined && { birthdate }),
+    ...(address && { address }),
   });
   return apiMessage(data);
 }

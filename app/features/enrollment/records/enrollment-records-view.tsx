@@ -40,6 +40,8 @@ function segmentClass(active: boolean): string {
 type Props = {
   students: EnrollmentStudent[];
   facets: EnrollmentFacets | null;
+  genders: string[];
+  nameSuffixes: string[];
   onChanged: () => void;
   /** Preselect the Type segment (used by the regular/irregular redirect links). */
   initialType?: string;
@@ -49,7 +51,7 @@ type Props = {
   onPageChange: (page: number) => void;
 };
 
-export function EnrollmentRecordsView({ students, facets, onChanged, initialType = "all", page, totalItems, pageSize, onPageChange }: Props) {
+export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes, onChanged, initialType = "all", page, totalItems, pageSize, onPageChange }: Props) {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
   const [typeFilter, setTypeFilter] = useState(initialType);
@@ -293,6 +295,8 @@ export function EnrollmentRecordsView({ students, facets, onChanged, initialType
       <EnrollmentDetailDrawer
         student={selected?.student ?? null}
         enrollment={selected?.enrollment ?? null}
+        genders={genders}
+        nameSuffixes={nameSuffixes}
         onClose={() => setSelected(null)}
         onChanged={onChanged}
       />

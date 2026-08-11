@@ -10,6 +10,7 @@ import { EnrollmentRecordsView } from "~/features/enrollment/records/enrollment-
 import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { enrollmentService } from "~/services/enrollment.service";
+import { enumService } from "~/services/enum.service";
 
 export function meta() {
   return [
@@ -55,6 +56,7 @@ function EnrollmentStudentsPage() {
     () => enrollmentService.getFacets(syId as number, semesterNumber as number),
     { enabled },
   );
+  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
 
   async function refetch() {
     await Promise.all([reloadStudents(), reloadFacets()]);
@@ -85,6 +87,8 @@ function EnrollmentStudentsPage() {
           <EnrollmentRecordsView
             students={students}
             facets={facets ?? null}
+            genders={enumOptions?.gender ?? []}
+            nameSuffixes={enumOptions?.nameSuffix ?? []}
             onChanged={refetch}
             initialType={initialType}
             page={page}

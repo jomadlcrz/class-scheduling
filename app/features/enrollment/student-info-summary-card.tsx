@@ -75,6 +75,8 @@ export function StudentInfoSummaryCard({
           </div>
           <dl className="grid gap-3">
             <InfoField label="Full Name">{displayName(identity)}</InfoField>
+            <InfoField label="Gender">{identity.gender || "—"}</InfoField>
+            <InfoField label="Birthdate">{identity.birthdate || "—"}</InfoField>
             <InfoField label="Contact Number">
               {identity.mobile.trim() ? <a href={`tel:${identity.mobile.trim()}`} className="hover:underline">{identity.mobile.trim()}</a> : "—"}
             </InfoField>

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import type { AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
 import {
   EnrollmentSectionCard,
@@ -8,6 +10,7 @@ import { IrregularSubjectPicker } from "~/features/enrollment/irregular-subject-
 import type { ReenrollDirectoryRow } from "~/features/enrollment/reenroll-step1-select-student";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import { enrollmentService } from "~/services/enrollment.service";
 import type { Program } from "~/types/program";
 import type { Subject } from "~/types/subject";
 
@@ -51,6 +54,32 @@ export function ReenrollStep3Review({
             String(s.yearLevel) === academic.yearLevel &&
             s.semester === semesterNumber,
         );
+
+  const [checkingPrereq, setCheckingPrereq] = useState(false);
+  const [prereqResults, setPrereqResults] = useState<Map<number, {
+    warnings: { subjectId: number; subjectCode: string | null; descriptiveTitle: string | null; missing: { subjectId: number; subjectCode: string | null; descriptiveTitle: string | null }[] }[];
+  }>>(new Map());
+
+  async function checkPrerequisites() {
+    setCheckingPrereq(true);
+    const results = new Map<number, { warnings: { subjectId: number; subjectCode: string | null; descriptiveTitle: string | null; missing: { subjectId: number; subjectCode: string | null; descriptiveTitle: string | null }[] }[] }>();
+    const subjectIds = isIrregular ? Array.from(selectedSubjectIds) : filteredSubjects.map((s) => s.id);
+    for (const student of students) {
+      try {
+        const result = await enrollmentService.checkPrerequisites({
+          studentProfileId: student.studentProfileId,
+          syId: Number(academic.syId),
+          semesterNumber: Number(academic.semesterNumber),
+          subjectIds,
+        });
+        results.set(student.studentProfileId, result);
+      } catch {
+        results.set(student.studentProfileId, { warnings: [] });
+      }
+    }
+    setPrereqResults(results);
+    setCheckingPrereq(false);
+  }
 
   const selectedSubjects = filteredSubjects.filter((s) => selectedSubjectIds.has(s.id));
   const totalUnits = isIrregular
@@ -122,6 +151,60 @@ export function ReenrollStep3Review({
           </dl>
         </EnrollmentSectionCard>
       </div>
+
+      <EnrollmentSectionCard title="Prerequisite Check">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <p className="font-body text-sm text-slate-600 dark:text-slate-400">
+              Verify prerequisites for the subjects being enrolled.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              isLoading={checkingPrereq}
+              loadingLabel="Checking…"
+              disabled={students.length === 0 || (isIrregular ? selectedSubjectIds.size === 0 : filteredSubjects.length === 0)}
+              onClick={checkPrerequisites}
+            >
+              Check Prerequisites
+            </Button>
+          </div>
+          {prereqResults.size > 0 && (
+            <div className="flex flex-col gap-4">
+              {students.map((student) => {
+                const result = prereqResults.get(student.studentProfileId);
+                if (!result) return null;
+                return (
+                  <div key={student.studentProfileId}>
+                    <p className="mb-1 font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
+                      {student.name}
+                    </p>
+                    {result.warnings.length === 0 ? (
+                      <p className="font-body text-xs text-emerald-600 dark:text-emerald-400">
+                        All prerequisites satisfied.
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {result.warnings.map((w) => (
+                          <div key={w.subjectId} className="rounded-lg border border-amber-200 bg-amber-50/60 p-2.5 dark:border-amber-800/40 dark:bg-amber-950/20">
+                            <p className="font-body text-xs font-medium text-amber-800 dark:text-amber-200">
+                              {w.subjectCode} — {w.descriptiveTitle}
+                            </p>
+                            <p className="mt-0.5 font-body text-xs text-amber-700 dark:text-amber-300">
+                              Missing: {w.missing.map((m) => `${m.subjectCode} — ${m.descriptiveTitle}`).join(", ")}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </EnrollmentSectionCard>
 
       <ProgramWizardFooter
         backLabel="Back: Enrollment Information"

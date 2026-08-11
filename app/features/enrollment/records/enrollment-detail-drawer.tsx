@@ -6,11 +6,12 @@ import { Drawer } from "~/components/ui/drawer";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { Spinner } from "~/components/ui/spinner";
-import { UserIcon } from "~/components/ui/icons";
+import { UserIcon, EditIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { enrollmentService } from "~/services/enrollment.service";
 import { studentService } from "~/services/student.service";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import { EditRecordModal } from "~/features/enrollment/records/edit-record-modal";
 import type { EnrollmentRow, EnrollmentStudent } from "~/types/enrollment";
 import type { StudentAcademicRecord, StudentProfileDetail } from "~/types/student";
 
@@ -38,6 +39,8 @@ type Tab = "info" | "subjects" | "history";
 type Props = {
   student: EnrollmentStudent | null;
   enrollment: EnrollmentRow | null;
+  genders: string[];
+  nameSuffixes: string[];
   onClose: () => void;
   onChanged: () => void;
 };
@@ -61,7 +64,7 @@ function tabClass(active: boolean): string {
   }`;
 }
 
-export function EnrollmentDetailDrawer({ student, enrollment, onClose, onChanged }: Props) {
+export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffixes, onClose, onChanged }: Props) {
   const [tab, setTab] = useState<Tab>("info");
   const [pendingState, setPendingState] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -69,6 +72,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, onClose, onChanged
   const [history, setHistory] = useState<StudentAcademicRecord[] | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [profile, setProfile] = useState<StudentProfileDetail | null>(null);
+  const [editRecordOpen, setEditRecordOpen] = useState(false);
   const { yearLevelLabel } = useYearLevels();
 
   const open = student !== null && enrollment !== null;
@@ -148,6 +152,15 @@ export function EnrollmentDetailDrawer({ student, enrollment, onClose, onChanged
                   </Badge>
                   <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
                 </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  onClick={() => setEditRecordOpen(true)}
+                >
+                  <EditIcon />
+                  Edit Record
+                </Button>
                 {(student.email || student.mobile) && (
                   <p className="flex flex-wrap gap-x-2 truncate font-body text-xs text-slate-500 dark:text-slate-400">
                     {student.mobile && <a href={`tel:${student.mobile}`} className="hover:underline">{student.mobile}</a>}
@@ -247,6 +260,17 @@ export function EnrollmentDetailDrawer({ student, enrollment, onClose, onChanged
         Permanently remove {student?.name}'s enrollment for this term? This can't be undone. To keep a record
         instead, drop or withdraw the student.
       </ConfirmDialog>
+
+      {enrollment && student && (
+        <EditRecordModal
+          open={editRecordOpen}
+          studentProfileId={student.studentProfileId}
+          enrollment={enrollment}
+          genders={genders}
+          nameSuffixes={nameSuffixes}
+          onClose={() => setEditRecordOpen(false)}
+        />
+      )}
     </>
   );
 }

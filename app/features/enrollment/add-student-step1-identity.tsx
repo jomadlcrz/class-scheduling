@@ -11,8 +11,16 @@ export type IdentityDraft = {
   midName: string;
   lastName: string;
   suffix: string;
+  gender: string;
+  birthdate: string;
   mobile: string;
   email: string;
+  addressStreet: string;
+  addressBarangay: string;
+  addressCity: string;
+  addressProvince: string;
+  addressRegion: string;
+  addressZipCode: string;
 };
 
 type AddStudentStep1IdentityProps = {
@@ -20,6 +28,8 @@ type AddStudentStep1IdentityProps = {
   onIdentityChange: (patch: Partial<IdentityDraft>) => void;
   /** Backend NameSuffix enum values (enumService). */
   nameSuffixes: string[];
+  /** Backend Gender enum values (enumService). */
+  genders: string[];
   photoFile: File | null;
   onPhotoChange: (file: File | null) => void;
   canAdvance: boolean;
@@ -31,6 +41,7 @@ export function AddStudentStep1Identity({
   identity,
   onIdentityChange,
   nameSuffixes,
+  genders,
   photoFile,
   onPhotoChange,
   canAdvance,
@@ -120,6 +131,37 @@ export function AddStudentStep1Identity({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
+                <FieldChrome id="new-student-gender" label="Gender" required>
+                  <Select
+                    items={[{ value: "", label: "Select gender" }, ...genders.map((g) => ({ value: g, label: g }))]}
+                    value={identity.gender}
+                    onValueChange={(v) => onIdentityChange({ gender: v as string })}
+                  >
+                    <SelectTrigger id="new-student-gender">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select gender</SelectItem>
+                      {genders.map((g) => (
+                        <SelectItem key={g} value={g}>
+                          {g}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <Input
+                  id="new-student-birthdate"
+                  label="Birthdate"
+                  type="date"
+                  required
+                  hint="Must be at least 18 years old"
+                  value={identity.birthdate}
+                  onChange={(e) => onIdentityChange({ birthdate: e.target.value })}
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   id="new-student-mobile"
                   label="Mobile Number"
@@ -149,6 +191,72 @@ export function AddStudentStep1Identity({
                 Email and mobile must be unique — used for account creation and communication. An
                 account is created automatically the first time the student logs in.
               </p>
+
+              <details className="group">
+                <summary className="cursor-pointer font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                  Address (Optional)
+                </summary>
+                <div className="mt-3 flex flex-col gap-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input
+                      id="new-student-address-street"
+                      label="Street"
+                      type="text"
+                      placeholder="e.g. Mabini St."
+                      value={identity.addressStreet}
+                      onChange={(e) => onIdentityChange({ addressStreet: e.target.value })}
+                    />
+                    <Input
+                      id="new-student-address-barangay"
+                      label="Barangay"
+                      type="text"
+                      placeholder="e.g. Poblacion"
+                      value={identity.addressBarangay}
+                      onChange={(e) => onIdentityChange({ addressBarangay: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input
+                      id="new-student-address-city"
+                      label="City / Municipality"
+                      type="text"
+                      placeholder="e.g. Labrador"
+                      value={identity.addressCity}
+                      onChange={(e) => onIdentityChange({ addressCity: e.target.value })}
+                    />
+                    <Input
+                      id="new-student-address-province"
+                      label="Province"
+                      type="text"
+                      placeholder="e.g. Pangasinan"
+                      value={identity.addressProvince}
+                      onChange={(e) => onIdentityChange({ addressProvince: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input
+                      id="new-student-address-region"
+                      label="Region"
+                      type="text"
+                      placeholder="e.g. Region I"
+                      value={identity.addressRegion}
+                      onChange={(e) => onIdentityChange({ addressRegion: e.target.value })}
+                    />
+                    <Input
+                      id="new-student-address-zip"
+                      label="Zip Code"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="e.g. 2402"
+                      value={identity.addressZipCode}
+                      onChange={(e) =>
+                        onIdentityChange({ addressZipCode: e.target.value.replace(/\D/g, "").slice(0, 4) })
+                      }
+                    />
+                  </div>
+                </div>
+              </details>
             </div>
           </div>
         </div>

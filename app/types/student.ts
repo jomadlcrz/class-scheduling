@@ -13,8 +13,11 @@ export type CreateStudentRecordInput = {
   lastName: string;
   /** Backend NameSuffix enum value (Jr., Sr., II, III, IV) — sent as `nameSuffix`. */
   suffix?: string;
+  gender?: string;
+  birthdate?: string;
   mobile: string;
   email: string;
+  address?: AddressInput;
   programId: number;
   yearLevel: number;
   setId?: number | null;
@@ -60,6 +63,12 @@ export type StudentAccountRow = {
   academics: StudentAcademicRecord[];
 };
 
+export type CreditedSubject = {
+  subjectId: number;
+  subjectCode: string;
+  descriptiveTitle: string;
+};
+
 export type StudentProfileDetail = {
   studentProfileId: number;
   studentId: string | null;
@@ -67,11 +76,14 @@ export type StudentProfileDetail = {
   midName: string | null;
   lastName: string;
   suffix: string | null;
+  gender: string | null;
+  birthdate: string | null;
   mobile: string | null;
   email: string | null;
   accountStatus: string;
   profilePhotoUrl: string | null;
   address: AddressData | null;
+  creditedSubjects: CreditedSubject[];
 };
 
 export type AddressData = {
@@ -83,14 +95,26 @@ export type AddressData = {
   zipCode: string | null;
 };
 
+export type AddressInput = {
+  street?: string;
+  barangay?: string;
+  cityMunicipality?: string;
+  province?: string;
+  region?: string;
+  zipCode?: string;
+};
+
 export type UpdateStudentProfileInput = {
   firstName: string;
   midName: string | null;
   lastName: string;
   /** Backend NameSuffix enum value or null to clear — sent as `nameSuffix`. */
   suffix?: string | null;
+  gender?: string;
+  birthdate?: string;
   mobile: string;
   email: string;
+  address?: AddressInput;
 };
 
 /** POST /enrollments payload — re-enrolls an existing profile into a new term. */

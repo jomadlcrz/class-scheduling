@@ -24,8 +24,16 @@ const EMPTY_IDENTITY: IdentityDraft = {
   midName: "",
   lastName: "",
   suffix: "",
+  gender: "",
+  birthdate: "",
   mobile: "",
   email: "",
+  addressStreet: "",
+  addressBarangay: "",
+  addressCity: "",
+  addressProvince: "",
+  addressRegion: "",
+  addressZipCode: "",
 };
 
 const EMPTY_ACADEMIC: AcademicDraft = {
@@ -47,6 +55,7 @@ type AddStudentWizardProps = {
   studentTypes: string[];
   academicStatuses: string[];
   nameSuffixes: string[];
+  genders: string[];
   isSaving: boolean;
   onSavingChange: (saving: boolean) => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -63,6 +72,7 @@ export function AddStudentWizard({
   studentTypes,
   academicStatuses,
   nameSuffixes,
+  genders,
   isSaving,
   onSavingChange,
   onDirtyChange,
@@ -127,7 +137,12 @@ export function AddStudentWizard({
   }
 
   const step1Valid =
-    identity.firstName.trim() !== "" && identity.lastName.trim() !== "" && identity.mobile.trim() !== "" && identity.email.trim() !== "";
+    identity.firstName.trim() !== "" &&
+    identity.lastName.trim() !== "" &&
+    identity.gender !== "" &&
+    identity.birthdate !== "" &&
+    identity.mobile.trim() !== "" &&
+    identity.email.trim() !== "";
   const step2Valid =
     academic.programId !== "" &&
     academic.yearLevel !== "" &&
@@ -161,6 +176,8 @@ export function AddStudentWizard({
       midName: identity.midName.trim(),
       lastName: identity.lastName.trim(),
       suffix: identity.suffix.trim(),
+      gender: identity.gender,
+      birthdate: identity.birthdate,
       mobile: identity.mobile.trim(),
       email: identity.email.trim(),
       programId: academic.programId,
@@ -181,11 +198,29 @@ export function AddStudentWizard({
     setSaveError(null);
     onSavingChange(true);
     try {
+      const addressStreet = identity.addressStreet.trim();
+      const addressBarangay = identity.addressBarangay.trim();
+      const addressCity = identity.addressCity.trim();
+      const addressProvince = identity.addressProvince.trim();
+      const addressRegion = identity.addressRegion.trim();
+      const addressZip = identity.addressZipCode.trim();
+      const hasAddress = addressStreet || addressBarangay || addressCity;
+
       const created = await studentService.createRecord({
         ...result.data,
         studentId: result.data.studentId || undefined,
         midName: result.data.midName || undefined,
         suffix: result.data.suffix || undefined,
+        ...(hasAddress && {
+          address: {
+            street: addressStreet || undefined,
+            barangay: addressBarangay || undefined,
+            cityMunicipality: addressCity || undefined,
+            province: addressProvince || undefined,
+            region: addressRegion || undefined,
+            zipCode: addressZip || undefined,
+          },
+        }),
       });
 
       if (photoFile) {
@@ -220,6 +255,7 @@ export function AddStudentWizard({
           identity={identity}
           onIdentityChange={handleIdentityChange}
           nameSuffixes={nameSuffixes}
+          genders={genders}
           photoFile={photoFile}
           onPhotoChange={setPhotoFile}
           canAdvance={step1Valid}
