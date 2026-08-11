@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CloseIcon } from "~/components/ui/icons";
+import { useScrollLock } from "~/hooks/use-scroll-lock";
 
 type ModalProps = {
   open: boolean;
@@ -141,20 +142,8 @@ function ModalContent({
   footer?: ReactNode;
   children: ReactNode;
 }) {
-  // Freeze body scroll while the modal is open; tall content scrolls
-  // inside the panel instead (same pattern as the mobile nav drawer).
-  useEffect(() => {
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
-    };
-  }, []);
+  // Freeze body scroll while open (shared counter — only restores when all overlays close).
+  useScrollLock();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

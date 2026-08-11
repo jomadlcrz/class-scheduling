@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
 import { CloseIcon } from "~/components/ui/icons";
+import { useScrollLock } from "~/hooks/use-scroll-lock";
 
 type DrawerProps = {
   open: boolean;
@@ -43,18 +44,7 @@ function DrawerPanel({
   children: ReactNode;
 }) {
   // Freeze body scroll while open; the panel scrolls internally.
-  useEffect(() => {
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
-    };
-  }, []);
+  useScrollLock();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
