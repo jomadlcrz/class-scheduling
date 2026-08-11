@@ -152,6 +152,33 @@ function StudentSchedulePage() {
                   showSet={!isRegular}
             />
           </div>
+
+          {visibleSchedules.length > 0 && (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                  Prepared by:
+                </p>
+                <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
+                  Harvin A. Arisga
+                </p>
+                <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                  Registrar
+                </p>
+              </div>
+              <div>
+                <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                  Approved by:
+                </p>
+                <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
+                  Denzel Valdez
+                </p>
+                <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                  Dean, CITE Department
+                </p>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

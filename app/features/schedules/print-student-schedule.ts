@@ -108,6 +108,12 @@ export function openStudentSchedulePrint(
 
     @media print{body{padding:0.35in}}
     @media print and (orientation:landscape){.sp-day{margin-top:0.9rem}}
+
+    .sp-signatures{display:flex;justify-content:space-between;margin-top:1.5rem;gap:1rem}
+    .sp-signatures div{flex:1}
+    .sp-signatures .sig-label{font-weight:bold;font-size:11px}
+    .sp-signatures .sig-name{font-size:11px;margin-top:0.15rem}
+    .sp-signatures .sig-role{font-size:9px;color:#555;margin-top:0.15rem}
   </style>
 </head>
 <body>
@@ -122,6 +128,18 @@ export function openStudentSchedulePrint(
     <p>S.Y. ${safe(context.schoolYear)}, ${safe(context.semesterLabel)}</p>
   </header>
   ${dayBlocks}
+  <footer class="sp-signatures">
+    <div>
+      <p class="sig-label">Prepared by:</p>
+      <p class="sig-name">Harvin A. Arisga</p>
+      <p class="sig-role">Registrar</p>
+    </div>
+    <div>
+      <p class="sig-label">Approved by:</p>
+      <p class="sig-name">Denzel Valdez</p>
+      <p class="sig-role">Dean, CITE Department</p>
+    </div>
+  </footer>
   <script>window.addEventListener("load",function(){setTimeout(function(){window.print()},200)})</script>
 </body>
 </html>`;
