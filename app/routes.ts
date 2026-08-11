@@ -18,7 +18,6 @@ export default [
     route("dashboard", "routes/app/dashboard.tsx"),
     route("administrators", "routes/app/administrators.tsx"),
     route("administrators/new", "routes/app/administrators-new.tsx"),
-    route("accounts", "routes/app/accounts.tsx"),
     route("permissions", "routes/app/permissions.tsx"),
     route("facilities", "routes/app/facilities.tsx"),
     route("facilities/new", "routes/app/facilities/new.tsx"),
