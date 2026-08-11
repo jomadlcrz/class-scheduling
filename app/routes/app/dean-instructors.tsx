@@ -105,10 +105,10 @@ function DeanInstructorsPage() {
                     </span>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-                    {instructor.email ?? "—"}
+                    {instructor.email ? <a href={`mailto:${instructor.email}`} className="hover:underline">{instructor.email}</a> : "—"}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-                    {instructor.mobile ?? "—"}
+                    {instructor.mobile ? <a href={`tel:${instructor.mobile}`} className="hover:underline">{instructor.mobile}</a> : "—"}
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
                     {instructor.gender}

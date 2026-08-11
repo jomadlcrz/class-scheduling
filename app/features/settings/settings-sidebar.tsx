@@ -63,9 +63,9 @@ export function SettingsSidebar() {
             <p className="truncate font-body text-sm font-semibold text-slate-800 dark:text-mist-100">
               {user.name}
             </p>
-            <p className="truncate font-body text-xs text-slate-500 dark:text-slate-400">
+            <a href={`mailto:${user.email}`} className="truncate font-body text-xs text-slate-500 hover:underline dark:text-slate-400">
               {user.email}
-            </p>
+            </a>
           </div>
         </div>
       </div>

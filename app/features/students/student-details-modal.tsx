@@ -145,12 +145,18 @@ export function StudentDetailsModal({
 }
 
 function Field({ label, value }: { label: string; value: string }) {
+  const href =
+    label === "Email" && value !== "—" ? `mailto:${value}`
+    : label === "Mobile" && value !== "—" ? `tel:${value}`
+    : null;
   return (
     <div>
       <dt>
         <Label>{label}</Label>
       </dt>
-      <dd className="mt-1.5 font-body text-sm text-slate-500 dark:text-slate-400">{value}</dd>
+      <dd className="mt-1.5 font-body text-sm text-slate-500 dark:text-slate-400">
+        {href ? <a href={href} className="hover:underline">{value}</a> : value}
+      </dd>
     </div>
   );
 }

@@ -250,9 +250,9 @@ export function EnrollmentRecordsView({ students, facets, onChanged, initialType
                           {student.name}
                         </p>
                         {student.email && (
-                          <p className="truncate font-body text-[0.7rem] text-slate-400 dark:text-slate-500">
+                          <a href={`mailto:${student.email}`} className="block truncate font-body text-[0.7rem] text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
                             {student.email}
-                          </p>
+                          </a>
                         )}
                       </div>
                     </div>

@@ -55,9 +55,9 @@ export function AdministratorTable({
                     {displayName(admin)}
                   </span>
                   {admin.email && (
-                    <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
+                    <a href={`mailto:${admin.email}`} className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
                       {admin.email}
-                    </span>
+                    </a>
                   )}
                 </div>
               </TableCell>

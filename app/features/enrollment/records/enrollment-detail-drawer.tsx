@@ -93,8 +93,10 @@ export function EnrollmentDetailDrawer({ student, enrollment, onClose, onChanged
                   <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
                 </div>
                 {(student.email || student.mobile) && (
-                  <p className="truncate font-body text-xs text-slate-500 dark:text-slate-400">
-                    {[student.mobile, student.email].filter(Boolean).join(" · ")}
+                  <p className="flex flex-wrap gap-x-2 truncate font-body text-xs text-slate-500 dark:text-slate-400">
+                    {student.mobile && <a href={`tel:${student.mobile}`} className="hover:underline">{student.mobile}</a>}
+                    {student.mobile && student.email && <span>·</span>}
+                    {student.email && <a href={`mailto:${student.email}`} className="hover:underline">{student.email}</a>}
                   </p>
                 )}
               </div>

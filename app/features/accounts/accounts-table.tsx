@@ -41,7 +41,7 @@ export function AccountsTable({
         {accounts.map((account) => (
           <TableRow key={account.userId}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-mist-100">{account.email}</span>
+              <a href={`mailto:${account.email}`} className="font-medium text-navy-700 hover:underline dark:text-mist-100">{account.email}</a>
             </TableCell>
             <TableCell>
               <div className="flex flex-wrap gap-1.5">

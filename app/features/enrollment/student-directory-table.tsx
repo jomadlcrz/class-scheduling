@@ -213,7 +213,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
                     <div className="min-w-0">
                       <p className="truncate font-body text-xs font-medium text-navy-700 dark:text-mist-100">{r.name}</p>
                       {r.email && (
-                        <p className="truncate font-body text-[0.7rem] text-slate-400 dark:text-slate-500">{r.email}</p>
+                        <a href={`mailto:${r.email}`} className="block truncate font-body text-[0.7rem] text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">{r.email}</a>
                       )}
                     </div>
                   </div>

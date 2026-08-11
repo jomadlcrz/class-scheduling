@@ -64,10 +64,10 @@ export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) 
               <AccountRoleBadge role={member.roleName} />
             </TableCell>
             <TableCell className="hidden text-slate-500 dark:text-slate-400 md:table-cell">
-              {member.email || "—"}
+              {member.email ? <a href={`mailto:${member.email}`} className="hover:underline">{member.email}</a> : "—"}
             </TableCell>
             <TableCell className="hidden text-slate-500 dark:text-slate-400 md:table-cell">
-              {member.mobile || "—"}
+              {member.mobile ? <a href={`tel:${member.mobile}`} className="hover:underline">{member.mobile}</a> : "—"}
             </TableCell>
           </TableRow>
         ))}

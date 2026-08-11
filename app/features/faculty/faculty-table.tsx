@@ -70,9 +70,9 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                     {displayName(member)}
                   </span>
                   {member.email && (
-                    <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
+                    <a href={`mailto:${member.email}`} className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
                       {member.email}
-                    </span>
+                    </a>
                   )}
                 </div>
               </div>

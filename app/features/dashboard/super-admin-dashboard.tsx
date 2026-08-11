@@ -129,9 +129,9 @@ function PendingFirstLoginTable({ accounts }: { accounts: SuperAdminAccount[] })
           {shown.map((account) => (
             <TableRow key={account.user_id}>
               <TableCell>
-                <span className="font-medium text-slate-800 dark:text-slate-200">
+                <a href={`mailto:${account.email}`} className="font-medium text-slate-800 hover:underline dark:text-slate-200">
                   {account.email}
-                </span>
+                </a>
               </TableCell>
               <TableCell>
                 <span className="flex flex-wrap gap-1">

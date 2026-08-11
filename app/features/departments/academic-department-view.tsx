@@ -62,10 +62,10 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
               </div>
               <div className="flex flex-col gap-1.5">
                 {detail.dean.email && (
-                  <span className={contactRowClassName}>
+                  <a href={`mailto:${detail.dean.email}`} className={contactRowClassName}>
                     <MailIcon />
                     {detail.dean.email}
-                  </span>
+                  </a>
                 )}
               </div>
             </>
