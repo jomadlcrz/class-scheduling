@@ -39,11 +39,12 @@ function EnrollmentStudentsPage() {
   const enabled = syId != null && semesterNumber != null;
   const termKey = enabled ? `${syId}:${semesterNumber}` : "none";
 
-  const { data: students, error: loadError, reload: reloadStudents } = useCachedData(
+  const { data: enrollmentData, error: loadError, reload: reloadStudents } = useCachedData(
     `enrollment-records:${termKey}`,
     () => enrollmentService.listTermEnrollments(syId as number, semesterNumber as number),
     { enabled },
   );
+  const students = enrollmentData?.items ?? null;
   const { data: facets, reload: reloadFacets } = useCachedData(
     `enrollment-facets:${termKey}`,
     () => enrollmentService.getFacets(syId as number, semesterNumber as number),

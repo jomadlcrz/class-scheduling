@@ -3,6 +3,7 @@ import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ChevronRightIcon, LayersIcon, MailIcon, UserIcon } from "~/components/ui/icons";
+import { Pagination } from "~/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -11,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { usePagination } from "~/hooks/use-pagination";
 import type { AcademicDepartmentDetail } from "~/types/department";
 
 const ENROLLED_STATUS_TONES: Record<string, BadgeTone> = {
@@ -24,6 +26,8 @@ const contactRowClassName = "flex items-center gap-2 font-body text-sm text-slat
 
 /** Academic-department hub — dean, program cards with set counts, and the student table. */
 export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentDetail }) {
+  const pagination = usePagination(detail.students, "students");
+
   return (
     <div className="flex flex-col gap-6">
       <section aria-labelledby="dean-heading">
@@ -142,7 +146,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                 <TableHeader>Status</TableHeader>
               </TableHead>
               <TableBody>
-                {detail.students.map((student) => (
+                {pagination.pageItems.map((student) => (
                   <TableRow key={student.studentProfileId}>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -181,6 +185,16 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                 ))}
               </TableBody>
             </Table>
+            {pagination.totalPages > 1 && (
+              <div className="mt-4">
+                <Pagination
+                  page={pagination.page}
+                  totalItems={pagination.totalItems}
+                  pageSize={pagination.pageSize}
+                  onPageChange={pagination.setPage}
+                />
+              </div>
+            )}
           </div>
         )}
       </section>
