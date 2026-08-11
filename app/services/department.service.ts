@@ -13,14 +13,18 @@ import type {
 /** Departments CRUD against the facilities module (registrar_admin). */
 
 type DepartmentsResponse = {
+  total_departments: number;
   departments: {
     department_id: number;
     department_abbrev: string;
     department_name: string;
     department_type: string;
+    building_id: number | null;
     building_name: string;
+    description: string | null;
     programs: { program_abbrev: string; program_name: string }[];
     logo_url: string | null;
+    cover_image_url: string | null;
   }[];
 };
 
@@ -29,15 +33,18 @@ function mapDepartments(data: DepartmentsResponse): Department[] {
     id: d.department_id,
     abbrev: d.department_abbrev,
     name: d.department_name,
+    buildingId: d.building_id,
     buildingName: d.building_name,
     departmentType: d.department_type,
+    description: d.description,
     programs: (d.programs ?? []).map((p) => ({ abbrev: p.program_abbrev, name: p.program_name })),
     logoUrl: d.logo_url,
+    coverImageUrl: d.cover_image_url,
   }));
 }
 
 /** GET /departments — every active department, administrative offices included.
- * The backend answers an empty table with 404. */
+ *  The backend answers an empty table with 404. */
 async function list(): Promise<Department[]> {
   try {
     return mapDepartments(await apiGet<DepartmentsResponse>("/departments/"));
@@ -48,8 +55,8 @@ async function list(): Promise<Department[]> {
 }
 
 /** GET /departments/academic — same shape as list(), minus administrative offices
- * (e.g. OCR, MIS) that own no programs. Use this for pickers assigning academic
- * data (like a program) to a college. */
+ *  (e.g. OCR, MIS) that own no programs. Use this for pickers assigning academic
+ *  data (like a program) to a college. */
 async function listAcademic(): Promise<Department[]> {
   try {
     return mapDepartments(await apiGet<DepartmentsResponse>("/departments/academic"));
@@ -60,16 +67,17 @@ async function listAcademic(): Promise<Department[]> {
 }
 
 /** POST /departments/ — create one department, with an optional logo.
- * Plain JSON when no logo is given; multipart/form-data (same camelCase fields, plus
- * a `logo` file) when one is — the backend accepts either body for this endpoint.
- * Returns the backend message. */
+ *  Plain JSON when no logo is given; multipart/form-data (same camelCase fields, plus
+ *  a `logo` file) when one is — the backend accepts either body for this endpoint.
+ *  Returns the backend message. */
 async function create(input: CreateDepartmentInput, logoFile?: File | null): Promise<string> {
   if (logoFile) {
     const formData = new FormData();
     formData.append("departmentAbbrev", input.abbrev);
     formData.append("departmentName", input.name);
-    formData.append("buildingId", String(input.buildingId));
+    if (input.buildingId != null) formData.append("buildingId", String(input.buildingId));
     if (input.departmentType !== undefined) formData.append("departmentType", input.departmentType);
+    if (input.description !== undefined) formData.append("description", input.description);
     formData.append("logo", logoFile);
     const data = await apiUpload<{ message?: string }>("/departments/", formData);
     return apiMessage(data);
@@ -78,19 +86,22 @@ async function create(input: CreateDepartmentInput, logoFile?: File | null): Pro
   const data = await apiPost<{ message?: string }>("/departments/", {
     departmentAbbrev: input.abbrev,
     departmentName: input.name,
-    buildingId: input.buildingId,
+    ...(input.buildingId != null && { buildingId: input.buildingId }),
     ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
+    ...(input.description !== undefined && { description: input.description }),
   });
   return apiMessage(data);
 }
 
-/** PUT /departments/:id — abbrev, name, building, and type are updatable. Returns the backend message. */
+/** PUT /departments/:id — abbrev, name, building, type, and description are updatable.
+ *  Returns the backend message. */
 async function update(id: number, input: UpdateDepartmentInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/departments/${id}`, {
     ...(input.abbrev !== undefined && { departmentAbbrev: input.abbrev }),
     ...(input.name !== undefined && { departmentName: input.name }),
     ...(input.buildingId !== undefined && { buildingId: input.buildingId }),
     ...(input.departmentType !== undefined && { departmentType: input.departmentType }),
+    ...(input.description !== undefined && { description: input.description }),
   });
   return apiMessage(data);
 }
@@ -109,7 +120,22 @@ async function removeLogo(id: number): Promise<string> {
   return apiMessage(data);
 }
 
-/** DELETE /departments/:id — cascades through its programs after the caller echoes the department's abbreviation (uppercase-normalized). Returns the backend message. */
+/** POST /departments/:id/cover — replace the department cover image. Field name `cover`. */
+async function uploadCover(id: number, file: File): Promise<{ url: string; message: string }> {
+  const formData = new FormData();
+  formData.append("cover", file);
+  const data = await apiUpload<{ message?: string; cover_image_url: string }>(`/departments/${id}/cover`, formData);
+  return { url: data.cover_image_url, message: data.message ?? "" };
+}
+
+/** DELETE /departments/:id/cover — remove the current cover image, if any. Returns the backend message. */
+async function removeCover(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/departments/${id}/cover`);
+  return apiMessage(data);
+}
+
+/** DELETE /departments/:id — cascades through its programs after the caller echoes the
+ *  department's abbreviation (uppercase-normalized). Returns the backend message. */
 async function remove(id: number, confirmCode: string): Promise<string> {
   const data = await apiPatch<{ message?: string }>(`/departments/${id}/archive`, { confirm: confirmCode });
   return apiMessage(data);
@@ -142,7 +168,9 @@ type DepartmentOverviewResponse = {
   department_type: string;
   building_id: number | null;
   building_name: string | null;
+  description: string | null;
   logo_url: string | null;
+  cover_image_url: string | null;
   total_programs: number;
   programs: ProgramSummaryResponse[];
 };
@@ -157,7 +185,9 @@ async function getOverview(id: number): Promise<DepartmentOverview> {
     departmentType: d.department_type,
     buildingId: d.building_id,
     buildingName: d.building_name,
+    description: d.description,
     logoUrl: d.logo_url,
+    coverImageUrl: d.cover_image_url,
     totalPrograms: d.total_programs,
     programs: d.programs.map(mapProgramSummary),
   };
@@ -234,7 +264,9 @@ async function getAcademicDetail(id: number): Promise<AcademicDepartmentDetail> 
     departmentType: d.department_type,
     buildingId: d.building_id,
     buildingName: d.building_name,
+    description: d.description,
     logoUrl: d.logo_url,
+    coverImageUrl: d.cover_image_url,
     dean: d.dean
       ? {
           deanProfileId: d.dean.dean_profile_id,
@@ -265,19 +297,28 @@ async function getAcademicDetail(id: number): Promise<AcademicDepartmentDetail> 
   };
 }
 
-/** GET /departments/:id/delete-preview — read-only breakdown of what the delete would affect. */
+/** GET /departments/:id/archive-preview — read-only breakdown of what the archive would affect. */
 async function getDeletePreview(id: number): Promise<DepartmentDeletePreview> {
   const data = await apiGet<{
-    department: DepartmentDeletePreview["department"];
+    department: { department_id: number; department_name: string; department_abbrev: string };
     archivable: boolean;
-    blockers: DepartmentDeletePreview["blockers"];
-    willArchive: DepartmentDeletePreview["will_delete"];
+    blockers: { staff: number };
+    willArchive: { programs: { program_id: number; program_abbrev: string }[] };
   }>(`/departments/${id}/archive-preview`);
   return {
-    department: data.department,
+    department: {
+      departmentId: data.department.department_id,
+      departmentName: data.department.department_name,
+      departmentAbbrev: data.department.department_abbrev,
+    },
     deletable: data.archivable,
     blockers: data.blockers,
-    will_delete: data.willArchive,
+    willDelete: {
+      programs: data.willArchive.programs.map((p) => ({
+        programId: p.program_id,
+        programAbbrev: p.program_abbrev,
+      })),
+    },
   };
 }
 
@@ -288,6 +329,8 @@ export const departmentService = {
   update,
   uploadLogo,
   removeLogo,
+  uploadCover,
+  removeCover,
   remove,
   getDeletePreview,
   getOverview,

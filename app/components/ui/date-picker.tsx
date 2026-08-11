@@ -31,8 +31,6 @@ type DatePickerProps = {
   captionLayout?: "label" | "dropdown";
   fromYear?: number;
   toYear?: number;
-  /** Show a clear (×) button when a value is set. Off when the field is required. */
-  clearable?: boolean;
   /** FormData key; defaults to `id` so it drops into uncontrolled forms. */
   name?: string;
 };
@@ -60,7 +58,6 @@ export function DatePicker({
   captionLayout = "label",
   fromYear,
   toYear,
-  clearable = true,
   name,
 }: DatePickerProps) {
   const isControlled = value !== undefined;
@@ -90,8 +87,6 @@ export function DatePicker({
     setOpen(false);
   };
 
-  const showClear = clearable && !required && !disabled && current !== "";
-
   const triggerClass =
     "flex w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400 dark:disabled:bg-white/3 dark:disabled:text-slate-500";
 
@@ -105,7 +100,7 @@ export function DatePicker({
           <Popover.Trigger
             disabled={disabled}
             aria-describedby={hint ? `${id}-hint` : undefined}
-            className={`${triggerClass} ${showClear ? "pr-16" : "pr-10"}`}
+            className={`${triggerClass} pr-10`}
           >
             <span className={`flex-1 truncate ${selected ? "" : "text-slate-400 dark:text-slate-500"}`}>
               {selected ? formatDisplayDate(selected) : placeholder}
@@ -116,20 +111,6 @@ export function DatePicker({
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
             <CalendarIcon />
           </span>
-
-          {showClear && (
-            <button
-              type="button"
-              aria-label={`Clear ${label.toLowerCase()}`}
-              onClick={() => commit("")}
-              className="absolute right-9 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-slate-400 transition-colors duration-150 hover:text-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:text-mist-100"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
         </div>
 
         <Popover.Portal>

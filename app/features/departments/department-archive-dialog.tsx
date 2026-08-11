@@ -42,7 +42,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
   }, [department]);
 
   const confirmed =
-    preview !== null && confirmValue.trim().toUpperCase() === preview.department.department_abbrev;
+    preview !== null && confirmValue.trim().toUpperCase() ===     preview.department.departmentAbbrev;
 
   async function handleArchive() {
     if (!department) return;
@@ -115,13 +115,13 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
       );
     }
 
-    const programs = preview.will_delete.programs;
+    const programs = preview.willDelete.programs;
     return (
       <div className="flex flex-col gap-4">
         <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           Archiving{" "}
           <span className="font-semibold text-navy-800 dark:text-mist-100">
-            {preview.department.department_abbrev} — {preview.department.department_name}
+            {preview.department.departmentAbbrev} — {preview.department.departmentName}
           </span>{" "}
           cascades through every program below. It can be restored from Archive at any time.
         </p>
@@ -139,10 +139,10 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
               <ul className="flex flex-wrap gap-1.5">
                 {programs.map((p) => (
                   <li
-                    key={p.program_id}
+                    key={p.programId}
                     className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
                   >
-                    {p.program_abbrev}
+                    {p.programAbbrev}
                   </li>
                 ))}
               </ul>
@@ -154,7 +154,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
           <Label htmlFor="department-archive-confirm">
             Type{" "}
             <span className="font-semibold text-navy-800 dark:text-mist-100">
-              {preview.department.department_abbrev}
+              {preview.department.departmentAbbrev}
             </span>{" "}
             to confirm archival
           </Label>
@@ -166,7 +166,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            placeholder={preview.department.department_abbrev}
+            placeholder={preview.department.departmentAbbrev}
             className={`${inputClassName} font-body uppercase tracking-wide`}
           />
         </div>

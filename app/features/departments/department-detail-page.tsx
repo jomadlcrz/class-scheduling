@@ -78,10 +78,13 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
         id: overview.id,
         abbrev: overview.abbrev,
         name: overview.name,
+        buildingId: overview.buildingId,
         buildingName: overview.buildingName ?? "",
         departmentType: overview.departmentType,
+        description: overview.description,
         programs: overview.programs.map((p) => ({ abbrev: p.abbrev, name: p.name })),
         logoUrl: overview.logoUrl,
+        coverImageUrl: overview.coverImageUrl,
       }
     : undefined;
 
@@ -200,19 +203,21 @@ function DepartmentHeader({
     <Card className="overflow-hidden">
       <div className="relative h-36 overflow-hidden bg-slate-100 dark:bg-surface-raised/60">
         <img
-          src={departmentLogoSrc(overview.logoUrl)}
+          src={overview.coverImageUrl || departmentLogoSrc(overview.logoUrl)}
           alt=""
           aria-hidden="true"
           onError={onDepartmentLogoError}
           className="absolute inset-0 size-full scale-125 object-cover object-center opacity-70 blur-2xl saturate-150"
         />
         <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
-        <img
-          src={departmentLogoSrc(overview.logoUrl)}
-          alt={`${overview.abbrev} logo`}
-          onError={onDepartmentLogoError}
-          className="absolute inset-0 m-auto size-20 object-contain drop-shadow-md"
-        />
+        <div className="absolute inset-0 m-auto size-20 overflow-hidden rounded-full drop-shadow-md">
+          <img
+            src={departmentLogoSrc(overview.logoUrl)}
+            alt={`${overview.abbrev} logo`}
+            onError={onDepartmentLogoError}
+            className="size-full object-cover"
+          />
+        </div>
       </div>
       <div className="flex flex-wrap items-start justify-between gap-4 p-5">
         <div className="min-w-0">
@@ -222,6 +227,11 @@ function DepartmentHeader({
           <h1 className="mt-0.5 font-body text-lg font-semibold text-slate-700 dark:text-slate-200">
             {overview.name}
           </h1>
+          {overview.description && (
+            <p className="mt-1.5 font-body text-sm text-slate-500 dark:text-slate-400">
+              {overview.description}
+            </p>
+          )}
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge tone={DEPARTMENT_TYPE_TONES[overview.departmentType] ?? "slate"}>
               {overview.departmentType}

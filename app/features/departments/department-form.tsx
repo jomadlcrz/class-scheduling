@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button";
 import { ConfirmDialog, ModalActions } from "~/components/ui/modal";
 import { FileChooser } from "~/components/ui/file-chooser";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
@@ -91,9 +92,11 @@ export function DepartmentForm({
     const data = new FormData(e.currentTarget);
     const abbrev = String(data.get("dept-abbrev") ?? "").trim();
     const name = String(data.get("dept-name") ?? "").trim();
-    const buildingId = Number(data.get("dept-building"));
+    const buildingIdRaw = Number(data.get("dept-building"));
+    const buildingId = Number.isFinite(buildingIdRaw) && buildingIdRaw > 0 ? buildingIdRaw : undefined;
+    const description = String(data.get("dept-description") ?? "").trim() || undefined;
 
-    const result = departmentSchema.safeParse({ abbrev, name, buildingId, departmentType: type });
+    const result = departmentSchema.safeParse({ abbrev, name, buildingId, departmentType: type, description });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -109,10 +112,7 @@ export function DepartmentForm({
     }
   }
 
-  const defaultBuildingId =
-    (department && buildings.find((b) => b.name === department.buildingName)?.id) ??
-    buildings[0]?.id ??
-    0;
+  const defaultBuildingId = String(department?.buildingId ?? buildings[0]?.id ?? "");
 
   return (
     <>
@@ -167,16 +167,17 @@ export function DepartmentForm({
         placeholder="College of Information Technology Education"
         defaultValue={department?.name ?? ""}
       />
-      <FieldChrome id="dept-building" label="Building">
+      <FieldChrome id="dept-building" label="Building" hint="Optional — leave unset if no building is assigned.">
         <Select
-          items={buildings.map((b) => ({ value: String(b.id), label: b.name }))}
+          items={[{ value: "", label: "No building" }, ...buildings.map((b) => ({ value: String(b.id), label: b.name }))]}
           name="dept-building"
-          defaultValue={String(defaultBuildingId)}
+          defaultValue={defaultBuildingId}
         >
           <SelectTrigger id="dept-building">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="">No building</SelectItem>
             {buildings.map((b) => (
               <SelectItem key={b.id} value={String(b.id)}>
                 {b.name}
@@ -204,6 +205,14 @@ export function DepartmentForm({
           </SelectContent>
         </Select>
       </FieldChrome>
+      <Textarea
+        id="dept-description"
+        label="Description"
+        placeholder="Brief description of the department…"
+        hint="Optional"
+        defaultValue={department?.description ?? ""}
+        rows={3}
+      />
       <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel

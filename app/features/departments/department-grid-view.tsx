@@ -49,19 +49,21 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
             <div className="flex flex-1 flex-col">
               <div className="relative h-28 shrink-0 overflow-hidden bg-slate-100 dark:bg-surface-raised/60">
                 <img
-                  src={departmentLogoSrc(dept.logoUrl)}
+                  src={dept.coverImageUrl || departmentLogoSrc(dept.logoUrl)}
                   alt=""
                   aria-hidden="true"
                   onError={onDepartmentLogoError}
                   className="absolute inset-0 size-full scale-125 object-cover object-center opacity-70 blur-2xl saturate-150"
                 />
                 <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
-                <img
-                  src={departmentLogoSrc(dept.logoUrl)}
-                  alt={`${dept.abbrev} logo`}
-                  onError={onDepartmentLogoError}
-                  className="absolute inset-0 m-auto size-16 object-contain drop-shadow-md transition-transform duration-500 ease-out group-hover:scale-110"
-                />
+                <div className="absolute inset-0 m-auto size-16 overflow-hidden rounded-full drop-shadow-md transition-transform duration-500 ease-out group-hover:scale-110">
+                  <img
+                    src={departmentLogoSrc(dept.logoUrl)}
+                    alt={`${dept.abbrev} logo`}
+                    onError={onDepartmentLogoError}
+                    className="size-full object-cover"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-1 flex-col gap-3 p-4">
@@ -70,29 +72,23 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
                   <p className="mt-0.5 line-clamp-2 font-body text-sm text-slate-600 dark:text-slate-300">{dept.name}</p>
                 </div>
 
+                {dept.description && (
+                  <p className="-mt-1 line-clamp-2 font-body text-xs text-slate-500 dark:text-slate-400">
+                    {dept.description}
+                  </p>
+                )}
+
                 <div className="flex flex-wrap gap-1.5">
                   <Badge tone={DEPARTMENT_TYPE_TONES[dept.departmentType] ?? "slate"}>{dept.departmentType}</Badge>
                   <Badge tone={getBuildingTone(dept.buildingName)}>{dept.buildingName}</Badge>
+                  {dept.departmentType !== "Administrative" && (
+                    <Badge tone="sky">
+                      {dept.programs.length === 0
+                        ? "No programs"
+                        : `${dept.programs.length} program${dept.programs.length === 1 ? "" : "s"}`}
+                    </Badge>
+                  )}
                 </div>
-
-                {dept.departmentType !== "Administrative" && (
-                  <div>
-                    <p className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                      Academic Programs
-                    </p>
-                    {dept.programs.length === 0 ? (
-                      <p className="mt-1 font-body text-xs text-slate-400 dark:text-slate-500">No programs yet.</p>
-                    ) : (
-                      <ul className="mt-1 list-disc space-y-0.5 pl-4 font-body text-xs text-slate-600 dark:text-slate-300">
-                        {dept.programs.map((program) => (
-                          <li key={program.abbrev}>
-                            {program.abbrev} — {program.name}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -116,17 +112,11 @@ export function DepartmentGridView({ departments, onEdit, onArchive }: Departmen
               </button>
             </div>
 
-            <div className="mt-auto flex flex-col">
+            <div className="mt-auto">
               <Link to={`/departments/${dept.id}`} className={cardFooterLinkClassName}>
-                <span>View Details</span>
+                <span>View {dept.abbrev}</span>
                 <ChevronRightIcon />
               </Link>
-              {dept.departmentType !== "Administrative" && (
-                <Link to="/program-curricula" className={cardFooterLinkClassName}>
-                  <span>View Curriculum</span>
-                  <ChevronRightIcon />
-                </Link>
-              )}
             </div>
           </Card>
         </motion.div>

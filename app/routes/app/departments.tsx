@@ -87,6 +87,7 @@ function DepartmentsPage() {
       name: input.name,
       buildingId: input.buildingId,
       departmentType: input.departmentType,
+      description: input.description,
     });
     if (message) toast.success(message);
     await refresh();

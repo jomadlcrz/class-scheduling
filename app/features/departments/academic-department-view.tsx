@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { ChevronRightIcon, LayersIcon, MailIcon, UserIcon } from "~/components/ui/icons";
+import { ChevronRightIcon, LayersIcon, UserIcon } from "~/components/ui/icons";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { Pagination } from "~/components/ui/pagination";
 import {
@@ -25,6 +25,12 @@ const ENROLLED_STATUS_TONES: Record<string, BadgeTone> = {
 };
 
 const contactRowClassName = "flex items-center gap-2 font-body text-sm text-slate-600 dark:text-slate-300";
+
+function yearOrdinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
+}
 
 /** Academic-department hub — dean, program cards with set counts, and the student table. */
 export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentDetail }) {
@@ -63,8 +69,12 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
               <div className="flex flex-col gap-1.5">
                 {detail.dean.email && (
                   <a href={`mailto:${detail.dean.email}`} className={contactRowClassName}>
-                    <MailIcon />
                     {detail.dean.email}
+                  </a>
+                )}
+                {detail.dean.mobile && (
+                  <a href={`tel:${detail.dean.mobile}`} className={contactRowClassName}>
+                    {detail.dean.mobile}
                   </a>
                 )}
               </div>
@@ -82,18 +92,9 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
           <h2 id="programs-heading" className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
             Programs
           </h2>
-          <div className="flex items-center gap-3">
-            <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-              {detail.totalPrograms} program{detail.totalPrograms === 1 ? "" : "s"}
-            </span>
-            <Link
-              to="/program-curricula"
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 font-body text-sm font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
-            >
-              View Curriculum
-              <ChevronRightIcon />
-            </Link>
-          </div>
+          <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+            {detail.totalPrograms} program{detail.totalPrograms === 1 ? "" : "s"}
+          </span>
         </div>
         {detail.programs.length === 0 ? (
           <Card className="mt-2">
@@ -105,7 +106,9 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
           <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {detail.programs.map((program) => (
               <Card key={program.id} className="flex flex-col gap-2 p-4">
-                <Badge tone="slate">{program.programType}</Badge>
+                <span className="self-start">
+                  <Badge tone="slate">{program.programType}</Badge>
+                </span>
                 <div>
                   <p className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">
                     {program.abbrev}
@@ -114,10 +117,17 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                     {program.name}
                   </p>
                 </div>
-                <span className="mt-auto inline-flex items-center gap-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                <span className="inline-flex items-center gap-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
                   <LayersIcon />
                   {program.totalSets} set{program.totalSets === 1 ? "" : "s"}
                 </span>
+                <Link
+                  to={`/program-curricula?program=${program.abbrev}`}
+                  className="mt-auto inline-flex items-center gap-1 font-body text-xs font-medium text-blue-700 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
+                >
+                  View Curriculum
+                  <ChevronRightIcon />
+                </Link>
               </Card>
             ))}
           </div>
@@ -178,7 +188,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                       {student.programAbbrev}
                     </TableCell>
                     <TableCell className="hidden text-slate-600 dark:text-slate-300 md:table-cell">
-                      Year {student.yearLevel}
+                      {yearOrdinal(student.yearLevel)} Year
                       {student.set ? ` · ${student.set}` : ""}
                     </TableCell>
                     <TableCell>
