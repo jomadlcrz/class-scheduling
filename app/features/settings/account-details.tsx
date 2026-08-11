@@ -1,19 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { SaveIcon } from "~/components/ui/icons";
-import { Input, inputClassName, PasswordInput } from "~/components/ui/input";
+import { Input, PasswordInput } from "~/components/ui/input";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { SettingsRow } from "~/components/ui/settings-row";
 import { Skeleton } from "~/components/ui/skeleton";
-import { StickyFooter } from "~/components/ui/sticky-footer";
 import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { useAuth } from "~/hooks/use-auth";
 import { profilePhotoService, type ProfilePhotoData } from "~/services/profile-photo.service";
-
-function FieldSkeleton() {
-  return <Skeleton className="h-10 w-full max-w-64 rounded-lg" />;
-}
 
 function ReadOnlySkeleton() {
   return <Skeleton className="h-5 w-32" />;
@@ -115,45 +109,27 @@ export function AccountDetails() {
           )}
         </SettingsRow>
 
-        <SettingsRow label="First Name" htmlFor="profile-first-name">
+        <SettingsRow label="First Name">
           {photoLoading ? (
-            <FieldSkeleton />
+            <ReadOnlySkeleton />
           ) : (
-            <input
-              id="profile-first-name"
-              name="profile-first-name"
-              type="text"
-              defaultValue={user.firstName}
-              className={inputClassName}
-            />
+            readOnlyField(user.firstName)
           )}
         </SettingsRow>
 
-        <SettingsRow label="Middle Name" htmlFor="profile-mid-name">
+        <SettingsRow label="Middle Name">
           {photoLoading ? (
-            <FieldSkeleton />
+            <ReadOnlySkeleton />
           ) : (
-            <input
-              id="profile-mid-name"
-              name="profile-mid-name"
-              type="text"
-              defaultValue={profile?.midName ?? ""}
-              className={inputClassName}
-            />
+            readOnlyField(profile?.midName ?? null)
           )}
         </SettingsRow>
 
-        <SettingsRow label="Last Name" htmlFor="profile-last-name">
+        <SettingsRow label="Last Name">
           {photoLoading ? (
-            <FieldSkeleton />
+            <ReadOnlySkeleton />
           ) : (
-            <input
-              id="profile-last-name"
-              name="profile-last-name"
-              type="text"
-              defaultValue={user.lastName}
-              className={inputClassName}
-            />
+            readOnlyField(user.lastName)
           )}
         </SettingsRow>
 
@@ -235,15 +211,6 @@ export function AccountDetails() {
           </>
         )}
       </div>
-
-      {!photoLoading && (
-        <StickyFooter layoutClassName="flex justify-end gap-2">
-          <Button type="button" block={false}>
-            <SaveIcon size={16} />
-            Save
-          </Button>
-        </StickyFooter>
-      )}
 
       {!photoLoading && (
         <>

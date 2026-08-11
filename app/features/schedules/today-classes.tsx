@@ -4,6 +4,7 @@ import { Card } from "~/components/ui/card";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
 import { SCHEDULE_DAY_NAMES } from "~/lib/schedule-days";
 import { DAYS, DAY_LABELS, type Day, type Schedule } from "~/types/schedule";
+import { ModeBadge } from "~/features/schedules/mode-badge";
 
 type TodayClassesProps = {
   /** Schedules already filtered to the selected school year + semester. */
@@ -97,19 +98,25 @@ export function TodayClasses({ schedules, hideInstructor }: TodayClassesProps) {
             </p>
           </Card>
         ) : (
-          <Card className="mt-2 overflow-hidden border-l-4 border-l-orange-400 p-0 dark:border-l-orange-500/70">
+          <Card className="mt-2 overflow-hidden border-l-4 border-l-blue-600 p-0 dark:border-l-sky-400">
             <ul className="divide-y divide-slate-100 dark:divide-white/8">
               {occurrences.map((o) => (
-                <li key={o.schedule.id} className="flex items-center gap-3 p-3">
-                  <span className="w-16 shrink-0 font-body text-xs font-semibold text-orange-500 dark:text-orange-400">
+                <li key={o.schedule.id} className="flex items-start gap-3 p-3">
+                  <span className="w-16 shrink-0 pt-0.5 font-body text-xs text-slate-600 dark:text-slate-400">
                     <span className="block">{formatTime12h(o.schedule.startTime)}</span>
                     <span className="block">{formatTime12h(o.schedule.endTime)}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-display text-sm text-navy-700 dark:text-mist-100">
-                      {o.schedule.subjectCode} — {o.schedule.subjectTitle}
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate font-display text-sm text-navy-700 dark:text-mist-100">
+                        {o.schedule.subjectCode}
+                      </span>
+                      <ModeBadge mode={o.schedule.mode} />
                     </span>
-                    <span className="block truncate font-body text-xs text-slate-500 dark:text-slate-400">
+                    <span className="mt-0.5 block truncate font-body text-xs text-slate-500 dark:text-slate-400">
+                      {o.schedule.subjectTitle}
+                    </span>
+                    <span className="mt-0.5 block truncate font-body text-xs text-slate-500 dark:text-slate-400">
                       {o.schedule.roomName}
                     </span>
                   </span>
