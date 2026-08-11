@@ -65,7 +65,9 @@ function SelectContent({
         alignItemWithTrigger={alignItemWithTrigger}
         sideOffset={sideOffset}
         collisionPadding={8}
-        className="z-50 outline-none"
+        // Above the modal dialog (z-60) and drawer panel (z-50) so the popup
+        // isn't hidden behind them when a Select is used inside an overlay.
+        className="z-70 outline-none"
       >
         <SelectPrimitive.Popup
           data-slot="select-content"
