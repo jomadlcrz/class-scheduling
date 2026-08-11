@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { AccountRoleBadge } from "~/features/accounts/account-role-badge";
+import { UserIcon } from "~/components/ui/icons";
 import type { OfficeStaffMember } from "~/types/department";
 
 function displayName(member: OfficeStaffMember) {
@@ -37,9 +38,22 @@ export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) 
         {staff.map((member) => (
           <TableRow key={member.key}>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-mist-100">
-                {displayName(member)}
-              </span>
+              <div className="flex items-center gap-3">
+                {member.profilePhotoUrl ? (
+                  <img
+                    src={member.profilePhotoUrl}
+                    alt=""
+                    className="size-8 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 text-mist-100 dark:bg-white dark:text-navy-800">
+                    <UserIcon />
+                  </span>
+                )}
+                <span className="font-medium text-navy-700 dark:text-mist-100">
+                  {displayName(member)}
+                </span>
+              </div>
             </TableCell>
             <TableCell className="hidden sm:table-cell">
               <AccountRoleBadge role={member.roleName} />

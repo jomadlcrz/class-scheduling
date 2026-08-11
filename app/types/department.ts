@@ -87,6 +87,7 @@ export type OfficeStaffMember = {
   roleName: string;
   email: string | null;
   mobile: string | null;
+  profilePhotoUrl: string | null;
 };
 
 /** GET /departments/:id/office-staff — response shape. */

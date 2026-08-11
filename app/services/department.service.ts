@@ -174,6 +174,7 @@ type OfficeStaffResponse = {
     role_name: string;
     email: string | null;
     mobile: string | null;
+    profile_photo_url: string | null;
   }[];
 };
 
@@ -191,6 +192,7 @@ async function getOfficeStaff(id: number): Promise<OfficeStaffPayload> {
       roleName: m.role_name,
       email: m.email,
       mobile: m.mobile,
+      profilePhotoUrl: m.profile_photo_url,
     })),
   };
 }

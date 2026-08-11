@@ -229,9 +229,11 @@ function DepartmentHeader({
             {overview.buildingName && (
               <Badge tone={getBuildingTone(overview.buildingName)}>{overview.buildingName}</Badge>
             )}
-            <Badge tone="blue">
-              {overview.totalPrograms} program{overview.totalPrograms === 1 ? "" : "s"}
-            </Badge>
+            {overview.departmentType === "Academic" && (
+              <Badge tone="blue">
+                {overview.totalPrograms} program{overview.totalPrograms === 1 ? "" : "s"}
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex gap-2">

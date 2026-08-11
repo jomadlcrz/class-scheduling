@@ -2,18 +2,16 @@ import { useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
+import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
-import { TabList } from "~/components/ui/tabs";
 import { AccountsTable } from "~/features/accounts/accounts-table";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { administratorService } from "~/services/administrator.service";
-
-type AccountTab = "active" | "deactivated";
 
 export function meta() {
   return [
@@ -37,19 +35,22 @@ function AccountsPage() {
   const { data, error: loadError, reload } = useCachedData("accounts", () =>
     administratorService.listAccounts(),
   );
-  const [tab, setTab] = useState<AccountTab>("active");
+  const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
 
   const counts = data?.counts;
-  const accounts = (tab === "active" ? data?.active ?? [] : data?.deactivated ?? []);
+  const accounts = [...(data?.active ?? []), ...(data?.deactivated ?? [])];
 
   const visibleAccounts = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return accounts;
-    return accounts.filter((account) => account.email.toLowerCase().includes(query));
-  }, [accounts, search]);
+    let filtered = accounts;
+    if (status === "active") filtered = accounts.filter((a) => !a.deactivatedAt);
+    if (status === "deactivated") filtered = accounts.filter((a) => a.deactivatedAt);
+    if (query) filtered = filtered.filter((account) => account.email.toLowerCase().includes(query));
+    return filtered;
+  }, [accounts, search, status]);
 
-  const pagination = usePagination(visibleAccounts, `${tab}|${search}`);
+  const pagination = usePagination(visibleAccounts, `${status}|${search}`);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -91,17 +92,19 @@ function AccountsPage() {
       </div>
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <TabList
-            ariaLabel="Account status"
-            tabs={[
-              { value: "active" as AccountTab, label: `Active${counts ? ` (${counts.active})` : ""}` },
-              { value: "deactivated" as AccountTab, label: `Deactivated${counts ? ` (${counts.deactivated})` : ""}` },
+        <div className="flex flex-wrap items-end gap-3">
+          <FilterDropdown
+            id="accounts-status-filter"
+            label="Status"
+            allLabel="All"
+            options={[
+              { value: "active", label: "Active" },
+              { value: "deactivated", label: "Deactivated" },
             ]}
-            value={tab}
-            onChange={setTab}
+            value={status}
+            onChange={setStatus}
           />
-          <div className="relative w-full sm:w-64">
+          <div className="relative ml-auto w-full sm:w-64">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
               <SearchIcon />
             </span>
@@ -125,15 +128,13 @@ function AccountsPage() {
           <TableSkeleton columns={3} rows={8} />
         ) : visibleAccounts.length === 0 ? (
           <EmptyState title="No accounts found">
-            {tab === "active"
-              ? "No active accounts match the current search."
-              : "No deactivated accounts match the current search."}
+            No accounts match the current filters.
           </EmptyState>
         ) : (
           <>
             <AccountsTable
               accounts={pagination.pageItems}
-              showDeactivatedAt={tab === "deactivated"}
+              showDeactivatedAt={true}
             />
             <Pagination
               page={pagination.page}
