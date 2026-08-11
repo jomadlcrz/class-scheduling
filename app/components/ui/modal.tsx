@@ -172,12 +172,12 @@ function ModalContent({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-40 bg-navy-950/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 bg-navy-950/40 backdrop-blur-sm"
         aria-hidden="true"
       />
 
       {/* Panel — top-aligned, not vertically centered; on small screens use nearly full viewport height so content scrolls inside. */}
-      <div className="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
+      <div className="pointer-events-none fixed inset-0 z-60 flex items-start justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
         <motion.div
           role="dialog"
           aria-modal="true"
