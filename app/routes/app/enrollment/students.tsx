@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -39,12 +40,16 @@ function EnrollmentStudentsPage() {
   const enabled = syId != null && semesterNumber != null;
   const termKey = enabled ? `${syId}:${semesterNumber}` : "none";
 
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
   const { data: enrollmentData, error: loadError, reload: reloadStudents } = useCachedData(
-    `enrollment-records:${termKey}`,
-    () => enrollmentService.listTermEnrollments(syId as number, semesterNumber as number),
+    `enrollment-records:${termKey}:p${page}`,
+    () => enrollmentService.listTermEnrollments(syId as number, semesterNumber as number, page, pageSize),
     { enabled },
   );
   const students = enrollmentData?.items ?? null;
+  const totalItems = enrollmentData?.total ?? 0;
   const { data: facets, reload: reloadFacets } = useCachedData(
     `enrollment-facets:${termKey}`,
     () => enrollmentService.getFacets(syId as number, semesterNumber as number),
@@ -53,6 +58,10 @@ function EnrollmentStudentsPage() {
 
   async function refetch() {
     await Promise.all([reloadStudents(), reloadFacets()]);
+  }
+
+  function handlePageChange(newPage: number) {
+    setPage(newPage);
   }
 
   return (
@@ -78,6 +87,10 @@ function EnrollmentStudentsPage() {
             facets={facets ?? null}
             onChanged={refetch}
             initialType={initialType}
+            page={page}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
           />
         )}
       </div>

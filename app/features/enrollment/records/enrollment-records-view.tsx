@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { ChevronRightIcon, SearchIcon, UserIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { EnrollmentDetailDrawer } from "~/features/enrollment/records/enrollment-detail-drawer";
@@ -42,9 +43,13 @@ type Props = {
   onChanged: () => void;
   /** Preselect the Type segment (used by the regular/irregular redirect links). */
   initialType?: string;
+  page: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
 };
 
-export function EnrollmentRecordsView({ students, facets, onChanged, initialType = "all" }: Props) {
+export function EnrollmentRecordsView({ students, facets, onChanged, initialType = "all", page, totalItems, pageSize, onPageChange }: Props) {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
   const [typeFilter, setTypeFilter] = useState(initialType);
@@ -291,6 +296,8 @@ export function EnrollmentRecordsView({ students, facets, onChanged, initialType
         onClose={() => setSelected(null)}
         onChanged={onChanged}
       />
+
+      <Pagination page={page} totalItems={totalItems} pageSize={pageSize} onPageChange={onPageChange} />
     </div>
   );
 }
