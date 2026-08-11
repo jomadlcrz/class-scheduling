@@ -12,19 +12,15 @@ export type StudentAccountFiltersState = {
   program: string;
   yearLevel: string;
   set: string;
-  studentType: string;
-  enrollmentState: string;
 };
 
 export const EMPTY_STUDENT_ACCOUNT_FILTERS: StudentAccountFiltersState = {
   program: "all",
   yearLevel: "all",
   set: "all",
-  studentType: "all",
-  enrollmentState: "all",
 };
 
-/** Program/Year Level/Set/Student Type/Enrollment State filter row — reset per tab by the caller. */
+/** Program / Year Level / Set filter row — reset per tab by the caller. */
 export function useStudentAccountFilters(rows: StudentAccountRow[]) {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [filters, setFilters] = useState<StudentAccountFiltersState>(EMPTY_STUDENT_ACCOUNT_FILTERS);
@@ -41,14 +37,6 @@ export function useStudentAccountFilters(rows: StudentAccountRow[]) {
     () => [...new Set(rows.map((r) => latest(r)?.set).filter((v): v is string => Boolean(v)))].sort(),
     [rows],
   );
-  const studentTypes = useMemo(
-    () => [...new Set(rows.map((r) => latest(r)?.studentType).filter((v): v is string => Boolean(v)))].sort(),
-    [rows],
-  );
-  const enrollmentStates = useMemo(
-    () => [...new Set(rows.map((r) => latest(r)?.enrollmentState).filter((v): v is string => Boolean(v)))].sort(),
-    [rows],
-  );
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
@@ -56,14 +44,12 @@ export function useStudentAccountFilters(rows: StudentAccountRow[]) {
       if (filters.program !== "all" && academic?.program !== filters.program) return false;
       if (filters.yearLevel !== "all" && String(academic?.yearLevel ?? "") !== filters.yearLevel) return false;
       if (filters.set !== "all" && academic?.set !== filters.set) return false;
-      if (filters.studentType !== "all" && academic?.studentType !== filters.studentType) return false;
-      if (filters.enrollmentState !== "all" && academic?.enrollmentState !== filters.enrollmentState) return false;
       return true;
     });
   }, [rows, filters]);
 
   const filterBar = (
-    <div className="grid gap-2 sm:grid-cols-5">
+    <div className="grid gap-2 sm:grid-cols-3">
       <Select
         items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
         value={filters.program}
@@ -111,42 +97,6 @@ export function useStudentAccountFilters(rows: StudentAccountRow[]) {
         <SelectContent>
           <SelectItem value="all">All Sets</SelectItem>
           {sets.map((s) => (
-            <SelectItem key={s} value={s}>
-              {s}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        items={[{ value: "all", label: "All Types" }, ...studentTypes.map((t) => ({ value: t, label: t }))]}
-        value={filters.studentType}
-        onValueChange={(v) => setFilters((f) => ({ ...f, studentType: v as string }))}
-      >
-        <SelectTrigger aria-label="Filter by student type">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Types</SelectItem>
-          {studentTypes.map((t) => (
-            <SelectItem key={t} value={t}>
-              {t}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        items={[{ value: "all", label: "All States" }, ...enrollmentStates.map((s) => ({ value: s, label: s }))]}
-        value={filters.enrollmentState}
-        onValueChange={(v) => setFilters((f) => ({ ...f, enrollmentState: v as string }))}
-      >
-        <SelectTrigger aria-label="Filter by enrollment state">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All States</SelectItem>
-          {enrollmentStates.map((s) => (
             <SelectItem key={s} value={s}>
               {s}
             </SelectItem>

@@ -864,9 +864,6 @@ export function StudentsPage() {
         {viewTarget && (
           <StudentDetailsModal
             student={viewTarget}
-            sets={sets}
-            enrollmentStates={enumOptions?.enrollmentState ?? []}
-            nameSuffixes={enumOptions?.nameSuffix ?? []}
           />
         )}
       </Modal>

@@ -1,4 +1,5 @@
-﻿import { Checkbox } from "~/components/ui/checkbox";
+﻿import { Badge } from "~/components/ui/badge";
+import { Checkbox } from "~/components/ui/checkbox";
 import { IconButton } from "~/components/ui/icon-button";
 import { FileSearchIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
 import {
@@ -62,10 +63,9 @@ export function StudentAccountTable({
             />
           </TableHeader>
         )}
-        <TableHeader>Student ID</TableHeader>
-        <TableHeader>Name</TableHeader>
+        <TableHeader>Student</TableHeader>
         <TableHeader className="hidden sm:table-cell">Program</TableHeader>
-        <TableHeader className="hidden lg:table-cell">Email</TableHeader>
+        <TableHeader>Status</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>
@@ -88,19 +88,42 @@ export function StudentAccountTable({
                 )}
               </TableCell>
             )}
-            <TableCell className="text-slate-600 dark:text-slate-300">
-              {student.studentId ?? "—"}
-            </TableCell>
             <TableCell>
-              <span className="font-medium text-navy-700 dark:text-mist-100">
-                {displayName(student)}
-              </span>
+              <div className="flex items-center gap-3">
+                {student.profilePhotoUrl ? (
+                  <img
+                    src={student.profilePhotoUrl}
+                    alt=""
+                    className="size-8 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 font-body text-xs font-medium text-mist-100 dark:bg-white dark:text-navy-800">
+                    {(student.firstName[0] ?? "").toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
+                    {displayName(student)}
+                  </span>
+                  <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
+                    {student.studentId ?? "—"}
+                  </span>
+                </div>
+              </div>
             </TableCell>
             <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
               {student.academics[student.academics.length - 1]?.program ?? "—"}
             </TableCell>
-            <TableCell className="hidden lg:table-cell text-slate-500 dark:text-slate-400">
-              {student.email ?? "—"}
+            <TableCell>
+              {!student.hasAccount ? (
+                <Badge tone="slate">No account</Badge>
+              ) : isActive === undefined ? (
+                <span className="text-xs text-slate-400 dark:text-slate-500">…</span>
+              ) : isActive ? (
+                <Badge tone="emerald">Active</Badge>
+              ) : (
+                <Badge tone="red">Deactivated</Badge>
+              )}
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-1">
