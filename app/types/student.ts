@@ -71,6 +71,16 @@ export type StudentProfileDetail = {
   email: string | null;
   accountStatus: string;
   profilePhotoUrl: string | null;
+  address: AddressData | null;
+};
+
+export type AddressData = {
+  street: string | null;
+  barangay: string | null;
+  cityMunicipality: string | null;
+  province: string | null;
+  region: string | null;
+  zipCode: string | null;
 };
 
 export type UpdateStudentProfileInput = {

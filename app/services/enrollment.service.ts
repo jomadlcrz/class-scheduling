@@ -37,6 +37,7 @@ type ApiStudent = {
   student_profile_id: number;
   student_id: string | null;
   student_full_name: string;
+  gender: string | null;
   mobile: string | null;
   email: string | null;
   account_status: string;
@@ -82,6 +83,7 @@ function toStudent(s: ApiStudent): EnrollmentStudent {
     studentProfileId: s.student_profile_id,
     studentId: s.student_id,
     name: s.student_full_name,
+    gender: s.gender,
     email: s.email,
     mobile: s.mobile,
     accountStatus: s.account_status,

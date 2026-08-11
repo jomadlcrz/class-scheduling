@@ -225,6 +225,14 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
     email: string | null;
     account_status: string;
     profile_photo_url: string | null;
+    address: {
+      street: string | null;
+      barangay: string | null;
+      cityMunicipality: string | null;
+      province: string | null;
+      region: string | null;
+      zipCode: string | null;
+    } | null;
   }>(`/students/${studentProfileId}`);
 
   return {
@@ -238,6 +246,16 @@ async function getProfile(studentProfileId: number): Promise<StudentProfileDetai
     email: row.email,
     accountStatus: row.account_status,
     profilePhotoUrl: row.profile_photo_url,
+    address: row.address
+      ? {
+          street: row.address.street,
+          barangay: row.address.barangay,
+          cityMunicipality: row.address.cityMunicipality,
+          province: row.address.province,
+          region: row.address.region,
+          zipCode: row.address.zipCode,
+        }
+      : null,
   };
 }
 

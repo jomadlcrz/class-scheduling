@@ -32,6 +32,7 @@ export type EnrollmentStudent = {
   studentProfileId: number;
   studentId: string | null;
   name: string;
+  gender: string | null;
   email: string | null;
   mobile: string | null;
   /** "Has an account" | "No account yet" — backend display string. */
