@@ -8,6 +8,7 @@ import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { useAuth } from "~/hooks/use-auth";
 import { profilePhotoService, type ProfilePhotoData } from "~/services/profile-photo.service";
+import type { AddressData } from "~/types/student";
 
 function ReadOnlySkeleton() {
   return <Skeleton className="h-5 w-32" />;
@@ -27,6 +28,7 @@ export function AccountDetails() {
   const [profilePictureModalOpen, setProfilePictureModalOpen] = useState(false);
   const [profile, setProfile] = useState<ProfilePhotoData | null>(null);
   const [photoLoading, setPhotoLoading] = useState(true);
+  const [address, setAddress] = useState<AddressData | null>(null);
 
   const fetchPhoto = useCallback(async () => {
     if (!user) return;
@@ -43,6 +45,11 @@ export function AccountDetails() {
   useEffect(() => {
     fetchPhoto();
   }, [fetchPhoto]);
+
+  useEffect(() => {
+    if (!user || user.role === "admin") return;
+    profilePhotoService.getAddress(user.role).then(setAddress).catch(() => setAddress(null));
+  }, [user]);
 
   if (!user) return null;
 
@@ -130,6 +137,18 @@ export function AccountDetails() {
             readOnlyField(user.lastName)
           )}
         </SettingsRow>
+
+        {user.role !== "admin" && (
+          <SettingsRow label="Address">
+            {address ? (
+              <p className="font-body text-sm text-navy-700 sm:pt-2 dark:text-mist-100">
+                {[address.street, address.barangay, address.cityMunicipality, address.province].filter(Boolean).join(", ")}
+              </p>
+            ) : (
+              <p className="font-body text-sm text-slate-400 sm:pt-2 dark:text-slate-500">&mdash;</p>
+            )}
+          </SettingsRow>
+        )}
 
         <SettingsRow label="Email Address">
           {photoLoading ? (

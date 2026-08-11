@@ -1,16 +1,18 @@
 import { apiDelete, apiGet, apiUpload } from "~/lib/api";
 import type { Role } from "~/types/user";
+import type { AddressData } from "~/types/student";
 
-type PhotoEndpoint = {
+type ProfileEndpointMap = {
   base: string;
+  address: string | null;
 };
 
-const ENDPOINTS: Record<Role, PhotoEndpoint> = {
-  admin: { base: "/super-admin/profile-photo" },
-  registrar: { base: "/registrar/profile-photo" },
-  dean: { base: "/deans/profile-photo" },
-  faculty: { base: "/instructors/profile-photo" },
-  student: { base: "/students/me/profile-photo" },
+const ENDPOINTS: Record<Role, ProfileEndpointMap> = {
+  admin: { base: "/super-admin/profile-photo", address: null },
+  registrar: { base: "/registrar/profile-photo", address: "/registrar/me/address" },
+  dean: { base: "/deans/profile-photo", address: "/deans/me/address" },
+  faculty: { base: "/instructors/profile-photo", address: "/instructors/me/address" },
+  student: { base: "/students/me/profile-photo", address: "/students/me/address" },
 };
 
 /** Raw snake_case shape returned by the backend's serialize_photo(). */
@@ -67,4 +69,11 @@ async function removePhoto(role: Role): Promise<string> {
   return data.message ?? "";
 }
 
-export const profilePhotoService = { getPhoto, uploadPhoto, removePhoto };
+async function getAddress(role: Role): Promise<AddressData | null> {
+  const addr = ENDPOINTS[role].address;
+  if (!addr) return null;
+  const raw = await apiGet<{ address: AddressData | null }>(addr);
+  return raw.address ?? null;
+}
+
+export const profilePhotoService = { getPhoto, uploadPhoto, removePhoto, getAddress };
