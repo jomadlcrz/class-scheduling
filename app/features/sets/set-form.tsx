@@ -109,7 +109,6 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         label={isEdit ? "Set Code" : "Set Code(s)"}
         rows={isEdit ? 2 : 4}
         required
-        placeholder={isEdit ? "A" : "A\nB\nC"}
         defaultValue={set?.setCode ?? ""}
         hint={isEdit ? undefined : "One code per line — each line creates a separate set."}
       />

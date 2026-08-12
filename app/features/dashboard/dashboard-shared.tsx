@@ -120,7 +120,7 @@ export function TermSelectors({
           }}
         >
           <SelectTrigger id="dashboard-sy">
-            <SelectValue placeholder="School year" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {years.map((y) => (
@@ -140,7 +140,7 @@ export function TermSelectors({
           }}
         >
           <SelectTrigger id="dashboard-sem">
-            <SelectValue placeholder="Semester" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {sems.map((s) => (

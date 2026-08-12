@@ -60,7 +60,6 @@ export function IrregularSubjectPicker({
         className="mb-3"
         value={query}
         onChange={setQuery}
-        placeholder="Search by code or title…"
         ariaLabel="Search subjects"
       />
 

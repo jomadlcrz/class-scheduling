@@ -66,7 +66,6 @@ export function ScheduleRejectDialog({ open, release, onClose, onConfirm }: Sche
           hint={reasonHint}
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="Explain what needs to change before this can be approved"
           required
         />
         <div className="flex justify-end gap-2 border-t border-slate-200 pt-4 dark:border-white/10">

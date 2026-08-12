@@ -72,7 +72,6 @@ export function AddRoleForm({ onCreated, onCancel }: AddRoleFormProps) {
         <Input
           id="add-role-name"
           label="Role Name"
-          placeholder="e.g. INSTRUCTOR"
           name="role-name"
           autoComplete="off"
         />

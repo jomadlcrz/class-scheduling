@@ -1,4 +1,5 @@
 import { FieldChrome, Input } from "~/components/ui/input";
+import { PhoneInput } from "~/components/ui/phone-input";
 import { DatePicker } from "~/components/ui/date-picker";
 import { formatISODate } from "~/components/ui/calendar";
 import { UserIcon } from "~/components/ui/icons";
@@ -78,7 +79,6 @@ export function AddStudentStep1Identity({
                 id="new-student-id"
                 label="Student ID (Optional)"
                 type="text"
-                placeholder="e.g. 2024-00123"
                 maxLength={50}
                 hint="School-assigned ID"
                 value={identity.studentId}
@@ -91,7 +91,6 @@ export function AddStudentStep1Identity({
                   label="First Name"
                   type="text"
                   required
-                  placeholder="e.g. Juan"
                   value={identity.firstName}
                   onChange={(e) => onIdentityChange({ firstName: e.target.value })}
                 />
@@ -99,7 +98,6 @@ export function AddStudentStep1Identity({
                   id="new-student-mid-name"
                   label="Middle Name (Optional)"
                   type="text"
-                  placeholder="e.g. Santos"
                   value={identity.midName}
                   onChange={(e) => onIdentityChange({ midName: e.target.value })}
                 />
@@ -111,7 +109,6 @@ export function AddStudentStep1Identity({
                   label="Last Name"
                   type="text"
                   required
-                  placeholder="e.g. Dela Cruz"
                   value={identity.lastName}
                   onChange={(e) => onIdentityChange({ lastName: e.target.value })}
                 />
@@ -161,7 +158,6 @@ export function AddStudentStep1Identity({
                   label="Birthdate"
                   required
                   hint="Must be at least 18 years old"
-                  placeholder="Select birthdate"
                   value={identity.birthdate}
                   onChange={(v) => onIdentityChange({ birthdate: v })}
                   captionLayout="dropdown"
@@ -172,26 +168,18 @@ export function AddStudentStep1Identity({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input
+                <PhoneInput
                   id="new-student-mobile"
                   label="Mobile Number"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={11}
                   required
-                  placeholder="e.g. 09171234567"
                   value={identity.mobile}
-                  onChange={(e) =>
-                    onIdentityChange({ mobile: e.target.value.replace(/\D/g, "").slice(0, 11) })
-                  }
+                  onChange={(e) => onIdentityChange({ mobile: e.target.value })}
                 />
                 <Input
                   id="new-student-email"
                   label="Email Address"
                   type="email"
                   required
-                  placeholder="e.g. juan.delacruz@example.com"
                   value={identity.email}
                   onChange={(e) => onIdentityChange({ email: e.target.value })}
                 />
@@ -212,7 +200,6 @@ export function AddStudentStep1Identity({
                       id="new-student-address-street"
                       label="Street"
                       type="text"
-                      placeholder="e.g. Mabini St."
                       value={identity.addressStreet}
                       onChange={(e) => onIdentityChange({ addressStreet: e.target.value })}
                     />
@@ -220,7 +207,6 @@ export function AddStudentStep1Identity({
                       id="new-student-address-barangay"
                       label="Barangay"
                       type="text"
-                      placeholder="e.g. Poblacion"
                       value={identity.addressBarangay}
                       onChange={(e) => onIdentityChange({ addressBarangay: e.target.value })}
                     />
@@ -230,7 +216,6 @@ export function AddStudentStep1Identity({
                       id="new-student-address-city"
                       label="City / Municipality"
                       type="text"
-                      placeholder="e.g. Labrador"
                       value={identity.addressCity}
                       onChange={(e) => onIdentityChange({ addressCity: e.target.value })}
                     />
@@ -238,7 +223,6 @@ export function AddStudentStep1Identity({
                       id="new-student-address-province"
                       label="Province"
                       type="text"
-                      placeholder="e.g. Pangasinan"
                       value={identity.addressProvince}
                       onChange={(e) => onIdentityChange({ addressProvince: e.target.value })}
                     />
@@ -248,7 +232,6 @@ export function AddStudentStep1Identity({
                       id="new-student-address-region"
                       label="Region"
                       type="text"
-                      placeholder="e.g. Region I"
                       value={identity.addressRegion}
                       onChange={(e) => onIdentityChange({ addressRegion: e.target.value })}
                     />
@@ -258,7 +241,6 @@ export function AddStudentStep1Identity({
                       type="text"
                       inputMode="numeric"
                       maxLength={4}
-                      placeholder="e.g. 2402"
                       value={identity.addressZipCode}
                       onChange={(e) =>
                         onIdentityChange({ addressZipCode: e.target.value.replace(/\D/g, "").slice(0, 4) })

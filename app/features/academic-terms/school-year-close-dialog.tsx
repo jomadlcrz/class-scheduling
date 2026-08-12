@@ -103,7 +103,6 @@ export function SchoolYearCloseDialog({ open, syId, onClose, onConfirm }: School
               label={preview.confirmation.completionReasonLabel}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Optional notes for the audit trail"
               required={preview.confirmation.completionReasonRequired}
             />
           </>

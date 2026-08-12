@@ -153,7 +153,6 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
               type="number"
               min={0}
               step="0.25"
-              placeholder="e.g. 3"
               value={lectureHours}
               onChange={(e) => setLectureHours(e.target.value)}
             />
@@ -164,7 +163,6 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
                 type="number"
                 min={0}
                 step="0.25"
-                placeholder="e.g. 2"
                 value={labHours}
                 onChange={(e) => setLabHours(e.target.value)}
               />
@@ -178,7 +176,6 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
             min={1}
             max={3}
             step="1"
-            placeholder="e.g. 2"
             value={meetings}
             onChange={(e) => setMeetings(e.target.value)}
           />

@@ -123,7 +123,6 @@ export function CurriculumSemesterPanel({
               id={`curriculum-search-${semesterNumber}`}
               value={search}
               onChange={onSearchChange}
-              placeholder="Search subjects…"
               ariaLabel="Search subjects"
               className="min-w-44 flex-1 sm:flex-none"
             />

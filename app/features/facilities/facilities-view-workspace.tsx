@@ -258,7 +258,6 @@ export function FacilitiesViewWorkspace({
           <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
             <SearchInput
               id="facilities-room-search"
-              placeholder="Search room names…"
               value={search}
               onChange={setSearch}
               ariaLabel="Search rooms"

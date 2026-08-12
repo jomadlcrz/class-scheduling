@@ -45,7 +45,6 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
         id="building-name"
         label="Building Name"
         required
-        placeholder="Main Academic Building"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
@@ -55,7 +54,6 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
         type="number"
         required
         min={1}
-        placeholder="3"
         value={floorCount}
         onChange={(e) => setFloorCount(Math.max(1, Number(e.target.value) || 1))}
         hint={

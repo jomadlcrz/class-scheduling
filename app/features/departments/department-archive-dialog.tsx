@@ -166,7 +166,6 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            placeholder={preview.department.departmentAbbrev}
             className={`${inputClassName} font-body uppercase tracking-wide`}
           />
         </div>

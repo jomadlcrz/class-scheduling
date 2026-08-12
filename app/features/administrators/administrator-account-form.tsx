@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { StickyFooter } from "~/components/ui/sticky-footer";
 import { Card } from "~/components/ui/card";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { PhoneInput } from "~/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { RolePermissionsPanel } from "~/features/permissions/role-permissions-panel";
 import { administratorSchema } from "~/schemas/administrator.schema";
@@ -83,26 +84,18 @@ export function AdministratorAccountForm({
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
-          <Input id="admin-first-name" label="First Name" type="text" required placeholder="Enter first name" />
-          <Input id="admin-mid-name" label="Middle Name" type="text" placeholder="Enter middle name" />
+          <Input id="admin-first-name" label="First Name" type="text" required />
+          <Input id="admin-mid-name" label="Middle Name" type="text" />
         </div>
 
-      <Input id="admin-last-name" label="Last Name" type="text" required placeholder="Enter last name" />
+      <Input id="admin-last-name" label="Last Name" type="text" required />
 
-      <Input id="admin-email" label="Email" type="email" required placeholder="Enter email address" />
+      <Input id="admin-email" label="Email" type="email" required />
 
-      <Input
+      <PhoneInput
         id="admin-mobile"
         label="Mobile Number"
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        maxLength={11}
         required
-        placeholder="Enter mobile number"
-        onInput={(e) => {
-          e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 11);
-        }}
       />
 
           </div>

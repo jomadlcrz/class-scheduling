@@ -81,7 +81,7 @@ export function AddInstructorModal({ open, onClose, availableInstructors, onAdd 
               onValueChange={(v) => setValue(v ?? "")}
             >
               <SelectTrigger id="add-instructor">
-                <SelectValue placeholder="Choose an instructor..." />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {availableInstructors.map((inst) => (
@@ -140,7 +140,7 @@ export function AddProgramModal({ open, onClose, onAdd, programOptions }: AddPro
           onValueChange={(v) => setValue(v ?? "")}
         >
           <SelectTrigger id="add-program">
-            <SelectValue placeholder="Choose a program..." />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {programOptions.map((prog) => (
@@ -267,7 +267,6 @@ export function AssignSubjectModal({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by code or title…"
           className={inputClassName}
         />
         <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">

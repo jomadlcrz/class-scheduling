@@ -194,7 +194,6 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            placeholder={preview.building.buildingName}
             className={inputClassName}
           />
         </div>

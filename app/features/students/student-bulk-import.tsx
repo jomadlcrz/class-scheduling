@@ -8,12 +8,14 @@ import { StickyFooter } from "~/components/ui/sticky-footer";
 import { Card } from "~/components/ui/card";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
+import { PhoneInput } from "~/components/ui/phone-input";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { TabLinks } from "~/components/ui/underline-tabs";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
+import { normalizePhoneNumber } from "~/lib/phone-number";
 import { PageHeader } from "~/layouts/page-header";
 import { enumService, type EnumOptions } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
@@ -229,7 +231,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
     useUnsavedChangesGuard(isDirty, !isLoading);
 
   const validRows = useMemo(
-    () => rows.filter((r) => r.firstName.trim() && r.lastName.trim() && r.contactNumber.trim() && r.email.trim()),
+    () => rows.filter((r) => r.firstName.trim() && r.lastName.trim() && normalizePhoneNumber(r.contactNumber) && r.email.trim()),
     [rows],
   );
 
@@ -239,6 +241,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
   );
 
   function prepareImportRow(row: StudentRow): ImportStudentInput {
+    const mobile = normalizePhoneNumber(row.contactNumber);
     const program = programs.find(
       (option) => option.abbrev.toLowerCase() === row.program.trim().toLowerCase(),
     );
@@ -273,6 +276,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
     );
 
     const missing: string[] = [];
+    if (!mobile) missing.push("valid contact number");
     if (!program) missing.push("program");
     if (!Number.isInteger(yearLevel) || yearLevel < 1) missing.push("year level");
     if (!schoolYear) missing.push("school year");
@@ -281,7 +285,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
     if (!row.studentType.trim()) missing.push("student type");
     if (isIrregular && requestedSubjectCodes.length === 0) missing.push("subject codes");
     if (subjectIds.some((id) => id == null)) missing.push("recognized subject codes");
-    if (missing.length > 0 || !program || !schoolYear || !semester) {
+    if (missing.length > 0 || !mobile || !program || !schoolYear || !semester) {
       return {
         error: `Invalid or missing ${missing.join(", ")}.`,
         studentId: row.studentNumber.trim() || undefined,
@@ -294,7 +298,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
         firstName: row.firstName,
         midName: row.middleName.trim() || undefined,
         lastName: row.lastName,
-        mobile: row.contactNumber,
+        mobile,
         email: row.email,
         programId: program.id,
         yearLevel,
@@ -595,7 +599,6 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
             id="paste-data"
             label="Paste CSV data"
             onPaste={handlePaste}
-            placeholder={`Student Number,First Name,Middle Name,Last Name,Contact Number,Email,Program,Year Level,Set,Student Type,School Year,Semester,Subject Codes\n2024-0001,Juan,Santos,Dela Cruz,09171234567,juan.delacruz@example.com,BSIT,1,A,New Student,2026-2027,1st Semester,`}
             disabled={isLoading}
             rows={8}
           />
@@ -636,27 +639,19 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                 <h3 className="col-span-full font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   Student Information
                 </h3>
-                <Input id={`s${index}-studentNumber`} label="Student Number" value={row.studentNumber} disabled={isLoading} placeholder="e.g. 2024-0001" onChange={(e) => updateRow(index, (r) => ({ ...r, studentNumber: e.target.value }))} />
-                <Input id={`s${index}-firstName`} label="First Name" value={row.firstName} disabled={isLoading} placeholder="Enter first name" required onChange={(e) => updateRow(index, (r) => ({ ...r, firstName: e.target.value }))} />
-                <Input id={`s${index}-middleName`} label="Middle Name" value={row.middleName} disabled={isLoading} placeholder="Optional" onChange={(e) => updateRow(index, (r) => ({ ...r, middleName: e.target.value }))} />
-                <Input id={`s${index}-lastName`} label="Last Name" value={row.lastName} disabled={isLoading} placeholder="Enter last name" required onChange={(e) => updateRow(index, (r) => ({ ...r, lastName: e.target.value }))} />
-                <Input
+                <Input id={`s${index}-studentNumber`} label="Student Number" value={row.studentNumber} disabled={isLoading} onChange={(e) => updateRow(index, (r) => ({ ...r, studentNumber: e.target.value }))} />
+                <Input id={`s${index}-firstName`} label="First Name" value={row.firstName} disabled={isLoading} required onChange={(e) => updateRow(index, (r) => ({ ...r, firstName: e.target.value }))} />
+                <Input id={`s${index}-middleName`} label="Middle Name" value={row.middleName} disabled={isLoading} onChange={(e) => updateRow(index, (r) => ({ ...r, middleName: e.target.value }))} />
+                <Input id={`s${index}-lastName`} label="Last Name" value={row.lastName} disabled={isLoading} required onChange={(e) => updateRow(index, (r) => ({ ...r, lastName: e.target.value }))} />
+                <PhoneInput
                   id={`s${index}-contactNumber`}
                   label="Contact Number"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={11}
                   required
                   value={row.contactNumber}
                   disabled={isLoading}
-                  placeholder="e.g. 09171234567"
-                  onChange={(e) => {
-                    const cleaned = e.target.value.replace(/\D/g, "").slice(0, 11);
-                    updateRow(index, (r) => ({ ...r, contactNumber: cleaned }));
-                  }}
+                  onChange={(e) => updateRow(index, (r) => ({ ...r, contactNumber: e.target.value }))}
                 />
-                <Input id={`s${index}-email`} label="Email" type="email" required value={row.email} disabled={isLoading} placeholder="student@example.com" onChange={(e) => updateRow(index, (r) => ({ ...r, email: e.target.value }))} />
+                <Input id={`s${index}-email`} label="Email" type="email" required value={row.email} disabled={isLoading} onChange={(e) => updateRow(index, (r) => ({ ...r, email: e.target.value }))} />
                 <FieldChrome id={`s${index}-program`} label="Program" required>
                   <Select
                     items={[{ value: "", label: "Select a program" }, ...programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))]}
@@ -774,7 +769,6 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     className={inputClassName}
                     value={row.subjectCodes}
                     disabled={isLoading}
-                    placeholder="e.g. CS101,CS102 (comma-separated)"
                     onChange={(e) => updateRow(index, (r) => ({ ...r, subjectCodes: e.target.value }))}
                   />
                   <datalist id={`s${index}-subjectCodes-list`}>

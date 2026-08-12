@@ -102,7 +102,6 @@ export function SchoolYearsPage() {
         <SearchInput
           value={search}
           onChange={setSearch}
-          placeholder="Search school year…"
           className="w-full sm:w-56"
         />
       </div>

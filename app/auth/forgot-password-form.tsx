@@ -42,7 +42,6 @@ export function ForgotPasswordForm({ onSent }: { onSent: (message: string) => vo
     label="Email Address"
     type="email"
     autoComplete="email"
-    placeholder="you@gwc.edu.ph"
   />
 
       <Button type="submit" pill isLoading={isLoading} loadingLabel="Sending…">

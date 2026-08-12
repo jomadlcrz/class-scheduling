@@ -146,7 +146,7 @@ export function ScheduleEditDialog({
             value={form.roomId}
             onValueChange={(value) => onFormChange((current) => ({ ...current, roomId: value as string }))}
           >
-            <SelectTrigger id="edit-room"><SelectValue placeholder="Select a room" /></SelectTrigger>
+            <SelectTrigger id="edit-room"><SelectValue /></SelectTrigger>
             <SelectContent>
               {rooms.map((room) => (
                 <SelectItem key={room.id} value={String(room.id)}>{room.roomName} ({room.buildingName})</SelectItem>

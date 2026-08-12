@@ -88,7 +88,6 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           id="prog-abbrev"
           label="Program Abbrev"
           required
-          placeholder="BSIS"
           defaultValue={program?.abbrev ?? ""}
         />
           <FieldChrome id="prog-type" label="Type">
@@ -115,7 +114,6 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
         id="prog-name"
         label="Program Name"
         required
-        placeholder="Bachelor of Science in Information Systems"
         defaultValue={program?.name ?? ""}
       />
       <FieldChrome id="prog-years" label="Length (Years)">

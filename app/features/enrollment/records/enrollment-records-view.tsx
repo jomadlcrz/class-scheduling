@@ -144,7 +144,6 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
           </span>
           <input
             type="search"
-            placeholder="Search by name or student ID…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search students"

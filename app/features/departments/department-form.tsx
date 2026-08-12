@@ -156,7 +156,6 @@ export function DepartmentForm({
         id="dept-abbrev"
         label="Department Abbrev"
         required
-        placeholder="CITE"
         defaultValue={department?.abbrev ?? ""}
         hint="Short abbreviation, e.g. CITE, CBA, COEd."
       />
@@ -164,7 +163,6 @@ export function DepartmentForm({
         id="dept-name"
         label="Department Name"
         required
-        placeholder="College of Information Technology Education"
         defaultValue={department?.name ?? ""}
       />
       <FieldChrome id="dept-building" label="Building" hint="Optional — leave unset if no building is assigned.">
@@ -208,7 +206,6 @@ export function DepartmentForm({
       <Textarea
         id="dept-description"
         label="Description"
-        placeholder="Brief description of the department…"
         hint="Optional"
         defaultValue={department?.description ?? ""}
         rows={3}

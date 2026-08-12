@@ -657,7 +657,6 @@ export function StudentsPage() {
             <input
               id="student-search"
               type="search"
-              placeholder="Search by name or ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search students"
@@ -746,7 +745,6 @@ export function StudentsPage() {
             <input
               id="regular-student-search"
               type="search"
-              placeholder="Search by name or ID…"
               value={regularSearch}
               onChange={(e) => setRegularSearch(e.target.value)}
               aria-label="Search regular students"
@@ -794,7 +792,6 @@ export function StudentsPage() {
             <input
               id="irregular-student-search"
               type="search"
-              placeholder="Search by name or ID…"
               value={irregularSearch}
               onChange={(e) => setIrregularSearch(e.target.value)}
               aria-label="Search irregular students"
@@ -939,7 +936,6 @@ export function StudentsPage() {
               label="Reason"
               value={reactivateReason}
               onChange={(e) => setReactivateReason(e.target.value)}
-              placeholder="Explain why this account is being reactivated"
             />
             </div>
             <div className="mt-4 flex justify-end gap-2">

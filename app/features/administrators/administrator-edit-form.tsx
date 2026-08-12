@@ -3,6 +3,8 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
+import { PhoneInput } from "~/components/ui/phone-input";
+import { normalizePhoneNumber } from "~/lib/phone-number";
 import type { Administrator } from "~/types/administrator";
 
 type AdministratorEditFormProps = {
@@ -23,11 +25,15 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
     const data = new FormData(e.currentTarget);
     const firstName = String(data.get("edit-admin-first-name") ?? "").trim();
     const lastName = String(data.get("edit-admin-last-name") ?? "").trim();
-    const mobile = String(data.get("edit-admin-mobile") ?? "").trim();
+    const mobile = normalizePhoneNumber(String(data.get("edit-admin-mobile") ?? ""));
     const midName = String(data.get("edit-admin-mid-name") ?? "").trim();
 
-    if (!firstName || !lastName || !mobile) {
+    if (!firstName || !lastName) {
       setError("Fill in all required fields.");
+      return;
+    }
+    if (!mobile) {
+      setError("Enter a valid mobile number.");
       return;
     }
 
@@ -71,18 +77,11 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
           </Button>
         </div>
       </div>
-      <Input
+      <PhoneInput
         id="edit-admin-mobile"
         label="Mobile Number"
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        maxLength={11}
         required
         defaultValue={administrator.mobile ?? ""}
-        onInput={(e) => {
-          e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 11);
-        }}
       />
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" block={false} onClick={onCancel} disabled={isSaving}>
@@ -100,7 +99,6 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
             label="New Email Address"
             type="email"
             autoComplete="email"
-            placeholder={email}
             hint="The user may need to reconfirm their account with the new email."
           />
           <div className="flex justify-end gap-2">

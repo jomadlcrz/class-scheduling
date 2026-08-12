@@ -581,7 +581,7 @@ export function EditBuildingWorkspace({
                         }
                       >
                         <SelectTrigger id={`existing-room-type-${room.id}`}>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {roomTypes.map((t) => (
@@ -734,7 +734,6 @@ export function EditBuildingWorkspace({
                       id={`new-room-name-${room.key}`}
                       label="Room Name"
                       required
-                      placeholder="Room 201"
                       value={room.roomName}
                       onChange={(e) => updateNewRoom(selectedFloor, room.key, { roomName: e.target.value })}
                     />
@@ -750,7 +749,7 @@ export function EditBuildingWorkspace({
                         }
                       >
                         <SelectTrigger id={`new-room-type-${room.key}`}>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {roomTypes.map((t) => (

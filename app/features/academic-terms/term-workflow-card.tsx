@@ -137,7 +137,7 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
                 }}
               >
                 <SelectTrigger id="term-workflow-sy" aria-label="School year" className="w-44 bg-white dark:bg-surface-raised">
-                  <SelectValue placeholder="School year" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {schoolYears.map((row) => (
@@ -236,7 +236,6 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
             label="Reason for reopening"
             value={reopenReason}
             onChange={(event) => setReopenReason(event.target.value)}
-            placeholder="Optional notes for the audit trail"
           />
         </div>
       </ConfirmDialog>

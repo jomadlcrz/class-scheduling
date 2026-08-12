@@ -125,7 +125,6 @@ export function InstructorCard({
               <input
                 type="number"
                 min="0"
-                placeholder="—"
                 value={maxHours ?? ""}
                 onChange={(e) => {
                   const v = e.target.value;

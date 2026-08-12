@@ -119,7 +119,6 @@ function SetsPage() {
             <input
               id="set-search"
               type="search"
-              placeholder="Set code…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search"

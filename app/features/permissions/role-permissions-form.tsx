@@ -62,7 +62,6 @@ export function RolePermissionsForm({ role, catalog, onSaved, onCancel }: RolePe
             id="permission-search"
             value={search}
             onChange={setSearch}
-            placeholder="Search permissions..."
           />
 
           <div className="flex max-h-80 flex-col gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-white/10">

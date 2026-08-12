@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { StickyFooter } from "~/components/ui/sticky-footer";
 import { Card } from "~/components/ui/card";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { PhoneInput } from "~/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { RolePermissionsPanel } from "~/features/permissions/role-permissions-panel";
 import { facultySchema, FACULTY_ROLES } from "~/schemas/faculty.schema";
@@ -86,32 +87,23 @@ export function FacultyAccountForm({
         <div className="grid gap-6 sm:grid-cols-2">
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
-            <Input id="faculty-first-name" label="First Name" type="text" required placeholder="Enter first name" />
-            <Input id="faculty-mid-name" label="Middle Name" type="text" placeholder="Enter middle name" />
+            <Input id="faculty-first-name" label="First Name" type="text" required />
+            <Input id="faculty-mid-name" label="Middle Name" type="text" />
           </div>
 
-          <Input id="faculty-last-name" label="Last Name" type="text" required placeholder="Enter last name" />
+          <Input id="faculty-last-name" label="Last Name" type="text" required />
 
           <Input
             id="faculty-email"
             label="Email"
             type="email"
             required
-            placeholder="Enter email address"
           />
 
-          <Input
+          <PhoneInput
             id="faculty-mobile"
             label="Mobile Number"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={11}
             required
-            placeholder="Enter mobile number"
-            onInput={(e) => {
-              e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 11);
-            }}
           />
 
         </div>

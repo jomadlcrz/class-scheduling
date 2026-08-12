@@ -4,12 +4,14 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { PhoneInput } from "~/components/ui/phone-input";
 import { DatePicker } from "~/components/ui/date-picker";
 import { Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { enrollmentService } from "~/services/enrollment.service";
 import { studentService } from "~/services/student.service";
+import { normalizePhoneNumber } from "~/lib/phone-number";
 import type { EnrollmentRow } from "~/types/enrollment";
 import type { AddressInput, StudentProfileDetail } from "~/types/student";
 
@@ -85,6 +87,11 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
     if (!profile) return;
     const form = new FormData(event.currentTarget);
     const middleName = String(form.get("edit-mid-name") ?? "").trim();
+    const mobile = normalizePhoneNumber(String(form.get("edit-mobile") ?? ""));
+    if (!mobile) {
+      setEditError("Enter a valid mobile number.");
+      return;
+    }
     setEditError(null);
     setIsSaving(true);
 
@@ -106,7 +113,7 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
         suffix: suffix || null,
         gender: gender || undefined,
         birthdate: String(form.get("edit-birthdate") ?? ""),
-        mobile: String(form.get("edit-mobile") ?? "").trim(),
+        mobile,
         email: String(form.get("edit-email") ?? "").trim(),
         address: addressPayload,
       });
@@ -198,17 +205,15 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
                 <DatePicker
                   id="edit-birthdate"
                   label="Birthdate"
-                  placeholder="Select birthdate"
                   defaultValue={profile.birthdate ?? ""}
                   disabled={isSaving}
                   captionLayout="dropdown"
                   fromYear={1940}
                   toYear={new Date().getFullYear()}
                 />
-                <Input
+                <PhoneInput
                   id="edit-mobile"
                   label="Mobile"
-                  type="tel"
                   defaultValue={profile.mobile ?? ""}
                   disabled={isSaving}
                 />

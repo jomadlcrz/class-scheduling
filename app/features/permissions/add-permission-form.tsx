@@ -71,13 +71,11 @@ export function AddPermissionForm({ onCreated, onCancel }: AddPermissionFormProp
         <Input
           id="add-permission-slug"
           label="Permission Slug"
-          placeholder="e.g. schedules:create"
           name="permission-slug"
         />
         <Input
           id="add-permission-description"
           label="Description"
-          placeholder="What this permission allows"
           name="permission-description"
         />
         <Button type="submit" variant="outline" block={false}>

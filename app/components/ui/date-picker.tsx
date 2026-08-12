@@ -22,7 +22,6 @@ type DatePickerProps = {
   required?: boolean;
   hint?: string;
   labelEnd?: ReactNode;
-  placeholder?: string;
   disabled?: boolean;
   /** Selectable bounds as "yyyy-mm-dd". */
   min?: string;
@@ -51,7 +50,6 @@ export function DatePicker({
   required,
   hint,
   labelEnd,
-  placeholder = "Select a date",
   disabled,
   min,
   max,
@@ -103,7 +101,7 @@ export function DatePicker({
             className={`${triggerClass} pr-10`}
           >
             <span className={`flex-1 truncate ${selected ? "" : "text-slate-400 dark:text-slate-500"}`}>
-              {selected ? formatDisplayDate(selected) : placeholder}
+              {selected ? formatDisplayDate(selected) : "\u00a0"}
             </span>
           </Popover.Trigger>
 

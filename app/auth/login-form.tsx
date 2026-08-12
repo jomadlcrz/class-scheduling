@@ -4,7 +4,6 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input, PasswordInput } from "~/components/ui/input";
-import { LockIcon, MailIcon } from "~/components/ui/icons";
 import { loginSchema } from "~/schemas/auth.schema";
 import { useAuth } from "~/auth/auth-provider";
 import { markJustLoggedIn } from "~/layouts/dashboard-intro";
@@ -55,15 +54,12 @@ export function LoginForm() {
         label="Email Address"
         type="email"
         autoComplete="username"
-        placeholder="you@gwc.edu.ph"
-        icon={<MailIcon size={18} />}
       />
 
       <PasswordInput
         id="password"
         label="Password"
         autoComplete="current-password"
-        icon={<LockIcon size={18} />}
       />
 
       <Checkbox id="remember" label="Remember me" />

@@ -266,7 +266,6 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
           type="number"
           min={0}
           step="0.5"
-          placeholder="e.g. 2"
           value={lectureHours}
           onChange={(e) => { setLectureHours(e.target.value); setError(null); }}
         />
@@ -276,7 +275,6 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
           type="number"
           min={0}
           step="0.5"
-          placeholder="e.g. 1.5"
           value={labHours}
           onChange={(e) => { setLabHours(e.target.value); setError(null); }}
         />
@@ -290,7 +288,6 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
           min={1}
           max={4}
           step="1"
-          placeholder="e.g. 2"
           value={meetings}
           onChange={(e) => { setMeetings(e.target.value); setError(null); }}
           disabled={hasLab}
@@ -321,7 +318,6 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
         label={isReduction ? "Reason for reducing hours" : "Note (optional)"}
         type="text"
         maxLength={255}
-        placeholder={isReduction ? "Required — explain why hours are being reduced" : "e.g. reduced to fit lab slot availability"}
         value={note}
         onChange={(e) => setNote(e.target.value)}
       />

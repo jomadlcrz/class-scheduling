@@ -66,7 +66,6 @@ function DeanInstructorsPage() {
           <input
             id="dean-instructor-search"
             type="search"
-            placeholder="Name or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search instructors"

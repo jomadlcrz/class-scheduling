@@ -251,7 +251,6 @@ export function CreateBuildingWorkspace({
                 id="create-building-name"
                 label="Building Name"
                 required
-                placeholder="Main Academic Building"
                 value={buildingName}
                 onChange={(e) => setBuildingName(e.target.value)}
               />
@@ -261,7 +260,6 @@ export function CreateBuildingWorkspace({
                 type="number"
                 required
                 min={1}
-                placeholder="3"
                 value={floorCount}
                 onChange={(e) => setFloorCount(Math.max(1, Number(e.target.value) || 1))}
               />
@@ -361,7 +359,6 @@ export function CreateBuildingWorkspace({
                                 id={`room-name-${room.key}`}
                                 label="Room Name"
                                 required
-                                placeholder="Room 101"
                                 value={room.roomName}
                                 onChange={(e) =>
                                   updateRoom(floor.floorLevel, room.key, { roomName: e.target.value })
@@ -379,7 +376,7 @@ export function CreateBuildingWorkspace({
                                   }
                                 >
                                   <SelectTrigger id={`room-type-${room.key}`}>
-                                    <SelectValue placeholder="Select type" />
+                                    <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {roomTypes.map((t) => (

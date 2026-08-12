@@ -76,7 +76,6 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
         label="Subject Code"
         type="text"
         required
-        placeholder="CS 101"
         defaultValue={subject.code}
       />
 
@@ -85,7 +84,6 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
         label="Descriptive Title"
         type="text"
         required
-        placeholder="Introduction to Computing"
         defaultValue={subject.title}
       />
 

@@ -34,13 +34,13 @@ export function SubjectAssignmentToolbar({
     <Card className="mt-4 grid gap-3 p-3 sm:gap-4 sm:p-4 sm:grid-cols-2 lg:grid-cols-[minmax(11rem,.8fr)_minmax(11rem,.8fr)_minmax(17rem,1.5fr)]">
       <FieldChrome id="subject-assignment-school-year" label="School Year">
         <Select items={schoolYears.map((year) => ({ value: String(year.id), label: year.schoolYear }))} value={selectedSchoolYearId} onValueChange={(value) => onSchoolYearChange(value ?? "")}>
-          <SelectTrigger id="subject-assignment-school-year"><SelectValue placeholder="Select school year" /></SelectTrigger>
+          <SelectTrigger id="subject-assignment-school-year"><SelectValue /></SelectTrigger>
           <SelectContent>{schoolYears.map((year) => <SelectItem key={year.id} value={String(year.id)}>{year.schoolYear}</SelectItem>)}</SelectContent>
         </Select>
       </FieldChrome>
       <FieldChrome id="subject-assignment-semester" label="Semester">
         <Select items={academicSemesters.map((semester) => ({ value: String(semester.semesterNumber), label: semesterLabel(semester.semesterNumber) }))} value={selectedSemesterNumber} onValueChange={(value) => onSemesterChange(value ?? "")}>
-          <SelectTrigger id="subject-assignment-semester"><SelectValue placeholder="Select semester" /></SelectTrigger>
+          <SelectTrigger id="subject-assignment-semester"><SelectValue /></SelectTrigger>
           <SelectContent>{academicSemesters.map((semester) => <SelectItem key={semester.semesterNumber} value={String(semester.semesterNumber)}>{semesterLabel(semester.semesterNumber)}</SelectItem>)}</SelectContent>
         </Select>
       </FieldChrome>
@@ -48,7 +48,7 @@ export function SubjectAssignmentToolbar({
         <FieldChrome id="subject-assignment-search" label="Search Instructor">
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-slate-500"><SearchIcon size={18} /></span>
-            <input id="subject-assignment-search" type="search" value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="Search instructor name" className={`${inputClassName} pl-10`} />
+            <input id="subject-assignment-search" type="search" value={search} onChange={(event) => onSearchChange(event.target.value)} className={`${inputClassName} pl-10`} />
           </div>
         </FieldChrome>
       </div>

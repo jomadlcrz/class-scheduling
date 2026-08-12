@@ -40,7 +40,7 @@ export function FieldChrome({ id, label, labelEnd, hint, required, children }: F
   );
 }
 
-type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "className"> & {
+type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "className" | "placeholder"> & {
   id: string;
   label: string;
   labelEnd?: ReactNode;
@@ -69,7 +69,7 @@ export function Input({ id, label, labelEnd, hint, required, icon, ...inputProps
   );
 }
 
-type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "className" | "type"> & {
+type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "className" | "type" | "placeholder"> & {
   id: string;
   label: string;
   autoComplete: "current-password" | "new-password";
@@ -87,7 +87,6 @@ export function PasswordInput({
   hint,
   required,
   icon,
-  placeholder = "••••••••",
   ...inputProps
 }: PasswordInputProps) {
   const [show, setShow] = useState(false);
@@ -106,7 +105,6 @@ export function PasswordInput({
           type={show ? "text" : "password"}
           autoComplete={autoComplete}
           required={required}
-          placeholder={placeholder}
           aria-describedby={hint ? `${id}-hint` : undefined}
           className={`${inputClassName} ${icon ? "pl-10" : ""} pr-11`}
           {...inputProps}

@@ -38,7 +38,7 @@ export function DeactivateReasonSelect({ id, reason, onReasonChange }: Deactivat
         onValueChange={(v) => handlePresetChange(v as string)}
       >
         <SelectTrigger id={`${id}-preset`} aria-label="Select reason">
-          <SelectValue placeholder="Select a reason" />
+          <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {PRESET_REASONS.map((r) => (
@@ -54,7 +54,6 @@ export function DeactivateReasonSelect({ id, reason, onReasonChange }: Deactivat
           label="Specify reason"
           value={customReason}
           onChange={(e) => handleCustomChange(e.target.value)}
-          placeholder="Provide a specific reason"
         />
       )}
     </div>
@@ -79,7 +78,6 @@ export function DeactivateConfirmInput({ id, value, onChange }: DeactivateConfir
         autoComplete="off"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="DEACTIVATE"
         className={inputClassName}
       />
     </div>

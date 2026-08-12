@@ -2,7 +2,9 @@ import { useState, type FormEvent } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { PhoneInput } from "~/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { normalizePhoneNumber } from "~/lib/phone-number";
 import type { StudentProfileDetail, UpdateStudentProfileInput } from "~/types/student";
 
 type StudentProfileFormProps = {
@@ -22,6 +24,11 @@ export function StudentProfileForm({ profile, nameSuffixes, onSubmit, onCancel }
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const mobile = normalizePhoneNumber(String(form.get("student-profile-mobile") ?? ""));
+    if (!mobile) {
+      setError("Enter a valid mobile number.");
+      return;
+    }
     setError(null);
     setIsSaving(true);
     try {
@@ -31,7 +38,7 @@ export function StudentProfileForm({ profile, nameSuffixes, onSubmit, onCancel }
         midName: middleName || null,
         lastName: String(form.get("student-profile-last-name") ?? "").trim(),
         suffix: suffix || null,
-        mobile: String(form.get("student-profile-mobile") ?? "").trim(),
+        mobile,
         email: String(form.get("student-profile-email") ?? "").trim(),
       });
     } catch (err) {
@@ -88,10 +95,9 @@ export function StudentProfileForm({ profile, nameSuffixes, onSubmit, onCancel }
             </SelectContent>
           </Select>
         </FieldChrome>
-        <Input
+        <PhoneInput
           id="student-profile-mobile"
           label="Mobile"
-          type="tel"
           defaultValue={profile.mobile ?? ""}
           disabled={isSaving}
         />

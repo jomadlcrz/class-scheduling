@@ -51,7 +51,6 @@ export function CurriculumBuilderHeader({
           required
           value={newProgram.name}
           onChange={(e) => onNewProgramChange({ name: e.target.value })}
-          placeholder="Bachelor of Science in Computer Science"
         />
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -79,7 +78,6 @@ export function CurriculumBuilderHeader({
             required
             value={newProgram.abbrev}
             onChange={(e) => onNewProgramChange({ abbrev: e.target.value.toUpperCase() })}
-            placeholder="BSIS"
           />
           <FieldChrome id="new-prog-type" label="Program Type" required>
             <Select
@@ -88,7 +86,7 @@ export function CurriculumBuilderHeader({
               onValueChange={(v) => onNewProgramChange({ type: v as string })}
             >
               <SelectTrigger id="new-prog-type">
-                <SelectValue placeholder="Select type" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {degreeTypes.map((t) => (
@@ -108,7 +106,6 @@ export function CurriculumBuilderHeader({
             max={10}
             value={newProgram.lengthYears === 0 ? "" : newProgram.lengthYears}
             onChange={(e) => onNewProgramChange({ lengthYears: Number(e.target.value) })}
-            placeholder="4"
           />
         </div>
 
@@ -118,7 +115,6 @@ export function CurriculumBuilderHeader({
           hint="Optional."
           value={newProgram.description ?? ""}
           onChange={(e) => onNewProgramChange({ description: e.target.value })}
-          placeholder="Enter program description…"
         />
 
         <p className="font-body text-xs text-slate-400 dark:text-slate-500">

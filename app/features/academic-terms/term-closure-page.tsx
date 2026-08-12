@@ -137,7 +137,6 @@ export function TermClosurePage() {
             <SearchInput
               value={search}
               onChange={setSearch}
-              placeholder="Search…"
               className="w-40"
             />
           </div>
@@ -204,7 +203,6 @@ export function TermClosurePage() {
             label="Reason for reopening"
             value={reopenReason}
             onChange={(event) => setReopenReason(event.target.value)}
-            placeholder="Optional notes for the audit trail"
           />
         </div>
       </ConfirmDialog>

@@ -49,7 +49,6 @@ export function ActivateAdministratorDialog({
           type="text"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Provide a reason for reactivation"
         />
       </div>
       <div className="mt-4 flex justify-end gap-2">

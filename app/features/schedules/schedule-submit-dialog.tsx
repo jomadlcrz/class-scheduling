@@ -50,7 +50,6 @@ export function ScheduleSubmitDialog({ open, release, onClose, onConfirm }: Sche
             hint="Required when resubmitting a rejected schedule. At least 10 characters."
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Explain what you revised, e.g. reassigned the lab sessions and fixed the faculty overlap."
           />
         </div>
       )}

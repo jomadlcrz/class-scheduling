@@ -316,7 +316,7 @@ export function SlotEntryForm({
             inputValue={facultyQuery}
             onInputValueChange={setFacultyQuery}
           >
-            <CommandInput id="slot-faculty" placeholder="Select faculty" focusPlaceholder="Search faculty…" />
+            <CommandInput id="slot-faculty" />
             <CommandList>
               {filteredFaculties.length === 0 ? (
                 <CommandEmpty>No faculty found.</CommandEmpty>

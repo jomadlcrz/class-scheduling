@@ -4,6 +4,7 @@ import { Stepper, type StepDefinition } from "~/components/ui/stepper";
 import { AddStudentStep1Identity, type IdentityDraft } from "~/features/enrollment/add-student-step1-identity";
 import { AddStudentStep2Academic, type AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
 import { AddStudentStep3Review } from "~/features/enrollment/add-student-step3-review";
+import { isValidPhoneNumber } from "~/lib/phone-number";
 import { studentSchema } from "~/schemas/student.schema";
 import { studentService } from "~/services/student.service";
 import type { SchoolYearOption } from "~/services/school-year.service";
@@ -141,7 +142,7 @@ export function AddStudentWizard({
     identity.lastName.trim() !== "" &&
     identity.gender !== "" &&
     identity.birthdate !== "" &&
-    identity.mobile.trim() !== "" &&
+    isValidPhoneNumber(identity.mobile) &&
     identity.email.trim() !== "";
   const step2Valid =
     academic.programId !== "" &&

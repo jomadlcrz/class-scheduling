@@ -181,7 +181,6 @@ function ClassroomMappingPage() {
               type="search"
               value={rawSearch}
               onChange={e => setRawSearch(e.target.value)}
-              placeholder="Search classrooms…"
               aria-label="Search classrooms"
               className={`${inputClassName} pl-9 pr-4`}
             />

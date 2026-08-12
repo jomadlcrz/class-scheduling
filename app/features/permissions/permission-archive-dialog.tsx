@@ -108,7 +108,6 @@ export function PermissionArchiveDialog({
                   spellCheck={false}
                   value={confirmValue}
                   onChange={(event) => setConfirmValue(event.target.value)}
-                  placeholder={slug}
                   className={inputClassName}
                 />
               </div>

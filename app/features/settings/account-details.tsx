@@ -182,7 +182,6 @@ export function AccountDetails() {
                 label="New Email Address"
                 type="email"
                 autoComplete="email"
-                placeholder={user.email}
                 hint="If you change your email, you may need to reconfirm your account."
               />
               <PasswordInput

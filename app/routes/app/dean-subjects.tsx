@@ -210,7 +210,6 @@ function DeanSubjectsPage() {
                     <input
                       id="dean-subject-search"
                       type="search"
-                      placeholder="Code or title…"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       aria-label="Search subjects"

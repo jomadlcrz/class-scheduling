@@ -85,7 +85,6 @@ export function SemesterForm({ initialValue, defaultNumber, mode, onSubmit, onCa
           value={semesterNumber}
           onChange={handleNumberChange}
           disabled={isEdit}
-          placeholder="1"
           hint="Only 1 or 2 — the two global semesters."
         />
       </div>
@@ -96,7 +95,6 @@ export function SemesterForm({ initialValue, defaultNumber, mode, onSubmit, onCa
         required
         value={semesterName}
         onChange={(event) => setSemesterName(event.target.value)}
-        placeholder="1st Semester"
         hint='Sent as "semesterName" — must match the number, e.g. "1st Semester" or "2nd Semester".'
         autoFocus
       />

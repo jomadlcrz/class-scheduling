@@ -185,7 +185,6 @@ function FacultyPage() {
             <input
               id="faculty-search"
               type="search"
-              placeholder="Name or email…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search"

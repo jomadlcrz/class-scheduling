@@ -136,7 +136,6 @@ export function RoomArchiveDialog({ room, onClose, onConfirm }: RoomArchiveDialo
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            placeholder={preview.room.roomName}
             className={inputClassName}
           />
         </div>

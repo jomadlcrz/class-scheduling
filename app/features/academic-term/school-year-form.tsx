@@ -55,7 +55,6 @@ export function SchoolYearForm({ initialValue, mode, onSubmit, onCancel }: Schoo
         label="School Year"
         required
         type="text"
-        placeholder={`e.g. ${EXAMPLE_SCHOOL_YEAR}`}
         value={schoolYear}
         onChange={handleChange}
         autoFocus

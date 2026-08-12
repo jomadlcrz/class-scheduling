@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { phoneNumberSchema } from "~/schemas/phone-number.schema";
 
 export const studentAccountSchema = z.object({
   email: z.email("Enter a valid email address."),
@@ -19,9 +20,7 @@ export const studentSchema = z
     suffix: z.string().max(10, "Suffix must be at most 10 characters.").optional(),
     gender: z.string().min(1, "Select a gender."),
     birthdate: z.string().min(1, "Enter a birthdate."),
-    mobile: z
-      .string()
-      .regex(/^\+?[0-9]{7,15}$/, "Enter a valid mobile number (7-15 digits, optional leading +)."),
+    mobile: phoneNumberSchema,
     email: z.email("Enter a valid email address."),
     programId: z.coerce.number().int().positive("Select a program."),
     yearLevel: z.coerce.number().int().min(1, "Select a year level.").max(6),

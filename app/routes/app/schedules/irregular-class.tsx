@@ -633,7 +633,7 @@ function IrregularClassPage() {
                 <div className="flex items-center gap-3">
                   <div className="relative w-64 shrink-0 sm:w-72">
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"><SearchIcon /></span>
-                    <input type="search" placeholder="Search students…" value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className={`${inputClassName} pl-9`} aria-label="Search students" />
+                    <input type="search" value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className={`${inputClassName} pl-9`} aria-label="Search students" />
                   </div>
                   <div className="w-40 shrink-0">
                     <Select

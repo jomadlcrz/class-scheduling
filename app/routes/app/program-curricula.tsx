@@ -193,7 +193,6 @@ function ProgramCurriculaPage() {
                   <input
                     id="curriculum-search"
                     type="search"
-                    placeholder="Code or title…"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     aria-label="Search"

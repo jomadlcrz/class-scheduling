@@ -5,6 +5,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { DownloadIcon, HelpCircleIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
+import { PhoneInput } from "~/components/ui/phone-input";
 import { Modal } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -20,6 +21,7 @@ import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-
 import { EnrolledStatusPicker } from "~/features/enrollment/enrolled-status-picker";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { useYearLevels } from "~/hooks/use-year-levels";
+import { normalizePhoneNumber } from "~/lib/phone-number";
 import { studentService } from "~/services/student.service";
 import type { SchoolYearOption } from "~/services/school-year.service";
 import type { Program } from "~/types/program";
@@ -278,7 +280,7 @@ export function EnrollmentBatchImport({
         (r) =>
           r.firstName.trim() &&
           r.lastName.trim() &&
-          r.contactNumber.trim() &&
+          normalizePhoneNumber(r.contactNumber) &&
           r.email.trim() &&
           r.programId &&
           r.yearLevel &&
@@ -379,6 +381,7 @@ export function EnrollmentBatchImport({
   }
 
   function prepareRow(row: RosterRow): PreparedRow {
+    const mobile = normalizePhoneNumber(row.contactNumber);
     const program = programs.find((p) => String(p.id) === row.programId);
     const yearLevel = Number(row.yearLevel);
     const schoolYear = schoolYears.find((sy) => String(sy.id) === row.syId);
@@ -399,6 +402,7 @@ export function EnrollmentBatchImport({
     );
 
     const missing: string[] = [];
+    if (!mobile) missing.push("valid contact number");
     if (!program) missing.push("program");
     if (!Number.isInteger(yearLevel) || yearLevel < 1) missing.push("year level");
     if (!schoolYear) missing.push("school year");
@@ -407,7 +411,7 @@ export function EnrollmentBatchImport({
     if (!row.studentType.trim()) missing.push("student type");
     if (isIrregular && codes.length === 0) missing.push("subject codes");
     if (isIrregular && subjectIds.some((id) => id == null)) missing.push("recognized subject codes");
-    if (missing.length > 0 || !program || !schoolYear || !semester) {
+    if (missing.length > 0 || !mobile || !program || !schoolYear || !semester) {
       return {
         error: `Invalid or missing ${missing.join(", ")}.`,
         studentId: row.studentNumber.trim() || undefined,
@@ -420,7 +424,7 @@ export function EnrollmentBatchImport({
         firstName: row.firstName.trim(),
         midName: row.middleName.trim() || undefined,
         lastName: row.lastName.trim(),
-        mobile: row.contactNumber.trim(),
+        mobile,
         email: row.email.trim(),
         programId: program.id,
         yearLevel,
@@ -628,7 +632,6 @@ export function EnrollmentBatchImport({
                   label="Student ID (Optional)"
                   value={row.studentNumber}
                   disabled={isLoading}
-                  placeholder="e.g. 2024-0001"
                   onChange={(e) => updateRow(index, { studentNumber: e.target.value })}
                 />
                 <Input
@@ -637,7 +640,6 @@ export function EnrollmentBatchImport({
                   value={row.studentType}
                   disabled={isLoading}
                   list={`batch-${index}-type-list`}
-                  placeholder="Select or type"
                   required
                   onChange={(e) => updateRow(index, { studentType: e.target.value })}
                 />
@@ -673,20 +675,13 @@ export function EnrollmentBatchImport({
                 />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input
+                <PhoneInput
                   id={`batch-${index}-mobile`}
                   label="Mobile Number"
                   required
-                  inputMode="numeric"
-                  maxLength={11}
                   value={row.contactNumber}
                   disabled={isLoading}
-                  placeholder="e.g. 09171234567"
-                  onChange={(e) =>
-                    updateRow(index, {
-                      contactNumber: e.target.value.replace(/\D/g, "").slice(0, 11),
-                    })
-                  }
+                  onChange={(e) => updateRow(index, { contactNumber: e.target.value })}
                 />
                 <Input
                   id={`batch-${index}-email`}

@@ -100,7 +100,6 @@ export function TermCloseDialog({ open, syId, semesterNumber, onClose, onConfirm
               label={preview.confirmation.closureReasonLabel}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Optional notes for the audit trail"
               required={preview.confirmation.closureReasonRequired}
             />
           </>

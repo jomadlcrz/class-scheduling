@@ -104,7 +104,6 @@ export function PrerequisiteCombobox({
           embedded
           id={inputId}
           aria-label={ariaLabel ?? "Prerequisites"}
-          placeholder={value.length === 0 ? "Type or select…" : "Add another…"}
           onKeyDown={(event) => {
             if (event.key === "Backspace" && query === "" && value.length > 0) {
               removeValue(value[value.length - 1]);

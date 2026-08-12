@@ -4,17 +4,13 @@ import { CheckIcon, ChevronDownIcon, SearchIcon } from "~/components/ui/icons";
 
 const Command = ComboboxPrimitive.Root;
 
-type CommandInputProps = ComboboxPrimitive.Input.Props & {
-  /** Shown while focused, in place of `placeholder` (e.g. "Search faculty…"). */
-  focusPlaceholder?: string;
+type CommandInputProps = Omit<ComboboxPrimitive.Input.Props, "placeholder"> & {
   /** Render without outer border — for embedding inside a custom field shell (e.g. tag inputs). */
   embedded?: boolean;
 };
 
 function CommandInput({
   className = "",
-  placeholder,
-  focusPlaceholder,
   embedded = false,
   onFocus,
   onBlur,
@@ -33,7 +29,6 @@ function CommandInput({
     >
       <ComboboxPrimitive.Input
         data-slot="command-input"
-        placeholder={focused ? (focusPlaceholder ?? placeholder) : placeholder}
         onFocus={(e) => {
           setFocused(true);
           onFocus?.(e);

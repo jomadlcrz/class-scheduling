@@ -79,7 +79,6 @@ export function ReenrollStep1SelectStudent({
         </span>
         <input
           type="search"
-          placeholder="Search by student ID or name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search students"

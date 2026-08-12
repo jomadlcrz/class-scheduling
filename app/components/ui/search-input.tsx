@@ -5,7 +5,6 @@ type SearchInputProps = {
   id?: string;
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
   ariaLabel?: string;
   className?: string;
 };
@@ -15,7 +14,6 @@ export function SearchInput({
   id,
   value,
   onChange,
-  placeholder = "Search…",
   ariaLabel,
   className,
 }: SearchInputProps) {
@@ -29,8 +27,7 @@ export function SearchInput({
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-label={ariaLabel ?? placeholder}
+        aria-label={ariaLabel ?? "Search"}
         className={`${inputClassName} pl-9`}
       />
     </div>

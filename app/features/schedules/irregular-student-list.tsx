@@ -79,7 +79,6 @@ export function IrregularStudentList({
         </span>
         <input
           type="search"
-          placeholder="Name or student ID…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={`${inputClassName} pl-9`}

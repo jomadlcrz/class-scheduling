@@ -72,7 +72,6 @@ export function CurriculumSubjectRow({
           <TableInput
             value={row.code}
             onChange={(e) => onUpdatePending(row.tempId!, { code: e.target.value })}
-            placeholder="IT101"
             className="font-medium"
           />
         ) : (
@@ -89,7 +88,6 @@ export function CurriculumSubjectRow({
           <TableInput
             value={row.title}
             onChange={(e) => onUpdatePending(row.tempId!, { title: e.target.value })}
-            placeholder="Introduction to Computing"
           />
         ) : (
           <span className="block truncate" title={row.title}>
@@ -105,7 +103,6 @@ export function CurriculumSubjectRow({
               min={1}
               max={6}
               step={1}
-              placeholder="—"
               value={row.units === 0 ? "" : row.units}
               onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
               aria-label={`Units for ${row.code || "new subject"}`}
@@ -127,7 +124,7 @@ export function CurriculumSubjectRow({
             onValueChange={(v) => onUpdatePending(row.tempId!, { subjectType: v as string })}
           >
             <SelectTrigger className="py-1.5 text-xs">
-              <SelectValue placeholder="Select type" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {subjectTypes.map((type) => (
