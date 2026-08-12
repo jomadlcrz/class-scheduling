@@ -66,7 +66,7 @@ function EnrollmentRegularStudentsPage() {
         actions={
           <Button type="button" block={false} onClick={() => navigate("/enrollment/new")}>
             <PlusIcon />
-            Add New Student
+            Add Records
           </Button>
         }
       />

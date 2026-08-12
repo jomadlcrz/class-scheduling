@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { formatISODate } from "~/components/ui/calendar";
+import { DatePicker } from "~/components/ui/date-picker";
 import { DownloadIcon, HelpCircleIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { PhoneInput } from "~/components/ui/phone-input";
@@ -19,6 +21,7 @@ import {
 } from "~/components/ui/table";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
 import { EnrolledStatusPicker } from "~/features/enrollment/enrolled-status-picker";
+import { PrerequisiteCombobox } from "~/features/subjects/prerequisite-picker";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { normalizePhoneNumber } from "~/lib/phone-number";
@@ -42,8 +45,17 @@ type RosterRow = {
   firstName: string;
   middleName: string;
   lastName: string;
+  suffix: string;
+  gender: string;
+  birthdate: string;
   contactNumber: string;
   email: string;
+  addressStreet: string;
+  addressBarangay: string;
+  addressCity: string;
+  addressProvince: string;
+  addressRegion: string;
+  addressZipCode: string;
   programId: string;
   yearLevel: string;
   setId: string;
@@ -58,8 +70,17 @@ const EMPTY_ROW: RosterRow = {
   firstName: "",
   middleName: "",
   lastName: "",
+  suffix: "",
+  gender: "",
+  birthdate: "",
   contactNumber: "",
   email: "",
+  addressStreet: "",
+  addressBarangay: "",
+  addressCity: "",
+  addressProvince: "",
+  addressRegion: "",
+  addressZipCode: "",
   programId: "",
   yearLevel: "",
   setId: "",
@@ -74,8 +95,17 @@ const CSV_HEADERS_BASE = [
   "First Name",
   "Middle Name",
   "Last Name",
+  "Suffix",
+  "Gender",
+  "Birthdate",
   "Contact Number",
   "Email",
+  "Street",
+  "Barangay",
+  "City / Municipality",
+  "Province",
+  "Region",
+  "Zip Code",
   "Program",
   "Year Level",
   "Set",
@@ -92,8 +122,17 @@ const TEMPLATE_ROW_REGULAR = [
   "Juan",
   "Santos",
   "Dela Cruz",
+  "",
+  "Male",
+  "2005-06-15",
   "09171234567",
   "juan.delacruz@example.com",
+  "123 Mabini Street",
+  "San Isidro",
+  "Legazpi City",
+  "Albay",
+  "Region V",
+  "4500",
   "BSIT",
   "1",
   "A",
@@ -107,8 +146,17 @@ const TEMPLATE_ROW_IRREGULAR = [
   "Maria",
   "Reyes",
   "Santos",
+  "",
+  "Female",
+  "2004-09-20",
   "09179876543",
   "maria.santos@example.com",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
   "BSIT",
   "2",
   "",
@@ -165,8 +213,17 @@ type ParsedCsvRow = {
   firstName: string;
   middleName: string;
   lastName: string;
+  suffix: string;
+  gender: string;
+  birthdate: string;
   contactNumber: string;
   email: string;
+  addressStreet: string;
+  addressBarangay: string;
+  addressCity: string;
+  addressProvince: string;
+  addressRegion: string;
+  addressZipCode: string;
   program: string;
   yearLevel: string;
   section: string;
@@ -182,8 +239,17 @@ function parseCsv(text: string): ParsedCsvRow[] {
     "firstName",
     "middleName",
     "lastName",
+    "suffix",
+    "gender",
+    "birthdate",
     "contactNumber",
     "email",
+    "addressStreet",
+    "addressBarangay",
+    "addressCity",
+    "addressProvince",
+    "addressRegion",
+    "addressZipCode",
     "program",
     "yearLevel",
     "section",
@@ -212,8 +278,17 @@ function parseCsv(text: string): ParsedCsvRow[] {
       firstName: "",
       middleName: "",
       lastName: "",
+      suffix: "",
+      gender: "",
+      birthdate: "",
       contactNumber: "",
       email: "",
+      addressStreet: "",
+      addressBarangay: "",
+      addressCity: "",
+      addressProvince: "",
+      addressRegion: "",
+      addressZipCode: "",
       program: "",
       yearLevel: "",
       section: "",
@@ -242,6 +317,8 @@ type EnrollmentBatchImportProps = {
   semesters: Semester[];
   studentTypes: string[];
   academicStatuses: string[];
+  nameSuffixes: string[];
+  genders: string[];
   onDirtyChange: (dirty: boolean) => void;
   onCancel: () => void;
   onFinished: (message: string) => void;
@@ -256,6 +333,8 @@ export function EnrollmentBatchImport({
   semesters,
   studentTypes,
   academicStatuses,
+  nameSuffixes,
+  genders,
   onDirtyChange,
   onCancel,
   onFinished,
@@ -269,6 +348,8 @@ export function EnrollmentBatchImport({
   const [templateHelpOpen, setTemplateHelpOpen] = useState(false);
 
   const isIrregular = enrolledStatus === "Irregular";
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
 
   useEffect(() => {
     onDirtyChange(rows.some(rowHasContent));
@@ -280,6 +361,8 @@ export function EnrollmentBatchImport({
         (r) =>
           r.firstName.trim() &&
           r.lastName.trim() &&
+          r.gender &&
+          r.birthdate &&
           normalizePhoneNumber(r.contactNumber) &&
           r.email.trim() &&
           r.programId &&
@@ -324,8 +407,17 @@ export function EnrollmentBatchImport({
         firstName: row.firstName,
         middleName: row.middleName,
         lastName: row.lastName,
+        suffix: row.suffix,
+        gender: row.gender,
+        birthdate: row.birthdate,
         contactNumber: row.contactNumber,
         email: row.email,
+        addressStreet: row.addressStreet,
+        addressBarangay: row.addressBarangay,
+        addressCity: row.addressCity,
+        addressProvince: row.addressProvince,
+        addressRegion: row.addressRegion,
+        addressZipCode: row.addressZipCode,
         programId: program ? String(program.id) : "",
         yearLevel: Number.isInteger(yearLevel) && yearLevel > 0 ? String(yearLevel) : "",
         setId: set ? String(set.id) : "",
@@ -397,12 +489,26 @@ export function EnrollmentBatchImport({
           (s) =>
             program &&
             s.program.toLowerCase() === program.abbrev.toLowerCase() &&
+            semester &&
+            s.semester === semester.semesterNumber &&
             s.code.toLowerCase() === code.toLowerCase(),
         )?.id,
     );
+    const addressStreet = row.addressStreet.trim();
+    const addressBarangay = row.addressBarangay.trim();
+    const addressCity = row.addressCity.trim();
+    const addressProvince = row.addressProvince.trim();
+    const addressRegion = row.addressRegion.trim();
+    const addressZip = row.addressZipCode.trim();
+    const hasAddress = addressStreet || addressBarangay || addressCity;
 
     const missing: string[] = [];
+    if (!row.firstName.trim()) missing.push("first name");
+    if (!row.lastName.trim()) missing.push("last name");
+    if (!row.gender.trim()) missing.push("gender");
+    if (!row.birthdate.trim()) missing.push("birthdate");
     if (!mobile) missing.push("valid contact number");
+    if (!row.email.trim()) missing.push("email");
     if (!program) missing.push("program");
     if (!Number.isInteger(yearLevel) || yearLevel < 1) missing.push("year level");
     if (!schoolYear) missing.push("school year");
@@ -424,8 +530,21 @@ export function EnrollmentBatchImport({
         firstName: row.firstName.trim(),
         midName: row.middleName.trim() || undefined,
         lastName: row.lastName.trim(),
+        suffix: row.suffix.trim() || undefined,
+        gender: row.gender.trim(),
+        birthdate: row.birthdate.trim(),
         mobile,
         email: row.email.trim(),
+        ...(hasAddress && {
+          address: {
+            street: addressStreet || undefined,
+            barangay: addressBarangay || undefined,
+            cityMunicipality: addressCity || undefined,
+            province: addressProvince || undefined,
+            region: addressRegion || undefined,
+            zipCode: addressZip || undefined,
+          },
+        }),
         programId: program.id,
         yearLevel,
         setId: isIrregular ? null : (set?.id ?? null),
@@ -602,6 +721,23 @@ export function EnrollmentBatchImport({
                 (!row.yearLevel || String(s.yearLevel) === row.yearLevel),
             )
           : [];
+        const subjectOptions = selectedProgram
+          ? subjects
+              .filter(
+                (subject) =>
+                  subject.program === selectedProgram.abbrev &&
+                  (!row.semesterNumber || String(subject.semester) === row.semesterNumber),
+              )
+              .map((subject) => ({
+                id: String(subject.id),
+                code: subject.code,
+                title: subject.title,
+              }))
+          : [];
+        const selectedSubjectCodes = row.subjectCodes
+          .split(/[,;]+/)
+          .map((code) => code.trim())
+          .filter(Boolean);
 
         return (
           <EnrollmentSectionCard
@@ -634,22 +770,30 @@ export function EnrollmentBatchImport({
                   disabled={isLoading}
                   onChange={(e) => updateRow(index, { studentNumber: e.target.value })}
                 />
-                <Input
-                  id={`batch-${index}-type`}
-                  label="Student Type"
-                  value={row.studentType}
-                  disabled={isLoading}
-                  list={`batch-${index}-type-list`}
-                  required
-                  onChange={(e) => updateRow(index, { studentType: e.target.value })}
-                />
-                <datalist id={`batch-${index}-type-list`}>
-                  {studentTypes.map((t) => (
-                    <option key={t} value={t} />
-                  ))}
-                </datalist>
+                <FieldChrome id={`batch-${index}-type`} label="Student Type" required>
+                  <Select
+                    items={[
+                      { value: "", label: "Select a type" },
+                      ...studentTypes.map((type) => ({ value: type, label: type })),
+                    ]}
+                    value={row.studentType}
+                    onValueChange={(value) => updateRow(index, { studentType: value as string })}
+                  >
+                    <SelectTrigger id={`batch-${index}-type`} disabled={isLoading}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select a type</SelectItem>
+                      {studentTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   id={`batch-${index}-first`}
                   label="First Name"
@@ -665,6 +809,8 @@ export function EnrollmentBatchImport({
                   disabled={isLoading}
                   onChange={(e) => updateRow(index, { middleName: e.target.value })}
                 />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
                 <Input
                   id={`batch-${index}-last`}
                   label="Last Name"
@@ -672,6 +818,65 @@ export function EnrollmentBatchImport({
                   value={row.lastName}
                   disabled={isLoading}
                   onChange={(e) => updateRow(index, { lastName: e.target.value })}
+                />
+                <FieldChrome id={`batch-${index}-suffix`} label="Suffix (Optional)">
+                  <Select
+                    items={[
+                      { value: "", label: "None" },
+                      ...nameSuffixes.map((suffix) => ({ value: suffix, label: suffix })),
+                    ]}
+                    value={row.suffix}
+                    onValueChange={(value) => updateRow(index, { suffix: value as string })}
+                  >
+                    <SelectTrigger id={`batch-${index}-suffix`} disabled={isLoading}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {nameSuffixes.map((suffix) => (
+                        <SelectItem key={suffix} value={suffix}>
+                          {suffix}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FieldChrome id={`batch-${index}-gender`} label="Gender" required>
+                  <Select
+                    items={[
+                      { value: "", label: "Select gender" },
+                      ...genders.map((gender) => ({ value: gender, label: gender })),
+                    ]}
+                    value={row.gender}
+                    onValueChange={(value) => updateRow(index, { gender: value as string })}
+                  >
+                    <SelectTrigger id={`batch-${index}-gender`} disabled={isLoading}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Select gender</SelectItem>
+                      {genders.map((gender) => (
+                        <SelectItem key={gender} value={gender}>
+                          {gender}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldChrome>
+                <DatePicker
+                  id={`batch-${index}-birthdate`}
+                  label="Birthdate"
+                  required
+                  hint="Must be at least 18 years old"
+                  value={row.birthdate}
+                  onChange={(value) => updateRow(index, { birthdate: value })}
+                  disabled={isLoading}
+                  captionLayout="dropdown"
+                  fromYear={1940}
+                  toYear={eighteenYearsAgo.getFullYear()}
+                  max={formatISODate(eighteenYearsAgo)}
                 />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -693,6 +898,64 @@ export function EnrollmentBatchImport({
                   onChange={(e) => updateRow(index, { email: e.target.value })}
                 />
               </div>
+
+              <details className="group">
+                <summary className="w-fit cursor-pointer font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                  Address (Optional)
+                </summary>
+                <div className="mt-3 flex flex-col gap-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input
+                      id={`batch-${index}-address-street`}
+                      label="Street"
+                      value={row.addressStreet}
+                      disabled={isLoading}
+                      onChange={(event) => updateRow(index, { addressStreet: event.target.value })}
+                    />
+                    <Input
+                      id={`batch-${index}-address-barangay`}
+                      label="Barangay"
+                      value={row.addressBarangay}
+                      disabled={isLoading}
+                      onChange={(event) => updateRow(index, { addressBarangay: event.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input
+                      id={`batch-${index}-address-city`}
+                      label="City / Municipality"
+                      value={row.addressCity}
+                      disabled={isLoading}
+                      onChange={(event) => updateRow(index, { addressCity: event.target.value })}
+                    />
+                    <Input
+                      id={`batch-${index}-address-province`}
+                      label="Province"
+                      value={row.addressProvince}
+                      disabled={isLoading}
+                      onChange={(event) => updateRow(index, { addressProvince: event.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input
+                      id={`batch-${index}-address-region`}
+                      label="Region"
+                      value={row.addressRegion}
+                      disabled={isLoading}
+                      onChange={(event) => updateRow(index, { addressRegion: event.target.value })}
+                    />
+                    <Input
+                      id={`batch-${index}-address-zip`}
+                      label="Zip Code"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={row.addressZipCode}
+                      disabled={isLoading}
+                      onChange={(event) => updateRow(index, { addressZipCode: event.target.value })}
+                    />
+                  </div>
+                </div>
+              </details>
 
               <h3 className="mt-2 font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                 Academic Information
@@ -775,14 +1038,16 @@ export function EnrollmentBatchImport({
                     </Select>
                   </FieldChrome>
                 ) : (
-                  <Input
-                    id={`batch-${index}-subjects`}
+                  <PrerequisiteCombobox
+                    options={subjectOptions}
+                    value={selectedSubjectCodes}
+                    onChange={(codes) => updateRow(index, { subjectCodes: codes.join(", ") })}
+                    ariaLabel={`Student ${index + 1} subject codes`}
                     label="Subject Codes"
+                    labelled
                     required
-                    hint="Comma-separated, e.g. IT 101, IT 102"
-                    value={row.subjectCodes}
+                    allowFreeText={false}
                     disabled={isLoading}
-                    onChange={(e) => updateRow(index, { subjectCodes: e.target.value })}
                   />
                 )}
 

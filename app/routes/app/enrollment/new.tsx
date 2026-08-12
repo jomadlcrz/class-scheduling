@@ -142,6 +142,8 @@ function EnrollmentNewStudentPage() {
             semesters={semesters}
             studentTypes={enumOptions?.studentType ?? []}
             academicStatuses={enumOptions?.academicStatus ?? []}
+            nameSuffixes={enumOptions?.nameSuffix ?? []}
+            genders={enumOptions?.gender ?? []}
             onDirtyChange={setIsDirty}
             onCancel={() => navigate(-1)}
             onFinished={(message) => {

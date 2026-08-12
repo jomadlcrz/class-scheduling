@@ -20,6 +20,13 @@ type PrerequisiteComboboxProps = {
   labelled?: boolean;
   /** Distinguishes several pickers when more than one is visible. */
   ariaLabel?: string;
+  /** Field label used in full-form mode. */
+  label?: string;
+  /** Marks the labelled field as required instead of optional. */
+  required?: boolean;
+  /** Whether a typed value that is not in `options` can be added. */
+  allowFreeText?: boolean;
+  disabled?: boolean;
 };
 
 const prereqChipClassName =
@@ -37,6 +44,10 @@ export function PrerequisiteCombobox({
   ownCode,
   labelled = false,
   ariaLabel,
+  label = "Prerequisites",
+  required = false,
+  allowFreeText = true,
+  disabled = false,
 }: PrerequisiteComboboxProps) {
   const [query, setQuery] = useState("");
   const inputId = useId();
@@ -62,7 +73,9 @@ export function PrerequisiteCombobox({
 
   const trimmedQuery = query.trim();
   const showFreeTextOption =
-    trimmedQuery.length > 0 && !filtered.some((o) => o.code.toLowerCase() === trimmedQuery.toLowerCase());
+    allowFreeText &&
+    trimmedQuery.length > 0 &&
+    !filtered.some((o) => o.code.toLowerCase() === trimmedQuery.toLowerCase());
 
   function addValue(raw: string) {
     const next = raw.trim();
@@ -92,6 +105,7 @@ export function PrerequisiteCombobox({
             {prerequisite}
             <button
               type="button"
+              disabled={disabled}
               onClick={() => removeValue(prerequisite)}
               aria-label={`Remove ${prerequisite}`}
               className="cursor-pointer leading-none text-navy-400 transition-colors duration-150 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-mist-100"
@@ -103,7 +117,8 @@ export function PrerequisiteCombobox({
         <CommandInput
           embedded
           id={inputId}
-          aria-label={ariaLabel ?? "Prerequisites"}
+          aria-label={ariaLabel ?? label}
+          disabled={disabled}
           onKeyDown={(event) => {
             if (event.key === "Backspace" && query === "" && value.length > 0) {
               removeValue(value[value.length - 1]);
@@ -138,8 +153,13 @@ export function PrerequisiteCombobox({
   return (
     <FieldChrome
       id={inputId}
-      label="Prerequisites"
-      labelEnd={<span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>}
+      label={label}
+      labelEnd={
+        required ? undefined : (
+          <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
+        )
+      }
+      required={required}
     >
       {picker}
     </FieldChrome>

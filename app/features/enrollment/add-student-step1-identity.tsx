@@ -191,7 +191,7 @@ export function AddStudentStep1Identity({
               </p>
 
               <details className="group">
-                <summary className="cursor-pointer font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                <summary className="w-fit cursor-pointer font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   Address (Optional)
                 </summary>
                 <div className="mt-3 flex flex-col gap-3">

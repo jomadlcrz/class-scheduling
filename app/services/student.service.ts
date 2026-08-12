@@ -17,11 +17,8 @@ import { semesterService } from "~/services/semester.service";
  * Student records (students module) and login accounts (super_admin module).
  */
 
-/** POST /students — creates the profile, academic record, and enrolled subjects. */
-async function createRecord(
-  input: CreateStudentRecordInput,
-): Promise<{ message: string; studentProfileId: number }> {
-  const data = await apiPost<{ message?: string; student_profile_id: number }>("/students", {
+function createRecordPayload(input: CreateStudentRecordInput) {
+  return {
     ...(input.studentId && { studentId: input.studentId }),
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
@@ -42,11 +39,31 @@ async function createRecord(
       semesterNumber: input.semesterNumber,
     },
     enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
-  });
+  };
+}
+
+/** POST /students — creates the profile, academic record, and enrolled subjects. */
+async function createRecord(
+  input: CreateStudentRecordInput,
+): Promise<{ message: string; studentProfileId: number }> {
+  const data = await apiPost<{ message?: string; student_profile_id: number }>(
+    "/students",
+    createRecordPayload(input),
+  );
   return {
     message: apiMessage(data),
     studentProfileId: data.student_profile_id,
   };
+}
+
+/** POST /students/bulk — creates every student in one all-or-nothing transaction. */
+async function bulkCreateRecords(
+  inputs: CreateStudentRecordInput[],
+): Promise<{ message: string; created: number }> {
+  const data = await apiPost<{ message?: string; created: number }>("/students/bulk", {
+    students: inputs.map(createRecordPayload),
+  });
+  return { message: apiMessage(data), created: data.created };
 }
 
 /** POST /students/{id}/profile-photo — registrar upload for a student profile. */
@@ -395,6 +412,7 @@ async function importRecords(rows: ImportStudentInput[]): Promise<ImportStudentR
 
 export const studentService = {
   createRecord,
+  bulkCreateRecords,
   uploadProfilePhoto,
   createAccount,
   listAccounts,
