@@ -1,8 +1,14 @@
 import { Card } from "~/components/ui/card";
+import {
+  scheduleReleaseStatusLabel,
+  scheduleReleaseStatusTone,
+} from "~/features/academic-terms/status-badges";
+import { Badge } from "~/components/ui/badge";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { ScheduleSemester } from "~/types/schedule";
 import type { Semester } from "~/types/semester";
+import type { ScheduleReleaseStatus } from "~/types/schedule-release";
 import type { YearLevel } from "~/types/subject";
 
 type RegularClassFiltersProps = {
@@ -30,6 +36,7 @@ type RegularClassFiltersProps = {
   yearLevelLabel: (n: number) => string;
 
   sets: string[];
+  setStatuses: Record<string, ScheduleReleaseStatus>;
   setName: string;
   onSetChange: (setName: string) => void;
 };
@@ -54,6 +61,7 @@ export function RegularClassFilters({
   onYearLevelChange,
   yearLevelLabel,
   sets,
+  setStatuses,
   setName,
   onSetChange,
 }: RegularClassFiltersProps) {
@@ -222,12 +230,31 @@ export function RegularClassFilters({
             </SelectItem>
             {sets.map((s) => (
               <SelectItem key={s} value={s}>
-                {s}
+                <SetOptionLabel setName={s} status={setStatuses[s]} />
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </FieldChrome>
     </Card>
+  );
+}
+
+function SetOptionLabel({
+  setName,
+  status,
+}: {
+  setName: string;
+  status?: ScheduleReleaseStatus;
+}) {
+  return (
+    <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
+      <span className="truncate">{setName}</span>
+      {status && (
+        <Badge tone={scheduleReleaseStatusTone(status)}>
+          {scheduleReleaseStatusLabel(status)}
+        </Badge>
+      )}
+    </span>
   );
 }

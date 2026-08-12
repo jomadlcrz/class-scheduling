@@ -46,6 +46,7 @@ import {
 } from "~/types/schedule";
 import type { Program } from "~/types/program";
 import type { ScheduleRelease } from "~/types/schedule-release";
+import type { ScheduleReleaseStatus } from "~/types/schedule-release";
 import type { YearLevel } from "~/types/subject";
 
 const TIME_OPTIONS = generateTimeSlots().map(formatTime);
@@ -265,6 +266,24 @@ function RegularClassPage() {
   );
 
   const { releases, refresh: refreshReleases } = useScheduleReleases(selectedSchoolYearId, semester);
+
+  const setStatuses = useMemo(() => {
+    const releaseStatusBySetId = new Map(
+      releases.map((release) => [release.setId, release.releaseStatus] as const),
+    );
+    const statuses: Record<string, ScheduleReleaseStatus> = {};
+    for (const scheduledSet of scheduledSets) {
+      if (
+        scheduledSet.schoolYear === schoolYear &&
+        scheduledSet.semesterNumber === semester &&
+        availableSets.includes(scheduledSet.setCode)
+      ) {
+        const status = releaseStatusBySetId.get(scheduledSet.setId);
+        if (status) statuses[scheduledSet.setCode] = status;
+      }
+    }
+    return statuses;
+  }, [availableSets, releases, scheduledSets, schoolYear, semester]);
 
   const selectedRelease = useMemo(
     () => releases.find((row) => row.setId === selectedScheduledSet?.setId) ?? null,
@@ -517,6 +536,7 @@ function RegularClassPage() {
             onYearLevelChange={handleYearLevelChange}
             yearLevelLabel={yearLevelLabel}
             sets={availableSets}
+            setStatuses={setStatuses}
             setName={setName}
             onSetChange={setSetName}
           />
