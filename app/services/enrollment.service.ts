@@ -93,7 +93,22 @@ function toStudent(s: ApiStudent): EnrollmentStudent {
 }
 
 /** GET /enrollments — the term directory, regular + irregular combined. Returns paginated items. */
-async function listTermEnrollments(syId: number, semesterNumber: number, page = 1, perPage = 20): Promise<{
+export type TermEnrollmentFilters = {
+  search?: string;
+  enrolledStatus?: string;
+  program?: string;
+  yearLevel?: string;
+  set?: string;
+  enrollmentState?: string;
+};
+
+async function listTermEnrollments(
+  syId: number,
+  semesterNumber: number,
+  page = 1,
+  perPage = 20,
+  filters: TermEnrollmentFilters = {},
+): Promise<{
   items: EnrollmentStudent[];
   total: number;
   pages: number;
@@ -102,6 +117,16 @@ async function listTermEnrollments(syId: number, semesterNumber: number, page = 
   const query = new URLSearchParams(termScopeQuery(syId, semesterNumber).replace("?", ""));
   query.set("page", String(page));
   query.set("perPage", String(perPage));
+  if (filters.search?.trim()) query.set("search", filters.search.trim());
+  if (filters.enrolledStatus && filters.enrolledStatus !== "all") {
+    query.set("enrolledStatus", filters.enrolledStatus);
+  }
+  if (filters.program && filters.program !== "all") query.set("program", filters.program);
+  if (filters.yearLevel && filters.yearLevel !== "all") query.set("yearLevel", filters.yearLevel);
+  if (filters.set && filters.set !== "all") query.set("set", filters.set);
+  if (filters.enrollmentState && filters.enrollmentState !== "all") {
+    query.set("enrollmentState", filters.enrollmentState);
+  }
   const data = await apiGet<{
     items: ApiStudent[];
     pagination: { page: number; perPage: number; totalItems: number; totalPages: number };
@@ -140,6 +165,14 @@ type ApiReenrollRow = {
   profile_photo_url: string | null;
 };
 
+export type ReenrollDirectoryFilters = {
+  search?: string;
+  program?: string;
+  yearLevel?: string;
+  semester?: string;
+  enrolledStatus?: string;
+};
+
 /**
  * GET /enrollments/directory — returning students (one row per profile), with eligibility for the
  * target term. Pass the target term so `reEnrollEligible` / `enrolledInTargetTerm` reflect it.
@@ -147,11 +180,22 @@ type ApiReenrollRow = {
 async function getReenrollDirectory(
   targetSyId: number | null,
   targetSemesterNumber: number | null,
+  filters: ReenrollDirectoryFilters = {},
 ): Promise<ReenrollDirectoryRow[]> {
-  const query = targetSyId != null && targetSemesterNumber != null
-    ? termScopeQuery(targetSyId, targetSemesterNumber)
-    : "";
-  const data = await apiGet<ApiReenrollRow[]>(`/enrollments/directory${query}`);
+  const query = new URLSearchParams();
+  if (targetSyId != null && targetSemesterNumber != null) {
+    const termQuery = new URLSearchParams(termScopeQuery(targetSyId, targetSemesterNumber).replace("?", ""));
+    termQuery.forEach((value, key) => query.set(key, value));
+  }
+  if (filters.search?.trim()) query.set("search", filters.search.trim());
+  if (filters.program && filters.program !== "all") query.set("program", filters.program);
+  if (filters.yearLevel && filters.yearLevel !== "all") query.set("yearLevel", filters.yearLevel);
+  if (filters.semester && filters.semester !== "all") query.set("semester", filters.semester);
+  if (filters.enrolledStatus && filters.enrolledStatus !== "all") {
+    query.set("enrolledStatus", filters.enrolledStatus);
+  }
+  const suffix = query.size > 0 ? `?${query.toString()}` : "";
+  const data = await apiGet<ApiReenrollRow[]>(`/enrollments/directory${suffix}`);
   return (data ?? []).map((r) => ({
     studentProfileId: r.student_profile_id,
     studentId: r.student_id,

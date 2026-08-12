@@ -7,7 +7,9 @@ import { Button } from "~/components/ui/button";
 import { WizardSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { ReenrollWizard } from "~/features/enrollment/reenroll-wizard";
+import type { ReenrollDirectoryFilterState } from "~/features/enrollment/reenroll-step1-select-student";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { useDebounce } from "~/hooks/use-debounce";
 import { PageHeader } from "~/layouts/page-header";
 import { enrollmentService } from "~/services/enrollment.service";
 import { enumService } from "~/services/enum.service";
@@ -48,6 +50,22 @@ function StudentsReenrollPage() {
   const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
 
   const [isSaving, setIsSaving] = useState(false);
+  const [directoryFilters, setDirectoryFilters] = useState<ReenrollDirectoryFilterState>({
+    search: "",
+    program: "all",
+    yearLevel: "all",
+    semester: "all",
+    enrolledStatus: "all",
+  });
+  const debouncedDirectorySearch = useDebounce(directoryFilters.search, 300);
+  const directoryRequestFilters = { ...directoryFilters, search: debouncedDirectorySearch };
+  const directoryFilterKey = [
+    debouncedDirectorySearch.trim(),
+    directoryFilters.program,
+    directoryFilters.yearLevel,
+    directoryFilters.semester,
+    directoryFilters.enrolledStatus,
+  ].join("|");
 
   // Returning-students directory in one backend call, with re-enroll eligibility computed
   // against the app's currently-selected term.
@@ -55,8 +73,9 @@ function StudentsReenrollPage() {
   const targetSyId = termContext?.selection.syId ?? null;
   const targetSem = termContext?.selection.semesterNumber ?? null;
   const { data: directory } = useCachedData(
-    `reenroll-directory:${targetSyId ?? "none"}:${targetSem ?? "none"}`,
-    () => enrollmentService.getReenrollDirectory(targetSyId, targetSem),
+    `reenroll-directory:${targetSyId ?? "none"}:${targetSem ?? "none"}:${directoryFilterKey}`,
+    () => enrollmentService.getReenrollDirectory(targetSyId, targetSem, directoryRequestFilters),
+    { keepPreviousData: true },
   );
 
   const initialSelectedIds = studentIdParam ? [Number(studentIdParam)] : undefined;
@@ -102,6 +121,10 @@ function StudentsReenrollPage() {
             semesters={semesters}
             studentTypes={enumOptions?.studentType ?? []}
             academicStatuses={enumOptions?.academicStatus ?? []}
+            directoryFilters={directoryFilters}
+            onDirectoryFiltersChange={(patch) => {
+              setDirectoryFilters((current) => ({ ...current, ...patch }));
+            }}
             isSaving={isSaving}
             onSavingChange={setIsSaving}
             onDirtyChange={() => {}}

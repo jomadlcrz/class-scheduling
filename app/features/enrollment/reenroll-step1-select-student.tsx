@@ -1,18 +1,27 @@
-import { useMemo, useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 import { LockIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
+import { usePagination } from "~/hooks/use-pagination";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { ReenrollDirectoryRow } from "~/types/enrollment";
 import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
 
 export type { ReenrollDirectoryRow };
+
+export type ReenrollDirectoryFilterState = {
+  search: string;
+  program: string;
+  yearLevel: string;
+  semester: string;
+  enrolledStatus: string;
+};
 
 const STATE_TONES: Record<string, BadgeTone> = {
   Enrolled: "emerald",
@@ -29,6 +38,8 @@ type ReenrollStep1SelectStudentProps = {
   programs: Program[];
   semesters: Semester[];
   academicStatuses: string[];
+  filters: ReenrollDirectoryFilterState;
+  onFiltersChange: (patch: Partial<ReenrollDirectoryFilterState>) => void;
   onNext: () => void;
   onCancel: () => void;
 };
@@ -41,33 +52,19 @@ export function ReenrollStep1SelectStudent({
   programs,
   semesters,
   academicStatuses,
+  filters,
+  onFiltersChange,
   onNext,
   onCancel,
 }: ReenrollStep1SelectStudentProps) {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
-  const [search, setSearch] = useState("");
-  const [programFilter, setProgramFilter] = useState("all");
-  const [yearLevelFilter, setYearLevelFilter] = useState("all");
-  const [semesterFilter, setSemesterFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-
-  const results = useMemo(() => {
-    if (!directory) return [];
-    const query = search.trim().toLowerCase();
-    return directory.filter((s) => {
-      if (programFilter !== "all" && s.program !== programFilter) return false;
-      if (yearLevelFilter !== "all" && String(s.yearLevel) !== yearLevelFilter) return false;
-      if (semesterFilter !== "all" && String(s.semesterNumber) !== semesterFilter) return false;
-      if (statusFilter !== "all" && s.enrolledStatus !== statusFilter) return false;
-      if (query && !s.name.toLowerCase().includes(query) && !(s.studentId ?? "").toLowerCase().includes(query)) {
-        return false;
-      }
-      return true;
-    });
-  }, [directory, search, programFilter, yearLevelFilter, semesterFilter, statusFilter]);
-
   const isSelectable = (row: ReenrollDirectoryRow) => row.reEnrollEligible && !row.enrolledInTargetTerm;
-  const selectableResults = results.filter(isSelectable);
+  const results = directory ?? [];
+  const pagination = usePagination(
+    results,
+    `${filters.search}|${filters.program}|${filters.yearLevel}|${filters.semester}|${filters.enrolledStatus}`,
+  );
+  const selectableResults = pagination.pageItems.filter(isSelectable);
   const allVisibleSelected =
     selectableResults.length > 0 && selectableResults.every((s) => selectedIds.has(s.studentProfileId));
 
@@ -79,8 +76,8 @@ export function ReenrollStep1SelectStudent({
         </span>
         <input
           type="search" placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={filters.search}
+          onChange={(e) => onFiltersChange({ search: e.target.value })}
           aria-label="Search students"
           className={`${inputClassName} pl-9 pr-4`}
         />
@@ -89,8 +86,8 @@ export function ReenrollStep1SelectStudent({
       <div className="grid gap-2 sm:grid-cols-4">
         <Select
           items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p.abbrev, label: p.abbrev }))]}
-          value={programFilter}
-          onValueChange={(v) => setProgramFilter(v as string)}
+          value={filters.program}
+          onValueChange={(v) => onFiltersChange({ program: v as string })}
         >
           <SelectTrigger aria-label="Filter by program">
             <SelectValue />
@@ -107,8 +104,8 @@ export function ReenrollStep1SelectStudent({
 
         <Select
           items={[{ value: "all", label: "All Year Levels" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
-          value={yearLevelFilter}
-          onValueChange={(v) => setYearLevelFilter(v as string)}
+          value={filters.yearLevel}
+          onValueChange={(v) => onFiltersChange({ yearLevel: v as string })}
         >
           <SelectTrigger aria-label="Filter by year level">
             <SelectValue />
@@ -125,8 +122,8 @@ export function ReenrollStep1SelectStudent({
 
         <Select
           items={[{ value: "all", label: "All Semesters" }, ...semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester }))]}
-          value={semesterFilter}
-          onValueChange={(v) => setSemesterFilter(v as string)}
+          value={filters.semester}
+          onValueChange={(v) => onFiltersChange({ semester: v as string })}
         >
           <SelectTrigger aria-label="Filter by semester">
             <SelectValue />
@@ -143,8 +140,8 @@ export function ReenrollStep1SelectStudent({
 
         <Select
           items={[{ value: "all", label: "All Enrolled Status" }, ...academicStatuses.map((s) => ({ value: s, label: s }))]}
-          value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as string)}
+          value={filters.enrolledStatus}
+          onValueChange={(v) => onFiltersChange({ enrolledStatus: v as string })}
         >
           <SelectTrigger aria-label="Filter by enrolled status">
             <SelectValue />
@@ -189,7 +186,7 @@ export function ReenrollStep1SelectStudent({
               <TableHeader dense>Last state</TableHeader>
             </TableHead>
             <TableBody>
-              {results.map((row) => {
+              {pagination.pageItems.map((row) => {
                 const selectable = isSelectable(row);
                 const isChecked = selectedIds.has(row.studentProfileId);
                 const blockReason = row.enrolledInTargetTerm
@@ -242,6 +239,13 @@ export function ReenrollStep1SelectStudent({
           </Table>
         )}
       </div>
+
+      <Pagination
+        page={pagination.page}
+        totalItems={pagination.totalItems}
+        pageSize={pagination.pageSize}
+        onPageChange={pagination.setPage}
+      />
 
       <ProgramWizardFooter
         backLabel="Cancel"

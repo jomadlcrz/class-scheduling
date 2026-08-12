@@ -45,23 +45,49 @@ type Props = {
   genders: string[];
   nameSuffixes: string[];
   onChanged: () => void;
-  /** Preselect the Type segment (used by the regular/irregular redirect links). */
-  initialType?: string;
+  search: string;
+  onSearchChange: (value: string) => void;
+  typeFilter: string;
+  onTypeFilterChange: (value: string) => void;
+  stateFilter: string;
+  onStateFilterChange: (value: string) => void;
+  programFilter: string;
+  onProgramFilterChange: (value: string) => void;
+  yearFilter: string;
+  onYearFilterChange: (value: string) => void;
+  setFilter: string;
+  onSetFilterChange: (value: string) => void;
   page: number;
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
 };
 
-export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes, onChanged, initialType = "all", page, totalItems, pageSize, onPageChange }: Props) {
+export function EnrollmentRecordsView({
+  students,
+  facets,
+  genders,
+  nameSuffixes,
+  onChanged,
+  search,
+  onSearchChange,
+  typeFilter,
+  onTypeFilterChange,
+  stateFilter,
+  onStateFilterChange,
+  programFilter,
+  onProgramFilterChange,
+  yearFilter,
+  onYearFilterChange,
+  setFilter,
+  onSetFilterChange,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange,
+}: Props) {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
-  const [typeFilter, setTypeFilter] = useState(initialType);
-  const [stateFilter, setStateFilter] = useState("all");
-  const [programFilter, setProgramFilter] = useState("all");
-  const [yearFilter, setYearFilter] = useState("all");
-  const [setFilter, setSetFilter] = useState("all");
-  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<DisplayRow | null>(null);
 
   const rows = useMemo<DisplayRow[]>(
@@ -80,46 +106,27 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
   const sets = facets?.sets ?? [];
   const counts = facets?.counts;
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return rows.filter(({ student, enrollment }) => {
-      if (typeFilter !== "all" && enrollment.enrolledStatus !== typeFilter) return false;
-      if (stateFilter !== "all" && enrollment.enrollmentState !== stateFilter) return false;
-      if (programFilter !== "all" && enrollment.program !== programFilter) return false;
-      if (yearFilter !== "all" && String(enrollment.yearLevel) !== yearFilter) return false;
-      if (setFilter !== "all" && enrollment.set !== setFilter) return false;
-      if (
-        query &&
-        !student.name.toLowerCase().includes(query) &&
-        !(student.studentId ?? "").toLowerCase().includes(query)
-      ) {
-        return false;
-      }
-      return true;
-    });
-  }, [rows, typeFilter, stateFilter, programFilter, yearFilter, setFilter, search]);
-
   return (
     <div className="flex flex-col gap-4">
       {/* Type + State facet segments with live term counts */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className={segmentClass(typeFilter === "all")} onClick={() => setTypeFilter("all")}>
+          <button type="button" className={segmentClass(typeFilter === "all")} onClick={() => onTypeFilterChange("all")}>
             All{counts ? ` · ${counts.total}` : ""}
           </button>
-          <button type="button" className={segmentClass(typeFilter === "Regular")} onClick={() => setTypeFilter("Regular")}>
+          <button type="button" className={segmentClass(typeFilter === "Regular")} onClick={() => onTypeFilterChange("Regular")}>
             Regular{counts ? ` · ${counts.regular}` : ""}
           </button>
           <button
             type="button"
             className={segmentClass(typeFilter === "Irregular")}
-            onClick={() => setTypeFilter("Irregular")}
+            onClick={() => onTypeFilterChange("Irregular")}
           >
             Irregular{counts ? ` · ${counts.irregular}` : ""}
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className={segmentClass(stateFilter === "all")} onClick={() => setStateFilter("all")}>
+          <button type="button" className={segmentClass(stateFilter === "all")} onClick={() => onStateFilterChange("all")}>
             Any state
           </button>
           {STATE_SEGMENTS.map((seg) => (
@@ -127,7 +134,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
               key={seg.value}
               type="button"
               className={segmentClass(stateFilter === seg.value)}
-              onClick={() => setStateFilter(seg.value)}
+              onClick={() => onStateFilterChange(seg.value)}
             >
               {seg.label}
               {counts ? ` · ${counts[seg.countKey]}` : ""}
@@ -145,7 +152,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
           <input
             type="search" placeholder="Search..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             aria-label="Search students"
             className={`${inputClassName} pl-9 pr-4`}
           />
@@ -154,7 +161,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
           <Select
             items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
             value={programFilter}
-            onValueChange={(v) => setProgramFilter(v as string)}
+            onValueChange={(v) => onProgramFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by program">
               <SelectValue />
@@ -171,7 +178,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
           <Select
             items={[{ value: "all", label: "All Years" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
             value={yearFilter}
-            onValueChange={(v) => setYearFilter(v as string)}
+            onValueChange={(v) => onYearFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by year level">
               <SelectValue />
@@ -188,7 +195,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
           <Select
             items={[{ value: "all", label: "All Sets" }, ...sets.map((s) => ({ value: s, label: s }))]}
             value={setFilter}
-            onValueChange={(v) => setSetFilter(v as string)}
+            onValueChange={(v) => onSetFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by set">
               <SelectValue />
@@ -205,11 +212,11 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="px-2 py-10 text-center font-body text-sm text-slate-500 dark:text-slate-400">
-          {rows.length === 0
-            ? "No enrollments for this term yet."
-            : "No students match your search and filters."}
+          {search.trim() || typeFilter !== "all" || stateFilter !== "all" || programFilter !== "all" || yearFilter !== "all" || setFilter !== "all"
+            ? "No students match your search and filters."
+            : "No enrollments for this term yet."}
         </p>
       ) : (
         <Table>
@@ -227,7 +234,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
             </TableHeader>
           </TableHead>
           <TableBody>
-            {filtered.map((row) => {
+            {rows.map((row) => {
               const { student, enrollment } = row;
               return (
                 <TableRow key={row.key}>

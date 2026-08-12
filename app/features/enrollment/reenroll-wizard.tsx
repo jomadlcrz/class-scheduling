@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Stepper, type StepDefinition } from "~/components/ui/stepper";
 import type { AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
-import { ReenrollStep1SelectStudent, type ReenrollDirectoryRow } from "~/features/enrollment/reenroll-step1-select-student";
+import {
+  ReenrollStep1SelectStudent,
+  type ReenrollDirectoryFilterState,
+  type ReenrollDirectoryRow,
+} from "~/features/enrollment/reenroll-step1-select-student";
 import { ReenrollStep2Enrollment } from "~/features/enrollment/reenroll-step2-enrollment";
 import { ReenrollStep3Review } from "~/features/enrollment/reenroll-step3-review";
 import { studentService } from "~/services/student.service";
@@ -37,6 +41,8 @@ type ReenrollWizardProps = {
   semesters: Semester[];
   studentTypes: string[];
   academicStatuses: string[];
+  directoryFilters: ReenrollDirectoryFilterState;
+  onDirectoryFiltersChange: (patch: Partial<ReenrollDirectoryFilterState>) => void;
   isSaving: boolean;
   onSavingChange: (saving: boolean) => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -55,6 +61,8 @@ export function ReenrollWizard({
   semesters,
   studentTypes,
   academicStatuses,
+  directoryFilters,
+  onDirectoryFiltersChange,
   isSaving,
   onSavingChange,
   onDirtyChange,
@@ -244,6 +252,8 @@ export function ReenrollWizard({
           programs={programs}
           semesters={semesters}
           academicStatuses={academicStatuses}
+          filters={directoryFilters}
+          onFiltersChange={onDirectoryFiltersChange}
           onNext={() => goToStep(1)}
           onCancel={onCancel}
         />
