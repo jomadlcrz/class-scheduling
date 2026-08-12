@@ -162,15 +162,6 @@ export function AddStudentWizard({
   }
 
   async function handleSave() {
-    // Irregular students don't belong to a standard set, but the backend still requires a
-    // set_id — fall back to any set matching their program/year level (same rule as
-    // StudentRecordForm, which this wizard replaces the UI of, not the underlying contract).
-    const selectedProgram = programs.find((p) => String(p.id) === academic.programId);
-    const irregularFallbackSet = sets.find(
-      (s) => s.program === selectedProgram?.abbrev && (!academic.yearLevel || String(s.yearLevel) === academic.yearLevel),
-    );
-    const setId = isIrregular ? String(irregularFallbackSet?.id ?? "") : academic.setId;
-
     const result = studentSchema.safeParse({
       studentId: identity.studentId.trim(),
       firstName: identity.firstName.trim(),
@@ -183,7 +174,7 @@ export function AddStudentWizard({
       email: identity.email.trim(),
       programId: academic.programId,
       yearLevel: academic.yearLevel,
-      setId,
+      setId: isIrregular ? undefined : academic.setId,
       studentType: academic.studentType,
       enrolledStatus: academic.enrolledStatus,
       syId: academic.syId,

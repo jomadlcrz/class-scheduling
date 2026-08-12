@@ -35,7 +35,7 @@ async function createRecord(
     academic: {
       programId: input.programId,
       yearLevel: input.yearLevel,
-      ...(input.setId != null && { setId: input.setId }),
+      ...(input.enrolledStatus !== "Irregular" && input.setId != null && { setId: input.setId }),
       studentType: input.studentType,
       enrolledStatus: input.enrolledStatus,
       syId: input.syId,
@@ -151,7 +151,7 @@ async function enroll(studentProfileId: number, input: EnrollStudentInput): Prom
     academic: {
       programId: input.programId,
       yearLevel: input.yearLevel,
-      setId: input.setId,
+      ...(input.enrolledStatus !== "Irregular" && input.setId != null && { setId: input.setId }),
       studentType: input.studentType,
       enrolledStatus: input.enrolledStatus,
       syId: input.syId,

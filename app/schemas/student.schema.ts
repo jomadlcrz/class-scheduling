@@ -24,7 +24,7 @@ export const studentSchema = z
     email: z.email("Enter a valid email address."),
     programId: z.coerce.number().int().positive("Select a program."),
     yearLevel: z.coerce.number().int().min(1, "Select a year level.").max(6),
-    setId: z.coerce.number().int().positive("Select a set."),
+    setId: z.coerce.number().int().positive("Select a set.").optional(),
     studentType: z.string().min(1, "Select a student type."),
     enrolledStatus: z.string().min(1, "Select an enrolled status."),
     syId: z.coerce.number().int().positive("Select a school year."),

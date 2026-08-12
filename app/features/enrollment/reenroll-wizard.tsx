@@ -171,16 +171,9 @@ export function ReenrollWizard({
     const rows = [...selectedStudents.values()];
     if (rows.length === 0) return;
 
-    // Irregular students don't belong to a standard set, but the backend still requires a
-    // set_id — fall back to any set matching their program/year level (same rule as
-    // StudentEnrollForm, which this wizard replaces the UI of, not the underlying contract).
-    const selectedProgram = programs.find((p) => String(p.id) === academic.programId);
-    const irregularFallbackSet = sets.find(
-      (s) => s.program === selectedProgram?.abbrev && (!academic.yearLevel || String(s.yearLevel) === academic.yearLevel),
-    );
-    const resolvedSetId = isIrregular ? irregularFallbackSet?.id : Number(academic.setId);
+    const resolvedSetId = isIrregular ? undefined : Number(academic.setId);
 
-    if (!resolvedSetId) {
+    if (!isIrregular && !resolvedSetId) {
       setSaveError("Select a set.");
       return;
     }
