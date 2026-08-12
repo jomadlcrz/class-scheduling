@@ -430,6 +430,15 @@ export function TrashIcon() {
   );
 }
 
+export function CameraIcon({ size = 18 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <path d="M14.5 5 13 3h-2L9.5 5H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4.5Z" />
+      <circle cx="12" cy="12.5" r="4" />
+    </IconBase>
+  );
+}
+
 export function PlusIcon() {
   return (
     <IconBase size={16}>

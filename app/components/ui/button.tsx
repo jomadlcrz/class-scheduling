@@ -31,6 +31,7 @@ type ButtonProps = {
   loadingLabel?: string;
   disabled?: boolean;
   onClick?: () => void;
+  className?: string;
   children: ReactNode;
 };
 
@@ -43,6 +44,7 @@ export function Button({
   loadingLabel,
   disabled = false,
   onClick,
+  className,
   children,
 }: ButtonProps) {
   const size = block ? "mt-1 w-full py-2.5 text-sm" : "px-3 py-1.5 text-sm";
@@ -52,7 +54,7 @@ export function Button({
       type={type}
       disabled={disabled || isLoading}
       onClick={onClick}
-      className={`${baseClassName} ${variants[variant]} ${shapeClassName(pill)} ${size}`}
+      className={`${baseClassName} ${variants[variant]} ${shapeClassName(pill)} ${size} ${className ?? ""}`.trim()}
     >
       {isLoading ? (
         <>

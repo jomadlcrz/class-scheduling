@@ -1,26 +1,27 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { ResultState } from "~/components/feedback/result-state";
 import { Badge } from "~/components/ui/badge";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { ResultState } from "~/components/feedback/result-state";
-import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
+import { ArchiveIcon, CameraIcon, EditIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AcademicDepartmentView } from "~/features/departments/academic-department-view";
 import { DepartmentArchiveDialog } from "~/features/departments/department-archive-dialog";
+import { DepartmentCoverDialog } from "~/features/departments/department-cover-dialog";
 import { DepartmentForm } from "~/features/departments/department-form";
 import { OfficeStaffDirectory } from "~/features/departments/office-staff-directory";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { writeCache } from "~/lib/data-cache";
 import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
 import { buildingService } from "~/services/building.service";
 import { departmentService } from "~/services/department.service";
 import { enumService } from "~/services/enum.service";
-import { getBuildingTone } from "~/types/building";
-import { DEPARTMENT_TYPE_TONES } from "~/types/department";
 import type { Building } from "~/types/building";
+import { getBuildingTone } from "~/types/building";
 import type {
   AcademicDepartmentDetail,
   CreateDepartmentInput,
@@ -28,6 +29,7 @@ import type {
   DepartmentOverview,
   OfficeStaffPayload,
 } from "~/types/department";
+import { DEPARTMENT_TYPE_TONES } from "~/types/department";
 
 type DepartmentDetailPageProps = {
   departmentId: number;
@@ -47,7 +49,7 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
   const id = Number.isFinite(departmentId) ? departmentId : NaN;
   const validId = Number.isFinite(id);
 
-  const { data: overview, error, reload: refresh } = useCachedData(
+  const { data: overview, error, reload: refresh, setData: setOverview } = useCachedData(
     `department:${id}:overview`,
     () => departmentService.getOverview(id),
     { enabled: validId },
@@ -71,6 +73,7 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
   );
 
   const [editOpen, setEditOpen] = useState(false);
+  const [coverOpen, setCoverOpen] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState<Department | null>(null);
 
   const editDepartment: Department | undefined = overview
@@ -91,6 +94,12 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
   const refreshAll = useCallback(async () => {
     await Promise.all([refresh(), reloadDetail()]);
   }, [refresh, reloadDetail]);
+
+  const refreshCover = useCallback(async () => {
+    const freshOverview = await departmentService.getOverview(id, true);
+    setOverview(freshOverview);
+    writeCache(`department:${id}:overview`, freshOverview);
+  }, [id, setOverview]);
 
   async function handleEdit(input: CreateDepartmentInput, logoFile?: File | null) {
     const message = await departmentService.update(id, {
@@ -144,7 +153,7 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 py-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:py-8">
       <Breadcrumb
         items={[
           { label: "Departments", href: "/departments" },
@@ -152,7 +161,12 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
         ]}
       />
 
-      <DepartmentHeader overview={overview} onEdit={() => setEditOpen(true)} onArchive={() => setArchiveTarget(editDepartment ?? null)} />
+      <DepartmentHeader
+        overview={overview}
+        onEditCover={() => setCoverOpen(true)}
+        onEdit={() => setEditOpen(true)}
+        onArchive={() => setArchiveTarget(editDepartment ?? null)}
+      />
 
       {detail ? (
         isOfficeStaff(detail) ? (
@@ -186,98 +200,108 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
         onClose={() => setArchiveTarget(null)}
         onConfirm={handleArchive}
       />
+
+      <DepartmentCoverDialog
+        department={coverOpen && editDepartment ? editDepartment : null}
+        onClose={() => setCoverOpen(false)}
+        onChanged={refreshCover}
+      />
     </div>
   );
 }
 
 function DepartmentHeader({
   overview,
+  onEditCover,
   onEdit,
   onArchive,
 }: {
   overview: DepartmentOverview;
+  onEditCover: () => void;
   onEdit: () => void;
   onArchive: () => void;
 }) {
   return (
-    <Card className="overflow-hidden">
-      {overview.coverImageUrl ? (
-        <>
-          <div className="relative">
-            <img
-              src={overview.coverImageUrl}
-              alt=""
-              className="h-64 w-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-navy-900/40" />
-          </div>
-          <div className="relative -mt-10 flex justify-center bg-linear-to-b from-transparent via-white to-white dark:from-transparent dark:via-surface-raised dark:to-surface-raised">
-            <div className="size-20 overflow-hidden rounded-full ring-4 ring-white dark:ring-surface-raised">
-              <img
-                src={departmentLogoSrc(overview.logoUrl)}
-                alt={`${overview.abbrev} logo`}
-                onError={onDepartmentLogoError}
-                className="size-full object-cover"
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="relative h-44">
+    <Card className="overflow-hidden p-0">
+      <div className="relative h-64 overflow-hidden bg-navy-900 sm:h-80 lg:h-88">
+        {overview.coverImageUrl ? (
           <img
-            src={departmentLogoSrc(overview.logoUrl)}
+            src={overview.coverImageUrl}
             alt=""
-            aria-hidden="true"
-            onError={onDepartmentLogoError}
-            className="absolute inset-0 size-full scale-125 object-cover object-center opacity-70 blur-2xl saturate-150"
+            className="size-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
-          <div className="absolute inset-0 m-auto size-20 overflow-hidden rounded-full drop-shadow-md">
+        ) : (
+          <>
             <img
               src={departmentLogoSrc(overview.logoUrl)}
-              alt={`${overview.abbrev} logo`}
+              alt=""
+              aria-hidden="true"
               onError={onDepartmentLogoError}
-              className="size-full object-cover"
+              className="size-full scale-125 object-cover object-center opacity-55 blur-3xl saturate-150"
             />
-          </div>
+            <div className="absolute inset-0 bg-linear-to-br from-navy-950/45 via-navy-900/35 to-gwc-blue-deep/40" />
+          </>
+        )}
+        <div className="absolute inset-0 bg-linear-to-b from-navy-950/55 via-navy-900/20 to-navy-950/65" />
+        <button
+          type="button"
+          onClick={onEditCover}
+          className="absolute right-3 top-3 flex cursor-pointer items-center gap-2 rounded-lg border border-white/30 bg-navy-950/85 px-3 py-2 font-body text-sm font-medium text-mist-100 shadow-lg backdrop-blur-md transition-colors duration-150 hover:border-white/45 hover:bg-navy-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 sm:right-5 sm:top-5"
+        >
+          <CameraIcon />
+          Edit cover
+        </button>
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-gold-400" />
+      </div>
+
+      <div className="relative px-5 pb-6 pt-16 sm:px-7 sm:pt-20">
+        <div className="absolute left-1/2 top-0 size-28 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-white bg-white shadow-xl sm:size-32 dark:border-surface-raised dark:bg-surface-raised">
+          <img
+            src={departmentLogoSrc(overview.logoUrl)}
+            alt={`${overview.abbrev} logo`}
+            onError={onDepartmentLogoError}
+            className="size-full object-cover"
+          />
         </div>
-      )}
-      <div className="flex flex-wrap items-start justify-between gap-4 p-5">
-        <div className="min-w-0">
-          <p className="font-display text-3xl tracking-wide text-navy-800 dark:text-mist-100">
+
+        <div className="flex flex-col items-center gap-5 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left">
+          <div className="min-w-0">
+            <p className="font-display text-4xl tracking-wide text-navy-800 dark:text-mist-100">
             {overview.abbrev}
-          </p>
-          <h1 className="mt-0.5 font-body text-lg font-semibold text-slate-700 dark:text-slate-200">
-            {overview.name}
-          </h1>
-          {overview.description && (
-            <p className="mt-1.5 font-body text-sm text-slate-500 dark:text-slate-400">
-              {overview.description}
             </p>
-          )}
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge tone={DEPARTMENT_TYPE_TONES[overview.departmentType] ?? "slate"}>
-              {overview.departmentType}
-            </Badge>
-            {overview.buildingName && (
-              <Badge tone={getBuildingTone(overview.buildingName)}>{overview.buildingName}</Badge>
+            <h1 className="mt-0.5 font-body text-lg font-semibold text-slate-700 dark:text-slate-200">
+              {overview.name}
+            </h1>
+            {overview.description && (
+              <p className="mx-auto mt-2 max-w-3xl font-body text-sm leading-6 text-slate-500 lg:mx-0 dark:text-slate-400">
+                {overview.description}
+              </p>
             )}
-            {overview.departmentType === "Academic" && (
-              <Badge tone="blue">
-                {overview.totalPrograms} program{overview.totalPrograms === 1 ? "" : "s"}
+            <div className="mt-3 flex flex-wrap justify-center gap-1.5 lg:justify-start">
+              <Badge tone={DEPARTMENT_TYPE_TONES[overview.departmentType] ?? "slate"}>
+                {overview.departmentType}
               </Badge>
-            )}
+              {overview.buildingName && (
+                <Badge tone={getBuildingTone(overview.buildingName)}>{overview.buildingName}</Badge>
+              )}
+              {overview.departmentType === "Academic" && (
+                <Badge tone="blue">
+                  {overview.totalPrograms} program{overview.totalPrograms === 1 ? "" : "s"}
+                </Badge>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" block={false} onClick={onEdit}>
-            <EditIcon />
-            Edit
-          </Button>
-          <Button type="button" variant="danger" block={false} onClick={onArchive}>
-            <ArchiveIcon />
-            Archive
-          </Button>
+
+          <div className="flex shrink-0 gap-2">
+            <Button type="button" variant="outline" block={false} onClick={onEdit}>
+              <EditIcon />
+              Edit
+            </Button>
+            <Button type="button" variant="danger" block={false} onClick={onArchive}>
+              <ArchiveIcon />
+              Archive
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

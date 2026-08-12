@@ -287,7 +287,7 @@ function ScheduleOverviewPage() {
                         alt=""
                         aria-hidden="true"
                         onError={onDepartmentLogoError}
-                        className="size-9 shrink-0 object-contain"
+                        className="size-9 shrink-0 rounded-full bg-white object-cover ring-1 ring-slate-200 dark:ring-white/15"
                       />
                       <span className="min-w-0">
                         <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">

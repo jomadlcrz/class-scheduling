@@ -121,9 +121,14 @@ async function removeLogo(id: number): Promise<string> {
 }
 
 /** POST /departments/:id/cover — replace the department cover image. Field name `cover`. */
-async function uploadCover(id: number, file: File): Promise<{ url: string; message: string }> {
+async function uploadCover(
+  id: number,
+  file: File,
+  originalFile?: File | null,
+): Promise<{ url: string; message: string }> {
   const formData = new FormData();
   formData.append("cover", file);
+  if (originalFile) formData.append("coverOriginal", originalFile);
   const data = await apiUpload<{ message?: string; cover_image_url: string }>(`/departments/${id}/cover`, formData);
   return { url: data.cover_image_url, message: data.message ?? "" };
 }
@@ -176,8 +181,9 @@ type DepartmentOverviewResponse = {
 };
 
 /** GET /departments/:id/overview — detail-page header, building, and nested programs. */
-async function getOverview(id: number): Promise<DepartmentOverview> {
-  const d = await apiGet<DepartmentOverviewResponse>(`/departments/${id}/overview`);
+async function getOverview(id: number, fresh = false): Promise<DepartmentOverview> {
+  const suffix = fresh ? `?refresh=${Date.now()}` : "";
+  const d = await apiGet<DepartmentOverviewResponse>(`/departments/${id}/overview${suffix}`);
   return {
     id: d.department_id,
     abbrev: d.department_abbrev,
