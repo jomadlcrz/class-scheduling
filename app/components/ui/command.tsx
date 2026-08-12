@@ -55,7 +55,8 @@ function CommandList({ className = "", children, ...props }: ComboboxPrimitive.P
         data-slot="command-positioner"
         sideOffset={6}
         collisionPadding={8}
-        className="z-50 outline-none"
+        // Keep portalled combobox lists above modal dialogs (z-60), matching SelectContent.
+        className="z-70 outline-none"
       >
         <ComboboxPrimitive.Popup
           data-slot="command-list"
