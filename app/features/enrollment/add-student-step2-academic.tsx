@@ -51,7 +51,9 @@ export function AddStudentStep2Academic({
   const selectedProgram = programs.find((p) => String(p.id) === academic.programId);
   const isIrregular = academic.enrolledStatus === "Irregular";
 
-  const yearOptions = yearLevelIds.filter((y) => y <= (selectedProgram?.lengthYears ?? 6));
+  const yearOptions = selectedProgram
+    ? yearLevelIds.filter((y) => y <= selectedProgram.lengthYears)
+    : [];
   const filteredSets = selectedProgram
     ? sets.filter(
         (s) =>
@@ -75,7 +77,15 @@ export function AddStudentStep2Academic({
                   })),
                 ]}
                 value={academic.programId}
-                onValueChange={(v) => onAcademicChange({ programId: v as string })}
+                onValueChange={(v) =>
+                  onAcademicChange({
+                    programId: v as string,
+                    yearLevel: "",
+                    setId: "",
+                    syId: "",
+                    semesterNumber: "",
+                  })
+                }
               >
                 <SelectTrigger id="new-student-program">
                   <SelectValue />
@@ -98,9 +108,16 @@ export function AddStudentStep2Academic({
                   ...yearOptions.map((y) => ({ value: String(y), label: yearLevelLabel(y) })),
                 ]}
                 value={academic.yearLevel}
-                onValueChange={(v) => onAcademicChange({ yearLevel: v as string })}
+                onValueChange={(v) =>
+                  onAcademicChange({
+                    yearLevel: v as string,
+                    setId: "",
+                    syId: "",
+                    semesterNumber: "",
+                  })
+                }
               >
-                <SelectTrigger id="new-student-year">
+                <SelectTrigger id="new-student-year" disabled={!selectedProgram}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,7 +135,14 @@ export function AddStudentStep2Academic({
           <EnrolledStatusPicker
             value={academic.enrolledStatus}
             options={academicStatuses}
-            onChange={(v) => onAcademicChange({ enrolledStatus: v, setId: "" })}
+            onChange={(v) =>
+              onAcademicChange({
+                enrolledStatus: v,
+                setId: "",
+                syId: "",
+                semesterNumber: "",
+              })
+            }
           />
 
           <div className={`grid gap-3 ${isIrregular ? "grid-cols-1" : "sm:grid-cols-2"}`}>
@@ -158,9 +182,18 @@ export function AddStudentStep2Academic({
                     ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode })),
                   ]}
                   value={academic.setId}
-                  onValueChange={(v) => onAcademicChange({ setId: v as string })}
+                  onValueChange={(v) =>
+                    onAcademicChange({
+                      setId: v as string,
+                      syId: "",
+                      semesterNumber: "",
+                    })
+                  }
                 >
-                  <SelectTrigger id="new-student-set">
+                  <SelectTrigger
+                    id="new-student-set"
+                    disabled={!selectedProgram || !academic.yearLevel}
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -184,9 +217,14 @@ export function AddStudentStep2Academic({
                   ...schoolYears.map((sy) => ({ value: String(sy.id), label: sy.schoolYear })),
                 ]}
                 value={academic.syId}
-                onValueChange={(v) => onAcademicChange({ syId: v as string })}
+                onValueChange={(v) =>
+                  onAcademicChange({ syId: v as string, semesterNumber: "" })
+                }
               >
-                <SelectTrigger id="new-student-sy">
+                <SelectTrigger
+                  id="new-student-sy"
+                  disabled={isIrregular ? !academic.yearLevel : !academic.setId}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,7 +250,7 @@ export function AddStudentStep2Academic({
                 value={academic.semesterNumber}
                 onValueChange={(v) => onAcademicChange({ semesterNumber: v as string })}
               >
-                <SelectTrigger id="new-student-sem">
+                <SelectTrigger id="new-student-sem" disabled={!academic.syId}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

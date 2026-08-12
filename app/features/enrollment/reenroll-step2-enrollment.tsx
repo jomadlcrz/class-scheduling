@@ -40,7 +40,9 @@ export function ReenrollStep2Enrollment({
   const selectedProgram = programs.find((p) => String(p.id) === academic.programId);
   const isIrregular = academic.enrolledStatus === "Irregular";
 
-  const yearOptions = yearLevelIds.filter((y) => y <= (selectedProgram?.lengthYears ?? 6));
+  const yearOptions = selectedProgram
+    ? yearLevelIds.filter((y) => y <= selectedProgram.lengthYears)
+    : [];
   const filteredSets = selectedProgram
     ? sets.filter(
         (s) => s.program === selectedProgram.abbrev && (!academic.yearLevel || String(s.yearLevel) === academic.yearLevel),
@@ -54,7 +56,15 @@ export function ReenrollStep2Enrollment({
           <Select
             items={[{ value: "", label: "Select a program" }, ...programs.map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` }))]}
             value={academic.programId}
-            onValueChange={(v) => onAcademicChange({ programId: v as string })}
+            onValueChange={(v) =>
+              onAcademicChange({
+                programId: v as string,
+                yearLevel: "",
+                setId: "",
+                syId: "",
+                semesterNumber: "",
+              })
+            }
           >
             <SelectTrigger id="reenroll-program">
               <SelectValue />
@@ -74,9 +84,16 @@ export function ReenrollStep2Enrollment({
           <Select
             items={[{ value: "", label: "Select a year" }, ...yearOptions.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
             value={academic.yearLevel}
-            onValueChange={(v) => onAcademicChange({ yearLevel: v as string })}
+            onValueChange={(v) =>
+              onAcademicChange({
+                yearLevel: v as string,
+                setId: "",
+                syId: "",
+                semesterNumber: "",
+              })
+            }
           >
-            <SelectTrigger id="reenroll-year">
+            <SelectTrigger id="reenroll-year" disabled={!selectedProgram}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -94,7 +111,14 @@ export function ReenrollStep2Enrollment({
       <EnrolledStatusPicker
         value={academic.enrolledStatus}
         options={academicStatuses}
-        onChange={(v) => onAcademicChange({ enrolledStatus: v, setId: "" })}
+        onChange={(v) =>
+          onAcademicChange({
+            enrolledStatus: v,
+            setId: "",
+            syId: "",
+            semesterNumber: "",
+          })
+        }
       />
 
       <div className={`grid gap-3 ${isIrregular ? "grid-cols-1" : "sm:grid-cols-2"}`}>
@@ -123,9 +147,18 @@ export function ReenrollStep2Enrollment({
             <Select
               items={[{ value: "", label: "Select a set" }, ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode }))]}
               value={academic.setId}
-              onValueChange={(v) => onAcademicChange({ setId: v as string })}
+              onValueChange={(v) =>
+                onAcademicChange({
+                  setId: v as string,
+                  syId: "",
+                  semesterNumber: "",
+                })
+              }
             >
-              <SelectTrigger id="reenroll-set">
+              <SelectTrigger
+                id="reenroll-set"
+                disabled={!selectedProgram || !academic.yearLevel}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -146,9 +179,14 @@ export function ReenrollStep2Enrollment({
           <Select
             items={[{ value: "", label: "Select a school year" }, ...schoolYears.map((sy) => ({ value: String(sy.id), label: sy.schoolYear }))]}
             value={academic.syId}
-            onValueChange={(v) => onAcademicChange({ syId: v as string })}
+            onValueChange={(v) =>
+              onAcademicChange({ syId: v as string, semesterNumber: "" })
+            }
           >
-            <SelectTrigger id="reenroll-sy">
+            <SelectTrigger
+              id="reenroll-sy"
+              disabled={isIrregular ? !academic.yearLevel : !academic.setId}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -168,7 +206,7 @@ export function ReenrollStep2Enrollment({
             value={academic.semesterNumber}
             onValueChange={(v) => onAcademicChange({ semesterNumber: v as string })}
           >
-            <SelectTrigger id="reenroll-sem">
+            <SelectTrigger id="reenroll-sem" disabled={!academic.syId}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

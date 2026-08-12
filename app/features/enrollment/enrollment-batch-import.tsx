@@ -703,7 +703,15 @@ export function EnrollmentBatchImport({
           options={academicStatuses.length > 0 ? academicStatuses : ["Regular", "Irregular"]}
           onChange={(v) => {
             setEnrolledStatus(v as BatchEnrolledStatus);
-            setRows((prev) => prev.map((row) => ({ ...row, setId: v === "Irregular" ? "" : row.setId })));
+            setRows((prev) =>
+              prev.map((row) => ({
+                ...row,
+                setId: v === "Irregular" ? "" : row.setId,
+                subjectCodes: v === "Regular" ? "" : row.subjectCodes,
+                syId: "",
+                semesterNumber: "",
+              })),
+            );
           }}
         />
         <p className="mt-3 font-body text-xs text-slate-500 dark:text-slate-400">
@@ -713,7 +721,9 @@ export function EnrollmentBatchImport({
 
       {rows.map((row, index) => {
         const selectedProgram = programs.find((p) => String(p.id) === row.programId);
-        const yearOptions = yearLevelIds.filter((y) => y <= (selectedProgram?.lengthYears ?? 6));
+        const yearOptions = selectedProgram
+          ? yearLevelIds.filter((y) => y <= selectedProgram.lengthYears)
+          : [];
         const filteredSets = selectedProgram
           ? sets.filter(
               (s) =>
@@ -721,12 +731,12 @@ export function EnrollmentBatchImport({
                 (!row.yearLevel || String(s.yearLevel) === row.yearLevel),
             )
           : [];
-        const subjectOptions = selectedProgram
+        const subjectOptions = selectedProgram && row.semesterNumber
           ? subjects
               .filter(
                 (subject) =>
                   subject.program === selectedProgram.abbrev &&
-                  (!row.semesterNumber || String(subject.semester) === row.semesterNumber),
+                  String(subject.semester) === row.semesterNumber,
               )
               .map((subject) => ({
                 id: String(subject.id),
@@ -972,7 +982,14 @@ export function EnrollmentBatchImport({
                     ]}
                     value={row.programId}
                     onValueChange={(v) =>
-                      updateRow(index, { programId: v as string, setId: "", yearLevel: "" })
+                      updateRow(index, {
+                        programId: v as string,
+                        yearLevel: "",
+                        setId: "",
+                        subjectCodes: "",
+                        syId: "",
+                        semesterNumber: "",
+                      })
                     }
                   >
                     <SelectTrigger id={`batch-${index}-program`} disabled={isLoading}>
@@ -996,9 +1013,20 @@ export function EnrollmentBatchImport({
                       ...yearOptions.map((y) => ({ value: String(y), label: yearLevelLabel(y) })),
                     ]}
                     value={row.yearLevel}
-                    onValueChange={(v) => updateRow(index, { yearLevel: v as string, setId: "" })}
+                    onValueChange={(v) =>
+                      updateRow(index, {
+                        yearLevel: v as string,
+                        setId: "",
+                        syId: "",
+                        semesterNumber: "",
+                        subjectCodes: "",
+                      })
+                    }
                   >
-                    <SelectTrigger id={`batch-${index}-year`} disabled={isLoading}>
+                    <SelectTrigger
+                      id={`batch-${index}-year`}
+                      disabled={isLoading || !selectedProgram}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1022,9 +1050,18 @@ export function EnrollmentBatchImport({
                         ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode })),
                       ]}
                       value={row.setId}
-                      onValueChange={(v) => updateRow(index, { setId: v as string })}
+                      onValueChange={(v) =>
+                        updateRow(index, {
+                          setId: v as string,
+                          syId: "",
+                          semesterNumber: "",
+                        })
+                      }
                     >
-                      <SelectTrigger id={`batch-${index}-set`} disabled={isLoading}>
+                      <SelectTrigger
+                        id={`batch-${index}-set`}
+                        disabled={isLoading || !selectedProgram || !row.yearLevel}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1047,7 +1084,7 @@ export function EnrollmentBatchImport({
                     labelled
                     required
                     allowFreeText={false}
-                    disabled={isLoading}
+                    disabled={isLoading || !selectedProgram || !row.semesterNumber}
                   />
                 )}
 
@@ -1061,9 +1098,18 @@ export function EnrollmentBatchImport({
                       })),
                     ]}
                     value={row.syId}
-                    onValueChange={(v) => updateRow(index, { syId: v as string })}
+                    onValueChange={(v) =>
+                      updateRow(index, {
+                        syId: v as string,
+                        semesterNumber: "",
+                        subjectCodes: "",
+                      })
+                    }
                   >
-                    <SelectTrigger id={`batch-${index}-sy`} disabled={isLoading}>
+                    <SelectTrigger
+                      id={`batch-${index}-sy`}
+                      disabled={isLoading || (isIrregular ? !row.yearLevel : !row.setId)}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1087,9 +1133,14 @@ export function EnrollmentBatchImport({
                       })),
                     ]}
                     value={row.semesterNumber}
-                    onValueChange={(v) => updateRow(index, { semesterNumber: v as string })}
+                    onValueChange={(v) =>
+                      updateRow(index, { semesterNumber: v as string, subjectCodes: "" })
+                    }
                   >
-                    <SelectTrigger id={`batch-${index}-sem`} disabled={isLoading}>
+                    <SelectTrigger
+                      id={`batch-${index}-sem`}
+                      disabled={isLoading || !row.syId}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
