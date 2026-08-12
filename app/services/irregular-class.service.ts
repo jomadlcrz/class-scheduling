@@ -124,7 +124,7 @@ async function listPendingStudents(syId: number, semesterNumber: number): Promis
 
 type PendingScheduleResponse = {
   irregular_students: {
-    student_academic_id: number;
+    enrollment_id: number;
     student_profile_id: number;
     student_id: string | null;
     first_name: string;
@@ -256,7 +256,7 @@ async function listPendingSchedule(syId: number, semesterNumber: number): Promis
     `/regular_schedule/irregular-students-pending-schedule${termScopeQuery(syId, semesterNumber)}`,
   );
   return data.irregular_students.map((s) => ({
-    studentAcademicId: s.student_academic_id,
+    studentAcademicId: s.enrollment_id,
     studentProfileId: s.student_profile_id,
     studentId: s.student_id,
     studentName: `${s.last_name}, ${s.first_name} ${s.mid_name ?? ""}`.trim(),

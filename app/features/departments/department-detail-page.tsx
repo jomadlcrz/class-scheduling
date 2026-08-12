@@ -201,24 +201,47 @@ function DepartmentHeader({
 }) {
   return (
     <Card className="overflow-hidden">
-      <div className="relative h-36 overflow-hidden bg-slate-100 dark:bg-surface-raised/60">
-        <img
-          src={overview.coverImageUrl || departmentLogoSrc(overview.logoUrl)}
-          alt=""
-          aria-hidden="true"
-          onError={onDepartmentLogoError}
-          className="absolute inset-0 size-full scale-125 object-cover object-center opacity-70 blur-2xl saturate-150"
-        />
-        <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
-        <div className="absolute inset-0 m-auto size-20 overflow-hidden rounded-full drop-shadow-md">
+      {overview.coverImageUrl ? (
+        <>
+          <div className="relative">
+            <img
+              src={overview.coverImageUrl}
+              alt=""
+              className="h-64 w-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-navy-900/40" />
+          </div>
+          <div className="relative -mt-10 flex justify-center bg-linear-to-b from-transparent via-white to-white dark:from-transparent dark:via-surface-raised dark:to-surface-raised">
+            <div className="size-20 overflow-hidden rounded-full ring-4 ring-white dark:ring-surface-raised">
+              <img
+                src={departmentLogoSrc(overview.logoUrl)}
+                alt={`${overview.abbrev} logo`}
+                onError={onDepartmentLogoError}
+                className="size-full object-cover"
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="relative h-44">
           <img
             src={departmentLogoSrc(overview.logoUrl)}
-            alt={`${overview.abbrev} logo`}
+            alt=""
+            aria-hidden="true"
             onError={onDepartmentLogoError}
-            className="size-full object-cover"
+            className="absolute inset-0 size-full scale-125 object-cover object-center opacity-70 blur-2xl saturate-150"
           />
+          <div className="absolute inset-0 bg-white/30 dark:bg-surface/40" />
+          <div className="absolute inset-0 m-auto size-20 overflow-hidden rounded-full drop-shadow-md">
+            <img
+              src={departmentLogoSrc(overview.logoUrl)}
+              alt={`${overview.abbrev} logo`}
+              onError={onDepartmentLogoError}
+              className="size-full object-cover"
+            />
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-4 p-5">
         <div className="min-w-0">
           <p className="font-display text-3xl tracking-wide text-navy-800 dark:text-mist-100">
@@ -264,7 +287,7 @@ function DepartmentHeader({
 function DetailSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-hidden="true">
-      <Skeleton className="h-36 rounded-xl" />
+      <Skeleton className="h-44 rounded-xl" />
       <div className="flex flex-col gap-5">
         <Skeleton className="h-5 w-44" />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

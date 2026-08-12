@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
-import { ChevronRightIcon, SearchIcon, UserIcon } from "~/components/ui/icons";
+import { IconButton } from "~/components/ui/icon-button";
+import { FileSearchIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -16,6 +17,11 @@ const STATE_TONES: Record<string, BadgeTone> = {
   Voided: "slate",
 };
 
+const TYPE_TONES: Record<string, BadgeTone> = {
+  Regular: "navy",
+  Irregular: "slate",
+};
+
 const STATE_SEGMENTS: { value: string; label: string; countKey: keyof EnrollmentFacets["counts"] }[] = [
   { value: "Enrolled", label: "Enrolled", countKey: "enrolled" },
   { value: "Dropped", label: "Dropped", countKey: "dropped" },
@@ -24,10 +30,6 @@ const STATE_SEGMENTS: { value: string; label: string; countKey: keyof Enrollment
 ];
 
 type DisplayRow = { key: string; student: EnrollmentStudent; enrollment: EnrollmentRow };
-
-function accountTone(status: string): BadgeTone {
-  return status.toLowerCase().includes("no") ? "slate" : "emerald";
-}
 
 function segmentClass(active: boolean): string {
   return `rounded-full border px-3 py-1 font-body text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gwc-blue/40 ${
@@ -217,7 +219,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
             <TableHeader dense>Student ID</TableHeader>
             <TableHeader dense className="hidden sm:table-cell">Program</TableHeader>
             <TableHeader dense className="hidden md:table-cell">Year</TableHeader>
-            <TableHeader dense className="hidden md:table-cell">Section</TableHeader>
+            <TableHeader dense className="hidden md:table-cell">Set</TableHeader>
             <TableHeader dense className="hidden lg:table-cell">Type</TableHeader>
             <TableHeader dense>State</TableHeader>
             <TableHeader dense className="hidden lg:table-cell">Account</TableHeader>
@@ -229,11 +231,7 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
             {filtered.map((row) => {
               const { student, enrollment } = row;
               return (
-                <TableRow
-                  key={row.key}
-                  onClick={() => setSelected(row)}
-                  className="cursor-pointer"
-                >
+                <TableRow key={row.key}>
                   <TableCell dense>
                     <div className="flex items-center gap-2">
                       {student.profilePhotoUrl ? (
@@ -243,8 +241,11 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
                           className="size-6 shrink-0 rounded-full object-cover"
                         />
                       ) : (
-                        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
-                          <UserIcon />
+                        <span
+                          aria-hidden="true"
+                          className="grid size-6 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-[0.55rem] font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+                        >
+                          {(student.name[0] ?? "").toUpperCase()}
                         </span>
                       )}
                       <div className="min-w-0">
@@ -272,18 +273,24 @@ export function EnrollmentRecordsView({ students, facets, genders, nameSuffixes,
                     {enrollment.set ?? "—"}
                   </TableCell>
                   <TableCell dense className="hidden text-xs lg:table-cell">
-                    {enrollment.enrolledStatus}
+                    <Badge tone={TYPE_TONES[enrollment.enrolledStatus] ?? "slate"}>
+                      {enrollment.enrolledStatus}
+                    </Badge>
                   </TableCell>
                   <TableCell dense>
                     <Badge tone={STATE_TONES[enrollment.enrollmentState] ?? "slate"}>
                       {enrollment.enrollmentState}
                     </Badge>
                   </TableCell>
-                  <TableCell dense className="hidden lg:table-cell">
-                    <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
+                  <TableCell dense className="hidden text-xs text-slate-500 lg:table-cell dark:text-slate-400">
+                    {student.accountStatus}
                   </TableCell>
-                  <TableCell dense className="text-slate-300 dark:text-slate-600">
-                    <ChevronRightIcon />
+                  <TableCell dense>
+                    <div className="flex justify-end">
+                      <IconButton onClick={() => setSelected(row)} label={`View ${student.name}`} title="View details">
+                        <FileSearchIcon />
+                      </IconButton>
+                    </div>
                   </TableCell>
                 </TableRow>
               );

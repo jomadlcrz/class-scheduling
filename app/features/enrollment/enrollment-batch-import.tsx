@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { FormError } from "~/components/forms/form-error";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { DownloadIcon, HelpCircleIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
@@ -21,16 +20,18 @@ import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-
 import { EnrolledStatusPicker } from "~/features/enrollment/enrolled-status-picker";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { useYearLevels } from "~/hooks/use-year-levels";
-import {
-  studentService,
-  type ImportStudentInput,
-  type ImportStudentResponse,
-} from "~/services/student.service";
+import { studentService } from "~/services/student.service";
 import type { SchoolYearOption } from "~/services/school-year.service";
 import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
 import type { ClassSet } from "~/types/set";
 import type { Subject } from "~/types/subject";
+import type { CreateStudentRecordInput } from "~/types/student";
+
+/** A roster row prepared for submit: a valid backend payload, or a client-side error. */
+type PreparedRow =
+  | { input: CreateStudentRecordInput; error?: never }
+  | { input?: never; error: string; studentId?: string };
 
 export type BatchEnrolledStatus = "Regular" | "Irregular";
 
@@ -263,7 +264,6 @@ export function EnrollmentBatchImport({
   const [rows, setRows] = useState<RosterRow[]>([{ ...EMPTY_ROW }]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<ImportStudentResponse | null>(null);
   const [templateHelpOpen, setTemplateHelpOpen] = useState(false);
 
   const isIrregular = enrolledStatus === "Irregular";
@@ -342,7 +342,6 @@ export function EnrollmentBatchImport({
       return;
     }
     setRows(mapCsvToRoster(parsed));
-    setResult(null);
     setError(null);
     toast.success(`Loaded ${parsed.length} student${parsed.length === 1 ? "" : "s"}.`);
   }
@@ -379,7 +378,7 @@ export function EnrollmentBatchImport({
     setRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   }
 
-  function prepareRow(row: RosterRow): ImportStudentInput {
+  function prepareRow(row: RosterRow): PreparedRow {
     const program = programs.find((p) => String(p.id) === row.programId);
     const yearLevel = Number(row.yearLevel);
     const schoolYear = schoolYears.find((sy) => String(sy.id) === row.syId);
@@ -441,80 +440,29 @@ export function EnrollmentBatchImport({
       setError("Add at least one student before enrolling.");
       return;
     }
+
+    // /students/bulk is all-or-nothing, so block on the first client-side
+    // problem instead of letting the whole transaction fail at the backend.
+    const prepared = valid.map(prepareRow);
+    const badIndex = prepared.findIndex((row) => row.error);
+    if (badIndex !== -1) {
+      setError(`Fix student ${badIndex + 1}: ${(prepared[badIndex] as { error: string }).error}`);
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
     try {
-      const res = await studentService.importRecords(valid.map(prepareRow));
-      setResult(res);
+      const inputs = prepared.map((row) => (row as { input: CreateStudentRecordInput }).input);
+      const res = await studentService.bulkCreateRecords(inputs);
       setRows([{ ...EMPTY_ROW }]);
       onDirtyChange(false);
-      if (res.failed === 0) {
-        onFinished(`Enrolled ${res.created} student${res.created === 1 ? "" : "s"}.`);
-      }
+      onFinished(res.message);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Import failed.");
+      setError(err instanceof Error ? err.message : "Enrollment failed.");
     } finally {
       setIsLoading(false);
     }
-  }
-
-  if (result) {
-    return (
-      <div className="flex flex-col gap-5">
-        <EnrollmentSectionCard title="Import results">
-          <div className="grid grid-cols-3 gap-4 border-b border-slate-200 pb-4 dark:border-white/10">
-            <div>
-              <p className="font-body text-xs text-slate-500">Created</p>
-              <p className="mt-0.5 font-display text-2xl tabular-nums text-emerald-600 dark:text-emerald-400">
-                {result.created}
-              </p>
-            </div>
-            <div>
-              <p className="font-body text-xs text-slate-500">Failed</p>
-              <p className="mt-0.5 font-display text-2xl tabular-nums text-red-600 dark:text-red-400">
-                {result.failed}
-              </p>
-            </div>
-            <div>
-              <p className="font-body text-xs text-slate-500">Total</p>
-              <p className="mt-0.5 font-display text-2xl tabular-nums text-navy-800 dark:text-mist-100">
-                {result.total}
-              </p>
-            </div>
-          </div>
-          <ul className="mt-3 max-h-64 divide-y divide-slate-100 overflow-y-auto dark:divide-white/5">
-            {result.results.map((r) => (
-              <li key={r.row} className="flex items-center justify-between gap-3 py-2.5">
-                <div className="min-w-0">
-                  <p className="font-body text-sm text-navy-800 dark:text-mist-100">
-                    Row {r.row}
-                    {r.student_id ? (
-                      <span className="ml-2 font-body text-xs text-slate-400">{r.student_id}</span>
-                    ) : null}
-                  </p>
-                  {r.message ? (
-                    <p className="truncate font-body text-xs text-slate-500">{r.message}</p>
-                  ) : null}
-                </div>
-                <Badge tone={r.status === "created" ? "emerald" : "red"}>
-                  {r.status === "created" ? "Created" : "Failed"}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        </EnrollmentSectionCard>
-
-        <ProgramWizardFooter
-          backLabel="Add more"
-          onBack={() => {
-            setResult(null);
-            setRows([{ ...EMPTY_ROW }]);
-          }}
-          primaryLabel="Done"
-          onPrimary={() => onFinished("")}
-        />
-      </div>
-    );
   }
 
   return (

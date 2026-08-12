@@ -155,8 +155,48 @@ input[list]::-webkit-list-button {
   will-change: transform;
 }
 
+/* Indeterminate progress sweep — slides a short gold bar across the track,
+   transform-only so it stays cheap on the compositor. */
+@keyframes progress-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@utility animate-progress {
+  animation: progress-sweep 1.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Loader dots — three dots ripple up one after another (assigning/processing states). */
+@keyframes loader-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+@utility animate-loader-dot {
+  animation: loader-bounce 1.2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer {
     animation: none;
+  }
+  .animate-progress {
+    animation: none;
+  }
+  .animate-loader-dot {
+    animation: none;
+    opacity: 1;
   }
 }

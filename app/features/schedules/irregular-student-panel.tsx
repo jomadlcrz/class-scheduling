@@ -1,5 +1,10 @@
-import { UserIcon } from "~/components/ui/icons";
+import { useState } from "react";
+import { ImageViewer } from "~/components/ui/image-viewer";
 import type { IrregularStudent } from "~/services/irregular-class.service";
+
+function firstName(name: string): string {
+  return name.split(" ")[0] ?? name;
+}
 
 type IrregularStudentPanelProps = {
   student: IrregularStudent | null;
@@ -7,6 +12,7 @@ type IrregularStudentPanelProps = {
 
 export function IrregularStudentPanel({ student }: IrregularStudentPanelProps) {
   const subjects = student?.subjectsEnrolled ?? [];
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
@@ -16,15 +22,30 @@ export function IrregularStudentPanel({ student }: IrregularStudentPanelProps) {
 
       <div className="shrink-0 flex items-center gap-3 rounded-xl border border-slate-300 bg-white p-4 dark:border-white/10 dark:bg-white/5">
         {student?.profilePhotoUrl ? (
-          <img
-            src={student.profilePhotoUrl}
-            alt={student.studentName}
-            className="size-10 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
-            <UserIcon />
+          <button
+            type="button"
+            onClick={() => setViewerSrc(student.profilePhotoUrl)}
+            className="shrink-0 cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+            aria-label="View profile photo"
+          >
+            <img
+              src={student.profilePhotoUrl}
+              alt={student.studentName}
+              className="size-10 rounded-full object-cover"
+            />
+          </button>
+        ) : student ? (
+          <span
+            aria-hidden="true"
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+          >
+            {(firstName(student.studentName)[0] ?? "").toUpperCase()}
           </span>
+        ) : (
+          <span
+            aria-hidden="true"
+            className="size-10 shrink-0 rounded-full bg-slate-100 dark:bg-white/10"
+          />
         )}
         {student ? (
           <div className="flex flex-col">
@@ -81,6 +102,15 @@ export function IrregularStudentPanel({ student }: IrregularStudentPanelProps) {
           </ul>
         )}
       </section>
+
+      {viewerSrc && (
+        <ImageViewer
+          open={viewerSrc !== null}
+          onClose={() => setViewerSrc(null)}
+          src={viewerSrc}
+          alt={student?.studentName ?? "Profile photo"}
+        />
+      )}
     </div>
   );
 }

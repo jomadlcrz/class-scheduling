@@ -1,60 +1,74 @@
-import { useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { AlertTriangleIcon, ClockIcon } from "~/components/ui/icons";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { AlertTriangleIcon } from "~/components/ui/icons";
 import type { StudentPendingSchedule } from "~/services/irregular-class.service";
 
 type AssignSchedulePanelProps = {
-  /** null once a term is picked but this student has no pending record; undefined before a term is picked. */
   pending: StudentPendingSchedule | null | undefined;
   onAssign: (studentAcademicId: number, regularSchedIds: number[]) => Promise<void>;
+  bulkStudentCount?: number;
+  bulkAssigning?: boolean;
+  onBulkAssign?: (regularSchedIds: number[]) => Promise<void>;
+  recCounts?: Map<string, number> | null;
+  recTotal?: number;
+  onSelectionStateChange?: (canAssign: boolean) => void;
 };
 
-/** Lets an admin pick existing regular schedule offerings per pending subject and assign them all at once. */
-export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelProps) {
-  const [selected, setSelected] = useState<Record<number, string>>({});
+export type AssignSchedulePanelHandle = {
+  assign: () => void;
+  getSummary: () => { subjectCode: string; set: string | null; meetingCount: number }[];
+};
+
+export const AssignSchedulePanel = forwardRef<AssignSchedulePanelHandle, AssignSchedulePanelProps>(function AssignSchedulePanel(
+  { pending, onAssign, bulkStudentCount, bulkAssigning, onBulkAssign, recCounts, recTotal, onSelectionStateChange },
+  ref,
+) {
+  const [selected, setSelected] = useState<Record<number, number | null>>({});
   const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isBulk = Boolean(bulkStudentCount && onBulkAssign);
 
-  if (pending === undefined) {
-    return (
-      <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
-        <ClockIcon />
-        <p className="font-body text-sm text-slate-400 dark:text-slate-500">
-          Select a school year and semester above to view assignable schedules.
-        </p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    onSelectionStateChange?.(allSelected);
+  }, [allSelected, onSelectionStateChange]);
 
-  if (!pending || (pending.pendingSubjects.length === 0 && pending.scheduledSubjects.length === 0)) {
-    return (
-      <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
-        <ClockIcon />
-        <p className="font-body text-sm text-slate-400 dark:text-slate-500">
-          No pending subjects for this student this term.
-        </p>
-      </div>
-    );
-  }
+  if (!pending || pending.pendingSubjects.length === 0) return null;
 
   const allSelected = pending.pendingSubjects.every(
-    (s) => selected[s.subjectId] && selected[s.subjectId] !== "",
+    (s) => selected[s.subjectId] !== undefined && selected[s.subjectId] !== null,
   );
-  const hasAnyOffering = pending.pendingSubjects.some((s) => s.availableOfferings.length > 0);
 
-  async function handleAssignAll() {
-    if (!pending) return;
-    const schedIds = pending.pendingSubjects
+  function toggleOffering(subjectId: number, offeringIdx: number) {
+    setSelected((prev) => {
+      const current = prev[subjectId];
+      return { ...prev, [subjectId]: current === offeringIdx ? null : offeringIdx };
+    });
+  }
+
+  function selectAllRecommended() {
+    const next: Record<number, number | null> = {};
+    for (const subj of pending!.pendingSubjects) {
+      const recIdx = subj.availableOfferings.findIndex((o) => o.recommended);
+      next[subj.subjectId] = recIdx >= 0 ? recIdx : null;
+    }
+    setSelected(next);
+  }
+
+  function getSchedIds(): number[] {
+    return pending!.pendingSubjects
       .map((s) => {
-        const offeringIdx = Number(selected[s.subjectId]);
-        if (!offeringIdx && offeringIdx !== 0) return [];
-        return s.availableOfferings[offeringIdx]?.regularSchedIds ?? [];
+        const idx = selected[s.subjectId];
+        if (idx == null) return [];
+        return s.availableOfferings[idx]?.regularSchedIds ?? [];
       })
       .flat()
       .filter((id) => id > 0);
+  }
+
+  async function handleAssignAll() {
+    if (!pending) return;
+    const schedIds = getSchedIds();
     if (schedIds.length === 0) return;
     setError(null);
     setAssigning(true);
@@ -68,115 +82,129 @@ export function AssignSchedulePanel({ pending, onAssign }: AssignSchedulePanelPr
     }
   }
 
+  async function handleBulkAssignAll() {
+    if (!pending || !onBulkAssign) return;
+    const schedIds = getSchedIds();
+    if (schedIds.length === 0) return;
+    setError(null);
+    await onBulkAssign(schedIds);
+  }
+
+  function getSummary() {
+    return pending!.pendingSubjects.map((s) => {
+      const idx = selected[s.subjectId];
+      const offering = idx != null ? s.availableOfferings[idx] : null;
+      return {
+        subjectCode: s.subjectCode,
+        set: offering?.set ?? null,
+        meetingCount: offering?.meetingCount ?? 0,
+      };
+    });
+  }
+
+  useImperativeHandle(ref, () => ({
+    assign() {
+      if (isBulk) handleBulkAssignAll();
+      else handleAssignAll();
+    },
+    getSummary,
+  }));
+
+  const anyRecommended = pending.pendingSubjects.some(
+    (s) => s.availableOfferings.some((o) => o.recommended),
+  );
+
   return (
-    <div className="mt-4 flex min-h-0 flex-1 flex-col">
+    <div className="flex flex-col gap-4">
       {error && (
-        <Alert variant="destructive" className="mb-3">
+        <Alert variant="destructive">
           <AlertTriangleIcon />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <ul className="scrollbar-none flex flex-1 flex-col gap-3 overflow-y-auto">
-        {pending.pendingSubjects.map((subject) => {
-          const chosen = selected[subject.subjectId] ?? "";
-          return (
-            <li
-              key={subject.subjectId}
-              className="rounded-lg border border-slate-200 p-3 dark:border-white/10"
-            >
-              <div className="flex flex-col">
-                <span className="flex items-center gap-2 font-body text-sm font-medium text-navy-800 dark:text-mist-100">
-                  {subject.subjectCode}
-                  {(() => {
-                    const chosenIdx = Number(selected[subject.subjectId]);
-                    const chosenOffering = !isNaN(chosenIdx) ? subject.availableOfferings[chosenIdx] : undefined;
-                    return chosenOffering?.recommended ? <Badge tone="emerald">Recommended</Badge> : null;
-                  })()}
-                </span>
-                <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                  {subject.descTitle} · {subject.units} unit{subject.units !== 1 ? "s" : ""}
-                </span>
-              </div>
+      {anyRecommended && (
+        <button
+          type="button"
+          onClick={selectAllRecommended}
+          className="w-fit rounded-full px-3 py-1 font-body text-xs text-navy-600 transition-colors hover:text-navy-800 dark:text-navy-400 dark:hover:text-mist-100"
+        >
+          Select all recommended
+        </button>
+      )}
 
-              {subject.availableOfferings.length === 0 ? (
-                <p className="mt-2 font-body text-xs text-slate-400 dark:text-slate-500">
-                  No regular schedule exists yet for this subject.
-                </p>
-              ) : (
-                <div className="mt-2">
-                  <Select
-                    items={[
-                      { value: "", label: "Select a class" },
-                      ...subject.availableOfferings.map((offering, idx) => ({
-                        value: String(idx),
-                        label: `${offering.set ?? "—"} · ${offering.days} · ${offering.instructors.join(", ") || "TBA"}`,
-                      })),
-                    ]}
-                    value={chosen}
-                    onValueChange={(v) =>
-                      setSelected((current) => ({ ...current, [subject.subjectId]: v as string }))
-                    }
-                  >
-                    <SelectTrigger id={`available-schedule-${subject.subjectId}`} className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Select a class</SelectItem>
-                      {subject.availableOfferings.map((offering, idx) => (
-                        <SelectItem key={idx} value={String(idx)}>
-                          {offering.set ?? "—"} · {offering.days} · {offering.instructors.join(", ") || "TBA"}
-                          {offering.recommended ? <span className="text-xs italic text-emerald-600 dark:text-emerald-400"> · Recommended</span> : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+      {pending.pendingSubjects.map((subject) => {
+        const chosenIdx = selected[subject.subjectId];
+        return (
+          <div key={subject.subjectId}>
+            <div className="mb-2 flex items-center gap-2">
+              <h4 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                {subject.subjectCode}
+              </h4>
+              <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                {subject.descTitle} · {subject.units} unit{subject.units !== 1 ? "s" : ""}
+              </span>
+            </div>
 
-                  {chosen !== "" && (() => {
-                    const offering = subject.availableOfferings[Number(chosen)];
-                    if (!offering) return null;
-                    return (
-                      <div className="mt-2 space-y-1 rounded-md bg-slate-50 p-2 dark:bg-white/5">
-                        {offering.meetings.map((m) => (
-                          <div key={m.regularSchedId} className="flex items-center gap-2 font-body text-xs text-slate-600 dark:text-slate-300">
-                            <span className="font-medium">{m.dayOfWeek}</span>
-                            <span>{m.startTime}–{m.endTime}</span>
-                            <span className="text-slate-400 dark:text-slate-500">{m.room ?? "TBA"}</span>
-                            <span className="text-slate-400 dark:text-slate-500">{m.mode}</span>
-                          </div>
-                        ))}
+            {subject.availableOfferings.length === 0 ? (
+              <p className="font-body text-xs text-slate-400 dark:text-slate-500">
+                No regular schedule exists yet for this subject.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {subject.availableOfferings.map((offering, idx) => {
+                  const isChosen = chosenIdx === idx;
+                  const recKey = `${subject.subjectId}:${offering.setId}`;
+                  const recNum = recCounts?.get(recKey);
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => toggleOffering(subject.subjectId, idx)}
+                      className={`flex flex-col gap-1 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                        isChosen
+                          ? "border-navy-700 bg-navy-50 ring-1 ring-navy-700 dark:border-gold-400 dark:bg-gold-400/10 dark:ring-gold-400"
+                          : "border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-body text-sm font-medium text-navy-800 dark:text-mist-100">
+                          {offering.set ?? "—"}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          {offering.recommended && (
+                            <Badge tone="emerald">Recommended</Badge>
+                          )}
+                          {recNum !== undefined && recNum > 0 && (
+                            <span className="font-body text-[0.65rem] text-slate-400 dark:text-slate-500">
+                              {recNum}/{recTotal}
+                            </span>
+                          )}
+                        </span>
                       </div>
-                    );
-                  })()}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                      <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                        {offering.days}
+                        {offering.meetingCount > 1 ? ` · ${offering.meetingCount} meetings` : ""}
+                      </span>
+                      <span className="font-body text-xs text-slate-400 dark:text-slate-500">
+                        {offering.instructors.join(", ") || "TBA"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {pending.scheduledSubjects.length > 0 && (
-        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
           <p className="font-body text-xs font-medium text-emerald-700 dark:text-emerald-400">
             Already scheduled: {pending.scheduledSubjects.map((ss) => ss.subjectCode).join(", ")}
           </p>
         </div>
       )}
-
-      {hasAnyOffering && (
-        <div className="mt-4 shrink-0 border-t border-slate-200 pt-4 dark:border-white/10">
-          <Button
-            type="button"
-            block
-            disabled={!allSelected}
-            isLoading={assigning}
-            loadingLabel="Assigning…"
-            onClick={handleAssignAll}
-          >
-            Assign All
-          </Button>
-        </div>
-      )}
     </div>
   );
-}
+});

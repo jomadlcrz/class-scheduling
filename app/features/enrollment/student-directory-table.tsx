@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
-import { SearchIcon, UserIcon } from "~/components/ui/icons";
+import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
@@ -206,8 +206,11 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
                     {r.profilePhotoUrl ? (
                       <img src={r.profilePhotoUrl} alt={r.name} className="size-6 shrink-0 rounded-full object-cover" />
                     ) : (
-                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
-                        <UserIcon />
+                      <span
+                        aria-hidden="true"
+                        className="grid size-6 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-[0.55rem] font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+                      >
+                        {(r.name[0] ?? "").toUpperCase()}
                       </span>
                     )}
                     <div className="min-w-0">

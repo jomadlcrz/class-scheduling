@@ -6,7 +6,7 @@ import { Drawer } from "~/components/ui/drawer";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { Spinner } from "~/components/ui/spinner";
-import { UserIcon, EditIcon } from "~/components/ui/icons";
+import { EditIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { enrollmentService } from "~/services/enrollment.service";
 import { studentService } from "~/services/student.service";
@@ -134,37 +134,40 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                   />
                 </button>
               ) : (
-                <span className="grid size-16 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500 [&_svg]:size-7">
-                  <UserIcon />
+                <span
+                  aria-hidden="true"
+                  className="grid size-16 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xl font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+                >
+                  {(student.name[0] ?? "").toUpperCase()}
                 </span>
               )}
               <div className="flex min-w-0 flex-col gap-1">
-                <h3 className="truncate font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+                <h3 className="truncate font-body text-base font-semibold text-navy-800 dark:text-mist-100">
                   {student.name}
                 </h3>
-                <p className="flex flex-wrap gap-x-2 font-body text-sm text-slate-500 dark:text-slate-400">
-                  <span>{student.studentId ?? "No ID"}</span>
-                  {student.gender && <span>· {student.gender}</span>}
+                <p className="truncate font-body text-xs text-slate-500 dark:text-slate-400">
+                  {student.studentId ?? "No ID"}
+                  {student.gender && <span> · {student.gender}</span>}
                 </p>
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <Badge tone={STATE_TONES[enrollment.enrollmentState] ?? "slate"}>
                     {enrollment.enrollmentState}
                   </Badge>
                   <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    onClick={() => setEditRecordOpen(true)}
+                  >
+                    <EditIcon />
+                    Edit Record
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  block={false}
-                  onClick={() => setEditRecordOpen(true)}
-                >
-                  <EditIcon />
-                  Edit Record
-                </Button>
                 {(student.email || student.mobile) && (
-                  <p className="flex flex-wrap gap-x-2 truncate font-body text-xs text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 truncate font-body text-xs text-slate-500 dark:text-slate-400">
                     {student.mobile && <a href={`tel:${student.mobile}`} className="hover:underline">{student.mobile}</a>}
-                    {student.mobile && student.email && <span>·</span>}
+                    {student.mobile && student.email && <span> · </span>}
                     {student.email && <a href={`mailto:${student.email}`} className="hover:underline">{student.email}</a>}
                   </p>
                 )}

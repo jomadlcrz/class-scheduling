@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { ChevronRightIcon, LayersIcon, UserIcon } from "~/components/ui/icons";
+import { ChevronRightIcon, LayersIcon } from "~/components/ui/icons";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { Pagination } from "~/components/ui/pagination";
 import {
@@ -55,8 +55,11 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                     onClick={() => setViewerSrc(detail.dean!.profilePhotoUrl)}
                   />
                 ) : (
-                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 text-mist-100 dark:bg-white dark:text-navy-800">
-                    <UserIcon />
+                  <span
+                    aria-hidden="true"
+                    className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+                  >
+                    {(detail.dean.fullName[0] ?? "").toUpperCase()}
                   </span>
                 )}
                 <div className="min-w-0">
@@ -172,8 +175,11 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                             onClick={() => setViewerSrc(student.profilePhotoUrl!)}
                           />
                         ) : (
-                          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-500">
-                            <UserIcon />
+                          <span
+                            aria-hidden="true"
+                            className="grid size-6 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-[0.55rem] font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+                          >
+                            {(student.fullName[0] ?? "").toUpperCase()}
                           </span>
                         )}
                         <span className="font-medium text-navy-700 dark:text-mist-100">
