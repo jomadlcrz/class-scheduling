@@ -6,7 +6,17 @@ import { Drawer } from "~/components/ui/drawer";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { Spinner } from "~/components/ui/spinner";
-import { EditIcon } from "~/components/ui/icons";
+import {
+  CloseIcon,
+  EditIcon,
+  LogoutIcon,
+  MailIcon,
+  MapPinIcon,
+  PhoneIcon,
+  RefreshCwIcon,
+  TrashIcon,
+  UserOffIcon,
+} from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { enrollmentService } from "~/services/enrollment.service";
 import { studentService } from "~/services/student.service";
@@ -27,6 +37,19 @@ function accountTone(accountStatus: string): BadgeTone {
 }
 
 const STATES = ["Enrolled", "Dropped", "Withdrawn", "Voided"] as const;
+
+function StateActionIcon({ state }: { state: (typeof STATES)[number] }) {
+  if (state === "Dropped") {
+    return <span className="text-red-500 dark:text-red-400"><UserOffIcon /></span>;
+  }
+  if (state === "Withdrawn") {
+    return <span className="text-gold-600 dark:text-gold-400"><LogoutIcon /></span>;
+  }
+  if (state === "Voided") {
+    return <span className="text-slate-500 dark:text-slate-400"><CloseIcon size={16} /></span>;
+  }
+  return <span className="text-emerald-600 dark:text-emerald-400"><RefreshCwIcon /></span>;
+}
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -164,17 +187,37 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                     Edit Record
                   </Button>
                 </div>
-                {(student.email || student.mobile) && (
-                  <p className="mt-1 truncate font-body text-xs text-slate-500 dark:text-slate-400">
-                    {student.mobile && <a href={`tel:${student.mobile}`} className="hover:underline">{student.mobile}</a>}
-                    {student.mobile && student.email && <span> · </span>}
-                    {student.email && <a href={`mailto:${student.email}`} className="hover:underline">{student.email}</a>}
-                  </p>
-                )}
-                {profile?.address && (
-                  <p className="truncate font-body text-xs text-slate-500 dark:text-slate-400">
-                    {[profile.address.street, profile.address.barangay, profile.address.cityMunicipality, profile.address.province].filter(Boolean).join(", ")}
-                  </p>
+                {(student.mobile || student.email || profile?.address) && (
+                  <div className="mt-1 flex min-w-0 flex-col gap-1 font-body text-xs text-slate-500 dark:text-slate-400">
+                    {student.mobile && (
+                      <a href={`tel:${student.mobile}`} className="flex min-w-0 items-center gap-1.5 hover:underline">
+                        <span aria-hidden="true" className="shrink-0 text-slate-400 dark:text-slate-500">
+                          <PhoneIcon size={13} />
+                        </span>
+                        <span className="truncate">{student.mobile}</span>
+                      </a>
+                    )}
+                    {student.email && (
+                      <a href={`mailto:${student.email}`} className="flex min-w-0 items-center gap-1.5 hover:underline">
+                        <span aria-hidden="true" className="shrink-0 text-slate-400 dark:text-slate-500">
+                          <MailIcon size={13} />
+                        </span>
+                        <span className="truncate">{student.email}</span>
+                      </a>
+                    )}
+                    {profile?.address && (
+                      <p className="flex min-w-0 items-start gap-1.5">
+                        <span aria-hidden="true" className="mt-px shrink-0 text-slate-400 dark:text-slate-500">
+                          <MapPinIcon size={13} />
+                        </span>
+                        <span className="truncate">
+                          {[profile.address.street, profile.address.barangay, profile.address.cityMunicipality, profile.address.province]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </span>
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </section>
@@ -204,6 +247,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
               <div className="flex flex-wrap gap-2">
                 {STATES.filter((s) => s !== enrollment.enrollmentState).map((s) => (
                   <Button key={s} type="button" variant="outline" block={false} onClick={() => setPendingState(s)}>
+                    <StateActionIcon state={s} />
                     Mark as {s}
                   </Button>
                 ))}
@@ -218,6 +262,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                 disabled={enrollment.termClosed}
                 onClick={() => setDeleteOpen(true)}
               >
+                <TrashIcon />
                 Delete enrollment
               </Button>
               {enrollment.termClosed && (
