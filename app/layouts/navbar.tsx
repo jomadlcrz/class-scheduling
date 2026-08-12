@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
   ChevronDownIcon,
@@ -13,8 +13,10 @@ import {
 import { Popover } from "~/components/ui/popover";
 import { NotificationBell } from "~/features/notifications/notification-bell";
 import { useAuth } from "~/hooks/use-auth";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useTheme, type ThemePreference } from "~/hooks/use-theme";
 import { profilePhotoService } from "~/services/profile-photo.service";
+import type { ProfilePhotoData } from "~/services/profile-photo.service";
 import { NOTIFICATION_RECIPIENT_ROLES } from "~/types/notification";
 
 const iconButtonClassName =
@@ -28,26 +30,18 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isSettingsRoute = location.pathname.startsWith("/settings");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-
-  const fetchPhoto = useCallback(async () => {
-    if (!user) return;
-    try {
-      const data = await profilePhotoService.getPhoto(user.role);
-      setPhotoUrl(data.profilePhotoUrl);
-    } catch {
-      // Photo may not exist yet.
-    }
-  }, [user]);
+  const { data: photoData, reload: reloadPhoto } = useCachedData<ProfilePhotoData>(
+    "profile-photo",
+    () => profilePhotoService.getPhoto(user!.role),
+    { enabled: !!user },
+  );
+  const photoUrl = photoData?.profilePhotoUrl ?? null;
 
   useEffect(() => {
-    fetchPhoto();
-    function handlePhotoChanged() {
-      fetchPhoto();
-    }
-    window.addEventListener("profile-photo-changed", handlePhotoChanged);
-    return () => window.removeEventListener("profile-photo-changed", handlePhotoChanged);
-  }, [fetchPhoto]);
+    const handler = () => reloadPhoto();
+    window.addEventListener("profile-photo-changed", handler);
+    return () => window.removeEventListener("profile-photo-changed", handler);
+  }, [reloadPhoto]);
 
   function handleLogout() {
     logout();

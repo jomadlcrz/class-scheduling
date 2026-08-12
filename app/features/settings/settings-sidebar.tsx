@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { NavLink } from "react-router";
 import { visibleGroups } from "~/features/settings/sections";
 import { useAuth } from "~/hooks/use-auth";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { profilePhotoService } from "~/services/profile-photo.service";
+import type { ProfilePhotoData } from "~/services/profile-photo.service";
 
 const itemClassName = (isActive: boolean) =>
   `group relative flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-left font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
@@ -15,26 +17,18 @@ const itemClassName = (isActive: boolean) =>
  * Facebook style). Mobile uses SettingsMobileNav instead. */
 export function SettingsSidebar() {
   const { user } = useAuth();
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-
-  const fetchPhoto = useCallback(async () => {
-    if (!user) return;
-    try {
-      const data = await profilePhotoService.getPhoto(user.role);
-      setPhotoUrl(data.profilePhotoUrl);
-    } catch {
-      // Photo may not exist yet.
-    }
-  }, [user]);
+  const { data: photoData, reload: reloadPhoto } = useCachedData<ProfilePhotoData>(
+    "profile-photo",
+    () => profilePhotoService.getPhoto(user!.role),
+    { enabled: !!user },
+  );
+  const photoUrl = photoData?.profilePhotoUrl ?? null;
 
   useEffect(() => {
-    fetchPhoto();
-    function handlePhotoChanged() {
-      fetchPhoto();
-    }
-    window.addEventListener("profile-photo-changed", handlePhotoChanged);
-    return () => window.removeEventListener("profile-photo-changed", handlePhotoChanged);
-  }, [fetchPhoto]);
+    const handler = () => reloadPhoto();
+    window.addEventListener("profile-photo-changed", handler);
+    return () => window.removeEventListener("profile-photo-changed", handler);
+  }, [reloadPhoto]);
 
   if (!user) return null;
 

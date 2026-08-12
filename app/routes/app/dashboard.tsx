@@ -1,6 +1,6 @@
 ﻿import { motion } from "motion/react";
-import { useEffect, useState } from "react";
 import { useAuth } from "~/hooks/use-auth";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { staggerContainer } from "~/landing/motion";
 import { fetchDashboardGreeting, type DashboardGreeting } from "~/services/dashboard.service";
 import { DeanDashboard } from "~/features/dashboard/dean-dashboard";
@@ -18,16 +18,11 @@ export function meta() {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [greeting, setGreeting] = useState<DashboardGreeting | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    fetchDashboardGreeting(user.role)
-      .then((g) => { if (!cancelled) setGreeting(g); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [user]);
+  const { data: greeting } = useCachedData<DashboardGreeting>(
+    "dashboard:greeting",
+    () => fetchDashboardGreeting(user!.role),
+    { enabled: !!user },
+  );
 
   return (
     <motion.div

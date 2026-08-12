@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input, PasswordInput } from "~/components/ui/input";
 import { Modal, ModalActions } from "~/components/ui/modal";
@@ -7,6 +7,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { useAuth } from "~/hooks/use-auth";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { profilePhotoService, type ProfilePhotoData } from "~/services/profile-photo.service";
 import type { AddressData } from "~/types/student";
 
@@ -26,25 +27,13 @@ export function AccountDetails() {
   const { user } = useAuth();
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [profilePictureModalOpen, setProfilePictureModalOpen] = useState(false);
-  const [profile, setProfile] = useState<ProfilePhotoData | null>(null);
-  const [photoLoading, setPhotoLoading] = useState(true);
+  const { data: profile, reload: reloadPhoto } = useCachedData<ProfilePhotoData>(
+    "profile-photo",
+    () => profilePhotoService.getPhoto(user!.role),
+    { enabled: !!user },
+  );
+  const photoLoading = !user || (profile === null);
   const [address, setAddress] = useState<AddressData | null>(null);
-
-  const fetchPhoto = useCallback(async () => {
-    if (!user) return;
-    try {
-      const data = await profilePhotoService.getPhoto(user.role);
-      setProfile(data);
-    } catch {
-      // Profile may not exist yet — that's fine.
-    } finally {
-      setPhotoLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchPhoto();
-  }, [fetchPhoto]);
 
   useEffect(() => {
     if (!user || user.role === "admin") return;
@@ -58,7 +47,7 @@ export function AccountDetails() {
   async function handleUpload(file: File): Promise<{ url: string; message: string }> {
     if (!user) throw new Error("Not logged in.");
     const result = await profilePhotoService.uploadPhoto(user.role, file);
-    await fetchPhoto();
+    await reloadPhoto();
     window.dispatchEvent(new CustomEvent("profile-photo-changed"));
     return result;
   }
@@ -66,7 +55,7 @@ export function AccountDetails() {
   async function handleRemove(): Promise<string> {
     if (!user) throw new Error("Not logged in.");
     const message = await profilePhotoService.removePhoto(user.role);
-    await fetchPhoto();
+    await reloadPhoto();
     window.dispatchEvent(new CustomEvent("profile-photo-changed"));
     return message;
   }
@@ -181,7 +170,7 @@ export function AccountDetails() {
             onClose={() => setProfilePictureModalOpen(false)}
             photoUrl={profile?.profilePhotoUrl ?? null}
             initials={initials}
-            onChanged={fetchPhoto}
+            onChanged={reloadPhoto}
             uploadPhoto={handleUpload}
             removePhoto={handleRemove}
           />
