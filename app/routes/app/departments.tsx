@@ -124,7 +124,7 @@ function DepartmentsPage() {
             </span>
             <input
               id="dept-search"
-              type="search"
+              type="search" placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search"

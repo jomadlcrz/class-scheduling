@@ -656,7 +656,7 @@ export function StudentsPage() {
             </span>
             <input
               id="student-search"
-              type="search"
+              type="search" placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search students"
@@ -744,7 +744,7 @@ export function StudentsPage() {
             </span>
             <input
               id="regular-student-search"
-              type="search"
+              type="search" placeholder="Search..."
               value={regularSearch}
               onChange={(e) => setRegularSearch(e.target.value)}
               aria-label="Search regular students"
@@ -791,7 +791,7 @@ export function StudentsPage() {
             </span>
             <input
               id="irregular-student-search"
-              type="search"
+              type="search" placeholder="Search..."
               value={irregularSearch}
               onChange={(e) => setIrregularSearch(e.target.value)}
               aria-label="Search irregular students"

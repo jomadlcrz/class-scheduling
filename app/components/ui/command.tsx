@@ -29,6 +29,7 @@ function CommandInput({
     >
       <ComboboxPrimitive.Input
         data-slot="command-input"
+        placeholder="Search..."
         onFocus={(e) => {
           setFocused(true);
           onFocus?.(e);

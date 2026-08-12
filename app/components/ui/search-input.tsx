@@ -25,6 +25,7 @@ export function SearchInput({
       <input
         id={id}
         type="search"
+        placeholder="Search..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-label={ariaLabel ?? "Search"}

@@ -178,7 +178,7 @@ function ClassroomMappingPage() {
               <SearchIcon />
             </span>
             <input
-              type="search"
+              type="search" placeholder="Search..."
               value={rawSearch}
               onChange={e => setRawSearch(e.target.value)}
               aria-label="Search classrooms"

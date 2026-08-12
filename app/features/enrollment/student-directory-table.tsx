@@ -80,7 +80,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
           <SearchIcon />
         </span>
         <input
-          type="search"
+          type="search" placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search students"
