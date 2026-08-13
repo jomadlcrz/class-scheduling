@@ -387,9 +387,9 @@ export function SubjectAssignmentView() {
       const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
       if (entry) {
         apiData.syncEntryFromInstructor(inst.name, inst);
-      } else {
-        await apiData.reloadEntries();
       }
+      // Reload the backend-computed load classification after assignment changes.
+      await apiData.reloadEntries();
     } catch (error) {
       if (error instanceof ApiError) {
         toast.error(error.message);

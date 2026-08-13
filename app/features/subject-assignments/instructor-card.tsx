@@ -1,4 +1,4 @@
-import { Badge } from "~/components/ui/badge";
+import { Badge, type BadgeTone } from "~/components/ui/badge";
 
 import { Button } from "~/components/ui/button";
 import { AccordionItem } from "~/components/ui/accordion";
@@ -19,6 +19,7 @@ type InstructorData = {
   department: string;
   statusBadge: string;
   maxWeeklyHours: number | null;
+  loadClassification: "underload" | "regular" | "overload" | null;
   avatarUrl?: string;
   programs: {
     id: string;
@@ -34,6 +35,12 @@ type InstructorData = {
       weeklyHours: number;
     }[];
   }[];
+};
+
+const LOAD_BADGES: Record<NonNullable<InstructorData["loadClassification"]>, { label: string; tone: BadgeTone }> = {
+  underload: { label: "Underload", tone: "gold" },
+  regular: { label: "Regular", tone: "emerald" },
+  overload: { label: "Overload", tone: "red" },
 };
 
 type InstructorCardProps = {
@@ -85,6 +92,7 @@ export function InstructorCard({
   }
 
   const progressPercent = maxHours != null && maxHours > 0 ? Math.min(100, Math.round((assignedHours / maxHours) * 100)) : 0;
+  const loadBadge = instructor.loadClassification ? LOAD_BADGES[instructor.loadClassification] : null;
 
   return (
     <AccordionItem title={
@@ -110,6 +118,7 @@ export function InstructorCard({
                 {instructor.name}
               </h3>
               <Badge tone="emerald">{instructor.statusBadge}</Badge>
+              {loadBadge && <Badge tone={loadBadge.tone}>{loadBadge.label}</Badge>}
             </div>
             <p className="mt-0.5 space-y-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
               <span className="block">
