@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { apiDelete, apiGet, apiGetFresh, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { termScopeQuery } from "~/lib/term-scope";
 import type {
   EnrollmentFacets,
@@ -129,7 +129,7 @@ async function listTermEnrollments(
     query.set("enrollmentState", filters.enrollmentState);
   }
   const base = audience === "dean" ? "/deans/students" : "/enrollments";
-  const data = await apiGet<{
+  const data = await apiGetFresh<{
     items: ApiStudent[];
     pagination: { page: number; perPage: number; totalItems: number; totalPages: number };
   }>(`${base}?${query}`);
@@ -244,7 +244,7 @@ async function getReenrollDirectory(
     query.set("enrolledStatus", filters.enrolledStatus);
   }
   const suffix = query.size > 0 ? `?${query.toString()}` : "";
-  const data = await apiGet<ApiReenrollRow[]>(`/enrollments/directory${suffix}`);
+  const data = await apiGetFresh<ApiReenrollRow[]>(`/enrollments/directory${suffix}`);
   return (data ?? []).map((r) => ({
     studentProfileId: r.student_profile_id,
     studentId: r.student_id,

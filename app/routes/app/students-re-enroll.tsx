@@ -75,7 +75,7 @@ function StudentsReenrollPage() {
   const { data: directory } = useCachedData(
     `reenroll-directory:${targetSyId ?? "none"}:${targetSem ?? "none"}:${directoryFilterKey}`,
     () => enrollmentService.getReenrollDirectory(targetSyId, targetSem, directoryRequestFilters),
-    { keepPreviousData: true },
+    { cache: false },
   );
 
   const initialSelectedIds = studentIdParam ? [Number(studentIdParam)] : undefined;

@@ -292,6 +292,11 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
   return data;
 }
 
+/** GET without the short-lived response cache, for highly dynamic filtered directories. */
+export async function apiGetFresh<T>(endpoint: string): Promise<T> {
+  return request<T>(endpoint, "GET");
+}
+
 /** GET a protected binary response (same-origin image proxies, exports). */
 export async function apiGetBlob(endpoint: string): Promise<Blob> {
   async function run(canRefresh: boolean): Promise<Blob> {

@@ -42,17 +42,17 @@ export default function EnrollmentReenrollRoute() {
 
 function EnrollmentReenrollPage() {
   const navigate = useNavigate();
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { data: programs } = useCachedData("programs", () => programService.list());
-  const { data: setsData } = useCachedData("sets", () => setService.list());
+  const { data: setsData } = useCachedData("sets", () => setService.list(), { enabled: isDirty });
   const sets = setsData ?? [];
-  const { data: subjectsData } = useCachedData("subjects", () => subjectService.list());
+  const { data: subjectsData } = useCachedData("subjects", () => subjectService.list(), { enabled: isDirty });
   const subjects = subjectsData ?? [];
   const { data: schoolYears } = useCachedData("school-years", () => schoolYearService.list());
   const { data: semestersData } = useCachedData("semesters", () => semesterService.list());
   const semesters = semestersData ?? [];
   const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
-  const [isDirty, setIsDirty] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [directoryFilters, setDirectoryFilters] = useState<ReenrollDirectoryFilterState>({
     search: "",
     program: "all",
@@ -78,7 +78,7 @@ function EnrollmentReenrollPage() {
   const { data: directory } = useCachedData(
     `reenroll-directory:${targetSyId ?? "none"}:${targetSem ?? "none"}:${directoryFilterKey}`,
     () => enrollmentService.getReenrollDirectory(targetSyId, targetSem, directoryRequestFilters),
-    { keepPreviousData: true },
+    { cache: false },
   );
 
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =

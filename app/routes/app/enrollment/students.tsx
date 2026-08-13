@@ -50,6 +50,7 @@ function EnrollmentStudentsPage() {
   const termKey = enabled ? `${syId}:${semesterNumber}` : "none";
 
   const [page, setPage] = useState(1);
+  const [paginationRequested, setPaginationRequested] = useState(false);
   const [capacityOpen, setCapacityOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState(initialType);
@@ -85,11 +86,11 @@ function EnrollmentStudentsPage() {
       },
       audience,
     ),
-    { enabled, keepPreviousData: true },
+    { enabled, cache: false },
   );
   const students = enrollmentData?.items ?? null;
   const totalItems = enrollmentData?.total ?? 0;
-  const changingPage = enrollmentData !== null && enrollmentData.currentPage !== page;
+  const changingPage = paginationRequested && enrollmentData?.currentPage !== page;
   const { data: facets, reload: reloadFacets } = useCachedData(
     `enrollment-facets:${termKey}`,
     () => enrollmentService.getFacets(syId as number, semesterNumber as number, audience),
@@ -102,10 +103,12 @@ function EnrollmentStudentsPage() {
   }
 
   function handlePageChange(newPage: number) {
+    setPaginationRequested(true);
     setPage(newPage);
   }
 
   function updateFilter(setter: (value: string) => void, value: string) {
+    setPaginationRequested(false);
     setter(value);
     setPage(1);
   }
@@ -126,10 +129,10 @@ function EnrollmentStudentsPage() {
       />
 
       <div className="mt-6">
-        {changingPage ? (
-          <TableLoadingSpinner label="Loading enrollment page" />
-        ) : loadError && students === null ? (
+        {loadError && students === null ? (
           <EmptyState title="Unable to load enrollments">{loadError}</EmptyState>
+        ) : changingPage ? (
+          <TableLoadingSpinner label="Loading enrollment page" />
         ) : students === null ? (
           <TableSkeleton columns={9} rows={8} />
         ) : (

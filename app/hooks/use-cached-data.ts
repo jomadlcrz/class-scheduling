@@ -27,11 +27,11 @@ import { peekCache, writeCache } from "~/lib/data-cache";
 export function useCachedData<T>(
   key: string,
   fetcher: () => Promise<T>,
-  options?: { enabled?: boolean; keepPreviousData?: boolean },
+  options?: { enabled?: boolean; cache?: boolean },
 ) {
   const enabled = options?.enabled ?? true;
-  const keepPreviousData = options?.keepPreviousData ?? false;
-  const [data, setData] = useState<T | null>(() => peekCache<T>(key));
+  const cache = options?.cache ?? true;
+  const [data, setData] = useState<T | null>(() => cache ? peekCache<T>(key) : null);
   const [error, setError] = useState<string | null>(null);
   // True while a fetch is in flight — lets callers show a subtle "refreshing"
   // indicator when revalidating over already-visible data.
@@ -52,7 +52,7 @@ export function useCachedData<T>(
     setIsValidating(true);
     try {
       const fresh = await fetcherRef.current();
-      writeCache(callKey, fresh);
+      if (cache) writeCache(callKey, fresh);
       if (keyRef.current !== callKey) return;
       setData(fresh);
       setError(null);
@@ -63,15 +63,15 @@ export function useCachedData<T>(
     } finally {
       if (keyRef.current === callKey) setIsValidating(false);
     }
-  }, [key]);
+  }, [cache, key]);
 
   // Re-seed from cache when the key changes so we show that key's cached data
   // immediately instead of the previous key's stale data.
   useEffect(() => {
-    const cached = peekCache<T>(key);
-    if (cached !== null || !keepPreviousData) setData(cached);
+    const cached = cache ? peekCache<T>(key) : null;
+    setData(cached);
     setError(null);
-  }, [key, keepPreviousData]);
+  }, [cache, key]);
 
   useEffect(() => {
     if (!enabled) return;
