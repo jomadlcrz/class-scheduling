@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FormError } from "~/components/forms/form-error";
-import { Stepper, type StepDefinition } from "~/components/ui/stepper";
+import type { StepDefinition } from "~/components/ui/stepper";
+import { Wizard } from "~/components/ui/wizard";
 import {
   emptyNewProgramDraft,
   type NewProgramDraft,
@@ -263,15 +264,13 @@ export function ProgramWizard({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Stepper
-        steps={STEPS}
-        currentIndex={currentIndex}
-        maxUnlockedIndex={maxUnlockedIndex}
-        onStepClick={goToStep}
-      />
-
-      <FormError message={saveError} />
+    <Wizard
+      steps={STEPS}
+      currentIndex={currentIndex}
+      maxUnlockedIndex={maxUnlockedIndex}
+      onStepClick={goToStep}
+    >
+      {saveError && <div className="mb-5"><FormError message={saveError} /></div>}
 
       {currentIndex === 0 && (
         <ProgramWizardStep1Info
@@ -325,6 +324,6 @@ export function ProgramWizard({
           onSave={handleSave}
         />
       )}
-    </div>
+    </Wizard>
   );
 }

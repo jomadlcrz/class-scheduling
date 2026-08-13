@@ -1,5 +1,5 @@
 import { Badge } from "~/components/ui/badge";
-import { BookIcon, EditIcon, UserIcon } from "~/components/ui/icons";
+import { BookIcon, EditIcon } from "~/components/ui/icons";
 import {
   EnrollmentSectionCard,
   InfoField,
@@ -43,7 +43,7 @@ export function StudentInfoSummaryCard({
   const statusTone = academic.enrolledStatus === "Irregular" ? "gold" : "emerald";
 
   return (
-    <EnrollmentSectionCard title="Student Information" icon={<UserIcon />}>
+    <EnrollmentSectionCard title="Student Information">
       <div className="grid gap-6 lg:grid-cols-[11rem_1fr_1fr]">
         <div className="flex flex-col items-center gap-3 border-b border-slate-200 pb-5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5 dark:border-white/10">
           <StudentAvatar

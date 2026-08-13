@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Checkbox } from "~/components/ui/checkbox";
-import { BookmarkIcon } from "~/components/ui/icons";
 import { SearchInput } from "~/components/ui/search-input";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
 import { useYearLevels } from "~/hooks/use-year-levels";
@@ -55,7 +54,7 @@ export function IrregularSubjectPicker({
   }, [subjects, query, yearLevelLabel]);
 
   return (
-    <EnrollmentSectionCard title="Subjects for this term" icon={<BookmarkIcon />}>
+    <EnrollmentSectionCard title="Subjects for this term">
       <SearchInput
         className="mb-3"
         value={query}

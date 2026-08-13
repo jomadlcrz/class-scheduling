@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from "motion/react";
 import { CheckIcon } from "~/components/ui/icons";
 
 export type StepStatus = "completed" | "current" | "upcoming";
@@ -23,18 +24,17 @@ function statusFor(index: number, currentIndex: number): StepStatus {
 }
 
 function connectorTone(status: StepStatus): string {
-  if (status === "completed") return "bg-emerald-400 dark:bg-emerald-500/70";
-  if (status === "current") {
-    return "bg-linear-to-r from-amber-400 to-slate-200 dark:from-gold-400/70 dark:to-white/10";
-  }
+  if (status === "completed") return "bg-navy-700 dark:bg-mist-100";
   return "bg-slate-200 dark:bg-white/10";
 }
 
 function StepNode({ status, index }: { status: StepStatus; index: number }) {
+  const reduceMotion = useReducedMotion();
+
   if (status === "completed") {
     return (
       <span
-        className="relative z-10 grid size-9 place-items-center rounded-full bg-emerald-500 text-mist-100 shadow-sm ring-4 ring-white dark:ring-surface-raised"
+        className="relative z-10 grid size-9 place-items-center rounded-full bg-navy-800 text-mist-100 dark:bg-mist-100 dark:text-navy-900"
         aria-hidden="true"
       >
         <CheckIcon size={16} strokeWidth={3} />
@@ -45,11 +45,15 @@ function StepNode({ status, index }: { status: StepStatus; index: number }) {
   if (status === "current") {
     return (
       <span
-        className="relative z-10 grid size-10 place-items-center rounded-full bg-amber-500 text-mist-100 shadow-md ring-4 ring-amber-100 dark:bg-gold-500 dark:ring-gold-400/20"
+        className="relative z-10 grid size-9 place-items-center rounded-full bg-white text-navy-800 dark:bg-white/5 dark:text-mist-100"
         aria-hidden="true"
       >
-        <span className="absolute inset-0 animate-ping rounded-full bg-amber-400/30 dark:bg-gold-400/25" />
-        <span className="relative font-body text-sm font-bold">{index + 1}</span>
+        <motion.span
+          className="absolute inset-0 rounded-full border border-dashed border-gold-500 dark:border-gold-400"
+          animate={{ rotate: reduceMotion ? 0 : 360 }}
+          transition={{ duration: 8, ease: "linear", repeat: reduceMotion ? 0 : Infinity }}
+        />
+        <span className="relative font-body text-sm font-semibold">{index + 1}</span>
       </span>
     );
   }
@@ -72,35 +76,26 @@ function StepNode({ status, index }: { status: StepStatus; index: number }) {
 export function Stepper({ steps, currentIndex, maxUnlockedIndex, onStepClick }: StepperProps) {
   return (
     <nav aria-label="Wizard progress">
-      <ol
-        className="hidden sm:grid"
-        style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
-      >
+      <ol className="hidden items-center sm:flex">
         {steps.map((step, index) => {
           const status = statusFor(index, currentIndex);
           const isLast = index === steps.length - 1;
           const isClickable = index <= maxUnlockedIndex;
 
           return (
-            <li key={step.key} className="relative flex min-w-0 flex-col items-center px-2 text-center">
-              {!isLast && (
-                <span
-                  aria-hidden="true"
-                  className={`absolute left-[calc(50%+1.25rem)] top-4.5 h-0.5 w-[calc(100%-2.5rem)] ${connectorTone(status)}`}
-                />
-              )}
+            <li key={step.key} className={`flex min-w-0 items-center ${isLast ? "" : "flex-1"}`}>
               <button
                 type="button"
                 disabled={!isClickable}
                 aria-current={status === "current" ? "step" : undefined}
                 onClick={() => onStepClick(index)}
-                className={`flex flex-col items-center gap-2 rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                className={`flex shrink-0 items-center gap-2 rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   isClickable ? "cursor-pointer" : "cursor-default"
                 }`}
               >
                 <StepNode status={status} index={index} />
                 <span
-                  className={`font-body text-sm font-medium ${
+                  className={`font-body text-sm font-semibold ${
                     status === "upcoming"
                       ? "text-slate-400 dark:text-slate-500"
                       : "text-navy-700 dark:text-mist-100"
@@ -109,6 +104,12 @@ export function Stepper({ steps, currentIndex, maxUnlockedIndex, onStepClick }: 
                   {step.label}
                 </span>
               </button>
+              {!isLast && (
+                <span
+                  aria-hidden="true"
+                  className={`mx-3 h-0.5 min-w-6 flex-1 ${connectorTone(status)}`}
+                />
+              )}
             </li>
           );
         })}
@@ -127,7 +128,7 @@ export function Stepper({ steps, currentIndex, maxUnlockedIndex, onStepClick }: 
           );
         })}
       </div>
-      <p className="mt-2 text-center font-body text-sm font-medium text-navy-700 sm:hidden dark:text-mist-100">
+      <p className="mt-2 text-center font-body text-sm font-semibold text-navy-700 sm:hidden dark:text-mist-100">
         Step {currentIndex + 1} of {steps.length}: {steps[currentIndex]?.label}
       </p>
     </nav>

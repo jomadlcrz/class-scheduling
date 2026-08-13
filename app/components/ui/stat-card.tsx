@@ -24,7 +24,7 @@ export function StatCard({
   return (
     <Card className={`p-4 ${className ?? ""}`.trim()}>
       <div className="flex items-start justify-between gap-2">
-        <p className="font-body text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        <p className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
           {label}
         </p>
         {adornment}

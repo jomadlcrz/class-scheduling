@@ -1,17 +1,12 @@
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
-import { LockIcon, SearchIcon } from "~/components/ui/icons";
-import { inputClassName } from "~/components/ui/input";
+import { LockIcon } from "~/components/ui/icons";
 import { Pagination } from "~/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
 import { usePagination } from "~/hooks/use-pagination";
-import { useYearLevels } from "~/hooks/use-year-levels";
 import type { ReenrollDirectoryRow } from "~/types/enrollment";
-import type { Program } from "~/types/program";
-import type { Semester } from "~/types/semester";
 
 export type { ReenrollDirectoryRow };
 
@@ -35,11 +30,7 @@ type ReenrollStep1SelectStudentProps = {
   selectedIds: Set<number>;
   onToggleSelect: (row: ReenrollDirectoryRow, checked: boolean) => void;
   onSelectAll: (checked: boolean, rows: ReenrollDirectoryRow[]) => void;
-  programs: Program[];
-  semesters: Semester[];
-  academicStatuses: string[];
   filters: ReenrollDirectoryFilterState;
-  onFiltersChange: (patch: Partial<ReenrollDirectoryFilterState>) => void;
   onNext: () => void;
   onCancel: () => void;
 };
@@ -49,15 +40,10 @@ export function ReenrollStep1SelectStudent({
   selectedIds,
   onToggleSelect,
   onSelectAll,
-  programs,
-  semesters,
-  academicStatuses,
   filters,
-  onFiltersChange,
   onNext,
   onCancel,
 }: ReenrollStep1SelectStudentProps) {
-  const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const isSelectable = (row: ReenrollDirectoryRow) => row.reEnrollEligible && !row.enrolledInTargetTerm;
   const results = directory ?? [];
   const pagination = usePagination(
@@ -70,93 +56,6 @@ export function ReenrollStep1SelectStudent({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="relative">
-        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-          <SearchIcon />
-        </span>
-        <input
-          type="search" placeholder="Search..."
-          value={filters.search}
-          onChange={(e) => onFiltersChange({ search: e.target.value })}
-          aria-label="Search students"
-          className={`${inputClassName} pl-9 pr-4`}
-        />
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-4">
-        <Select
-          items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p.abbrev, label: p.abbrev }))]}
-          value={filters.program}
-          onValueChange={(v) => onFiltersChange({ program: v as string })}
-        >
-          <SelectTrigger aria-label="Filter by program">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Programs</SelectItem>
-            {programs.map((p) => (
-              <SelectItem key={p.id} value={p.abbrev}>
-                {p.abbrev}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          items={[{ value: "all", label: "All Year Levels" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
-          value={filters.yearLevel}
-          onValueChange={(v) => onFiltersChange({ yearLevel: v as string })}
-        >
-          <SelectTrigger aria-label="Filter by year level">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Year Levels</SelectItem>
-            {yearLevelIds.map((y) => (
-              <SelectItem key={y} value={String(y)}>
-                {yearLevelLabel(y)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          items={[{ value: "all", label: "All Semesters" }, ...semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester }))]}
-          value={filters.semester}
-          onValueChange={(v) => onFiltersChange({ semester: v as string })}
-        >
-          <SelectTrigger aria-label="Filter by semester">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Semesters</SelectItem>
-            {semesters.map((s) => (
-              <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>
-                {s.semester}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          items={[{ value: "all", label: "All Enrolled Status" }, ...academicStatuses.map((s) => ({ value: s, label: s }))]}
-          value={filters.enrolledStatus}
-          onValueChange={(v) => onFiltersChange({ enrolledStatus: v as string })}
-        >
-          <SelectTrigger aria-label="Filter by enrolled status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Enrolled Status</SelectItem>
-            {academicStatuses.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       <div>
         {directory === null ? (
           <div className="flex justify-center py-8">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
-import { Stepper, type StepDefinition } from "~/components/ui/stepper";
+import type { StepDefinition } from "~/components/ui/stepper";
+import { Wizard } from "~/components/ui/wizard";
 import { AddStudentStep1Identity, type IdentityDraft } from "~/features/enrollment/add-student-step1-identity";
 import { AddStudentStep2Academic, type AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
 import { AddStudentStep3Review } from "~/features/enrollment/add-student-step3-review";
@@ -237,10 +238,13 @@ export function AddStudentWizard({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Stepper steps={STEPS} currentIndex={currentIndex} maxUnlockedIndex={maxUnlockedIndex} onStepClick={goToStep} />
-
-      <FormError message={saveError} />
+    <Wizard
+      steps={STEPS}
+      currentIndex={currentIndex}
+      maxUnlockedIndex={maxUnlockedIndex}
+      onStepClick={goToStep}
+    >
+      {saveError && <div className="mb-5"><FormError message={saveError} /></div>}
 
       {currentIndex === 0 && (
         <AddStudentStep1Identity
@@ -292,6 +296,6 @@ export function AddStudentWizard({
           onEditAcademic={() => goToStep(1)}
         />
       )}
-    </div>
+    </Wizard>
   );
 }

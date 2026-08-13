@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
-import { Stepper, type StepDefinition } from "~/components/ui/stepper";
+import type { StepDefinition } from "~/components/ui/stepper";
+import { Wizard } from "~/components/ui/wizard";
 import type { AcademicDraft } from "~/features/enrollment/add-student-step2-academic";
+import { ReenrollDirectoryToolbar } from "~/features/enrollment/reenroll-directory-toolbar";
 import {
   ReenrollStep1SelectStudent,
   type ReenrollDirectoryFilterState,
@@ -231,10 +233,23 @@ export function ReenrollWizard({
   const selectedRows = [...selectedStudents.values()];
 
   return (
-    <div className="flex flex-col gap-6">
-      <Stepper steps={STEPS} currentIndex={currentIndex} maxUnlockedIndex={maxUnlockedIndex} onStepClick={goToStep} />
-
-      <FormError message={saveError} />
+    <>
+      {currentIndex === 0 && (
+        <ReenrollDirectoryToolbar
+          programs={programs}
+          semesters={semesters}
+          academicStatuses={academicStatuses}
+          filters={directoryFilters}
+          onFiltersChange={onDirectoryFiltersChange}
+        />
+      )}
+      <Wizard
+        steps={STEPS}
+        currentIndex={currentIndex}
+        maxUnlockedIndex={maxUnlockedIndex}
+        onStepClick={goToStep}
+      >
+      {saveError && <div className="mb-5"><FormError message={saveError} /></div>}
 
       {currentIndex === 0 && (
         <ReenrollStep1SelectStudent
@@ -242,11 +257,7 @@ export function ReenrollWizard({
           selectedIds={new Set(selectedStudents.keys())}
           onToggleSelect={toggleStudent}
           onSelectAll={selectAllStudents}
-          programs={programs}
-          semesters={semesters}
-          academicStatuses={academicStatuses}
           filters={directoryFilters}
-          onFiltersChange={onDirectoryFiltersChange}
           onNext={() => goToStep(1)}
           onCancel={onCancel}
         />
@@ -282,6 +293,7 @@ export function ReenrollWizard({
           onSave={handleSave}
         />
       )}
-    </div>
+      </Wizard>
+    </>
   );
 }

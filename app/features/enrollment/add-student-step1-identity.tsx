@@ -2,7 +2,6 @@ import { FieldChrome, Input } from "~/components/ui/input";
 import { PhoneInput } from "~/components/ui/phone-input";
 import { DatePicker } from "~/components/ui/date-picker";
 import { formatISODate } from "~/components/ui/calendar";
-import { UserIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
 import { PhotoUploadField } from "~/features/enrollment/photo-upload-field";
@@ -57,7 +56,7 @@ export function AddStudentStep1Identity({
 
   return (
     <div className="flex flex-col gap-5">
-      <EnrollmentSectionCard title="Student Information" icon={<UserIcon />}>
+      <EnrollmentSectionCard title="Student Information">
         <div className="grid gap-6 lg:grid-cols-[11rem_1fr]">
           <div className="border-b border-slate-200 pb-5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5 dark:border-white/10">
             <PhotoUploadField

@@ -346,20 +346,21 @@ type WizardSkeletonProps = {
 export function WizardSkeleton({ steps = 3 }: WizardSkeletonProps) {
   return (
     <div role="status" aria-label="Loading">
-      <div aria-hidden="true" className="flex flex-col gap-6">
-        <div className="flex flex-wrap items-center justify-center gap-3">
+      <div
+        aria-hidden="true"
+        className="overflow-hidden rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5"
+      >
+        <div className="flex items-center border-b border-slate-200 px-5 py-4 sm:px-6 dark:border-white/10">
           {Array.from({ length: steps }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="flex flex-col items-center gap-1">
-                <Skeleton className="size-8 rounded-full" />
-                <Skeleton className="h-2.5 w-16" />
-              </div>
-              {i < steps - 1 && <Skeleton className="h-0.5 w-16" />}
+            <div key={i} className={`flex min-w-0 items-center ${i < steps - 1 ? "flex-1" : ""}`}>
+              <Skeleton className="size-9 shrink-0 rounded-full" />
+              <Skeleton className="ml-2 hidden h-3 w-20 sm:block" />
+              {i < steps - 1 && <Skeleton className="mx-3 h-0.5 min-w-6 flex-1" />}
             </div>
           ))}
         </div>
 
-        <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-surface-raised/80">
+        <div className="flex flex-col gap-4 p-5 sm:p-6">
           <Skeleton className="h-5 w-40" />
           <div className="grid gap-4 sm:grid-cols-2">
             <Skeleton className="h-10 w-full rounded-lg" />
@@ -368,11 +369,10 @@ export function WizardSkeleton({ steps = 3 }: WizardSkeletonProps) {
             <Skeleton className="h-10 w-full rounded-lg" />
             <Skeleton className="h-10 w-full rounded-lg sm:col-span-2" />
           </div>
-        </div>
-
-        <div className="flex justify-between gap-3">
-          <Skeleton className="h-10 w-24 rounded-lg" />
-          <Skeleton className="h-10 w-32 rounded-lg" />
+          <div className="-mx-5 -mb-5 mt-2 flex justify-between gap-3 border-t border-slate-200 bg-slate-50/80 px-5 py-4 sm:-mx-6 sm:-mb-6 sm:px-6 dark:border-white/10 dark:bg-white/3">
+            <Skeleton className="h-10 w-24 rounded-lg" />
+            <Skeleton className="h-10 w-32 rounded-lg" />
+          </div>
         </div>
       </div>
     </div>

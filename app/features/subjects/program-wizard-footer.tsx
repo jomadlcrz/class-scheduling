@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "~/components/ui/button";
-import { StickyFooter } from "~/components/ui/sticky-footer";
+import { WizardFooter } from "~/components/ui/wizard";
 
 type ProgramWizardFooterProps = {
   backLabel: string;
@@ -24,7 +24,7 @@ export function ProgramWizardFooter({
   leadingContent,
 }: ProgramWizardFooterProps) {
   return (
-    <StickyFooter>
+    <WizardFooter>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" variant="outline" block={false} onClick={onBack}>
           {backLabel}
@@ -41,6 +41,6 @@ export function ProgramWizardFooter({
       >
         {primaryLabel}
       </Button>
-    </StickyFooter>
+    </WizardFooter>
   );
 }

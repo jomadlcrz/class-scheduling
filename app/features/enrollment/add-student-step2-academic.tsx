@@ -1,4 +1,3 @@
-import { BookIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { EnrollmentSectionCard } from "~/features/enrollment/enrollment-section-card";
@@ -64,7 +63,7 @@ export function AddStudentStep2Academic({
 
   return (
     <div className="flex flex-col gap-5">
-      <EnrollmentSectionCard title="Academic Information" icon={<BookIcon />}>
+      <EnrollmentSectionCard title="Academic Information">
         <div className="flex flex-col gap-5">
           <div className="grid gap-3 sm:grid-cols-2">
             <FieldChrome id="new-student-program" label="Program" required>
