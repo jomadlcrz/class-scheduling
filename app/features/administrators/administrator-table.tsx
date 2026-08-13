@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
+import { ImageViewer } from "~/components/ui/image-viewer";
 import {
   Table,
   TableBody,
@@ -19,7 +21,7 @@ function displayName(admin: Administrator) {
 
 type AdministratorTableProps = {
   administrators: Administrator[];
-  /** Per-row login status fetched from GET /super-admin/admin-accounts/<id> (the list endpoint doesn't include it); undefined while still loading. */
+  /** Per-row login status resolved from GET /super-admin/accounts by email. */
   accountActiveById: Record<number, boolean | undefined>;
   onEdit: (admin: Administrator) => void;
   onDeactivate: (admin: Administrator) => void;
@@ -33,7 +35,10 @@ export function AdministratorTable({
   onDeactivate,
   onReactivate,
 }: AdministratorTableProps) {
+  const [viewer, setViewer] = useState<{ src: string; alt: string } | null>(null);
+
   return (
+    <>
     <Table>
       <TableHead>
         <TableHeader>Administrator</TableHeader>
@@ -50,15 +55,31 @@ export function AdministratorTable({
           return (
             <TableRow key={admin.id}>
               <TableCell>
-                <div className="min-w-0">
-                  <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
-                    {displayName(admin)}
-                  </span>
-                  {admin.email && (
-                    <a href={`mailto:${admin.email}`} className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
-                      {admin.email}
-                    </a>
+                <div className="flex min-w-0 items-center gap-2.5">
+                  {admin.profilePhotoUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => setViewer({ src: admin.profilePhotoUrl!, alt: displayName(admin) })}
+                      className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+                      aria-label={`View ${displayName(admin)} profile photo`}
+                    >
+                      <img src={admin.profilePhotoUrl} alt="" className="size-9 rounded-full object-cover" />
+                    </button>
+                  ) : (
+                    <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-full bg-navy-800 text-xs font-semibold text-white dark:bg-white dark:text-navy-900">
+                      {(admin.firstName[0] ?? admin.lastName[0] ?? "").toUpperCase()}
+                    </span>
                   )}
+                  <div className="min-w-0">
+                    <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
+                      {displayName(admin)}
+                    </span>
+                    {admin.email && (
+                      <a href={`mailto:${admin.email}`} className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
+                        {admin.email}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </TableCell>
               <TableCell className="text-slate-600 dark:text-slate-300">
@@ -115,5 +136,7 @@ export function AdministratorTable({
         })}
       </TableBody>
     </Table>
+    {viewer && <ImageViewer open onClose={() => setViewer(null)} src={viewer.src} alt={viewer.alt} />}
+    </>
   );
 }

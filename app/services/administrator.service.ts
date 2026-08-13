@@ -32,6 +32,7 @@ async function create(input: CreateAdministratorAccountInput): Promise<string> {
 async function list(): Promise<Administrator[]> {
   type AdminResponse = {
     profile_id: number;
+    profile_photo_url: string | null;
     first_name: string;
     mid_name: string | null;
     last_name: string;
@@ -56,6 +57,7 @@ async function list(): Promise<Administrator[]> {
     const deptParts = department.split(" - ");
     return {
       id: a.profile_id,
+      profilePhotoUrl: a.profile_photo_url,
       firstName: a.first_name,
       midName: a.mid_name,
       lastName: a.last_name,

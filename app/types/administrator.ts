@@ -7,6 +7,7 @@ export type Administrator = {
   firstName: string;
   midName: string | null;
   lastName: string;
+  profilePhotoUrl: string | null;
   gender: string;
   civilStatus: string;
   /** Raw department string from backend, e.g. "CS - Computer Science". */

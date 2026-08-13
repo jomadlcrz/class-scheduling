@@ -132,7 +132,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Academic Community",
     items: [
       { label: "Administrators", to: "/administrators", icon: <ShieldUserIcon />, roles: ["admin"], matchPrefix: true },
-      { label: "All Accounts", to: "/accounts", icon: <UsersIcon />, roles: ["admin"] },
       { label: "Faculty", to: "/faculty", icon: <UserIcon />, roles: ["admin"], matchPrefix: true },
       { label: "Students", to: "/students", icon: <UsersIcon />, roles: ["admin"], matchPaths: ["/students", "/students-regular", "/students-irregular"] },
     ],

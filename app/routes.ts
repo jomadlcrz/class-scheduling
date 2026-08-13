@@ -17,7 +17,6 @@ export default [
   layout("layouts/app-shell.tsx", [
     route("dashboard", "routes/app/dashboard.tsx"),
     route("administrators", "routes/app/administrators.tsx"),
-    route("accounts", "routes/app/accounts.tsx"),
     route("administrators/new", "routes/app/administrators-new.tsx"),
     route("permissions", "routes/app/permissions.tsx"),
     route("facilities", "routes/app/facilities.tsx"),

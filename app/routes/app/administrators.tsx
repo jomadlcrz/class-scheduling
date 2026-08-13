@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -38,9 +38,13 @@ export default function AdministratorsRoute() {
 
 function AdministratorsPage() {
   const navigate = useNavigate();
-  const { data: administrators, error: loadError, reload: refresh } = useCachedData(
+  const { data: administrators, error: loadError, reload: reloadAdministrators } = useCachedData(
     "administrators",
     () => administratorService.list(),
+  );
+  const { data: systemAccounts, reload: reloadSystemAccounts } = useCachedData(
+    "system-accounts",
+    () => administratorService.listAccounts(),
   );
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("all");
@@ -51,7 +55,19 @@ function AdministratorsPage() {
   const [reactivateTarget, setReactivateTarget] = useState<Administrator | null>(null);
   // The list endpoint has no account_active field — fetched per-row (page-bounded
   // by pagination) so Deactivate/Reactivate can show only the one that applies.
-  const [accountActiveById, setAccountActiveById] = useState<Record<number, boolean | undefined>>({});
+  const accountActiveById = useMemo<Record<number, boolean | undefined>>(() => {
+    const byEmail = new Map(
+      (systemAccounts?.items ?? [])
+        .filter((account) => account.email)
+        .map((account) => [account.email!.toLowerCase(), account.active]),
+    );
+    return Object.fromEntries(
+      (administrators ?? []).map((admin) => [
+        admin.id,
+        admin.email ? byEmail.get(admin.email.toLowerCase()) : undefined,
+      ]),
+    );
+  }, [administrators, systemAccounts]);
 
   const visibleAdministrators = useMemo(() => {
     if (!administrators) return [];
@@ -75,47 +91,25 @@ function AdministratorsPage() {
   }, [administrators, search, role, status, accountActiveById]);
 
   const pagination = usePagination(visibleAdministrators, `${search}|${role}|${status}`);
-  const pageIds = pagination.pageItems.map((a) => a.id).join(",");
-
-  useEffect(() => {
-    if (!pageIds) return;
-    const ids = pageIds.split(",").map(Number);
-    let cancelled = false;
-    Promise.all(
-      ids.map((id) =>
-        administratorService
-          .get(id)
-          .then((detail) => [id, detail.accountActive ?? true] as const)
-          .catch(() => [id, true] as const),
-      ),
-    ).then((results) => {
-      if (cancelled) return;
-      setAccountActiveById((current) => ({ ...current, ...Object.fromEntries(results) }));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [pageIds]);
-
   async function handleEdit(input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) {
     if (!editTarget) return;
     const message = await administratorService.update(editTarget.id, input);
     if (message) toast.success(message);
     setEditTarget(null);
-    refresh();
+    await Promise.all([reloadAdministrators(), reloadSystemAccounts()]);
   }
 
   async function handleDeactivate(admin: Administrator, reason: string) {
     const message = await administratorService.deactivate(admin.id, reason);
     if (message) toast.success(message);
-    setAccountActiveById((current) => ({ ...current, [admin.id]: false }));
+    await reloadSystemAccounts();
     setDeactivateTarget(null);
   }
 
   async function handleReactivate(admin: Administrator, reason: string) {
     const message = await administratorService.reactivate(admin.id, reason);
     if (message) toast.success(message);
-    setAccountActiveById((current) => ({ ...current, [admin.id]: true }));
+    await reloadSystemAccounts();
     setReactivateTarget(null);
   }
 
