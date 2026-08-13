@@ -7,8 +7,8 @@ import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
-import { SubjectAssignmentToolbar } from "~/features/dean-assignments/subject-assignment-toolbar";
-import { useDeanSubjectAssignments } from "~/features/dean-assignments/use-dean-subject-assignments";
+import { SubjectAssignmentToolbar } from "~/features/subject-assignments/subject-assignment-toolbar";
+import { useSubjectAssignments } from "~/features/subject-assignments/use-subject-assignments";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
@@ -55,7 +55,7 @@ type Instructor = {
 };
 
 export function SubjectAssignmentView() {
-  const apiData = useDeanSubjectAssignments();
+  const apiData = useSubjectAssignments();
   const navigate = useNavigate();
   const [programOptions, setProgramOptions] = useState<{
     id: number;
@@ -561,7 +561,7 @@ export function SubjectAssignmentView() {
                 onViewTeachingTerm={() => {
                   const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
                   if (entry?.teachingTermId) {
-                    navigate(`/dean/teaching-terms/${entry.teachingTermId}`);
+                    navigate(`/teaching-terms/${entry.teachingTermId}`);
                   }
                 }}
                 onRemoveInstructor={() => setRemoveInstructorTarget(inst)}

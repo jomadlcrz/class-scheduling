@@ -6,6 +6,7 @@ import {
   LayersIcon,
   UserIcon,
 } from "~/components/ui/icons";
+
 import { StickyFooter } from "~/components/ui/sticky-footer";
 
 type AssignmentSummaryFooterProps = {

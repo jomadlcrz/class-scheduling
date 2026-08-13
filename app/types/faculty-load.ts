@@ -79,7 +79,7 @@ export type FacultyLoadingEntry = {
   semesterNumber?: number;
   /** subjectCode → subjectAssignmentId lookup, merged from teaching terms. */
   subjectAssignmentIds?: Map<string, number>;
-  /** Programs grouped from the teaching term response — matches the grouped view on /dean/teaching-terms/<id>. */
+  /** Programs grouped from the teaching term response — matches the grouped view on /teaching-terms/<id>. */
   programs?: {
     programAbbrev: string;
     programName: string;

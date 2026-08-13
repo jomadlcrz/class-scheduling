@@ -89,10 +89,10 @@ function TermSkeleton() {
   );
 }
 
-export default function DeanTeachingTermRoute() {
+export default function TeachingTermRoute() {
   return (
-    <RoleGuard allow={["dean"]}>
-      <DeanTeachingTermPage />
+    <RoleGuard allow={["dean", "registrar"]}>
+      <TeachingTermPage />
     </RoleGuard>
   );
 }
@@ -337,13 +337,13 @@ function UnassignedSubjectsWarning({ subjects }: { subjects: TeachingTermDetailU
   );
 }
 
-function DeanTeachingTermPage() {
+function TeachingTermPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const teachingTermId = Number(id);
 
   const { data: detail, error } = useCachedData(
-    `dean-teaching-term:${teachingTermId || "none"}`,
+    `teaching-term:${teachingTermId || "none"}`,
     () => deanService.getTeachingTermDetail(teachingTermId),
     { enabled: !!teachingTermId },
   );
@@ -360,7 +360,7 @@ function DeanTeachingTermPage() {
           title="Teaching Term Not Found"
 
           actions={
-            <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/subject-assignments")}>
+            <Button type="button" variant="outline" block={false} onClick={() => navigate("/subject-assignments")}>
               <ArrowLeftIcon /> Back to Assignments
             </Button>
           }
@@ -376,7 +376,7 @@ function DeanTeachingTermPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <Breadcrumb
         items={[
-          { label: "Subject Assignments", href: "/dean/subject-assignments" },
+          { label: "Subject Assignments", href: "/subject-assignments" },
           { label: instructor.full_name ?? "Teaching Term" },
         ]}
         className="mb-4"
@@ -396,7 +396,7 @@ function DeanTeachingTermPage() {
             />
           ) : (
             <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-navy-800 text-base font-bold text-mist-100 dark:bg-white/10 dark:text-mist-100">
-              {instructor.full_name?.split(" ").map((n) => n[0]).join("").slice(0, 2) ?? "IN"}
+              {(instructor.full_name?.trim().charAt(0) || "I").toUpperCase()}
             </div>
           )}
           <div>

@@ -102,7 +102,7 @@ function mapTeachingTermsToEntries(teachingTerms: TeachingTerm[]): FacultyLoadin
   });
 }
 
-export function useDeanSubjectAssignments() {
+export function useSubjectAssignments() {
   const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 

@@ -28,16 +28,18 @@ export const AssignSchedulePanel = forwardRef<AssignSchedulePanelHandle, AssignS
   const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isBulk = Boolean(bulkStudentCount && onBulkAssign);
+  const allSelected = Boolean(
+    pending?.pendingSubjects.length &&
+      pending.pendingSubjects.every(
+        (subject) => selected[subject.subjectId] !== undefined && selected[subject.subjectId] !== null,
+      ),
+  );
 
   useEffect(() => {
     onSelectionStateChange?.(allSelected);
   }, [allSelected, onSelectionStateChange]);
 
   if (!pending || pending.pendingSubjects.length === 0) return null;
-
-  const allSelected = pending.pendingSubjects.every(
-    (s) => selected[s.subjectId] !== undefined && selected[s.subjectId] !== null,
-  );
 
   function toggleOffering(subjectId: number, offeringIdx: number) {
     setSelected((prev) => {

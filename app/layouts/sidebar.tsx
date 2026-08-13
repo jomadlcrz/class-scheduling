@@ -111,6 +111,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Scheduling Hub", to: "/schedules", icon: <SchedulingHubIcon />, roles: ["registrar"] },
       { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
+      { label: "Subject Assignments", to: "/subject-assignments", icon: <UserCheckIcon />, roles: ["registrar"] },
       { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
       { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
       { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
@@ -153,7 +154,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Schedule Approvals", to: "/dean/schedule-approvals", icon: <CheckIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
-      { label: "Subject Assignments", to: "/dean/subject-assignments", icon: <UserCheckIcon />, roles: ["dean"], matchPrefix: true },
+      { label: "Subject Assignments", to: "/subject-assignments", icon: <UserCheckIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Curriculum", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
       { label: "Department Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
     ],
