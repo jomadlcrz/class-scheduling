@@ -5,6 +5,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { TableSkeleton } from "~/components/ui/skeleton";
+import { TableLoadingSpinner } from "~/components/ui/spinner";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { EnrollmentRecordsView } from "~/features/enrollment/records/enrollment-records-view";
 import { SetCapacityDialog } from "~/features/enrollment/set-capacity-dialog";
@@ -88,6 +89,7 @@ function EnrollmentStudentsPage() {
   );
   const students = enrollmentData?.items ?? null;
   const totalItems = enrollmentData?.total ?? 0;
+  const changingPage = enrollmentData !== null && enrollmentData.currentPage !== page;
   const { data: facets, reload: reloadFacets } = useCachedData(
     `enrollment-facets:${termKey}`,
     () => enrollmentService.getFacets(syId as number, semesterNumber as number, audience),
@@ -124,7 +126,9 @@ function EnrollmentStudentsPage() {
       />
 
       <div className="mt-6">
-        {loadError && students === null ? (
+        {changingPage ? (
+          <TableLoadingSpinner label="Loading enrollment page" />
+        ) : loadError && students === null ? (
           <EmptyState title="Unable to load enrollments">{loadError}</EmptyState>
         ) : students === null ? (
           <TableSkeleton columns={9} rows={8} />

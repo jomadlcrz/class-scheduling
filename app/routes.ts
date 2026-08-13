@@ -28,7 +28,6 @@ export default [
     route("departments", "routes/app/departments.tsx"),
     route("departments/:departmentId", "routes/app/departments/$departmentId.tsx"),
     route("program-curricula", "routes/app/program-curricula.tsx"),
-    route("subjects", "routes/app/subjects.tsx"),
     route("program-curricula/new", "routes/app/program-curricula-new.tsx"),
     route("sets", "routes/app/sets.tsx"),
     route("dean/subjects", "routes/app/dean-subjects.tsx"),

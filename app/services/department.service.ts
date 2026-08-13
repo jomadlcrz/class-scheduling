@@ -191,7 +191,7 @@ type DepartmentOverviewResponse = {
 /** GET /departments/:id/overview — detail-page header, building, and nested programs. */
 async function getOverview(id: number, fresh = false): Promise<DepartmentOverview> {
   const suffix = fresh ? `?refresh=${Date.now()}` : "";
-  const [d, detail, _programs, logo] = await Promise.all([
+  const [d, detail, _programs, logo, cover] = await Promise.all([
     apiGet<DepartmentOverviewResponse>(`/departments/${id}/overview${suffix}`),
     apiGet<{
       department_id: number; department_abbrev: string; department_name: string;
@@ -200,6 +200,7 @@ async function getOverview(id: number, fresh = false): Promise<DepartmentOvervie
     }>(`/departments/${id}${suffix}`),
     apiGet<unknown>(`/departments/${id}/programs${suffix}`),
     apiGet<{ logo_url: string | null }>(`/departments/${id}/logo${suffix}`),
+    apiGet<{ cover_image_url: string | null }>(`/departments/${id}/cover${suffix}`),
   ]);
   return {
     id: detail.department_id,
@@ -210,7 +211,7 @@ async function getOverview(id: number, fresh = false): Promise<DepartmentOvervie
     buildingName: d.building_name,
     description: detail.description,
     logoUrl: logo.logo_url,
-    coverImageUrl: detail.cover_image_url,
+    coverImageUrl: cover.cover_image_url,
     totalPrograms: d.total_programs,
     programs: d.programs.map(mapProgramSummary),
   };

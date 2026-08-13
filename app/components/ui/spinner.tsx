@@ -1,9 +1,9 @@
-export function Spinner() {
+export function Spinner({ size = 14 }: { size?: number }) {
   return (
     <svg
       className="animate-spin"
-      width="14"
-      height="14"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
@@ -16,5 +16,18 @@ export function Spinner() {
         strokeLinecap="round"
       />
     </svg>
+  );
+}
+
+/** Centered loading state for tables that render paginated results. */
+export function TableLoadingSpinner({ label = "Loading table…" }: { label?: string }) {
+  return (
+    <div
+      role="status"
+      aria-label={label}
+      className="grid min-h-64 place-items-center text-navy-700 dark:text-slate-200"
+    >
+      <Spinner size={24} />
+    </div>
   );
 }

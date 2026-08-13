@@ -102,7 +102,6 @@ const NAV_GROUPS: NavGroup[] = [
       },
       { label: "Departments", to: "/departments", icon: <FolderOpenIcon />, roles: ["registrar"] },
       { label: "Program Curricula", to: "/program-curricula", icon: <BookOpenIcon />, roles: ["registrar"], matchPrefix: true },
-      { label: "Subjects", to: "/subjects", icon: <BookOpenIcon />, roles: ["registrar"] },
       { label: "Sets", to: "/sets", icon: <LayersIcon />, roles: ["registrar"] },
     ],
   },

@@ -7,6 +7,7 @@ import { LockIcon, RotateIcon, UnlockIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
+import { TableLoadingSpinner } from "~/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -61,6 +62,7 @@ export function AcademicTermsAuditLogPage() {
   const pages = entryData?.pages ?? 1;
   const loadingEntries = entryData === null;
   const loading = loadingFilters || loadingEntries;
+  const changingPage = entryData !== null && entryData.page !== page;
 
   const schoolYearOptions = useMemo(
     () => filters?.schoolYears.map((row) => ({ value: String(row.id), label: row.schoolYear })) ?? [],
@@ -176,7 +178,11 @@ export function AcademicTermsAuditLogPage() {
         </div>
       )}
 
-      {loading ? (
+      {changingPage || (loadingEntries && page > 1) ? (
+        <div className="mt-4">
+          <TableLoadingSpinner label="Loading academic-term audit log" />
+        </div>
+      ) : loading ? (
         <div className="mt-4">
           <TableSkeleton columns={5} rows={8} />
         </div>

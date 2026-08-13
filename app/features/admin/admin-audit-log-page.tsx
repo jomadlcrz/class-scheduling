@@ -3,6 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
+import { TableLoadingSpinner } from "~/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -36,6 +37,7 @@ export function AdminAuditLogPage() {
   const total = entryData?.total ?? 0;
   const pages = entryData?.pages ?? 1;
   const loading = entryData === null;
+  const changingPage = entryData !== null && entryData.page !== page;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -43,7 +45,11 @@ export function AdminAuditLogPage() {
         title="Audit Log"
       />
 
-      {loading ? (
+      {changingPage || (loading && page > 1) ? (
+        <div className="mt-4">
+          <TableLoadingSpinner label="Loading audit log" />
+        </div>
+      ) : loading ? (
         <div className="mt-4">
           <TableSkeleton columns={5} rows={8} />
         </div>
