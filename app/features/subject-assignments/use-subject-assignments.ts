@@ -29,6 +29,7 @@ function entryFromTermDetail(detail: TeachingTermDetail, prev?: FacultyLoadingEn
     syId: detail.term.sy_id ?? prev?.syId,
     semesterNumber: detail.term.semester_number ?? prev?.semesterNumber,
     maxWeeklyHours: detail.hours.max_weekly_hours,
+    loadClassification: detail.hours.load_classification,
     teachingTermId: detail.teaching_term_id,
     subjectAssignmentIds,
     subjects: assignments.map((a) => ({
@@ -71,6 +72,7 @@ function mapTeachingTermsToEntries(teachingTerms: TeachingTerm[]): FacultyLoadin
       syId: tt.syId,
       semesterNumber: tt.semesterNumber,
       maxWeeklyHours: tt.maxWeeklyHours,
+      loadClassification: tt.loadClassification,
       teachingTermId: tt.id,
       subjectAssignmentIds: assignmentIdMap,
       programs: (tt.programs ?? []).map((p) => ({

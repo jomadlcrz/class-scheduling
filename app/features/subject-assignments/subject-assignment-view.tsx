@@ -16,6 +16,7 @@ import { facultyKey, formatInstructorName } from "~/lib/faculty-load";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
+import { AssignmentLoadSummary } from "./assignment-load-summary";
 import { InstructorCard } from "./instructor-card";
 
 type Subject = {
@@ -50,6 +51,7 @@ type Instructor = {
   department: string;
   statusBadge: string;
   maxWeeklyHours: number | null;
+  loadClassification: "underload" | "regular" | "overload" | null;
   avatarUrl?: string;
   programs: ProgramGroup[];
 };
@@ -160,6 +162,7 @@ export function SubjectAssignmentView() {
         department: inst.department,
         statusBadge: "active",
         maxWeeklyHours: entry.maxWeeklyHours,
+        loadClassification: entry.loadClassification ?? null,
         avatarUrl: inst.profilePhotoUrl ?? undefined,
         programs,
       };
@@ -233,6 +236,7 @@ export function SubjectAssignmentView() {
       department: instructor.department,
       statusBadge: "active",
       maxWeeklyHours: entry?.maxWeeklyHours ?? null,
+      loadClassification: entry?.loadClassification ?? null,
       avatarUrl: instructor.profilePhotoUrl ?? undefined,
       programs,
     };
@@ -468,6 +472,13 @@ export function SubjectAssignmentView() {
     if (inst.maxWeeklyHours == null) return false;
     return uniqueAssignedHours(inst) > inst.maxWeeklyHours;
   });
+  const loadCounts = filteredInstructors.reduce(
+    (counts, instructor) => {
+      if (instructor.loadClassification) counts[instructor.loadClassification] += 1;
+      return counts;
+    },
+    { underload: 0, regular: 0, overload: 0 },
+  );
 
   if (apiData.instructors === null || apiData.entries === null || (apiData.entries.length > 0 && instructors.length === 0)) {
     return (
@@ -500,6 +511,13 @@ export function SubjectAssignmentView() {
         onSemesterChange={apiData.setSelectedSemesterNumber}
         search={search}
         onSearchChange={setSearch}
+      />
+
+      <AssignmentLoadSummary
+        instructors={totalInstructors}
+        underload={loadCounts.underload}
+        regular={loadCounts.regular}
+        overload={loadCounts.overload}
       />
 
       {/* Teaching Loads Main Section */}

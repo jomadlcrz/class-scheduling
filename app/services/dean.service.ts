@@ -220,6 +220,7 @@ async function listTeachingTerms(params?: {
     semesterNumber: t.term?.semester_number ?? 0,
     maxWeeklyHours: t.hours?.max_weekly_hours ?? 0,
     currentWeeklyHours: t.hours?.current_weekly_hours ?? 0,
+    loadClassification: t.hours?.load_classification ?? null,
     subjectAssignments: (t.subject_assignments ?? []).map((sa) => ({
       subjectAssignmentId: sa.subject_assignment_id,
       curriculumDetailId: sa.curriculum_detail_id,

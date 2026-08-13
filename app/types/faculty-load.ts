@@ -1,5 +1,7 @@
 import type { Semester, YearLevel } from "~/types/subject";
 
+export type InstructorLoadClassification = "underload" | "regular" | "overload";
+
 /** One subject to assign within a program (matched by id on the backend). */
 type SubjectLoadInput = {
   subjectId: number;
@@ -72,6 +74,7 @@ export type FacultyLoadingEntry = {
   semester: string;
   academicTerm: string;
   maxWeeklyHours: number | null;
+  loadClassification?: InstructorLoadClassification | null;
   /** Populated from GET /deans/teaching-terms so maxWeeklyHours can be edited. */
   teachingTermId: number | null;
   instructorProfileId?: number;
@@ -108,6 +111,7 @@ export type TeachingTerm = {
   semesterNumber: number;
   maxWeeklyHours: number;
   currentWeeklyHours: number;
+  loadClassification: InstructorLoadClassification | null;
   /** Populated by the list endpoint so the view can reference assignment IDs. */
   subjectAssignments?: {
     subjectAssignmentId: number;
@@ -229,6 +233,10 @@ export type TeachingTermDetail = {
     is_overloaded: boolean;
     expected_weekly_hours: number;
     total_daily_hours: number;
+    load_classification: InstructorLoadClassification;
+    normal_load_hours: number;
+    regular_daily_cap: number;
+    overload_daily_cap: number;
   };
   totals: {
     assigned_subjects: number;
