@@ -7,6 +7,7 @@ import { Accordion } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
+import { ImageViewer } from "~/components/ui/image-viewer";
 import { SubjectAssignmentToolbar } from "~/features/subject-assignments/subject-assignment-toolbar";
 import { useSubjectAssignments } from "~/features/subject-assignments/use-subject-assignments";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
@@ -193,6 +194,7 @@ export function SubjectAssignmentView() {
     assignedCodes: Set<string>;
   } | null>(null);
   const [removeInstructorTarget, setRemoveInstructorTarget] = useState<Instructor | null>(null);
+  const [avatarViewer, setAvatarViewer] = useState<{ src: string; alt: string } | null>(null);
   const [removeSubjectTarget, setRemoveSubjectTarget] = useState<{
     instructorId: string;
     programId: string;
@@ -582,6 +584,7 @@ export function SubjectAssignmentView() {
                     navigate(`/teaching-terms/${entry.teachingTermId}`);
                   }
                 }}
+                onViewAvatar={inst.avatarUrl ? () => setAvatarViewer({ src: inst.avatarUrl!, alt: `${inst.name} profile photo` }) : undefined}
                 onRemoveInstructor={() => setRemoveInstructorTarget(inst)}
               />
             ))}
@@ -607,6 +610,15 @@ export function SubjectAssignmentView() {
         availableInstructors={availableInstructors}
         onAdd={handleAddInstructor}
       />
+
+      {avatarViewer && (
+        <ImageViewer
+          open
+          src={avatarViewer.src}
+          alt={avatarViewer.alt}
+          onClose={() => setAvatarViewer(null)}
+        />
+      )}
 
       <AddProgramModal
         open={addProgramTarget !== null}

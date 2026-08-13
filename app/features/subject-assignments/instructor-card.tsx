@@ -46,6 +46,7 @@ type InstructorCardProps = {
   onRemoveProgram: (programId: string) => void;
   onUpdateAssignment: () => void;
   onViewTeachingTerm?: () => void;
+  onViewAvatar?: () => void;
   onRemoveInstructor: () => void;
 };
 
@@ -59,6 +60,7 @@ export function InstructorCard({
   onRemoveProgram,
   onUpdateAssignment,
   onViewTeachingTerm,
+  onViewAvatar,
   onRemoveInstructor,
 }: InstructorCardProps) {
   const subjectHours = new Map<string, number>();
@@ -91,7 +93,11 @@ export function InstructorCard({
             <img
               src={instructor.avatarUrl}
               alt={instructor.name}
-              className="size-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-white/10"
+              className="size-11 cursor-pointer rounded-full object-cover ring-2 ring-slate-100 dark:ring-white/10"
+              onClick={(event) => {
+                event.stopPropagation();
+                onViewAvatar?.();
+              }}
             />
           ) : (
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-bold text-mist-100 dark:bg-white dark:text-navy-800">

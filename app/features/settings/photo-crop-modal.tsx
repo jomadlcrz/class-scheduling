@@ -3,6 +3,7 @@ import Cropper from "react-easy-crop";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { FileChooser } from "~/components/ui/file-chooser";
+import { ImageViewer } from "~/components/ui/image-viewer";
 import { Modal, ModalActions } from "~/components/ui/modal";
 
 type ProfilePictureModalProps = {
@@ -235,25 +236,14 @@ export function ProfilePictureModal({
       </Modal>
 
       {/* ── Full view modal ── */}
-      <Modal open={fullViewOpen} onClose={() => setFullViewOpen(false)} title="Profile Picture">
-        <div className="flex flex-col items-center gap-4">
-          <img
-            src={photoUrl ?? undefined}
-            alt="Profile"
-            className="max-h-96 rounded-lg object-contain"
-          />
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              onClick={() => setFullViewOpen(false)}
-            >
-              Close
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {photoUrl && (
+        <ImageViewer
+          open={fullViewOpen}
+          onClose={() => setFullViewOpen(false)}
+          src={photoUrl}
+          alt="Profile picture full view"
+        />
+      )}
     </>
   );
 }
