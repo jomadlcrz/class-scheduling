@@ -2,11 +2,11 @@ import { useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { MobileScheduleSkeleton } from "~/components/ui/skeleton";
-import { BookIcon, CalendarIcon, PrinterIcon, UserCheckIcon, UsersIcon } from "~/components/ui/icons";
+import { PrinterIcon } from "~/components/ui/icons";
+import { StatCard } from "~/components/ui/stat-card";
 import { Tooltip } from "~/components/ui/tooltip";
 import { MobileWeeklySchedule } from "~/features/schedules/mobile-weekly-schedule";
 import { openStudentSchedulePrint } from "~/features/schedules/print-student-schedule";
-import { ScheduleKpiCard } from "~/features/schedules/schedule-kpi-card";
 import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
 import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { TodayClasses } from "~/features/schedules/today-classes";
@@ -113,21 +113,19 @@ function StudentSchedulePage() {
           ) : (
             <>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <ScheduleKpiCard icon={<BookIcon />} label="Total Units" value={totalUnits} />
-                <ScheduleKpiCard
-                  icon={<CalendarIcon />}
+                <StatCard label="Total Units" value={totalUnits} />
+                <StatCard
                   label="Weekly Classes"
                   value={visibleSchedules.length}
                 />
-                <ScheduleKpiCard
-                  icon={<UserCheckIcon />}
+                <StatCard
                   label="Status"
                   value={academicStatus ?? totalSubjects}
                 />
                 {isRegular ? (
-                  <ScheduleKpiCard icon={<UsersIcon />} label="SET" value={studentSetCode} />
+                  <StatCard label="Set" value={studentSetCode} />
                 ) : (
-                  <ScheduleKpiCard icon={<UsersIcon />} label="Sets" value={totalSets} />
+                  <StatCard label="Sets" value={totalSets} />
                 )}
               </div>
 

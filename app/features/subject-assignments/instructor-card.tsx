@@ -112,8 +112,8 @@ export function InstructorCard({
               {instructor.name.charAt(0)}
             </span>
           )}
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 {instructor.name}
               </h3>
@@ -131,13 +131,17 @@ export function InstructorCard({
           </div>
         </div>
       }
+      adornmentPosition="below"
       adornment={
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center gap-2">
-            <span className="font-body text-xs font-medium text-slate-500 dark:text-slate-400">
+        <div
+          className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div>
+            <span className="block font-body text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
               Max Weekly Hours
             </span>
-            <div className="flex items-center rounded-lg border border-slate-300 bg-white shadow-xs dark:border-white/15 dark:bg-white/5">
+            <div className="mt-1 flex w-fit items-center rounded-lg border border-slate-300 bg-white shadow-xs dark:border-white/15 dark:bg-white/5">
               <input
                 type="number"
                 min="0"
@@ -154,9 +158,9 @@ export function InstructorCard({
             </div>
           </div>
 
-          <div className="flex flex-col min-w-0 sm:min-w-36 sm:flex-1">
+          <div className="min-w-0 sm:min-w-36 sm:flex-1">
             <div className="flex items-center justify-between font-body text-xs">
-              <span className="text-slate-500 dark:text-slate-400">Assigned Hours</span>
+              <span className="uppercase tracking-wide text-slate-400 dark:text-slate-500">Assigned Hours</span>
               <span className="font-bold text-navy-800 dark:text-mist-100">
                 {assignedHours}{maxHours != null ? ` / ${maxHours}` : ""} hrs
               </span>
@@ -176,7 +180,7 @@ export function InstructorCard({
           </div>
 
           <div className="flex flex-col font-body text-xs">
-            <span className="text-slate-500 dark:text-slate-400">Remaining Hours</span>
+            <span className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">Remaining Hours</span>
             <span
               className={`mt-0.5 font-bold ${
                 remainingHours == null

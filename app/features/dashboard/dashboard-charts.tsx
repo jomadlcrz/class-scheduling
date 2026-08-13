@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { useTheme } from "~/hooks/use-theme";
 import { EASE_OUT } from "~/features/dashboard/dashboard-shared";
+import { StatCard } from "~/components/ui/stat-card";
 import type {
   CoverageByProgram,
   DailyLoadHour,
@@ -167,7 +168,7 @@ function ChartEmpty({ message }: { message: string }) {
   );
 }
 
-// ── KPI tile ────────────────────────────────────────────────────────────────
+// ── Stat tile ───────────────────────────────────────────────────────────────
 
 export function StatTile({
   title,
@@ -203,11 +204,14 @@ export function StatTile({
         boxShadow: "0 8px 25px -8px rgba(0,0,0,0.12)",
         transition: { duration: 0.2 },
       }}
-      className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900"
+      className="h-full rounded-xl"
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{title}</span>
-        {badge && (
+      <StatCard
+        className="h-full"
+        label={title}
+        value={displayValue}
+        hint={unit}
+        adornment={badge && (
           <motion.span
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -218,37 +222,33 @@ export function StatTile({
             {badge}
           </motion.span>
         )}
-      </div>
-      <motion.span
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: EASE_OUT }}
-        className="text-3xl font-bold tracking-tight text-navy-800 dark:text-mist-100"
       >
-        {displayValue}
-      </motion.span>
-      {unit && <span className="text-xs text-slate-500 dark:text-slate-400">{unit}</span>}
-      {meterPercent != null && (
-        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(meterPercent, 100)}%` }}
-            transition={{ duration: 0.8, ease: EASE_OUT }}
-            className="h-full rounded-full"
-            style={{ backgroundColor: color }}
-          />
-        </div>
-      )}
-      {hint && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-          className="text-[11px] leading-tight text-slate-400 dark:text-slate-500"
-        >
-          {hint}
-        </motion.p>
-      )}
+        {(meterPercent != null || hint) && (
+          <>
+            {meterPercent != null && (
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(meterPercent, 100)}%` }}
+                  transition={{ duration: 0.8, ease: EASE_OUT }}
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: color }}
+                />
+              </div>
+            )}
+            {hint && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25, duration: 0.4 }}
+                className={`${meterPercent != null ? "mt-2" : ""} text-[11px] leading-tight text-slate-400 dark:text-slate-500`}
+              >
+                {hint}
+              </motion.p>
+            )}
+          </>
+        )}
+      </StatCard>
     </motion.div>
   );
 }

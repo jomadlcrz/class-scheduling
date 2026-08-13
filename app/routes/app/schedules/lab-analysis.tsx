@@ -7,7 +7,7 @@ import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { LabAnalysisSkeleton } from "~/components/ui/skeleton";
 import { aggregateLabSubjects } from "~/features/schedules/lab-analysis/aggregate-subjects";
-import { LabAnalysisKpis } from "~/features/schedules/lab-analysis/lab-analysis-kpis";
+import { LabAnalysisStats } from "~/features/schedules/lab-analysis/lab-analysis-stats";
 import { LabAnalysisLegend } from "~/features/schedules/lab-analysis/lab-analysis-legend";
 import { LabAnalysisVerdict } from "~/features/schedules/lab-analysis/lab-analysis-verdict";
 import { LabProgramAccessCards } from "~/features/schedules/lab-analysis/lab-program-access-cards";
@@ -184,7 +184,7 @@ function LabAnalysisPage() {
         ) : (
           <>
             <LabAnalysisVerdict totals={analysis.totals} />
-            <LabAnalysisKpis totals={analysis.totals} />
+            <LabAnalysisStats totals={analysis.totals} />
 
             <section>
               <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Room by Room</h2>

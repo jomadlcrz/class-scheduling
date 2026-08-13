@@ -610,7 +610,7 @@ export function IrregularStudentsSkeleton() {
   );
 }
 
-/** Lab analysis loading placeholder — verdict banner, KPI stat row, per-room
+/** Lab analysis loading placeholder — verdict banner, summary stat row, per-room
  * slot plates, and the consuming-subjects table. */
 export function LabAnalysisSkeleton() {
   return (

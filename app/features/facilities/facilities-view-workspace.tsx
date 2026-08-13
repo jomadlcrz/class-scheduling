@@ -6,6 +6,7 @@ import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { StatCard } from "~/components/ui/stat-card";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import {
   ArchiveIcon,
@@ -44,19 +45,6 @@ type FacilitiesViewWorkspaceProps = {
 
 function pluralizeRooms(count: number) {
   return `${count} room${count === 1 ? "" : "s"}`;
-}
-
-function OverviewStat({ label, value }: { label: string; value: string | number }) {
-  return (
-    <Card className="bg-white px-4 py-3 dark:bg-white/5">
-      <p className="font-body text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        {label}
-      </p>
-      <p className="mt-1 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
-        {value}
-      </p>
-    </Card>
-  );
 }
 
 export function FacilitiesViewWorkspace({
@@ -230,10 +218,10 @@ export function FacilitiesViewWorkspace({
               </Select>
             </div>
           </Card>
-          <OverviewStat label="Total floors" value={building.floorCount} />
-          <OverviewStat label="Total rooms" value={building.rooms.length} />
-          <OverviewStat label="Total capacity" value={totalCapacity.toLocaleString()} />
-          <OverviewStat label="Room types" value={Object.keys(summary.roomTypeCounts).length} />
+          <StatCard label="Total floors" value={building.floorCount} />
+          <StatCard label="Total rooms" value={building.rooms.length} />
+          <StatCard label="Total capacity" value={totalCapacity.toLocaleString()} />
+          <StatCard label="Room types" value={Object.keys(summary.roomTypeCounts).length} />
         </div>
       </div>
 

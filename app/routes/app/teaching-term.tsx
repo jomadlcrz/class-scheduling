@@ -17,13 +17,12 @@ import {
   AlertTriangleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  ClockIcon,
   BookOpenIcon,
-  LayersIcon,
 } from "~/components/ui/icons";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { StatCard } from "~/components/ui/stat-card";
 import { Table, TableHead, TableHeader, TableBody, TableCell } from "~/components/ui/table";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -120,28 +119,6 @@ function utilizationMeta(rate: number) {
   if (rate > 100) return { color: "text-red-600 dark:text-red-400", bar: barColors.red };
   if (rate >= 80) return { color: "text-amber-600 dark:text-amber-400", bar: barColors.amber };
   return { color: "text-emerald-600 dark:text-emerald-400", bar: barColors.green };
-}
-
-function StatCard({ icon, label, value, children }: { icon: React.ReactNode; label: string; value: string | number; children?: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <Card className="p-5">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <span className="shrink-0 text-navy-700 dark:text-mist-100">{icon}</span>
-            <div>
-              <p className="font-body text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
-              <p className="font-body text-xl font-bold tracking-tight text-navy-800 dark:text-mist-100">{value}</p>
-            </div>
-          </div>
-        </div>
-        {children}
-      </Card>
-    </motion.div>
-  );
 }
 
 function DailyLoadStrip({ dailyLoads }: { dailyLoads: TeachingTermDetail["daily_loads"] }) {
@@ -413,8 +390,8 @@ function TeachingTermPage() {
 
       {/* ── Stats grid ── */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<ClockIcon size={19} />} label="Weekly Hours" value={`${hours.max_weekly_hours}h`}>
-          <div className="mt-3 flex items-center gap-2">
+        <StatCard label="Weekly Hours" value={`${hours.max_weekly_hours}h`}>
+          <div className="flex items-center gap-2">
             {hours.is_overloaded && <Badge tone="red">Overloaded</Badge>}
             <span className="font-body text-[11px] text-slate-400 dark:text-slate-500">max</span>
           </div>
@@ -437,8 +414,8 @@ function TeachingTermPage() {
           </div>
         </StatCard>
 
-        <StatCard icon={<BookOpenIcon />} label="Assigned Subjects" value={totals.assigned_subjects}>
-          <div className="mt-4 space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
+        <StatCard label="Assigned Subjects" value={totals.assigned_subjects}>
+          <div className="space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Total units</span>
               <span className="font-semibold text-navy-700 dark:text-mist-100">{totals.total_units}</span>
@@ -450,8 +427,8 @@ function TeachingTermPage() {
           </div>
         </StatCard>
 
-        <StatCard icon={<LayersIcon />} label="Scheduled Subjects" value={`${totals.scheduled_subjects}/${totals.assigned_subjects}`}>
-          <div className="mt-4 space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
+        <StatCard label="Scheduled Subjects" value={`${totals.scheduled_subjects}/${totals.assigned_subjects}`}>
+          <div className="space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Booked sessions</span>
               <span className="font-semibold text-navy-700 dark:text-mist-100">{totals.scheduled_sessions}</span>
@@ -467,8 +444,8 @@ function TeachingTermPage() {
           </div>
         </StatCard>
 
-        <StatCard icon={<ClockIcon size={19} />} label="Daily Hours" value={`${hours.total_daily_hours}h total`}>
-          <div className="mt-4 space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
+        <StatCard label="Daily Hours" value={`${hours.total_daily_hours}h total`}>
+          <div className="space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Current weekly</span>
               <span className="font-semibold text-navy-700 dark:text-mist-100">{hours.current_weekly_hours}h</span>

@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { StatCard } from "~/components/ui/stat-card";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -698,20 +699,14 @@ function IrregularClassPage() {
           {activeTab === "students" && step === 2 && activePending && (
             <div className="flex flex-col gap-6">
               <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">Assignment Summary</h2>
-              {/* KPI cards */}
-              <div className="flex flex-wrap gap-4">
-                <div className="rounded-lg border border-slate-200 px-4 py-3 dark:border-white/8">
-                  <p className="font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Students</p>
-                  <p className="font-display text-xl tracking-wide text-navy-800 dark:text-mist-100">{isBulk ? selectedStudents.length : 1}</p>
-                </div>
-                <div className="rounded-lg border border-slate-200 px-4 py-3 dark:border-white/8">
-                  <p className="font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Schedules</p>
-                  <p className="font-display text-xl tracking-wide text-navy-800 dark:text-mist-100">{selectedOfferingKeys.size}</p>
-                </div>
-                <div className="rounded-lg border border-slate-200 px-4 py-3 dark:border-white/8">
-                  <p className="font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Assignments</p>
-                  <p className="font-display text-xl tracking-wide text-navy-800 dark:text-mist-100">{(isBulk ? selectedStudents.length : 1) * selectedOfferingKeys.size}</p>
-                </div>
+              {/* Summary stats */}
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+                <StatCard label="Students" value={isBulk ? selectedStudents.length : 1} />
+                <StatCard label="Schedules" value={selectedOfferingKeys.size} />
+                <StatCard
+                  label="Assignments"
+                  value={(isBulk ? selectedStudents.length : 1) * selectedOfferingKeys.size}
+                />
               </div>
               {/* Selected schedules list */}
               <div>

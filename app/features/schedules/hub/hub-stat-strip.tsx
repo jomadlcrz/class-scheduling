@@ -1,9 +1,9 @@
-import { Card } from "~/components/ui/card";
+import { StatCard } from "~/components/ui/stat-card";
 import type { StatusCounts } from "~/features/schedules/hub/scheduling-stages";
 
 type Stat = { label: string; value: string; hint: string; tone: string };
 
-/** Term-wide KPI cards for the scheduling hub — built, drafts, pending, published. Hue signals status. */
+/** Term-wide stat cards for the scheduling hub — built, drafts, pending, published. Hue signals status. */
 export function HubStatStrip({
   built,
   total,
@@ -44,15 +44,13 @@ export function HubStatStrip({
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.label} className="p-4">
-          <p className="font-body text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">
-            {stat.label}
-          </p>
-          <p className={`mt-1 font-display text-2xl leading-none tracking-wide tabular-nums ${stat.tone}`}>
-            {stat.value}
-          </p>
-          <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">{stat.hint}</p>
-        </Card>
+        <StatCard
+          key={stat.label}
+          label={stat.label}
+          value={stat.value}
+          hint={stat.hint}
+          valueClassName={stat.tone}
+        />
       ))}
     </div>
   );

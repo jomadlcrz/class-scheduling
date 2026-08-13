@@ -8,6 +8,7 @@ type AccordionItemProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   adornment?: ReactNode;
+  adornmentPosition?: "inline" | "below";
   /** "flat" drops the bordered/rounded card chrome — for nesting inside another AccordionItem without stacking boxes. */
   variant?: "boxed" | "flat";
 };
@@ -19,6 +20,7 @@ export function AccordionItem({
   open,
   onOpenChange,
   adornment,
+  adornmentPosition = "inline",
   variant = "boxed",
 }: AccordionItemProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
@@ -29,6 +31,7 @@ export function AccordionItem({
   const triggerId = `accordion-trigger-${id}`;
   const panelId = `accordion-panel-${id}`;
   const isFlat = variant === "flat";
+  const hasStackedAdornment = Boolean(adornment) && adornmentPosition === "below";
 
   function toggle() {
     const next = !isOpen;
@@ -42,7 +45,13 @@ export function AccordionItem({
         isFlat ? "" : "rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5"
       }
     >
-      <div className="flex min-h-13 items-stretch">
+      <div
+        className={
+          hasStackedAdornment
+            ? "flex min-h-13 flex-col sm:flex-row sm:items-stretch"
+            : "flex min-h-13 items-stretch"
+        }
+      >
         <button
           id={triggerId}
           type="button"
@@ -52,7 +61,9 @@ export function AccordionItem({
           className={
             isFlat
               ? "flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left text-sm text-navy-800 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5"
-              : "flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-5 py-3 text-left text-sm text-navy-800 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5"
+              : `flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-5 py-3 text-left text-sm text-navy-800 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:text-mist-100 dark:hover:bg-white/5 ${
+                  hasStackedAdornment ? "rounded-t-xl sm:rounded-xl" : "rounded-xl"
+                }`
           }
         >
           <span className="min-w-0 flex-1">{title}</span>
@@ -72,7 +83,17 @@ export function AccordionItem({
             <polyline points="9 6 15 12 9 18" />
           </svg>
         </button>
-        {adornment && <div className="flex shrink-0 items-center py-2 pr-3">{adornment}</div>}
+        {adornment && (
+          <div
+            className={
+              hasStackedAdornment
+                ? "w-full border-t border-slate-100 px-5 py-3 sm:flex sm:w-auto sm:shrink-0 sm:items-center sm:border-t-0 sm:px-0 sm:py-2 sm:pr-3 dark:border-white/8"
+                : "flex shrink-0 items-center py-2 pr-3"
+            }
+          >
+            {adornment}
+          </div>
+        )}
       </div>
       <AnimatePresence initial={false}>
         {isOpen && (

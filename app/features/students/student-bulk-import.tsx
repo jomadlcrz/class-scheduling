@@ -6,6 +6,7 @@ import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { StickyFooter } from "~/components/ui/sticky-footer";
 import { Card } from "~/components/ui/card";
+import { StatCard } from "~/components/ui/stat-card";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
 import { FieldChrome, Input, inputClassName } from "~/components/ui/input";
 import { PhoneInput } from "~/components/ui/phone-input";
@@ -431,25 +432,24 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
         </div>
 
         <div className="mt-6 flex flex-col gap-4">
-          <Card className="p-4">
+          <section>
             <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
               Import Summary
             </h3>
-            <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-              <div>
-                <span className="block font-display text-2xl text-navy-700 dark:text-mist-100">{result.total}</span>
-                <span className="font-body text-xs text-slate-500 dark:text-slate-400">Total</span>
-              </div>
-              <div>
-                <span className="block font-display text-2xl text-emerald-600 dark:text-emerald-400">{result.created}</span>
-                <span className="font-body text-xs text-slate-500 dark:text-slate-400">Created</span>
-              </div>
-              <div>
-                <span className="block font-display text-2xl text-red-600 dark:text-red-400">{result.failed}</span>
-                <span className="font-body text-xs text-slate-500 dark:text-slate-400">Failed</span>
-              </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <StatCard label="Total" value={result.total} />
+              <StatCard
+                label="Created"
+                value={result.created}
+                valueClassName="text-emerald-600 dark:text-emerald-400"
+              />
+              <StatCard
+                label="Failed"
+                value={result.failed}
+                valueClassName="text-red-600 dark:text-red-400"
+              />
             </div>
-          </Card>
+          </section>
 
           {result.results.length > 0 && (
             <Card className="overflow-hidden p-0">

@@ -4,7 +4,7 @@ import type { LabAnalysisTotals } from "~/types/lab-analysis";
 /**
  * The one-sentence read of the board: is there still a free lab window this
  * term, or is every one of them taken. Slot capacity is the real constraint
- * (see LabAnalysisKpis) so this reads slotsFree, not the softer hour figure.
+ * (see LabAnalysisStats) so this reads slotsFree, not the softer hour figure.
  */
 export function LabAnalysisVerdict({ totals }: { totals: LabAnalysisTotals }) {
   const noFreeSlots = totals.slotsFree === 0;
