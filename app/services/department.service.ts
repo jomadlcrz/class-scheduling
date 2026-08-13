@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiGetBlob, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
 import type {
   AcademicDepartmentDetail,
   CreateDepartmentInput,
@@ -139,6 +139,14 @@ async function removeCover(id: number): Promise<string> {
   return apiMessage(data);
 }
 
+async function getLogoRaw(id: number, original = true): Promise<Blob> {
+  return apiGetBlob(`/departments/${id}/logo/raw${original ? "?original=1" : ""}`);
+}
+
+async function getCoverRaw(id: number, original = true): Promise<Blob> {
+  return apiGetBlob(`/departments/${id}/cover/raw${original ? "?original=1" : ""}`);
+}
+
 /** DELETE /departments/:id — cascades through its programs after the caller echoes the
  *  department's abbreviation (uppercase-normalized). Returns the backend message. */
 async function remove(id: number, confirmCode: string): Promise<string> {
@@ -183,17 +191,26 @@ type DepartmentOverviewResponse = {
 /** GET /departments/:id/overview — detail-page header, building, and nested programs. */
 async function getOverview(id: number, fresh = false): Promise<DepartmentOverview> {
   const suffix = fresh ? `?refresh=${Date.now()}` : "";
-  const d = await apiGet<DepartmentOverviewResponse>(`/departments/${id}/overview${suffix}`);
+  const [d, detail, _programs, logo] = await Promise.all([
+    apiGet<DepartmentOverviewResponse>(`/departments/${id}/overview${suffix}`),
+    apiGet<{
+      department_id: number; department_abbrev: string; department_name: string;
+      department_type: string; building_id: number | null; description: string | null;
+      logo_url: string | null; cover_image_url: string | null;
+    }>(`/departments/${id}${suffix}`),
+    apiGet<unknown>(`/departments/${id}/programs${suffix}`),
+    apiGet<{ logo_url: string | null }>(`/departments/${id}/logo${suffix}`),
+  ]);
   return {
-    id: d.department_id,
-    abbrev: d.department_abbrev,
-    name: d.department_name,
-    departmentType: d.department_type,
-    buildingId: d.building_id,
+    id: detail.department_id,
+    abbrev: detail.department_abbrev,
+    name: detail.department_name,
+    departmentType: detail.department_type,
+    buildingId: detail.building_id,
     buildingName: d.building_name,
-    description: d.description,
-    logoUrl: d.logo_url,
-    coverImageUrl: d.cover_image_url,
+    description: detail.description,
+    logoUrl: logo.logo_url,
+    coverImageUrl: detail.cover_image_url,
     totalPrograms: d.total_programs,
     programs: d.programs.map(mapProgramSummary),
   };
@@ -340,6 +357,8 @@ export const departmentService = {
   remove,
   getDeletePreview,
   getOverview,
+  getLogoRaw,
+  getCoverRaw,
   getOfficeStaff,
   getAcademicDetail,
 };

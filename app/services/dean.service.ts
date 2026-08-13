@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import { termScopeQuery } from "~/lib/term-scope";
 import { facultyService } from "~/services/faculty.service";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
@@ -361,6 +361,60 @@ async function getAnalytics(syId: number, semesterNumber: number): Promise<DeanA
   return apiGet<DeanAnalyticsResponse>(`/deans/analytics${termScopeQuery(syId, semesterNumber)}`);
 }
 
+export type SchedulingLoadPolicy = {
+  syId: number;
+  semesterNumber: number;
+  normalLoadHours: number;
+  regularDailyCap: number;
+  overloadDailyCap: number;
+  isDefault: boolean;
+  isClosed: boolean;
+  guidelines: string[];
+};
+
+type SchedulingLoadPolicyResponse = {
+  sy_id: number;
+  semester_number: number;
+  normal_load_hours: number;
+  regular_daily_cap: number;
+  overload_daily_cap: number;
+  is_default: boolean;
+  is_closed: boolean;
+  guidelines: string[];
+  message?: string;
+};
+
+function mapSchedulingLoadPolicy(data: SchedulingLoadPolicyResponse): SchedulingLoadPolicy {
+  return {
+    syId: data.sy_id,
+    semesterNumber: data.semester_number,
+    normalLoadHours: data.normal_load_hours,
+    regularDailyCap: data.regular_daily_cap,
+    overloadDailyCap: data.overload_daily_cap,
+    isDefault: data.is_default,
+    isClosed: data.is_closed,
+    guidelines: data.guidelines ?? [],
+  };
+}
+
+async function getSchedulingLoadPolicy(syId: number, semesterNumber: number): Promise<SchedulingLoadPolicy> {
+  const data = await apiGet<SchedulingLoadPolicyResponse>(
+    `/deans/scheduling-load-policy${termScopeQuery(syId, semesterNumber)}`,
+  );
+  return mapSchedulingLoadPolicy(data);
+}
+
+async function updateSchedulingLoadPolicy(input: {
+  syId: number;
+  semesterNumber: number;
+  normalLoadHours: number;
+  regularDailyCap: number;
+  overloadDailyCap: number;
+}): Promise<{ policy: SchedulingLoadPolicy; message: string }> {
+  const data = await apiPut<SchedulingLoadPolicyResponse>("/deans/scheduling-load-policy", input);
+  return { policy: mapSchedulingLoadPolicy(data), message: apiMessage(data) };
+}
+
 export const deanService = {
   list,
   create,
@@ -375,4 +429,6 @@ export const deanService = {
   deleteTeachingTerm,
   removeSubjectAssignment,
   getAnalytics,
+  getSchedulingLoadPolicy,
+  updateSchedulingLoadPolicy,
 };

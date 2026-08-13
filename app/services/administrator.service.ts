@@ -165,6 +165,32 @@ async function listAuditLog(page: number, perPage: number): Promise<AdminAuditRe
   };
 }
 
+export type SystemAccount = {
+  userId: number;
+  email: string | null;
+  roles: string[];
+  active: boolean;
+  pendingFirstLogin: boolean;
+  deactivatedAt: string | null;
+};
+
+/** GET /super-admin/accounts — every login across every role. */
+async function listAccounts(): Promise<{ items: SystemAccount[]; counts: { active: number; deactivated: number; total: number; pendingFirstLogin: number } }> {
+  type Row = { user_id: number; email: string | null; roles: string[]; pending_first_login?: boolean; deactivated_at?: string | null };
+  const data = await apiGet<{
+    active: Row[];
+    deactivated: Row[];
+    counts: { active: number; deactivated: number; total: number; pending_first_login: number };
+  }>("/super-admin/accounts");
+  return {
+    items: [
+      ...data.active.map((row) => ({ userId: row.user_id, email: row.email, roles: row.roles, active: true, pendingFirstLogin: Boolean(row.pending_first_login), deactivatedAt: null })),
+      ...data.deactivated.map((row) => ({ userId: row.user_id, email: row.email, roles: row.roles, active: false, pendingFirstLogin: false, deactivatedAt: row.deactivated_at ?? null })),
+    ],
+    counts: { ...data.counts, pendingFirstLogin: data.counts.pending_first_login },
+  };
+}
+
 export const administratorService = {
   list,
   create,
@@ -173,4 +199,5 @@ export const administratorService = {
   deactivate,
   reactivate,
   listAuditLog,
+  listAccounts,
 };

@@ -62,6 +62,12 @@ async function listCatalog(): Promise<RolePermission[]> {
   }
 }
 
+/** GET /permissions/<id> — fresh detail used before editing. */
+async function get(id: number): Promise<RolePermission> {
+  const p = await apiGet<PermissionCatalogResponse[number]>(`/permissions/${id}`);
+  return { id: p.permission_id, slug: p.permission_slug, description: p.description ?? "" };
+}
+
 /** PUT /roles/{roleId}/permissions — declaratively sets a role's grants to exactly these permission ids. */
 async function replace(roleId: number, permissionIds: number[]): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/roles/${roleId}/permissions`, {
@@ -119,6 +125,7 @@ export const permissionService = {
   createRoleBulk,
   createPermissionBulk,
   listCatalog,
+  get,
   replace,
   revoke,
   update,

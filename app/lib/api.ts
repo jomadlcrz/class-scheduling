@@ -292,6 +292,32 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
   return data;
 }
 
+/** GET a protected binary response (same-origin image proxies, exports). */
+export async function apiGetBlob(endpoint: string): Promise<Blob> {
+  async function run(canRefresh: boolean): Promise<Blob> {
+    const token = loadSession()?.token;
+    let response: Response;
+    try {
+      response = await fetch(resolveApiUrl(endpoint), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch {
+      throw new ApiError("Unable to reach the server. Check your connection and try again.", 0);
+    }
+    if (response.status === 401 && token && canRefresh) {
+      const refreshed = await attemptRefresh();
+      if (refreshed.ok) return run(false);
+    }
+    if (!response.ok) {
+      const data = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+      const message = firstMessage(data?.error) ?? firstMessage(data?.errors) ?? firstMessage(data?.message) ?? "Something went wrong. Please try again.";
+      throw new ApiError(message, response.status, data);
+    }
+    return response.blob();
+  }
+  return run(true);
+}
+
 export function apiPost<T>(
   endpoint: string,
   body?: unknown,

@@ -108,6 +108,7 @@ async function listTermEnrollments(
   page = 1,
   perPage = 20,
   filters: TermEnrollmentFilters = {},
+  audience: "registrar" | "dean" = "registrar",
 ): Promise<{
   items: EnrollmentStudent[];
   total: number;
@@ -127,10 +128,11 @@ async function listTermEnrollments(
   if (filters.enrollmentState && filters.enrollmentState !== "all") {
     query.set("enrollmentState", filters.enrollmentState);
   }
+  const base = audience === "dean" ? "/deans/students" : "/enrollments";
   const data = await apiGet<{
     items: ApiStudent[];
     pagination: { page: number; perPage: number; totalItems: number; totalPages: number };
-  }>(`/enrollments?${query}`);
+  }>(`${base}?${query}`);
   return {
     items: (data.items ?? []).map(toStudent),
     total: data.pagination.totalItems,
@@ -140,9 +142,56 @@ async function listTermEnrollments(
 }
 
 /** GET /enrollments/facets — filter options and unfiltered term counts. */
-async function getFacets(syId: number, semesterNumber: number): Promise<EnrollmentFacets> {
-  const data = await apiGet<ApiFacets>(`/enrollments/facets${termScopeQuery(syId, semesterNumber)}`);
+async function getFacets(
+  syId: number,
+  semesterNumber: number,
+  audience: "registrar" | "dean" = "registrar",
+): Promise<EnrollmentFacets> {
+  const base = audience === "dean" ? "/deans/students/facets" : "/enrollments/facets";
+  const data = await apiGet<ApiFacets>(`${base}${termScopeQuery(syId, semesterNumber)}`);
   return { programs: data.programs ?? [], sets: data.sets ?? [], counts: data.counts };
+}
+
+async function getSetCapacity(): Promise<number> {
+  const data = await apiGet<{ max_students_per_set: number }>("/enrollments/set-capacity");
+  return data.max_students_per_set;
+}
+
+async function updateSetCapacity(maxStudentsPerSet: number): Promise<{ value: number; message: string }> {
+  const data = await apiPut<{ message?: string; max_students_per_set: number }>(
+    "/enrollments/set-capacity",
+    { maxStudentsPerSet },
+  );
+  return { value: data.max_students_per_set, message: apiMessage(data) };
+}
+
+type BulkEnrollmentInput = {
+  studentProfileId: number;
+  programId: number;
+  yearLevel: number;
+  setId?: number;
+  studentType: string;
+  enrolledStatus: string;
+  syId: number;
+  semesterNumber: number;
+  subjectIds: number[];
+};
+
+async function bulkCreate(inputs: BulkEnrollmentInput[]): Promise<{ created: number; message: string }> {
+  const data = await apiPost<{ created: number; message?: string }>("/enrollments/bulk", {
+    enrollments: inputs.map((input) => ({
+      studentProfileId: input.studentProfileId,
+      programId: input.programId,
+      yearLevel: input.yearLevel,
+      ...(input.setId != null && { setId: input.setId }),
+      studentType: input.studentType,
+      enrolledStatus: input.enrolledStatus,
+      syId: input.syId,
+      semesterNumber: input.semesterNumber,
+      enrolledSubjects: input.subjectIds.map((subjectId) => ({ subjectId })),
+    })),
+  });
+  return { created: data.created, message: apiMessage(data) };
 }
 
 type ApiReenrollRow = {
@@ -296,6 +345,9 @@ async function checkPrerequisites(input: {
 export const enrollmentService = {
   listTermEnrollments,
   getFacets,
+  getSetCapacity,
+  updateSetCapacity,
+  bulkCreate,
   getReenrollDirectory,
   getEnrollment,
   updateEnrollment,
@@ -305,3 +357,4 @@ export const enrollmentService = {
 };
 
 export type { UpdateEnrollmentInput };
+export type { BulkEnrollmentInput };

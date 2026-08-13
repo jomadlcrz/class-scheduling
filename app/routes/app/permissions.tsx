@@ -54,6 +54,14 @@ function PermissionsPage() {
   const [editPermissionTarget, setEditPermissionTarget] = useState<RolePermission | null>(null);
   const [archivePermissionTarget, setArchivePermissionTarget] = useState<RolePermission | null>(null);
 
+  async function openPermissionEditor(permission: RolePermission) {
+    try {
+      setEditPermissionTarget(await permissionService.get(permission.id));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "");
+    }
+  }
+
   function refresh() {
     void reloadRoles();
     void reloadCatalog();
@@ -109,7 +117,7 @@ function PermissionsPage() {
             </h2>
             <PermissionCatalogTable
               catalog={catalog}
-              onEdit={setEditPermissionTarget}
+              onEdit={(permission) => void openPermissionEditor(permission)}
               onArchive={setArchivePermissionTarget}
             />
           </section>

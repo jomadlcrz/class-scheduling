@@ -17,6 +17,7 @@ export default [
   layout("layouts/app-shell.tsx", [
     route("dashboard", "routes/app/dashboard.tsx"),
     route("administrators", "routes/app/administrators.tsx"),
+    route("accounts", "routes/app/accounts.tsx"),
     route("administrators/new", "routes/app/administrators-new.tsx"),
     route("permissions", "routes/app/permissions.tsx"),
     route("facilities", "routes/app/facilities.tsx"),
@@ -28,6 +29,7 @@ export default [
     route("departments", "routes/app/departments.tsx"),
     route("departments/:departmentId", "routes/app/departments/$departmentId.tsx"),
     route("program-curricula", "routes/app/program-curricula.tsx"),
+    route("subjects", "routes/app/subjects.tsx"),
     route("program-curricula/new", "routes/app/program-curricula-new.tsx"),
     route("sets", "routes/app/sets.tsx"),
     route("dean/subjects", "routes/app/dean-subjects.tsx"),
@@ -57,11 +59,8 @@ export default [
     route("faculty-schedule", "routes/app/faculty-schedule.tsx"),
     route("student-schedule", "routes/app/student-schedule.tsx"),
     route("students", "routes/app/students.tsx"),
-    route("students/re-enroll", "routes/app/students-re-enroll.tsx"),
     route("students-regular", "routes/app/students-regular.tsx"),
-    route("students-regular/bulk", "routes/app/students-regular-bulk.tsx"),
     route("students-irregular", "routes/app/students-irregular.tsx"),
-    route("students-irregular/bulk", "routes/app/students-irregular-bulk.tsx"),
 
     // Enrollment — separate from the routes above, which stay as they are.
     route("enrollment/students", "routes/app/enrollment/students.tsx"),

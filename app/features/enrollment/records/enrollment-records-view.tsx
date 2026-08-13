@@ -61,6 +61,7 @@ type Props = {
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  readOnly?: boolean;
 };
 
 export function EnrollmentRecordsView({
@@ -85,6 +86,7 @@ export function EnrollmentRecordsView({
   totalItems,
   pageSize,
   onPageChange,
+  readOnly = false,
 }: Props) {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
@@ -312,6 +314,7 @@ export function EnrollmentRecordsView({
         nameSuffixes={nameSuffixes}
         onClose={() => setSelected(null)}
         onChanged={onChanged}
+        readOnly={readOnly}
       />
 
       <Pagination page={page} totalItems={totalItems} pageSize={pageSize} onPageChange={onPageChange} />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { useAuth } from "~/hooks/use-auth";
@@ -8,8 +8,7 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { ResultState } from "~/components/feedback/result-state";
-import { SuccessDone } from "~/components/feedback/success-done";
-import { AlertTriangleIcon, PlusIcon, GraduationCapIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
+import { AlertTriangleIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";
@@ -20,28 +19,16 @@ import { TabLinks } from "~/components/ui/underline-tabs";
 import { useStudentAccountFilters } from "~/features/students/student-account-filters";
 import { StudentAccountTable } from "~/features/students/student-account-table";
 import { StudentDetailsModal } from "~/features/students/student-details-modal";
-import { StudentRecordForm } from "~/features/students/student-record-form";
 import { PageHeader } from "~/layouts/page-header";
-import { enumService, type EnumOptions } from "~/services/enum.service";
 import { irregularClassService, type IrregularStudent } from "~/services/irregular-class.service";
-import { programService } from "~/services/program.service";
 import { regularClassService } from "~/services/regular-class.service";
-import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
-import { semesterService } from "~/services/semester.service";
-import { setService } from "~/services/set.service";
 import { studentService } from "~/services/student.service";
-import { subjectService } from "~/services/subject.service";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
-import type { Program } from "~/types/program";
-import type { Semester } from "~/types/semester";
-import type { ClassSet } from "~/types/set";
 import type {
-  CreateStudentRecordInput,
   RegularStudentRow,
   StudentAccountRow,
 } from "~/types/student";
-import type { Subject } from "~/types/subject";
 
 export function meta() {
   return [
@@ -98,7 +85,6 @@ export default function StudentsRoute() {
 
 export function StudentsPage() {
   const location = useLocation();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { context: termContext } = useTermContext();
   const isAdmin = user?.role === "admin";
@@ -115,18 +101,6 @@ export function StudentsPage() {
 
   // Shared reference data for the create/enroll forms — cached under keys reused
   // across the app so revisits and reloads skip the loading state.
-  const { data: programsData } = useCachedData("programs", () => programService.list());
-  const programs = programsData ?? [];
-  const { data: setsData } = useCachedData("sets", () => setService.list());
-  const sets = setsData ?? [];
-  const { data: subjectsData } = useCachedData("subjects", () => subjectService.list());
-  const subjects = subjectsData ?? [];
-  const { data: schoolYearsData } = useCachedData("school-years", () => schoolYearService.list());
-  const schoolYears = schoolYearsData ?? [];
-  const { data: semestersData } = useCachedData("semesters", () => semesterService.list());
-  const semesters = semestersData ?? [];
-  const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
-
   const [search, setSearch] = useState("");
   const [regularSearch, setRegularSearch] = useState("");
   const [irregularSearch, setIrregularSearch] = useState("");
@@ -140,8 +114,6 @@ export function StudentsPage() {
   const [irregularStudents, setIrregularStudents] = useState<IrregularStudent[] | null>(null);
   const [irregularLoadError, setIrregularLoadError] = useState<string | null>(null);
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createdRecord, setCreatedRecord] = useState(false);
   const [viewTarget, setViewTarget] = useState<StudentAccountRow | null>(null);
   const [deactivateAccountTarget, setDeactivateAccountTarget] = useState<StudentAccountRow | null>(null);
   const [reactivateAccountTarget, setReactivateAccountTarget] = useState<StudentAccountRow | null>(null);
@@ -421,18 +393,6 @@ export function StudentsPage() {
     void reloadAccounts();
   }
 
-  async function handleCreateRecord(input: CreateStudentRecordInput) {
-    const { message } = await studentService.createRecord(input);
-    if (message) toast.success(message);
-    setCreatedRecord(true);
-    refreshStudentList();
-  }
-
-  function closeCreate() {
-    setCreateOpen(false);
-    setCreatedRecord(false);
-  }
-
   function toggleSelectForAccount(student: StudentAccountRow, checked: boolean) {
     setSelectedForAccount((current) => {
       const next = new Set(current);
@@ -607,29 +567,7 @@ export function StudentsPage() {
               : "All Students"
         }
         actions={
-          !isAdmin ? (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                block={false}
-                onClick={() => navigate("/students/re-enroll")}
-              >
-                <GraduationCapIcon />
-                Re-enroll
-              </Button>
-              <Button
-                type="button"
-                block={false}
-                onClick={() =>
-                  navigate(activeView === "irregular" ? "/students-irregular/bulk" : "/students-regular/bulk")
-                }
-              >
-                <PlusIcon />
-                New Student
-              </Button>
-            </>
-          ) : selectedForAccount.size > 0 ? (
+          isAdmin && selectedForAccount.size > 0 ? (
             <Button type="button" block={false} onClick={() => setBulkCreateOpen(true)}>
               <UserCheckIcon />
               Create Accounts ({selectedForAccount.size})
@@ -831,29 +769,6 @@ export function StudentsPage() {
           )}
         </div>
       )}
-
-      <Modal open={createOpen} onClose={closeCreate} title="New Student" wide={!createdRecord}>
-        {createdRecord ? (
-          <SuccessDone title="Student registered" onDone={closeCreate}>
-            {isAdmin
-              ? 'The student record was created. Use "Create Account" on the student\'s row to set up their login.'
-              : "The student record was created."}
-          </SuccessDone>
-        ) : (
-          <StudentRecordForm
-            programs={programs}
-            sets={sets}
-            subjects={subjects}
-            schoolYears={schoolYears}
-            semesters={semesters}
-            studentTypes={enumOptions?.studentType ?? []}
-            academicStatuses={enumOptions?.academicStatus ?? []}
-            nameSuffixes={enumOptions?.nameSuffix ?? []}
-            onSubmit={handleCreateRecord}
-            onCancel={closeCreate}
-          />
-        )}
-      </Modal>
 
       <Modal
         open={viewTarget !== null}

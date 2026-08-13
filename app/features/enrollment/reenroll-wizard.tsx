@@ -11,7 +11,7 @@ import {
 } from "~/features/enrollment/reenroll-step1-select-student";
 import { ReenrollStep2Enrollment } from "~/features/enrollment/reenroll-step2-enrollment";
 import { ReenrollStep3Review } from "~/features/enrollment/reenroll-step3-review";
-import { studentService } from "~/services/student.service";
+import { enrollmentService } from "~/services/enrollment.service";
 import type { SchoolYearOption } from "~/services/school-year.service";
 import type { Program } from "~/types/program";
 import type { Semester } from "~/types/semester";
@@ -199,35 +199,16 @@ export function ReenrollWizard({
       subjectIds: isIrregular ? [...selectedSubjectIds] : [],
     };
 
-    const results = await Promise.allSettled(
-      rows.map((row) => studentService.enroll(row.studentProfileId, input).then((message) => ({ row, message }))),
-    );
-
-    const succeeded: { row: ReenrollDirectoryRow; message: string }[] = [];
-    const failed: { row: ReenrollDirectoryRow; error: string }[] = [];
-    results.forEach((result, i) => {
-      if (result.status === "fulfilled") succeeded.push(result.value);
-      else failed.push({ row: rows[i], error: result.reason instanceof Error ? result.reason.message : "" });
-    });
-
-    onSavingChange(false);
-
-    if (failed.length === 0) {
-      onSaved(succeeded.length === 1 ? succeeded[0].message : `Enrolled ${succeeded.length} student(s).`);
-      return;
+    try {
+      const result = await enrollmentService.bulkCreate(
+        rows.map((row) => ({ studentProfileId: row.studentProfileId, ...input })),
+      );
+      onSaved(result.message);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "");
+    } finally {
+      onSavingChange(false);
     }
-
-    // Partial (or total) failure: drop whoever already succeeded so a retry only targets what's left.
-    setSelectedStudents((current) => {
-      const next = new Map(current);
-      for (const { row } of succeeded) next.delete(row.studentProfileId);
-      return next;
-    });
-    const successNote = succeeded.length > 0 ? `${succeeded.length} succeeded. ` : "";
-    setSaveError(
-      `${successNote}${failed.length} failed: ` +
-        failed.map(({ row, error }) => `${row.name} — ${error || "Unable to enroll."}`).join("; "),
-    );
   }
 
   const selectedRows = [...selectedStudents.values()];

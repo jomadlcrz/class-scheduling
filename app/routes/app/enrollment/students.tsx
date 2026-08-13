@@ -7,8 +7,10 @@ import { PlusIcon } from "~/components/ui/icons";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { EnrollmentRecordsView } from "~/features/enrollment/records/enrollment-records-view";
+import { SetCapacityDialog } from "~/features/enrollment/set-capacity-dialog";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useDebounce } from "~/hooks/use-debounce";
+import { useAuth } from "~/hooks/use-auth";
 import { PageHeader } from "~/layouts/page-header";
 import { enrollmentService } from "~/services/enrollment.service";
 import { enumService } from "~/services/enum.service";
@@ -25,7 +27,7 @@ export function meta() {
 
 export default function EnrollmentStudentsRoute() {
   return (
-    <RoleGuard allow={["registrar"]}>
+    <RoleGuard allow={["registrar", "dean"]}>
       <EnrollmentStudentsPage />
     </RoleGuard>
   );
@@ -33,6 +35,9 @@ export default function EnrollmentStudentsRoute() {
 
 function EnrollmentStudentsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isDean = user?.role === "dean";
+  const audience = isDean ? "dean" : "registrar";
   const [searchParams] = useSearchParams();
   const requestedType = searchParams.get("type");
   const initialType = requestedType === "Regular" || requestedType === "Irregular" ? requestedType : "all";
@@ -44,6 +49,7 @@ function EnrollmentStudentsPage() {
   const termKey = enabled ? `${syId}:${semesterNumber}` : "none";
 
   const [page, setPage] = useState(1);
+  const [capacityOpen, setCapacityOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState(initialType);
   const [stateFilter, setStateFilter] = useState("all");
@@ -76,6 +82,7 @@ function EnrollmentStudentsPage() {
         yearLevel: yearFilter,
         set: setFilter,
       },
+      audience,
     ),
     { enabled, keepPreviousData: true },
   );
@@ -83,7 +90,7 @@ function EnrollmentStudentsPage() {
   const totalItems = enrollmentData?.total ?? 0;
   const { data: facets, reload: reloadFacets } = useCachedData(
     `enrollment-facets:${termKey}`,
-    () => enrollmentService.getFacets(syId as number, semesterNumber as number),
+    () => enrollmentService.getFacets(syId as number, semesterNumber as number, audience),
     { enabled },
   );
   const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
@@ -104,13 +111,16 @@ function EnrollmentStudentsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageHeader
-        title="Enrollment Records"
-        actions={
-          <Button type="button" block={false} onClick={() => navigate("/enrollment/new")}>
-            <PlusIcon />
-            Add Records
-          </Button>
-        }
+        title={isDean ? "Department Students" : "Enrollment Records"}
+        actions={!isDean ? (
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" block={false} onClick={() => setCapacityOpen(true)}>Class Size Cap</Button>
+            <Button type="button" block={false} onClick={() => navigate("/enrollment/new")}>
+              <PlusIcon />
+              Add Records
+            </Button>
+          </div>
+        ) : undefined}
       />
 
       <div className="mt-6">
@@ -141,9 +151,11 @@ function EnrollmentStudentsPage() {
             totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={handlePageChange}
+            readOnly={isDean}
           />
         )}
       </div>
+      <SetCapacityDialog open={capacityOpen} onClose={() => setCapacityOpen(false)} />
     </div>
   );
 }

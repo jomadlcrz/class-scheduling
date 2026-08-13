@@ -73,7 +73,7 @@ type PaginationSubjectsResponse = {
   total_pages: number;
 };
 
-type PaginatedSubject = {
+export type PaginatedSubject = {
   id: number;
   curriculumId: number;
   program: { id: number; name: string } | null;
@@ -87,13 +87,37 @@ type PaginatedSubject = {
   } | null;
 };
 
-type PaginatedSubjectsResult = {
+export type PaginatedSubjectsResult = {
   items: PaginatedSubject[];
   totalSubjects: number;
   page: number;
   perPage: number;
   totalPages: number;
 };
+
+/** GET /pagination_subjects — flat server-paginated subject catalog. */
+async function listPaginated(page = 1, perPage = 20): Promise<PaginatedSubjectsResult> {
+  const data = await apiGet<PaginationSubjectsResponse>(`/pagination_subjects?page=${page}&per_page=${perPage}`);
+  return {
+    items: data.data.map((row) => ({
+      id: row.id,
+      curriculumId: row.curriculum_id,
+      program: row.program,
+      subject: row.subject ? {
+        id: row.subject.id,
+        code: row.subject.code,
+        title: row.subject.title,
+        subjectType: row.subject.subject_type,
+        prerequisites: row.subject.prerequisites.map((p) => ({ id: p.id, code: p.info?.code ?? null, title: p.info?.title ?? null })),
+        textPrerequisites: row.subject.text_prerequisites.map((p) => p.description),
+      } : null,
+    })),
+    totalSubjects: data.total_subjects,
+    page: data.page,
+    perPage: data.per_page,
+    totalPages: data.total_pages,
+  };
+}
 
 type CurriculumSubjectEntry = {
   yearLevel: number;
@@ -179,6 +203,7 @@ async function getDeletePreview(id: number): Promise<SubjectDeletePreview> {
 
 export const subjectService = {
   list,
+  listPaginated,
   createCurriculum,
   update,
   remove,

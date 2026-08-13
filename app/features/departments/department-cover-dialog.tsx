@@ -51,6 +51,13 @@ export function DepartmentCoverDialog({
     setZoom(1);
     setCroppedAreaPixels(null);
     setError(null);
+    if (department?.coverImageUrl) {
+      let active = true;
+      departmentService.getCoverRaw(department.id, false).then((blob) => {
+        if (active) setCurrentUrl(URL.createObjectURL(blob));
+      }).catch(() => {});
+      return () => { active = false; };
+    }
   }, [department?.id, department?.coverImageUrl]);
 
   useEffect(() => {

@@ -66,6 +66,7 @@ type Props = {
   nameSuffixes: string[];
   onClose: () => void;
   onChanged: () => void;
+  readOnly?: boolean;
 };
 
 function Field({ label, value, wide }: { label: string; value: React.ReactNode; wide?: boolean }) {
@@ -87,11 +88,12 @@ function tabClass(active: boolean): string {
   }`;
 }
 
-export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffixes, onClose, onChanged }: Props) {
+export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffixes, onClose, onChanged, readOnly = false }: Props) {
   const [tab, setTab] = useState<Tab>("info");
   const [pendingState, setPendingState] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [rawPhotoUrl, setRawPhotoUrl] = useState<string | null>(null);
   const [history, setHistory] = useState<StudentAcademicRecord[] | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [profile, setProfile] = useState<StudentProfileDetail | null>(null);
@@ -109,10 +111,26 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
   }, [open]);
 
   useEffect(() => {
-    if (open && student) {
+    if (open && student && !readOnly) {
       studentService.getProfile(student.studentProfileId).then(setProfile);
     }
-  }, [open, student]);
+  }, [open, readOnly, student]);
+
+  useEffect(() => () => { if (rawPhotoUrl) URL.revokeObjectURL(rawPhotoUrl); }, [rawPhotoUrl]);
+
+  async function openPhoto() {
+    if (!student) return;
+    if (!readOnly) {
+      try {
+        await studentService.getProfilePhoto(student.studentProfileId);
+        const blob = await studentService.getProfilePhotoRaw(student.studentProfileId);
+        setRawPhotoUrl(URL.createObjectURL(blob));
+      } catch {
+        setRawPhotoUrl(null);
+      }
+    }
+    setImageViewerOpen(true);
+  }
 
   useEffect(() => {
     if (open && tab === "history" && history === null) {
@@ -146,7 +164,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
               {student.profilePhotoUrl ? (
                 <button
                   type="button"
-                  onClick={() => setImageViewerOpen(true)}
+                  onClick={() => void openPhoto()}
                   className="shrink-0 cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
                   aria-label="View profile photo"
                 >
@@ -177,15 +195,12 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                     {enrollment.enrollmentState}
                   </Badge>
                   <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    block={false}
-                    onClick={() => setEditRecordOpen(true)}
-                  >
-                    <EditIcon />
-                    Edit Record
-                  </Button>
+                  {!readOnly && (
+                    <Button type="button" variant="outline" block={false} onClick={() => setEditRecordOpen(true)}>
+                      <EditIcon />
+                      Edit Record
+                    </Button>
+                  )}
                 </div>
                 {(student.mobile || student.email || profile?.address) && (
                   <div className="mt-1 flex min-w-0 flex-col gap-1 font-body text-xs text-slate-500 dark:text-slate-400">
@@ -229,9 +244,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
               <button type="button" className={tabClass(tab === "subjects")} onClick={() => setTab("subjects")}>
                 Subject Load
               </button>
-              <button type="button" className={tabClass(tab === "history")} onClick={() => setTab("history")}>
-                History
-              </button>
+              {!readOnly && <button type="button" className={tabClass(tab === "history")} onClick={() => setTab("history")}>History</button>}
             </div>
 
             {tab === "info" && <InfoTab enrollment={enrollment} yearLevelLabel={yearLevelLabel} />}
@@ -240,7 +253,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
               <HistoryTab records={history} loading={historyLoading} yearLevelLabel={yearLevelLabel} studentProfileId={student.studentProfileId} />
             )}
 
-            <section>
+            {!readOnly && <section>
               <h3 className="mb-2 font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                 Change state
               </h3>
@@ -252,9 +265,9 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                   </Button>
                 ))}
               </div>
-            </section>
+            </section>}
 
-            <section className="border-t border-slate-100 pt-4 dark:border-white/8">
+            {!readOnly && <section className="border-t border-slate-100 pt-4 dark:border-white/8">
               <Button
                 type="button"
                 variant="danger"
@@ -270,7 +283,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                   Deleting is disabled once the term is closed — use a state change (drop/withdraw/void) instead.
                 </p>
               )}
-            </section>
+            </section>}
           </div>
         )}
       </Drawer>
@@ -279,7 +292,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
         <ImageViewer
           open={imageViewerOpen}
           onClose={() => setImageViewerOpen(false)}
-          src={student.profilePhotoUrl}
+          src={rawPhotoUrl ?? student.profilePhotoUrl}
           alt={student.name}
         />
       )}
@@ -309,7 +322,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
         instead, drop or withdraw the student.
       </ConfirmDialog>
 
-      {enrollment && student && (
+      {!readOnly && enrollment && student && (
         <EditRecordModal
           open={editRecordOpen}
           studentProfileId={student.studentProfileId}

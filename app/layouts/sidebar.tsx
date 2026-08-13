@@ -102,6 +102,7 @@ const NAV_GROUPS: NavGroup[] = [
       },
       { label: "Departments", to: "/departments", icon: <FolderOpenIcon />, roles: ["registrar"] },
       { label: "Program Curricula", to: "/program-curricula", icon: <BookOpenIcon />, roles: ["registrar"], matchPrefix: true },
+      { label: "Subjects", to: "/subjects", icon: <BookOpenIcon />, roles: ["registrar"] },
       { label: "Sets", to: "/sets", icon: <LayersIcon />, roles: ["registrar"] },
     ],
   },
@@ -131,6 +132,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Academic Community",
     items: [
       { label: "Administrators", to: "/administrators", icon: <ShieldUserIcon />, roles: ["admin"], matchPrefix: true },
+      { label: "All Accounts", to: "/accounts", icon: <UsersIcon />, roles: ["admin"] },
       { label: "Faculty", to: "/faculty", icon: <UserIcon />, roles: ["admin"], matchPrefix: true },
       { label: "Students", to: "/students", icon: <UsersIcon />, roles: ["admin"], matchPaths: ["/students", "/students-regular", "/students-irregular"] },
     ],
@@ -157,6 +159,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Subject Assignments", to: "/subject-assignments", icon: <UserCheckIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Curriculum", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
       { label: "Department Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
+      { label: "Department Students", to: "/enrollment/students", icon: <UsersIcon />, roles: ["dean"] },
     ],
   },
   {

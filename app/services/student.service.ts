@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiGetBlob, apiMessage, apiPatch, apiPost, apiPut, apiUpload } from "~/lib/api";
 import type {
   CreateStudentAccountInput,
   CreateStudentRecordInput,
@@ -78,6 +78,17 @@ async function uploadProfilePhoto(
     formData,
   );
   return { url: data.profile_photo_url, message: data.message ?? "" };
+}
+
+async function getProfilePhoto(studentProfileId: number): Promise<{ url: string | null; hasPhoto: boolean }> {
+  const data = await apiGet<{ profile_photo_url: string | null; has_photo: boolean }>(
+    `/students/${studentProfileId}/profile-photo`,
+  );
+  return { url: data.profile_photo_url, hasPhoto: data.has_photo };
+}
+
+async function getProfilePhotoRaw(studentProfileId: number): Promise<Blob> {
+  return apiGetBlob(`/students/${studentProfileId}/profile-photo/raw`);
 }
 
 /** POST /super-admin/create-student-accounts — emails temp password. Returns the backend message. */
@@ -414,6 +425,8 @@ export const studentService = {
   createRecord,
   bulkCreateRecords,
   uploadProfilePhoto,
+  getProfilePhoto,
+  getProfilePhotoRaw,
   createAccount,
   listAccounts,
   enroll,

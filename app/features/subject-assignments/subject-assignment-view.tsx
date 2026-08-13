@@ -9,6 +9,7 @@ import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { SubjectAssignmentToolbar } from "~/features/subject-assignments/subject-assignment-toolbar";
+import { SchedulingLoadPolicyDialog } from "~/features/subject-assignments/scheduling-load-policy-dialog";
 import { useSubjectAssignments } from "~/features/subject-assignments/use-subject-assignments";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
@@ -81,6 +82,7 @@ export function SubjectAssignmentView() {
 
   // Search filter
   const [search, setSearch] = useState("");
+  const [policyOpen, setPolicyOpen] = useState(false);
 
   // Instructors list — starts empty, populated from API data
   const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -500,6 +502,7 @@ export function SubjectAssignmentView() {
       {/* Page Header */}
       <PageHeader
         title="Subject Assignments"
+        actions={<Button type="button" variant="outline" block={false} onClick={() => setPolicyOpen(true)}>Load Policy</Button>}
       />
 
       {/* Toolbar */}
@@ -513,6 +516,13 @@ export function SubjectAssignmentView() {
         onSemesterChange={apiData.setSelectedSemesterNumber}
         search={search}
         onSearchChange={setSearch}
+      />
+
+      <SchedulingLoadPolicyDialog
+        open={policyOpen}
+        syId={Number(apiData.selectedSchoolYearId) || null}
+        semesterNumber={Number(apiData.selectedSemesterNumber) || null}
+        onClose={() => setPolicyOpen(false)}
       />
 
       <AssignmentLoadSummary

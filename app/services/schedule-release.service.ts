@@ -105,6 +105,11 @@ async function getApprovalPreview(id: number): Promise<SchedulePreview> {
   return mapPreview(await apiGet<ApiSchedulePreview>(`/deans/schedule-approvals/${id}/preview`));
 }
 
+/** GET /deans/schedule-approvals/{id} — dean-scoped release detail. */
+async function getApproval(id: number): Promise<ScheduleRelease> {
+  return mapRelease(await apiGet<ApiScheduleRelease>(`/deans/schedule-approvals/${id}`));
+}
+
 /** POST /deans/schedule-approvals/{id}/approve — pending_approval → approved. Publishes the schedule. */
 async function approveRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
@@ -168,6 +173,7 @@ export const scheduleReleaseService = {
   withdrawRelease,
   listApprovals,
   getApprovalPreview,
+  getApproval,
   approveRelease,
   rejectRelease,
   mapPreviewToSchedules,

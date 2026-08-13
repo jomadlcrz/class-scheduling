@@ -54,6 +54,15 @@ export function DepartmentForm({
   const [logoRemoveOpen, setLogoRemoveOpen] = useState(false);
 
   useEffect(() => {
+    if (!department?.logoUrl) return;
+    let active = true;
+    departmentService.getLogoRaw(department.id, false).then((blob) => {
+      if (active) setLogoUrl(URL.createObjectURL(blob));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [department?.id, department?.logoUrl]);
+
+  useEffect(() => {
     if (!logoPreview) return;
     return () => URL.revokeObjectURL(logoPreview);
   }, [logoPreview]);

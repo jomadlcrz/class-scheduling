@@ -33,10 +33,12 @@ export function DeanScheduleApprovalDetailPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    scheduleReleaseService
-      .getApprovalPreview(releaseId)
-      .then((data) => {
-        if (!cancelled) setPreview(data);
+    Promise.all([
+      scheduleReleaseService.getApproval(releaseId),
+      scheduleReleaseService.getApprovalPreview(releaseId),
+    ])
+      .then(([release, data]) => {
+        if (!cancelled) setPreview({ ...data, release });
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "Unable to load this schedule.");
