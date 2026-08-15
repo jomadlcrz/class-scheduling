@@ -34,7 +34,7 @@ function StepNode({ status, index }: { status: StepStatus; index: number }) {
   if (status === "completed") {
     return (
       <span
-        className="relative z-10 grid size-9 place-items-center rounded-full bg-navy-800 text-mist-100 dark:bg-mist-100 dark:text-navy-900"
+        className="relative z-10 grid size-11 shrink-0 place-items-center rounded-full bg-navy-700 text-mist-100 shadow-md shadow-navy-700/20 transition-all duration-300 dark:bg-mist-100 dark:text-navy-900 dark:shadow-none"
         aria-hidden="true"
       >
         <CheckIcon size={16} strokeWidth={3} />
@@ -45,13 +45,18 @@ function StepNode({ status, index }: { status: StepStatus; index: number }) {
   if (status === "current") {
     return (
       <span
-        className="relative z-10 grid size-9 place-items-center rounded-full bg-white text-navy-800 dark:bg-white/5 dark:text-mist-100"
+        className="relative z-10 grid size-11 shrink-0 place-items-center rounded-full bg-white text-navy-700 ring-4 ring-gold-500/15 transition-all duration-300 dark:bg-white/5 dark:text-mist-100 dark:ring-gold-400/15"
         aria-hidden="true"
       >
         <motion.span
-          className="absolute inset-0 rounded-full border border-dashed border-gold-500 dark:border-gold-400"
+          className="absolute inset-0 rounded-full border-2 border-dashed border-gold-500 dark:border-gold-400"
           animate={{ rotate: reduceMotion ? 0 : 360 }}
-          transition={{ duration: 8, ease: "linear", repeat: reduceMotion ? 0 : Infinity }}
+          transition={{ duration: 6, ease: "linear", repeat: reduceMotion ? 0 : Infinity }}
+        />
+        <motion.span
+          className="absolute inset-1 rounded-full bg-gold-500/5 dark:bg-gold-400/5"
+          animate={{ opacity: reduceMotion ? 1 : [0.35, 1, 0.35] }}
+          transition={{ duration: 2, ease: "easeInOut", repeat: reduceMotion ? 0 : Infinity }}
         />
         <span className="relative font-body text-sm font-semibold">{index + 1}</span>
       </span>
@@ -60,7 +65,7 @@ function StepNode({ status, index }: { status: StepStatus; index: number }) {
 
   return (
     <span
-      className="relative z-10 grid size-9 place-items-center rounded-full border-2 border-slate-200 bg-white font-body text-xs font-semibold text-slate-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-500"
+      className="relative z-10 grid size-11 shrink-0 place-items-center rounded-full border-2 border-slate-200 bg-white font-body text-sm font-semibold text-slate-400 transition-all duration-300 dark:border-white/15 dark:bg-surface-raised dark:text-slate-500"
       aria-hidden="true"
     >
       {index + 1}
@@ -75,7 +80,7 @@ function StepNode({ status, index }: { status: StepStatus; index: number }) {
  */
 export function Stepper({ steps, currentIndex, maxUnlockedIndex, onStepClick }: StepperProps) {
   return (
-    <nav aria-label="Wizard progress">
+    <nav aria-label="Wizard progress" className="w-full px-1 py-2 sm:px-2">
       <ol className="hidden items-center sm:flex">
         {steps.map((step, index) => {
           const status = statusFor(index, currentIndex);
@@ -89,16 +94,18 @@ export function Stepper({ steps, currentIndex, maxUnlockedIndex, onStepClick }: 
                 disabled={!isClickable}
                 aria-current={status === "current" ? "step" : undefined}
                 onClick={() => onStepClick(index)}
-                className={`flex shrink-0 items-center gap-2 rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                className={`flex shrink-0 items-center gap-3 rounded-lg px-1 py-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   isClickable ? "cursor-pointer" : "cursor-default"
                 }`}
               >
                 <StepNode status={status} index={index} />
                 <span
-                  className={`font-body text-sm font-semibold ${
-                    status === "upcoming"
-                      ? "text-slate-400 dark:text-slate-500"
-                      : "text-navy-700 dark:text-mist-100"
+                  className={`whitespace-nowrap font-body text-sm font-semibold tracking-tight transition-all duration-300 ${
+                    status === "current"
+                      ? "rounded-full bg-navy-800/10 px-3 py-1.5 text-navy-700 dark:bg-mist-100/10 dark:text-mist-100"
+                      : status === "upcoming"
+                        ? "text-slate-400 dark:text-slate-500"
+                        : "text-navy-700 dark:text-mist-100"
                   }`}
                 >
                   {step.label}
@@ -107,7 +114,7 @@ export function Stepper({ steps, currentIndex, maxUnlockedIndex, onStepClick }: 
               {!isLast && (
                 <span
                   aria-hidden="true"
-                  className={`mx-3 h-0.5 min-w-6 flex-1 ${connectorTone(status)}`}
+                  className={`mx-4 h-0.5 min-w-8 flex-1 rounded-full transition-colors duration-500 ${connectorTone(status)}`}
                 />
               )}
             </li>

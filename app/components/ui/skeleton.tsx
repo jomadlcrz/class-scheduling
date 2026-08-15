@@ -353,9 +353,9 @@ export function WizardSkeleton({ steps = 3 }: WizardSkeletonProps) {
         <div className="flex items-center border-b border-slate-200 px-5 py-4 sm:px-6 dark:border-white/10">
           {Array.from({ length: steps }).map((_, i) => (
             <div key={i} className={`flex min-w-0 items-center ${i < steps - 1 ? "flex-1" : ""}`}>
-              <Skeleton className="size-9 shrink-0 rounded-full" />
+              <Skeleton className="size-11 shrink-0 rounded-full" />
               <Skeleton className="ml-2 hidden h-3 w-20 sm:block" />
-              {i < steps - 1 && <Skeleton className="mx-3 h-0.5 min-w-6 flex-1" />}
+              {i < steps - 1 && <Skeleton className="mx-4 h-0.5 min-w-8 flex-1" />}
             </div>
           ))}
         </div>
