@@ -8,6 +8,7 @@ import { ConfirmDialog } from "~/components/ui/modal";
 import { WizardSkeleton } from "~/components/ui/skeleton";
 import { AddStudentWizard } from "~/features/enrollment/add-student-wizard";
 import { EnrollmentBatchImport } from "~/features/enrollment/enrollment-batch-import";
+import { SetCapacityDialog } from "~/features/enrollment/set-capacity-dialog";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
@@ -80,6 +81,7 @@ function EntryModeTabs({
 function EnrollmentNewStudentPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<EntryMode>("single");
+  const [capacityOpen, setCapacityOpen] = useState(false);
   const { data: programs } = useCachedData("programs", () => programService.list());
   const { data: setsData } = useCachedData("sets", () => setService.list());
   const sets = setsData ?? [];
@@ -103,15 +105,20 @@ function EnrollmentNewStudentPage() {
       <PageHeader
         title="Add New Student"
         actions={
-          !noAcademicTerm && !isLoading ? (
-            <EntryModeTabs
-              mode={mode}
-              onChange={(next) => {
-                setMode(next);
-                setIsDirty(false);
-              }}
-            />
-          ) : undefined
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" block={false} onClick={() => setCapacityOpen(true)}>
+              Class Size Cap
+            </Button>
+            {!noAcademicTerm && !isLoading ? (
+              <EntryModeTabs
+                mode={mode}
+                onChange={(next) => {
+                  setMode(next);
+                  setIsDirty(false);
+                }}
+              />
+            ) : undefined}
+          </div>
         }
       />
 
@@ -199,6 +206,8 @@ function EnrollmentNewStudentPage() {
       >
         You have unsaved student details. Reloading will discard them.
       </ConfirmDialog>
+
+      <SetCapacityDialog open={capacityOpen} onClose={() => setCapacityOpen(false)} />
     </div>
   );
 }

@@ -65,7 +65,8 @@ export function Pagination({ page, totalItems, pageSize, onPageChange }: Paginat
       aria-label="pagination"
       className="mt-4 flex w-full flex-col items-center gap-2"
     >
-      <ul className="flex flex-wrap items-center justify-center gap-2">
+      {totalPages > 1 && (
+        <ul className="flex flex-wrap items-center justify-center gap-2">
         {hasPrevious && (
           <li>
             <button
@@ -166,7 +167,8 @@ export function Pagination({ page, totalItems, pageSize, onPageChange }: Paginat
             </button>
           </li>
         )}
-      </ul>
+        </ul>
+      )}
       <p className="text-sm text-slate-500 dark:text-slate-400">
         Showing {start}–{end} of {totalItems}
       </p>
@@ -212,7 +214,7 @@ function GoToPagePopover({
       label="Go to page"
       trigger={trigger}
       triggerClassName={triggerClassName}
-      className="w-80 p-4"
+      className="w-max p-4"
       scrollable={false}
       onOpenChange={(open) => {
         if (open) setValue(String(currentPage));

@@ -8,7 +8,6 @@ import { TableSkeleton } from "~/components/ui/skeleton";
 import { TableLoadingSpinner } from "~/components/ui/spinner";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { EnrollmentRecordsView } from "~/features/enrollment/records/enrollment-records-view";
-import { SetCapacityDialog } from "~/features/enrollment/set-capacity-dialog";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useDebounce } from "~/hooks/use-debounce";
 import { useAuth } from "~/hooks/use-auth";
@@ -51,7 +50,6 @@ function EnrollmentStudentsPage() {
 
   const [page, setPage] = useState(1);
   const [paginationRequested, setPaginationRequested] = useState(false);
-  const [capacityOpen, setCapacityOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState(initialType);
   const [stateFilter, setStateFilter] = useState("all");
@@ -118,13 +116,10 @@ function EnrollmentStudentsPage() {
       <PageHeader
         title={isDean ? "Department Students" : "Enrollment Records"}
         actions={!isDean ? (
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" block={false} onClick={() => setCapacityOpen(true)}>Class Size Cap</Button>
-            <Button type="button" block={false} onClick={() => navigate("/enrollment/new")}>
-              <PlusIcon />
-              Add Records
-            </Button>
-          </div>
+          <Button type="button" block={false} onClick={() => navigate("/enrollment/new")}>
+            <PlusIcon />
+            Add Records
+          </Button>
         ) : undefined}
       />
 
@@ -162,7 +157,6 @@ function EnrollmentStudentsPage() {
           />
         )}
       </div>
-      <SetCapacityDialog open={capacityOpen} onClose={() => setCapacityOpen(false)} />
     </div>
   );
 }
