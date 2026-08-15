@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useState, type ReactNode } from "react";
 import { Button } from "~/components/ui/button";
 import {
   ChevronLeftIcon,
@@ -16,8 +16,30 @@ const navButtonClassName =
 const iconButtonClassName =
   "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-navy-700 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
 
-const pagePillClassName =
-  "inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-navy-800 transition-colors duration-150 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-navy-800 dark:text-slate-100 dark:hover:bg-navy-700";
+const pageButtonClassName =
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
+
+const activePageButtonClassName =
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-navy-800 dark:border-white/15 dark:bg-navy-800 dark:text-slate-100";
+
+const activePillClassName =
+  "inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-navy-800 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-navy-800 dark:text-slate-100";
+
+const ellipsisButtonClassName =
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300";
+
+/** First, last, current, and one neighbor on each side; gaps become "ellipsis". */
+function pageRange(current: number, total: number): (number | "ellipsis")[] {
+  const range: (number | "ellipsis")[] = [];
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || (i >= current - 1 && i <= current + 1)) {
+      range.push(i);
+    } else if (range[range.length - 1] !== "ellipsis") {
+      range.push("ellipsis");
+    }
+  }
+  return range;
+}
 
 type PaginationProps = {
   page: number;
@@ -35,6 +57,7 @@ export function Pagination({ page, totalItems, pageSize, onPageChange }: Paginat
   const hasNext = currentPage < totalPages;
   const start = (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, totalItems);
+  const items = pageRange(currentPage, totalPages);
 
   return (
     <nav
@@ -42,7 +65,7 @@ export function Pagination({ page, totalItems, pageSize, onPageChange }: Paginat
       aria-label="pagination"
       className="mt-4 flex w-full flex-col items-center gap-2"
     >
-      <ul className="flex items-center gap-2">
+      <ul className="flex flex-wrap items-center justify-center gap-2">
         {hasPrevious && (
           <li>
             <button
@@ -68,12 +91,55 @@ export function Pagination({ page, totalItems, pageSize, onPageChange }: Paginat
             </button>
           </li>
         )}
-        <li>
+        <li className="md:hidden">
           <GoToPagePopover
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={onPageChange}
+            inputId="pagination-go-to-page-mobile"
+            triggerClassName={activePillClassName}
+            trigger={
+              <span aria-current="page">
+                {currentPage} / {totalPages}
+              </span>
+            }
           />
+        </li>
+        <li className="hidden md:block">
+          <div className="flex flex-wrap items-center gap-2">
+            {items.map((item, i) =>
+              item === "ellipsis" ? (
+                <GoToPagePopover
+                  key={`ellipsis-${i}`}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={onPageChange}
+                  inputId={`pagination-go-to-page-e${i}`}
+                  triggerClassName={ellipsisButtonClassName}
+                  trigger={<span aria-hidden="true">…</span>}
+                />
+              ) : item === currentPage ? (
+                <span
+                  key={item}
+                  aria-current="page"
+                  aria-label={`Current page, page ${item}`}
+                  className={activePageButtonClassName}
+                >
+                  {item}
+                </span>
+              ) : (
+                <button
+                  key={item}
+                  type="button"
+                  aria-label={`Go to page ${item}`}
+                  onClick={() => onPageChange(item)}
+                  className={pageButtonClassName}
+                >
+                  {item}
+                </button>
+              ),
+            )}
+          </div>
         </li>
         {hasNext && (
           <li>
@@ -112,9 +178,19 @@ type GoToPagePopoverProps = {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  inputId: string;
+  triggerClassName: string;
+  trigger: ReactNode;
 };
 
-function GoToPagePopover({ currentPage, totalPages, onPageChange }: GoToPagePopoverProps) {
+function GoToPagePopover({
+  currentPage,
+  totalPages,
+  onPageChange,
+  inputId,
+  triggerClassName,
+  trigger,
+}: GoToPagePopoverProps) {
   const [value, setValue] = useState(String(currentPage));
 
   const clamp = (target: number) => Math.min(Math.max(target, 1), totalPages);
@@ -134,8 +210,8 @@ function GoToPagePopover({ currentPage, totalPages, onPageChange }: GoToPagePopo
   return (
     <Popover
       label="Go to page"
-      trigger={<span aria-current="page">{currentPage} of {totalPages}</span>}
-      triggerClassName={pagePillClassName}
+      trigger={trigger}
+      triggerClassName={triggerClassName}
       className="w-80 p-4"
       scrollable={false}
       onOpenChange={(open) => {
@@ -165,7 +241,7 @@ function GoToPagePopover({ currentPage, totalPages, onPageChange }: GoToPagePopo
                 <MinusIcon />
               </button>
               <input
-                id="pagination-go-to-page"
+                id={inputId}
                 type="number"
                 min={1}
                 max={totalPages}
