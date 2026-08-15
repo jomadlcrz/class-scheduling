@@ -20,6 +20,12 @@
   font-display: swap;
 }
 
+/* Bebas Neue runs tight by default — widen display text slightly and consistently.
+   Un-layered so it beats the layered tracking-* utilities everywhere. */
+.font-display {
+  letter-spacing: 0.04em;
+}
+
 @theme {
   /* Two families only — display for the wordmark/headlines, body for everything else. */
   --font-display: "Bebas Neue";

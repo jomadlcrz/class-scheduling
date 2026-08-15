@@ -4,7 +4,7 @@
 
 export function Table({ children }: { children: ReactNode }) {
   return (
-    <div className="scrollbar-thin overflow-x-auto rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
+    <div className="relative scrollbar-thin overflow-x-auto rounded-xl border border-slate-300 bg-white dark:border-white/10 dark:bg-white/5">
       <table className="w-full text-left font-body text-sm">{children}</table>
     </div>
   );
