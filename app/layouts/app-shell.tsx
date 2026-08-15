@@ -7,13 +7,13 @@ import { LayoutSidebarIcon } from "~/components/ui/icons";
 import { Toaster } from "~/components/ui/sonner";
 import { TermContextProvider } from "~/features/academic-terms/term-context-provider";
 import { DashboardIntroOverlay, useJustLoggedIn } from "~/layouts/dashboard-intro";
-import { Topbar } from "~/layouts/topbar";
 import {
   Sidebar,
   loadSidebarMode,
   saveSidebarMode,
   type SidebarMode,
 } from "~/layouts/sidebar";
+import { Topbar } from "~/layouts/topbar";
 
 const MOBILE_QUERY = "(max-width: 1023px)";
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
@@ -81,7 +81,7 @@ function Shell() {
         (mode === "expand-on-hover" ? (
           /* Expand-on-hover keeps a 60px rail in-flow and floats the expanded
              aside over the topbar/content so nothing reflows. */
-          <div className="sticky top-0 z-40 hidden h-dvh w-[60px] shrink-0 lg:block">
+          <div className="sticky top-0 z-40 hidden h-dvh w-15 shrink-0 lg:block">
             <Sidebar
               mode={mode}
               onModeChange={setModePersisted}
@@ -110,12 +110,12 @@ function Shell() {
           type="button"
           aria-label="Close menu"
           onClick={() => setMobileOpen(false)}
-          className={`fixed inset-0 z-50 bg-slate-900/50 transition-opacity duration-200 lg:hidden ${
+          className={`fixed inset-0 z-40 bg-slate-900/50 transition-opacity duration-200 lg:hidden ${
             mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           }`}
         />
         <div
-          className={`fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out lg:hidden ${
+          className={`fixed inset-y-0 left-0 z-40 transition-transform duration-200 ease-in-out lg:hidden ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

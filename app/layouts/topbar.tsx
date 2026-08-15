@@ -49,7 +49,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-surface/90">
+    <header className="sticky top-0 z-35 flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white/95 px-4 backdrop-blur-md sm:px-6 dark:border-white/8 dark:bg-surface/90">
       {/* Settings routes hide the main app Sidebar on desktop, so the toggle
           has nothing to do there — show the brand lockup instead. It still
           opens the mobile drawer below lg. */}
