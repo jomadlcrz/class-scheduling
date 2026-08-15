@@ -8,9 +8,13 @@ import { Toaster } from "~/components/ui/sonner";
 import { TermContextProvider } from "~/features/academic-terms/term-context-provider";
 import { DashboardIntroOverlay, useJustLoggedIn } from "~/layouts/dashboard-intro";
 import { Navbar } from "~/layouts/navbar";
-import { Sidebar } from "~/layouts/sidebar";
+import {
+  Sidebar,
+  loadSidebarMode,
+  saveSidebarMode,
+  type SidebarMode,
+} from "~/layouts/sidebar";
 
-const COLLAPSED_KEY = "cs-sidebar-collapsed";
 const MOBILE_QUERY = "(max-width: 1023px)";
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -31,45 +35,35 @@ function Shell() {
   const justLoggedIn = useJustLoggedIn();
   const location = useLocation();
   const isSettingsRoute = location.pathname.startsWith("/settings");
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem(COLLAPSED_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
+  const [mode, setMode] = useState<SidebarMode>(() => loadSidebarMode());
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const setCollapsedPersisted = useCallback((next: boolean) => {
-    setCollapsed(next);
-    try {
-      localStorage.setItem(COLLAPSED_KEY, next ? "1" : "0");
-    } catch {
-      // storage unavailable
-    }
+  const setModePersisted = useCallback((next: SidebarMode) => {
+    setMode(next);
+    saveSidebarMode(next);
   }, []);
 
   const toggleSidebar = useCallback(() => {
     if (window.matchMedia(MOBILE_QUERY).matches) {
       setMobileOpen((open) => !open);
     } else {
-      setCollapsedPersisted(!collapsed);
+      setModePersisted(mode === "expanded" ? "collapsed" : "expanded");
     }
-  }, [collapsed, setCollapsedPersisted]);
+  }, [mode, setModePersisted]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key === "b") {
         if (!window.matchMedia(MOBILE_QUERY).matches) {
           event.preventDefault();
-          setCollapsedPersisted(!collapsed);
+          setModePersisted(mode === "expanded" ? "collapsed" : "expanded");
         }
       }
       if (event.key === "Escape") setMobileOpen(false);
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [collapsed, setCollapsedPersisted]);
+  }, [mode, setModePersisted]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -83,19 +77,32 @@ function Shell() {
       {justLoggedIn && <DashboardIntroOverlay />}
 
       {/* Desktop sidebar — settings routes use their own SettingsSidebar instead */}
-      {!isSettingsRoute && (
-        <motion.div
-          className="sticky top-0 hidden h-dvh lg:block"
-          initial={{ opacity: 0, x: -16 }}
-          animate={{ opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE_OUT } }}
-        >
-          <Sidebar
-            collapsed={collapsed}
-            onExpand={() => setCollapsedPersisted(false)}
-            onNavigate={() => setMobileOpen(false)}
-          />
-        </motion.div>
-      )}
+      {!isSettingsRoute &&
+        (mode === "expand-on-hover" ? (
+          /* Expand-on-hover keeps a 60px rail in-flow and floats the expanded
+             aside over the topbar/content so nothing reflows. */
+          <div className="sticky top-0 z-40 hidden h-dvh w-[60px] shrink-0 lg:block">
+            <Sidebar
+              mode={mode}
+              onModeChange={setModePersisted}
+              onExpand={() => setModePersisted("expanded")}
+              onNavigate={() => setMobileOpen(false)}
+            />
+          </div>
+        ) : (
+          <motion.div
+            className="sticky top-0 hidden h-dvh lg:block"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE_OUT } }}
+          >
+            <Sidebar
+              mode={mode}
+              onModeChange={setModePersisted}
+              onExpand={() => setModePersisted("expanded")}
+              onNavigate={() => setMobileOpen(false)}
+            />
+          </motion.div>
+        ))}
 
       {/* Mobile drawer — still reachable from the navbar hamburger on every route, including settings */}
       <>
@@ -124,7 +131,9 @@ function Shell() {
               </span>
             </button>
             <Sidebar
-              collapsed={false}
+              mode={mode}
+              forceExpanded
+              onModeChange={setModePersisted}
               onExpand={() => undefined}
               onNavigate={() => setMobileOpen(false)}
             />

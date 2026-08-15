@@ -57,7 +57,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         type="button"
         onClick={onToggleSidebar}
         aria-label="Toggle navigation menu"
-        className={`${iconButtonClassName} ${isSettingsRoute ? "lg:hidden" : ""}`}
+        className={`${iconButtonClassName} lg:hidden`}
       >
         <span className="flex size-7 items-center justify-center">
           <MenuIcon />

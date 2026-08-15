@@ -17,6 +17,7 @@ import {
   FolderOpenIcon,
   GraduationCapIcon,
   LayersIcon,
+  LayoutSidebarIcon,
   ListIcon,
   MapIcon,
   RefreshCwIcon,
@@ -28,6 +29,7 @@ import {
   UsersIcon,
   UsersRoundIcon,
 } from "~/components/ui/icons";
+import { Popover } from "~/components/ui/popover";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useDeanPendingApprovalsCount } from "~/features/dean-approvals/use-dean-pending-count";
 import { useRegistrarPendingScheduleCount } from "~/features/schedules/use-registrar-pending-count";
@@ -41,6 +43,39 @@ const SCHEDULE_APPROVALS_PATH = "/dean/schedule-approvals";
 const SCHEDULING_HUB_PATH = "/schedules";
 
 const ALL_ROLES: Role[] = ["admin", "registrar", "dean", "faculty", "student"];
+
+export type SidebarMode = "expanded" | "collapsed" | "expand-on-hover";
+
+const SIDEBAR_MODE_KEY = "cs-sidebar-mode";
+const LEGACY_COLLAPSED_KEY = "cs-sidebar-collapsed";
+
+const SIDEBAR_MODE_OPTIONS: { value: SidebarMode; label: string }[] = [
+  { value: "expanded", label: "Expanded" },
+  { value: "collapsed", label: "Collapsed" },
+  { value: "expand-on-hover", label: "Expand on hover" },
+];
+
+export function loadSidebarMode(): SidebarMode {
+  try {
+    const stored = localStorage.getItem(SIDEBAR_MODE_KEY);
+    if (stored === "expanded" || stored === "collapsed" || stored === "expand-on-hover") {
+      return stored;
+    }
+    if (localStorage.getItem(LEGACY_COLLAPSED_KEY) === "1") return "collapsed";
+  } catch {
+    // storage unavailable
+  }
+  return "expanded";
+}
+
+export function saveSidebarMode(mode: SidebarMode): void {
+  try {
+    localStorage.setItem(SIDEBAR_MODE_KEY, mode);
+  } catch {
+    // storage unavailable
+  }
+}
+
 
 type NavLeaf = {
   label: string;
@@ -230,17 +265,27 @@ function isSubItemActive(pathname: string, sub: NavLeaf): boolean {
 }
 
 type SidebarProps = {
-  collapsed: boolean;
+  mode: SidebarMode;
+  onModeChange: (mode: SidebarMode) => void;
   onExpand: () => void;
   onNavigate: () => void;
+  /** Mobile drawer always renders expanded regardless of the persisted mode. */
+  forceExpanded?: boolean;
 };
 
-export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
+export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpanded = false }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
   const pendingApprovals = useDeanPendingApprovalsCount();
   const pendingSchedules = useRegistrarPendingScheduleCount();
   const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
+  const [hoverExpanded, setHoverExpanded] = useState(false);
+
+  const collapsed = forceExpanded
+    ? false
+    : mode === "collapsed" || (mode === "expand-on-hover" && !hoverExpanded);
+  // Expand-on-hover overlays the topbar/content instead of reflowing them.
+  const overlay = !forceExpanded && mode === "expand-on-hover" && hoverExpanded;
 
   useEffect(() => {
     for (const group of NAV_GROUPS) {
@@ -282,9 +327,13 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
   return (
     <motion.aside
       aria-label="Portal navigation"
+      onMouseEnter={() => setHoverExpanded(true)}
+      onMouseLeave={() => setHoverExpanded(false)}
       animate={{ width: collapsed ? 60 : 220 }}
       transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-      className="flex h-dvh flex-col overflow-hidden border-r border-white/10 bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-mist-100"
+      className={`flex flex-col overflow-hidden border-r border-white/10 bg-gwc-blue-deep bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-mist-100 ${
+        overlay ? "fixed inset-y-0 left-0 z-40" : "h-dvh"
+      }`}
     >
       <header
         className={`flex items-center gap-2 px-3 pb-2.5 pt-3.5 ${collapsed ? "justify-center px-0" : ""}`}
@@ -463,6 +512,84 @@ export function Sidebar({ collapsed, onExpand, onNavigate }: SidebarProps) {
           </div>
         ))}
       </nav>
+
+      {!forceExpanded && (
+        <SidebarControl mode={mode} onModeChange={onModeChange} collapsed={collapsed} />
+      )}
     </motion.aside>
+  );
+}
+
+type SidebarControlProps = {
+  mode: SidebarMode;
+  onModeChange: (mode: SidebarMode) => void;
+  collapsed: boolean;
+};
+
+function SidebarControl({ mode, onModeChange, collapsed }: SidebarControlProps) {
+  return (
+    <footer className="border-t border-white/10 p-2">
+      <Tooltip label="Sidebar control" direction="right" gap={10} disabled={!collapsed}>
+        <Popover
+          label="Sidebar control"
+          trigger={
+            collapsed ? (
+              <LayoutSidebarIcon size={16} />
+            ) : (
+              <>
+                <LayoutSidebarIcon size={15} />
+                <span className="min-w-0 flex-1 truncate text-left">Sidebar</span>
+                <span className="shrink-0 opacity-70">
+                  <ChevronRightIcon />
+                </span>
+              </>
+            )
+          }
+          triggerClassName={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 font-body text-[0.78rem] text-mist-100/95 transition-colors duration-150 hover:bg-gwc-blue-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+            collapsed ? "justify-center px-0" : ""
+          }`}
+          className="w-56 px-1.5"
+          scrollable={false}
+        >
+          {(close) => (
+            <div className="flex flex-col gap-0.5 py-1">
+              <p className="px-2.5 pb-1.5 pt-1 font-body text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-slate-400 dark:text-slate-500">
+                Sidebar control
+              </p>
+              {SIDEBAR_MODE_OPTIONS.map((option) => {
+                const active = mode === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={active}
+                    onClick={() => {
+                      onModeChange(option.value);
+                      close();
+                    }}
+                    className={`flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-left font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                      active
+                        ? "bg-slate-100 font-semibold text-navy-800 dark:bg-white/10 dark:text-mist-100"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-navy-700 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-mist-100"
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`grid size-4 shrink-0 place-items-center rounded-full border ${
+                        active ? "border-navy-700 dark:border-mist-100" : "border-slate-300 dark:border-white/25"
+                      }`}
+                    >
+                      {active && <span className="size-2 rounded-full bg-navy-700 dark:bg-mist-100" />}
+                    </span>
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </Popover>
+      </Tooltip>
+    </footer>
   );
 }
