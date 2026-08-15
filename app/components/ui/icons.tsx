@@ -326,6 +326,32 @@ export function ChevronRightIcon() {
   );
 }
 
+export function ChevronLeftIcon() {
+  return (
+    <IconBase size={16}>
+      <polyline points="15 18 9 12 15 6" />
+    </IconBase>
+  );
+}
+
+export function ChevronsLeftIcon() {
+  return (
+    <IconBase size={16}>
+      <polyline points="11 17 6 12 11 7" />
+      <polyline points="18 17 13 12 18 7" />
+    </IconBase>
+  );
+}
+
+export function ChevronsRightIcon() {
+  return (
+    <IconBase size={16}>
+      <polyline points="13 17 18 12 13 7" />
+      <polyline points="6 17 11 12 6 7" />
+    </IconBase>
+  );
+}
+
 export function MailIcon({ size = 20 }: { size?: number } = {}) {
   return (
     <IconBase size={size}>
@@ -443,6 +469,14 @@ export function PlusIcon() {
   return (
     <IconBase size={16}>
       <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </IconBase>
+  );
+}
+
+export function MinusIcon() {
+  return (
+    <IconBase size={16}>
       <line x1="5" y1="12" x2="19" y2="12" />
     </IconBase>
   );

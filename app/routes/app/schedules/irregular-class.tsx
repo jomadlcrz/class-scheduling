@@ -11,9 +11,8 @@ import { StatCard } from "~/components/ui/stat-card";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { IrregularStudentsSkeleton, TableSkeleton } from "~/components/ui/skeleton";
-import { Stepper, type StepDefinition } from "~/components/ui/stepper";
-import { StickyFooter } from "~/components/ui/sticky-footer";
+import { TableSkeleton, WizardSkeleton } from "~/components/ui/skeleton";
+import { type StepDefinition } from "~/components/ui/stepper";
 import {
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { TabButtons } from "~/components/ui/underline-tabs";
+import { Wizard, WizardFooter } from "~/components/ui/wizard";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { usePagination } from "~/hooks/use-pagination";
 import { useSchoolYears } from "~/hooks/use-school-years";
@@ -535,27 +535,33 @@ function IrregularClassPage() {
   }
 
   const termSelectors = (
-    <div className="grid grid-cols-2 gap-3 sm:max-w-md">
-      <Select
-        items={schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear }))}
-        value={schoolYear}
-        onValueChange={(v) => setSchoolYear(v as string)}
-      >
-        <SelectTrigger id="ic-school-year" aria-label="School Year"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          {schoolYears.map((sy) => <SelectItem key={sy.id} value={sy.schoolYear}>{sy.schoolYear}</SelectItem>)}
-        </SelectContent>
-      </Select>
-      <Select
-        items={semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester }))}
-        value={semesterNumber}
-        onValueChange={(v) => setSemesterNumber(v as string)}
-      >
-        <SelectTrigger id="ic-semester" aria-label="Semester"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          {semesters.map((s) => <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>{s.semester}</SelectItem>)}
-        </SelectContent>
-      </Select>
+    <div className="flex flex-wrap items-end gap-3">
+      <div className="flex w-44 flex-col gap-1">
+        <label htmlFor="ic-school-year" className="font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">School Year</label>
+        <Select
+          items={schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear }))}
+          value={schoolYear}
+          onValueChange={(v) => setSchoolYear(v as string)}
+        >
+          <SelectTrigger id="ic-school-year" aria-label="School Year"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {schoolYears.map((sy) => <SelectItem key={sy.id} value={sy.schoolYear}>{sy.schoolYear}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex w-44 flex-col gap-1">
+        <label htmlFor="ic-semester" className="font-body text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Semester</label>
+        <Select
+          items={semesters.map((s) => ({ value: String(s.semesterNumber), label: s.semester }))}
+          value={semesterNumber}
+          onValueChange={(v) => setSemesterNumber(v as string)}
+        >
+          <SelectTrigger id="ic-semester" aria-label="Semester"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {semesters.map((s) => <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>{s.semester}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 
@@ -587,158 +593,173 @@ function IrregularClassPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader title="Irregular Schedule Builder" />
 
-      <TabButtons
-        ariaLabel="Irregular class"
-        className="mt-6"
-        value={activeTab}
-        onChange={(v) => { setActiveTab(v as Tab); resetWizard(); }}
-        tabs={[
-          { value: "students", label: "Irregular Students" },
-          { value: "assigned", label: "Irregular Schedules" },
-        ]}
-      />
-
       {students === null ? (
-        activeTab === "students" ? <div className="mt-6"><IrregularStudentsSkeleton /></div> : <div className="mt-6"><TableSkeleton columns={6} rows={8} /></div>
+        <div className="mt-6">
+          {activeTab === "students" ? <WizardSkeleton /> : <TableSkeleton columns={6} rows={8} />}
+        </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-6">
-          {termSelectors}
+        <>
+          <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <TabButtons
+              ariaLabel="Irregular class"
+              value={activeTab}
+              onChange={(v) => { setActiveTab(v as Tab); resetWizard(); }}
+              tabs={[
+                { value: "students", label: "Irregular Students" },
+                { value: "assigned", label: "Irregular Schedules" },
+              ]}
+            />
+            {termSelectors}
+          </div>
 
           {activeTab === "students" ? (
-            <Stepper steps={WIZARD_STEPS} currentIndex={step} maxUnlockedIndex={2} onStepClick={(i) => { if (i < step) setStep(i as Step); }} />
-          ) : !matchedSy || !matchedSem ? (
-            <EmptyState title="Select a term">Pick a school year and semester to see assigned schedules.</EmptyState>
-          ) : assigned === null ? (
-            <TableSkeleton columns={6} rows={8} />
-          ) : assigned.length === 0 ? (
-            <EmptyState title="No assigned schedules">No irregular students have an assigned schedule for this term yet.</EmptyState>
-          ) : (
-            <AssignedScheduleView students={assigned} />
-          )}
-
-          {/* ═══ STEP 1 — Select Students ═══ */}
-          {activeTab === "students" && step === 0 && (
-            !students || students.length === 0 ? (
-              <EmptyState title="No irregular students">No students are currently flagged as irregular.</EmptyState>
-            ) : (
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-baseline gap-2">
-                    <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">Select Students</h2>
-                    <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                      {selectedStudentIds.size > 0 ? `${selectedStudentIds.size} selected` : "0 selected"}
-                    </span>
-                  </div>
-                </div>
-                {/* Search + Select All */}
-                <div className="flex items-center gap-3">
-                  <div className="relative w-64 shrink-0 sm:w-72">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"><SearchIcon /></span>
-                    <input type="search" placeholder="Search..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className={`${inputClassName} pl-9`} aria-label="Search students" />
-                  </div>
-                  <div className="w-40 shrink-0">
-                    <Select
-                      items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
-                      value={programFilter}
-                      onValueChange={(v) => setProgramFilter(v as string)}
-                    >
-                      <SelectTrigger aria-label="Filter by program"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Programs</SelectItem>
-                        {programs.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <button type="button" onClick={handleSelectAllStudents} className="shrink-0 rounded-lg px-3 py-1.5 font-body text-xs text-slate-600 transition-colors hover:text-slate-800 dark:text-slate-300 dark:hover:text-mist-100">
-                    {filteredStudents.length > 0 && filteredStudents.every((s) => selectedStudentIds.has(s.studentProfileId)) ? "Deselect All" : "Select All"}
-                  </button>
-                </div>
-                {/* Table */}
-                <StudentTable students={filteredStudents} selectedIds={selectedStudentIds} onToggle={handleToggleStudent} onSelectAll={handleSelectAllStudents} />
-                {/* Footer */}
-                {selectedStudentIds.size > 0 && (
-                  <StickyFooter>
-                    <Button type="button" variant="outline" block={false} onClick={() => navigate("/dashboard")}>Cancel</Button>
-                    <Button type="button" block={false} onClick={() => setStep(1)}>Continue</Button>
-                  </StickyFooter>
-                )}
-              </>
-            )
-          )}
-
-          {/* ═══ STEP 2 — Select Schedules ═══ */}
-          {activeTab === "students" && step === 1 && (
-            !activePending ? (
-              <EmptyState title="No pending schedules">This student has no pending subjects to schedule for this term.</EmptyState>
-            ) : (
-              <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-6">
-                <div className="flex min-w-0 flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-baseline gap-2">
-                      <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">Available Schedules</h2>
-                      <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                        {selectedOfferingKeys.size > 0 ? `${selectedOfferingKeys.size} selected` : "0 selected"}
-                      </span>
-                    </div>
-                    <button type="button" onClick={handleSelectAllRecommended} className="rounded-lg px-3 py-1.5 font-body text-xs text-slate-600 transition-colors hover:text-slate-800 dark:text-slate-300 dark:hover:text-mist-100">
-                      {allRecommendedSelected ? "Deselect All" : "Select All"}
-                    </button>
-                  </div>
-                  <ScheduleCardGrid offerings={recommendedOfferings} selectedKeys={selectedOfferingKeys} onToggle={handleToggleOffering} />
-                  <StickyFooter>
-                    <Button type="button" variant="outline" block={false} onClick={() => setStep(0)}>Back</Button>
-                    <Button type="button" block={false} disabled={!canContinueFromStep2()} onClick={() => setStep(2)}>Continue</Button>
-                  </StickyFooter>
-                </div>
-                <aside className="hidden lg:block">{studentSummary}</aside>
-              </div>
-            )
-          )}
-
-          {/* ═══ STEP 3 — Review & Assign ═══ */}
-          {activeTab === "students" && step === 2 && activePending && (
-            <div className="flex flex-col gap-6">
-              <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">Assignment Summary</h2>
-              {/* Summary stats */}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-                <StatCard label="Students" value={isBulk ? selectedStudents.length : 1} />
-                <StatCard label="Schedules" value={selectedOfferingKeys.size} />
-                <StatCard
-                  label="Assignments"
-                  value={(isBulk ? selectedStudents.length : 1) * selectedOfferingKeys.size}
-                />
-              </div>
-              {/* Selected schedules list */}
-              <div>
-                <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Selected Schedules</h3>
-                <div className="mt-2 flex flex-col gap-2">
-                  {selectedSummaryLines.length > 0 ? selectedSummaryLines.map((line, i) => (
-                    <div key={i} className="flex items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 dark:border-white/5">
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <span className="font-body text-sm font-medium text-navy-800 dark:text-mist-100">{line.set ?? "—"}</span>
-                        <span className="ml-2 font-body text-xs text-slate-500 dark:text-slate-400">{line.subjectCode}</span>
+            <div className="mx-auto mt-6 w-full max-w-5xl">
+              <Wizard
+                steps={WIZARD_STEPS}
+                currentIndex={step}
+                maxUnlockedIndex={2}
+                onStepClick={(i) => { if (i < step) setStep(i as Step); }}
+              >
+                {/* ═══ STEP 1 — Select Students ═══ */}
+                {step === 0 && (
+                  students.length === 0 ? (
+                    <EmptyState title="No irregular students">No students are currently flagged as irregular.</EmptyState>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-baseline gap-2">
+                          <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">Select Students</h2>
+                          <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                            {selectedStudentIds.size > 0 ? `${selectedStudentIds.size} selected` : "0 selected"}
+                          </span>
+                        </div>
                       </div>
-                      <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                        {isBulk ? `${selectedStudents.length} students` : "1 student"}
-                      </span>
+                      {/* Search + Select All */}
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <div className="relative w-64 shrink-0 sm:w-72">
+                          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"><SearchIcon /></span>
+                          <input type="search" placeholder="Search..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className={`${inputClassName} pl-9`} aria-label="Search students" />
+                        </div>
+                        <div className="w-40 shrink-0">
+                          <Select
+                            items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
+                            value={programFilter}
+                            onValueChange={(v) => setProgramFilter(v as string)}
+                          >
+                            <SelectTrigger aria-label="Filter by program"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Programs</SelectItem>
+                              {programs.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <button type="button" onClick={handleSelectAllStudents} className="shrink-0 rounded-lg px-3 py-1.5 font-body text-xs text-slate-600 transition-colors hover:text-slate-800 dark:text-slate-300 dark:hover:text-mist-100">
+                          {filteredStudents.length > 0 && filteredStudents.every((s) => selectedStudentIds.has(s.studentProfileId)) ? "Deselect All" : "Select All"}
+                        </button>
+                      </div>
+                      {/* Table */}
+                      <div className="mt-4">
+                        <StudentTable students={filteredStudents} selectedIds={selectedStudentIds} onToggle={handleToggleStudent} onSelectAll={handleSelectAllStudents} />
+                      </div>
+                      {/* Footer */}
+                      {selectedStudentIds.size > 0 && (
+                        <WizardFooter>
+                          <Button type="button" variant="outline" block={false} onClick={() => navigate("/dashboard")}>Cancel</Button>
+                          <Button type="button" block={false} onClick={() => setStep(1)}>Continue</Button>
+                        </WizardFooter>
+                      )}
+                    </>
+                  )
+                )}
+
+                {/* ═══ STEP 2 — Select Schedules ═══ */}
+                {step === 1 && (
+                  !activePending ? (
+                    <EmptyState title="No pending schedules">This student has no pending subjects to schedule for this term.</EmptyState>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-baseline gap-2">
+                          <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">Available Schedules</h2>
+                          <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                            {selectedOfferingKeys.size > 0 ? `${selectedOfferingKeys.size} selected` : "0 selected"}
+                          </span>
+                        </div>
+                        <button type="button" onClick={handleSelectAllRecommended} className="rounded-lg px-3 py-1.5 font-body text-xs text-slate-600 transition-colors hover:text-slate-800 dark:text-slate-300 dark:hover:text-mist-100">
+                          {allRecommendedSelected ? "Deselect All" : "Select All"}
+                        </button>
+                      </div>
+                      <div className="mt-4 lg:grid lg:grid-cols-[1fr_220px] lg:gap-6">
+                        <div className="flex min-w-0 flex-col gap-4">
+                          <ScheduleCardGrid offerings={recommendedOfferings} selectedKeys={selectedOfferingKeys} onToggle={handleToggleOffering} />
+                        </div>
+                        <aside className="hidden lg:block">{studentSummary}</aside>
+                      </div>
+                      <WizardFooter>
+                        <Button type="button" variant="outline" block={false} onClick={() => setStep(0)}>Back</Button>
+                        <Button type="button" block={false} disabled={!canContinueFromStep2()} onClick={() => setStep(2)}>Continue</Button>
+                      </WizardFooter>
+                    </>
+                  )
+                )}
+
+                {/* ═══ STEP 3 — Review & Assign ═══ */}
+                {step === 2 && activePending && (
+                  <>
+                    <div className="flex flex-col gap-6">
+                      <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">Assignment Summary</h2>
+                      {/* Summary stats */}
+                      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+                        <StatCard label="Students" value={isBulk ? selectedStudents.length : 1} />
+                        <StatCard label="Schedules" value={selectedOfferingKeys.size} />
+                        <StatCard
+                          label="Assignments"
+                          value={(isBulk ? selectedStudents.length : 1) * selectedOfferingKeys.size}
+                        />
+                      </div>
+                      {/* Selected schedules list */}
+                      <div>
+                        <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Selected Schedules</h3>
+                        <div className="mt-2 flex flex-col gap-2">
+                          {selectedSummaryLines.length > 0 ? selectedSummaryLines.map((line, i) => (
+                            <div key={i} className="flex items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 dark:border-white/5">
+                              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <span className="font-body text-sm font-medium text-navy-800 dark:text-mist-100">{line.set ?? "—"}</span>
+                                <span className="ml-2 font-body text-xs text-slate-500 dark:text-slate-400">{line.subjectCode}</span>
+                              </div>
+                              <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                                {isBulk ? `${selectedStudents.length} students` : "1 student"}
+                              </span>
+                            </div>
+                          )) : (
+                            <p className="font-body text-xs text-slate-400 dark:text-slate-500">No schedules selected.</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )) : (
-                    <p className="font-body text-xs text-slate-400 dark:text-slate-500">No schedules selected.</p>
-                  )}
-                </div>
-              </div>
-              <StickyFooter>
-                <Button type="button" variant="outline" block={false} onClick={() => setStep(1)}>Back</Button>
-                <Button type="button" block={false} isLoading={bulkAssigning} loadingLabel="Assigning…" onClick={handleAssign}>
-                  {isBulk ? `Assign to ${selectedStudents.length} Students` : "Assign Student"}
-                </Button>
-              </StickyFooter>
+                    <WizardFooter>
+                      <Button type="button" variant="outline" block={false} onClick={() => setStep(1)}>Back</Button>
+                      <Button type="button" block={false} isLoading={bulkAssigning} loadingLabel="Assigning…" onClick={handleAssign}>
+                        {isBulk ? `Assign to ${selectedStudents.length} Students` : "Assign Student"}
+                      </Button>
+                    </WizardFooter>
+                  </>
+                )}
+              </Wizard>
             </div>
+          ) : !matchedSy || !matchedSem ? (
+            <div className="mt-6"><EmptyState title="Select a term">Pick a school year and semester to see assigned schedules.</EmptyState></div>
+          ) : assigned === null ? (
+            <div className="mt-6"><TableSkeleton columns={6} rows={8} /></div>
+          ) : assigned.length === 0 ? (
+            <div className="mt-6"><EmptyState title="No assigned schedules">No irregular students have an assigned schedule for this term yet.</EmptyState></div>
+          ) : (
+            <div className="mt-6"><AssignedScheduleView students={assigned} /></div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
