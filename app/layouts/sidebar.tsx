@@ -205,7 +205,7 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 const itemClassName = (isActive: boolean) =>
-  `group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left font-body text-[0.78rem] text-mist-100/95 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+  `group flex h-8 w-full items-center gap-2 rounded-md px-2 py-1.5 text-left font-body text-[0.78rem] text-mist-100/95 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
     isActive ? "bg-gwc-blue-bright font-extrabold" : "hover:bg-gwc-blue-bright"
   }`;
 
@@ -323,13 +323,16 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
   })).filter((group) => group.items.length > 0);
 
   function toggleSubmenu(label: string) {
-    if (collapsed) onExpand();
+    if (collapsed || floating) onExpand();
     setOpenSubmenus((current) =>
       current.includes(label) ? current.filter((item) => item !== label) : [...current, label],
     );
   }
 
-  const isSubmenuOpen = (label: string) => !collapsed && openSubmenus.includes(label);
+  // Submenus never expand inside the floating expand-on-hover state — hovering
+  // must only change width. Clicking a submenu parent switches to "expanded"
+  // mode (via onExpand) where submenus render and animate normally.
+  const isSubmenuOpen = (label: string) => !collapsed && !floating && openSubmenus.includes(label);
 
   return (
     <motion.aside
@@ -337,36 +340,35 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
       onMouseEnter={() => setHoverExpanded(true)}
       onMouseLeave={() => setHoverExpanded(false)}
       animate={{ width: collapsed ? 60 : 220 }}
-      transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{
+        width: { type: "spring", stiffness: 300, damping: 32, mass: 0.9 },
+      }}
       className={`flex flex-col overflow-hidden border-r border-white/10 bg-gwc-blue-deep bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-mist-100 ${
         floating ? "fixed inset-y-0 left-0 z-40" : "h-dvh"
       }`}
     >
       <header
-        className={`flex items-center gap-2 px-3 pb-2.5 pt-3.5 ${collapsed ? "justify-center px-0" : ""}`}
+        className={`flex items-center px-3 pb-2.5 pt-3.5 ${collapsed ? "justify-center gap-0 px-0" : "gap-2"}`}
       >
         <img
           src="/images/logos/gwc-logo.avif"
           alt="GWC logo"
           className="size-8 shrink-0 object-contain"
         />
-        <AnimatePresence mode="wait">
-          {!collapsed && (
-            <motion.div
-              key="brand-text"
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: "auto" }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.15 }}
-              className="min-w-0 overflow-hidden font-body leading-[1.05]"
-            >
-              <span className="block truncate text-[0.9rem] font-black">GWC</span>
-              <span className="mt-0.5 block truncate border-t-2 border-white/20 pt-0.5 text-[0.9rem] font-black">
-                Class Scheduling
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          initial={false}
+          animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
+          transition={{
+            width: { type: "spring", stiffness: 300, damping: 32, mass: 0.9 },
+            opacity: { duration: 0.18, ease: "easeOut" },
+          }}
+          className="min-w-0 overflow-hidden font-body leading-[1.05]"
+        >
+          <span className="block truncate text-[0.9rem] font-black">GWC</span>
+          <span className="mt-0.5 block truncate border-t-2 border-white/20 pt-0.5 text-[0.9rem] font-black">
+            Class Scheduling
+          </span>
+        </motion.div>
       </header>
 
       <nav
@@ -411,8 +413,13 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                           {item.icon}
                         </span>
                         {!collapsed && (
-                          <>
-                            <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
+                          <motion.span
+                            initial={{ opacity: 0, x: -6 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.16, ease: "easeOut", delay: 0.04 }}
+                            className="flex min-w-0 flex-1 items-center gap-2"
+                          >
+                            <span className="min-w-0 flex-1 truncate text-left leading-none">{item.label}</span>
                             <motion.span
                               aria-hidden="true"
                               animate={{ rotate: openSubmenus.includes(item.label) ? 90 : 0 }}
@@ -421,7 +428,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                             >
                               <ChevronRightIcon />
                             </motion.span>
-                          </>
+                          </motion.span>
                         )}
                       </button>
                     </Tooltip>
@@ -487,14 +494,23 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                         <span className="grid size-5 shrink-0 place-items-center opacity-90">
                           {item.icon}
                         </span>
-                        {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+                        {!collapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, x: -6 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.16, ease: "easeOut", delay: 0.04 }}
+                            className="min-w-0 flex-1 truncate leading-none"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
                         {!collapsed && item.to === SCHEDULE_APPROVALS_PATH && pendingApprovals > 0 && (
-                          <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold tabular-nums text-mist-100">
+                          <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold leading-none tabular-nums text-mist-100">
                             {pendingApprovals}
                           </span>
                         )}
                         {!collapsed && item.to === SCHEDULING_HUB_PATH && pendingSchedules > 0 && (
-                          <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold tabular-nums text-mist-100">
+                          <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold leading-none tabular-nums text-mist-100">
                             {pendingSchedules}
                           </span>
                         )}
@@ -543,16 +559,21 @@ function SidebarControl({ mode, onModeChange, collapsed }: SidebarControlProps) 
             collapsed ? (
               <LayoutSidebarIcon size={16} />
             ) : (
-              <>
+              <motion.span
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.16, ease: "easeOut", delay: 0.04 }}
+                className="flex min-w-0 flex-1 items-center gap-2"
+              >
                 <LayoutSidebarIcon size={15} />
-                <span className="min-w-0 flex-1 truncate text-left">Sidebar</span>
+                <span className="min-w-0 flex-1 truncate text-left leading-none">Sidebar</span>
                 <span className="shrink-0 opacity-70">
                   <ChevronRightIcon />
                 </span>
-              </>
+              </motion.span>
             )
           }
-          triggerClassName={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 font-body text-[0.78rem] text-mist-100/95 transition-colors duration-150 hover:bg-gwc-blue-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+          triggerClassName={`flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 font-body text-[0.78rem] text-mist-100/95 transition-colors duration-150 hover:bg-gwc-blue-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
             collapsed ? "justify-center px-0" : ""
           }`}
           className="w-56 px-1.5"

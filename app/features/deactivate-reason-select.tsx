@@ -64,7 +64,7 @@ export function DeactivateReasonSelect({
         onValueChange={(v) => handlePresetChange(v as string)}
       >
         <SelectTrigger id={`${id}-preset`} aria-label="Select reason">
-          <SelectValue>{(value) => value ?? "Select a reason"}</SelectValue>
+          <SelectValue>{(value) => value || "Select a reason"}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {presetReasons.map((r) => (
