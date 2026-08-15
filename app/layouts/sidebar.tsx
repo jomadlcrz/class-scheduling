@@ -209,6 +209,11 @@ const itemClassName = (isActive: boolean) =>
     isActive ? "bg-gwc-blue-bright font-extrabold" : "hover:bg-gwc-blue-bright"
   }`;
 
+// Collapsed centers the icon; expand-on-hover keeps the icon at the same spot
+// and only slides the label in (nav px-1 + centered 20px icon == nav px-2 + pl-3).
+const itemPad = (collapsed: boolean, floating: boolean) =>
+  collapsed ? "justify-center px-0" : floating ? "pl-3 pr-2" : "";
+
 const containerVariants = {
   hidden: {},
   visible: {
@@ -284,8 +289,10 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
   const collapsed = forceExpanded
     ? false
     : mode === "collapsed" || (mode === "expand-on-hover" && !hoverExpanded);
-  // Expand-on-hover overlays the topbar/content instead of reflowing them.
-  const overlay = !forceExpanded && mode === "expand-on-hover" && hoverExpanded;
+  // Expand-on-hover floats the aside at all times (fixed, width 60↔220) so it
+  // overlays the topbar/content without reflowing them — and never toggles
+  // between static/fixed, which makes the browser adjust the page scroll.
+  const floating = !forceExpanded && mode === "expand-on-hover";
 
   useEffect(() => {
     for (const group of NAV_GROUPS) {
@@ -332,7 +339,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
       animate={{ width: collapsed ? 60 : 220 }}
       transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
       className={`flex flex-col overflow-hidden border-r border-white/10 bg-gwc-blue-deep bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-mist-100 ${
-        overlay ? "fixed inset-y-0 left-0 z-40" : "h-dvh"
+        floating ? "fixed inset-y-0 left-0 z-40" : "h-dvh"
       }`}
     >
       <header
@@ -369,7 +376,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
         {groups.map((group) => (
           <div key={group.label || "_"} className="mt-3 first:mt-1">
             <AnimatePresence mode="wait">
-              {!collapsed && group.label && (
+              {!collapsed && !floating && group.label && (
                 <motion.p
                   key="group-label"
                   initial={{ opacity: 0, y: -4 }}
@@ -398,7 +405,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                         onClick={() => toggleSubmenu(item.label)}
                         className={`${itemClassName(
                           item.subItems.some((sub) => isSubItemActive(location.pathname, sub)),
-                        )} ${collapsed ? "justify-center px-0" : ""}`}
+                        )} ${itemPad(collapsed, floating)}`}
                       >
                         <span className="grid size-5 shrink-0 place-items-center opacity-90">
                           {item.icon}
@@ -470,7 +477,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                         onClick={onNavigate}
                         className={() => {
                           const active = isLeafActive(location.pathname, item);
-                          return `${itemClassName(active)} ${collapsed ? "justify-center px-0" : ""} ${
+                          return `${itemClassName(active)} ${itemPad(collapsed, floating)} ${
                             active && !collapsed
                               ? "before:absolute before:-left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded before:bg-white"
                               : ""

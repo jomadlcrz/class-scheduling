@@ -110,12 +110,12 @@ function Shell() {
           type="button"
           aria-label="Close menu"
           onClick={() => setMobileOpen(false)}
-          className={`fixed inset-0 z-30 bg-slate-900/50 transition-opacity duration-200 lg:hidden ${
+          className={`fixed inset-0 z-50 bg-slate-900/50 transition-opacity duration-200 lg:hidden ${
             mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           }`}
         />
         <div
-          className={`fixed inset-y-0 left-0 z-40 transition-transform duration-200 ease-in-out lg:hidden ${
+          className={`fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out lg:hidden ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
