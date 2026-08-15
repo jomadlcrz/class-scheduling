@@ -359,17 +359,17 @@ export function RegistrarDashboard() {
 
               {/* ─── Not yet enrolled students ─── */}
               <motion.section variants={fadeSlideUp}>
-                <h3 className="mb-3 font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                <p className="mb-3 font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                   Not yet enrolled students
-                </h3>
+                </p>
                 <NotEnrolledStudentsTable students={data.enrollment.not_enrolled_students} />
               </motion.section>
 
               {/* ─── Not yet scheduled ─── */}
               <motion.section variants={fadeSlideUp}>
-                <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                <p className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                   Not yet scheduled
-                </h3>
+                </p>
                 <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
                   Already enrolled, but still without a seat — separate from the not-yet-enrolled count above.
                 </p>
@@ -410,9 +410,9 @@ export function RegistrarDashboard() {
 
               {/* ─── Unscheduled sets ─── */}
               <motion.section variants={fadeSlideUp}>
-                <h3 className="mb-3 font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                <p className="mb-3 font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                   Unscheduled sets
-                </h3>
+                </p>
                 <UnscheduledSetsTable sets={data.schedule_completion.unscheduled_sets} />
               </motion.section>
             </motion.div>

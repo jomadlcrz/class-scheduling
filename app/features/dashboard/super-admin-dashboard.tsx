@@ -350,9 +350,9 @@ export function SuperAdminDashboard() {
 
               {/* ─── Pending first login ─── */}
               <motion.section variants={fadeSlideUp}>
-                <h3 className="mb-3 font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                <p className="mb-3 font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                   Pending first login
-                </h3>
+                </p>
                 <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
                   Accounts that have never signed in — resend the temp password to get them
                   started.

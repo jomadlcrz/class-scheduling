@@ -151,7 +151,7 @@ export function ChartCard({
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
       className={`rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900 ${className}`}
     >
-      <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">{title}</h3>
+      <p className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{title}</p>
       {subtitle && (
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
       )}
