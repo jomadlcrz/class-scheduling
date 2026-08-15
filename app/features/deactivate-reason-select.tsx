@@ -3,20 +3,46 @@ import { inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 
-const PRESET_REASONS = [
+export const DEFAULT_DEACTIVATE_REASONS = [
   { value: "Inactivity", label: "Inactivity" },
   { value: "Resigned", label: "Resigned" },
   { value: "Violation of terms", label: "Violation of terms" },
   { value: "Other", label: "Other" },
-];
+] as const;
+
+export const FACULTY_DEACTIVATE_REASONS = [
+  { value: "Inactivity", label: "Inactivity" },
+  { value: "Resigned", label: "Resigned" },
+  { value: "Contract not renewed", label: "Contract not renewed" },
+  { value: "Retirement", label: "Retirement" },
+  { value: "Violation of terms", label: "Violation of terms" },
+  { value: "Other", label: "Other" },
+] as const;
+
+export const STUDENT_DEACTIVATE_REASONS = [
+  { value: "Inactivity", label: "Inactivity" },
+  { value: "Graduated", label: "Graduated" },
+  { value: "Transferred", label: "Transferred" },
+  { value: "Dropped out", label: "Dropped out" },
+  { value: "Violation of terms", label: "Violation of terms" },
+  { value: "Other", label: "Other" },
+] as const;
+
+type DeactivateReason = { value: string; label: string };
 
 type DeactivateReasonSelectProps = {
   id: string;
   reason: string;
   onReasonChange: (value: string) => void;
+  presetReasons?: readonly DeactivateReason[];
 };
 
-export function DeactivateReasonSelect({ id, reason, onReasonChange }: DeactivateReasonSelectProps) {
+export function DeactivateReasonSelect({
+  id,
+  reason,
+  onReasonChange,
+  presetReasons = DEFAULT_DEACTIVATE_REASONS,
+}: DeactivateReasonSelectProps) {
   const [selectedPreset, setSelectedPreset] = useState("");
   const [customReason, setCustomReason] = useState("");
 
@@ -33,15 +59,15 @@ export function DeactivateReasonSelect({ id, reason, onReasonChange }: Deactivat
   return (
     <div className="flex flex-col gap-3">
       <Select
-        items={PRESET_REASONS.map((r) => ({ value: r.value, label: r.label }))}
+        items={presetReasons.map((r) => ({ value: r.value, label: r.label }))}
         value={selectedPreset}
         onValueChange={(v) => handlePresetChange(v as string)}
       >
         <SelectTrigger id={`${id}-preset`} aria-label="Select reason">
-          <SelectValue />
+          <SelectValue>{(value) => value ?? "Select a reason"}</SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {PRESET_REASONS.map((r) => (
+          {presetReasons.map((r) => (
             <SelectItem key={r.value} value={r.value}>
               {r.label}
             </SelectItem>

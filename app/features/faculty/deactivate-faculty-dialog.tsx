@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 import { AlertTriangleIcon } from "~/components/ui/icons";
 import { Button } from "~/components/ui/button";
 import { Modal } from "~/components/ui/modal";
-import { DeactivateConfirmInput, DeactivateReasonSelect } from "~/features/deactivate-reason-select";
+import { DeactivateConfirmInput, DeactivateReasonSelect, FACULTY_DEACTIVATE_REASONS } from "~/features/deactivate-reason-select";
 import type { Faculty } from "~/types/faculty";
 
 type DeactivateFacultyDialogProps = {
@@ -49,7 +49,12 @@ export function DeactivateFacultyDialog({ member, onClose, onConfirm }: Deactiva
         </AlertDescription>
       </Alert>
       <div className="mt-4">
-        <DeactivateReasonSelect id="deactivate-faculty" reason={reason} onReasonChange={setReason} />
+        <DeactivateReasonSelect
+          id="deactivate-faculty"
+          reason={reason}
+          onReasonChange={setReason}
+          presetReasons={FACULTY_DEACTIVATE_REASONS}
+        />
       </div>
       <div className="mt-4">
         <DeactivateConfirmInput id="deactivate-faculty-confirm" value={confirmText} onChange={setConfirmText} />

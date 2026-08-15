@@ -49,8 +49,9 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
       if (filters.program !== "all" && academic?.program !== filters.program) return false;
       if (filters.yearLevel !== "all" && String(academic?.yearLevel ?? "") !== filters.yearLevel) return false;
       if (filters.set !== "all" && academic?.set !== filters.set) return false;
-      if (statusFilter === "active" && !r.hasAccount) return false;
+      if (statusFilter === "active" && (r.hasAccount !== true || r.accountActive !== true)) return false;
       if (statusFilter === "no_account" && r.hasAccount) return false;
+      if (statusFilter === "deactivated" && (r.hasAccount !== true || r.accountActive !== false)) return false;
       return true;
     });
   }, [rows, filters, statusFilter]);
@@ -87,6 +88,7 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
         allLabel="All"
         options={[
           { value: "active", label: "Active" },
+          { value: "deactivated", label: "Deactivated" },
           { value: "no_account", label: "No account" },
         ]}
         value={statusFilter}

@@ -59,6 +59,8 @@ export type StudentAccountRow = {
   mobile: string | null;
   email: string | null;
   hasAccount: boolean;
+  /** Login active state; `true`/`false` when the row has an account, `null`/undefined when unknown. */
+  accountActive?: boolean | null;
   profilePhotoUrl?: string | null;
   academics: StudentAcademicRecord[];
 };

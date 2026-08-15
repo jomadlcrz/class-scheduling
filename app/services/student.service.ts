@@ -114,6 +114,7 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     mobile: string | null;
     email: string | null;
     has_account: boolean;
+    account_active: boolean | null;
     profile_photo_url: string | null;
     academics: {
       enrollment_id?: number;
@@ -152,6 +153,7 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     mobile: s.mobile,
     email: s.email,
     hasAccount: s.has_account,
+    accountActive: s.account_active ?? null,
     profilePhotoUrl: s.profile_photo_url,
     academics: s.academics.map((a) => ({
       studentAcademicId: a.enrollment_id ?? a.student_academic_id,

@@ -12,7 +12,7 @@ import { AlertTriangleIcon, SearchIcon, UserCheckIcon } from "~/components/ui/ic
 import { inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";
-import { DeactivateConfirmInput, DeactivateReasonSelect } from "~/features/deactivate-reason-select";
+import { DeactivateConfirmInput, DeactivateReasonSelect, STUDENT_DEACTIVATE_REASONS } from "~/features/deactivate-reason-select";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { TabLinks } from "~/components/ui/underline-tabs";
@@ -104,6 +104,8 @@ export function StudentsPage() {
   const [search, setSearch] = useState("");
   const [regularSearch, setRegularSearch] = useState("");
   const [irregularSearch, setIrregularSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const statusFilterOptions = { statusFilter, onStatusFilterChange: (v: string) => setStatusFilter(v) };
   const activeView = location.pathname.includes("students-regular")
     ? "regular"
     : location.pathname.includes("students-irregular")
@@ -131,10 +133,15 @@ export function StudentsPage() {
 
   const resetKey = search;
 
-  // Admin-only: lookup map from studentProfileId → hasAccount (built from super-admin endpoint)
+  // Admin-only: lookup map from studentProfileId → account state (built from super-admin endpoint)
   const accountLookup = useMemo(() => {
     if (!isAdmin || !studentList) return undefined;
-    return Object.fromEntries(studentList.map((s) => [s.studentProfileId, s.hasAccount]));
+    return Object.fromEntries(
+      studentList.map((s) => [
+        s.studentProfileId,
+        { hasAccount: s.hasAccount, accountActive: s.accountActive ?? null },
+      ]),
+    );
   }, [isAdmin, studentList]);
 
   // For registrar: combine regular + irregular students into a unified list for "All" view
@@ -183,7 +190,8 @@ export function StudentsPage() {
       studentName: s.studentName,
       mobile: s.mobile,
       email: s.email,
-      hasAccount: accountLookup?.[s.studentProfileId] ?? false,
+      hasAccount: accountLookup?.[s.studentProfileId]?.hasAccount ?? false,
+      accountActive: accountLookup?.[s.studentProfileId]?.accountActive ?? null,
       academics: s.academics,
     }));
   }, [regularStudents, accountLookup]);
@@ -200,7 +208,8 @@ export function StudentsPage() {
       studentName: s.studentName,
       mobile: s.mobile,
       email: s.email,
-      hasAccount: accountLookup?.[s.studentProfileId] ?? false,
+      hasAccount: accountLookup?.[s.studentProfileId]?.hasAccount ?? false,
+      accountActive: accountLookup?.[s.studentProfileId]?.accountActive ?? null,
       academics: s.programTaken && s.programTaken !== "—"
         ? [{ studentAcademicId: 0, yearLevel: 0, program: s.programTaken, set: null, enrolledStatus: "", studentType: "", schoolYear: null, semester: null, enrolledSubjects: [] }]
         : [],
@@ -209,9 +218,12 @@ export function StudentsPage() {
 
   // Program/Year Level/Set/Student Type/Enrollment State filters — one instance per tab,
   // each fed that tab's own (unfiltered-by-search) row source.
-  const allTabFilters = useStudentAccountFilters(isAdmin ? studentList ?? [] : allStudentsForRegistrar ?? []);
-  const regularTabFilters = useStudentAccountFilters(normalizedRegularStudents ?? []);
-  const irregularTabFilters = useStudentAccountFilters(normalizedIrregularStudents ?? []);
+  const allTabFilters = useStudentAccountFilters(
+    isAdmin ? studentList ?? [] : allStudentsForRegistrar ?? [],
+    statusFilterOptions,
+  );
+  const regularTabFilters = useStudentAccountFilters(normalizedRegularStudents ?? [], statusFilterOptions);
+  const irregularTabFilters = useStudentAccountFilters(normalizedIrregularStudents ?? [], statusFilterOptions);
 
   const activeTabFilters =
     activeView === "regular" ? regularTabFilters : activeView === "irregular" ? irregularTabFilters : allTabFilters;
@@ -222,6 +234,7 @@ export function StudentsPage() {
     allTabFilters.resetFilters();
     regularTabFilters.resetFilters();
     irregularTabFilters.resetFilters();
+    setStatusFilter("all");
     setSelectedForAccount(new Set());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeView]);
@@ -800,7 +813,12 @@ export function StudentsPage() {
               </AlertDescription>
             </Alert>
             <div className="mt-4">
-              <DeactivateReasonSelect id="deactivate-student" reason={deactivateReason} onReasonChange={setDeactivateReason} />
+              <DeactivateReasonSelect
+                id="deactivate-student"
+                reason={deactivateReason}
+                onReasonChange={setDeactivateReason}
+                presetReasons={STUDENT_DEACTIVATE_REASONS}
+              />
             </div>
             <div className="mt-4">
               <DeactivateConfirmInput id="deactivate-student-confirm" value={deactivateConfirmText} onChange={setDeactivateConfirmText} />
