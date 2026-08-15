@@ -249,7 +249,7 @@ function DepartmentHeader({
           className="absolute right-3 top-3 flex cursor-pointer items-center gap-2 rounded-lg border border-white/30 bg-navy-950/85 px-3 py-2 font-body text-sm font-medium text-mist-100 shadow-lg backdrop-blur-md transition-colors duration-150 hover:border-white/45 hover:bg-navy-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 sm:right-5 sm:top-5"
         >
           <CameraIcon />
-          Edit cover
+          {overview.coverImageUrl ? "Edit cover" : "Add cover"}
         </button>
         <div className="absolute inset-x-0 bottom-0 h-1 bg-gold-400" />
       </div>

@@ -136,7 +136,7 @@ export function DepartmentCoverDialog({
       <Modal
         open={department !== null && !cropSrc}
         onClose={handleClose}
-        title="Department Cover"
+        title={department?.coverImageUrl ? "Edit Department Cover" : "Add Department Cover"}
         wide
       >
         <div className="flex flex-col gap-4">
