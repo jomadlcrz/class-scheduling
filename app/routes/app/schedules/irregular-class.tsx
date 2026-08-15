@@ -613,7 +613,7 @@ function IrregularClassPage() {
           </div>
 
           {activeTab === "students" ? (
-            <div className="mx-auto mt-6 w-full max-w-5xl">
+            <div className="mt-6 w-full">
               <Wizard
                 steps={WIZARD_STEPS}
                 currentIndex={step}

@@ -70,7 +70,7 @@ function FacilitiesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-400 px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title="Facilities"
 
