@@ -7,7 +7,7 @@ import { LayoutSidebarIcon } from "~/components/ui/icons";
 import { Toaster } from "~/components/ui/sonner";
 import { TermContextProvider } from "~/features/academic-terms/term-context-provider";
 import { DashboardIntroOverlay, useJustLoggedIn } from "~/layouts/dashboard-intro";
-import { Navbar } from "~/layouts/navbar";
+import { Topbar } from "~/layouts/topbar";
 import {
   Sidebar,
   loadSidebarMode,
@@ -104,7 +104,7 @@ function Shell() {
           </motion.div>
         ))}
 
-      {/* Mobile drawer — still reachable from the navbar hamburger on every route, including settings */}
+      {/* Mobile drawer — still reachable from the topbar hamburger on every route, including settings */}
       <>
         <button
           type="button"
@@ -146,7 +146,7 @@ function Shell() {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.05, ease: EASE_OUT } }}
       >
-        <Navbar onToggleSidebar={toggleSidebar} />
+        <Topbar onToggleSidebar={toggleSidebar} />
         <main className="min-w-0 flex-1">
           <Outlet />
         </main>

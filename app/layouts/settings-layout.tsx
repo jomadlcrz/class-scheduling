@@ -3,7 +3,7 @@ import { SettingsSidebar } from "~/features/settings/settings-sidebar";
 
 /**
  * Desktop settings get a full-height rail pinned to the left corner below the
- * navbar, mirroring the main app sidebar (which app-shell hides for /settings
+ * topbar, mirroring the main app sidebar (which app-shell hides for /settings
  * routes). Mobile has no room for a rail — each page's SettingsPageHeader
  * renders a "Your account" quick switcher instead, right below the title.
  */

@@ -244,11 +244,11 @@ function GoToPagePopover({
               </button>
               <input
                 id={inputId}
-                type="number"
-                min={1}
-                max={totalPages}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onChange={(e) => setValue(e.target.value.replace(/\D/g, ""))}
                 aria-label="Enter page number"
                 className="w-16 bg-transparent text-center font-body text-sm text-navy-800 outline-none focus-visible:ring-0 dark:text-mist-100"
               />

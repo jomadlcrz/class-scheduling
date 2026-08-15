@@ -92,7 +92,7 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-/** Navbar bell — real inbox from GET /notifications, self-scoped per user. */
+/** Topbar bell — real inbox from GET /notifications, self-scoped per user. */
 export function NotificationBell() {
   const navigate = useNavigate();
   const { user } = useAuth();
