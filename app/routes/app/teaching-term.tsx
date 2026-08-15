@@ -28,7 +28,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 
 function TermSkeleton() {
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-7 w-72" />
@@ -332,7 +332,7 @@ function TeachingTermPage() {
 
   if (!detail) {
     return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
         <PageHeader
           title="Teaching Term Not Found"
 
@@ -350,7 +350,7 @@ function TeachingTermPage() {
   const meta = utilizationMeta(hours.utilization_rate);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
       <Breadcrumb
         items={[
           { label: "Subject Assignments", href: "/subject-assignments" },

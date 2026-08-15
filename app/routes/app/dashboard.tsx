@@ -26,7 +26,7 @@ export default function Dashboard() {
 
   return (
     <motion.div
-      className="mx-auto max-w-6xl px-4 py-8"
+      className="mx-auto w-full max-w-7xl px-4 py-8"
       variants={staggerContainer}
       initial="hidden"
       animate="visible"

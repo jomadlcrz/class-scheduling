@@ -122,7 +122,7 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
 
   if (!validId) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <ResultState
           tone="error"
           title="Department not found"
@@ -136,7 +136,7 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
 
   if (error && overview === null) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <ResultState tone="error" title="Unable to load department">
           {error}
         </ResultState>
@@ -146,14 +146,14 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
 
   if (overview === null) {
     return (
-      <div role="status" aria-label="Loading department" className="mx-auto max-w-5xl px-4 py-8">
+      <div role="status" aria-label="Loading department" className="mx-auto w-full max-w-7xl px-4 py-8">
         <DetailSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:py-8">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6 sm:py-8">
       <Breadcrumb
         items={[
           { label: "Departments", href: "/departments" },

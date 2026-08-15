@@ -488,7 +488,7 @@ function RegularClassPage() {
   const showContent = !isLoading && (schedules?.length ?? 0) > 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title="Regular Schedule Builder"
 

@@ -85,7 +85,7 @@ function EditBuildingPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <EditBuildingSkeleton />
       </div>
     );
@@ -94,7 +94,7 @@ function EditBuildingPage() {
   if (!building) return null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <Breadcrumb
         items={[
           { label: "Facilities", href: "/facilities" },

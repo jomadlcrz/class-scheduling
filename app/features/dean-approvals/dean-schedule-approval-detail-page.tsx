@@ -76,7 +76,7 @@ export function DeanScheduleApprovalDetailPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <div role="status" aria-label="Loading schedule" className="grid place-items-center py-16">
           <Spinner />
         </div>
@@ -86,7 +86,7 @@ export function DeanScheduleApprovalDetailPage() {
 
   if (error || !preview) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <PageHeader
           title="Schedule Not Found"
 
@@ -105,7 +105,7 @@ export function DeanScheduleApprovalDetailPage() {
   const canReview = release.releaseStatus === "pending_approval";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title={`${release.programAbbrev ?? ""} ${release.setCode ?? ""}`.trim()}
 

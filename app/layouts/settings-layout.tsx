@@ -14,7 +14,7 @@ export default function SettingsLayout() {
         <SettingsSidebar />
       </aside>
       <div className="min-w-0 flex-1">
-        <div className="mx-auto w-full max-w-6xl px-4 py-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-8">
           <Outlet />
         </div>
       </div>

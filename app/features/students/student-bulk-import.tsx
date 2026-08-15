@@ -422,7 +422,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
   /* ── Results view ── */
   if (result) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <PageHeader
           title={pageTitle}
         />
@@ -514,7 +514,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
 
   /* ── Form view ── */
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title={pageTitle}
       />

@@ -52,7 +52,7 @@ function SchedulingHubPage() {
   const hub = useSchedulingHubData(syId, semester);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader title="Scheduling Hub" />
 
       <Card className="mt-4 grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">

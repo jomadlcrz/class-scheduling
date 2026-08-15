@@ -486,7 +486,7 @@ export function SubjectAssignmentView() {
 
   if (apiData.instructors === null || apiData.entries === null || (apiData.entries.length > 0 && instructors.length === 0)) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <PageHeader
           title="Subject Assignments"
         />
@@ -498,7 +498,7 @@ export function SubjectAssignmentView() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       {/* Page Header */}
       <PageHeader
         title="Subject Assignments"

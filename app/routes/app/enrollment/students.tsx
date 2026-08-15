@@ -114,7 +114,7 @@ function EnrollmentStudentsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title={isDean ? "Department Students" : "Enrollment Records"}
         actions={!isDean ? (
