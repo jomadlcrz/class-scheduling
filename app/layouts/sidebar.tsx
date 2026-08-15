@@ -336,22 +336,33 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
   })).filter((group) => group.items.length > 0);
 
   function toggleSubmenu(label: string) {
-    if (collapsed || floating) onExpand();
+    if (collapsed && !floating) onExpand();
     setOpenSubmenus((current) =>
       current.includes(label) ? current.filter((item) => item !== label) : [...current, label],
     );
   }
 
-  // Submenus never expand inside the floating expand-on-hover state — hovering
-  // must only change width. Clicking a submenu parent switches to "expanded"
-  // mode (via onExpand) where submenus render and animate normally.
-  const isSubmenuOpen = (label: string) => !collapsed && !floating && openSubmenus.includes(label);
+  const isSubmenuOpen = (label: string) => !collapsed && openSubmenus.includes(label);
+
+  const handleHoverEnter = () => {
+    setHoverExpanded(true);
+    if (floating) {
+      setOpenSubmenus([]);
+    }
+  };
+
+  const handleHoverLeave = () => {
+    setHoverExpanded(false);
+    if (floating) {
+      setOpenSubmenus([]);
+    }
+  };
 
   return (
     <motion.aside
       aria-label="Portal navigation"
-      onMouseEnter={() => setHoverExpanded(true)}
-      onMouseLeave={() => setHoverExpanded(false)}
+      onMouseEnter={handleHoverEnter}
+      onMouseLeave={handleHoverLeave}
       animate={{ width: collapsed ? 60 : 220 }}
       transition={{
         width: hoverAnimated ? hoverWidth : widthSpring,
