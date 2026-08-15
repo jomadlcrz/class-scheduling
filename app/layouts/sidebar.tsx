@@ -212,7 +212,15 @@ const itemClassName = (isActive: boolean) =>
 // Collapsed centers the icon; expand-on-hover keeps the icon at the same spot
 // and only slides the label in (nav px-1 + centered 20px icon == nav px-2 + pl-3).
 const itemPad = (collapsed: boolean, floating: boolean) =>
-  collapsed ? "justify-center px-0" : floating ? "pl-3 pr-2" : "";
+  floating ? "justify-start pl-3 pr-2" : collapsed ? "justify-center px-0" : "";
+
+const widthSpring = { type: "spring", stiffness: 300, damping: 32, mass: 0.9 } as const;
+const labelIn = { duration: 0.16, ease: "easeOut", delay: 0.04 } as const;
+const headerFade = { duration: 0.18, ease: "easeOut" } as const;
+// Expand-on-hover uses a quick, polished reveal inspired by social app sidebars.
+const hoverWidth = { duration: 0.24, ease: [0.22, 1, 0.36, 1] } as const;
+const hoverLabelIn = { duration: 0.18, ease: "easeOut", delay: 0.03 } as const;
+const hoverHeader = { duration: 0.16, ease: "easeOut" } as const;
 
 const containerVariants = {
   hidden: {},
@@ -293,6 +301,11 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
   // overlays the topbar/content without reflowing them — and never toggles
   // between static/fixed, which makes the browser adjust the page scroll.
   const floating = !forceExpanded && mode === "expand-on-hover";
+  const hoverAnimated = mode === "expand-on-hover";
+  const headerClassName = floating
+    ? "flex items-center gap-2 px-3 pb-2.5 pt-3.5"
+    : `flex items-center px-3 pb-2.5 pt-3.5 ${collapsed ? "justify-center gap-0 px-0" : "gap-2"}`;
+  const navPaddingClassName = floating ? "px-2" : collapsed ? "px-1" : "px-2";
 
   useEffect(() => {
     for (const group of NAV_GROUPS) {
@@ -341,14 +354,14 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
       onMouseLeave={() => setHoverExpanded(false)}
       animate={{ width: collapsed ? 60 : 220 }}
       transition={{
-        width: { type: "spring", stiffness: 300, damping: 32, mass: 0.9 },
+        width: hoverAnimated ? hoverWidth : widthSpring,
       }}
       className={`flex flex-col overflow-hidden border-r border-white/10 bg-gwc-blue-deep bg-linear-to-b from-gwc-blue to-gwc-blue-deep text-mist-100 ${
         floating ? "fixed inset-y-0 left-0 z-40" : "h-dvh"
       }`}
     >
       <header
-        className={`flex items-center px-3 pb-2.5 pt-3.5 ${collapsed ? "justify-center gap-0 px-0" : "gap-2"}`}
+        className={headerClassName}
       >
         <img
           src="/images/logos/gwc-logo.avif"
@@ -359,8 +372,8 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
           initial={false}
           animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
           transition={{
-            width: { type: "spring", stiffness: 300, damping: 32, mass: 0.9 },
-            opacity: { duration: 0.18, ease: "easeOut" },
+            width: hoverAnimated ? hoverWidth : widthSpring,
+            opacity: hoverAnimated ? hoverHeader : headerFade,
           }}
           className="min-w-0 overflow-hidden font-body leading-[1.05]"
         >
@@ -373,7 +386,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
 
       <nav
         aria-label="Sidebar navigation"
-        className={`flex-1 overflow-y-auto pb-3 scrollbar-none ${collapsed ? "px-1" : "px-2"}`}
+        className={`flex-1 overflow-y-auto pb-3 scrollbar-none ${navPaddingClassName}`}
       >
         {groups.map((group) => (
           <div key={group.label || "_"} className="mt-3 first:mt-1">
@@ -416,7 +429,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                           <motion.span
                             initial={{ opacity: 0, x: -6 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.16, ease: "easeOut", delay: 0.04 }}
+                            transition={hoverAnimated ? hoverLabelIn : labelIn}
                             className="flex min-w-0 flex-1 items-center gap-2"
                           >
                             <span className="min-w-0 flex-1 truncate text-left leading-none">{item.label}</span>
@@ -498,7 +511,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                           <motion.span
                             initial={{ opacity: 0, x: -6 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.16, ease: "easeOut", delay: 0.04 }}
+                            transition={hoverAnimated ? hoverLabelIn : labelIn}
                             className="min-w-0 flex-1 truncate leading-none"
                           >
                             {item.label}
@@ -537,7 +550,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
       </nav>
 
       {!forceExpanded && (
-        <SidebarControl mode={mode} onModeChange={onModeChange} collapsed={collapsed} />
+        <SidebarControl mode={mode} onModeChange={onModeChange} collapsed={collapsed} floating={floating} />
       )}
     </motion.aside>
   );
@@ -547,34 +560,39 @@ type SidebarControlProps = {
   mode: SidebarMode;
   onModeChange: (mode: SidebarMode) => void;
   collapsed: boolean;
+  floating: boolean;
 };
 
-function SidebarControl({ mode, onModeChange, collapsed }: SidebarControlProps) {
+function SidebarControl({ mode, onModeChange, collapsed, floating }: SidebarControlProps) {
+  const hoverAnimated = mode === "expand-on-hover";
+
   return (
     <footer className="border-t border-white/10 p-2">
       <Tooltip label="Sidebar control" direction="right" gap={10} disabled={!collapsed}>
         <Popover
           label="Sidebar control"
           trigger={
-            collapsed ? (
-              <LayoutSidebarIcon size={16} />
-            ) : (
-              <motion.span
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.16, ease: "easeOut", delay: 0.04 }}
-                className="flex min-w-0 flex-1 items-center gap-2"
-              >
+            <>
+              <span className="grid size-5 shrink-0 place-items-center opacity-90">
                 <LayoutSidebarIcon size={15} />
-                <span className="min-w-0 flex-1 truncate text-left leading-none">Sidebar</span>
-                <span className="shrink-0 opacity-70">
-                  <ChevronRightIcon />
-                </span>
-              </motion.span>
-            )
+              </span>
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={hoverAnimated ? hoverLabelIn : labelIn}
+                  className="flex min-w-0 flex-1 items-center gap-2"
+                >
+                  <span className="min-w-0 flex-1 truncate text-left leading-none">Sidebar</span>
+                  <span className="shrink-0 opacity-70">
+                    <ChevronRightIcon />
+                  </span>
+                </motion.span>
+              )}
+            </>
           }
           triggerClassName={`flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 font-body text-[0.78rem] text-mist-100/95 transition-colors duration-150 hover:bg-gwc-blue-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
-            collapsed ? "justify-center px-0" : ""
+            floating ? "justify-start pl-3 pr-2" : collapsed ? "justify-center px-0" : ""
           }`}
           className="w-56 px-1.5"
           scrollable={false}
