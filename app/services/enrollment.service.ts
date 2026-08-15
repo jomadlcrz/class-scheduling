@@ -222,30 +222,20 @@ export type ReenrollDirectoryFilters = {
   enrolledStatus?: string;
 };
 
-/**
- * GET /enrollments/directory — returning students (one row per profile), with eligibility for the
- * target term. Pass the target term so `reEnrollEligible` / `enrolledInTargetTerm` reflect it.
- */
-async function getReenrollDirectory(
-  targetSyId: number | null,
-  targetSemesterNumber: number | null,
-  filters: ReenrollDirectoryFilters = {},
-): Promise<ReenrollDirectoryRow[]> {
-  const query = new URLSearchParams();
-  if (targetSyId != null && targetSemesterNumber != null) {
-    const termQuery = new URLSearchParams(termScopeQuery(targetSyId, targetSemesterNumber).replace("?", ""));
-    termQuery.forEach((value, key) => query.set(key, value));
-  }
-  if (filters.search?.trim()) query.set("search", filters.search.trim());
-  if (filters.program && filters.program !== "all") query.set("program", filters.program);
-  if (filters.yearLevel && filters.yearLevel !== "all") query.set("yearLevel", filters.yearLevel);
-  if (filters.semester && filters.semester !== "all") query.set("semester", filters.semester);
-  if (filters.enrolledStatus && filters.enrolledStatus !== "all") {
-    query.set("enrolledStatus", filters.enrolledStatus);
-  }
-  const suffix = query.size > 0 ? `?${query.toString()}` : "";
-  const data = await apiGetFresh<ApiReenrollRow[]>(`/enrollments/directory${suffix}`);
-  return (data ?? []).map((r) => ({
+export type ReenrollDirectoryPage = {
+  items: ReenrollDirectoryRow[];
+  total: number;
+  pages: number;
+  currentPage: number;
+};
+
+type ApiReenrollDirectoryBlock = {
+  items: ApiReenrollRow[];
+  pagination: { page: number; perPage: number; totalItems: number; totalPages: number };
+};
+
+function toReenrollRow(r: ApiReenrollRow): ReenrollDirectoryRow {
+  return {
     studentProfileId: r.student_profile_id,
     studentId: r.student_id,
     name: r.student_full_name,
@@ -262,7 +252,56 @@ async function getReenrollDirectory(
     enrolledInTargetTerm: r.enrolled_in_target_term,
     accountStatus: r.account_status,
     profilePhotoUrl: r.profile_photo_url,
-  }));
+  };
+}
+
+/**
+ * GET /enrollments/directory — returning students (one row per profile), with eligibility for the
+ * target term. Server-paginated: the backend splits rows into `eligible` and `alreadyEnrolled`
+ * blocks, each sliced by its own page. Both are requested for the same `page` and merged — the
+ * blocks are disjoint, so dedupe guards against the backend clamping a block's page to its last
+ * page when it runs out of pages before the other block.
+ */
+async function getReenrollDirectory(
+  targetSyId: number | null,
+  targetSemesterNumber: number | null,
+  filters: ReenrollDirectoryFilters = {},
+  page = 1,
+  perPage = 10,
+): Promise<ReenrollDirectoryPage> {
+  const query = new URLSearchParams();
+  if (targetSyId != null && targetSemesterNumber != null) {
+    const termQuery = new URLSearchParams(termScopeQuery(targetSyId, targetSemesterNumber).replace("?", ""));
+    termQuery.forEach((value, key) => query.set(key, value));
+  }
+  if (filters.search?.trim()) query.set("search", filters.search.trim());
+  if (filters.program && filters.program !== "all") query.set("program", filters.program);
+  if (filters.yearLevel && filters.yearLevel !== "all") query.set("yearLevel", filters.yearLevel);
+  if (filters.semester && filters.semester !== "all") query.set("semester", filters.semester);
+  if (filters.enrolledStatus && filters.enrolledStatus !== "all") {
+    query.set("enrolledStatus", filters.enrolledStatus);
+  }
+  query.set("eligible_page", String(page));
+  query.set("already_page", String(page));
+  query.set("perPage", String(perPage));
+  const suffix = query.size > 0 ? `?${query.toString()}` : "";
+  const data = await apiGetFresh<{ eligible: ApiReenrollDirectoryBlock; alreadyEnrolled: ApiReenrollDirectoryBlock }>(
+    `/enrollments/directory${suffix}`,
+  );
+  const eligible = data?.eligible ?? { items: [], pagination: { page, perPage, totalItems: 0, totalPages: 1 } };
+  const alreadyEnrolled = data?.alreadyEnrolled ?? { items: [], pagination: { page, perPage, totalItems: 0, totalPages: 1 } };
+  const seen = new Set<number>();
+  const items = [...eligible.items, ...alreadyEnrolled.items].map(toReenrollRow).filter((row) => {
+    if (seen.has(row.studentProfileId)) return false;
+    seen.add(row.studentProfileId);
+    return true;
+  });
+  return {
+    items,
+    total: eligible.pagination.totalItems + alreadyEnrolled.pagination.totalItems,
+    pages: Math.max(eligible.pagination.totalPages, alreadyEnrolled.pagination.totalPages),
+    currentPage: page,
+  };
 }
 
 /** GET /enrollments/{id} — one enrollment row with its subject load. */

@@ -60,6 +60,8 @@ function EnrollmentReenrollPage() {
     semester: "all",
     enrolledStatus: "all",
   });
+  const [directoryPage, setDirectoryPage] = useState(1);
+  const directoryPageSize = 10;
   const debouncedDirectorySearch = useDebounce(directoryFilters.search, 300);
   const directoryRequestFilters = { ...directoryFilters, search: debouncedDirectorySearch };
   const directoryFilterKey = [
@@ -76,8 +78,15 @@ function EnrollmentReenrollPage() {
   const targetSyId = termContext?.selection.syId ?? null;
   const targetSem = termContext?.selection.semesterNumber ?? null;
   const { data: directory } = useCachedData(
-    `reenroll-directory:${targetSyId ?? "none"}:${targetSem ?? "none"}:${directoryFilterKey}`,
-    () => enrollmentService.getReenrollDirectory(targetSyId, targetSem, directoryRequestFilters),
+    `reenroll-directory:${targetSyId ?? "none"}:${targetSem ?? "none"}:${directoryFilterKey}:p${directoryPage}`,
+    () =>
+      enrollmentService.getReenrollDirectory(
+        targetSyId,
+        targetSem,
+        directoryRequestFilters,
+        directoryPage,
+        directoryPageSize,
+      ),
     { cache: false },
   );
 
@@ -114,7 +123,11 @@ function EnrollmentReenrollPage() {
       ) : (
         <div className="mt-6">
           <ReenrollWizard
-            directory={directory}
+            directory={directory?.items ?? null}
+            directoryTotal={directory?.total ?? 0}
+            directoryPage={directoryPage}
+            directoryPageSize={directoryPageSize}
+            onDirectoryPageChange={setDirectoryPage}
             programs={programs}
             sets={sets}
             subjects={subjects}
@@ -125,6 +138,7 @@ function EnrollmentReenrollPage() {
             directoryFilters={directoryFilters}
             onDirectoryFiltersChange={(patch) => {
               setDirectoryFilters((current) => ({ ...current, ...patch }));
+              setDirectoryPage(1);
             }}
             isSaving={isSaving}
             onSavingChange={setIsSaving}

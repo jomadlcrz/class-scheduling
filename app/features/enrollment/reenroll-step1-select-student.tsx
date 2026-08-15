@@ -5,7 +5,6 @@ import { Pagination } from "~/components/ui/pagination";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { ProgramWizardFooter } from "~/features/subjects/program-wizard-footer";
-import { usePagination } from "~/hooks/use-pagination";
 import type { ReenrollDirectoryRow } from "~/types/enrollment";
 
 export type { ReenrollDirectoryRow };
@@ -27,30 +26,32 @@ const STATE_TONES: Record<string, BadgeTone> = {
 
 type ReenrollStep1SelectStudentProps = {
   directory: ReenrollDirectoryRow[] | null;
+  directoryTotal: number;
+  directoryPage: number;
+  directoryPageSize: number;
+  onDirectoryPageChange: (page: number) => void;
   selectedIds: Set<number>;
   onToggleSelect: (row: ReenrollDirectoryRow, checked: boolean) => void;
   onSelectAll: (checked: boolean, rows: ReenrollDirectoryRow[]) => void;
-  filters: ReenrollDirectoryFilterState;
   onNext: () => void;
   onCancel: () => void;
 };
 
 export function ReenrollStep1SelectStudent({
   directory,
+  directoryTotal,
+  directoryPage,
+  directoryPageSize,
+  onDirectoryPageChange,
   selectedIds,
   onToggleSelect,
   onSelectAll,
-  filters,
   onNext,
   onCancel,
 }: ReenrollStep1SelectStudentProps) {
   const isSelectable = (row: ReenrollDirectoryRow) => row.reEnrollEligible && !row.enrolledInTargetTerm;
   const results = directory ?? [];
-  const pagination = usePagination(
-    results,
-    `${filters.search}|${filters.program}|${filters.yearLevel}|${filters.semester}|${filters.enrolledStatus}`,
-  );
-  const selectableResults = pagination.pageItems.filter(isSelectable);
+  const selectableResults = results.filter(isSelectable);
   const allVisibleSelected =
     selectableResults.length > 0 && selectableResults.every((s) => selectedIds.has(s.studentProfileId));
 
@@ -85,7 +86,7 @@ export function ReenrollStep1SelectStudent({
               <TableHeader dense>Last state</TableHeader>
             </TableHead>
             <TableBody>
-              {pagination.pageItems.map((row) => {
+              {results.map((row) => {
                 const selectable = isSelectable(row);
                 const isChecked = selectedIds.has(row.studentProfileId);
                 const blockReason = row.enrolledInTargetTerm
@@ -140,10 +141,10 @@ export function ReenrollStep1SelectStudent({
       </div>
 
       <Pagination
-        page={pagination.page}
-        totalItems={pagination.totalItems}
-        pageSize={pagination.pageSize}
-        onPageChange={pagination.setPage}
+        page={directoryPage}
+        totalItems={directoryTotal}
+        pageSize={directoryPageSize}
+        onPageChange={onDirectoryPageChange}
       />
 
       <ProgramWizardFooter

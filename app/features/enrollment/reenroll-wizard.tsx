@@ -36,6 +36,10 @@ const EMPTY_ACADEMIC: AcademicDraft = {
 
 type ReenrollWizardProps = {
   directory: ReenrollDirectoryRow[] | null;
+  directoryTotal: number;
+  directoryPage: number;
+  directoryPageSize: number;
+  onDirectoryPageChange: (page: number) => void;
   programs: Program[];
   sets: ClassSet[];
   subjects: Subject[];
@@ -56,6 +60,10 @@ type ReenrollWizardProps = {
 
 export function ReenrollWizard({
   directory,
+  directoryTotal,
+  directoryPage,
+  directoryPageSize,
+  onDirectoryPageChange,
   programs,
   sets,
   subjects,
@@ -235,10 +243,13 @@ export function ReenrollWizard({
       {currentIndex === 0 && (
         <ReenrollStep1SelectStudent
           directory={directory}
+          directoryTotal={directoryTotal}
+          directoryPage={directoryPage}
+          directoryPageSize={directoryPageSize}
+          onDirectoryPageChange={onDirectoryPageChange}
           selectedIds={new Set(selectedStudents.keys())}
           onToggleSelect={toggleStudent}
           onSelectAll={selectAllStudents}
-          filters={directoryFilters}
           onNext={() => goToStep(1)}
           onCancel={onCancel}
         />
