@@ -88,7 +88,12 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           id="prog-abbrev"
           label="Program Abbrev"
           required
-          defaultValue={program?.abbrev ?? ""}
+          autoCapitalize="characters"
+          spellCheck={false}
+          defaultValue={program?.abbrev.toUpperCase() ?? ""}
+          onChange={(event) => {
+            event.currentTarget.value = event.currentTarget.value.toUpperCase();
+          }}
         />
           <FieldChrome id="prog-type" label="Type">
             <Select

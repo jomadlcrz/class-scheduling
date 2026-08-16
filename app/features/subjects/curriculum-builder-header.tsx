@@ -58,6 +58,8 @@ export function CurriculumBuilderHeader({
             id="new-prog-abbrev"
             label="Program Abbreviation"
             required
+            autoCapitalize="characters"
+            spellCheck={false}
             value={newProgram.abbrev}
             onChange={(e) => onNewProgramChange({ abbrev: e.target.value.toUpperCase() })}
           />
