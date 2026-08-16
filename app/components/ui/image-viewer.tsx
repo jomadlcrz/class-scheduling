@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { CloseIcon } from "~/components/ui/icons";
 
 type ImageViewerProps = {
@@ -26,9 +27,9 @@ export function ImageViewer({ open, onClose, src, alt }: ImageViewerProps) {
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -50,6 +51,7 @@ export function ImageViewer({ open, onClose, src, alt }: ImageViewerProps) {
         className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
         onClick={(e) => e.stopPropagation()}
       />
-    </div>
+    </div>,
+    document.body,
   );
 }

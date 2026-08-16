@@ -23,6 +23,7 @@ import {
 } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { NotificationBell } from "~/features/notifications/notification-bell";
+import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useTheme, type ThemePreference } from "~/hooks/use-theme";
@@ -153,6 +154,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   );
   const photoUrl = photoData?.profilePhotoUrl ?? null;
   const [searchOpen, setSearchOpen] = useState(false);
+  const [profilePictureOpen, setProfilePictureOpen] = useState(false);
   const createActions = user ? CREATE_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
   const searchActions = user ? SEARCH_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
   const helpActions = user ? HELP_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
@@ -177,6 +179,21 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   function handleLogout() {
     logout();
     navigate("/login", { replace: true });
+  }
+
+  async function handlePhotoUpload(file: File) {
+    if (!user) throw new Error("Not logged in.");
+    return profilePhotoService.uploadPhoto(user.role, file);
+  }
+
+  async function handlePhotoRemove() {
+    if (!user) throw new Error("Not logged in.");
+    return profilePhotoService.removePhoto(user.role);
+  }
+
+  function handlePhotoChanged() {
+    void reloadPhoto();
+    window.dispatchEvent(new CustomEvent("profile-photo-changed"));
   }
 
   return (
@@ -220,7 +237,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
       <div className="flex-1 lg:hidden" />
 
-      {user && (
+      {user && !isSettingsRoute && (
         <div className="hidden shrink-0 items-center gap-2 font-body lg:flex">
           <span className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
             Role
@@ -360,34 +377,51 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               )}
             </span>
           }
-          triggerClassName="ml-1 flex cursor-pointer items-center rounded-full p-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8"
+          triggerClassName={`${iconButtonClassName} ml-1`}
           className="w-72 px-1.5"
         >
           {(close) => (
             <>
               <div className="mb-1 flex items-center gap-3 border-b border-slate-100 px-2.5 pb-3 pt-2 dark:border-white/10">
-                {photoUrl ? (
-                  <img
-                    src={photoUrl}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-11 shrink-0 rounded-full object-cover"
-                  />
-                ) : (
+                <button
+                  type="button"
+                  aria-label="Edit profile picture"
+                  title="Edit profile picture"
+                  className="group relative size-11 shrink-0 cursor-pointer overflow-hidden rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-surface"
+                  onClick={() => {
+                    close();
+                    setProfilePictureOpen(true);
+                  }}
+                >
+                  {photoUrl ? (
+                    <img
+                      src={photoUrl}
+                      alt=""
+                      aria-hidden="true"
+                      className="size-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="grid size-full place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+                    >
+                      {initials(user.name)}
+                    </span>
+                  )}
                   <span
                     aria-hidden="true"
-                    className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-mist-100 dark:bg-white dark:text-navy-800"
+                    className="absolute inset-0 grid place-items-center rounded-full bg-navy-950/65 font-body text-[10px] font-semibold text-white opacity-100 transition-opacity duration-150 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-visible:opacity-100"
                   >
-                    {initials(user.name)}
+                    Edit
                   </span>
-                )}
+                </button>
                 <div className="min-w-0">
                   <p className="truncate font-body text-sm font-semibold text-slate-800 dark:text-mist-100">
                     {user.name}
                   </p>
-                  <a href={`mailto:${user.email}`} className="truncate font-body text-xs text-slate-500 hover:underline dark:text-slate-400">
+                  <p className="truncate font-body text-xs text-slate-500 dark:text-slate-400">
                     {user.email}
-                  </a>
+                  </p>
                 </div>
               </div>
               <button
@@ -454,6 +488,18 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
+
+      {user && (
+        <ProfilePictureModal
+          open={profilePictureOpen}
+          onClose={() => setProfilePictureOpen(false)}
+          photoUrl={photoUrl}
+          initials={initials(user.name)}
+          onChanged={handlePhotoChanged}
+          uploadPhoto={handlePhotoUpload}
+          removePhoto={handlePhotoRemove}
+        />
+      )}
     </header>
   );
 }

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CloseIcon } from "~/components/ui/icons";
@@ -19,14 +20,17 @@ type ModalProps = {
 };
 
 export function Modal({ open, onClose, title, wide, xl, footer, children }: ModalProps) {
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <ModalContent key="modal" onClose={onClose} title={title} wide={wide} xl={xl} footer={footer}>
           {children}
         </ModalContent>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
 
