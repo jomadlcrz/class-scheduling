@@ -165,7 +165,7 @@ function ModalContent({
         aria-hidden="true"
       />
 
-      {/* Panel — top-aligned, not vertically centered; on small screens use nearly full viewport height so content scrolls inside. */}
+      {/* Viewport-centered panel; the body portal keeps it independent of route scroll and layout. */}
       <div className="pointer-events-none fixed inset-0 z-60 flex items-start justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
         <motion.div
           role="dialog"
