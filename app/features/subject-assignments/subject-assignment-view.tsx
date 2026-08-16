@@ -51,7 +51,6 @@ type Instructor = {
   instructorProfileId: number;
   facultyId: string;
   department: string;
-  statusBadge: string;
   maxWeeklyHours: number | null;
   loadClassification: "underload" | "regular" | "overload" | null;
   avatarUrl?: string;
@@ -163,7 +162,6 @@ export function SubjectAssignmentView() {
         instructorProfileId: inst.instructorProfileId,
         facultyId: entry.employeeId ?? "--",
         department: inst.department,
-        statusBadge: "active",
         maxWeeklyHours: entry.maxWeeklyHours,
         loadClassification: entry.loadClassification ?? null,
         avatarUrl: inst.profilePhotoUrl ?? undefined,
@@ -238,13 +236,12 @@ export function SubjectAssignmentView() {
       instructorProfileId: instructor.instructorProfileId,
       facultyId: instructor.employeeId ?? "--",
       department: instructor.department,
-      statusBadge: "active",
       maxWeeklyHours: entry?.maxWeeklyHours ?? null,
       loadClassification: entry?.loadClassification ?? null,
       avatarUrl: instructor.profilePhotoUrl ?? undefined,
       programs,
     };
-    setInstructors((prev) => [...prev, newInst]);
+    setInstructors((prev) => [newInst, ...prev]);
     toast.success(`Instructor ${newInst.name} added.`);
   };
 

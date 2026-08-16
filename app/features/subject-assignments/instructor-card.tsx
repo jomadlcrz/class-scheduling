@@ -17,7 +17,6 @@ type InstructorData = {
   name: string;
   facultyId: string;
   department: string;
-  statusBadge: string;
   maxWeeklyHours: number | null;
   loadClassification: "underload" | "regular" | "overload" | null;
   avatarUrl?: string;
@@ -117,7 +116,6 @@ export function InstructorCard({
               <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 {instructor.name}
               </h3>
-              <Badge tone="emerald">{instructor.statusBadge}</Badge>
               {loadBadge && <Badge tone={loadBadge.tone}>{loadBadge.label}</Badge>}
             </div>
             <p className="mt-0.5 space-y-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
