@@ -5,6 +5,7 @@ import { MobileScheduleSkeleton } from "~/components/ui/skeleton";
 import { PrinterIcon } from "~/components/ui/icons";
 import { StatCard } from "~/components/ui/stat-card";
 import { Tooltip } from "~/components/ui/tooltip";
+import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { MobileWeeklySchedule } from "~/features/schedules/mobile-weekly-schedule";
 import { openInstructorSchedulePrint } from "~/features/schedules/print-instructor-schedule";
 import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
@@ -12,8 +13,10 @@ import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle
 import { TodayClasses } from "~/features/schedules/today-classes";
 import { useMySchedule } from "~/features/schedules/use-my-schedule";
 import { useAuth } from "~/hooks/use-auth";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
+import { deanService } from "~/services/dean.service";
 
 export function meta() {
   return [
@@ -33,6 +36,7 @@ export default function FacultyScheduleRoute() {
 function FacultySchedulePage() {
   const { user } = useAuth();
   const { semesterLabel } = useSemesters();
+  const { context: termContext, loading: termContextLoading } = useTermContext();
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
   const {
@@ -42,6 +46,49 @@ function FacultySchedulePage() {
     semester,
     visibleSchedules,
   } = useMySchedule();
+
+  const selectedTerm = termContext?.selection;
+  const selectedTermReady = selectedTerm?.syId != null && selectedTerm.semesterNumber != null;
+  const facultyLoadKey = `faculty-schedule-empty-state:${selectedTerm?.syId ?? "none"}:${selectedTerm?.semesterNumber ?? "none"}`;
+  const { data: facultyLoading, error: facultyLoadingError } = useCachedData(
+    facultyLoadKey,
+    () => deanService.getFacultyLoading(selectedTerm!.syId!, selectedTerm!.semesterNumber!),
+    { enabled: !isLoading && visibleSchedules.length === 0 && selectedTermReady },
+  );
+
+  const emptyContextLoading =
+    !isLoading &&
+    visibleSchedules.length === 0 &&
+    (termContextLoading || (selectedTermReady && facultyLoading === null && !facultyLoadingError));
+
+  const emptyScheduleState = useMemo(() => {
+    if (termContext && termContext.schoolYears.length === 0) {
+      return {
+        title: "No academic term available",
+        message: "Your teaching schedule will appear after the registrar creates an academic term.",
+      };
+    }
+
+    const facultyEntry = facultyLoading?.[0];
+    if (selectedTermReady && facultyLoading && (!facultyEntry || facultyEntry.subjects.length === 0)) {
+      return {
+        title: "No teaching assignments",
+        message: `You have no assigned subjects for ${selectedTerm?.schoolYear ?? "the selected term"}, ${semesterLabel(selectedTerm!.semesterNumber!)}.`,
+      };
+    }
+
+    if (facultyEntry?.subjects.length) {
+      return {
+        title: "Schedule not available yet",
+        message: "Your subjects are assigned, but their approved schedule is not available yet. It will appear after scheduling and approval are complete.",
+      };
+    }
+
+    return {
+      title: "No classes scheduled",
+      message: "You have no classes for the selected term.",
+    };
+  }, [facultyLoading, semesterLabel, selectedTerm, selectedTermReady, termContext]);
 
   const totalUnits = useMemo(() => {
     const seen = new Set<string>();
@@ -94,14 +141,14 @@ function FacultySchedulePage() {
         <EmptyState title="Couldn't load your schedule">{loadError}</EmptyState>
       ) : (
         <>
-          {isLoading ? (
+          {isLoading || emptyContextLoading ? (
             <div className="mt-8 sm:hidden">
               <MobileScheduleSkeleton rows={4} />
             </div>
           ) : visibleSchedules.length === 0 ? (
             <div className="mt-6 sm:hidden">
-              <EmptyState title="No classes scheduled">
-                You have no classes for the selected term.
+              <EmptyState title={emptyScheduleState.title}>
+                {emptyScheduleState.message}
               </EmptyState>
             </div>
           ) : (
@@ -135,11 +182,11 @@ function FacultySchedulePage() {
           <div className="hidden sm:block">
             <ScheduleViewer
               schedules={visibleSchedules}
-              isLoading={isLoading}
+              isLoading={isLoading || emptyContextLoading}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-              emptyTitle="No classes scheduled"
-              emptyMessage="You have no classes for the selected term."
+              emptyTitle={emptyScheduleState.title}
+              emptyMessage={emptyScheduleState.message}
               showSet
               hideInstructor
             />
