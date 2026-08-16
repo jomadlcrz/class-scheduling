@@ -2,11 +2,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { PhoneInput } from "~/components/ui/phone-input";
 import { DatePicker } from "~/components/ui/date-picker";
-import { Modal } from "~/components/ui/modal";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { enrollmentService } from "~/services/enrollment.service";
@@ -137,195 +136,208 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
           Unable to load student profile.
         </p>
       ) : (
-        <div className="flex flex-col gap-6">
-          <form noValidate onSubmit={handleSave} className="flex flex-col gap-6">
-            <FormError message={editError} />
+        <form noValidate onSubmit={handleSave} className="flex flex-col gap-6">
+          <FormError message={editError} />
 
-            <Card className="p-4">
-              <h3 className="mb-3 font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                Personal Information
-              </h3>
+          {/* Personal Information */}
+          <section className="flex flex-col gap-3">
+            <h3 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+              Personal Information
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                id="edit-first-name"
+                label="First Name"
+                defaultValue={profile.firstName}
+                required
+                disabled={isSaving}
+              />
+              <Input
+                id="edit-mid-name"
+                label="Middle Name"
+                defaultValue={profile.midName ?? ""}
+                disabled={isSaving}
+              />
+              <Input
+                id="edit-last-name"
+                label="Last Name"
+                defaultValue={profile.lastName}
+                required
+                disabled={isSaving}
+              />
+              <FieldChrome id="edit-suffix" label="Suffix">
+                <Select
+                  items={[{ value: "", label: "None" }, ...nameSuffixes.map((s) => ({ value: s, label: s }))]}
+                  value={suffix}
+                  onValueChange={(v) => setSuffix(v as string)}
+                  disabled={isSaving}
+                >
+                  <SelectTrigger id="edit-suffix">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {nameSuffixes.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldChrome>
+              <FieldChrome id="edit-gender" label="Gender">
+                <Select
+                  items={[{ value: "", label: "Select gender" }, ...genders.map((g) => ({ value: g, label: g }))]}
+                  value={gender}
+                  onValueChange={(v) => setGender(v as string)}
+                  disabled={isSaving}
+                >
+                  <SelectTrigger id="edit-gender">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Select gender</SelectItem>
+                    {genders.map((g) => (
+                      <SelectItem key={g} value={g}>{g}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldChrome>
+              <DatePicker
+                id="edit-birthdate"
+                label="Birthdate"
+                defaultValue={profile.birthdate ?? ""}
+                disabled={isSaving}
+                captionLayout="dropdown"
+                fromYear={1940}
+                toYear={new Date().getFullYear()}
+              />
+              <PhoneInput
+                id="edit-mobile"
+                label="Mobile"
+                defaultValue={profile.mobile ?? ""}
+                disabled={isSaving}
+              />
+              <Input
+                id="edit-email"
+                label="Email"
+                type="email"
+                defaultValue={profile.email ?? ""}
+                disabled={isSaving}
+              />
+            </div>
+          </section>
+
+          {/* Address */}
+          <section className="flex flex-col gap-3 border-t border-slate-100 pt-5 dark:border-white/8">
+            <h3 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+              Address
+            </h3>
+            <div className="flex flex-col gap-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input
-                  id="edit-first-name"
-                  label="First Name"
-                  defaultValue={profile.firstName}
-                  required
+                  id="edit-address-street"
+                  label="Street"
+                  value={addressStreet}
+                  onChange={(e) => setAddressStreet(e.target.value)}
                   disabled={isSaving}
                 />
                 <Input
-                  id="edit-mid-name"
-                  label="Middle Name"
-                  defaultValue={profile.midName ?? ""}
-                  disabled={isSaving}
-                />
-                <Input
-                  id="edit-last-name"
-                  label="Last Name"
-                  defaultValue={profile.lastName}
-                  required
-                  disabled={isSaving}
-                />
-                <FieldChrome id="edit-suffix" label="Suffix">
-                  <Select
-                    items={[{ value: "", label: "None" }, ...nameSuffixes.map((s) => ({ value: s, label: s }))]}
-                    value={suffix}
-                    onValueChange={(v) => setSuffix(v as string)}
-                    disabled={isSaving}
-                  >
-                    <SelectTrigger id="edit-suffix">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">None</SelectItem>
-                      {nameSuffixes.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FieldChrome>
-                <FieldChrome id="edit-gender" label="Gender">
-                  <Select
-                    items={[{ value: "", label: "Select gender" }, ...genders.map((g) => ({ value: g, label: g }))]}
-                    value={gender}
-                    onValueChange={(v) => setGender(v as string)}
-                    disabled={isSaving}
-                  >
-                    <SelectTrigger id="edit-gender">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Select gender</SelectItem>
-                      {genders.map((g) => (
-                        <SelectItem key={g} value={g}>{g}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FieldChrome>
-                <DatePicker
-                  id="edit-birthdate"
-                  label="Birthdate"
-                  defaultValue={profile.birthdate ?? ""}
-                  disabled={isSaving}
-                  captionLayout="dropdown"
-                  fromYear={1940}
-                  toYear={new Date().getFullYear()}
-                />
-                <PhoneInput
-                  id="edit-mobile"
-                  label="Mobile"
-                  defaultValue={profile.mobile ?? ""}
-                  disabled={isSaving}
-                />
-                <Input
-                  id="edit-email"
-                  label="Email"
-                  type="email"
-                  defaultValue={profile.email ?? ""}
+                  id="edit-address-barangay"
+                  label="Barangay"
+                  value={addressBarangay}
+                  onChange={(e) => setAddressBarangay(e.target.value)}
                   disabled={isSaving}
                 />
               </div>
-            </Card>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  id="edit-address-city"
+                  label="City / Municipality"
+                  value={addressCity}
+                  onChange={(e) => setAddressCity(e.target.value)}
+                  disabled={isSaving}
+                />
+                <Input
+                  id="edit-address-province"
+                  label="Province"
+                  value={addressProvince}
+                  onChange={(e) => setAddressProvince(e.target.value)}
+                  disabled={isSaving}
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  id="edit-address-region"
+                  label="Region"
+                  value={addressRegion}
+                  onChange={(e) => setAddressRegion(e.target.value)}
+                  disabled={isSaving}
+                />
+                <Input
+                  id="edit-address-zip"
+                  label="Zip Code"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={addressZip}
+                  onChange={(e) => setAddressZip(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+          </section>
 
-            <Card className="p-4">
-              <h3 className="mb-3 font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                Address
+          {/* Credited Subjects */}
+          {profile.creditedSubjects.length > 0 && (
+            <section className="flex flex-col gap-3 border-t border-slate-100 pt-5 dark:border-white/8">
+              <h3 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                Credited Subjects ({profile.creditedSubjects.length})
               </h3>
-              <div className="flex flex-col gap-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    id="edit-address-street"
-                    label="Street"
-                    value={addressStreet}
-                    onChange={(e) => setAddressStreet(e.target.value)}
-                    disabled={isSaving}
-                  />
-                  <Input
-                    id="edit-address-barangay"
-                    label="Barangay"
-                    value={addressBarangay}
-                    onChange={(e) => setAddressBarangay(e.target.value)}
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    id="edit-address-city"
-                    label="City / Municipality"
-                    value={addressCity}
-                    onChange={(e) => setAddressCity(e.target.value)}
-                    disabled={isSaving}
-                  />
-                  <Input
-                    id="edit-address-province"
-                    label="Province"
-                    value={addressProvince}
-                    onChange={(e) => setAddressProvince(e.target.value)}
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    id="edit-address-region"
-                    label="Region"
-                    value={addressRegion}
-                    onChange={(e) => setAddressRegion(e.target.value)}
-                    disabled={isSaving}
-                  />
-                  <Input
-                    id="edit-address-zip"
-                    label="Zip Code"
-                    inputMode="numeric"
-                    maxLength={4}
-                    value={addressZip}
-                    onChange={(e) => setAddressZip(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                    disabled={isSaving}
-                  />
-                </div>
-              </div>
-            </Card>
-
-            {profile.creditedSubjects.length > 0 && (
-              <Card className="p-4">
-                <h3 className="mb-3 font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                  Credited Subjects ({profile.creditedSubjects.length})
-                </h3>
-                <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-white/8 dark:border-white/10">
-                  {profile.creditedSubjects.map((cs) => (
-                    <li key={cs.subjectId} className="flex items-baseline justify-between gap-3 px-3 py-1.5">
-                      <span className="min-w-0">
-                        <span className="font-body text-xs font-medium text-navy-700 dark:text-mist-100">
-                          {cs.subjectCode}
-                        </span>
-                        <span className="ml-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                          {cs.descriptiveTitle}
-                        </span>
+              <ul className="divide-y divide-slate-100 rounded-lg bg-slate-50/70 p-1 dark:divide-white/8 dark:bg-white/[0.03]">
+                {profile.creditedSubjects.map((cs) => (
+                  <li key={cs.subjectId} className="flex items-baseline justify-between gap-3 px-3 py-2">
+                    <span className="min-w-0">
+                      <span className="font-body text-xs font-medium text-navy-700 dark:text-mist-100">
+                        {cs.subjectCode}
                       </span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            )}
+                      <span className="ml-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                        {cs.descriptiveTitle}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-            <Card className="p-4">
-              <div className="flex items-center justify-between">
+          {/* Prerequisite Check */}
+          <section className="flex flex-col gap-3 border-t border-slate-100 pt-5 dark:border-white/8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
                 <h3 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   Prerequisite Check
                 </h3>
-                <Button type="button" variant="outline" block={false} isLoading={checkingPrereq} loadingLabel="Checking…" onClick={checkPrerequisites}>
-                  Check Prerequisites
-                </Button>
-              </div>
-              {prereqWarnings === null ? (
-                <p className="mt-3 font-body text-xs text-slate-400 dark:text-slate-500">
+                <p className="mt-0.5 font-body text-xs text-slate-400 dark:text-slate-500">
                   Verify prerequisites for the current enrollment subjects.
                 </p>
-              ) : prereqWarnings.length === 0 ? (
-                <p className="mt-3 font-body text-xs text-emerald-600 dark:text-emerald-400">
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                isLoading={checkingPrereq}
+                loadingLabel="Checking…"
+                onClick={checkPrerequisites}
+                className="shrink-0 whitespace-nowrap"
+              >
+                Check Prerequisites
+              </Button>
+            </div>
+            {prereqWarnings !== null && (
+              prereqWarnings.length === 0 ? (
+                <p className="font-body text-xs text-emerald-600 dark:text-emerald-400">
                   All prerequisites satisfied.
                 </p>
               ) : (
-                <div className="mt-3 flex flex-col gap-3">
+                <div className="flex flex-col gap-3">
                   {prereqWarnings.map((w) => (
                     <div key={w.subjectId} className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-800/40 dark:bg-amber-950/20">
                       <p className="font-body text-xs font-medium text-amber-800 dark:text-amber-200">
@@ -344,19 +356,19 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
                     </div>
                   ))}
                 </div>
-              )}
-            </Card>
+              )
+            )}
+          </section>
 
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" block={false} onClick={onClose} disabled={isSaving}>
-                Cancel
-              </Button>
-              <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Saving…">
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </div>
+          <ModalActions>
+            <Button type="button" variant="outline" block={false} onClick={onClose} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Saving…">
+              Save Changes
+            </Button>
+          </ModalActions>
+        </form>
       )}
     </Modal>
   );

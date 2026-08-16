@@ -53,25 +53,7 @@ export function CurriculumBuilderHeader({
           onChange={(e) => onNewProgramChange({ name: e.target.value })}
         />
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <FieldChrome id="new-prog-department" label="Department" required>
-            <Select
-              items={departments.map((d) => ({ value: d.name, label: `${d.abbrev} — ${d.name}` }))}
-              value={newProgram.departmentName}
-              onValueChange={(v) => onNewProgramChange({ departmentName: v as string })}
-            >
-              <SelectTrigger id="new-prog-department">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((d) => (
-                  <SelectItem key={d.id} value={d.name}>
-                    {d.abbrev} — {d.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldChrome>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Input
             id="new-prog-abbrev"
             label="Program Abbreviation"
@@ -107,6 +89,24 @@ export function CurriculumBuilderHeader({
             value={newProgram.lengthYears === 0 ? "" : newProgram.lengthYears}
             onChange={(e) => onNewProgramChange({ lengthYears: Number(e.target.value) })}
           />
+          <FieldChrome id="new-prog-department" label="Department" required>
+            <Select
+              items={departments.map((d) => ({ value: d.name, label: `${d.abbrev} — ${d.name}` }))}
+              value={newProgram.departmentName}
+              onValueChange={(v) => onNewProgramChange({ departmentName: v as string })}
+            >
+              <SelectTrigger id="new-prog-department">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {departments.map((d) => (
+                  <SelectItem key={d.id} value={d.name}>
+                    {d.abbrev} — {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldChrome>
         </div>
 
         <Textarea
