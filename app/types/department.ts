@@ -98,6 +98,7 @@ export type OfficeStaffMember = {
   firstName: string;
   midName: string | null;
   lastName: string;
+  gender: string | null;
   roleName: string;
   email: string | null;
   mobile: string | null;
@@ -116,6 +117,7 @@ export type DepartmentStudent = {
   studentProfileId: number;
   studentId: string;
   fullName: string;
+  gender: string | null;
   programId: number;
   programAbbrev: string;
   programName: string;
@@ -142,6 +144,7 @@ export type AcademicDepartmentDetail = {
   dean: {
     deanProfileId: number;
     fullName: string;
+    gender: string | null;
     email: string | null;
     mobile: string | null;
     profilePhotoUrl: string | null;

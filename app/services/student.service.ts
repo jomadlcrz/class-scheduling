@@ -111,6 +111,7 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     first_name: string;
     mid_name: string | null;
     last_name: string;
+    gender: string | null;
     mobile: string | null;
     email: string | null;
     has_account: boolean;
@@ -150,6 +151,7 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     firstName: s.first_name,
     midName: s.mid_name,
     lastName: s.last_name,
+    gender: s.gender,
     mobile: s.mobile,
     email: s.email,
     hasAccount: s.has_account,

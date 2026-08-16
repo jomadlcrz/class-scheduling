@@ -35,6 +35,8 @@ function toDirectoryRow(s: RegularStudentRow): StudentDirectoryRow {
     name: s.studentName,
     email: s.email,
     mobile: s.mobile,
+    gender: s.gender,
+    profilePhotoUrl: s.profilePhotoUrl,
     program: academic?.program ?? "",
     yearLevel: academic?.yearLevel ?? 0,
     set: academic?.set ?? null,

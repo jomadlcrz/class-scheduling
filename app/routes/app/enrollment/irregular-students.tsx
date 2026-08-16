@@ -34,6 +34,7 @@ function toDirectoryRow(s: IrregularStudent): StudentDirectoryRow {
     email: s.email,
     mobile: s.mobile,
     profilePhotoUrl: s.profilePhotoUrl,
+    gender: s.gender,
     program: s.programTaken === "—" ? "" : s.programTaken,
     yearLevel: s.yearLevel,
     set: s.set,

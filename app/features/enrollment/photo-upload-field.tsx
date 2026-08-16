@@ -8,6 +8,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 type PhotoUploadFieldProps = {
   firstName?: string;
   lastName?: string;
+  gender?: string | null;
   studentIdLabel?: string;
   photoFile: File | null;
   onPhotoChange: (file: File | null) => void;
@@ -17,6 +18,7 @@ type PhotoUploadFieldProps = {
 export function PhotoUploadField({
   firstName,
   lastName,
+  gender,
   studentIdLabel,
   photoFile,
   onPhotoChange,
@@ -62,7 +64,7 @@ export function PhotoUploadField({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <StudentAvatar firstName={firstName} lastName={lastName} photoUrl={previewUrl} />
+      <StudentAvatar firstName={firstName} lastName={lastName} photoUrl={previewUrl} gender={gender} />
 
       <input
         ref={inputRef}

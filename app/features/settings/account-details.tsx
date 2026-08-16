@@ -5,6 +5,7 @@ import { Modal, ModalActions } from "~/components/ui/modal";
 import { SettingsRow } from "~/components/ui/settings-row";
 import { Skeleton } from "~/components/ui/skeleton";
 import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { SettingsPageHeader } from "~/features/settings/settings-page-header";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
@@ -42,8 +43,6 @@ export function AccountDetails() {
 
   if (!user) return null;
 
-  const initials = `${user.firstName[0] ?? ""}`.toUpperCase();
-
   async function handleUpload(file: File): Promise<{ url: string; message: string }> {
     if (!user) throw new Error("Not logged in.");
     const result = await profilePhotoService.uploadPhoto(user.role, file);
@@ -80,20 +79,12 @@ export function AccountDetails() {
                   onClick={() => setProfilePictureModalOpen(true)}
                   className="group relative inline-flex size-20 cursor-pointer overflow-hidden rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-surface"
                 >
-                  {profile?.profilePhotoUrl ? (
-                    <img
-                      src={profile.profilePhotoUrl}
-                      alt="Profile"
-                      className="size-full rounded-full object-cover transition-opacity duration-150 group-hover:opacity-90"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      className="flex size-full items-center justify-center rounded-full bg-navy-800 font-body text-2xl font-medium text-mist-100 transition-opacity duration-150 group-hover:opacity-90 dark:bg-white dark:text-navy-800"
-                    >
-                      {initials}
-                    </span>
-                  )}
+                  <ProfileAvatar
+                    src={profile?.profilePhotoUrl}
+                    gender={profile?.gender}
+                    alt="Profile"
+                    className="size-full transition-opacity duration-150 group-hover:opacity-90"
+                  />
                 </button>
               </div>
               <p className="mt-3 font-body text-xs text-slate-400 dark:text-slate-500">
@@ -169,7 +160,7 @@ export function AccountDetails() {
             open={profilePictureModalOpen}
             onClose={() => setProfilePictureModalOpen(false)}
             photoUrl={profile?.profilePhotoUrl ?? null}
-            initials={initials}
+            gender={profile?.gender}
             onChanged={reloadPhoto}
             uploadPhoto={handleUpload}
             removePhoto={handleRemove}

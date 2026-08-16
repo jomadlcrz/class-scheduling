@@ -5,12 +5,13 @@ import { Button } from "~/components/ui/button";
 import { FileChooser } from "~/components/ui/file-chooser";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { Modal, ModalActions } from "~/components/ui/modal";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 
 type ProfilePictureModalProps = {
   open: boolean;
   onClose: () => void;
   photoUrl: string | null;
-  initials: string;
+  gender?: string | null;
   onChanged: () => void;
   uploadPhoto: (file: File) => Promise<{ url: string; message: string }>;
   removePhoto: () => Promise<string>;
@@ -20,7 +21,7 @@ export function ProfilePictureModal({
   open,
   onClose,
   photoUrl,
-  initials,
+  gender,
   onChanged,
   uploadPhoto,
   removePhoto,
@@ -120,11 +121,7 @@ export function ProfilePictureModal({
                   className="size-24 rounded-full object-cover"
                 />
               </button>
-            ) : (
-              <span className="flex size-24 items-center justify-center rounded-full bg-navy-800 font-body text-3xl font-medium text-mist-100 dark:bg-white dark:text-navy-800">
-                {initials}
-              </span>
-            )}
+            ) : <ProfileAvatar gender={gender} className="size-24" />}
           </div>
 
           {photoUrl && (

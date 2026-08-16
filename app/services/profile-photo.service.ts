@@ -21,6 +21,7 @@ type RawPhotoData = {
   first_name: string | null;
   mid_name: string | null;
   last_name: string | null;
+  gender: string | null;
   profile_photo_url: string | null;
   has_photo: boolean;
 };
@@ -30,6 +31,7 @@ export type ProfilePhotoData = {
   firstName: string | null;
   midName: string | null;
   lastName: string | null;
+  gender: string | null;
   profilePhotoUrl: string | null;
   hasPhoto: boolean;
 };
@@ -40,6 +42,7 @@ function toProfilePhotoData(raw: RawPhotoData): ProfilePhotoData {
     firstName: raw.first_name,
     midName: raw.mid_name,
     lastName: raw.last_name,
+    gender: raw.gender,
     profilePhotoUrl: raw.profile_photo_url,
     hasPhoto: raw.has_photo,
   };

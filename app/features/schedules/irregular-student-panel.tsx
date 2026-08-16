@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import type { IrregularStudent } from "~/services/irregular-class.service";
-
-function firstName(name: string): string {
-  return name.split(" ")[0] ?? name;
-}
 
 type IrregularStudentPanelProps = {
   student: IrregularStudent | null;
@@ -35,12 +32,7 @@ export function IrregularStudentPanel({ student }: IrregularStudentPanelProps) {
             />
           </button>
         ) : student ? (
-          <span
-            aria-hidden="true"
-            className="grid size-10 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-          >
-            {(firstName(student.studentName)[0] ?? "").toUpperCase()}
-          </span>
+          <ProfileAvatar gender={student.gender} className="size-10" />
         ) : (
           <span
             aria-hidden="true"

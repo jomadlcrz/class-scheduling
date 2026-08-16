@@ -9,6 +9,8 @@ type RegularStudentsResponse = {
   student_profile_id: number;
   student_id: string | null;
   student_full_name: string;
+  gender: string | null;
+  profile_photo_url: string | null;
   mobile: string | null;
   email: string | null;
   account_status: string;
@@ -48,6 +50,8 @@ async function listStudents(syId: number, semesterNumber: number): Promise<Regul
     midName: null,
     lastName: "",
     studentName: s.student_full_name,
+    gender: s.gender,
+    profilePhotoUrl: s.profile_photo_url,
     mobile: s.mobile,
     email: s.email,
     accountStatus: s.account_status,

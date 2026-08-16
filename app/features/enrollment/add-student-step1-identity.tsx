@@ -62,6 +62,7 @@ export function AddStudentStep1Identity({
             <PhotoUploadField
               firstName={identity.firstName}
               lastName={identity.lastName}
+              gender={identity.gender}
               studentIdLabel={identity.studentId.trim() || "ID optional"}
               photoFile={photoFile}
               onPhotoChange={onPhotoChange}

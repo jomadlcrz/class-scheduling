@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { Spinner } from "~/components/ui/spinner";
 import {
   CloseIcon,
@@ -174,14 +175,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                     className="size-16 rounded-full object-cover"
                   />
                 </button>
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="grid size-16 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xl font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                >
-                  {(student.name[0] ?? "").toUpperCase()}
-                </span>
-              )}
+                ) : <ProfileAvatar gender={student.gender} className="size-16" />}
               <div className="flex min-w-0 flex-col gap-1">
                 <h3 className="truncate font-body text-base font-semibold text-navy-800 dark:text-mist-100">
                   {student.name}

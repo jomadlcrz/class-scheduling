@@ -55,6 +55,7 @@ export type StudentAccountRow = {
   firstName: string;
   midName: string | null;
   lastName: string;
+  gender?: string | null;
   studentName?: string;
   mobile: string | null;
   email: string | null;
@@ -139,6 +140,8 @@ export type RegularStudentRow = {
   midName: string | null;
   lastName: string;
   studentName: string;
+  gender: string | null;
+  profilePhotoUrl: string | null;
   mobile: string | null;
   email: string | null;
   accountStatus: string;

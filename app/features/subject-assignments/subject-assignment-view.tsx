@@ -54,6 +54,7 @@ type Instructor = {
   maxWeeklyHours: number | null;
   loadClassification: "underload" | "regular" | "overload" | null;
   avatarUrl?: string;
+  gender?: string | null;
   programs: ProgramGroup[];
 };
 
@@ -165,6 +166,7 @@ export function SubjectAssignmentView() {
         maxWeeklyHours: entry.maxWeeklyHours,
         loadClassification: entry.loadClassification ?? null,
         avatarUrl: inst.profilePhotoUrl ?? undefined,
+        gender: inst.gender,
         programs,
       };
     });
@@ -239,6 +241,7 @@ export function SubjectAssignmentView() {
       maxWeeklyHours: entry?.maxWeeklyHours ?? null,
       loadClassification: entry?.loadClassification ?? null,
       avatarUrl: instructor.profilePhotoUrl ?? undefined,
+      gender: instructor.gender,
       programs,
     };
     setInstructors((prev) => [newInst, ...prev]);

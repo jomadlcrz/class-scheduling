@@ -50,6 +50,7 @@ export function StudentInfoSummaryCard({
             firstName={identity.firstName}
             lastName={identity.lastName}
             photoUrl={photoUrl}
+            gender={identity.gender}
           />
           <Badge tone="sky">For Enrollment</Badge>
           <p className="font-body text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400">

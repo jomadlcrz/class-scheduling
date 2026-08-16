@@ -11,6 +11,7 @@ import {
   TrashIcon,
 } from "~/components/ui/icons";
 import { ProgramTablePanel } from "./program-table-panel";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 
 type InstructorData = {
   id: string;
@@ -20,6 +21,7 @@ type InstructorData = {
   maxWeeklyHours: number | null;
   loadClassification: "underload" | "regular" | "overload" | null;
   avatarUrl?: string;
+  gender?: string | null;
   programs: {
     id: string;
     programAbbrev: string;
@@ -106,11 +108,7 @@ export function InstructorCard({
                 onViewAvatar?.();
               }}
             />
-          ) : (
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-bold text-mist-100 dark:bg-white dark:text-navy-800">
-              {instructor.name.charAt(0)}
-            </span>
-          )}
+          ) : <ProfileAvatar gender={instructor.gender} className="size-11 ring-2 ring-slate-100 dark:ring-white/10" />}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">

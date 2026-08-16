@@ -22,6 +22,7 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { StatCard } from "~/components/ui/stat-card";
 import { Table, TableHead, TableHeader, TableBody, TableCell } from "~/components/ui/table";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -365,17 +366,11 @@ function TeachingTermPage() {
         className="rounded-xl border border-slate-300 bg-white px-5 py-4 dark:border-white/10 dark:bg-white/5"
       >
         <div className="flex items-center gap-4">
-          {instructor.profile_photo_url ? (
-            <img
-              src={instructor.profile_photo_url}
-              alt=""
-              className="size-14 shrink-0 rounded-full bg-slate-100 object-cover dark:bg-white/10"
-            />
-          ) : (
-            <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-navy-800 text-base font-bold text-mist-100 dark:bg-white/10 dark:text-mist-100">
-              {(instructor.full_name?.trim().charAt(0) || "I").toUpperCase()}
-            </div>
-          )}
+          <ProfileAvatar
+            src={instructor.profile_photo_url}
+            gender={instructor.gender}
+            className="size-14"
+          />
           <div>
             <h1 className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               {instructor.full_name ?? "Instructor"}

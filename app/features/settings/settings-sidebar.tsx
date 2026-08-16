@@ -5,6 +5,7 @@ import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { profilePhotoService } from "~/services/profile-photo.service";
 import type { ProfilePhotoData } from "~/services/profile-photo.service";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 
 const itemClassName = (isActive: boolean) =>
   `group relative flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-left font-body text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
@@ -41,18 +42,7 @@ export function SettingsSidebar() {
           Your account
         </p>
         <div className="mt-3 flex items-center gap-3">
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt=""
-              aria-hidden="true"
-              className="size-9 shrink-0 rounded-full object-cover"
-            />
-          ) : (
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-sm font-medium text-mist-100 dark:bg-white dark:text-navy-800">
-              {(user.firstName[0] ?? "").toUpperCase()}
-            </span>
-          )}
+          <ProfileAvatar src={photoUrl} gender={photoData?.gender} className="size-9" />
           <div className="min-w-0">
             <p className="truncate font-body text-sm font-semibold text-slate-800 dark:text-mist-100">
               {user.name}

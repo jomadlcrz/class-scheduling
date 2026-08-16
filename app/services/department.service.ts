@@ -224,6 +224,7 @@ type OfficeStaffResponse = {
     first_name: string;
     mid_name: string | null;
     last_name: string;
+    gender: string | null;
     role_name: string;
     email: string | null;
     mobile: string | null;
@@ -242,6 +243,7 @@ async function getOfficeStaff(id: number): Promise<OfficeStaffPayload> {
       firstName: m.first_name,
       midName: m.mid_name,
       lastName: m.last_name,
+      gender: m.gender,
       roleName: m.role_name,
       email: m.email,
       mobile: m.mobile,
@@ -254,6 +256,7 @@ type AcademicDetailResponse = Omit<DepartmentOverviewResponse, "programs"> & {
   dean: {
     dean_profile_id: number;
     full_name: string;
+    gender: string | null;
     email: string | null;
     mobile: string | null;
     profile_photo_url: string | null;
@@ -264,6 +267,7 @@ type AcademicDetailResponse = Omit<DepartmentOverviewResponse, "programs"> & {
     student_profile_id: number;
     student_id: string;
     full_name: string;
+    gender: string | null;
     program_id: number;
     program_abbrev: string;
     program_name: string;
@@ -294,6 +298,7 @@ async function getAcademicDetail(id: number): Promise<AcademicDepartmentDetail> 
       ? {
           deanProfileId: d.dean.dean_profile_id,
           fullName: d.dean.full_name,
+          gender: d.dean.gender,
           email: d.dean.email,
           mobile: d.dean.mobile,
           profilePhotoUrl: d.dean.profile_photo_url,
@@ -306,6 +311,7 @@ async function getAcademicDetail(id: number): Promise<AcademicDepartmentDetail> 
       studentProfileId: s.student_profile_id,
       studentId: s.student_id,
       fullName: s.full_name,
+      gender: s.gender,
       programId: s.program_id,
       programAbbrev: s.program_abbrev,
       programName: s.program_name,

@@ -10,6 +10,7 @@ import {
 } from "~/components/ui/table";
 import { AccountRoleBadge } from "~/features/accounts/account-role-badge";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import type { OfficeStaffMember } from "~/types/department";
 
 function displayName(member: OfficeStaffMember) {
@@ -49,14 +50,7 @@ export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) 
                     className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
                     onClick={() => setViewerSrc(member.profilePhotoUrl!)}
                   />
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="grid size-8 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-[0.6rem] font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                  >
-                    {(member.firstName[0] ?? "").toUpperCase()}
-                  </span>
-                )}
+                  ) : <ProfileAvatar gender={member.gender} className="size-8" />}
                 <span className="font-medium text-navy-700 dark:text-mist-100">
                   {displayName(member)}
                 </span>

@@ -29,6 +29,7 @@ type IrregularStudentsResponse = {
   mobile: string | null;
   email: string | null;
   profile_photo_url: string | null;
+  gender: string | null;
   account_status: string;
   academics: IrregularAcademicRecord[];
 }[];
@@ -45,6 +46,7 @@ export type IrregularStudent = {
   mobile: string | null;
   email: string | null;
   profilePhotoUrl: string | null;
+  gender: string | null;
   programTaken: string;
   /** Year level of the most recent academic record; 0 when the student has none yet. */
   yearLevel: number;
@@ -83,6 +85,7 @@ function mapIrregularStudents(data: IrregularStudentsResponse): IrregularStudent
       mobile: s.mobile,
       email: s.email,
       profilePhotoUrl: s.profile_photo_url,
+      gender: s.gender,
       programTaken: current?.program ?? "—",
       yearLevel: current?.year_level ?? 0,
       set: current?.set ?? null,

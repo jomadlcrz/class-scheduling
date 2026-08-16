@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { useYearLevels } from "~/hooks/use-year-levels";
@@ -15,6 +16,7 @@ export type StudentDirectoryRow = {
   email: string | null;
   mobile: string | null;
   profilePhotoUrl?: string | null;
+  gender?: string | null;
   program: string;
   yearLevel: number;
   set: string | null;
@@ -204,14 +206,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
                   <div className="flex items-center gap-2">
                     {r.profilePhotoUrl ? (
                       <img src={r.profilePhotoUrl} alt={r.name} className="size-6 shrink-0 rounded-full object-cover" />
-                    ) : (
-                      <span
-                        aria-hidden="true"
-                        className="grid size-6 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-[0.55rem] font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                      >
-                        {(r.name[0] ?? "").toUpperCase()}
-                      </span>
-                    )}
+                      ) : <ProfileAvatar gender={r.gender} className="size-6" />}
                     <div className="min-w-0">
                       <p className="truncate font-body text-xs font-medium text-navy-700 dark:text-mist-100">{r.name}</p>
                       {r.email && (

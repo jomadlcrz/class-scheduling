@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import {
   Table,
   TableBody,
@@ -65,11 +66,7 @@ export function AdministratorTable({
                     >
                       <img src={admin.profilePhotoUrl} alt="" className="size-9 rounded-full object-cover" />
                     </button>
-                  ) : (
-                    <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-full bg-navy-800 text-xs font-semibold text-white dark:bg-white dark:text-navy-900">
-                      {(admin.firstName[0] ?? admin.lastName[0] ?? "").toUpperCase()}
-                    </span>
-                  )}
+                  ) : <ProfileAvatar gender={admin.gender} className="size-9" />}
                   <div className="min-w-0">
                     <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
                       {displayName(admin)}

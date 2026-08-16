@@ -3,6 +3,7 @@ import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { IconButton } from "~/components/ui/icon-button";
 import { FileSearchIcon, SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
@@ -248,14 +249,7 @@ export function EnrollmentRecordsView({
                           alt={student.name}
                           className="size-6 shrink-0 rounded-full object-cover"
                         />
-                      ) : (
-                        <span
-                          aria-hidden="true"
-                          className="grid size-6 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-[0.55rem] font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                        >
-                          {(student.name[0] ?? "").toUpperCase()}
-                        </span>
-                      )}
+                        ) : <ProfileAvatar gender={student.gender} className="size-6" />}
                       <div className="min-w-0">
                         <p className="truncate font-body text-xs font-medium text-navy-700 dark:text-mist-100">
                           {student.name}

@@ -5,6 +5,7 @@ import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ChevronRightIcon, LayersIcon } from "~/components/ui/icons";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { Pagination } from "~/components/ui/pagination";
 import {
   Table,
@@ -25,12 +26,6 @@ const ENROLLED_STATUS_TONES: Record<string, BadgeTone> = {
 };
 
 const contactRowClassName = "flex items-center gap-2 font-body text-sm text-slate-600 dark:text-slate-300";
-
-function yearOrdinal(n: number): string {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
-}
 
 /** Academic-department hub — dean, program cards with set counts, and the student table. */
 export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentDetail }) {
@@ -54,14 +49,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                     className="size-11 shrink-0 cursor-pointer rounded-full object-cover"
                     onClick={() => setViewerSrc(detail.dean!.profilePhotoUrl)}
                   />
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="grid size-11 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                  >
-                    {(detail.dean.fullName[0] ?? "").toUpperCase()}
-                  </span>
-                )}
+                  ) : <ProfileAvatar gender={detail.dean.gender} className="size-11" />}
                 <div className="min-w-0">
                   <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                     {detail.dean.fullName}
@@ -159,7 +147,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                 <TableHeader>Name</TableHeader>
                 <TableHeader className="hidden sm:table-cell">Student ID</TableHeader>
                 <TableHeader>Program</TableHeader>
-                <TableHeader className="hidden md:table-cell">Year / Set</TableHeader>
+                <TableHeader className="hidden md:table-cell">Section</TableHeader>
                 <TableHeader>Status</TableHeader>
               </TableHead>
               <TableBody>
@@ -174,14 +162,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                             className="size-6 shrink-0 cursor-pointer rounded-full object-cover"
                             onClick={() => setViewerSrc(student.profilePhotoUrl!)}
                           />
-                        ) : (
-                          <span
-                            aria-hidden="true"
-                            className="grid size-6 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-[0.55rem] font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                          >
-                            {(student.fullName[0] ?? "").toUpperCase()}
-                          </span>
-                        )}
+                          ) : <ProfileAvatar gender={student.gender} className="size-6" />}
                         <span className="font-medium text-navy-700 dark:text-mist-100">
                           {student.fullName}
                         </span>
@@ -194,8 +175,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                       {student.programAbbrev}
                     </TableCell>
                     <TableCell className="hidden text-slate-600 dark:text-slate-300 md:table-cell">
-                      {yearOrdinal(student.yearLevel)} Year
-                      {student.set ? ` · ${student.set}` : ""}
+                      {student.set || "—"}
                     </TableCell>
                     <TableCell>
                       <Badge tone={ENROLLED_STATUS_TONES[student.enrolledStatus] ?? "slate"}>

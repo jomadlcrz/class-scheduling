@@ -1,6 +1,7 @@
 ﻿import { Badge } from "~/components/ui/badge";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { useState } from "react";
 import {
   Table,
@@ -60,11 +61,7 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                     className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
                     onClick={() => setViewerSrc(member.profilePhotoUrl)}
                   />
-                ) : (
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 font-body text-xs font-medium text-mist-100 dark:bg-white dark:text-navy-800">
-                    {(member.firstName[0] ?? "").toUpperCase()}
-                  </span>
-                )}
+                  ) : <ProfileAvatar gender={member.gender} className="size-8" />}
                 <div className="min-w-0">
                   <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
                     {displayName(member)}

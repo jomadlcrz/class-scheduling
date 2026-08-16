@@ -22,6 +22,7 @@ import {
   UserIcon,
 } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
+import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { NotificationBell } from "~/features/notifications/notification-bell";
 import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { useAuth } from "~/hooks/use-auth";
@@ -235,8 +236,6 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         </Link>
       )}
 
-      <div className="flex-1 lg:hidden" />
-
       {user && !isSettingsRoute && (
         <div className="hidden shrink-0 items-center gap-2 font-body lg:flex">
           <span className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
@@ -249,14 +248,24 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         </div>
       )}
 
-      <div className="hidden min-w-0 flex-1 justify-end lg:flex">
+      <div className="flex min-w-0 flex-1 justify-end">
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="flex h-8 w-full max-w-sm cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 text-left font-body text-sm text-slate-400 transition-colors hover:border-slate-400 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500 dark:hover:border-white/20 dark:hover:bg-white/8"
+          aria-label="Search pages"
+          className={`${iconButtonClassName} lg:hidden`}
+        >
+          <span className="flex size-7 items-center justify-center">
+            <SearchIcon />
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="hidden h-8 w-full max-w-sm cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 text-left font-body text-sm text-slate-400 transition-colors hover:border-slate-400 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 lg:flex dark:border-white/10 dark:bg-white/5 dark:text-slate-500 dark:hover:border-white/20 dark:hover:bg-white/8"
         >
           <SearchIcon />
-          <span className="min-w-0 flex-1 truncate">Search pages...</span>
+          <span className="min-w-0 flex-1 truncate">Search...</span>
           <kbd className="hidden rounded border border-slate-200 bg-white px-1.5 py-0.5 font-body text-[10px] text-slate-400 xl:inline dark:border-white/10 dark:bg-white/5 dark:text-slate-500">
             Ctrl K
           </kbd>
@@ -360,21 +369,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           label="Open user menu"
           trigger={
             <span className="flex items-center">
-              {photoUrl ? (
-                <img
-                  src={photoUrl}
-                  alt=""
-                  aria-hidden="true"
-                  className="size-7 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="grid size-7 shrink-0 place-items-center rounded-full bg-navy-800 font-body text-xs font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                >
-                  {initials(user.name)}
-                </span>
-              )}
+              <ProfileAvatar src={photoUrl} gender={photoData?.gender} className="size-7" />
             </span>
           }
           triggerClassName={`${iconButtonClassName} ml-1`}
@@ -393,21 +388,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                     setProfilePictureOpen(true);
                   }}
                 >
-                  {photoUrl ? (
-                    <img
-                      src={photoUrl}
-                      alt=""
-                      aria-hidden="true"
-                      className="size-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      className="grid size-full place-items-center rounded-full bg-navy-800 font-body text-base font-medium text-mist-100 dark:bg-white dark:text-navy-800"
-                    >
-                      {initials(user.name)}
-                    </span>
-                  )}
+                  <ProfileAvatar src={photoUrl} gender={photoData?.gender} className="size-full" />
                   <span
                     aria-hidden="true"
                     className="absolute inset-0 grid place-items-center rounded-full bg-navy-950/65 font-body text-[10px] font-semibold text-white opacity-100 transition-opacity duration-150 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-visible:opacity-100"
@@ -494,7 +475,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           open={profilePictureOpen}
           onClose={() => setProfilePictureOpen(false)}
           photoUrl={photoUrl}
-          initials={initials(user.name)}
+          gender={photoData?.gender}
           onChanged={handlePhotoChanged}
           uploadPhoto={handlePhotoUpload}
           removePhoto={handlePhotoRemove}
@@ -551,10 +532,4 @@ function ThemeRow() {
       </div>
     </div>
   );
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")[0]?.[0]
-    ?.toUpperCase() ?? "";
 }
