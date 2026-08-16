@@ -49,6 +49,17 @@ type HelpAction = TopbarAction & {
   description: string;
 };
 
+type RoleHelpGuide = {
+  workflow: string[];
+  commonIssue: string;
+};
+
+type PageHelp = {
+  matches: (pathname: string) => boolean;
+  title: string;
+  description: string;
+};
+
 const ROLE_LABELS: Record<Role, string> = {
   admin: "Administrator",
   registrar: "Registrar",
@@ -143,6 +154,98 @@ const HELP_ACTIONS: HelpAction[] = [
   },
 ];
 
+const ROLE_HELP_GUIDES: Record<Role, RoleHelpGuide> = {
+  admin: {
+    workflow: ["Create the account", "Review role permissions", "Maintain account access"],
+    commonIssue: "If access looks incorrect, verify the assigned role and its permissions before resetting the account.",
+  },
+  registrar: {
+    workflow: [
+      "Set the academic term",
+      "Prepare departments and programs",
+      "Enroll students",
+      "Assign subjects and instructors",
+      "Build schedules",
+      "Review conflicts",
+      "Release the schedule",
+    ],
+    commonIssue: "Unavailable actions usually mean the term is incomplete, closed, or still missing required academic data.",
+  },
+  dean: {
+    workflow: ["Review subject assignments", "Check faculty loads", "Review and decide on submitted schedules"],
+    commonIssue: "A schedule cannot be reviewed until the registrar submits it for approval.",
+  },
+  faculty: {
+    workflow: ["Review assigned subjects", "Check teaching load", "Verify the published class schedule"],
+    commonIssue: "Report missing subjects or schedule conflicts to your dean or the registrar before the term is finalized.",
+  },
+  student: {
+    workflow: ["Confirm enrollment", "Review the published schedule", "Report missing or conflicting classes"],
+    commonIssue: "If a class is missing, confirm your enrollment first, then contact the registrar.",
+  },
+};
+
+const PAGE_HELP: PageHelp[] = [
+  {
+    matches: (pathname) => pathname === "/subject-assignments",
+    title: "Subject assignments",
+    description: "Assign instructors after the program curriculum and active teaching term are ready. Review workload indicators before saving.",
+  },
+  {
+    matches: (pathname) => pathname.startsWith("/schedules/subject-hour-overrides"),
+    title: "Subject hour overrides",
+    description: "Use an override only when a subject must differ from its subject-type defaults. Scope it to one set when the exception is not institution-wide.",
+  },
+  {
+    matches: (pathname) => pathname.startsWith("/schedules"),
+    title: "Scheduling",
+    description: "Complete subject assignments and facilities first, then resolve conflicts before submitting or releasing a schedule.",
+  },
+  {
+    matches: (pathname) => pathname.startsWith("/program-curricula"),
+    title: "Programs and curricula",
+    description: "Define the program first, then add every required subject under the correct year level and semester.",
+  },
+  {
+    matches: (pathname) => pathname.startsWith("/enrollment") || pathname === "/students",
+    title: "Enrollment",
+    description: "Confirm the academic term, program, year level, and section before saving a student enrollment.",
+  },
+  {
+    matches: (pathname) => pathname.startsWith("/dean/schedule-approvals"),
+    title: "Schedule approvals",
+    description: "Review conflicts, room use, instructor availability, and faculty load before approving a submitted schedule.",
+  },
+  {
+    matches: (pathname) => pathname === "/faculty-loads" || pathname === "/faculty-loading",
+    title: "Faculty loads",
+    description: "Compare assigned hours with the active load policy and inspect the listed subjects before acting on a workload issue.",
+  },
+  {
+    matches: (pathname) => pathname === "/faculty-schedule" || pathname === "/student-schedule",
+    title: "My schedule",
+    description: "Use the published schedule as your current class reference and report missing or overlapping meetings promptly.",
+  },
+  {
+    matches: (pathname) => pathname.startsWith("/permissions"),
+    title: "Roles and permissions",
+    description: "Review the permission changes carefully because they affect every account assigned to that role.",
+  },
+  {
+    matches: (pathname) => pathname.startsWith("/settings"),
+    title: "Account settings",
+    description: "Update your personal account details here. Role and institutional access are managed separately.",
+  },
+];
+
+function pageHelpFor(pathname: string, role: Role): Omit<PageHelp, "matches"> {
+  const contextual = PAGE_HELP.find((item) => item.matches(pathname));
+  return contextual ?? {
+    title: `${ROLE_LABELS[role]} workspace`,
+    description: "Use Search to open an available page quickly, or follow the recommended workflow below.",
+  };
+}
+
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -158,7 +261,11 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const [profilePictureOpen, setProfilePictureOpen] = useState(false);
   const createActions = user ? CREATE_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
   const searchActions = user ? SEARCH_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
-  const helpActions = user ? HELP_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
+  const helpActions = user
+    ? HELP_ACTIONS.filter((action) => action.roles.includes(user.role)).slice(0, 2)
+    : [];
+  const helpGuide = user ? ROLE_HELP_GUIDES[user.role] : null;
+  const pageHelp = user ? pageHelpFor(location.pathname, user.role) : null;
 
   useEffect(() => {
     const handler = () => reloadPhoto();
@@ -307,7 +414,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         </Popover>
       )}
 
-      {user && helpActions.length > 0 && (
+      {user && helpGuide && pageHelp && (
         <Popover
           label={`Open ${ROLE_LABELS[user.role].toLowerCase()} help menu`}
           trigger={
@@ -325,30 +432,69 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   {ROLE_LABELS[user.role]} help
                 </p>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                  Quick access to your main workspace tasks.
+                  Guidance for your current workspace.
                 </p>
               </div>
-              <div className="py-1">
-                {helpActions.map((action) => (
-                  <button
-                    key={action.to}
-                    type="button"
-                    role="menuitem"
-                    className="w-full cursor-pointer rounded-md px-2.5 py-2 text-left transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/5"
-                    onClick={() => {
-                      close();
-                      navigate(action.to);
-                    }}
-                  >
-                    <span className="block text-sm font-medium text-slate-700 dark:text-mist-100">
-                      {action.label}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
-                      {action.description}
-                    </span>
-                  </button>
-                ))}
+              <div className="px-2.5 py-3">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-gold-600 dark:text-gold-400">
+                  Help for this page
+                </p>
+                <p className="mt-1.5 text-sm font-semibold text-slate-700 dark:text-mist-100">
+                  {pageHelp.title}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  {pageHelp.description}
+                </p>
               </div>
+              <div className="border-t border-slate-100 px-2.5 py-3 dark:border-white/10">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Recommended workflow
+                </p>
+                <ol className="mt-2 space-y-1.5">
+                  {helpGuide.workflow.map((step, index) => (
+                    <li key={step} className="flex gap-2 text-xs text-slate-600 dark:text-slate-300">
+                      <span className="grid size-4 shrink-0 place-items-center rounded-full bg-slate-100 text-[0.6rem] font-semibold text-navy-700 dark:bg-white/10 dark:text-mist-100">
+                        {index + 1}
+                      </span>
+                      <span className="leading-4">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="border-t border-slate-100 px-2.5 py-3 dark:border-white/10">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Common issue
+                </p>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  {helpGuide.commonIssue}
+                </p>
+              </div>
+              {helpActions.length > 0 && (
+                <div className="border-t border-slate-100 py-1 dark:border-white/10">
+                  <p className="px-2.5 pb-1 pt-2 text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Quick tasks
+                  </p>
+                  {helpActions.map((action) => (
+                    <button
+                      key={action.to}
+                      type="button"
+                      role="menuitem"
+                      className="w-full cursor-pointer rounded-md px-2.5 py-2 text-left transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/5"
+                      onClick={() => {
+                        close();
+                        navigate(action.to);
+                      }}
+                    >
+                      <span className="block text-sm font-medium text-slate-700 dark:text-mist-100">
+                        {action.label}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                        {action.description}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="border-t border-slate-100 px-2.5 py-2.5 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
                 <div className="flex items-center justify-between gap-3">
                   <span>Search and open a page</span>
