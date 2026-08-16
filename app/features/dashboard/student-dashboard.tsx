@@ -58,10 +58,7 @@ function buildTiles(data: StudentAnalytics): Tile[] {
   const m = data.meta;
   const units = data.subjects.reduce((sum, subject) => sum + subject.units, 0);
   const scheduledPct = pct(s.subjects_scheduled, s.total_subjects);
-  const section =
-    [m.set_name, m.year_level != null ? `Year ${m.year_level}` : null]
-      .filter(Boolean)
-      .join(" · ") || m.program_abbrev;
+  const section = m.set_name || m.program_abbrev;
   return [
     {
       title: "Subjects scheduled",
@@ -315,9 +312,7 @@ export function StudentDashboard() {
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {[
                       data.meta.student_name,
-                      [data.meta.set_name, data.meta.year_level != null ? `Year ${data.meta.year_level}` : null]
-                        .filter(Boolean)
-                        .join(" · ") || data.meta.program_abbrev,
+                      data.meta.set_name || data.meta.program_abbrev,
                     ].filter(Boolean).join(" · ")}
                   </p>
                 </div>
