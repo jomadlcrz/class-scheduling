@@ -1,5 +1,16 @@
 import { useId, useMemo, useState } from "react";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from "~/components/ui/combobox";
 import { FieldChrome } from "~/components/ui/input";
 
 export type PrerequisiteOption = {
@@ -29,9 +40,6 @@ type PrerequisiteComboboxProps = {
   disabled?: boolean;
 };
 
-const prereqChipClassName =
-  "inline-flex items-center gap-1 rounded-md bg-navy-500/10 px-1.5 py-0.5 text-xs font-medium text-navy-600 dark:bg-navy-300/20 dark:text-slate-200";
-
 /**
  * Hybrid prerequisites field — pick an existing subject or type free text the
  * backend also accepts (a standing phrase like "3rd Year Standing"). Values are
@@ -50,6 +58,7 @@ export function PrerequisiteCombobox({
   disabled = false,
 }: PrerequisiteComboboxProps) {
   const [query, setQuery] = useState("");
+  const anchor = useComboboxAnchor();
   const inputId = useId();
   const normalizedOwnCode = (ownCode ?? "").trim().toLowerCase();
 
@@ -75,77 +84,77 @@ export function PrerequisiteCombobox({
   const showFreeTextOption =
     allowFreeText &&
     trimmedQuery.length > 0 &&
+    !value.some((item) => item.toLowerCase() === trimmedQuery.toLowerCase()) &&
     !filtered.some((o) => o.code.toLowerCase() === trimmedQuery.toLowerCase());
 
-  function addValue(raw: string) {
-    const next = raw.trim();
-    if (!next || value.some((v) => v.toLowerCase() === next.toLowerCase())) {
-      setQuery("");
-      return;
-    }
-    onChange([...value, next]);
+  function handleValueChange(next: string[]) {
+    onChange(next);
     setQuery("");
   }
 
-  function removeValue(prerequisite: string) {
-    onChange(value.filter((v) => v !== prerequisite));
-  }
+  const items = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...value,
+          ...availableOptions.map((option) => option.code),
+          ...(showFreeTextOption ? [trimmedQuery] : []),
+        ]),
+      ),
+    [availableOptions, showFreeTextOption, trimmedQuery, value],
+  );
+  const filteredItems = [
+    ...filtered.map((option) => option.code),
+    ...(showFreeTextOption ? [trimmedQuery] : []),
+  ];
 
   const picker = (
-    <Command
-      value=""
-      onValueChange={(next) => addValue(String(next))}
+    <Combobox
+      multiple
+      autoHighlight
+      items={items}
+      filteredItems={filteredItems}
+      value={value}
+      onValueChange={handleValueChange}
       inputValue={query}
       onInputValueChange={setQuery}
-      itemToStringLabel={(item) => String(item)}
     >
-      <div className="flex min-h-8.5 min-w-0 cursor-text flex-wrap items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 transition-colors duration-150 focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:focus-within:border-gold-400">
-        {value.map((prerequisite) => (
-          <span key={prerequisite} className={prereqChipClassName}>
-            {prerequisite}
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => removeValue(prerequisite)}
-              aria-label={`Remove ${prerequisite}`}
-              className="cursor-pointer leading-none text-navy-400 transition-colors duration-150 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-mist-100"
-            >
-              ×
-            </button>
-          </span>
-        ))}
-        <CommandInput
-          embedded
-          id={inputId}
-          aria-label={ariaLabel ?? label}
-          disabled={disabled}
-          onKeyDown={(event) => {
-            if (event.key === "Backspace" && query === "" && value.length > 0) {
-              removeValue(value[value.length - 1]);
-            }
-          }}
-        />
-      </div>
+      <ComboboxChips ref={anchor}>
+        <ComboboxValue>
+          {(values: string[]) => (
+            <>
+              {values.map((prerequisite) => (
+                <ComboboxChip key={prerequisite}>{prerequisite}</ComboboxChip>
+              ))}
+              <ComboboxChipsInput
+                id={inputId}
+                aria-label={ariaLabel ?? label}
+                disabled={disabled}
+                placeholder={values.length === 0 ? "Search or add prerequisite" : undefined}
+              />
+            </>
+          )}
+        </ComboboxValue>
+      </ComboboxChips>
 
-      <CommandList>
-        {filtered.length === 0 && !showFreeTextOption ? (
-          <CommandEmpty>No subjects found.</CommandEmpty>
-        ) : (
-          <>
-            {filtered.map((option) => (
-              <CommandItem key={option.id} value={option.code}>
-                {option.code} — {option.title}
-              </CommandItem>
-            ))}
-            {showFreeTextOption && (
-              <CommandItem value={trimmedQuery} className="text-blue-700 dark:text-blue-400">
-                Add “{trimmedQuery}”
-              </CommandItem>
-            )}
-          </>
-        )}
-      </CommandList>
-    </Command>
+      <ComboboxContent anchor={anchor}>
+        <ComboboxEmpty>No subjects found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item: string) => {
+            const option = options.find((candidate) => candidate.code === item);
+            return (
+              <ComboboxItem
+                key={option?.id ?? item}
+                value={item}
+                className={!option ? "text-blue-700 dark:text-blue-400" : ""}
+              >
+                {option ? `${option.code} — ${option.title}` : `Add “${item}”`}
+              </ComboboxItem>
+            );
+          }}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 
   if (!labelled) return picker;

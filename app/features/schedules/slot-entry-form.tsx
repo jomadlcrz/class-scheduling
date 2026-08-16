@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "~/components/ui/combobox";
 import { PlusIcon } from "~/components/ui/icons";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -309,26 +316,31 @@ export function SlotEntryForm({
             No faculty assigned to this subject
           </div>
         ) : (
-          <Command
+          <Combobox
+            items={faculties.map((faculty) => String(faculty.id))}
+            filteredItems={filteredFaculties.map((faculty) => String(faculty.id))}
+            autoHighlight
             value={facultyId}
             onValueChange={(v) => setFacultyId(v as string)}
             itemToStringLabel={(id) => faculties.find((f) => String(f.id) === id)?.fullName ?? ""}
             inputValue={facultyQuery}
             onInputValueChange={setFacultyQuery}
           >
-            <CommandInput id="slot-faculty" />
-            <CommandList>
-              {filteredFaculties.length === 0 ? (
-                <CommandEmpty>No faculty found.</CommandEmpty>
-              ) : (
-                filteredFaculties.map((f) => (
-                  <CommandItem key={f.id} value={String(f.id)}>
-                    {f.fullName}
-                  </CommandItem>
-                ))
-              )}
-            </CommandList>
-          </Command>
+            <ComboboxInput id="slot-faculty" placeholder="Search faculty" />
+            <ComboboxContent>
+              <ComboboxEmpty>No faculty found.</ComboboxEmpty>
+              <ComboboxList>
+                {(id: string) => {
+                  const faculty = faculties.find((candidate) => String(candidate.id) === id);
+                  return faculty ? (
+                    <ComboboxItem key={faculty.id} value={id}>
+                      {faculty.fullName}
+                    </ComboboxItem>
+                  ) : null;
+                }}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
         )}
       </FieldChrome>
 

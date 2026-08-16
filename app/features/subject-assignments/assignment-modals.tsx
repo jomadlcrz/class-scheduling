@@ -2,6 +2,14 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "~/components/ui/command";
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -42,69 +50,41 @@ export type AddInstructorModalProps = {
 };
 
 export function AddInstructorModal({ open, onClose, availableInstructors, onAdd }: AddInstructorModalProps) {
-  const [value, setValue] = useState("");
-
-  useEffect(() => {
-    if (!open) {
-      setValue("");
-    }
-  }, [open]);
-
-  const selectedInstructor = value
-    ? availableInstructors.find((inst) => `${inst.firstName}|${inst.lastName}` === value)
-    : undefined;
-
-  const handleAdd = () => {
-    if (!selectedInstructor) return;
-    onAdd(selectedInstructor);
-    setValue("");
+  const handleAdd = (instructor: DepartmentInstructor) => {
+    onAdd(instructor);
     onClose();
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Add Existing Instructor">
-      <div className="space-y-4 font-body text-sm">
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Select Instructor
-          </label>
-          {availableInstructors.length === 0 ? (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
-              No available instructors to add
-            </div>
-          ) : (
-            <Select
-              items={availableInstructors.map((inst) => ({
-                value: `${inst.firstName}|${inst.lastName}`,
-                label: formatInstructorName(inst),
-              }))}
-              value={value}
-              onValueChange={(v) => setValue(v ?? "")}
+    <CommandDialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose();
+      }}
+      title="Add Existing Instructor"
+      description="Search for an instructor to add to this teaching term."
+    >
+      <CommandInput placeholder="Search instructors..." autoFocus />
+      <CommandList>
+        <CommandEmpty>No available instructors found.</CommandEmpty>
+        <CommandGroup heading="Instructors">
+          {availableInstructors.map((instructor) => (
+            <CommandItem
+              key={instructor.instructorProfileId}
+              value={`${formatInstructorName(instructor)} ${instructor.department}`}
+              onSelect={() => handleAdd(instructor)}
             >
-              <SelectTrigger id="add-instructor">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {availableInstructors.map((inst) => (
-                  <SelectItem key={`${inst.firstName}|${inst.lastName}`} value={`${inst.firstName}|${inst.lastName}`}>
-                    <span className="font-semibold">{formatInstructorName(inst)}</span>
-                    <span className="ml-2 text-slate-500 dark:text-slate-400">{inst.department}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-        <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" block={false} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="button" block={false} disabled={!selectedInstructor} onClick={handleAdd}>
-            Add Instructor
-          </Button>
-        </div>
-      </div>
-    </Modal>
+              <span className="min-w-0 flex-1 truncate font-semibold">
+                {formatInstructorName(instructor)}
+              </span>
+              <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                {instructor.department}
+              </span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
   );
 }
 
