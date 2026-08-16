@@ -342,10 +342,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
     );
   }
 
-  const isSubmenuOpen = (label: string) => {
-    if (floating) return openSubmenus.includes(label);
-    return !collapsed && openSubmenus.includes(label);
-  };
+  const isSubmenuOpen = (label: string) => !collapsed && openSubmenus.includes(label);
 
   const handleHoverEnter = () => {
     setHoverExpanded(true);
@@ -461,15 +458,14 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                     </Tooltip>
                     <AnimatePresence initial={false}>
                       {isSubmenuOpen(item.label) && (
-                        <motion.div
+                        <motion.ul
                           key="submenu"
                           variants={submenuVariants}
                           initial="hidden"
                           animate="visible"
                           exit="exit"
-                          className="overflow-hidden"
+                          className="ml-[1.15rem] mt-0.5 flex flex-col gap-0.5 overflow-hidden border-l border-white/15 pl-2"
                         >
-                        <motion.ul className={`relative mt-0.5 flex w-full flex-col gap-0.5 ${floating ? "pl-8" : "pl-7"} pb-0.5 before:absolute before:bottom-0 before:top-0 before:w-px before:bg-white/15 ${floating ? "before:left-5.75" : "before:left-4.75"}`}>
                           {item.subItems.map((sub, i) => {
                             const active = isSubItemActive(location.pathname, sub);
                             return (
@@ -496,7 +492,6 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                             );
                           })}
                         </motion.ul>
-                        </motion.div>
                       )}
                     </AnimatePresence>
                   </motion.li>
