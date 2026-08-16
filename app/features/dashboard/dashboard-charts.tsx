@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { useTheme } from "~/hooks/use-theme";
 import { EASE_OUT } from "~/features/dashboard/dashboard-shared";
+import { Card } from "~/components/ui/card";
 import { StatCard } from "~/components/ui/stat-card";
 import type {
   CoverageByProgram,
@@ -148,14 +149,20 @@ export function ChartCard({
         hidden: { opacity: 0, y: 16 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE_OUT } },
       }}
-      whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className={`rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-navy-900 ${className}`}
+      whileHover={{
+        y: -3,
+        boxShadow: "0 8px 25px -8px rgba(0,0,0,0.12)",
+        transition: { duration: 0.2 },
+      }}
+      className={`h-full rounded-xl ${className}`}
     >
-      <p className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{title}</p>
-      {subtitle && (
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
-      )}
-      <div className="mt-3">{children}</div>
+      <Card className="h-full p-4">
+        <p className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{title}</p>
+        {subtitle && (
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
+        )}
+        <div className="mt-3">{children}</div>
+      </Card>
     </motion.div>
   );
 }
@@ -665,7 +672,7 @@ export function PermissionsDonut({ rbac }: { rbac: SuperAdminRbac }) {
         formatter={(v) => `${v} permission${v === 1 ? "" : "s"}`}
       />
       {rbac.permissions_ungranted.length > 0 && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+        <div className="rounded-xl border border-slate-300 bg-white p-3 dark:border-white/10 dark:bg-white/5">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Ungranted
           </p>

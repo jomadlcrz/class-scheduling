@@ -110,7 +110,7 @@ function PendingFirstLoginTable({ accounts }: { accounts: SuperAdminAccount[] })
     return (
       <motion.div
         variants={popCard}
-        className="flex h-44 items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500"
+        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
       >
         Every account has signed in at least once.
       </motion.div>
@@ -160,7 +160,7 @@ function StudentsWithoutLoginTable({ students }: { students: StudentProfileWitho
     return (
       <motion.div
         variants={popCard}
-        className="flex h-44 items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500"
+        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
       >
         Every student profile has a login account.
       </motion.div>

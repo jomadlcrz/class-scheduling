@@ -117,7 +117,7 @@ function AttentionTable({ items }: { items: AttentionItem[] }) {
     return (
       <motion.div
         variants={popCard}
-        className="flex h-64 items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500"
+        className="flex h-64 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
       >
         Nothing needs a decision right now.
       </motion.div>

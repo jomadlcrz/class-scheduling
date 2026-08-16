@@ -170,7 +170,7 @@ export function LoadingSkeleton() {
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900">
+          <div key={i} className="rounded-xl border border-slate-300 bg-white p-4 dark:border-white/10 dark:bg-white/5">
             <Skeleton className="mb-3 h-3 w-1/3" />
             <Skeleton className="mb-2 h-8 w-1/2" />
             <Skeleton className="mb-3 h-3 w-1/4" />

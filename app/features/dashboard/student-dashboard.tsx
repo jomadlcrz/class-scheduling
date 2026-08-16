@@ -126,7 +126,7 @@ function SubjectsTable({ subjects }: { subjects: StudentSubject[] }) {
     return (
       <motion.div
         variants={popCard}
-        className="flex h-44 items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500"
+        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
       >
         No subjects are on your timetable this term.
       </motion.div>
@@ -181,7 +181,7 @@ function ScheduleTable({ schedule }: { schedule: StudentScheduleEntry[] }) {
     return (
       <motion.div
         variants={popCard}
-        className="flex h-44 items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-navy-900 dark:text-slate-500"
+        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
       >
         No sessions are on your timetable this term yet.
       </motion.div>

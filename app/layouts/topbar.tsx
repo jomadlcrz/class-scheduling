@@ -232,7 +232,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         </div>
       )}
 
-      <div className="hidden min-w-0 flex-1 justify-center lg:flex">
+      <div className="hidden min-w-0 flex-1 justify-end lg:flex">
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
