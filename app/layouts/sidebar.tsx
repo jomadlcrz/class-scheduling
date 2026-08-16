@@ -27,7 +27,7 @@ import {
   UserCheckIcon,
   UserIcon,
   UsersIcon,
-  UsersRoundIcon,
+  UsersRoundIcon
 } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Tooltip } from "~/components/ui/tooltip";
@@ -191,8 +191,8 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
       { label: "Subject Assignments", to: "/subject-assignments", icon: <UserCheckIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Curriculum", to: "/dean/subjects", icon: <BookOpenIcon />, roles: ["dean"] },
-      { label: "Department Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
-      { label: "Department Students", to: "/enrollment/students", icon: <UsersIcon />, roles: ["dean"] },
+      { label: "Instructors", to: "/dean/instructors", icon: <UsersRoundIcon />, roles: ["dean"] },
+      { label: "Students", to: "/enrollment/students", icon: <UsersIcon />, roles: ["dean"] },
     ],
   },
   {

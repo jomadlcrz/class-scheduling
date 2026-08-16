@@ -3,6 +3,7 @@ import { termScopeQuery } from "~/lib/term-scope";
 import { facultyService } from "~/services/faculty.service";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
 import type { DeanAnalyticsResponse } from "~/types/dean-analytics";
+import type { OfferingCoverage } from "~/types/offering-coverage";
 import type {
   DepartmentSubjectProgram,
   FacultyLoadingEntry,
@@ -101,13 +102,13 @@ async function listDepartmentInstructors(): Promise<DepartmentInstructor[]> {
 }
 
 /**
- * GET /deans/subjects — the dean's own department curriculum tree.
+ * GET /deans/curricula — the dean's own department curriculum tree.
  * Uses the program name directly (no /programs call — deans may lack programs:read).
  */
 async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
   let data: DepartmentSubjectsResponse;
   try {
-    data = await apiGet<DepartmentSubjectsResponse>("/deans/subjects");
+    data = await apiGet<DepartmentSubjectsResponse>("/deans/curricula");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -361,6 +362,15 @@ async function getAnalytics(syId: number, semesterNumber: number): Promise<DeanA
   return apiGet<DeanAnalyticsResponse>(`/deans/analytics${termScopeQuery(syId, semesterNumber)}`);
 }
 
+/** GET /deans/offering-coverage — which offerable minor/GenEd subjects still
+ *  have no instructor for the term, grouped department → program. The backend
+ *  scopes it by role (registrar: college-wide; dean: own department). Raw
+ *  snake_case passthrough, like getAnalytics. Both sy_id and semester_number
+ *  are required by the endpoint (400 otherwise), so callers always pass them. */
+async function getOfferingCoverage(syId: number, semesterNumber: number): Promise<OfferingCoverage> {
+  return apiGet<OfferingCoverage>(`/deans/offering-coverage${termScopeQuery(syId, semesterNumber)}`);
+}
+
 export type SchedulingLoadPolicy = {
   syId: number;
   semesterNumber: number;
@@ -429,6 +439,7 @@ export const deanService = {
   deleteTeachingTerm,
   removeSubjectAssignment,
   getAnalytics,
+  getOfferingCoverage,
   getSchedulingLoadPolicy,
   updateSchedulingLoadPolicy,
 };
