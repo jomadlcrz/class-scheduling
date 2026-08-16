@@ -342,7 +342,10 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
     );
   }
 
-  const isSubmenuOpen = (label: string) => !collapsed && openSubmenus.includes(label);
+  const isSubmenuOpen = (label: string) => {
+    if (floating) return openSubmenus.includes(label);
+    return !collapsed && openSubmenus.includes(label);
+  };
 
   const handleHoverEnter = () => {
     setHoverExpanded(true);
@@ -458,14 +461,15 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                     </Tooltip>
                     <AnimatePresence initial={false}>
                       {isSubmenuOpen(item.label) && (
-                        <motion.ul
+                        <motion.div
                           key="submenu"
                           variants={submenuVariants}
                           initial="hidden"
                           animate="visible"
                           exit="exit"
-                          className="ml-[1.15rem] mt-0.5 flex flex-col gap-0.5 overflow-hidden border-l border-white/15 pl-2"
+                          className="overflow-hidden"
                         >
+                        <motion.ul className={`relative mt-0.5 flex w-full flex-col gap-0.5 ${floating ? "pl-8" : "pl-7"} pb-0.5 before:absolute before:bottom-0 before:top-0 before:w-px before:bg-white/15 ${floating ? "before:left-5.75" : "before:left-4.75"}`}>
                           {item.subItems.map((sub, i) => {
                             const active = isSubItemActive(location.pathname, sub);
                             return (
@@ -480,9 +484,9 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                                   to={sub.to}
                                   end
                                   onClick={onNavigate}
-                                  className={`relative block truncate rounded-md px-2 py-1 font-body text-[0.75rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                                  className={`relative block truncate rounded-md px-2 py-1 font-body text-[0.75rem] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/60 ${
                                     active
-                                      ? "bg-gwc-blue-bright font-extrabold text-mist-100 before:absolute before:left-[-0.85rem] before:top-1/2 before:size-1.5 before:-translate-y-1/2 before:rounded-full before:bg-white"
+                                      ? "bg-gwc-blue-bright font-extrabold text-mist-100"
                                       : "text-mist-100/85 hover:bg-gwc-blue-bright hover:text-mist-100"
                                   }`}
                                 >
@@ -492,6 +496,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                             );
                           })}
                         </motion.ul>
+                        </motion.div>
                       )}
                     </AnimatePresence>
                   </motion.li>
