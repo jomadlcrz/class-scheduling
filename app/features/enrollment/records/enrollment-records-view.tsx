@@ -6,6 +6,7 @@ import { inputClassName } from "~/components/ui/input";
 import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { TableSkeleton } from "~/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { EnrollmentDetailDrawer } from "~/features/enrollment/records/enrollment-detail-drawer";
 import { useYearLevels } from "~/hooks/use-year-levels";
@@ -41,7 +42,7 @@ function segmentClass(active: boolean): string {
 }
 
 type Props = {
-  students: EnrollmentStudent[];
+  students: EnrollmentStudent[] | null;
   facets: EnrollmentFacets | null;
   genders: string[];
   nameSuffixes: string[];
@@ -95,13 +96,13 @@ export function EnrollmentRecordsView({
 
   const rows = useMemo<DisplayRow[]>(
     () =>
-      students.flatMap((student) =>
+      students?.flatMap((student) =>
         student.enrollments.map((enrollment) => ({
           key: String(enrollment.enrollmentId),
           student,
           enrollment,
         })),
-      ),
+      ) ?? [],
     [students],
   );
 
@@ -215,7 +216,9 @@ export function EnrollmentRecordsView({
         </div>
       </div>
 
-      {rows.length === 0 ? (
+      {students === null ? (
+        <TableSkeleton columns={9} rows={8} />
+      ) : rows.length === 0 ? (
         <p className="px-2 py-10 text-center font-body text-sm text-slate-500 dark:text-slate-400">
           {search.trim() || typeFilter !== "all" || stateFilter !== "all" || programFilter !== "all" || yearFilter !== "all" || setFilter !== "all"
             ? "No students match your search and filters."

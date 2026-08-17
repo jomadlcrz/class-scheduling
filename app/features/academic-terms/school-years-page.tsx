@@ -101,17 +101,22 @@ export function SchoolYearsPage() {
       )}
 
       {currentCheck && !missingCurrentYear && (
-        <Card className="relative mt-6 overflow-hidden border-gold-400/40 bg-navy-900 px-5 py-5 shadow-lg shadow-navy-900/10 sm:px-6 dark:border-gold-400/30 dark:bg-navy-900">
+        <Card className="animated-brand-border mt-6 overflow-hidden border-blue-200! bg-linear-to-br from-blue-50 via-white to-gold-300/15 px-5 py-5 shadow-lg shadow-navy-900/10 sm:px-6 dark:border-blue-400/20! dark:bg-navy-900! dark:bg-none">
+          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-gwc-blue via-blue-500 to-gold-400" />
           <div
             aria-hidden="true"
-            className="absolute -right-16 -top-20 size-48 rounded-full bg-gold-400/10 blur-3xl"
+            className="absolute -left-20 -bottom-24 size-48 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-400/5"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute -right-16 -top-20 size-48 rounded-full bg-gold-400/15 blur-3xl dark:bg-gold-400/10"
           />
           <div className="relative flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-gold-300">
+              <p className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-gwc-blue dark:text-blue-300">
                 Current School Year
               </p>
-              <p className="mt-1 font-display text-4xl tracking-wide text-white">
+              <p className="mt-1 font-display text-4xl tracking-wide text-navy-800 dark:text-white">
                 {currentCheck.schoolYear}
               </p>
             </div>

@@ -4,7 +4,6 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/components/ui/icons";
-import { TableSkeleton } from "~/components/ui/skeleton";
 import { TableLoadingSpinner } from "~/components/ui/spinner";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { EnrollmentRecordsView } from "~/features/enrollment/records/enrollment-records-view";
@@ -128,8 +127,6 @@ function EnrollmentStudentsPage() {
           <EmptyState title="Unable to load enrollments">{loadError}</EmptyState>
         ) : changingPage ? (
           <TableLoadingSpinner label="Loading enrollment page" />
-        ) : students === null ? (
-          <TableSkeleton columns={9} rows={8} />
         ) : (
           <EnrollmentRecordsView
             students={students}

@@ -73,6 +73,14 @@ const ROLE_LABELS: Record<Role, string> = {
   student: "Student",
 };
 
+const ROLE_WORKSPACE_CAPTIONS: Record<Role, string> = {
+  admin: "System administration",
+  registrar: "Academic operations",
+  dean: "Academic oversight",
+  faculty: "Instructor portal",
+  student: "Student portal",
+};
+
 const CREATE_ACTIONS: TopbarAction[] = [
   { label: "New Administrator", to: "/administrators/new", roles: ["admin"] },
   { label: "New Faculty Account", to: "/faculty/new", roles: ["admin"] },
@@ -369,13 +377,24 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       )}
 
       {user && !isSettingsRoute && (
-        <div className="hidden shrink-0 items-center gap-2 font-body lg:flex">
-          <span className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-            Role
+        <div
+          aria-label={`${ROLE_LABELS[user.role]} workspace`}
+          className="hidden h-8 shrink-0 items-center gap-3 lg:flex"
+        >
+          <span aria-hidden="true" className="relative flex h-6 w-2 items-center justify-center">
+            <span className="absolute h-full w-px bg-linear-to-b from-transparent via-gold-500/70 to-transparent dark:via-gold-300/70" />
+            <span className="relative size-1.5 rotate-45 rounded-[1px] bg-gold-500 ring-2 ring-white dark:bg-gold-300 dark:ring-surface" />
           </span>
-          <span className="text-slate-300 dark:text-white/15">/</span>
-          <span className="text-sm font-semibold text-navy-700 dark:text-mist-100">
-            {ROLE_LABELS[user.role]}
+          <span className="flex min-w-0 flex-col leading-none">
+            <span className="flex items-center gap-2">
+              <span className="truncate font-display text-base tracking-[0.08em] text-navy-700 dark:text-mist-100">
+                {ROLE_LABELS[user.role]}
+              </span>
+              <span aria-hidden="true" className="h-px w-6 bg-linear-to-r from-gold-400/80 to-transparent dark:from-gold-300/70" />
+            </span>
+            <span className="mt-0.5 truncate font-body text-[8px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+              {ROLE_WORKSPACE_CAPTIONS[user.role]}
+            </span>
           </span>
         </div>
       )}

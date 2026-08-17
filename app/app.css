@@ -172,6 +172,53 @@ input[list]::-webkit-list-button {
   will-change: transform;
 }
 
+/* A restrained highlight that travels around featured card borders. */
+@keyframes brand-border-shimmer {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -180% 0;
+  }
+}
+
+@utility animated-brand-border {
+  position: relative;
+}
+
+.animated-brand-border::after {
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    transparent 18%,
+    color-mix(in srgb, var(--color-gwc-blue-bright) 85%, white) 40%,
+    color-mix(in srgb, var(--color-gold-400) 90%, white) 54%,
+    transparent 76%
+  );
+  background-size: 260% 100%;
+  content: "";
+  pointer-events: none;
+  animation: brand-border-shimmer 4s ease-in-out infinite;
+  -webkit-mask:
+    linear-gradient(white 0 0) content-box,
+    linear-gradient(white 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.dark .animated-brand-border::after {
+  background-image: linear-gradient(
+    110deg,
+    transparent 18%,
+    color-mix(in srgb, var(--color-gwc-blue-soft) 75%, white) 40%,
+    color-mix(in srgb, var(--color-gold-300) 80%, white) 54%,
+    transparent 76%
+  );
+}
+
 /* Loader dots — three dots ripple up one after another (assigning/processing states). */
 @keyframes loader-bounce {
   0%,
@@ -195,6 +242,10 @@ input[list]::-webkit-list-button {
   }
   .animate-progress {
     animation: none;
+  }
+  .animated-brand-border::after {
+    animation: none;
+    background-position: center;
   }
   .animate-loader-dot {
     animation: none;
