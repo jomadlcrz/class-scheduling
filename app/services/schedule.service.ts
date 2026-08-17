@@ -33,6 +33,7 @@ type ViewScheduleResponse = {
   desc_title: string;
   units: number;
   set_name: string;
+  program_name?: string | null;
   day_of_week: string;
   mode: string;
   class_time: string;
@@ -82,6 +83,7 @@ async function view(): Promise<Schedule[]> {
       setId: r.set_name ?? "",
       setCode: r.set_name ?? "",
       program: programAbbrev ?? r.dept_abbrev ?? "",
+      programName: r.program_name ?? undefined,
       departmentCode: r.dept_abbrev ?? "",
       yearLevel: ([1, 2, 3, 4].includes(yearLevel) ? yearLevel : 1) as YearLevel,
       facultyId: String(r.instructor_id),

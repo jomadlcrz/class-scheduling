@@ -35,6 +35,7 @@ export type Schedule = {
   setId: string;
   setCode: string;
   program: string;
+  programName?: string;
   departmentCode: string;
   yearLevel: YearLevel;
   facultyId: string;

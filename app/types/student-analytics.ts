@@ -49,6 +49,7 @@ export type StudentAnalytics = {
     student_profile_id: number;
     enrolled_status: string;
     program_abbrev: string;
+    program_name: string | null;
     set_name: string;
     year_level: number;
     school_year: string;
