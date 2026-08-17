@@ -6,7 +6,9 @@ import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { FieldChrome, inputClassName } from "~/components/ui/input";
+import { Card } from "~/components/ui/card";
+import { ClockIcon, FlaskConicalIcon } from "~/components/ui/icons";
+import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -52,6 +54,7 @@ function MajorSchedulesPage() {
   const [decisionTarget, setDecisionTarget] = useState<DecisionTarget | null>(null);
   const [conflicts, setConflicts] = useState<MajorScheduleConflict[] | null>(null);
   const [floatingTarget, setFloatingTarget] = useState<MajorSchedule | null>(null);
+  const [floatingInstructorId, setFloatingInstructorId] = useState(0);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -75,6 +78,7 @@ function MajorSchedulesPage() {
   );
   const { data: labSlots } = useCachedData("major-schedule-lab-slots", () => authorityWorkflowService.listMajorLabTimeSlots());
   const { data: instructors } = useCachedData("major-schedule-instructors", () => deanService.listDepartmentInstructors());
+  const regularSemesters = semesters.filter((row) => row.semesterNumber !== 3);
 
   async function withRefresh(action: () => Promise<{ message?: string } | string>) {
     setSaving(true);
@@ -103,12 +107,22 @@ function MajorSchedulesPage() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader title="Major Schedules" actions={user?.role === "dean" ? <Button type="button" block={false} onClick={() => { setEditTarget(null); setMeetingOpen(true); setFormError(null); }}>New Major Meeting</Button> : undefined} />
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 sm:max-w-xl">
-        <select aria-label="School year" value={syId || ""} onChange={(event) => setSyId(Number(event.target.value))} className={inputClassName}>{schoolYears.map((year) => <option key={year.id} value={year.id}>{year.schoolYear}</option>)}</select>
-        <select aria-label="Semester" value={semesterNumber || ""} onChange={(event) => setSemesterNumber(Number(event.target.value))} className={inputClassName}>{semesters.filter((row) => row.semesterNumber !== 3).map((semester) => <option key={semester.semesterNumber} value={semester.semesterNumber}>{semesterLabel(semester.semesterNumber)}</option>)}</select>
+      <div className="mt-4 grid max-w-xl gap-3 sm:grid-cols-2">
+        <FieldChrome id="major-school-year" label="School year">
+          <Select items={schoolYears.map((year) => ({ value: String(year.id), label: year.schoolYear }))} value={syId ? String(syId) : ""} onValueChange={(value) => setSyId(Number(value))}>
+            <SelectTrigger id="major-school-year"><SelectValue placeholder="Select school year" /></SelectTrigger>
+            <SelectContent>{schoolYears.map((year) => <SelectItem key={year.id} value={String(year.id)}>{year.schoolYear}</SelectItem>)}</SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="major-semester" label="Semester">
+          <Select items={regularSemesters.map((semester) => ({ value: String(semester.semesterNumber), label: semesterLabel(semester.semesterNumber) }))} value={semesterNumber ? String(semesterNumber) : ""} onValueChange={(value) => setSemesterNumber(Number(value))}>
+            <SelectTrigger id="major-semester"><SelectValue placeholder="Select semester" /></SelectTrigger>
+            <SelectContent>{regularSemesters.map((semester) => <SelectItem key={semester.semesterNumber} value={String(semester.semesterNumber)}>{semesterLabel(semester.semesterNumber)}</SelectItem>)}</SelectContent>
+          </Select>
+        </FieldChrome>
       </div>
       <div className="mt-3"><FormError message={formError} /></div>
-      {labSlots?.labTimeSlots.length ? <p className="mt-3 font-body text-xs text-slate-500 dark:text-slate-400">Major laboratory slots: {labSlots.labTimeSlots.map((slot) => `${formatTime12h(slot.startTime)}–${formatTime12h(slot.endTime)}`).join(", ")}</p> : null}
+      {labSlots?.labTimeSlots.length ? <MajorLaboratorySlotsCard slots={labSlots.labTimeSlots} requiredMeetingHours={labSlots.requiredMeetingHours} /> : null}
 
       <div className="mt-6 space-y-5">
         {error && submissions === null ? <EmptyState title="Couldn't load major schedules">{error}</EmptyState> : submissions === null ? <Skeleton className="h-72 rounded-xl" /> : submissions.length === 0 ? <EmptyState title="No major schedules">No major schedule submission exists for this term.</EmptyState> : submissions.map((submission) => (
@@ -124,7 +138,7 @@ function MajorSchedulesPage() {
             </div>
             <Table>
               <TableHead><TableHeader>Subject</TableHeader><TableHeader>Section</TableHeader><TableHeader>Schedule</TableHeader><TableHeader>Instructor</TableHeader><TableHeader>Status</TableHeader><TableHeader><span className="sr-only">Actions</span></TableHeader></TableHead>
-              <TableBody>{submission.schedules.map((schedule) => <TableRow key={schedule.id}><TableCell><span className="font-semibold text-navy-700 dark:text-mist-100">{schedule.subjectCode}</span><span className="block text-xs text-slate-400">{schedule.subjectTitle}</span></TableCell><TableCell>{schedule.setName}</TableCell><TableCell>{schedule.dayOfWeek} · {schedule.startTime}–{schedule.endTime}</TableCell><TableCell>{schedule.instructorDisplay}</TableCell><TableCell><Badge tone={schedule.floating ? "gold" : "emerald"}>{schedule.floating ? "Floating" : schedule.meetingKind}</Badge></TableCell><TableCell><div className="flex justify-end gap-2">{((user?.role === "dean" && ["draft", "reopened"].includes(submission.status)) || (user?.role === "registrar" && submission.status === "submitted")) && <Button type="button" variant="outline" block={false} onClick={() => { setEditTarget(schedule); setMeetingOpen(true); setFormError(null); }}>Edit</Button>}{user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" variant="danger" block={false} onClick={() => setDeleteTarget(schedule)}>Delete</Button>}{user?.role === "registrar" && schedule.floating && <Button type="button" block={false} onClick={() => { setFloatingTarget(schedule); setFormError(null); }}>Assign Instructor</Button>}</div></TableCell></TableRow>)}</TableBody>
+              <TableBody>{submission.schedules.map((schedule) => <TableRow key={schedule.id}><TableCell><span className="font-semibold text-navy-700 dark:text-mist-100">{schedule.subjectCode}</span><span className="block text-xs text-slate-400">{schedule.subjectTitle}</span></TableCell><TableCell>{schedule.setName}</TableCell><TableCell>{schedule.dayOfWeek} · {schedule.startTime}–{schedule.endTime}</TableCell><TableCell>{schedule.instructorDisplay}</TableCell><TableCell><Badge tone={schedule.floating ? "gold" : "emerald"}>{schedule.floating ? "Floating" : schedule.meetingKind}</Badge></TableCell><TableCell><div className="flex justify-end gap-2">{((user?.role === "dean" && ["draft", "reopened"].includes(submission.status)) || (user?.role === "registrar" && submission.status === "submitted")) && <Button type="button" variant="outline" block={false} onClick={() => { setEditTarget(schedule); setMeetingOpen(true); setFormError(null); }}>Edit</Button>}{user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" variant="danger" block={false} onClick={() => setDeleteTarget(schedule)}>Delete</Button>}{user?.role === "registrar" && schedule.floating && <Button type="button" block={false} onClick={() => { setFloatingTarget(schedule); setFloatingInstructorId(0); setFormError(null); }}>Assign Instructor</Button>}</div></TableCell></TableRow>)}</TableBody>
             </Table>
           </section>
         ))}
@@ -137,8 +151,46 @@ function MajorSchedulesPage() {
       <Modal open={editRequestTarget !== null} onClose={() => setEditRequestTarget(null)} title="Request Schedule Edit"><form onSubmit={async (event) => { event.preventDefault(); const reason = String(new FormData(event.currentTarget).get("reason") ?? ""); const ok = await withRefresh(() => authorityWorkflowService.requestMajorScheduleEdit(editRequestTarget!.id, reason)); if (ok) setEditRequestTarget(null); }} className="space-y-4"><FormError message={formError} /><Textarea id="reason" name="reason" label="Reason" required minLength={10} /><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setEditRequestTarget(null)}>Cancel</Button><Button type="submit" block={false} isLoading={saving} loadingLabel="Sending…">Send Request</Button></ModalActions></form></Modal>
       <Modal open={decisionTarget !== null} onClose={() => setDecisionTarget(null)} title={`${decisionTarget?.approve ? "Approve" : "Reject"} Edit Request`}><form onSubmit={async (event) => { event.preventDefault(); const note = String(new FormData(event.currentTarget).get("note") ?? ""); const ok = await withRefresh(() => authorityWorkflowService.decideMajorScheduleEdit(decisionTarget!.request.id, decisionTarget!.approve, note || undefined)); if (ok) setDecisionTarget(null); }} className="space-y-4"><FormError message={formError} /><Textarea id="note" name="note" label="Decision note" /><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setDecisionTarget(null)}>Cancel</Button><Button type="submit" variant={decisionTarget?.approve ? "primary" : "danger"} block={false} isLoading={saving} loadingLabel="Saving…">Confirm</Button></ModalActions></form></Modal>
       <Modal open={conflicts !== null} onClose={() => setConflicts(null)} title="Submission Conflicts" wide>{conflicts?.length === 0 ? <EmptyState title="No conflicts">This submission is ready to finalize.</EmptyState> : <div className="space-y-2">{conflicts?.map((conflict) => <div key={`${conflict.scheduleId}:${conflict.conflictingScheduleId}`} className="border-b border-slate-200 pb-2 text-sm dark:border-white/10"><strong>{conflict.schedule.subjectCode}</strong> conflicts with <strong>{conflict.conflictingSchedule.subjectCode}</strong> ({conflict.conflictTypes.join(", ")}).</div>)}</div>}</Modal>
-      <Modal open={floatingTarget !== null} onClose={() => setFloatingTarget(null)} title="Assign Floating Instructor"><form onSubmit={async (event) => { event.preventDefault(); const instructorId = Number(new FormData(event.currentTarget).get("instructorId")); const ok = await withRefresh(() => authorityWorkflowService.assignFloatingInstructor(floatingTarget!.id, instructorId)); if (ok) setFloatingTarget(null); }} className="space-y-4"><FormError message={formError} /><select name="instructorId" required defaultValue="" className={inputClassName}><option value="" disabled>Select instructor</option>{(instructors ?? []).map((instructor) => <option key={instructor.instructorProfileId} value={instructor.instructorProfileId}>{instructor.firstName} {instructor.lastName}</option>)}</select><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setFloatingTarget(null)}>Cancel</Button><Button type="submit" block={false} isLoading={saving} loadingLabel="Assigning…">Assign Instructor</Button></ModalActions></form></Modal>
+      <Modal open={floatingTarget !== null} onClose={() => setFloatingTarget(null)} title="Assign Floating Instructor"><form onSubmit={async (event) => { event.preventDefault(); if (!floatingInstructorId) { setFormError("Select an instructor."); return; } const ok = await withRefresh(() => authorityWorkflowService.assignFloatingInstructor(floatingTarget!.id, floatingInstructorId)); if (ok) setFloatingTarget(null); }} className="space-y-4" noValidate><FormError message={formError} /><FieldChrome id="floating-instructor" label="Instructor" required><Select items={(instructors ?? []).map((instructor) => ({ value: String(instructor.instructorProfileId), label: `${instructor.firstName} ${instructor.lastName}` }))} value={floatingInstructorId ? String(floatingInstructorId) : ""} onValueChange={(value) => setFloatingInstructorId(Number(value))}><SelectTrigger id="floating-instructor"><SelectValue placeholder="Select instructor" /></SelectTrigger><SelectContent>{(instructors ?? []).map((instructor) => <SelectItem key={instructor.instructorProfileId} value={String(instructor.instructorProfileId)}>{instructor.firstName} {instructor.lastName}</SelectItem>)}</SelectContent></Select></FieldChrome><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setFloatingTarget(null)}>Cancel</Button><Button type="submit" block={false} isLoading={saving} loadingLabel="Assigning…" disabled={!floatingInstructorId}>Assign Instructor</Button></ModalActions></form></Modal>
     </div>
+  );
+}
+
+function MajorLaboratorySlotsCard({ slots, requiredMeetingHours }: { slots: { startTime: string; endTime: string }[]; requiredMeetingHours: number | null }) {
+  return (
+    <Card className="relative mt-5 overflow-hidden border-blue-200 shadow-sm shadow-navy-900/5 dark:border-blue-400/15 dark:bg-surface-raised">
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-gwc-blue via-blue-500 to-gold-400" />
+      <div className="p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-blue-50 text-gwc-blue ring-1 ring-blue-100 dark:bg-blue-400/10 dark:text-blue-300 dark:ring-blue-400/20">
+              <FlaskConicalIcon />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">Major Laboratory Schedule</h2>
+              <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                Standard laboratory windows{requiredMeetingHours !== null ? ` · ${requiredMeetingHours} hours per meeting` : ""}
+              </p>
+            </div>
+          </div>
+          <Badge tone="navy">{slots.length} time slots</Badge>
+        </div>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {slots.map((slot, index) => (
+            <div key={`${slot.startTime}-${slot.endTime}`} className="group rounded-lg border border-slate-200 bg-slate-50/80 px-3.5 py-3 transition-colors hover:border-blue-200 hover:bg-blue-50/70 dark:border-white/10 dark:bg-white/3 dark:hover:border-blue-400/20 dark:hover:bg-blue-400/5">
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <span className="font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Slot {String(index + 1).padStart(2, "0")}</span>
+                <span className="text-blue-500 dark:text-blue-300"><ClockIcon size={14} /></span>
+              </div>
+              <p className="whitespace-nowrap font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                {formatTime12h(slot.startTime)} <span className="font-normal text-slate-400">–</span> {formatTime12h(slot.endTime)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
   );
 }
 

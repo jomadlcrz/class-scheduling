@@ -3,6 +3,7 @@ import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Card } from "~/components/ui/card";
+import { CalendarClockIcon, FlaskConicalIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { LabAnalysisSkeleton } from "~/components/ui/skeleton";
@@ -77,8 +78,32 @@ function LabAnalysisPage() {
 
       />
 
+      <Card className="relative mt-5 overflow-hidden border-blue-200 bg-linear-to-br from-blue-50 via-white to-gold-50/60 shadow-sm shadow-navy-900/5 dark:border-blue-400/15 dark:from-blue-400/10 dark:via-surface-raised dark:to-gold-400/5">
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-gwc-blue via-blue-500 to-gold-400" />
+        <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gwc-blue text-mist-100 shadow-lg shadow-gwc-blue/20">
+              <FlaskConicalIcon />
+            </div>
+            <div className="min-w-0">
+              <p className="font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-gwc-blue dark:text-blue-300">Capacity intelligence</p>
+              <h2 className="mt-1 font-display text-xl tracking-wide text-navy-800 dark:text-mist-100 sm:text-2xl">Know where every lab window goes.</h2>
+              <p className="mt-1.5 max-w-2xl font-body text-sm leading-relaxed text-slate-600 dark:text-slate-300">Review room capacity, program access, and booked laboratory sessions before approving the next schedule.</p>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 rounded-xl border border-white/80 bg-white/70 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/5">
+            <CalendarClockIcon />
+            <div>
+              <p className="font-body text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Active lens</p>
+              <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">{schoolYear || "Select a term"} · {termReady ? semesterLabel(semester) : "—"}</p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       <div className="mt-4 flex flex-col gap-4">
-        <Card className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-3">
+        <Card className="relative grid grid-cols-1 gap-4 overflow-hidden border-slate-200 p-4 sm:grid-cols-3 sm:p-5 dark:border-white/10">
+          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-blue-300 to-transparent dark:via-blue-400/40" />
           <FieldChrome id="la-school-year" label="School Year">
             <Select
               items={
