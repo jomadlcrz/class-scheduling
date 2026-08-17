@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { Badge } from "~/components/ui/badge";
 import {
   Table,
@@ -277,15 +278,7 @@ export function StudentDashboard() {
             <LoadingSkeleton />
           </motion.div>
         ) : error ? (
-          <motion.div
-            key="error"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
-          >
-            {error}
-          </motion.div>
+          <DataLoadAlert title="Dashboard unavailable" message={error} permission={error.toLowerCase().includes("permission")} />
         ) : data ? (
           <motion.div
             key="data"

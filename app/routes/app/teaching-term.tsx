@@ -21,6 +21,8 @@ import {
   BookOpenIcon,
 } from "~/components/ui/icons";
 import { Badge } from "~/components/ui/badge";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { ProfileAvatar } from "~/components/ui/profile-avatar";
@@ -324,7 +326,7 @@ function TeachingTermPage() {
   const { semesterLabel } = useSemesters();
   const teachingTermId = Number(id);
 
-  const { data: detail, error } = useCachedData(
+  const { data: detail, error, reload } = useCachedData(
     `teaching-term:${teachingTermId || "none"}`,
     () => deanService.getTeachingTermDetail(teachingTermId),
     { enabled: !!teachingTermId },
@@ -339,7 +341,7 @@ function TeachingTermPage() {
     return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
         <PageHeader
-          title="Teaching Term Not Found"
+          title={error ? "Unable to load teaching term" : "Teaching Term Not Found"}
 
           actions={
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/subject-offering")}>
@@ -347,6 +349,9 @@ function TeachingTermPage() {
             </Button>
           }
         />
+        <div className="mt-6">
+          {error ? <DataLoadAlert title="Teaching term unavailable" message={error} onRetry={reload} permission={error.toLowerCase().includes("permission")} /> : <EmptyState title="Teaching term not found">The requested teaching term may have been removed or is no longer available.</EmptyState>}
+        </div>
       </div>
     );
   }

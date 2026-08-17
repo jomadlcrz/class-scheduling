@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ButtonLink } from "~/components/ui/button";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { AlertIcon, CheckIcon } from "~/components/ui/icons";
 
 const tones = {
@@ -28,6 +29,16 @@ type ResultStateProps = {
 /** Centered terminal state for a flow: icon-in-circle, title, body, optional CTA. */
 export function ResultState({ tone, title, children, action }: ResultStateProps) {
   const t = tones[tone];
+
+  if (tone === "error") {
+    return (
+      <DataLoadAlert
+        title={title}
+        message={children}
+        action={action ? <ButtonLink href={action.href}>{action.label}</ButtonLink> : undefined}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col items-center text-center">

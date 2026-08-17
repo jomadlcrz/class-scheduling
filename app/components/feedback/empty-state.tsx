@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 
 type EmptyStateProps = {
   title: string;
@@ -9,6 +10,10 @@ type EmptyStateProps = {
 
 /** Centered placeholder for empty lists / no search results. */
 export function EmptyState({ title, children, action }: EmptyStateProps) {
+  if (/^(couldn.t|unable to) load/i.test(title)) {
+    return <DataLoadAlert title={title} message={children ?? "Something went wrong while loading this data."} action={action} />;
+  }
+
   return (
     <div className="flex flex-col items-center px-4 py-12 text-center">
       <p className="font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">{title}</p>

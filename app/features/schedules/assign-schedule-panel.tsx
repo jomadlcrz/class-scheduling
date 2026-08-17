@@ -1,7 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
-import { Alert, AlertDescription } from "~/components/ui/alert";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { Badge } from "~/components/ui/badge";
-import { AlertTriangleIcon } from "~/components/ui/icons";
 import type { StudentPendingSchedule } from "~/services/irregular-class.service";
 
 type AssignSchedulePanelProps = {
@@ -118,12 +117,7 @@ export const AssignSchedulePanel = forwardRef<AssignSchedulePanelHandle, AssignS
 
   return (
     <div className="flex flex-col gap-4">
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangleIcon />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {error && <DataLoadAlert title="Assignment options unavailable" message={error} permission={error.toLowerCase().includes("permission")} />}
 
       {anyRecommended && (
         <button

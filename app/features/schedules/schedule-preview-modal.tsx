@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FormError } from "~/components/forms/form-error";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import {
@@ -65,7 +65,7 @@ export function SchedulePreviewModal({ open, releaseId, fetchPreview, onClose }:
       xl
     >
       <div className="flex flex-col gap-4">
-        <FormError message={error} />
+        {error && <DataLoadAlert title="Schedule preview unavailable" message={error} permission={error.toLowerCase().includes("permission")} />}
 
         {loading ? (
           <div role="status" aria-label="Loading schedule preview" className="grid place-items-center py-12">

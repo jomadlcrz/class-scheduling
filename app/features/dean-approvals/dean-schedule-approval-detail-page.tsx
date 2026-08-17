@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router";
 import { Button } from "~/components/ui/button";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ArrowLeftIcon, CheckIcon, CloseIcon } from "~/components/ui/icons";
 import { Spinner } from "~/components/ui/spinner";
@@ -88,7 +89,7 @@ export function DeanScheduleApprovalDetailPage() {
     return (
       <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <PageHeader
-          title="Schedule Not Found"
+          title={error ? "Unable to load schedule" : "Schedule Not Found"}
 
           actions={
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/schedule-approvals")}>
@@ -96,6 +97,9 @@ export function DeanScheduleApprovalDetailPage() {
             </Button>
           }
         />
+        <div className="mt-6">
+          {error ? <DataLoadAlert title="Schedule unavailable" message={error} permission={error.toLowerCase().includes("permission")} /> : <p className="font-body text-sm text-slate-500 dark:text-slate-400">The requested schedule could not be found.</p>}
+        </div>
       </div>
     );
   }

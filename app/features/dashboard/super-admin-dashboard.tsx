@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
-import { FormError } from "~/components/forms/form-error";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import {
   Table,
   TableBody,
@@ -249,14 +249,7 @@ export function SuperAdminDashboard() {
             <LoadingSkeleton />
           </motion.div>
         ) : error ? (
-          <motion.div
-            key="error"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <FormError message={error} />
-          </motion.div>
+          <DataLoadAlert title="Dashboard unavailable" message={error} permission={error.toLowerCase().includes("permission")} />
         ) : analytics ? (
           <motion.div
             key="data"

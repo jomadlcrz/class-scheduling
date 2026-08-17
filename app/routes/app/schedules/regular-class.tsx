@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { AlertIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
@@ -613,12 +614,7 @@ function RegularClassPage() {
               <AlertDescription>{actionError}</AlertDescription>
             </Alert>
           )}
-          {loadError && (
-            <Alert key="load-error" variant="destructive" className="mb-4">
-              <AlertIcon />
-              <AlertDescription>{loadError}</AlertDescription>
-            </Alert>
-          )}
+          {loadError && <DataLoadAlert className="mb-4" title="Schedules unavailable" message={loadError} permission={loadError.toLowerCase().includes("permission")} />}
         </AnimatePresence>
 
         {isLoading ? (
