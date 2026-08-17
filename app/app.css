@@ -194,14 +194,15 @@ input[list]::-webkit-list-button {
   background: linear-gradient(
     110deg,
     transparent 18%,
-    color-mix(in srgb, var(--color-gwc-blue-bright) 85%, white) 40%,
-    color-mix(in srgb, var(--color-gold-400) 90%, white) 54%,
+    color-mix(in srgb, var(--color-gwc-blue-bright) 72%, white) 40%,
+    color-mix(in srgb, var(--color-gold-400) 78%, white) 54%,
     transparent 76%
   );
   background-size: 260% 100%;
   content: "";
   pointer-events: none;
-  animation: brand-border-shimmer 4s ease-in-out infinite;
+  animation: brand-border-shimmer 6s linear infinite;
+  will-change: background-position;
   -webkit-mask:
     linear-gradient(white 0 0) content-box,
     linear-gradient(white 0 0);
@@ -213,8 +214,8 @@ input[list]::-webkit-list-button {
   background-image: linear-gradient(
     110deg,
     transparent 18%,
-    color-mix(in srgb, var(--color-gwc-blue-soft) 75%, white) 40%,
-    color-mix(in srgb, var(--color-gold-300) 80%, white) 54%,
+    color-mix(in srgb, var(--color-gwc-blue-soft) 62%, white) 40%,
+    color-mix(in srgb, var(--color-gold-300) 70%, white) 54%,
     transparent 76%
   );
 }
