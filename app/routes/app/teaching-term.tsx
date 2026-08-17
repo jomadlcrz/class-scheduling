@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { useSemesters } from "~/hooks/use-semesters";
 import { deanService } from "~/services/dean.service";
 import type {
   TeachingTermDetail,
@@ -210,14 +211,16 @@ function ordinalSuffix(n: number): string {
 
 function SubjectAssignmentRow({
   assignment,
+  semesterLabel,
 }: {
   assignment: TeachingTermDetailSubjectAssignment;
+  semesterLabel: (semesterNumber: number) => string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const sessions = assignment.is_scheduled ? assignment.scheduled_sessions : [];
   const hasSessions = sessions.length > 0;
   const yr = assignment.year_level ? `${assignment.year_level}${ordinalSuffix(assignment.year_level)} Yr` : null;
-  const sem = assignment.semester_category ? `${assignment.semester_category}${ordinalSuffix(assignment.semester_category)} Sem` : null;
+  const sem = assignment.semester_number == null ? null : semesterLabel(assignment.semester_number);
 
   return (
     <>
@@ -318,6 +321,7 @@ function UnassignedSubjectsWarning({ subjects }: { subjects: TeachingTermDetailU
 function TeachingTermPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { semesterLabel } = useSemesters();
   const teachingTermId = Number(id);
 
   const { data: detail, error } = useCachedData(
@@ -349,6 +353,7 @@ function TeachingTermPage() {
 
   const { instructor, term, hours, totals, daily_loads, subject_assignments, unassigned_scheduled_subjects } = detail;
   const meta = utilizationMeta(hours.utilization_rate);
+  const termSemester = term.semester_number == null ? null : semesterLabel(term.semester_number);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
@@ -377,7 +382,12 @@ function TeachingTermPage() {
             </h1>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-body text-sm text-slate-500 dark:text-slate-400">
               {instructor.department && <span>{instructor.department}</span>}
-              {term.school_year && <><span className="text-slate-300 dark:text-slate-600">·</span><span>{term.school_year} — {term.semester}</span></>}
+              {term.school_year && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-600">·</span>
+                  <span>{term.school_year}{termSemester ? ` — ${termSemester}` : ""}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -513,6 +523,7 @@ function TeachingTermPage() {
                   <SubjectAssignmentRow
                     key={a.subject_assignment_id}
                     assignment={a}
+                    semesterLabel={semesterLabel}
                   />
                 ))}
               </AnimatePresence>

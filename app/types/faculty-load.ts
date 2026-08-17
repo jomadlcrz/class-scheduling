@@ -158,7 +158,7 @@ export type TeachingTermDetailSubjectAssignment = {
   program_abbrev: string | null;
   program_name: string | null;
   year_level: number | null;
-  semester_category: number | null;
+  semester_number: number | null;
   is_shared: boolean;
   programs_covered: {
     curriculum_detail_id: number;
@@ -166,7 +166,7 @@ export type TeachingTermDetailSubjectAssignment = {
     program_abbrev: string | null;
     program_name: string | null;
     year_level: number | null;
-    semester_category: number | null;
+    semester_number: number | null;
   }[];
   also_carried_by: {
     curriculum_detail_id: number;
@@ -174,7 +174,7 @@ export type TeachingTermDetailSubjectAssignment = {
     program_abbrev: string | null;
     program_name: string | null;
     year_level: number | null;
-    semester_category: number | null;
+    semester_number: number | null;
   }[];
   scheduled_sessions: TeachingTermDetailScheduledSession[];
   scheduled_hours: number;
@@ -222,7 +222,6 @@ export type TeachingTermDetail = {
   term: {
     sy_id: number;
     school_year: string | null;
-    semester: string | null;
     semester_number: number | null;
   };
   hours: {
