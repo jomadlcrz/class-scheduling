@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertAction, AlertDescription } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { HelpCircleIcon, PlusIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
@@ -98,6 +100,26 @@ export function SchoolYearsPage() {
         </Alert>
       )}
 
+      {currentCheck && !missingCurrentYear && (
+        <Card className="relative mt-6 overflow-hidden border-gold-400/40 bg-navy-900 px-5 py-5 shadow-lg shadow-navy-900/10 sm:px-6 dark:border-gold-400/30 dark:bg-navy-900">
+          <div
+            aria-hidden="true"
+            className="absolute -right-16 -top-20 size-48 rounded-full bg-gold-400/10 blur-3xl"
+          />
+          <div className="relative flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-gold-300">
+                Current School Year
+              </p>
+              <p className="mt-1 font-display text-4xl tracking-wide text-white">
+                {currentCheck.schoolYear}
+              </p>
+            </div>
+            <Badge tone="gold">Current</Badge>
+          </div>
+        </Card>
+      )}
+
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <SearchInput
           value={search}
@@ -108,7 +130,7 @@ export function SchoolYearsPage() {
 
       <div className="mt-3">
         {loading ? (
-          <TableSkeleton columns={5} rows={8} />
+          <TableSkeleton columns={4} rows={8} />
         ) : filtered.length === 0 ? (
           <EmptyState title={search ? "No school years found" : "No school years yet"}>
             {search ? "Try a different search term." : "Create the first school year to get started."}

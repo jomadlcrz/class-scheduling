@@ -1,5 +1,4 @@
 import { EditIcon } from "~/components/ui/icons";
-import { Badge } from "~/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -30,7 +29,6 @@ export function SchoolYearTable({ schoolYears, onEdit }: SchoolYearTableProps) {
       <TableHead>
         <TableHeader>School Year</TableHeader>
         <TableHeader>Calendar Status</TableHeader>
-        <TableHeader>Current</TableHeader>
         <TableHeader className="hidden md:table-cell">Created At</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -47,18 +45,6 @@ export function SchoolYearTable({ schoolYears, onEdit }: SchoolYearTableProps) {
                 <StatusBadge tone={calendarStatusTone(sy.status)}>{sy.status}</StatusBadge>
               ) : (
                 "—"
-              )}
-            </TableCell>
-            <TableCell>
-              {sy.isCurrent ? (
-                <Badge tone="sky">
-                  <span className="inline-flex items-center gap-1">
-                    <span aria-hidden="true">★</span>
-                    Current
-                  </span>
-                </Badge>
-              ) : (
-                <span className="text-slate-400">—</span>
               )}
             </TableCell>
             <TableCell className="hidden md:table-cell">{formatCreatedAt(sy.createdAt)}</TableCell>
