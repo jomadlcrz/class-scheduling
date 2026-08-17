@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
+import { toast } from "sonner";
 import {
   CommandDialog,
   CommandEmpty,
@@ -8,6 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "~/components/ui/command";
+import { CropDialog } from "~/components/ui/crop-dialog";
 import {
   ChevronDownIcon,
   HelpCircleIcon,
@@ -21,10 +23,13 @@ import {
   SunIcon,
   UserIcon,
 } from "~/components/ui/icons";
+import { ImageViewer } from "~/components/ui/image-viewer";
+import { FileChooser } from "~/components/ui/file-chooser";
+import { Modal, ModalActions } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { ProfileAvatar } from "~/components/ui/profile-avatar";
+import { Button } from "~/components/ui/button";
 import { NotificationBell } from "~/features/notifications/notification-bell";
-import { ProfilePictureModal } from "~/features/settings/photo-crop-modal";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useTheme, type ThemePreference } from "~/hooks/use-theme";
@@ -263,6 +268,9 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const photoUrl = photoData?.profilePhotoUrl ?? null;
   const [searchOpen, setSearchOpen] = useState(false);
   const [profilePictureOpen, setProfilePictureOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState("");
+  const [removing, setRemoving] = useState(false);
+  const [fullViewOpen, setFullViewOpen] = useState(false);
   const createActions = user ? CREATE_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
   const searchActions = user ? SEARCH_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
   const helpActions = user
@@ -293,19 +301,32 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     navigate("/login", { replace: true });
   }
 
-  async function handlePhotoUpload(file: File) {
+  const isCropping = cropSrc !== "";
+
+  async function handlePhotoUpload(croppedFile: File) {
     if (!user) throw new Error("Not logged in.");
-    return profilePhotoService.uploadPhoto(user.role, file);
+    const result = await profilePhotoService.uploadPhoto(user.role, croppedFile);
+    void reloadPhoto();
+    window.dispatchEvent(new CustomEvent("profile-photo-changed"));
+    setCropSrc("");
+    if (result.message) toast.success(result.message);
+    setProfilePictureOpen(false);
   }
 
   async function handlePhotoRemove() {
-    if (!user) throw new Error("Not logged in.");
-    return profilePhotoService.removePhoto(user.role);
-  }
-
-  function handlePhotoChanged() {
-    void reloadPhoto();
-    window.dispatchEvent(new CustomEvent("profile-photo-changed"));
+    if (!user) return;
+    setRemoving(true);
+    try {
+      const message = await profilePhotoService.removePhoto(user.role);
+      void reloadPhoto();
+      window.dispatchEvent(new CustomEvent("profile-photo-changed"));
+      setProfilePictureOpen(false);
+      if (message) toast.success(message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Remove failed.");
+    } finally {
+      setRemoving(false);
+    }
   }
 
   return (
@@ -621,15 +642,75 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       </CommandDialog>
 
       {user && (
-        <ProfilePictureModal
-          open={profilePictureOpen}
-          onClose={() => setProfilePictureOpen(false)}
-          photoUrl={photoUrl}
-          gender={photoData?.gender}
-          onChanged={handlePhotoChanged}
-          uploadPhoto={handlePhotoUpload}
-          removePhoto={handlePhotoRemove}
-        />
+        <>
+          <Modal
+            open={profilePictureOpen && !isCropping}
+            onClose={() => { setCropSrc(""); setProfilePictureOpen(false); }}
+            title="Profile Picture"
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-center">
+                {photoUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setFullViewOpen(true)}
+                    className="cursor-pointer rounded-full transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2"
+                  >
+                    <img src={photoUrl} alt="Profile" className="size-24 rounded-full object-cover" />
+                  </button>
+                ) : <ProfileAvatar gender={photoData?.gender} className="size-24" />}
+              </div>
+
+              {photoUrl && (
+                <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+                  Click the image to see full view.
+                </p>
+              )}
+
+              <div>
+                <p className="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Upload new custom profile picture:
+                </p>
+                <FileChooser
+                  id="topbar-profile-picture-file"
+                  accept="image/jpeg,image/png,image/webp"
+                  hint="It is recommended that you use an image that is at least 400×400 pixels."
+                  onChange={(file) => setCropSrc(URL.createObjectURL(file))}
+                />
+              </div>
+
+              <ModalActions>
+                <Button type="button" variant="outline" block={false} onClick={() => setProfilePictureOpen(false)} disabled={removing}>
+                  Cancel
+                </Button>
+                {photoUrl && (
+                  <Button type="button" variant="danger" block={false} isLoading={removing} loadingLabel="Deleting…" onClick={handlePhotoRemove}>
+                    Delete
+                  </Button>
+                )}
+              </ModalActions>
+            </div>
+          </Modal>
+
+          <CropDialog
+            open={profilePictureOpen && isCropping}
+            imageSrc={cropSrc}
+            aspect={1}
+            cropShape="round"
+            showGrid={false}
+            title="Adjust Profile Photo"
+            saveLabel="Save Photo"
+            hint="Drag the image to position it, then click Save Photo."
+            previewClassName="relative aspect-square w-48 overflow-hidden rounded-full"
+            onClose={() => { setCropSrc(""); setProfilePictureOpen(false); }}
+            onBack={() => setCropSrc("")}
+            onSave={handlePhotoUpload}
+          />
+
+          {photoUrl && (
+            <ImageViewer open={fullViewOpen} onClose={() => setFullViewOpen(false)} src={photoUrl} alt="Profile picture full view" />
+          )}
+        </>
       )}
     </header>
   );

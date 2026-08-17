@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import Cropper from "react-easy-crop";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { CropDialog } from "~/components/ui/crop-dialog";
 import { FileChooser } from "~/components/ui/file-chooser";
 import { CameraIcon, TrashIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
@@ -18,13 +18,6 @@ type DepartmentCoverDialogProps = {
   onChanged: () => void | Promise<void>;
 };
 
-type PixelCrop = {
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-};
-
 const MAX_COVER_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_COVER_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -36,9 +29,6 @@ export function DepartmentCoverDialog({
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [cropSrc, setCropSrc] = useState("");
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
@@ -47,9 +37,6 @@ export function DepartmentCoverDialog({
     setCurrentUrl(department?.coverImageUrl ?? null);
     setOriginalFile(null);
     setCropSrc("");
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
     setError(null);
     if (department?.coverImageUrl) {
       let active = true;
@@ -66,17 +53,10 @@ export function DepartmentCoverDialog({
     };
   }, [cropSrc]);
 
-  const onCropComplete = useCallback((_: unknown, areaPixels: PixelCrop) => {
-    setCroppedAreaPixels(areaPixels);
-  }, []);
-
   function resetCrop() {
     if (cropSrc) URL.revokeObjectURL(cropSrc);
     setOriginalFile(null);
     setCropSrc("");
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
     setError(null);
   }
 
@@ -102,13 +82,11 @@ export function DepartmentCoverDialog({
     setCropSrc(URL.createObjectURL(file));
   }
 
-  async function handleSave() {
-    if (!department || !originalFile || !cropSrc || !croppedAreaPixels) return;
+  async function handleCropSave(croppedFile: File) {
+    if (!department || !originalFile) return;
     setSaving(true);
     setError(null);
     try {
-      const blob = await getCroppedCoverBlob(cropSrc, croppedAreaPixels);
-      const croppedFile = new File([blob], "department-cover.jpg", { type: "image/jpeg" });
       const result = await departmentService.uploadCover(department.id, croppedFile, originalFile);
       setCurrentUrl(result.url);
       if (result.message) toast.success(result.message);
@@ -179,68 +157,19 @@ export function DepartmentCoverDialog({
         </div>
       </Modal>
 
-      <Modal
-        open={department !== null && Boolean(cropSrc)}
-        onClose={saving ? () => {} : resetCrop}
-        title="Adjust Department Cover"
+      <CropDialog
+        open={Boolean(cropSrc)}
+        imageSrc={cropSrc}
+        aspect={16 / 5}
+        outputWidth={1600}
+        outputHeight={500}
         wide
-      >
-        <div className="flex flex-col gap-4">
-          <FormError message={error} />
-
-          <div className="relative aspect-16/5 overflow-hidden rounded-xl bg-navy-900">
-            <Cropper
-              image={cropSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={16 / 5}
-              showGrid
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-            />
-          </div>
-
-          <p className="text-center font-body text-sm text-slate-500 dark:text-slate-400">
-            Drag the image to reposition it. Use the slider to zoom in or out.
-          </p>
-
-          <div className="flex items-center gap-3">
-            <label
-              htmlFor="department-cover-zoom"
-              className="shrink-0 font-body text-xs text-slate-500 dark:text-slate-400"
-            >
-              Zoom
-            </label>
-            <input
-              id="department-cover-zoom"
-              type="range"
-              min={1}
-              max={3}
-              step={0.01}
-              value={zoom}
-              onChange={(event) => setZoom(Number(event.target.value))}
-              className="w-full accent-navy-800 dark:accent-white"
-            />
-          </div>
-
-          <ModalActions>
-            <Button type="button" variant="outline" block={false} onClick={resetCrop} disabled={saving}>
-              Back
-            </Button>
-            <Button
-              type="button"
-              block={false}
-              disabled={!croppedAreaPixels}
-              isLoading={saving}
-              loadingLabel="Uploading…"
-              onClick={handleSave}
-            >
-              Save cover
-            </Button>
-          </ModalActions>
-        </div>
-      </Modal>
+        title="Adjust Department Cover"
+        saveLabel="Save cover"
+        onClose={handleClose}
+        onBack={resetCrop}
+        onSave={handleCropSave}
+      />
 
       <ConfirmDialog
         open={removeOpen}
@@ -255,42 +184,4 @@ export function DepartmentCoverDialog({
       </ConfirmDialog>
     </>
   );
-}
-
-async function getCroppedCoverBlob(imageSrc: string, pixelCrop: PixelCrop): Promise<Blob> {
-  const image = await loadImage(imageSrc);
-  const canvas = document.createElement("canvas");
-  canvas.width = 1600;
-  canvas.height = 500;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Could not prepare the cover image.");
-
-  context.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    canvas.width,
-    canvas.height,
-  );
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("Could not crop the cover image."))),
-      "image/jpeg",
-      0.9,
-    );
-  });
-}
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Could not load the selected image."));
-    image.src = src;
-  });
 }

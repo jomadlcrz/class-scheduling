@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ResultState } from "~/components/feedback/result-state";
@@ -6,8 +6,10 @@ import { Badge } from "~/components/ui/badge";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { ArchiveIcon, CameraIcon, EditIcon } from "~/components/ui/icons";
-import { Modal } from "~/components/ui/modal";
+import { CropDialog } from "~/components/ui/crop-dialog";
+import { ArchiveIcon, CameraIcon, EditIcon, TrashIcon, UploadIcon } from "~/components/ui/icons";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
+import { Popover } from "~/components/ui/popover";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AcademicDepartmentView } from "~/features/departments/academic-department-view";
 import { DepartmentArchiveDialog } from "~/features/departments/department-archive-dialog";
@@ -75,6 +77,9 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
   const [editOpen, setEditOpen] = useState(false);
   const [coverOpen, setCoverOpen] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState<Department | null>(null);
+  const [logoRemoveOpen, setLogoRemoveOpen] = useState(false);
+  const logoFileRef = useRef<HTMLInputElement>(null);
+  const [logoCropSrc, setLogoCropSrc] = useState("");
 
   const editDepartment: Department | undefined = overview
     ? {
@@ -118,6 +123,26 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
     if (message) toast.success(message);
     setArchiveTarget(null);
     navigate("/departments");
+  }
+
+  function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setLogoCropSrc(URL.createObjectURL(file));
+  }
+
+  async function handleLogoCropSave(croppedFile: File) {
+    const result = await departmentService.uploadLogo(id, croppedFile);
+    if (result.message) toast.success(result.message);
+    setLogoCropSrc("");
+    await refresh();
+  }
+
+  async function handleLogoRemove() {
+    const message = await departmentService.removeLogo(id);
+    if (message) toast.success(message);
+    await refresh();
   }
 
   if (!validId) {
@@ -166,6 +191,8 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
         onEditCover={() => setCoverOpen(true)}
         onEdit={() => setEditOpen(true)}
         onArchive={() => setArchiveTarget(editDepartment ?? null)}
+        onUploadLogo={() => logoFileRef.current?.click()}
+        onRemoveLogo={() => setLogoRemoveOpen(true)}
       />
 
       {detail ? (
@@ -190,7 +217,6 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
             departmentTypes={departmentTypes}
             onSubmit={handleEdit}
             onCancel={() => setEditOpen(false)}
-            onLogoChanged={refresh}
           />
         )}
       </Modal>
@@ -206,6 +232,43 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
         onClose={() => setCoverOpen(false)}
         onChanged={refreshCover}
       />
+
+      <input
+        ref={logoFileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handleLogoSelect}
+      />
+
+      <CropDialog
+        open={Boolean(logoCropSrc)}
+        imageSrc={logoCropSrc}
+        aspect={1}
+        outputWidth={512}
+        outputHeight={512}
+        cropShape="round"
+        showGrid={false}
+        title="Adjust Department Logo"
+        saveLabel="Save logo"
+        hint="Drag the image to position it, then click Save logo."
+        previewClassName="relative aspect-square w-48 overflow-hidden rounded-full"
+        onClose={() => setLogoCropSrc("")}
+        onBack={() => setLogoCropSrc("")}
+        onSave={handleLogoCropSave}
+      />
+
+      <ConfirmDialog
+        open={logoRemoveOpen}
+        onClose={() => setLogoRemoveOpen(false)}
+        title="Remove logo"
+        confirmLabel="Remove"
+        loadingLabel="Removing…"
+        confirmVariant="danger"
+        onConfirm={handleLogoRemove}
+      >
+        The department logo will be removed and replaced with the default placeholder.
+      </ConfirmDialog>
     </div>
   );
 }
@@ -215,11 +278,15 @@ function DepartmentHeader({
   onEditCover,
   onEdit,
   onArchive,
+  onUploadLogo,
+  onRemoveLogo,
 }: {
   overview: DepartmentOverview;
   onEditCover: () => void;
   onEdit: () => void;
   onArchive: () => void;
+  onUploadLogo: () => void;
+  onRemoveLogo: () => void;
 }) {
   return (
     <Card className="overflow-hidden p-0">
@@ -246,7 +313,7 @@ function DepartmentHeader({
         <button
           type="button"
           onClick={onEditCover}
-          className="absolute right-3 top-3 flex cursor-pointer items-center gap-2 rounded-lg border border-white/30 bg-navy-950/85 px-3 py-2 font-body text-sm font-medium text-mist-100 shadow-lg backdrop-blur-md transition-colors duration-150 hover:border-white/45 hover:bg-navy-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 sm:right-5 sm:top-5"
+          className="absolute right-3 bottom-3 flex cursor-pointer items-center gap-2 rounded-lg border border-white/30 bg-navy-950/85 px-3 py-2 font-body text-sm font-medium text-mist-100 shadow-lg backdrop-blur-md transition-colors duration-150 hover:border-white/45 hover:bg-navy-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 sm:right-5 sm:bottom-5"
         >
           <CameraIcon />
           {overview.coverImageUrl ? "Edit cover" : "Add cover"}
@@ -255,13 +322,45 @@ function DepartmentHeader({
       </div>
 
       <div className="relative px-5 pb-6 pt-16 sm:px-7 sm:pt-20">
-        <div className="absolute left-1/2 top-0 size-28 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-white bg-white shadow-xl sm:size-32 dark:border-surface-raised dark:bg-surface-raised">
-          <img
-            src={departmentLogoSrc(overview.logoUrl)}
-            alt={`${overview.abbrev} logo`}
-            onError={onDepartmentLogoError}
-            className="size-full object-cover"
-          />
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+          <Popover
+            label="Department logo options"
+            triggerClassName="size-28 sm:size-32 cursor-pointer rounded-full border-4 border-white bg-white shadow-xl dark:border-surface-raised dark:bg-surface-raised overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+            trigger={
+              <img
+                src={departmentLogoSrc(overview.logoUrl)}
+                alt={`${overview.abbrev} logo`}
+                onError={onDepartmentLogoError}
+                className="size-full object-cover"
+              />
+            }
+            className="w-52"
+          >
+            {(close) => (
+              <div className="flex flex-col" role="none">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { close(); onUploadLogo(); }}
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left font-body text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+                >
+                  <UploadIcon size={16} />
+                  Upload a logo…
+                </button>
+                {overview.logoUrl && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { close(); onRemoveLogo(); }}
+                    className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left font-body text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                  >
+                    <TrashIcon />
+                    Remove logo
+                  </button>
+                )}
+              </div>
+            )}
+          </Popover>
         </div>
 
         <div className="flex flex-col items-center gap-5 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left">

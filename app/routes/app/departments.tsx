@@ -185,7 +185,6 @@ function DepartmentsPage() {
             departmentTypes={departmentTypes}
             onSubmit={handleEdit}
             onCancel={() => setEditTarget(null)}
-            onLogoChanged={refresh}
           />
         )}
       </Modal>
