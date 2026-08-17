@@ -1,0 +1,309 @@
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { RoleGuard } from "~/auth/role-guard";
+import { FormError } from "~/components/forms/form-error";
+import { DataLoadAlert } from "~/components/feedback/data-load-alert";
+import { EmptyState } from "~/components/feedback/empty-state";
+import { Badge, type BadgeTone } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { FieldChrome, inputClassName } from "~/components/ui/input";
+import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { Textarea } from "~/components/ui/textarea";
+import { useAuth } from "~/hooks/use-auth";
+import { useCachedData } from "~/hooks/use-cached-data";
+import { useSchoolYears } from "~/hooks/use-school-years";
+import { useSemesters } from "~/hooks/use-semesters";
+import { PageHeader } from "~/layouts/page-header";
+import { formatTime12h, timeToMinutes } from "~/lib/time";
+import { authorityWorkflowService } from "~/services/authority-workflow.service";
+import { deanService } from "~/services/dean.service";
+import { programService } from "~/services/program.service";
+import { scheduleService } from "~/services/schedule.service";
+import { setService } from "~/services/set.service";
+import type { MajorSchedule, MajorScheduleConflict, MajorScheduleEditRequest, MajorScheduleMeetingInput, MajorScheduleSubmission } from "~/types/authority-workflow";
+import { DAY_LABELS, generateTimeSlots } from "~/types/schedule";
+
+export function meta() {
+  return [{ title: "Major Schedules — GWC Class Scheduling" }];
+}
+
+const STATUS_TONES: Record<string, BadgeTone> = {
+  draft: "slate", reopened: "gold", submitted: "navy", finalized: "emerald",
+  pending: "gold", approved: "emerald", rejected: "red",
+};
+
+const TIME_OPTIONS = generateTimeSlots().map(formatTime12h);
+
+type DecisionTarget = { request: MajorScheduleEditRequest; approve: boolean };
+
+function MajorSchedulesPage() {
+  const { user } = useAuth();
+  const { schoolYears } = useSchoolYears();
+  const { semesters, semesterLabel } = useSemesters();
+  const [syId, setSyId] = useState(0);
+  const [semesterNumber, setSemesterNumber] = useState(0);
+  const [meetingOpen, setMeetingOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<MajorSchedule | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<MajorSchedule | null>(null);
+  const [editRequestTarget, setEditRequestTarget] = useState<MajorScheduleSubmission | null>(null);
+  const [decisionTarget, setDecisionTarget] = useState<DecisionTarget | null>(null);
+  const [conflicts, setConflicts] = useState<MajorScheduleConflict[] | null>(null);
+  const [floatingTarget, setFloatingTarget] = useState<MajorSchedule | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!syId && schoolYears.length) setSyId(schoolYears[0].id);
+  }, [schoolYears, syId]);
+  useEffect(() => {
+    if (!semesterNumber && semesters.length) setSemesterNumber((semesters.find((row) => row.semesterNumber !== 3) ?? semesters[0]).semesterNumber);
+  }, [semesterNumber, semesters]);
+
+  const scopeReady = syId > 0 && semesterNumber > 0;
+  const { data: submissions, error, reload } = useCachedData(
+    `major-schedule-submissions:${syId}:${semesterNumber}`,
+    () => authorityWorkflowService.listMajorScheduleSubmissions({ syId, semesterNumber }),
+    { enabled: scopeReady, cache: false },
+  );
+  const { data: editRequests, reload: reloadEditRequests } = useCachedData(
+    "major-schedule-edit-requests",
+    () => authorityWorkflowService.listMajorScheduleEditRequests(),
+    { enabled: user?.role === "registrar", cache: false },
+  );
+  const { data: labSlots } = useCachedData("major-schedule-lab-slots", () => authorityWorkflowService.listMajorLabTimeSlots());
+  const { data: instructors } = useCachedData("major-schedule-instructors", () => deanService.listDepartmentInstructors());
+
+  async function withRefresh(action: () => Promise<{ message?: string } | string>) {
+    setSaving(true);
+    setFormError(null);
+    try {
+      const result = await action();
+      const message = typeof result === "string" ? result : result.message;
+      if (message) toast.success(message);
+      await Promise.all([reload(), user?.role === "registrar" ? reloadEditRequests() : Promise.resolve()]);
+      return true;
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function submitMeeting(input: MajorScheduleMeetingInput) {
+    const ok = await withRefresh(() => editTarget
+      ? authorityWorkflowService.updateMajorSchedule(editTarget.id, input, user?.role === "registrar" ? "registrar" : "dean")
+      : authorityWorkflowService.createMajorSchedule(input));
+    if (ok) { setMeetingOpen(false); setEditTarget(null); }
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <PageHeader title="Major Schedules" actions={user?.role === "dean" ? <Button type="button" block={false} onClick={() => { setEditTarget(null); setMeetingOpen(true); setFormError(null); }}>New Major Meeting</Button> : undefined} />
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 sm:max-w-xl">
+        <select aria-label="School year" value={syId || ""} onChange={(event) => setSyId(Number(event.target.value))} className={inputClassName}>{schoolYears.map((year) => <option key={year.id} value={year.id}>{year.schoolYear}</option>)}</select>
+        <select aria-label="Semester" value={semesterNumber || ""} onChange={(event) => setSemesterNumber(Number(event.target.value))} className={inputClassName}>{semesters.filter((row) => row.semesterNumber !== 3).map((semester) => <option key={semester.semesterNumber} value={semester.semesterNumber}>{semesterLabel(semester.semesterNumber)}</option>)}</select>
+      </div>
+      <div className="mt-3"><FormError message={formError} /></div>
+      {labSlots?.labTimeSlots.length ? <p className="mt-3 font-body text-xs text-slate-500 dark:text-slate-400">Major laboratory slots: {labSlots.labTimeSlots.map((slot) => `${formatTime12h(slot.startTime)}–${formatTime12h(slot.endTime)}`).join(", ")}</p> : null}
+
+      <div className="mt-6 space-y-5">
+        {error && submissions === null ? <EmptyState title="Couldn't load major schedules">{error}</EmptyState> : submissions === null ? <Skeleton className="h-72 rounded-xl" /> : submissions.length === 0 ? <EmptyState title="No major schedules">No major schedule submission exists for this term.</EmptyState> : submissions.map((submission) => (
+          <section key={submission.id} className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div><h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">{submission.departmentAbbrev} · Version {submission.version}</h2><p className="font-body text-xs text-slate-500 dark:text-slate-400">{submission.departmentName}</p></div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={STATUS_TONES[submission.status] ?? "slate"}>{submission.status}</Badge>
+                {user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.submitMajorSchedule(submission.id))}>Submit</Button>}
+                {user?.role === "dean" && ["submitted", "finalized"].includes(submission.status) && <Button type="button" variant="outline" block={false} onClick={() => { setEditRequestTarget(submission); setFormError(null); }}>Request Edit</Button>}
+                {user?.role === "registrar" && submission.status === "submitted" && <><Button type="button" variant="outline" block={false} onClick={async () => { setFormError(null); try { const result = await authorityWorkflowService.getMajorScheduleConflicts(submission.id); setConflicts(result.conflicts); } catch (err) { setFormError(err instanceof Error ? err.message : ""); } }}>Check Conflicts</Button><Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.finalizeMajorSchedule(submission.id))}>Finalize</Button></>}
+              </div>
+            </div>
+            <Table>
+              <TableHead><TableHeader>Subject</TableHeader><TableHeader>Section</TableHeader><TableHeader>Schedule</TableHeader><TableHeader>Instructor</TableHeader><TableHeader>Status</TableHeader><TableHeader><span className="sr-only">Actions</span></TableHeader></TableHead>
+              <TableBody>{submission.schedules.map((schedule) => <TableRow key={schedule.id}><TableCell><span className="font-semibold text-navy-700 dark:text-mist-100">{schedule.subjectCode}</span><span className="block text-xs text-slate-400">{schedule.subjectTitle}</span></TableCell><TableCell>{schedule.setName}</TableCell><TableCell>{schedule.dayOfWeek} · {schedule.startTime}–{schedule.endTime}</TableCell><TableCell>{schedule.instructorDisplay}</TableCell><TableCell><Badge tone={schedule.floating ? "gold" : "emerald"}>{schedule.floating ? "Floating" : schedule.meetingKind}</Badge></TableCell><TableCell><div className="flex justify-end gap-2">{((user?.role === "dean" && ["draft", "reopened"].includes(submission.status)) || (user?.role === "registrar" && submission.status === "submitted")) && <Button type="button" variant="outline" block={false} onClick={() => { setEditTarget(schedule); setMeetingOpen(true); setFormError(null); }}>Edit</Button>}{user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" variant="danger" block={false} onClick={() => setDeleteTarget(schedule)}>Delete</Button>}{user?.role === "registrar" && schedule.floating && <Button type="button" block={false} onClick={() => { setFloatingTarget(schedule); setFormError(null); }}>Assign Instructor</Button>}</div></TableCell></TableRow>)}</TableBody>
+            </Table>
+          </section>
+        ))}
+      </div>
+
+      {user?.role === "registrar" && (editRequests?.length ?? 0) > 0 && <section className="mt-8"><h2 className="mb-3 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Edit Requests</h2><Table><TableHead><TableHeader>Submission</TableHeader><TableHeader>Reason</TableHeader><TableHeader>Status</TableHeader><TableHeader><span className="sr-only">Actions</span></TableHeader></TableHead><TableBody>{editRequests!.map((request) => <TableRow key={request.id}><TableCell>Submission #{request.submissionId}</TableCell><TableCell>{request.reason}</TableCell><TableCell><Badge tone={STATUS_TONES[request.status] ?? "slate"}>{request.status}</Badge></TableCell><TableCell>{request.status === "pending" && <div className="flex justify-end gap-2"><Button type="button" block={false} onClick={() => setDecisionTarget({ request, approve: true })}>Approve</Button><Button type="button" variant="danger" block={false} onClick={() => setDecisionTarget({ request, approve: false })}>Reject</Button></div>}</TableCell></TableRow>)}</TableBody></Table></section>}
+
+      <MajorMeetingModal open={meetingOpen} schedule={editTarget} syId={syId} semesterNumber={semesterNumber} schoolYear={schoolYears.find((row) => row.id === syId)?.schoolYear ?? ""} saving={saving} error={formError} onClose={() => { setMeetingOpen(false); setEditTarget(null); }} onSubmit={submitMeeting} />
+      <ConfirmDialog open={deleteTarget !== null} onClose={() => setDeleteTarget(null)} title="Delete Major Meeting" confirmLabel="Delete" loadingLabel="Deleting…" confirmVariant="danger" onConfirm={async () => { if (!deleteTarget) return; const message = await authorityWorkflowService.deleteMajorSchedule(deleteTarget.id); if (message) toast.success(message); await reload(); }}>Delete {deleteTarget?.subjectCode} from this draft?</ConfirmDialog>
+      <Modal open={editRequestTarget !== null} onClose={() => setEditRequestTarget(null)} title="Request Schedule Edit"><form onSubmit={async (event) => { event.preventDefault(); const reason = String(new FormData(event.currentTarget).get("reason") ?? ""); const ok = await withRefresh(() => authorityWorkflowService.requestMajorScheduleEdit(editRequestTarget!.id, reason)); if (ok) setEditRequestTarget(null); }} className="space-y-4"><FormError message={formError} /><Textarea id="reason" name="reason" label="Reason" required minLength={10} /><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setEditRequestTarget(null)}>Cancel</Button><Button type="submit" block={false} isLoading={saving} loadingLabel="Sending…">Send Request</Button></ModalActions></form></Modal>
+      <Modal open={decisionTarget !== null} onClose={() => setDecisionTarget(null)} title={`${decisionTarget?.approve ? "Approve" : "Reject"} Edit Request`}><form onSubmit={async (event) => { event.preventDefault(); const note = String(new FormData(event.currentTarget).get("note") ?? ""); const ok = await withRefresh(() => authorityWorkflowService.decideMajorScheduleEdit(decisionTarget!.request.id, decisionTarget!.approve, note || undefined)); if (ok) setDecisionTarget(null); }} className="space-y-4"><FormError message={formError} /><Textarea id="note" name="note" label="Decision note" /><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setDecisionTarget(null)}>Cancel</Button><Button type="submit" variant={decisionTarget?.approve ? "primary" : "danger"} block={false} isLoading={saving} loadingLabel="Saving…">Confirm</Button></ModalActions></form></Modal>
+      <Modal open={conflicts !== null} onClose={() => setConflicts(null)} title="Submission Conflicts" wide>{conflicts?.length === 0 ? <EmptyState title="No conflicts">This submission is ready to finalize.</EmptyState> : <div className="space-y-2">{conflicts?.map((conflict) => <div key={`${conflict.scheduleId}:${conflict.conflictingScheduleId}`} className="border-b border-slate-200 pb-2 text-sm dark:border-white/10"><strong>{conflict.schedule.subjectCode}</strong> conflicts with <strong>{conflict.conflictingSchedule.subjectCode}</strong> ({conflict.conflictTypes.join(", ")}).</div>)}</div>}</Modal>
+      <Modal open={floatingTarget !== null} onClose={() => setFloatingTarget(null)} title="Assign Floating Instructor"><form onSubmit={async (event) => { event.preventDefault(); const instructorId = Number(new FormData(event.currentTarget).get("instructorId")); const ok = await withRefresh(() => authorityWorkflowService.assignFloatingInstructor(floatingTarget!.id, instructorId)); if (ok) setFloatingTarget(null); }} className="space-y-4"><FormError message={formError} /><select name="instructorId" required defaultValue="" className={inputClassName}><option value="" disabled>Select instructor</option>{(instructors ?? []).map((instructor) => <option key={instructor.instructorProfileId} value={instructor.instructorProfileId}>{instructor.firstName} {instructor.lastName}</option>)}</select><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setFloatingTarget(null)}>Cancel</Button><Button type="submit" block={false} isLoading={saving} loadingLabel="Assigning…">Assign Instructor</Button></ModalActions></form></Modal>
+    </div>
+  );
+}
+
+function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, saving, error, onClose, onSubmit }: { open: boolean; schedule: MajorSchedule | null; syId: number; semesterNumber: number; schoolYear: string; saving: boolean; error: string | null; onClose: () => void; onSubmit: (input: MajorScheduleMeetingInput) => Promise<void> }) {
+  const { semesterLabel } = useSemesters();
+  const [programId, setProgramId] = useState(0);
+  const [setId, setSetId] = useState(0);
+  const [subjectId, setSubjectId] = useState(0);
+  const [instructorId, setInstructorId] = useState("floating");
+  const [roomId, setRoomId] = useState(0);
+  const [dayOfWeek, setDayOfWeek] = useState("Monday");
+  const [startTime, setStartTime] = useState("7:00 AM");
+  const [endTime, setEndTime] = useState("8:00 AM");
+  const [mode, setMode] = useState("Lecture");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const { data: programs, error: programsError, reload: reloadPrograms } = useCachedData("major-meeting-programs", () => programService.list());
+  const selectedProgram = (programs ?? []).find((row) => row.id === programId);
+  const { data: sets, error: setsError, reload: reloadSets } = useCachedData(`major-meeting-sets:${syId}:${semesterNumber}:${programId}`, () => setService.list({ syId, semesterNumber, programId }), { enabled: open && programId > 0 });
+  const availableSets = (sets ?? []).filter((row) => !selectedProgram || row.program === selectedProgram.abbrev);
+  const selectedSet = availableSets.find((row) => row.id === setId);
+  const { data: subjects, error: subjectsError, reload: reloadSubjects } = useCachedData(`major-meeting-subjects:${schoolYear}:${semesterNumber}:${programId}:${selectedSet?.yearLevel ?? 0}`, () => scheduleService.listScheduleSubjects({ schoolYear, programId, semester: semesterNumber as 1 | 2, yearLevel: selectedSet?.yearLevel }), { enabled: open && !!schoolYear && programId > 0 && !!selectedSet });
+  const { data: rooms, error: roomsError, reload: reloadRooms } = useCachedData("major-meeting-rooms", () => scheduleService.listScheduleRooms(), { enabled: open });
+  const instructors = (subjects ?? []).flatMap((subject) => subject.faculties).filter((faculty, index, all) => all.findIndex((item) => item.id === faculty.id) === index);
+  const referenceDataError = programsError ?? setsError ?? subjectsError ?? roomsError;
+
+  useEffect(() => {
+    if (!open) return;
+    setProgramId(schedule?.programId ?? 0);
+    setSetId(schedule?.setId ?? 0);
+    setSubjectId(schedule?.subjectId ?? 0);
+    setInstructorId(schedule?.instructorId ? String(schedule.instructorId) : "floating");
+    setRoomId(schedule?.roomId ?? 0);
+    setDayOfWeek(schedule?.dayOfWeek ?? "Monday");
+    setStartTime(schedule ? formatTime12h(schedule.startTime) : "7:00 AM");
+    setEndTime(schedule ? formatTime12h(schedule.endTime) : "8:00 AM");
+    setMode(schedule?.meetingKind === "LAB" ? "Laboratory" : "Lecture");
+    setValidationError(null);
+  }, [open, schedule]);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!programId || !setId || !subjectId || !roomId) {
+      setValidationError("Complete all required fields before saving.");
+      return;
+    }
+    if (!startTime || !endTime) {
+      setValidationError("Select both a start time and an end time.");
+      return;
+    }
+    if (timeToMinutes(endTime) <= timeToMinutes(startTime)) {
+      setValidationError("End time must be after start time.");
+      return;
+    }
+    setValidationError(null);
+    void onSubmit({
+      syId,
+      semesterNumber,
+      programId,
+      setId,
+      subjectId,
+      instructorId: instructorId === "floating" ? null : Number(instructorId),
+      roomId,
+      dayOfWeek,
+      startTime,
+      endTime,
+      mode,
+    });
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title={schedule ? "Edit Major Meeting" : "New Major Meeting"} wide>
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <FormError message={validationError ?? error} />
+
+        {programsError && <DataLoadAlert title="Programs unavailable" message={programsError} onRetry={reloadPrograms} />}
+        {setsError && <DataLoadAlert title="Sections unavailable" message={setsError} onRetry={reloadSets} />}
+        {subjectsError && <DataLoadAlert title="Subject and instructor options unavailable" message={subjectsError} onRetry={reloadSubjects} permission helpText="Ask an administrator to grant access to subject instructor information." />}
+        {roomsError && <DataLoadAlert title="Rooms unavailable" message={roomsError} onRetry={reloadRooms} />}
+
+        <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 dark:border-blue-400/15 dark:bg-blue-400/5">
+          <p className="font-body text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Teaching term</p>
+          <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">{schoolYear} · {semesterLabel(semesterNumber)}</p>
+        </div>
+
+        <fieldset className="space-y-3">
+          <legend className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Academic assignment</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FieldChrome id="major-program" label="Program" required>
+              <Select items={(programs ?? []).map((program) => ({ value: String(program.id), label: `${program.abbrev} — ${program.name}` }))} value={programId ? String(programId) : ""} onValueChange={(value) => { setProgramId(Number(value)); setSetId(0); setSubjectId(0); setInstructorId("floating"); }}>
+                <SelectTrigger id="major-program"><SelectValue placeholder="Select program" /></SelectTrigger>
+                <SelectContent>{(programs ?? []).map((program) => <SelectItem key={program.id} value={String(program.id)}>{program.abbrev} — {program.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="major-set" label="Section" required hint={programId ? undefined : "Select a program first."}>
+              <Select items={availableSets.map((set) => ({ value: String(set.id), label: `${set.program}-${set.yearLevel}${set.setCode}` }))} value={setId ? String(setId) : ""} onValueChange={(value) => { setSetId(Number(value)); setSubjectId(0); setInstructorId("floating"); }} disabled={!programId}>
+                <SelectTrigger id="major-set"><SelectValue placeholder="Select section" /></SelectTrigger>
+                <SelectContent>{availableSets.map((set) => <SelectItem key={set.id} value={String(set.id)}>{set.program}-{set.yearLevel}{set.setCode}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+          </div>
+          <FieldChrome id="major-subject" label="Subject" required hint={setId ? undefined : "Select a section to load its subjects."}>
+            <Select items={(subjects ?? []).map((subject) => ({ value: String(subject.id), label: `${subject.code} — ${subject.title}` }))} value={subjectId ? String(subjectId) : ""} onValueChange={(value) => setSubjectId(Number(value))} disabled={!setId}>
+              <SelectTrigger id="major-subject"><SelectValue placeholder="Select subject" /></SelectTrigger>
+              <SelectContent>{(subjects ?? []).map((subject) => <SelectItem key={subject.id} value={String(subject.id)}>{subject.code} — {subject.title}</SelectItem>)}</SelectContent>
+            </Select>
+          </FieldChrome>
+        </fieldset>
+
+        <fieldset className="space-y-3 border-t border-slate-200 pt-4 dark:border-white/10">
+          <legend className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Room and instructor</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FieldChrome id="major-instructor" label="Instructor" hint="Leave floating when an instructor has not been assigned.">
+              <Select items={[{ value: "floating", label: "TBA / Floating" }, ...instructors.map((faculty) => ({ value: String(faculty.id), label: faculty.fullName }))]} value={instructorId} onValueChange={(value) => setInstructorId(value ?? "floating")}>
+                <SelectTrigger id="major-instructor"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="floating">TBA / Floating</SelectItem>{instructors.map((faculty) => <SelectItem key={faculty.id} value={String(faculty.id)}>{faculty.fullName}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="major-room" label="Room" required>
+              <Select items={(rooms ?? []).map((room) => ({ value: String(room.id), label: `${room.buildingName} · ${room.roomName}` }))} value={roomId ? String(roomId) : ""} onValueChange={(value) => setRoomId(Number(value))}>
+                <SelectTrigger id="major-room"><SelectValue placeholder="Select room" /></SelectTrigger>
+                <SelectContent>{(rooms ?? []).map((room) => <SelectItem key={room.id} value={String(room.id)}>{room.buildingName} · {room.roomName}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+          </div>
+        </fieldset>
+
+        <fieldset className="space-y-3 border-t border-slate-200 pt-4 dark:border-white/10">
+          <legend className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Meeting pattern</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FieldChrome id="major-day" label="Day" required>
+              <Select items={Object.values(DAY_LABELS).map((day) => ({ value: day, label: day }))} value={dayOfWeek} onValueChange={(value) => setDayOfWeek(value ?? "Monday")}>
+                <SelectTrigger id="major-day"><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.values(DAY_LABELS).map((day) => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="major-mode" label="Meeting mode" required>
+              <Select items={["Lecture", "Laboratory", "F2F", "Online"].map((item) => ({ value: item, label: item }))} value={mode} onValueChange={(value) => setMode(value ?? "Lecture")}>
+                <SelectTrigger id="major-mode"><SelectValue /></SelectTrigger>
+                <SelectContent>{["Lecture", "Laboratory", "F2F", "Online"].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="major-start-time" label="Start time" required>
+              <Select items={TIME_OPTIONS.map((time) => ({ value: time, label: time }))} value={startTime} onValueChange={(value) => { const next = value ?? ""; setStartTime(next); if (endTime && timeToMinutes(endTime) <= timeToMinutes(next)) setEndTime(""); }}>
+                <SelectTrigger id="major-start-time"><SelectValue placeholder="Select start time" /></SelectTrigger>
+                <SelectContent>{TIME_OPTIONS.map((time) => <SelectItem key={time} value={time}>{time}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="major-end-time" label="End time" required hint={startTime ? undefined : "Select a start time first."}>
+              <Select items={TIME_OPTIONS.filter((time) => !startTime || timeToMinutes(time) > timeToMinutes(startTime)).map((time) => ({ value: time, label: time }))} value={endTime} onValueChange={(value) => setEndTime(value ?? "")} disabled={!startTime}>
+                <SelectTrigger id="major-end-time"><SelectValue placeholder="Select end time" /></SelectTrigger>
+                <SelectContent>{TIME_OPTIONS.filter((time) => !startTime || timeToMinutes(time) > timeToMinutes(startTime)).map((time) => <SelectItem key={time} value={time}>{time}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+          </div>
+        </fieldset>
+
+        <ModalActions>
+          <Button type="button" variant="outline" block={false} onClick={onClose}>Cancel</Button>
+          <Button type="submit" block={false} isLoading={saving} loadingLabel="Saving…" disabled={Boolean(referenceDataError)}>{schedule ? "Save Changes" : "Create Meeting"}</Button>
+        </ModalActions>
+      </form>
+    </Modal>
+  );
+}
+
+export default function MajorSchedulesRoute() {
+  return <RoleGuard allow={["dean", "registrar"]}><MajorSchedulesPage /></RoleGuard>;
+}

@@ -218,10 +218,14 @@ type EnrollmentHistoryResponse = {
   enrolled_subjects?: EnrollmentSubjectResponse[];
 }[];
 
-/** GET /students/{id}/enrollments — every term this student has been enrolled in. */
-async function getEnrollments(studentProfileId: number): Promise<StudentAcademicRecord[]> {
+/** Role-scoped enrollment history. Dean reads are constrained to their department. */
+async function getEnrollments(
+  studentProfileId: number,
+  audience: "registrar" | "dean" = "registrar",
+): Promise<StudentAcademicRecord[]> {
+  const base = audience === "dean" ? "/deans/students" : "/students";
   const [data, semesters] = await Promise.all([
-    apiGet<EnrollmentHistoryResponse>(`/students/${studentProfileId}/enrollments`),
+    apiGet<EnrollmentHistoryResponse>(`${base}/${studentProfileId}/enrollments`),
     semesterService.list(),
   ]);
   const semesterLabels = new Map(

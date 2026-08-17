@@ -136,9 +136,12 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
   useEffect(() => {
     if (open && tab === "history" && history === null) {
       setHistoryLoading(true);
-      studentService.getEnrollments(student!.studentProfileId).then(setHistory).finally(() => setHistoryLoading(false));
+      studentService
+        .getEnrollments(student!.studentProfileId, readOnly ? "dean" : "registrar")
+        .then(setHistory)
+        .finally(() => setHistoryLoading(false));
     }
-  }, [open, tab, history, student]);
+  }, [open, tab, history, readOnly, student]);
 
   async function applyState() {
     if (!enrollment || !pendingState) return;
