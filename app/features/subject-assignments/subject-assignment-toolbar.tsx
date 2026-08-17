@@ -46,10 +46,10 @@ export function SubjectAssignmentToolbar({
         </Select>
       </FieldChrome>
       <div className="sm:col-span-2 lg:col-span-1">
-        <FieldChrome id="subject-assignment-search" label="Search Instructor">
+        <FieldChrome id="subject-assignment-search" label="Search">
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-slate-500"><SearchIcon size={18} /></span>
-            <input id="subject-assignment-search" type="search" placeholder="Search..." value={search} onChange={(event) => onSearchChange(event.target.value)} className={`${inputClassName} pl-10`} />
+            <input id="subject-assignment-search" type="search" placeholder="Search subjects, programs, or instructors" value={search} onChange={(event) => onSearchChange(event.target.value)} className={`${inputClassName} pl-10`} />
           </div>
         </FieldChrome>
       </div>

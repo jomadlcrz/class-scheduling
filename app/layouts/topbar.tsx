@@ -88,7 +88,7 @@ const SEARCH_ACTIONS: TopbarAction[] = [
   { label: "Facilities", to: "/facilities", roles: ["registrar"] },
   { label: "Departments", to: "/departments", roles: ["registrar"] },
   { label: "Program Curricula", to: "/program-curricula", roles: ["registrar"] },
-  { label: "Subject Assignments", to: "/subject-assignments", roles: ["registrar", "dean"] },
+  { label: "Subject Offering", to: "/subject-offering", roles: ["registrar", "dean"] },
   { label: "Scheduling Hub", to: "/schedules", roles: ["registrar"] },
   { label: "Schedule Approvals", to: "/dean/schedule-approvals", roles: ["dean"] },
   { label: "Faculty Loads", to: "/faculty-loads", roles: ["dean"] },
@@ -187,9 +187,9 @@ const ROLE_HELP_GUIDES: Record<Role, RoleHelpGuide> = {
 
 const PAGE_HELP: PageHelp[] = [
   {
-    matches: (pathname) => pathname === "/subject-assignments",
-    title: "Subject assignments",
-    description: "Assign instructors after the program curriculum and active teaching term are ready. Review workload indicators before saving.",
+    matches: (pathname) => pathname === "/subject-offering",
+    title: "Subject offering",
+    description: "Review term offerings and instructor coverage, then manage teaching assignments and workload indicators in one place.",
   },
   {
     matches: (pathname) => pathname.startsWith("/schedules/subject-hour-overrides"),

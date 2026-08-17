@@ -4,18 +4,25 @@ import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import { Accordion } from "~/components/ui/accordion";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import { PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { Skeleton } from "~/components/ui/skeleton";
+import { StatCard } from "~/components/ui/stat-card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SubjectAssignmentToolbar } from "~/features/subject-assignments/subject-assignment-toolbar";
 import { SchedulingLoadPolicyDialog } from "~/features/subject-assignments/scheduling-load-policy-dialog";
 import { useSubjectAssignments } from "~/features/subject-assignments/use-subject-assignments";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
+import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { facultyKey, formatInstructorName } from "~/lib/faculty-load";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
+import type { OfferingCoverage } from "~/types/offering-coverage";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
 import { AssignmentLoadSummary } from "./assignment-load-summary";
@@ -58,9 +65,52 @@ type Instructor = {
   programs: ProgramGroup[];
 };
 
+type OfferingRow = {
+  key: string;
+  department: string;
+  programAbbrev: string;
+  programName: string;
+  subjectCode: string;
+  descriptiveTitle: string;
+  yearLevel: number;
+  subjectType: string | null;
+  assigned: boolean;
+  instructors: string[];
+};
+
+function flattenOfferingCoverage(coverage: OfferingCoverage | null): OfferingRow[] {
+  return (coverage?.departments ?? []).flatMap((department) =>
+    department.programs.flatMap((program) =>
+      program.subjects.map((subject) => ({
+        key: `${department.department_id}:${subject.curriculum_detail_id}`,
+        department: department.department_abbrev,
+        programAbbrev: program.program_abbrev,
+        programName: program.program_name,
+        subjectCode: subject.subject_code,
+        descriptiveTitle: subject.descriptive_title,
+        yearLevel: subject.year_level,
+        subjectType: subject.subject_type,
+        assigned: subject.assigned,
+        instructors: subject.instructors,
+      })),
+    ),
+  );
+}
+
 export function SubjectAssignmentView() {
   const apiData = useSubjectAssignments();
   const navigate = useNavigate();
+  const selectedSyId = Number(apiData.selectedSchoolYearId);
+  const selectedSemesterNumber = Number(apiData.selectedSemesterNumber);
+  const offeringScopeReady = selectedSyId > 0 && selectedSemesterNumber > 0;
+  const {
+    data: offeringCoverage,
+    error: offeringCoverageError,
+  } = useCachedData(
+    `subject-offering-coverage:${selectedSyId || "none"}:${selectedSemesterNumber || "none"}`,
+    () => deanService.getOfferingCoverage(selectedSyId, selectedSemesterNumber),
+    { enabled: offeringScopeReady },
+  );
   const [programOptions, setProgramOptions] = useState<{
     id: number;
     abbrev: string;
@@ -82,6 +132,7 @@ export function SubjectAssignmentView() {
 
   // Search filter
   const [search, setSearch] = useState("");
+  const [showUnassignedOnly, setShowUnassignedOnly] = useState(true);
   const [policyOpen, setPolicyOpen] = useState(false);
 
   // Instructors list — starts empty, populated from API data
@@ -434,13 +485,38 @@ export function SubjectAssignmentView() {
     useUnsavedChangesGuard(isDirty, !apiData.mutating);
 
   // Filter calculation
+  const normalizedSearch = search.trim().toLowerCase();
   const filteredInstructors = instructors.filter(
     (inst) =>
-      !search ||
-      inst.name.toLowerCase().includes(search.toLowerCase()) ||
-      inst.facultyId.toLowerCase().includes(search.toLowerCase()) ||
-      inst.department.toLowerCase().includes(search.toLowerCase()),
+      !normalizedSearch ||
+      inst.name.toLowerCase().includes(normalizedSearch) ||
+      inst.facultyId.toLowerCase().includes(normalizedSearch) ||
+      inst.department.toLowerCase().includes(normalizedSearch) ||
+      inst.programs.some(
+        (program) =>
+          program.programAbbrev.toLowerCase().includes(normalizedSearch) ||
+          program.programName.toLowerCase().includes(normalizedSearch) ||
+          program.subjects.some(
+            (subject) =>
+              subject.subjectCode.toLowerCase().includes(normalizedSearch) ||
+              subject.descriptiveTitle.toLowerCase().includes(normalizedSearch),
+          ),
+      ),
   );
+  const offeringRows = useMemo(() => flattenOfferingCoverage(offeringCoverage), [offeringCoverage]);
+  const filteredOfferingRows = offeringRows.filter((offering) => {
+    if (showUnassignedOnly && offering.assigned) return false;
+    if (!normalizedSearch) return true;
+    return (
+      offering.subjectCode.toLowerCase().includes(normalizedSearch) ||
+      offering.descriptiveTitle.toLowerCase().includes(normalizedSearch) ||
+      offering.programAbbrev.toLowerCase().includes(normalizedSearch) ||
+      offering.programName.toLowerCase().includes(normalizedSearch) ||
+      offering.department.toLowerCase().includes(normalizedSearch) ||
+      offering.instructors.some((instructor) => instructor.toLowerCase().includes(normalizedSearch))
+    );
+  });
+  const totalUnassignedOfferings = offeringRows.filter((offering) => !offering.assigned).length;
 
   function uniqueAssignedHours(inst: Instructor): number {
     const seen = new Set<string>();
@@ -488,7 +564,7 @@ export function SubjectAssignmentView() {
     return (
       <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <PageHeader
-          title="Subject Assignments"
+          title="Subject Offering"
         />
         <div className="flex items-center justify-center py-20">
           <Spinner />
@@ -501,7 +577,7 @@ export function SubjectAssignmentView() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       {/* Page Header */}
       <PageHeader
-        title="Subject Assignments"
+        title="Subject Offering"
         actions={<Button type="button" variant="outline" block={false} onClick={() => setPolicyOpen(true)}>Load Policy</Button>}
       />
 
@@ -517,6 +593,101 @@ export function SubjectAssignmentView() {
         search={search}
         onSearchChange={setSearch}
       />
+
+      {/* Offering coverage */}
+      <section className="mt-6 space-y-4" aria-labelledby="offering-coverage-heading">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 id="offering-coverage-heading" className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+              Subject Offerings
+            </h2>
+            <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
+              Curriculum subjects available this term and their current instructor coverage.
+            </p>
+          </div>
+          <Checkbox
+            id="subject-offering-unassigned-only"
+            label="Show unassigned only"
+            checked={showUnassignedOnly}
+            onChange={setShowUnassignedOnly}
+          />
+        </div>
+
+        {offeringCoverageError && offeringCoverage === null ? (
+          <EmptyState title="Couldn't load subject offerings">{offeringCoverageError}</EmptyState>
+        ) : offeringCoverage === null ? (
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Skeleton className="h-24 rounded-xl" />
+              <Skeleton className="h-24 rounded-xl" />
+            </div>
+            <Skeleton className="h-64 rounded-xl" />
+          </div>
+        ) : offeringRows.length === 0 ? (
+          <EmptyState title="No subject offerings">
+            There are no offerable subjects for the selected academic term.
+          </EmptyState>
+        ) : (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <StatCard
+                label="Without instructor"
+                value={totalUnassignedOfferings}
+                hint="Offerings still requiring an assignment"
+                valueClassName={totalUnassignedOfferings > 0 ? "text-amber-600 dark:text-gold-300" : "text-emerald-600 dark:text-emerald-400"}
+              />
+              <StatCard
+                label="Total offerings"
+                value={offeringRows.length}
+                hint="Subjects available in the selected term"
+              />
+            </div>
+
+            {filteredOfferingRows.length === 0 ? (
+              <EmptyState title="No offerings found">
+                No subject offerings match the current search and coverage filter.
+              </EmptyState>
+            ) : (
+              <Table>
+                <TableHead>
+                  <TableHeader>Subject</TableHeader>
+                  <TableHeader>Program</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Department</TableHeader>
+                  <TableHeader className="hidden sm:table-cell">Year</TableHeader>
+                  <TableHeader className="hidden lg:table-cell">Type</TableHeader>
+                  <TableHeader>Current Instructor</TableHeader>
+                  <TableHeader className="text-right">Status</TableHeader>
+                </TableHead>
+                <TableBody>
+                  {filteredOfferingRows.map((offering) => (
+                    <TableRow key={offering.key}>
+                      <TableCell>
+                        <span className="font-semibold text-navy-700 dark:text-mist-100">{offering.subjectCode}</span>
+                        <span className="block max-w-sm text-xs text-slate-500 dark:text-slate-400">{offering.descriptiveTitle}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-semibold text-navy-700 dark:text-mist-100">{offering.programAbbrev}</span>
+                        <span className="hidden max-w-48 truncate text-xs text-slate-500 dark:text-slate-400 xl:block">{offering.programName}</span>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{offering.department}</TableCell>
+                      <TableCell className="hidden sm:table-cell">Year {offering.yearLevel}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{offering.subjectType ?? "—"}</TableCell>
+                      <TableCell>
+                        {offering.instructors.length > 0 ? offering.instructors.join(", ") : <span className="text-slate-400 dark:text-slate-500">—</span>}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge tone={offering.assigned ? "emerald" : "gold"}>
+                          {offering.assigned ? "Assigned" : "Unassigned"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </>
+        )}
+      </section>
 
       <SchedulingLoadPolicyDialog
         open={policyOpen}
@@ -545,7 +716,9 @@ export function SubjectAssignmentView() {
           </Button>
         </div>
 
-        {filteredInstructors.length === 0 ? (
+        {apiData.loadError ? (
+          <EmptyState title="Couldn't load instructor assignments">{apiData.loadError}</EmptyState>
+        ) : filteredInstructors.length === 0 ? (
           <EmptyState title="No instructors found">
             {apiData.entries && apiData.entries.length > 0
               ? "No instructors match your current search criteria."

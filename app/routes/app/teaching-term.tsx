@@ -342,7 +342,7 @@ function TeachingTermPage() {
           title="Teaching Term Not Found"
 
           actions={
-            <Button type="button" variant="outline" block={false} onClick={() => navigate("/subject-assignments")}>
+            <Button type="button" variant="outline" block={false} onClick={() => navigate("/subject-offering")}>
               <ArrowLeftIcon /> Back to Assignments
             </Button>
           }
@@ -359,7 +359,7 @@ function TeachingTermPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
       <Breadcrumb
         items={[
-          { label: "Subject Assignments", href: "/subject-assignments" },
+          { label: "Subject Offering", href: "/subject-offering" },
           { label: instructor.full_name ?? "Teaching Term" },
         ]}
         className="mb-4"
