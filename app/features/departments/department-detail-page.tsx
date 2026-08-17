@@ -252,7 +252,7 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
         title="Adjust Department Logo"
         saveLabel="Save logo"
         hint="Drag the image to position it, then click Save logo."
-        previewClassName="relative aspect-square w-48 overflow-hidden rounded-full"
+        previewClassName="relative aspect-square w-72 overflow-hidden rounded-full"
         onClose={() => setLogoCropSrc("")}
         onBack={() => setLogoCropSrc("")}
         onSave={handleLogoCropSave}

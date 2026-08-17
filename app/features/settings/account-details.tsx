@@ -231,7 +231,7 @@ export function AccountDetails() {
             title="Adjust Profile Photo"
             saveLabel="Save Photo"
             hint="Drag the image to position it, then click Save Photo."
-            previewClassName="relative aspect-square w-48 overflow-hidden rounded-full"
+            previewClassName="relative aspect-square w-72 overflow-hidden rounded-full"
             onClose={() => { setCropSrc(""); setProfilePictureModalOpen(false); }}
             onBack={() => setCropSrc("")}
             onSave={handleUpload}

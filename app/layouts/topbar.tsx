@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,6 +11,7 @@ import {
   CommandList,
 } from "~/components/ui/command";
 import { CropDialog } from "~/components/ui/crop-dialog";
+import { FileChooser } from "~/components/ui/file-chooser";
 import {
   ChevronDownIcon,
   HelpCircleIcon,
@@ -24,11 +26,9 @@ import {
   UserIcon,
 } from "~/components/ui/icons";
 import { ImageViewer } from "~/components/ui/image-viewer";
-import { FileChooser } from "~/components/ui/file-chooser";
 import { Modal, ModalActions } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { ProfileAvatar } from "~/components/ui/profile-avatar";
-import { Button } from "~/components/ui/button";
 import { NotificationBell } from "~/features/notifications/notification-bell";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
@@ -701,7 +701,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             title="Adjust Profile Photo"
             saveLabel="Save Photo"
             hint="Drag the image to position it, then click Save Photo."
-            previewClassName="relative aspect-square w-48 overflow-hidden rounded-full"
+            previewClassName="relative aspect-square w-72 overflow-hidden rounded-full"
             onClose={() => { setCropSrc(""); setProfilePictureOpen(false); }}
             onBack={() => setCropSrc("")}
             onSave={handlePhotoUpload}
