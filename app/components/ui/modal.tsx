@@ -194,45 +194,46 @@ function ModalContent({
         aria-hidden="true"
       />
 
-      {/* Viewport-centered panel; the body portal keeps it independent of route scroll and layout. */}
-      <div className="pointer-events-none fixed inset-0 flex items-start justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4" style={{ zIndex: panelZ }}>
-        <motion.div
-          role="dialog"
-          aria-modal="true"
-          aria-label={title}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className={`pointer-events-auto flex max-h-[calc(100dvh-3rem)] w-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl sm:max-h-[calc(100dvh-2rem)] dark:border-white/10 dark:bg-surface-raised ${
-            xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
-          }`}
-        >
-          {/* Header band */}
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-5 dark:border-white/10 dark:bg-white/5">
-            <h2 className="min-w-0 font-display text-lg tracking-wide text-navy-700 sm:text-xl dark:text-mist-100">
-              {title}
-            </h2>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close dialog"
-              className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          {/* Body — scrolls when tall; its own padding keeps focus rings clear of the edges. */}
-          <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-            {children}
-          </div>
-          {/* Footer band — pinned action bar, set apart from the body. */}
-          {footer && (
-            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-5 dark:border-white/10 dark:bg-white/5">
-              {footer}
+      {/* Full-viewport scroll container — the overlay scrolls as one, so the
+          scrollbar shows at the viewport's right edge like the page's own. */}
+      <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: panelZ }}>
+        <div className="flex min-h-full items-center justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`flex w-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl dark:border-white/10 dark:bg-surface-raised ${
+              xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
+            }`}
+          >
+            {/* Header band */}
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-5 dark:border-white/10 dark:bg-white/5">
+              <h2 className="min-w-0 font-display text-lg tracking-wide text-navy-700 sm:text-xl dark:text-mist-100">
+                {title}
+              </h2>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close dialog"
+                className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
+              >
+                <CloseIcon />
+              </button>
             </div>
-          )}
-        </motion.div>
+            {/* Body — scrolls with the whole overlay when tall. */}
+            <div className="px-4 py-4 sm:px-5">{children}</div>
+            {/* Footer band — follows the content; the overlay scroll handles overflow. */}
+            {footer && (
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3 sm:px-5 dark:border-white/10 dark:bg-white/5">
+                {footer}
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
     </>
   );
