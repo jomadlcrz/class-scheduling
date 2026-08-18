@@ -190,7 +190,7 @@ function StudentSchedulePage() {
                 />
                 <StatCard
                   label="Status"
-                  value={academicStatus ?? totalSubjects}
+                  value={academicStatus || "Irregular"}
                 />
                 {isRegular ? (
                   <StatCard label="Set" value={studentSetCode} />

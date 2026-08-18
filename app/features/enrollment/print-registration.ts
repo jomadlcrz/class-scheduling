@@ -1,5 +1,4 @@
 import type { EnrollmentRegistration } from "~/types/enrollment";
-import { programService } from "~/services/program.service";
 
 const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -44,17 +43,6 @@ export async function openRegistrationPrint(
 
   const { meta, summary, subjects, schedule } = registration;
   const origin = window.location.origin;
-
-  let departmentCode = "";
-  if (meta.program_abbrev) {
-    try {
-      const programs = await programService.list();
-      const matched = programs.find((p) => p.abbrev === meta.program_abbrev);
-      if (matched?.departmentAbbrev) departmentCode = matched.departmentAbbrev;
-    } catch {
-      // fallback: no department logo
-    }
-  }
 
   const subjectRows = subjects
     .map(
@@ -134,7 +122,6 @@ export async function openRegistrationPrint(
 
     .cor-logo{position:absolute;top:0.02in;width:0.55in;height:0.55in;display:block;padding:0.02in;object-fit:contain;object-position:center}
     .cor-logo-left{left:0.02in}
-    .cor-logo-right{right:0.02in}
 
     .cor-student{display:grid;grid-template-columns:1fr 1fr;gap:0.04in 0.3in;margin:0.12in 0;padding:0.05in 0;font-size:8.5px}
     .cor-student p{line-height:1.3}
@@ -166,7 +153,6 @@ export async function openRegistrationPrint(
 <body>
   <header class="cor-header">
     <img class="cor-logo cor-logo-left" src="${origin}/images/logos/gwc-logo.avif" alt="GWC logo" />
-    <img class="cor-logo cor-logo-right" src="${origin}/images/departments/${safe(departmentCode.toLowerCase())}.avif" alt="${safe(departmentCode)} logo" onerror="if(this.src!=='${origin}/images/departments/no-logo.avif')this.src='${origin}/images/departments/no-logo.avif'" />
     <strong>GOLDEN WEST COLLEGES, INC.</strong>
     <span>San Jose Drive, Alaminos City, Pangasinan</span>
     <small>S.Y. ${safe(meta.school_year)} &middot; ${safe(meta.semester_name)}</small>
@@ -209,11 +195,6 @@ export async function openRegistrationPrint(
       <p class="sig-label">Prepared by:</p>
       <p class="sig-name">${safe(meta.registrar_name)}</p>
       <p class="sig-role">Registrar</p>
-    </div>
-    <div>
-      <p class="sig-label">Approved by:</p>
-      <p class="sig-name">${safe(meta.dean_name)}</p>
-      <p class="sig-role">${safe(meta.dean_department)}</p>
     </div>
   </footer>
   <script>window.addEventListener("load",function(){setTimeout(function(){window.print()},200)})</script>
