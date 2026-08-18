@@ -89,8 +89,8 @@ function SetsPage() {
     setEditTarget(null);
   }
 
-  async function handleArchive(target: ClassSet) {
-    const message = await setService.remove(target.id, target.setCode);
+  async function handleArchive(target: ClassSet, confirmValue: string) {
+    const message = await setService.remove(target.id, confirmValue);
     if (message) toast.success(message);
     await refresh();
   }
@@ -182,11 +182,11 @@ function SetsPage() {
         )}
       </Modal>
 
-      <SetArchiveDialog
-        set={archiveTarget}
-        onClose={() => setArchiveTarget(null)}
-        onConfirm={handleArchive}
-      />
+<SetArchiveDialog
+  set={archiveTarget}
+  onClose={() => setArchiveTarget(null)}
+  onConfirm={handleArchive}
+/>
     </div>
   );
 }

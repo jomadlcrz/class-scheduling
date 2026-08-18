@@ -12,7 +12,7 @@ import type { ClassSet, SetDeletePreview } from "~/types/set";
 type SetArchiveDialogProps = {
   set: ClassSet | null;
   onClose: () => void;
-  onConfirm: (set: ClassSet) => Promise<void>;
+  onConfirm: (set: ClassSet, confirmValue: string) => Promise<void>;
 };
 
 const summaryRowClassName =
@@ -48,7 +48,7 @@ export function SetArchiveDialog({ set, onClose, onConfirm }: SetArchiveDialogPr
     setError(null);
     setArchiving(true);
     try {
-      await onConfirm(set);
+      await onConfirm(set, confirmValue);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
