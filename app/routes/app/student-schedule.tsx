@@ -15,6 +15,7 @@ import { useMySchedule } from "~/features/schedules/use-my-schedule";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useSemesters } from "~/hooks/use-semesters";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { selfAnalyticsService } from "~/services/self-analytics.service";
 
@@ -36,6 +37,7 @@ export default function StudentScheduleRoute() {
 function StudentSchedulePage() {
   const { user } = useAuth();
   const { semesterLabel } = useSemesters();
+  const { yearLevelLabel } = useYearLevels();
   const { context: termContext, loading: termContextLoading } = useTermContext();
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
@@ -136,6 +138,9 @@ function StudentSchedulePage() {
     studentAnalytics?.meta.program_name ??
     visibleSchedules[0]?.programName ??
     visibleSchedules[0]?.program;
+  const studentYearLevel = studentAnalytics?.meta.year_level
+    ? yearLevelLabel(studentAnalytics.meta.year_level)
+    : undefined;
 
   const currentAttestation = attestations.find((a) => a.setCode === studentSetCode);
 
@@ -156,6 +161,7 @@ function StudentSchedulePage() {
                   studentName: user?.name ?? "",
                   academicStatus,
                   programName,
+                  yearLevel: studentYearLevel,
                   semesterNumber: semester,
                   attestations,
                 })

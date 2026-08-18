@@ -43,6 +43,7 @@ export function openStudentSchedulePrint(
     studentName: string;
     academicStatus?: string;
     programName?: string;
+    yearLevel?: string;
     semesterNumber?: number;
     attestations?: Attestation[];
   },
@@ -153,6 +154,7 @@ export function openStudentSchedulePrint(
     <p><b>Name of Student:</b> ${safe(context.studentName)}</p>
     <p><b>Program:</b> ${safe(context.programName || first.program)}</p>
     ${isRegular ? `<p><b>Year Level and Section:</b> ${safe(first.setCode)}</p>` : ""}
+    ${isRegular ? "" : `<p><b>Year Level:</b> ${safe(context.yearLevel || "—")}</p>`}
     <p><b>Status:</b> ${safe(context.academicStatus || "Irregular")}</p>
   </section>
   <table class="sp-table ${showSet ? "sp-with-set" : ""}">
