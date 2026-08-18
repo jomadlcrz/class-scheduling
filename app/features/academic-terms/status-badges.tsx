@@ -29,14 +29,27 @@ export function closedReasonTone(reason: string | null | undefined): BadgeTone {
   return "gold";
 }
 
-export type ScheduleReleaseStatusValue = "draft" | "pending_approval" | "approved" | "rejected";
+export type ScheduleReleaseStatusValue =
+  | "draft"
+  | "pending_dean_review"
+  | "instructor_review"
+  | "registrar_revision"
+  | "pending_final_approval"
+  | "approved"
+  | "rejected";
 
 export function scheduleReleaseStatusTone(status: ScheduleReleaseStatusValue | string): BadgeTone {
   switch (status) {
     case "draft":
       return "gold";
-    case "pending_approval":
+    case "pending_dean_review":
       return "sky";
+    case "instructor_review":
+      return "violet";
+    case "registrar_revision":
+      return "gold";
+    case "pending_final_approval":
+      return "navy";
     case "approved":
       return "emerald";
     case "rejected":
@@ -50,8 +63,14 @@ export function scheduleReleaseStatusLabel(status: ScheduleReleaseStatusValue | 
   switch (status) {
     case "draft":
       return "Draft";
-    case "pending_approval":
-      return "Pending Approval";
+    case "pending_dean_review":
+      return "Pending Dean Review";
+    case "instructor_review":
+      return "Instructor Review";
+    case "registrar_revision":
+      return "Registrar Revision";
+    case "pending_final_approval":
+      return "Pending Final Approval";
     case "approved":
       return "Approved";
     case "rejected":

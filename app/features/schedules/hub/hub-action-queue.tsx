@@ -114,12 +114,12 @@ function buildQueue(
     });
   }
   for (const r of releases) {
-    if (r.releaseStatus !== "pending_approval") continue;
+    if (!["pending_dean_review", "instructor_review", "pending_final_approval"].includes(r.releaseStatus)) continue;
     items.push({
       id: `pending-${r.id}`,
       kind: "pending",
       title: releaseTitle(r),
-      detail: "Waiting in the dean's review queue.",
+      detail: "Moving through the schedule review workflow.",
       to: regularClassPath(schoolYear, r),
       actionLabel: "View",
     });

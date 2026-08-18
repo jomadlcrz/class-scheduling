@@ -10,6 +10,7 @@ import {
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
+import { formatDateTime } from "~/lib/time";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { SchedulePreview } from "~/types/schedule-release";
 
@@ -85,6 +86,18 @@ export function SchedulePreviewModal({ open, releaseId, fetchPreview, onClose }:
               </div>
               <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
             </div>
+
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-slate-50 p-3 font-body text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300 sm:grid-cols-4">
+              <div><dt className="text-slate-400">Reference</dt><dd>{release.referenceCode ?? `Release #${release.id}`}</dd></div>
+              <div><dt className="text-slate-400">Subjects</dt><dd>{release.subjectCount}</dd></div>
+              <div><dt className="text-slate-400">Meetings</dt><dd>{release.generatedMeetingCount} generated · {release.majorMeetingCount} major · {release.tbaCount} TBA</dd></div>
+              <div><dt className="text-slate-400">Submitted by</dt><dd>{release.submittedBy?.name ?? "—"}</dd></div>
+              <div><dt className="text-slate-400">Submitted</dt><dd>{formatDateTime(release.submittedAt) || "—"}</dd></div>
+              <div><dt className="text-slate-400">Reviewed</dt><dd>{formatDateTime(release.reviewedAt) || "—"}</dd></div>
+              <div><dt className="text-slate-400">Approved</dt><dd>{formatDateTime(release.approvedAt) || "—"}</dd></div>
+              {release.submissionNote && <div><dt className="text-slate-400">Submission note</dt><dd>{release.submissionNote}</dd></div>}
+              {release.rejectionReason && <div className="col-span-2 sm:col-span-4"><dt className="text-red-500">Rejection reason</dt><dd className="text-red-600 dark:text-red-300">{release.rejectionReason}</dd></div>}
+            </dl>
 
             {schedules.length === 0 ? (
               <p className="py-8 text-center font-body text-sm text-slate-500 dark:text-slate-400">

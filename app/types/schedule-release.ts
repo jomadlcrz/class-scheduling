@@ -1,10 +1,19 @@
-export type ScheduleReleaseStatus = "draft" | "pending_approval" | "approved" | "rejected";
+/** Backend-owned schedule-release workflow states. */
+export type ScheduleReleaseStatus =
+  | "draft"
+  | "pending_dean_review"
+  | "instructor_review"
+  | "registrar_revision"
+  | "pending_final_approval"
+  | "approved"
+  | "rejected";
 
 export type ScheduleReleaseSubmitter = { userId: number; name: string | null };
 
 /** Shared release object returned by both the registrar and dean endpoints. */
 export type ScheduleRelease = {
   id: number;
+  referenceCode: string | null;
   syId: number;
   semesterNumber: number;
   setId: number;
@@ -13,7 +22,13 @@ export type ScheduleRelease = {
   programId: number;
   programAbbrev: string | null;
   releaseStatus: ScheduleReleaseStatus;
+  allowedTransitions: ScheduleReleaseStatus[];
   sessionCount: number;
+  subjectCount: number;
+  generatedMeetingCount: number;
+  majorMeetingCount: number;
+  tbaCount: number;
+  submissionNote: string | null;
   submittedAt: string | null;
   submittedBy: ScheduleReleaseSubmitter | null;
   reviewedAt: string | null;

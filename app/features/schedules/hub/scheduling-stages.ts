@@ -3,7 +3,15 @@ import type { ScheduleReleaseStatus } from "~/types/schedule-release";
 export type StatusCounts = Record<ScheduleReleaseStatus, number>;
 
 export function emptyStatusCounts(): StatusCounts {
-  return { draft: 0, pending_approval: 0, approved: 0, rejected: 0 };
+  return {
+    draft: 0,
+    pending_dean_review: 0,
+    instructor_review: 0,
+    registrar_revision: 0,
+    pending_final_approval: 0,
+    approved: 0,
+    rejected: 0,
+  };
 }
 
 /** Roll a flat list of release statuses into per-status counts. */
@@ -93,11 +101,11 @@ export function deriveHubStage({ hasTerm, total, unscheduled, counts }: HubStage
       to: "/schedules/regular-class",
     };
   }
-  if (counts.pending_approval > 0) {
+  if (counts.pending_dean_review > 0) {
     return {
       tone: "wait",
       eyebrow: "Waiting on the dean",
-      title: `${counts.pending_approval} section${counts.pending_approval === 1 ? "" : "s"} awaiting approval`,
+      title: `${counts.pending_dean_review} section${counts.pending_dean_review === 1 ? "" : "s"} awaiting approval`,
       line: "Everything built is submitted. The dean is reviewing — track progress on the overview.",
       actionLabel: "View overview",
       to: "/schedules/overview",

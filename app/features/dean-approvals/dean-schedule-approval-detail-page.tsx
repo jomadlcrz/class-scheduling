@@ -106,7 +106,7 @@ export function DeanScheduleApprovalDetailPage() {
 
   const { release, daySchedules } = preview;
   const schedules = scheduleReleaseService.mapPreviewToSchedules(preview);
-  const canReview = release.releaseStatus === "pending_approval";
+  const canReview = release.releaseStatus === "pending_dean_review";
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">

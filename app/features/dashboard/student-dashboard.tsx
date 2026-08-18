@@ -101,7 +101,7 @@ function buildTiles(data: StudentAnalytics): Tile[] {
       tone:
         m.scheduleReleaseStatus === "approved"
           ? "good"
-          : m.scheduleReleaseStatus === "pending_approval"
+          : ["pending_dean_review", "instructor_review", "pending_final_approval"].includes(m.scheduleReleaseStatus)
             ? "warning"
             : "critical",
       badge: m.scheduleReleaseStatus === "approved" ? "Available" : "Waiting",

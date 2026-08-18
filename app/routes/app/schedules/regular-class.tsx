@@ -564,7 +564,7 @@ function RegularClassPage() {
                     <SendIcon />
                     {selectedRelease.releaseStatus === "rejected" ? "Resubmit for Approval" : "Submit for Approval"}
                   </Button>
-                ) : selectedRelease.releaseStatus === "pending_approval" ? (
+                ) : selectedRelease.releaseStatus === "pending_dean_review" ? (
                   <Button
                     type="button"
                     variant="outline"

@@ -7,7 +7,7 @@ import { setService } from "~/services/set.service";
 
 /**
  * Matches the "Needs your attention" count from HubActionQueue:
- * drafts + rejected + pending_approval releases + unscheduled sections.
+ * drafts + rejected + in-review releases + unscheduled sections.
  * Returns 0 for non-registrars and makes no request for them.
  */
 export function useRegistrarPendingScheduleCount(): number {

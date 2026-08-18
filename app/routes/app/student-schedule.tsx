@@ -83,7 +83,7 @@ function StudentSchedulePage() {
     }
 
     const releaseStatus = studentAnalytics?.meta.scheduleReleaseStatus;
-    if (releaseStatus === "pending_approval") {
+    if (releaseStatus === "pending_dean_review" || releaseStatus === "instructor_review" || releaseStatus === "pending_final_approval") {
       return {
         title: "Schedule pending approval",
         message: "Your class schedule is waiting for dean approval. It will appear here once approved.",

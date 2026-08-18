@@ -8,6 +8,7 @@ import {
   StatusBadge,
 } from "~/features/academic-terms/status-badges";
 import { formatRelativeTime } from "~/lib/time";
+import { formatDateTime } from "~/lib/time";
 import type { ScheduleRelease, ScheduleReleaseStatus } from "~/types/schedule-release";
 
 type Audience = "registrar" | "dean";
@@ -37,7 +38,7 @@ function stopsFor(status: ScheduleReleaseStatus): StopView[] {
         { label: "Dean Review", state: "done", sub: "Reviewed" },
         { label: "Approved", state: "done", sub: "Published" },
       ];
-    case "pending_approval":
+    case "pending_dean_review":
       return [
         { label: "Draft", state: "done", sub: "Submitted" },
         { label: "Dean Review", state: "current", sub: "In review" },
@@ -70,7 +71,7 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
 
   if (audience === "dean") {
     switch (release.releaseStatus) {
-      case "pending_approval":
+      case "pending_dean_review":
         return {
           variant: "info",
           icon: <ClockIcon />,
@@ -108,7 +109,7 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
   }
 
   switch (release.releaseStatus) {
-    case "pending_approval":
+    case "pending_dean_review":
       return {
         variant: "info",
         icon: <ClockIcon />,
@@ -280,6 +281,43 @@ export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLif
         </AlertDescription>
         {action && <AlertAction>{action}</AlertAction>}
       </Alert>
+
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-lg border border-slate-100 bg-slate-50 p-3 font-body text-xs text-slate-600 dark:border-white/8 dark:bg-white/4 dark:text-slate-300 sm:grid-cols-4">
+        <div>
+          <dt className="text-slate-400 dark:text-slate-500">Reference</dt>
+          <dd className="mt-0.5 font-medium text-navy-700 dark:text-mist-100">{release.referenceCode ?? `Release #${release.id}`}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400 dark:text-slate-500">Subjects / sessions</dt>
+          <dd className="mt-0.5">{release.subjectCount} / {release.sessionCount}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400 dark:text-slate-500">Meetings</dt>
+          <dd className="mt-0.5">{release.generatedMeetingCount} generated · {release.majorMeetingCount} major · {release.tbaCount} TBA</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400 dark:text-slate-500">Submitted by</dt>
+          <dd className="mt-0.5">{release.submittedBy?.name ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400 dark:text-slate-500">Submitted</dt>
+          <dd className="mt-0.5">{formatDateTime(release.submittedAt) || "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400 dark:text-slate-500">Reviewed</dt>
+          <dd className="mt-0.5">{formatDateTime(release.reviewedAt) || "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400 dark:text-slate-500">Approved</dt>
+          <dd className="mt-0.5">{formatDateTime(release.approvedAt) || "—"}</dd>
+        </div>
+        {release.submissionNote && (
+          <div className="col-span-2 sm:col-span-4">
+            <dt className="text-slate-400 dark:text-slate-500">Submission note</dt>
+            <dd className="mt-0.5">{release.submissionNote}</dd>
+          </div>
+        )}
+      </dl>
     </Card>
   );
 }

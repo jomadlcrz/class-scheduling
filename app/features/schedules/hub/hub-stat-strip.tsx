@@ -29,9 +29,9 @@ export function HubStatStrip({
     },
     {
       label: "Pending dean",
-      value: String(counts.pending_approval),
-      hint: "Awaiting approval",
-      tone: counts.pending_approval > 0 ? "text-sky-700 dark:text-sky-300" : "text-slate-500 dark:text-slate-400",
+      value: String(counts.pending_dean_review + counts.instructor_review + counts.pending_final_approval),
+      hint: "Moving through review",
+      tone: counts.pending_dean_review + counts.instructor_review + counts.pending_final_approval > 0 ? "text-sky-700 dark:text-sky-300" : "text-slate-500 dark:text-slate-400",
     },
     {
       label: "Published",

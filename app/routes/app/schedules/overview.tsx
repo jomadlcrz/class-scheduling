@@ -23,6 +23,7 @@ import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
+import { formatDateTime } from "~/lib/time";
 import { departmentService } from "~/services/department.service";
 import { programService } from "~/services/program.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
@@ -45,12 +46,28 @@ export default function ScheduleOverviewRoute() {
   );
 }
 
-const STATUS_ORDER: ScheduleReleaseStatus[] = ["approved", "pending_approval", "rejected", "draft"];
+const STATUS_ORDER: ScheduleReleaseStatus[] = [
+  "approved",
+  "pending_final_approval",
+  "instructor_review",
+  "pending_dean_review",
+  "registrar_revision",
+  "rejected",
+  "draft",
+];
 
 type StatusCounts = Record<ScheduleReleaseStatus, number>;
 
 function emptyCounts(): StatusCounts {
-  return { draft: 0, pending_approval: 0, approved: 0, rejected: 0 };
+  return {
+    draft: 0,
+    pending_dean_review: 0,
+    instructor_review: 0,
+    registrar_revision: 0,
+    pending_final_approval: 0,
+    approved: 0,
+    rejected: 0,
+  };
 }
 
 function tally(releases: ScheduleRelease[]): StatusCounts {
@@ -337,8 +354,9 @@ function ScheduleOverviewPage() {
                             <Table>
                               <TableHead>
                                 <TableHeader>Set</TableHeader>
-                                <TableHeader>Status</TableHeader>
-                                <TableHeader className="text-center">Sessions</TableHeader>
+                                <TableHeader>Status & release</TableHeader>
+                                <TableHeader className="hidden lg:table-cell">Schedule totals</TableHeader>
+                                <TableHeader className="hidden xl:table-cell">Activity</TableHeader>
                                 <TableHeader>
                                   <span className="sr-only">Actions</span>
                                 </TableHeader>
@@ -355,8 +373,35 @@ function ScheduleOverviewPage() {
                                       <StatusBadge tone={scheduleReleaseStatusTone(release.releaseStatus)}>
                                         {scheduleReleaseStatusLabel(release.releaseStatus)}
                                       </StatusBadge>
+                                      <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">
+                                        {release.referenceCode ?? `Release #${release.id}`}
+                                      </p>
+                                      {release.rejectionReason && (
+                                        <p className="mt-1 max-w-64 font-body text-xs text-red-600 dark:text-red-300">
+                                          {release.rejectionReason}
+                                        </p>
+                                      )}
                                     </TableCell>
-                                    <TableCell className="text-center">{release.sessionCount}</TableCell>
+                                    <TableCell className="hidden lg:table-cell">
+                                      <p>{release.sessionCount} sessions · {release.subjectCount} subjects</p>
+                                      <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">
+                                        {release.generatedMeetingCount} generated · {release.majorMeetingCount} major · {release.tbaCount} TBA
+                                      </p>
+                                    </TableCell>
+                                    <TableCell className="hidden xl:table-cell">
+                                      <p title={formatDateTime(release.submittedAt)}>
+                                        Submitted: {formatDateTime(release.submittedAt) || "—"}
+                                      </p>
+                                      <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">
+                                        By: {release.submittedBy?.name ?? "—"}
+                                      </p>
+                                      <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400" title={formatDateTime(release.reviewedAt)}>
+                                        Reviewed: {formatDateTime(release.reviewedAt) || "—"}
+                                      </p>
+                                      <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400" title={formatDateTime(release.approvedAt)}>
+                                        Approved: {formatDateTime(release.approvedAt) || "—"}
+                                      </p>
+                                    </TableCell>
                                     <TableCell>
                                       <div className="flex justify-end">
                                         <TableActionButton
