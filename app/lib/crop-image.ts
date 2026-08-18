@@ -16,7 +16,6 @@ export async function getCroppedBlob(
   width?: number,
   height?: number,
   errorMessage = "Could not crop the image.",
-  circle = false,
 ): Promise<Blob> {
   const image = await loadImage(imageSrc);
   const canvas = document.createElement("canvas");
@@ -24,12 +23,6 @@ export async function getCroppedBlob(
   canvas.height = height ?? pixelCrop.height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error(errorMessage);
-
-  if (circle) {
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
-    ctx.clip();
-  }
 
   ctx.drawImage(
     image,
@@ -46,8 +39,8 @@ export async function getCroppedBlob(
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error(errorMessage))),
-      circle ? "image/png" : "image/jpeg",
-      circle ? undefined : 0.92,
+      "image/jpeg",
+      0.92,
     );
   });
 }

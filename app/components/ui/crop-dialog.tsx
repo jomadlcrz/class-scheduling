@@ -72,11 +72,8 @@ export function CropDialog({
     setSaving(true);
     setError(null);
     try {
-      const isCircle = cropShape === "round";
-      const blob = await getCroppedBlob(imageSrc, croppedPixels, outputWidth, outputHeight, undefined, isCircle);
-      const ext = isCircle ? "png" : "jpg";
-      const mime = isCircle ? "image/png" : "image/jpeg";
-      const file = new File([blob], `cropped.${ext}`, { type: mime });
+      const blob = await getCroppedBlob(imageSrc, croppedPixels, outputWidth, outputHeight);
+      const file = new File([blob], "cropped.jpg", { type: "image/jpeg" });
       await onSave(file);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to crop the image.");
