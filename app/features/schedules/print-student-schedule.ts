@@ -1,4 +1,4 @@
-import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "~/types/schedule";
+import { DAYS, DAY_LABELS, formatTime, type Attestation, type Day, type Schedule } from "~/types/schedule";
 
 function safe(value: string | number | null | undefined): string {
   return String(value ?? "—")
@@ -49,6 +49,7 @@ export function openStudentSchedulePrint(
     studentName: string;
     academicStatus?: string;
     programName?: string;
+    attestations?: Attestation[];
   },
 ): boolean {
   if (schedules.length === 0) return false;
@@ -58,6 +59,14 @@ export function openStudentSchedulePrint(
   const departmentCode = first.departmentCode;
   const isRegular = context.academicStatus === "Regular";
   const showSet = !isRegular;
+
+  const attestation = context.attestations?.find((a) => a.setCode === first.setCode);
+  const preparedName = attestation?.preparedBy.name ?? "";
+  const preparedPosition = attestation?.preparedBy.position ?? "";
+  const approvedName = attestation?.approvedBy.name ?? "";
+  const approvedPosition = attestation?.approvedBy.departmentAbbrev
+    ? `${attestation.approvedBy.position}, ${attestation.approvedBy.departmentAbbrev} Department`
+    : attestation?.approvedBy.position ?? "";
 
   const dayBlocks = DAYS.map((day) => ({
     day,
@@ -147,13 +156,13 @@ export function openStudentSchedulePrint(
   <footer class="sp-signatures">
     <div>
       <p class="sig-label">Prepared by:</p>
-      <p class="sig-name">Harvin A. Arisga</p>
-      <p class="sig-role">Registrar</p>
+      <p class="sig-name">${safe(preparedName)}</p>
+      <p class="sig-role">${safe(preparedPosition)}</p>
     </div>
     <div>
       <p class="sig-label">Approved by:</p>
-      <p class="sig-name">Denzel Valdez</p>
-      <p class="sig-role">Dean, CITE Department</p>
+      <p class="sig-name">${safe(approvedName)}</p>
+      <p class="sig-role">${safe(approvedPosition)}</p>
     </div>
   </footer>
   <script>window.addEventListener("load",function(){setTimeout(function(){window.print()},200)})</script>

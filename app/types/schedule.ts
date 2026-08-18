@@ -50,6 +50,20 @@ export type Schedule = {
   academicStatus?: string;
 };
 
+export type AttestationPerson = {
+  name: string;
+  position: string;
+  departmentAbbrev?: string;
+};
+
+export type Attestation = {
+  setCode: string;
+  schoolYear: string;
+  semesterNumber: number;
+  preparedBy: AttestationPerson;
+  approvedBy: AttestationPerson;
+};
+
 /** GET /regular_schedule/<id> response, camelCased. */
 export type RegularScheduleDetail = {
   id: number;

@@ -46,6 +46,7 @@ function StudentSchedulePage() {
     schoolYear,
     semester,
     visibleSchedules,
+    attestations,
   } = useMySchedule();
 
   const selectedTerm = termContext?.selection;
@@ -135,6 +136,8 @@ function StudentSchedulePage() {
     visibleSchedules[0]?.programName ??
     visibleSchedules[0]?.program;
 
+  const currentAttestation = attestations.find((a) => a.setCode === studentSetCode);
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
@@ -152,6 +155,7 @@ function StudentSchedulePage() {
                   studentName: user?.name ?? "",
                   academicStatus,
                   programName,
+                  attestations,
                 })
               }
               className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
@@ -217,17 +221,17 @@ function StudentSchedulePage() {
             />
           </div>
 
-          {visibleSchedules.length > 0 && (
+          {visibleSchedules.length > 0 && currentAttestation && (
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               <div>
                 <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
                   Prepared by:
                 </p>
                 <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
-                  Harvin A. Arisga
+                  {currentAttestation.preparedBy.name}
                 </p>
                 <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                  Registrar
+                  {currentAttestation.preparedBy.position}
                 </p>
               </div>
               <div>
@@ -235,10 +239,12 @@ function StudentSchedulePage() {
                   Approved by:
                 </p>
                 <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
-                  Denzel Valdez
+                  {currentAttestation.approvedBy.name}
                 </p>
                 <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                  Dean, CITE Department
+                  {currentAttestation.approvedBy.departmentAbbrev
+                    ? `${currentAttestation.approvedBy.position}, ${currentAttestation.approvedBy.departmentAbbrev} Department`
+                    : currentAttestation.approvedBy.position}
                 </p>
               </div>
             </div>

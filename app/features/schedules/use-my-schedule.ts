@@ -14,6 +14,10 @@ export function useMySchedule() {
     scheduleService.view(),
   );
 
+  const { data: attestations } = useCachedData("my-schedule-attestations", () =>
+    scheduleService.viewAttestations(),
+  );
+
   const [schoolYear, setSchoolYear] = useState("");
   const [semester, setSemester] = useState<ScheduleSemester>(1);
 
@@ -51,5 +55,6 @@ export function useMySchedule() {
     setSemester,
     schoolYears,
     visibleSchedules,
+    attestations: attestations ?? [],
   };
 }

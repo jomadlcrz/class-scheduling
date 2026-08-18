@@ -5,6 +5,7 @@ import {
   DAY_LABELS,
   SCHEDULE_MODES,
   parseTime12h,
+  type Attestation,
   type Day,
   type RegularScheduleDetail,
   type Schedule,
@@ -97,6 +98,36 @@ async function view(): Promise<Schedule[]> {
       academicStatus: r.academic_status,
     };
   });
+}
+
+type AttestationResponse = {
+  setCode: string;
+  schoolYear: string;
+  semesterNumber: number;
+  preparedBy: { name: string; position: string };
+  approvedBy: { name: string; position: string; departmentAbbrev?: string };
+};
+
+/** GET /schedule/view — returns only the attestations array (student/instructor roles). */
+async function viewAttestations(): Promise<Attestation[]> {
+  let data: { attestations?: AttestationResponse[] };
+  try {
+    data = await apiGet<{ attestations?: AttestationResponse[] }>("/schedule/view");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+  return (data.attestations ?? []).map((a) => ({
+    setCode: a.setCode,
+    schoolYear: a.schoolYear,
+    semesterNumber: a.semesterNumber,
+    preparedBy: { name: a.preparedBy.name, position: a.preparedBy.position },
+    approvedBy: {
+      name: a.approvedBy.name,
+      position: a.approvedBy.position,
+      departmentAbbrev: a.approvedBy.departmentAbbrev,
+    },
+  }));
 }
 
 export type ScheduleFacultyOption = {
@@ -885,6 +916,7 @@ async function listScheduleAuditLog(params: {
 
 export const scheduleService = {
   view,
+  viewAttestations,
   listScheduleSubjects,
   listScheduleRooms,
   autoGenerate,
