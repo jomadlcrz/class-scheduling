@@ -26,6 +26,30 @@ export function useDeanFacultyLoading() {
     { enabled: Boolean(selectedSchoolYearId && selectedSemesterNumber) },
   );
 
+  // Department roster supplies employee IDs the loading sheet doesn't carry.
+  const { data: departmentInstructors } = useCachedData(
+    "dean-department-instructors",
+    () => deanService.listDepartmentInstructors(),
+  );
+
+  // Normalizes "Doe, John M." -> "doe, john" to match roster names.
+  const employeeIdByInstructorName = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const instructor of departmentInstructors ?? []) {
+      map.set(`${instructor.lastName.toLowerCase()}, ${instructor.firstName.toLowerCase()}`, instructor.employeeId ?? "");
+    }
+    return map;
+  }, [departmentInstructors]);
+
+  const enrichedEntries = useMemo(() => {
+    if (!entries) return null;
+    return entries.map((entry) => {
+      const key = entry.instructorName.toLowerCase().replace(/\s+[a-z]\.$/, "").trim();
+      const employeeId = employeeIdByInstructorName.get(key);
+      return employeeId ? { ...entry, employeeId } : entry;
+    });
+  }, [entries, employeeIdByInstructorName]);
+
   // Default school year
   useEffect(() => {
     if (selectedSchoolYearId || schoolYears.length === 0) return;
@@ -52,8 +76,8 @@ export function useDeanFacultyLoading() {
   const semesterName = matchedSem ? semesterLabel(matchedSem.semesterNumber) : "";
 
   const selectedEntry = useMemo(
-    () => entries?.[selectedIndex] ?? null,
-    [entries, selectedIndex],
+    () => enrichedEntries?.[selectedIndex] ?? null,
+    [enrichedEntries, selectedIndex],
   );
 
   return {
@@ -73,7 +97,7 @@ export function useDeanFacultyLoading() {
     selectedSemesterNumber,
     setSelectedSemesterNumber,
     // Instructor
-    entries,
+    entries: enrichedEntries,
     selectedEntry,
     selectedIndex,
     setSelectedIndex,

@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "~/components/ui/command";
+import { ChevronDownIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { FacultyLoadingScheduleTable } from "~/features/faculty/faculty-loading-schedule-table";
 import type { FacultyLoadingEntry } from "~/types/faculty-load";
@@ -37,6 +41,9 @@ export function DeanFacultyLoadsView({
   onSemesterChange,
   semesterLabel,
 }: DeanFacultyLoadsViewProps) {
+  const [instructorPickerOpen, setInstructorPickerOpen] = useState(false);
+  const selectedEntryName = entries[selectedIndex]?.instructorName;
+
   return (
     <div className="flex flex-col gap-4">
       {/* ── Info grid ── */}
@@ -47,27 +54,16 @@ export function DeanFacultyLoadsView({
               <td className="w-[12%] border border-slate-300 px-3 py-1.5 font-bold text-navy-800 dark:border-white/15 dark:text-mist-100">
                 NAME
               </td>
-              <td className="w-[38%] border border-slate-300 px-3 py-1.5 text-navy-700 dark:border-white/15 dark:text-mist-200">
-                {entries.length > 0 ? (
-                  <Select
-                    items={entries.map((e, i) => ({ value: String(i), label: e.instructorName }))}
-                    value={String(selectedIndex)}
-                    onValueChange={(v) => onSelectedIndexChange(Number(v))}
-                  >
-                    <SelectTrigger className="border-0 px-2 py-1 font-body text-xs *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {entries.map((e, i) => (
-                        <SelectItem key={i} value={String(i)}>
-                          {e.instructorName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  "—"
-                )}
+              <td className="w-[38%] border border-slate-300 px-1 py-0.5 dark:border-white/15">
+                <button
+                  type="button"
+                  disabled={entries.length === 0}
+                  onClick={() => setInstructorPickerOpen(true)}
+                  className={`${inputClassName} flex items-center justify-between gap-3 text-left`}
+                >
+                  <span className={selectedEntryName ? "truncate" : "truncate text-slate-400 dark:text-slate-500"}>{selectedEntryName ?? "Select an instructor"}</span>
+                  <span className="shrink-0 text-slate-400"><ChevronDownIcon /></span>
+                </button>
               </td>
               <td className="w-[12%] border border-slate-300 px-3 py-1.5 font-bold text-navy-800 dark:border-white/15 dark:text-mist-100">
                 SEMESTER
@@ -127,6 +123,23 @@ export function DeanFacultyLoadsView({
           </tbody>
         </table>
       </div>
+
+      <CommandDialog open={instructorPickerOpen} onOpenChange={setInstructorPickerOpen} title="Select Instructor" description="Search by name, employee ID, or department.">
+        <CommandInput placeholder="Search instructors…" autoFocus />
+        <CommandList>
+          <CommandEmpty>No instructors found.</CommandEmpty>
+          <CommandGroup heading="Instructors">
+            {entries.map((e, i) => (
+              <CommandItem key={i} value={`${e.instructorName} ${e.employeeId ?? ""} ${e.department}`} onSelect={() => { onSelectedIndexChange(i); setInstructorPickerOpen(false); }}>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{e.instructorName}</span>
+                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">{e.employeeId ?? "No employee ID"}{e.department ? ` · ${e.department}` : ""}</span>
+                </span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
 
       {/* ── Schedule table ── */}
       <div className="overflow-x-auto">
