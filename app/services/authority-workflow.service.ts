@@ -116,6 +116,13 @@ async function listMajorScheduleSubmissions(params: {
   return data.submissions ?? [];
 }
 
+async function getMajorScheduleSubmission(submissionId: number): Promise<MajorScheduleSubmission> {
+  const data = await apiGet<MajorScheduleSubmission | { submission: MajorScheduleSubmission }>(
+    `/major-schedule-submissions/${submissionId}`,
+  );
+  return "submission" in data ? data.submission : data;
+}
+
 async function listMajorLabTimeSlots() {
   return apiGet<{ labTimeSlots: { startTime: string; endTime: string }[]; requiredMeetingHours: number | null }>("/major-schedule-lab-time-slots");
 }
@@ -184,6 +191,7 @@ export const authorityWorkflowService = {
   updateMajorSchedule,
   deleteMajorSchedule,
   listMajorScheduleSubmissions,
+  getMajorScheduleSubmission,
   listMajorLabTimeSlots,
   submitMajorSchedule,
   requestMajorScheduleEdit,

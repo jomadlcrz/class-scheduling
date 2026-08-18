@@ -7,7 +7,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { ClockIcon, FlaskConicalIcon } from "~/components/ui/icons";
+import { ClockIcon, EyeIcon, FlaskConicalIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -54,6 +54,10 @@ function MajorSchedulesPage() {
   const [decisionTarget, setDecisionTarget] = useState<DecisionTarget | null>(null);
   const [conflicts, setConflicts] = useState<MajorScheduleConflict[] | null>(null);
   const [floatingTarget, setFloatingTarget] = useState<MajorSchedule | null>(null);
+  const [submissionDetail, setSubmissionDetail] = useState<MajorScheduleSubmission | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
   const [floatingInstructorId, setFloatingInstructorId] = useState(0);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -104,6 +108,20 @@ function MajorSchedulesPage() {
     if (ok) { setMeetingOpen(false); setEditTarget(null); }
   }
 
+  async function openSubmissionDetail(submissionId: number) {
+    setDetailOpen(true);
+    setDetailLoading(true);
+    setDetailError(null);
+    setSubmissionDetail(null);
+    try {
+      setSubmissionDetail(await authorityWorkflowService.getMajorScheduleSubmission(submissionId));
+    } catch (err) {
+      setDetailError(err instanceof Error ? err.message : "");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader title="Major Schedules" actions={user?.role === "dean" ? <Button type="button" block={false} onClick={() => { setEditTarget(null); setMeetingOpen(true); setFormError(null); }}>New Major Meeting</Button> : undefined} />
@@ -131,6 +149,10 @@ function MajorSchedulesPage() {
               <div><h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">{submission.departmentAbbrev} · Version {submission.version}</h2><p className="font-body text-xs text-slate-500 dark:text-slate-400">{submission.departmentName}</p></div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={STATUS_TONES[submission.status] ?? "slate"}>{submission.status}</Badge>
+                <Button type="button" variant="outline" block={false} onClick={() => void openSubmissionDetail(submission.id)}>
+                  <EyeIcon />
+                  View Details
+                </Button>
                 {user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.submitMajorSchedule(submission.id))}>Submit</Button>}
                 {user?.role === "dean" && ["submitted", "finalized"].includes(submission.status) && <Button type="button" variant="outline" block={false} onClick={() => { setEditRequestTarget(submission); setFormError(null); }}>Request Edit</Button>}
                 {user?.role === "registrar" && submission.status === "submitted" && <><Button type="button" variant="outline" block={false} onClick={async () => { setFormError(null); try { const result = await authorityWorkflowService.getMajorScheduleConflicts(submission.id); setConflicts(result.conflicts); } catch (err) { setFormError(err instanceof Error ? err.message : ""); } }}>Check Conflicts</Button><Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.finalizeMajorSchedule(submission.id))}>Finalize</Button></>}
@@ -147,6 +169,33 @@ function MajorSchedulesPage() {
       {user?.role === "registrar" && (editRequests?.length ?? 0) > 0 && <section className="mt-8"><h2 className="mb-3 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Edit Requests</h2><Table><TableHead><TableHeader>Submission</TableHeader><TableHeader>Reason</TableHeader><TableHeader>Status</TableHeader><TableHeader><span className="sr-only">Actions</span></TableHeader></TableHead><TableBody>{editRequests!.map((request) => <TableRow key={request.id}><TableCell>Submission #{request.submissionId}</TableCell><TableCell>{request.reason}</TableCell><TableCell><Badge tone={STATUS_TONES[request.status] ?? "slate"}>{request.status}</Badge></TableCell><TableCell>{request.status === "pending" && <div className="flex justify-end gap-2"><Button type="button" block={false} onClick={() => setDecisionTarget({ request, approve: true })}>Approve</Button><Button type="button" variant="danger" block={false} onClick={() => setDecisionTarget({ request, approve: false })}>Reject</Button></div>}</TableCell></TableRow>)}</TableBody></Table></section>}
 
       <MajorMeetingModal open={meetingOpen} schedule={editTarget} syId={syId} semesterNumber={semesterNumber} schoolYear={schoolYears.find((row) => row.id === syId)?.schoolYear ?? ""} saving={saving} error={formError} onClose={() => { setMeetingOpen(false); setEditTarget(null); }} onSubmit={submitMeeting} />
+      <Modal open={detailOpen} onClose={() => setDetailOpen(false)} title="Submission Details" wide>
+        {detailLoading ? (
+          <Skeleton className="h-52 rounded-xl" />
+        ) : detailError ? (
+          <DataLoadAlert title="Submission unavailable" message={detailError} />
+        ) : submissionDetail ? (
+          <div className="space-y-4">
+            <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <SubmissionField label="Department" value={`${submissionDetail.departmentAbbrev} — ${submissionDetail.departmentName}`} />
+              <SubmissionField label="Version" value={String(submissionDetail.version)} />
+              <SubmissionField label="Status" value={submissionDetail.status} />
+              <SubmissionField label="Meetings" value={String(submissionDetail.schedules.length)} />
+            </dl>
+            <Table>
+              <TableHead><TableHeader>Subject</TableHeader><TableHeader>Section</TableHeader><TableHeader>Schedule</TableHeader><TableHeader>Instructor</TableHeader></TableHead>
+              <TableBody>{submissionDetail.schedules.map((schedule) => (
+                <TableRow key={schedule.id}>
+                  <TableCell><span className="font-semibold text-navy-700 dark:text-mist-100">{schedule.subjectCode}</span><span className="block text-xs text-slate-400">{schedule.subjectTitle}</span></TableCell>
+                  <TableCell>{schedule.setName}</TableCell>
+                  <TableCell>{schedule.dayOfWeek} · {schedule.startTime}–{schedule.endTime}</TableCell>
+                  <TableCell>{schedule.instructorDisplay}</TableCell>
+                </TableRow>
+              ))}</TableBody>
+            </Table>
+          </div>
+        ) : null}
+      </Modal>
       <ConfirmDialog open={deleteTarget !== null} onClose={() => setDeleteTarget(null)} title="Delete Major Meeting" confirmLabel="Delete" loadingLabel="Deleting…" confirmVariant="danger" onConfirm={async () => { if (!deleteTarget) return; const message = await authorityWorkflowService.deleteMajorSchedule(deleteTarget.id); if (message) toast.success(message); await reload(); }}>Delete {deleteTarget?.subjectCode} from this draft?</ConfirmDialog>
       <Modal open={editRequestTarget !== null} onClose={() => setEditRequestTarget(null)} title="Request Schedule Edit"><form onSubmit={async (event) => { event.preventDefault(); const reason = String(new FormData(event.currentTarget).get("reason") ?? ""); const ok = await withRefresh(() => authorityWorkflowService.requestMajorScheduleEdit(editRequestTarget!.id, reason)); if (ok) setEditRequestTarget(null); }} className="space-y-4"><FormError message={formError} /><Textarea id="reason" name="reason" label="Reason" required minLength={10} /><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setEditRequestTarget(null)}>Cancel</Button><Button type="submit" block={false} isLoading={saving} loadingLabel="Sending…">Send Request</Button></ModalActions></form></Modal>
       <Modal open={decisionTarget !== null} onClose={() => setDecisionTarget(null)} title={`${decisionTarget?.approve ? "Approve" : "Reject"} Edit Request`}><form onSubmit={async (event) => { event.preventDefault(); const note = String(new FormData(event.currentTarget).get("note") ?? ""); const ok = await withRefresh(() => authorityWorkflowService.decideMajorScheduleEdit(decisionTarget!.request.id, decisionTarget!.approve, note || undefined)); if (ok) setDecisionTarget(null); }} className="space-y-4"><FormError message={formError} /><Textarea id="note" name="note" label="Decision note" /><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setDecisionTarget(null)}>Cancel</Button><Button type="submit" variant={decisionTarget?.approve ? "primary" : "danger"} block={false} isLoading={saving} loadingLabel="Saving…">Confirm</Button></ModalActions></form></Modal>
@@ -191,6 +240,15 @@ function MajorLaboratorySlotsCard({ slots, requiredMeetingHours }: { slots: { st
         </div>
       </div>
     </Card>
+  );
+}
+
+function SubmissionField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-body text-[0.7rem] uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</dt>
+      <dd className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">{value}</dd>
+    </div>
   );
 }
 

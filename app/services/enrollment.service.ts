@@ -381,6 +381,49 @@ async function checkPrerequisites(input: {
   };
 }
 
+export type EnrollmentRegistration = {
+  enrolled: boolean;
+  meta: {
+    student_id: string | null;
+    student_name: string | null;
+    full_name: string | null;
+    name_natural: string | null;
+    enrolled_status?: string | null;
+    program_abbrev?: string | null;
+    program_name?: string | null;
+    set_name?: string | null;
+    year_level?: number | null;
+    school_year?: string | null;
+    semester_name?: string | null;
+    registrar_name?: string | null;
+  };
+  summary: {
+    total_subjects: number;
+    total_units: number;
+  };
+  subjects: {
+    subject_id: number;
+    subject_code: string | null;
+    descriptive_title: string | null;
+    units: number | null;
+    lec_hours: number | null;
+    lab_hours: number | null;
+  }[];
+  schedule: {
+    subject_code: string | null;
+    day: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    room: string | null;
+    instructor: string | null;
+  }[];
+};
+
+/** GET /enrollments/<id>/registration — Certificate of Registration for one enrollment. */
+async function getRegistration(enrollmentId: number): Promise<EnrollmentRegistration> {
+  return apiGet<EnrollmentRegistration>(`/enrollments/${enrollmentId}/registration`);
+}
+
 export const enrollmentService = {
   listTermEnrollments,
   getFacets,
@@ -393,6 +436,7 @@ export const enrollmentService = {
   setEnrollmentState,
   deleteEnrollment,
   checkPrerequisites,
+  getRegistration,
 };
 
 export type { UpdateEnrollmentInput };

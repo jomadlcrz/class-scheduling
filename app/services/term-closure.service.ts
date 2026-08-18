@@ -319,29 +319,6 @@ function mapNextAction(raw: ApiWorkflowPayload["next_action"]): TermWorkflowNext
   };
 }
 
-function lifecycleToTermWorkflow(lifecycle: AcademicLifecycle): TermWorkflow {
-  return {
-    schoolYear: {
-      id: lifecycle.schoolYear.syId,
-      schoolYear: lifecycle.schoolYear.schoolYear,
-      registrarCompleted: lifecycle.schoolYear.isClosed,
-      reopenable: lifecycle.schoolYear.reopenable,
-    },
-    semesters: lifecycle.terms.map((row) => ({
-      semesterNumber: row.semesterNumber,
-      semesterName: row.term.closure.semesterDisplayName,
-      status: row.term.closure.status,
-      closedReason: row.term.closure.closedReason,
-      closedReasonLabel: row.term.closure.closedReasonLabel,
-      actions: {
-        canClose: row.term.closure.actions.canClose,
-        canReopen: row.term.closure.actions.canReopen,
-      },
-    })),
-    workflow: lifecycle.workflow,
-  };
-}
-
 function lockEffectsToClosureEffects(effects: string[]): { label: string }[] {
   return effects.map((label) => ({ label }));
 }
@@ -475,9 +452,51 @@ async function getLifecycle(syId: number): Promise<AcademicLifecycle> {
   };
 }
 
-/** Workflow view derived from GET /school-years/{id}/lifecycle. */
+/** GET /school-years/{id}/term-workflow — focused two-semester workflow view. */
 async function getTermWorkflow(syId: number): Promise<TermWorkflow> {
-  return lifecycleToTermWorkflow(await getLifecycle(syId));
+  const raw = await apiGet<{
+    school_year: {
+      id: number;
+      school_year: string;
+      registrar_completed: boolean;
+      reopenable: boolean;
+    };
+    semesters: {
+      semester_number: number;
+      semester_name: string;
+      status: "Open" | "Closed";
+      closed_reason: string | null;
+      closed_reason_label: string | null;
+      actions: ApiLifecycleActions;
+    }[];
+    workflow: ApiWorkflowPayload;
+  }>(`/school-years/${syId}/term-workflow`);
+
+  return {
+    schoolYear: {
+      id: raw.school_year.id,
+      schoolYear: raw.school_year.school_year,
+      registrarCompleted: raw.school_year.registrar_completed,
+      reopenable: raw.school_year.reopenable,
+    },
+    semesters: raw.semesters.map((semester) => ({
+      semesterNumber: semester.semester_number,
+      semesterName: semester.semester_name,
+      status: semester.status,
+      closedReason: semester.closed_reason,
+      closedReasonLabel: semester.closed_reason_label,
+      actions: {
+        canClose: semester.actions.can_close,
+        canReopen: semester.actions.can_reopen,
+      },
+    })),
+    workflow: mapWorkflow(raw.workflow),
+  };
+}
+
+/** GET /school-years/:id/state. */
+async function getSchoolYearState(syId: number): Promise<SchoolYearLifecycleState> {
+  return mapSchoolYearState(await apiGet<ApiSchoolYearState>(`/school-years/${syId}/state`));
 }
 
 /** GET /school-years/:id/state/preview. */
@@ -583,6 +602,13 @@ async function patchTermState(
   return apiMessage(data);
 }
 
+/** GET /school-years/:id/terms/:semester/state. */
+async function getTermState(syId: number, semesterNumber: number): Promise<TermLifecycleState> {
+  return mapTermState(
+    await apiGet<ApiTermState>(`/school-years/${syId}/terms/${semesterNumber}/state`),
+  );
+}
+
 export const termClosureService = {
   getContext,
   listClosures,
@@ -591,8 +617,10 @@ export const termClosureService = {
   listAuditLog,
   getTermWorkflow,
   getLifecycle,
+  getSchoolYearState,
   getSchoolYearStatePreview,
   patchSchoolYearState,
+  getTermState,
   getTermStatePreview,
   patchTermState,
 };

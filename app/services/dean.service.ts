@@ -339,6 +339,31 @@ async function getTeachingTermDetail(id: number): Promise<TeachingTermDetail> {
   return apiGet<TeachingTermDetail>(`/deans/teaching-terms/${id}`);
 }
 
+type DeanStudentEnrollment = {
+  enrollment_id: number;
+  student_profile_id: number;
+  student_type: string;
+  year_level: number;
+  enrolled_status: string;
+  enrollment_state: string;
+  program: string;
+  set: string | null;
+  semester_name: string;
+  sy_id: number;
+  term_closed: boolean;
+  subjects: {
+    subject_id: number;
+    subject_code: string | null;
+    descriptive_title: string | null;
+    units: number | null;
+  }[];
+};
+
+/** GET /deans/students/<id>/enrollments — one student's enrollment history scoped to the dean's department. */
+async function getStudentEnrollments(studentProfileId: number): Promise<DeanStudentEnrollment[]> {
+  return apiGet<DeanStudentEnrollment[]>(`/deans/students/${studentProfileId}/enrollments`);
+}
+
 /** POST /deans/subject-assignments — update cap for an existing teaching term.
  *  The backend re-applies max_weekly_hours on every POST to this endpoint. */
 async function updateMaxWeeklyHours(
@@ -442,4 +467,5 @@ export const deanService = {
   getOfferingCoverage,
   getSchedulingLoadPolicy,
   updateSchedulingLoadPolicy,
+  getStudentEnrollments,
 };

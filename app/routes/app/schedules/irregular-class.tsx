@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { SearchIcon } from "~/components/ui/icons";
+import { SearchIcon, TrashIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { StatCard } from "~/components/ui/stat-card";
-import { Modal } from "~/components/ui/modal";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { TableSkeleton, WizardSkeleton } from "~/components/ui/skeleton";
@@ -757,7 +758,7 @@ function IrregularClassPage() {
           ) : assigned.length === 0 ? (
             <div className="mt-6"><EmptyState title="No assigned schedules">No irregular students have an assigned schedule for this term yet.</EmptyState></div>
           ) : (
-            <div className="mt-6"><AssignedScheduleView students={assigned} /></div>
+            <div className="mt-6"><AssignedScheduleView students={assigned} onRemoved={reloadAssigned} /></div>
           )}
         </>
       )}
@@ -766,8 +767,26 @@ function IrregularClassPage() {
 }
 
 /* ── Assigned tab — unchanged ── */
-function AssignedScheduleView({ students }: { students: StudentAssignedSchedule[] }) {
+type AssignedScheduleRow = StudentAssignedSchedule["assignedSubjects"][number]["schedules"][number];
+
+function AssignedScheduleView({
+  students,
+  onRemoved,
+}: {
+  students: StudentAssignedSchedule[];
+  onRemoved: () => Promise<unknown>;
+}) {
   const [selected, setSelected] = useState<StudentAssignedSchedule | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<AssignedScheduleRow | null>(null);
+
+  async function removeSchedule() {
+    if (!removeTarget) return;
+    const message = await irregularClassService.deleteSchedule(removeTarget.id);
+    if (message) toast.success(message);
+    setRemoveTarget(null);
+    setSelected(null);
+    await onRemoved();
+  }
 
   return (
     <>
@@ -805,6 +824,7 @@ function AssignedScheduleView({ students }: { students: StudentAssignedSchedule[
                       <TableHeader dense className="hidden sm:table-cell">Room</TableHeader>
                       <TableHeader dense className="hidden sm:table-cell">Instructor</TableHeader>
                       <TableHeader dense className="hidden sm:table-cell">Set</TableHeader>
+                      <TableHeader dense><span className="sr-only">Actions</span></TableHeader>
                     </TableHead>
                     <TableBody>
                       {subject.schedules.map((sched) => (
@@ -814,6 +834,20 @@ function AssignedScheduleView({ students }: { students: StudentAssignedSchedule[
                           <TableCell dense className="hidden sm:table-cell">{sched.room ?? "—"}</TableCell>
                           <TableCell dense className="hidden sm:table-cell">{sched.instructor ?? "—"}</TableCell>
                           <TableCell dense className="hidden sm:table-cell">{sched.set ?? "—"}</TableCell>
+                          <TableCell dense>
+                            <div className="flex justify-end">
+                              <Button
+                                type="button"
+                                variant="danger"
+                                block={false}
+                                onClick={() => setRemoveTarget(sched)}
+                                aria-label={`Remove ${subject.subjectCode} schedule on ${sched.dayOfWeek}`}
+                              >
+                                <TrashIcon />
+                                Remove
+                              </Button>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -824,6 +858,18 @@ function AssignedScheduleView({ students }: { students: StudentAssignedSchedule[
           </div>
         )}
       </Modal>
+      <ConfirmDialog
+        open={removeTarget !== null}
+        onClose={() => setRemoveTarget(null)}
+        title="Remove irregular seat"
+        confirmLabel="Remove seat"
+        loadingLabel="Removing…"
+        confirmVariant="danger"
+        onConfirm={removeSchedule}
+      >
+        Remove this student's seat from {removeTarget?.subjectCode} on {removeTarget?.dayOfWeek}? The
+        regular class schedule will not be changed.
+      </ConfirmDialog>
     </>
   );
 }
