@@ -109,6 +109,7 @@ export function openStudentSchedulePrint(
     .sp-table{width:100%;table-layout:fixed;border-collapse:collapse}
     .sp-table th,.sp-table td{border:1px solid #444;padding:0.12rem 0.2rem;color:#000;font-size:9px;line-height:1.2;vertical-align:middle}
     .sp-table th{text-align:center}
+    .sp-table thead th{border-bottom-width:2px}
     .sp-table td:nth-child(1),.sp-table th:nth-child(1){width:16%;text-align:center;white-space:nowrap}
     .sp-table td:nth-child(2),.sp-table th:nth-child(2){width:13%;text-align:center}
     .sp-table td:nth-child(3),.sp-table th:nth-child(3){width:31%}
