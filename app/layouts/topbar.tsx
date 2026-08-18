@@ -26,7 +26,7 @@ import {
   UserIcon,
 } from "~/components/ui/icons";
 import { ImageViewer } from "~/components/ui/image-viewer";
-import { Modal, ModalActions } from "~/components/ui/modal";
+import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
 import { Popover } from "~/components/ui/popover";
 import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { NotificationBell } from "~/features/notifications/notification-bell";
@@ -278,6 +278,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const [profilePictureOpen, setProfilePictureOpen] = useState(false);
   const [cropSrc, setCropSrc] = useState("");
   const [removing, setRemoving] = useState(false);
+  const [photoRemoveOpen, setPhotoRemoveOpen] = useState(false);
   const [fullViewOpen, setFullViewOpen] = useState(false);
   const createActions = user ? CREATE_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
   const searchActions = user ? SEARCH_ACTIONS.filter((action) => action.roles.includes(user.role)) : [];
@@ -703,13 +704,30 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   Cancel
                 </Button>
                 {photoUrl && (
-                  <Button type="button" variant="danger" block={false} isLoading={removing} loadingLabel="Deleting…" onClick={handlePhotoRemove}>
+                  <Button type="button" variant="danger" block={false} disabled={removing} onClick={() => setPhotoRemoveOpen(true)}>
                     Delete
                   </Button>
                 )}
               </ModalActions>
             </div>
           </Modal>
+
+          <ConfirmDialog
+            open={photoRemoveOpen}
+            onClose={() => setPhotoRemoveOpen(false)}
+            title="Remove profile picture"
+            confirmLabel="Remove"
+            loadingLabel="Removing…"
+            confirmVariant="danger"
+            onConfirm={async () => {
+              await handlePhotoRemove();
+              setPhotoRemoveOpen(false);
+            }}
+          >
+            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+              This will permanently delete your custom profile picture.
+            </p>
+          </ConfirmDialog>
 
           <CropDialog
             open={profilePictureOpen && isCropping}

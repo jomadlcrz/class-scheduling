@@ -6,6 +6,22 @@ import { Button } from "~/components/ui/button";
 import { CloseIcon } from "~/components/ui/icons";
 import { useScrollLock } from "~/hooks/use-scroll-lock";
 
+/** Overlays currently mounted. Each dialog reserves a slot so a nested dialog's
+ *  backdrop + panel stack above every dialog opened before it. */
+let openModalCount = 0;
+
+function useModalDepth(): number {
+  const [depth, setDepth] = useState(0);
+  useEffect(() => {
+    openModalCount += 1;
+    setDepth(openModalCount);
+    return () => {
+      openModalCount -= 1;
+    };
+  }, []);
+  return depth;
+}
+
 type ModalProps = {
   open: boolean;
   onClose: () => void;
@@ -149,13 +165,21 @@ function ModalContent({
   // Freeze body scroll while open (shared counter — only restores when all overlays close).
   useScrollLock();
 
+  // Later-opened dialogs get a higher slot so their backdrop sits above the panel
+  // of every earlier dialog — otherwise a nested confirm's backdrop (z-50) would
+  // hide under the opener's panel (z-60) and never dim/blur it.
+  const depth = useModalDepth();
+  const backdropZ = 50 + Math.max(0, depth - 1) * 20;
+  const panelZ = backdropZ + 10;
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      // Escape closes only the top-most dialog, leaving the opener untouched.
+      if (e.key === "Escape" && depth >= openModalCount) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, depth]);
 
   return (
     <>
@@ -165,12 +189,13 @@ function ModalContent({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 bg-navy-950/40 backdrop-blur-sm"
+        className="fixed inset-0 bg-navy-950/40 backdrop-blur-sm"
+        style={{ zIndex: backdropZ }}
         aria-hidden="true"
       />
 
       {/* Viewport-centered panel; the body portal keeps it independent of route scroll and layout. */}
-      <div className="pointer-events-none fixed inset-0 z-60 flex items-start justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
+      <div className="pointer-events-none fixed inset-0 flex items-start justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4" style={{ zIndex: panelZ }}>
         <motion.div
           role="dialog"
           aria-modal="true"
