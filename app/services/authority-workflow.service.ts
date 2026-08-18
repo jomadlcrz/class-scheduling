@@ -89,7 +89,7 @@ async function createMajorSchedule(input: MajorScheduleMeetingInput) {
 }
 
 async function updateMajorSchedule(id: number, input: MajorScheduleMeetingInput, audience: "dean" | "registrar") {
-  const data = await apiPut<MessageResponse & { schedule: MajorSchedule }>(`/${audience}/major-schedules/${id}`, input);
+  const data = await apiPut<MessageResponse & { schedule: MajorSchedule }>(`/${audience === "dean" ? "deans" : "registrar"}/major-schedules/${id}`, input);
   return { message: apiMessage(data), schedule: data.schedule };
 }
 
