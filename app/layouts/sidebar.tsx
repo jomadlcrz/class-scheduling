@@ -141,25 +141,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    // Timetable pipeline + personal schedules.
-    label: "Scheduling",
-    items: [
-      { label: "Scheduling Hub", to: "/schedules", icon: <SchedulingHubIcon />, roles: ["registrar"] },
-      { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
-      { label: "Subject Offering", to: "/subject-offering", icon: <UserCheckIcon />, roles: ["registrar"] },
-      { label: "Assignment Audit Logs", to: "/subject-offering/audit-logs", icon: <AuditLogIcon />, roles: ["registrar"] },
-      { label: "Major Schedules", to: "/major-schedules", icon: <CalendarCheckIcon />, roles: ["registrar"] },
-      { label: "Hours Adjustments", to: "/hours-adjustment-requests", icon: <ClockIcon />, roles: ["registrar"] },
-      { label: "Schedule Responses", to: "/schedule-responses", icon: <CalendarClockIcon />, roles: ["registrar"] },
-      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
-      { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
-      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "Schedule Responses", to: "/schedule-responses", icon: <CalendarClockIcon />, roles: ["faculty"] },
-      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
-    ],
-  },
-  {
     // Advisory capacity tools — shared with the dean.
     label: "Rooms & Capacity",
     items: [
@@ -187,6 +168,25 @@ const NAV_GROUPS: NavGroup[] = [
       },
       { label: "New Enrollment", to: "/enrollment/new", icon: <GraduationCapIcon />, roles: ["registrar"] },
       { label: "Re-enroll Student", to: "/enrollment/re-enroll", icon: <RefreshCwIcon />, roles: ["registrar"] },
+    ],
+  },
+  {
+    // Timetable pipeline + personal schedules.
+    label: "Scheduling",
+    items: [
+      { label: "Scheduling Hub", to: "/schedules", icon: <SchedulingHubIcon />, roles: ["registrar"] },
+      { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
+      { label: "Subject Offering", to: "/subject-offering", icon: <UserCheckIcon />, roles: ["registrar"] },
+      { label: "Assignment Audit Logs", to: "/subject-offering/audit-logs", icon: <AuditLogIcon />, roles: ["registrar"] },
+      { label: "Major Schedules", to: "/major-schedules", icon: <CalendarCheckIcon />, roles: ["registrar"] },
+      { label: "Hours Adjustments", to: "/hours-adjustment-requests", icon: <ClockIcon />, roles: ["registrar"] },
+      { label: "Schedule Responses", to: "/schedule-responses", icon: <CalendarClockIcon />, roles: ["registrar"] },
+      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
+      { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
+      { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
+      { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
+      { label: "Schedule Responses", to: "/schedule-responses", icon: <CalendarClockIcon />, roles: ["faculty"] },
+      { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
     ],
   },
   {
