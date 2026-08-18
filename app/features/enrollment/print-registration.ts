@@ -77,13 +77,14 @@ export async function openRegistrationPrint(
     const otherDays = [...grouped.keys()].filter((d) => !DAY_ORDER.includes(d));
     const orderedDays = [...dayOrder, ...otherDays];
 
-    const dayBlocks = orderedDays
+    const dayRows = orderedDays
       .map((day) => {
         const entries = grouped.get(day)!;
-        const rows = entries
+        return entries
           .map(
-            (s) => `
+            (s, i) => `
               <tr>
+                ${i === 0 ? `<td class="day-cell" rowspan="${entries.length}">${safe(day)}</td>` : ""}
                 <td>${safe(s.subject_code)}</td>
                 <td class="center">${formatTime(s.start_time)} – ${formatTime(s.end_time)}</td>
                 <td>${safe(s.room)}</td>
@@ -92,29 +93,24 @@ export async function openRegistrationPrint(
             `,
           )
           .join("");
-        return `
-          <div class="day-group">
-            <div class="day-label">${safe(day)}</div>
-            <table class="day-table">
-              <thead>
-                <tr>
-                  <th>Subject Code</th>
-                  <th>Time</th>
-                  <th>Room</th>
-                  <th>Instructor</th>
-                </tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>
-        `;
       })
       .join("");
 
     scheduleSection = `
       <section class="cor-section">
         <h3>Class Schedule</h3>
-        ${dayBlocks}
+        <table class="sched-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Subject Code</th>
+              <th>Time</th>
+              <th>Room</th>
+              <th>Instructor</th>
+            </tr>
+          </thead>
+          <tbody>${dayRows}</tbody>
+        </table>
       </section>
     `;
   }
@@ -127,48 +123,44 @@ export async function openRegistrationPrint(
   <link rel="icon" href="${origin}/favicon.ico" />
   <style>
     *{box-sizing:border-box;margin:0}
-    body{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:0.4in}
-    
-    .cor-header{position:relative;min-height:0.72in;text-align:center;margin-bottom:0.4rem;line-height:1.12;padding:0 0.78in}
+    body{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:0.35in}
+
+    .cor-header{position:relative;min-height:0.65in;text-align:center;margin-bottom:0.3rem;line-height:1.1;padding:0 0.75in}
     .cor-header strong,.cor-header span,.cor-header small{display:block}
-    .cor-header strong{font-size:15px}
-    .cor-header span{font-size:10px}
-    .cor-header small{margin-top:0.35rem;font-size:9px}
-    .cor-header h2{font-size:12px;margin-top:0.6rem;letter-spacing:0.08em;text-decoration:underline}
+    .cor-header strong{font-size:14px}
+    .cor-header span{font-size:9.5px}
+    .cor-header small{margin-top:0.25rem;font-size:8.5px}
+    .cor-header h2{font-size:11px;margin-top:0.45rem;letter-spacing:0.06em;text-decoration:underline}
 
-    .cor-logo{position:absolute;top:0.03in;width:0.62in;height:0.62in;display:block;padding:0.03in;object-fit:contain;object-position:center}
-    .cor-logo-left{left:0.03in}
-    .cor-logo-right{right:0.03in}
+    .cor-logo{position:absolute;top:0.02in;width:0.55in;height:0.55in;display:block;padding:0.02in;object-fit:contain;object-position:center}
+    .cor-logo-left{left:0.02in}
+    .cor-logo-right{right:0.02in}
 
-    .cor-student{display:grid;grid-template-columns:1fr 1fr;gap:0.06in 0.35in;margin:0.2in 0;padding:0.08in 0;font-size:9px}
-    .cor-student p{line-height:1.4}
-    .cor-student b{display:inline-block;min-width:1.1in}
+    .cor-student{display:grid;grid-template-columns:1fr 1fr;gap:0.04in 0.3in;margin:0.12in 0;padding:0.05in 0;font-size:8.5px}
+    .cor-student p{line-height:1.3}
+    .cor-student b{display:inline-block;min-width:1in}
 
-    .cor-section{margin-top:0.25in}
-    .cor-section h3{font-size:10px;text-transform:uppercase;margin-bottom:0.08in}
+    .cor-section{margin-top:0.15in}
+    .cor-section h3{font-size:9.5px;text-transform:uppercase;margin-bottom:0.05in}
 
-    table{width:100%;border-collapse:collapse;margin-top:0.05in}
-    th,td{border:1px solid #000;padding:0.04in 0.08in;font-size:8.5px;line-height:1.2;vertical-align:middle}
-    th{background:#f0f0f0;text-align:center;font-weight:bold;font-size:8.5px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #000;padding:0.03in 0.06in;font-size:8px;line-height:1.15;vertical-align:middle}
+    th{background:#f0f0f0;text-align:center;font-weight:bold;font-size:7.5px;text-transform:uppercase}
     td.center{text-align:center}
 
-    .day-group{margin-bottom:0.08in}
-    .day-label{font-size:9px;font-weight:bold;background:#e8e8e8;padding:0.02in 0.06in;border:1px solid #000;border-bottom:none}
-    .day-table{margin-top:0}
-    .day-table th{font-size:8px;padding:0.03in 0.06in}
-    .day-table td{font-size:8px;padding:0.03in 0.06in}
+    .day-cell{background:#f5f5f5;font-weight:bold;text-align:center;vertical-align:middle}
 
-    .cor-summary{margin-top:0.12in;font-size:9px;text-align:right}
-    .cor-summary b{margin-left:0.3in}
+    .cor-summary{margin-top:0.08in;font-size:8.5px;text-align:right}
+    .cor-summary b{margin-left:0.25in}
 
-    .cor-footer{display:flex;justify-content:space-between;margin-top:0.6in;font-size:9px}
+    .cor-footer{display:flex;justify-content:space-between;margin-top:0.4in;font-size:8.5px;page-break-inside:avoid;break-inside:avoid}
     .cor-footer div{flex:1}
     .cor-footer .sig-label{font-weight:bold}
-    .cor-footer .sig-name{margin-top:0.12in}
-    .cor-footer .sig-role{color:#555;margin-top:0.12in}
+    .cor-footer .sig-name{margin-top:0.1in}
+    .cor-footer .sig-role{color:#555;margin-top:0.08in}
 
-    @media print{body{padding:0.35in}}
-    @media print and (orientation:landscape){body{zoom:0.85}}
+    @media print{body{padding:0.3in}}
+    @media print and (orientation:landscape){body{zoom:0.82}}
   </style>
 </head>
 <body>
