@@ -45,6 +45,8 @@ function FacultySchedulePage() {
     schoolYear,
     semester,
     visibleSchedules,
+    attestations,
+    attestationsLoading,
   } = useMySchedule();
 
   const selectedTerm = termContext?.selection;
@@ -121,12 +123,14 @@ function FacultySchedulePage() {
             <button
               type="button"
               aria-label="Print schedule"
-              disabled={visibleSchedules.length === 0}
+              disabled={visibleSchedules.length === 0 || attestationsLoading}
               onClick={() =>
                 openInstructorSchedulePrint(visibleSchedules, {
                   schoolYear,
                   semesterLabel: semesterLabel(semester),
                   instructorName: user?.name ?? "",
+                  semesterNumber: semester,
+                  attestations,
                 })
               }
               className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-mist-100"

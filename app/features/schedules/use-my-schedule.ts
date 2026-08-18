@@ -10,7 +10,7 @@ import { DAYS, type ScheduleSemester } from "~/types/schedule";
  * consumers of this data.
  */
 export function useMySchedule() {
-  const { data: schedules, error: loadError } = useCachedData("my-schedule", () =>
+  const { data: schedules, error: loadError } = useCachedData("my-schedules", () =>
     scheduleService.view(),
   );
 
@@ -56,5 +56,6 @@ export function useMySchedule() {
     schoolYears,
     visibleSchedules,
     attestations: attestations ?? [],
+    attestationsLoading: attestations === null,
   };
 }
