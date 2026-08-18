@@ -27,6 +27,7 @@ import { useCachedData } from "~/hooks/use-cached-data";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
+import { departmentService } from "~/services/department.service";
 import { enumService } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
@@ -123,6 +124,8 @@ function RegularClassPage() {
   // Program list supplies the full names — schedules only carry the abbrev.
   const { data: programsData } = useCachedData("programs", () => programService.list());
   const programs = programsData ?? [];
+  const { data: departmentsData } = useCachedData("departments", () => departmentService.list());
+  const departments = departmentsData ?? [];
 
   // Clear Schedule dialog (selection/loading/error live inside the dialog component).
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
@@ -595,9 +598,35 @@ function RegularClassPage() {
               variant="outline"
               block={false}
               disabled={visibleSchedules.length === 0}
-              onClick={() =>
-                openSchedulePrint(visibleSchedules, { schoolYear, semesterLabel: semesterLabel(semester) })
-              }
+              onClick={async () => {
+                const availableDepartments = departments.length > 0 ? departments : await departmentService.list();
+                const department = availableDepartments.find((item) =>
+                  item.programs.some((program) => program.abbrev === selectedRelease?.programAbbrev),
+                );
+                let approvedBy: { name: string; position: string; departmentAbbrev?: string } | null = null;
+                if (department) {
+                  try {
+                    const detail = await departmentService.getAcademicDetail(department.id);
+                    if (detail.dean) {
+                      approvedBy = {
+                        name: detail.dean.fullName,
+                        position: "Dean",
+                        departmentAbbrev: detail.departmentAbbrev,
+                      };
+                    }
+                  } catch {
+                    // Printing can still proceed when the optional dean profile cannot be loaded.
+                  }
+                }
+                openSchedulePrint(visibleSchedules, {
+                  schoolYear,
+                  semesterLabel: semesterLabel(semester),
+                  preparedBy: selectedRelease?.submittedBy?.name
+                    ? { name: selectedRelease.submittedBy.name, position: "Registrar" }
+                    : null,
+                  approvedBy,
+                })
+              }}
             >
               <PrinterIcon />
               Print

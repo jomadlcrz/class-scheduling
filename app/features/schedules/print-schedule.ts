@@ -1,4 +1,4 @@
-import { DAYS, DAY_LABELS, formatTime, type Day, type Schedule } from "~/types/schedule";
+import { DAYS, DAY_LABELS, formatTime, type AttestationPerson, type Day, type Schedule } from "~/types/schedule";
 
 function safe(value: string): string {
   return value
@@ -9,7 +9,8 @@ function safe(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function renderDayGroup(day: Day, slots: Schedule[]): string {
+/** A day is a tbody within one shared table, keeping column headings to a single print header. */
+function renderDayBody(day: Day, slots: Schedule[]): string {
   const rows = slots
     .map(
       (s) => `
@@ -26,15 +27,10 @@ function renderDayGroup(day: Day, slots: Schedule[]): string {
     .join("");
 
   return `
-    <section class="sp-day">
-      <h4>${safe(DAY_LABELS[day]).toUpperCase()}</h4>
-      <table>
-        <thead>
-          <tr><th>TIME</th><th>SUBJECT CODE</th><th>DESCRIPTIVE TITLE</th><th>MODE</th><th>INSTRUCTOR</th><th>ROOM</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </section>
+    <tbody class="sp-day">
+      <tr class="sp-day-head"><td colspan="6">${safe(DAY_LABELS[day]).toUpperCase()}</td></tr>
+      ${rows}
+    </tbody>
   `;
 }
 
@@ -46,12 +42,22 @@ function renderDayGroup(day: Day, slots: Schedule[]): string {
  */
 export function openSchedulePrint(
   schedules: Schedule[],
-  context: { schoolYear: string; semesterLabel: string },
+  context: {
+    schoolYear: string;
+    semesterLabel: string;
+    preparedBy?: AttestationPerson | null;
+    approvedBy?: AttestationPerson | null;
+  },
 ): boolean {
   if (schedules.length === 0) return false;
 
   const origin = window.location.origin;
   const { setCode, departmentCode } = schedules[0];
+  const preparedBy = context.preparedBy;
+  const approvedBy = context.approvedBy;
+  const approvedPosition = approvedBy?.departmentAbbrev
+    ? `${approvedBy.position}, ${approvedBy.departmentAbbrev} Department`
+    : approvedBy?.position;
 
   const dayGroups = DAYS.map((day) => ({
     day,
@@ -60,7 +66,7 @@ export function openSchedulePrint(
       .sort((a, b) => a.startTime.localeCompare(b.startTime)),
   })).filter((g) => g.slots.length > 0);
 
-  const dayBlocks = dayGroups.map(({ day, slots }) => renderDayGroup(day, slots)).join("");
+  const dayBodies = dayGroups.map(({ day, slots }) => renderDayBody(day, slots)).join("");
 
   const html = `<!doctype html>
 <html lang="en">
@@ -84,20 +90,27 @@ export function openSchedulePrint(
     .sp-logo-left{left:0.03in}
     .sp-logo-right{right:0.03in}
 
-    .sp-day{break-inside:avoid;margin-top:2rem}
-    .sp-day h4{border:1px solid #444;padding:0.12rem 0.2rem;text-align:center;font-size:11px;border-bottom:none}
-    .sp-day table{width:100%;table-layout:fixed;border-collapse:collapse}
-    .sp-day th,.sp-day td{border:1px solid #444;padding:0.12rem 0.2rem;color:#000;font-size:9px;line-height:1.2;vertical-align:middle}
-    .sp-day th{text-align:center}
-    .sp-day td:nth-child(1),.sp-day th:nth-child(1){width:16%;text-align:center;white-space:nowrap}
-    .sp-day td:nth-child(2),.sp-day th:nth-child(2){width:13%;text-align:center}
-    .sp-day td:nth-child(3),.sp-day th:nth-child(3){width:31%}
-    .sp-day td:nth-child(4),.sp-day th:nth-child(4){width:10%;text-align:center}
-    .sp-day td:nth-child(5),.sp-day th:nth-child(5){width:18%}
-    .sp-day td:nth-child(6),.sp-day th:nth-child(6){width:12%;text-align:center}
+    .sp-table{width:100%;table-layout:fixed;border-collapse:collapse}
+    .sp-table th,.sp-table td{border:1px solid #444;padding:0.12rem 0.2rem;color:#000;font-size:9px;line-height:1.2;vertical-align:middle}
+    .sp-table th{text-align:center}
+    .sp-table thead th{border-bottom-width:2px}
+    .sp-table td:nth-child(1),.sp-table th:nth-child(1){width:16%;text-align:center;white-space:nowrap}
+    .sp-table td:nth-child(2),.sp-table th:nth-child(2){width:13%;text-align:center}
+    .sp-table td:nth-child(3),.sp-table th:nth-child(3){width:31%}
+    .sp-table td:nth-child(4),.sp-table th:nth-child(4){width:10%;text-align:center}
+    .sp-table td:nth-child(5),.sp-table th:nth-child(5){width:18%}
+    .sp-table td:nth-child(6),.sp-table th:nth-child(6){width:12%;text-align:center}
+    .sp-day{break-inside:avoid;page-break-inside:avoid}
+    .sp-day + .sp-day .sp-day-head td{border-top-width:2px}
+    .sp-day-head td{background:#f2f2f2;font-weight:bold;font-size:10px;text-align:center}
+    .sp-signatures{display:flex;justify-content:space-between;margin-top:1.5rem;gap:1rem}
+    .sp-signatures div{flex:1}
+    .sp-signatures .sig-label{font-weight:bold;font-size:11px}
+    .sp-signatures .sig-name{font-size:11px;margin-top:0.15rem}
+    .sp-signatures .sig-role{font-size:9px;color:#555;margin-top:0.15rem}
 
     @media print{body{padding:0.35in}}
-    @media print and (orientation:landscape){.sp-day{margin-top:0.9rem}}
+    @media print and (orientation:landscape){body{zoom:0.82}}
   </style>
 </head>
 <body>
@@ -110,7 +123,24 @@ export function openSchedulePrint(
     <h2>${safe(setCode)}</h2>
     <p>S.Y. ${safe(context.schoolYear)}, ${safe(context.semesterLabel)}</p>
   </header>
-  ${dayBlocks}
+  <table class="sp-table">
+    <thead>
+      <tr><th>TIME</th><th>SUBJECT CODE</th><th>DESCRIPTIVE TITLE</th><th>MODE</th><th>INSTRUCTOR</th><th>ROOM</th></tr>
+    </thead>
+    ${dayBodies}
+  </table>
+  <footer class="sp-signatures">
+    <div>
+      <p class="sig-label">Prepared by:</p>
+      <p class="sig-name">${safe(preparedBy?.name ?? "")}</p>
+      <p class="sig-role">${safe(preparedBy?.position ?? "")}</p>
+    </div>
+    <div>
+      <p class="sig-label">Approved by:</p>
+      <p class="sig-name">${safe(approvedBy?.name ?? "")}</p>
+      <p class="sig-role">${safe(approvedPosition ?? "")}</p>
+    </div>
+  </footer>
   <script>window.addEventListener("load",function(){setTimeout(function(){window.print()},200)})</script>
 </body>
 </html>`;
