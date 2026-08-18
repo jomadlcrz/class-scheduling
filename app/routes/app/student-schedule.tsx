@@ -47,6 +47,7 @@ function StudentSchedulePage() {
     semester,
     visibleSchedules,
     attestations,
+    attestationsLoading,
   } = useMySchedule();
 
   const selectedTerm = termContext?.selection;
@@ -147,7 +148,7 @@ function StudentSchedulePage() {
             <button
               type="button"
               aria-label="Print schedule"
-              disabled={visibleSchedules.length === 0}
+              disabled={visibleSchedules.length === 0 || attestationsLoading}
               onClick={() =>
                 openStudentSchedulePrint(visibleSchedules, {
                   schoolYear,
@@ -155,6 +156,7 @@ function StudentSchedulePage() {
                   studentName: user?.name ?? "",
                   academicStatus,
                   programName,
+                  semesterNumber: semester,
                   attestations,
                 })
               }
