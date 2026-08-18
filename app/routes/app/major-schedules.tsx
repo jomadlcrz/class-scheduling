@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
-import { FormError } from "~/components/forms/form-error";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { FormError } from "~/components/forms/form-error";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -19,7 +19,7 @@ import { useCachedData } from "~/hooks/use-cached-data";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
-import { formatTime12h, timeToMinutes } from "~/lib/time";
+import { formatTime12h, normalizeTime, timeToMinutes } from "~/lib/time";
 import { authorityWorkflowService } from "~/services/authority-workflow.service";
 import { deanService } from "~/services/dean.service";
 import { programService } from "~/services/program.service";
@@ -108,18 +108,9 @@ function MajorSchedulesPage() {
     if (ok) { setMeetingOpen(false); setEditTarget(null); }
   }
 
-  async function openSubmissionDetail(submissionId: number) {
+  function openSubmissionDetail(submission: MajorScheduleSubmission) {
+    setSubmissionDetail(submission);
     setDetailOpen(true);
-    setDetailLoading(true);
-    setDetailError(null);
-    setSubmissionDetail(null);
-    try {
-      setSubmissionDetail(await authorityWorkflowService.getMajorScheduleSubmission(submissionId));
-    } catch (err) {
-      setDetailError(err instanceof Error ? err.message : "");
-    } finally {
-      setDetailLoading(false);
-    }
   }
 
   return (
@@ -149,7 +140,7 @@ function MajorSchedulesPage() {
               <div><h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">{submission.departmentAbbrev} · Version {submission.version}</h2><p className="font-body text-xs text-slate-500 dark:text-slate-400">{submission.departmentName}</p></div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={STATUS_TONES[submission.status] ?? "slate"}>{submission.status}</Badge>
-                <Button type="button" variant="outline" block={false} onClick={() => void openSubmissionDetail(submission.id)}>
+                <Button type="button" variant="outline" block={false} onClick={() => openSubmissionDetail(submission)}>
                   <EyeIcon />
                   View Details
                 </Button>
@@ -312,8 +303,8 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
       instructorId: instructorId === "floating" ? null : Number(instructorId),
       roomId,
       dayOfWeek,
-      startTime,
-      endTime,
+      startTime: normalizeTime(startTime),
+      endTime: normalizeTime(endTime),
       mode,
     });
   }
