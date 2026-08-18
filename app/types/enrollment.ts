@@ -73,6 +73,8 @@ export type EnrollmentRegistration = {
     school_year?: string | null;
     semester_name?: string | null;
     registrar_name?: string | null;
+    dean_name?: string | null;
+    dean_department?: string | null;
   };
   summary: {
     total_subjects: number;

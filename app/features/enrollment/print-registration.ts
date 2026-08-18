@@ -207,13 +207,13 @@ export async function openRegistrationPrint(
   <footer class="cor-footer">
     <div>
       <p class="sig-label">Prepared by:</p>
-      <p class="sig-name">${safe(meta.registrar_name ?? "Harvin A. Arisga")}</p>
+      <p class="sig-name">${safe(meta.registrar_name)}</p>
       <p class="sig-role">Registrar</p>
     </div>
     <div>
       <p class="sig-label">Approved by:</p>
-      <p class="sig-name">Denzel Valdez</p>
-      <p class="sig-role">Dean, CITE Department</p>
+      <p class="sig-name">${safe(meta.dean_name)}</p>
+      <p class="sig-role">${safe(meta.dean_department)}</p>
     </div>
   </footer>
   <script>window.addEventListener("load",function(){setTimeout(function(){window.print()},200)})</script>
