@@ -67,6 +67,7 @@ export type EnrollmentRegistration = {
     enrolled_status?: string | null;
     program_abbrev?: string | null;
     program_name?: string | null;
+    department_code?: string | null;
     set_name?: string | null;
     year_level?: number | null;
     school_year?: string | null;

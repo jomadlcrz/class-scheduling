@@ -14,6 +14,7 @@ import {
   MailIcon,
   MapPinIcon,
   PhoneIcon,
+  PrinterIcon,
   RefreshCwIcon,
   TrashIcon,
   UserOffIcon,
@@ -21,6 +22,7 @@ import {
 import { ConfirmDialog } from "~/components/ui/modal";
 import { enrollmentService } from "~/services/enrollment.service";
 import { studentService } from "~/services/student.service";
+import { openRegistrationPrint } from "~/features/enrollment/print-registration";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { EditRecordModal } from "~/features/enrollment/records/edit-record-modal";
 import type { EnrollmentRow, EnrollmentStudent } from "~/types/enrollment";
@@ -99,6 +101,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
   const [historyLoading, setHistoryLoading] = useState(false);
   const [profile, setProfile] = useState<StudentProfileDetail | null>(null);
   const [editRecordOpen, setEditRecordOpen] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
   const { yearLevelLabel } = useYearLevels();
 
   const open = student !== null && enrollment !== null;
@@ -159,6 +162,19 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
     onClose();
   }
 
+  async function handlePrintCOR() {
+    if (!enrollment) return;
+    setPrintLoading(true);
+    try {
+      const registration = await enrollmentService.getRegistration(enrollment.enrollmentId);
+      await openRegistrationPrint(registration);
+    } catch {
+      toast.error("Failed to load registration data");
+    } finally {
+      setPrintLoading(false);
+    }
+  }
+
   return (
     <>
       <Drawer open={open} onClose={onClose} title="Student Details" wide>
@@ -192,6 +208,16 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                     {enrollment.enrollmentState}
                   </Badge>
                   <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    disabled={printLoading}
+                    onClick={() => void handlePrintCOR()}
+                  >
+                    <PrinterIcon size={14} />
+                    Print COR
+                  </Button>
                   {!readOnly && (
                     <Button type="button" variant="outline" block={false} onClick={() => setEditRecordOpen(true)}>
                       <EditIcon />
