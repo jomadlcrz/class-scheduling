@@ -269,7 +269,7 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
   const { data: sets, error: setsError, reload: reloadSets } = useCachedData(`major-meeting-sets:${syId}:${semesterNumber}:${programId}`, () => setService.list({ syId, semesterNumber, programId }), { enabled: open && programId > 0 });
   const availableSets = (sets ?? []).filter((row) => !selectedProgram || row.program === selectedProgram.abbrev);
   const selectedSet = availableSets.find((row) => row.id === setId);
-  const { data: subjects, error: subjectsError, reload: reloadSubjects } = useCachedData(`major-meeting-subjects:${schoolYear}:${semesterNumber}:${programId}:${selectedSet?.yearLevel ?? 0}`, () => scheduleService.listScheduleSubjects({ schoolYear, programId, semester: semesterNumber as 1 | 2, yearLevel: selectedSet?.yearLevel }), { enabled: open && !!schoolYear && programId > 0 && !!selectedSet });
+  const { data: subjects, error: subjectsError, reload: reloadSubjects } = useCachedData(`major-meeting-subjects:${schoolYear}:${semesterNumber}:${programId}:${selectedSet?.yearLevel ?? 0}`, () => scheduleService.listScheduleSubjects({ schoolYear, programId, semester: semesterNumber as 1 | 2, yearLevel: selectedSet?.yearLevel, includeScheduledSets: true }), { enabled: open && !!schoolYear && programId > 0 && !!selectedSet });
   const { data: rooms, error: roomsError, reload: reloadRooms } = useCachedData("major-meeting-rooms", () => scheduleService.listScheduleRooms(), { enabled: open });
   const instructors = (subjects ?? []).flatMap((subject) => subject.faculties).filter((faculty, index, all) => all.findIndex((item) => item.id === faculty.id) === index);
   const referenceDataError = programsError ?? setsError ?? subjectsError ?? roomsError;
