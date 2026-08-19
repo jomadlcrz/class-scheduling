@@ -35,11 +35,11 @@ function WaitingCell({ iso }: { iso: string | null }) {
 type PendingTableProps = {
   releases: ScheduleRelease[];
   onPreview: (release: ScheduleRelease) => void;
-  onApprove: (release: ScheduleRelease) => void;
+  onSendToInstructors: (release: ScheduleRelease) => void;
   onReject: (release: ScheduleRelease) => void;
 };
 
-export function SchedulePendingApprovalsTable({ releases, onPreview, onApprove, onReject }: PendingTableProps) {
+export function SchedulePendingApprovalsTable({ releases, onPreview, onSendToInstructors, onReject }: PendingTableProps) {
   return (
     <Table>
       <TableHead>
@@ -73,9 +73,9 @@ export function SchedulePendingApprovalsTable({ releases, onPreview, onApprove, 
                   <EyeIcon />
                   Review
                 </TableActionButton>
-                <TableActionButton tone="amber" onClick={() => onApprove(row)}>
+                <TableActionButton tone="amber" onClick={() => onSendToInstructors(row)}>
                   <CheckIcon size={14} />
-                  Approve
+                  Send to instructors
                 </TableActionButton>
                 <TableActionButton tone="slate" onClick={() => onReject(row)}>
                   <CloseIcon size={14} />
@@ -122,7 +122,7 @@ function groupByProgramYear(releases: ScheduleRelease[]): ProgramGroup[] {
 
 type GroupedPendingProps = PendingTableProps & {
   /** Approve every section in a Program→Year cohort at once. */
-  onApproveCohort: (label: string, releases: ScheduleRelease[]) => void;
+  onSendCohort: (label: string, releases: ScheduleRelease[]) => void;
   /** Program abbrev → full name + department code, for the group header logo/label. */
   programInfo?: Map<string, { name: string; departmentCode: string }>;
 };
@@ -136,9 +136,9 @@ export function GroupedPendingApprovals({
   releases,
   programInfo,
   onPreview,
-  onApprove,
+  onSendToInstructors,
   onReject,
-  onApproveCohort,
+  onSendCohort,
 }: GroupedPendingProps) {
   const programs = useMemo(() => groupByProgramYear(releases), [releases]);
 
@@ -199,16 +199,16 @@ export function GroupedPendingApprovals({
                       type="button"
                       variant="outline"
                       block={false}
-                      onClick={() => onApproveCohort(label, cohort.releases)}
+                      onClick={() => onSendCohort(label, cohort.releases)}
                     >
                       <CheckIcon size={14} />
-                      Approve all ({cohort.releases.length})
+                      Send all ({cohort.releases.length})
                     </Button>
                   </div>
                   <SchedulePendingApprovalsTable
                     releases={cohort.releases}
                     onPreview={onPreview}
-                    onApprove={onApprove}
+                    onSendToInstructors={onSendToInstructors}
                     onReject={onReject}
                   />
                 </div>

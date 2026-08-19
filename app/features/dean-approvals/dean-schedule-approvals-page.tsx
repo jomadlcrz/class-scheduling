@@ -38,9 +38,9 @@ export function DeanScheduleApprovalsPage() {
   } = useDeanScheduleApprovals();
 
   const [previewTarget, setPreviewTarget] = useState<ScheduleRelease | null>(null);
-  const [approveTarget, setApproveTarget] = useState<ScheduleRelease | null>(null);
+  const [sendTarget, setSendTarget] = useState<ScheduleRelease | null>(null);
   const [rejectTarget, setRejectTarget] = useState<ScheduleRelease | null>(null);
-  const [approveCohort, setApproveCohort] = useState<{ label: string; releases: ScheduleRelease[] } | null>(null);
+  const [sendCohort, setSendCohort] = useState<{ label: string; releases: ScheduleRelease[] } | null>(null);
 
   const contextReady = Boolean(selectedSchoolYearId && selectedSemesterNumber);
 
@@ -53,17 +53,17 @@ export function DeanScheduleApprovalsPage() {
     return map;
   }, [programsData]);
 
-  async function handleApprove() {
-    if (!approveTarget) return;
+  async function handleSendToInstructors() {
+    if (!sendTarget) return;
     try {
-      const { message } = await scheduleReleaseService.approveRelease(approveTarget.id);
+      const { message } = await scheduleReleaseService.sendToInstructors(sendTarget.id);
       if (message) toast.success(message);
       await refresh();
-      setApproveTarget(null);
+      setSendTarget(null);
     } catch (err) {
       // Already reviewed / term closed: clear the stale row, then re-surface the backend message.
       await refresh().catch(() => {});
-      throw err instanceof Error ? err : new Error("Unable to approve the schedule.");
+      throw err instanceof Error ? err : new Error("Unable to send the schedule to instructors.");
     }
   }
 
@@ -85,25 +85,25 @@ export function DeanScheduleApprovalsPage() {
    * approve sequentially and keep going on failure — then summarise the outcome once, since
    * one toast per section would drown the dean. Refresh reconciles whatever actually landed.
    */
-  async function handleApproveCohort() {
-    if (!approveCohort) return;
-    const { releases } = approveCohort;
-    let approved = 0;
+  async function handleSendCohort() {
+    if (!sendCohort) return;
+    const { releases } = sendCohort;
+    let sent = 0;
     const failed: string[] = [];
     for (const release of releases) {
       try {
-        await scheduleReleaseService.approveRelease(release.id);
-        approved += 1;
+        await scheduleReleaseService.sendToInstructors(release.id);
+        sent += 1;
       } catch {
         failed.push(`${release.programAbbrev ?? ""} ${release.setCode ?? ""}`.trim() || `#${release.id}`);
       }
     }
-    if (approved > 0) toast.success(`Approved ${approved} section${approved === 1 ? "" : "s"}.`);
+    if (sent > 0) toast.success(`Sent ${sent} section${sent === 1 ? "" : "s"} to instructors for review.`);
     if (failed.length > 0) {
-      toast.error(`Couldn't approve ${failed.length}: ${failed.join(", ")}. They may already be reviewed.`);
+      toast.error(`Couldn't send ${failed.length}: ${failed.join(", ")}. They may already be reviewed.`);
     }
     await refresh().catch(() => {});
-    setApproveCohort(null);
+    setSendCohort(null);
   }
 
   const pending = inbox?.pending ?? [];
@@ -210,9 +210,9 @@ export function DeanScheduleApprovalsPage() {
                     releases={pending}
                     programInfo={programInfo}
                     onPreview={setPreviewTarget}
-                    onApprove={setApproveTarget}
+                    onSendToInstructors={setSendTarget}
                     onReject={setRejectTarget}
-                    onApproveCohort={(label, releases) => setApproveCohort({ label, releases })}
+                    onSendCohort={(label, releases) => setSendCohort({ label, releases })}
                   />
                 )}
               </div>
@@ -243,10 +243,10 @@ export function DeanScheduleApprovalsPage() {
       />
 
       <ScheduleApproveDialog
-        open={approveTarget !== null}
-        release={approveTarget}
-        onClose={() => setApproveTarget(null)}
-        onConfirm={handleApprove}
+        open={sendTarget !== null}
+        release={sendTarget}
+        onClose={() => setSendTarget(null)}
+        onConfirm={handleSendToInstructors}
       />
 
       <ScheduleRejectDialog
@@ -257,15 +257,15 @@ export function DeanScheduleApprovalsPage() {
       />
 
       <ConfirmDialog
-        open={approveCohort !== null}
-        onClose={() => setApproveCohort(null)}
-        title={`Approve all of ${approveCohort?.label ?? ""}?`}
-        confirmLabel={`Approve ${approveCohort?.releases.length ?? 0} section${approveCohort?.releases.length === 1 ? "" : "s"}`}
-        loadingLabel="Approving…"
-        onConfirm={handleApproveCohort}
+        open={sendCohort !== null}
+        onClose={() => setSendCohort(null)}
+        title={`Send all of ${sendCohort?.label ?? ""} to instructors?`}
+        confirmLabel={`Send ${sendCohort?.releases.length ?? 0} section${sendCohort?.releases.length === 1 ? "" : "s"}`}
+        loadingLabel="Sending…"
+        onConfirm={handleSendCohort}
       >
-        This publishes every one of these section timetables to their students and instructors. Each is
-        approved individually, so any already reviewed elsewhere are simply skipped.
+        This asks each assigned instructor to review their section timetable. It does not publish schedules;
+        publication happens only after every instructor accepts and the dean gives final approval.
       </ConfirmDialog>
     </div>
   );

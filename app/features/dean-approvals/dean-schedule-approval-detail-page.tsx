@@ -52,15 +52,15 @@ export function DeanScheduleApprovalDetailPage() {
     };
   }, [releaseId]);
 
-  async function handleApprove() {
+  async function handleSendToInstructors() {
     try {
-      const { message } = await scheduleReleaseService.approveRelease(releaseId);
+      const { message } = await scheduleReleaseService.sendToInstructors(releaseId);
       if (message) toast.success(message);
       navigate("/dean/schedule-approvals");
     } catch (err) {
       // Already reviewed / term closed: refresh so the review buttons reflect the new status.
       await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
-      throw err instanceof Error ? err : new Error("Unable to approve the schedule.");
+      throw err instanceof Error ? err : new Error("Unable to send the schedule to instructors.");
     }
   }
 
@@ -126,7 +126,7 @@ export function DeanScheduleApprovalDetailPage() {
                 </Button>
                 <Button type="button" block={false} onClick={() => setApproveOpen(true)}>
                   <CheckIcon size={14} />
-                  Approve
+                  Send to instructors
                 </Button>
               </>
             )}
@@ -156,7 +156,7 @@ export function DeanScheduleApprovalDetailPage() {
         open={approveOpen}
         release={release}
         onClose={() => setApproveOpen(false)}
-        onConfirm={handleApprove}
+        onConfirm={handleSendToInstructors}
       />
       <ScheduleRejectDialog
         open={rejectOpen}
