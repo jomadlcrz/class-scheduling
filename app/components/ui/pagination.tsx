@@ -1,4 +1,4 @@
-﻿import { useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Button } from "~/components/ui/button";
 import {
   ChevronLeftIcon,
@@ -11,13 +11,13 @@ import {
 import { Popover } from "~/components/ui/popover";
 
 const navButtonClassName =
-  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
 
 const iconButtonClassName =
-  "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-navy-700 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
+  "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-navy-700 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
 
 const pageButtonClassName =
-  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-navy-700 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-200 dark:hover:bg-white/10";
 
 const activePageButtonClassName =
   "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-navy-800 dark:border-white/15 dark:bg-navy-800 dark:text-slate-100";
@@ -26,7 +26,7 @@ const activePillClassName =
   "inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-navy-800 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-navy-800 dark:text-slate-100";
 
 const ellipsisButtonClassName =
-  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-300";
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-400 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-400 dark:hover:bg-white/10";
 
 /** First, last, current, and one neighbor on each side; gaps become "ellipsis". */
 function pageRange(current: number, total: number): (number | "ellipsis")[] {

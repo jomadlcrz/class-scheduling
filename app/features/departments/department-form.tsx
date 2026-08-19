@@ -17,7 +17,7 @@ type DepartmentFormProps = {
   buildings: Building[];
   /** Backend DepartmentType values (enumService). */
   departmentTypes: string[];
-  onSubmit: (input: CreateDepartmentInput, logoFile?: File | null) => Promise<void>;
+  onSubmit: (input: CreateDepartmentInput, logoFile?: File | null, logoRemoved?: boolean) => Promise<void>;
   onCancel: () => void;
 };
 
@@ -34,12 +34,21 @@ export function DepartmentForm({
   const [type, setType] = useState(department?.departmentType ?? departmentTypes[0] ?? "");
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(department?.logoUrl ?? null);
+  const [logoRemoved, setLogoRemoved] = useState(false);
   const [logoCropSrc, setLogoCropSrc] = useState("");
 
   useEffect(() => {
-    if (!logoPreview) return;
-    return () => URL.revokeObjectURL(logoPreview);
+    setLogoFile(null);
+    setLogoPreview(department?.logoUrl ?? null);
+    setLogoRemoved(false);
+    setLogoCropSrc("");
+  }, [department?.id, department?.logoUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (logoPreview && logoPreview.startsWith("blob:")) URL.revokeObjectURL(logoPreview);
+    };
   }, [logoPreview]);
 
   useEffect(() => {
@@ -54,22 +63,26 @@ export function DepartmentForm({
       setLogoCropSrc(URL.createObjectURL(file));
     } else {
       setLogoFile(file);
+      if (logoPreview && logoPreview.startsWith("blob:")) URL.revokeObjectURL(logoPreview);
       setLogoPreview(URL.createObjectURL(file));
+      setLogoRemoved(false);
     }
   }
 
   async function handleLogoCropSave(croppedFile: File) {
     setLogoFile(croppedFile);
-    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    if (logoPreview && logoPreview.startsWith("blob:")) URL.revokeObjectURL(logoPreview);
     setLogoPreview(URL.createObjectURL(croppedFile));
+    setLogoRemoved(false);
     if (logoCropSrc) URL.revokeObjectURL(logoCropSrc);
     setLogoCropSrc("");
   }
 
   function handleLogoClear() {
     setLogoFile(null);
-    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    if (logoPreview && logoPreview.startsWith("blob:")) URL.revokeObjectURL(logoPreview);
     setLogoPreview(null);
+    setLogoRemoved(true);
     if (logoCropSrc) URL.revokeObjectURL(logoCropSrc);
     setLogoCropSrc("");
   }
@@ -92,7 +105,7 @@ export function DepartmentForm({
     setError(null);
     setIsLoading(true);
     try {
-      await onSubmit(result.data, logoFile);
+      await onSubmit(result.data, logoFile, logoRemoved);
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
       setIsLoading(false);
@@ -101,27 +114,28 @@ export function DepartmentForm({
 
   const defaultBuildingId = String(department?.buildingId ?? buildings[0]?.id ?? "");
 
+  const displayFileName =
+    logoFile?.name ?? (logoPreview && !logoRemoved ? (department?.logoUrl ? "Current logo" : null) : null);
+
   return (
     <>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
 
-      {!isEdit && (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="dept-logo-file">Logo (optional)</Label>
-          <FileChooser
-            id="dept-logo-file"
-            accept="image/jpeg,image/png,image/webp"
-            fileName={logoFile?.name ?? null}
-            previewUrl={logoPreview}
-            onChange={handleLogoSelect}
-            onClear={handleLogoClear}
-          />
-          <p className="font-body text-xs text-slate-400 dark:text-slate-500">
-            JPG, PNG, or WEBP, up to 5 MB.
-          </p>
-        </div>
-      )}
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="dept-logo-file">Logo (optional)</Label>
+        <FileChooser
+          id="dept-logo-file"
+          accept="image/jpeg,image/png,image/webp"
+          fileName={displayFileName}
+          previewUrl={logoPreview}
+          onChange={handleLogoSelect}
+          onClear={handleLogoClear}
+        />
+        <p className="font-body text-xs text-slate-400 dark:text-slate-500">
+          JPG, PNG, or WEBP, up to 5 MB.
+        </p>
+      </div>
 
       <Input
         id="dept-abbrev"

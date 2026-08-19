@@ -106,13 +106,19 @@ export function DepartmentDetailPage({ departmentId }: DepartmentDetailPageProps
     writeCache(`department:${id}:overview`, freshOverview);
   }, [id, setOverview]);
 
-  async function handleEdit(input: CreateDepartmentInput, logoFile?: File | null) {
+  async function handleEdit(input: CreateDepartmentInput, logoFile?: File | null, logoRemoved?: boolean) {
     const message = await departmentService.update(id, {
       abbrev: input.abbrev,
       name: input.name,
       buildingId: input.buildingId,
       departmentType: input.departmentType,
+      description: input.description,
     });
+    if (logoFile) {
+      await departmentService.uploadLogo(id, logoFile);
+    } else if (logoRemoved && overview?.logoUrl) {
+      await departmentService.removeLogo(id);
+    }
     if (message) toast.success(message);
     setEditOpen(false);
     await refreshAll();

@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -80,7 +80,7 @@ function DepartmentsPage() {
     setCreateOpen(false);
   }
 
-  async function handleEdit(input: CreateDepartmentInput) {
+  async function handleEdit(input: CreateDepartmentInput, logoFile?: File | null, logoRemoved?: boolean) {
     if (!editTarget) return;
     const message = await departmentService.update(editTarget.id, {
       abbrev: input.abbrev,
@@ -89,6 +89,11 @@ function DepartmentsPage() {
       departmentType: input.departmentType,
       description: input.description,
     });
+    if (logoFile) {
+      await departmentService.uploadLogo(editTarget.id, logoFile);
+    } else if (logoRemoved && editTarget.logoUrl) {
+      await departmentService.removeLogo(editTarget.id);
+    }
     if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
