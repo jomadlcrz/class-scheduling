@@ -200,8 +200,10 @@ function FacultyPage() {
         ) : facultyList === null ? (
           <TableSkeleton columns={6} rows={8} />
         ) : visibleFaculty.length === 0 ? (
-          <EmptyState title="No faculty found">
-            No faculty match the current filters. Adjust the search or add a new faculty member.
+          <EmptyState title={search.trim() || department !== "all" || role !== "all" || status !== "all" ? "No faculty found" : "No faculty yet"}>
+            {search.trim() || department !== "all" || role !== "all" || status !== "all"
+              ? "No faculty match the current search and filters."
+              : "Add a faculty member to get started."}
           </EmptyState>
         ) : (
           <>

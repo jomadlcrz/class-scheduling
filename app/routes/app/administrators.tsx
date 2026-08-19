@@ -172,8 +172,10 @@ function AdministratorsPage() {
         ) : administrators === null ? (
           <TableSkeleton columns={5} rows={8} />
         ) : visibleAdministrators.length === 0 ? (
-          <EmptyState title="No administrators found">
-            No administrators match the current search. Adjust the search or add a new administrator.
+          <EmptyState title={search.trim() || role !== "all" || status !== "all" ? "No administrators found" : "No administrators yet"}>
+            {search.trim() || role !== "all" || status !== "all"
+              ? "No administrators match the current search and filters."
+              : "Add an administrator to get started."}
           </EmptyState>
         ) : (
           <>

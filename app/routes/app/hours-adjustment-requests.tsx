@@ -121,7 +121,9 @@ function HoursAdjustmentRequestsPage() {
         ) : data === null ? (
           <Skeleton className="h-72 rounded-xl" />
         ) : data.length === 0 ? (
-          <EmptyState title="No adjustment requests">No requests match the selected status.</EmptyState>
+          <EmptyState title={status === "all" ? "No adjustment requests yet" : "No adjustment requests found"}>
+            {status === "all" ? "No adjustment requests have been submitted yet." : "No requests match the selected status."}
+          </EmptyState>
         ) : (
           <Table>
             <TableHead>

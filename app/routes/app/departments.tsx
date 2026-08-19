@@ -148,8 +148,10 @@ function DepartmentsPage() {
         ) : depts === null ? (
           <CardGridSkeleton cards={6} />
         ) : visibleDepts.length === 0 ? (
-          <EmptyState title="No departments found">
-            No departments match the current filters. Adjust the search or add a new department.
+          <EmptyState title={search.trim() || buildingFilter !== "all" ? "No departments found" : "No departments yet"}>
+            {search.trim() || buildingFilter !== "all"
+              ? "No departments match the current search and filters."
+              : "Add a department to get started."}
           </EmptyState>
         ) : (
           <>

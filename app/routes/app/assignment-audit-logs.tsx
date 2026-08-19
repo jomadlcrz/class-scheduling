@@ -46,7 +46,9 @@ function AssignmentAuditLogsPage() {
         ) : data === null ? (
           <Skeleton className="h-72 rounded-xl" />
         ) : rows.length === 0 ? (
-          <EmptyState title="No audit logs found">No assignment activity matches the current search.</EmptyState>
+          <EmptyState title={search.trim() ? "No audit logs found" : "No audit logs yet"}>
+            {search.trim() ? "No assignment activity matches your search." : "No assignment activity has been recorded yet."}
+          </EmptyState>
         ) : (
           <Table>
             <TableHead>

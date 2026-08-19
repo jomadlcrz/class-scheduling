@@ -208,8 +208,10 @@ function ClassroomMappingPage() {
         ) : classrooms === null ? (
           <MappingSkeleton rooms={4} />
         ) : filtered.length === 0 ? (
-          <EmptyState title="No classrooms found">
-            No classrooms match the current filters.
+          <EmptyState title={rawSearch.trim() || buildingFilter !== "all" ? "No classrooms found" : "No classrooms configured"}>
+            {rawSearch.trim() || buildingFilter !== "all"
+              ? "No classrooms match the current search and filters."
+              : "No classrooms are configured for this term yet."}
           </EmptyState>
         ) : viewMode === "grid" ? (
           <MappingGridView classrooms={filtered} />

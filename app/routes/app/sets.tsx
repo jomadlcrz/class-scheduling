@@ -146,8 +146,10 @@ function SetsPage() {
         {sets === null && !error ? (
           <TableSkeleton columns={4} rows={8} />
         ) : visibleSets.length === 0 ? (
-          <EmptyState title="No sets found">
-            No sets match the current filters. Adjust the search or add a new set.
+          <EmptyState title={search.trim() || program !== "all" || yearLevel !== "all" ? "No sets found" : "No sets yet"}>
+            {search.trim() || program !== "all" || yearLevel !== "all"
+              ? "No sets match the current search and filters."
+              : "Add a class set to get started."}
           </EmptyState>
         ) : (
           <>

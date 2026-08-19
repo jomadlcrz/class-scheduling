@@ -282,18 +282,27 @@ async function getReenrollDirectory(
   if (filters.enrolledStatus && filters.enrolledStatus !== "all") {
     query.set("enrolledStatus", filters.enrolledStatus);
   }
-  query.set("page", String(page));
+  query.set("eligible_page", String(page));
+  query.set("already_page", String(page));
   query.set("perPage", String(perPage));
   const suffix = query.size > 0 ? `?${query.toString()}` : "";
-  const data = await apiGetFresh<ApiReenrollDirectoryBlock>(
-    `/enrollments/directory/${directory}${suffix}`,
+  // The existing endpoint returns both blocks. Cache this raw response briefly
+  // so switching between the Eligible and Already Enrolled routes does not
+  // repeat the same expensive request. Any enrollment mutation clears apiGet's
+  // cache, keeping the next directory visit current.
+  const data = await apiGet<{
+    eligible: ApiReenrollDirectoryBlock;
+    alreadyEnrolled: ApiReenrollDirectoryBlock;
+  }>(
+    `/enrollments/directory${suffix}`,
   );
-  const block = data ?? { items: [], pagination: { page, perPage, totalItems: 0, totalPages: 1 } };
+  const block = directory === "eligible" ? data?.eligible : data?.alreadyEnrolled;
+  const resolvedBlock = block ?? { items: [], pagination: { page, perPage, totalItems: 0, totalPages: 1 } };
   return {
-    items: block.items.map(toReenrollRow),
-    total: block.pagination.totalItems,
-    pages: block.pagination.totalPages,
-    currentPage: block.pagination.page,
+    items: resolvedBlock.items.map(toReenrollRow),
+    total: resolvedBlock.pagination.totalItems,
+    pages: resolvedBlock.pagination.totalPages,
+    currentPage: resolvedBlock.pagination.page,
   };
 }
 
