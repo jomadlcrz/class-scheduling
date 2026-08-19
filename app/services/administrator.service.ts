@@ -41,6 +41,8 @@ async function list(): Promise<Administrator[]> {
     department: string | null;
     mobile: string | null;
     email: string | null;
+    has_account?: boolean;
+    account_active?: boolean | null;
     roles: { role_id: number; role_name: string; permissions: unknown[] }[];
   };
 
@@ -55,6 +57,12 @@ async function list(): Promise<Administrator[]> {
   return data.map((a) => {
     const department = a.department ?? "";
     const deptParts = department.split(" - ");
+    const accountActive =
+      typeof a.account_active === "boolean"
+        ? a.account_active
+        : a.has_account !== undefined
+          ? a.has_account
+          : true;
     return {
       id: a.profile_id,
       profilePhotoUrl: a.profile_photo_url,
@@ -67,6 +75,8 @@ async function list(): Promise<Administrator[]> {
       departmentCode: deptParts[0] ?? department,
       mobile: a.mobile,
       email: a.email,
+      hasAccount: a.has_account ?? true,
+      accountActive,
       roleName: (a.roles[0]?.role_name ?? "Registrar Admin") as AdministratorRole,
     };
   });

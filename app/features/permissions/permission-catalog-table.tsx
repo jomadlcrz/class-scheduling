@@ -25,13 +25,13 @@ export function PermissionCatalogTable({ catalog, onEdit, onArchive }: Permissio
       </TableHead>
       <TableBody>
         {sorted.map((permission) => (
-          <TableRow key={permission.id}>
+          <TableRow key={permission.id} className="group">
             <TableCell>
               <span className="font-medium text-navy-700 dark:text-mist-100">{permission.slug}</span>
             </TableCell>
             <TableCell>{permission.description || "—"}</TableCell>
             <TableCell>
-              <div className="flex justify-end gap-1">
+              <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                 <IconButton
                   onClick={() => onEdit(permission)}
                   label={`Edit ${permission.slug}`}

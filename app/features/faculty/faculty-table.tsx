@@ -1,4 +1,4 @@
-﻿import { Badge } from "~/components/ui/badge";
+import { Badge } from "~/components/ui/badge";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { ProfileAvatar } from "~/components/ui/profile-avatar";
@@ -49,9 +49,9 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
       </TableHead>
       <TableBody>
         {faculty.map((member) => {
-          const isActive = accountActiveById[member.id];
+          const isActive = accountActiveById[member.id] ?? member.accountActive ?? (member.hasAccount ? true : null);
           return (
-          <TableRow key={member.id}>
+          <TableRow key={member.id} className="group">
             <TableCell>
               <div className="flex min-w-0 items-center gap-3">
                 {member.profilePhotoUrl ? (
@@ -104,7 +104,7 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
               )}
             </TableCell>
             <TableCell>
-              <div className="flex justify-end gap-1">
+              <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                 <IconButton
                   onClick={() => onEdit(member)}
                   label={`Edit ${member.firstName} ${member.lastName}`}

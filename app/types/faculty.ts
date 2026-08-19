@@ -14,6 +14,7 @@ export type Faculty = {
   email: string | null;
   roles: { id: number; name: string }[];
   hasAccount: boolean;
+  accountActive?: boolean | null;
   profilePhotoUrl: string | null;
   /** Present when sourced from mock data; absent for real data. */
   status?: "active" | "inactive";

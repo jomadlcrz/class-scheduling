@@ -53,19 +53,24 @@ function AdministratorsPage() {
   const [editTarget, setEditTarget] = useState<Administrator | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Administrator | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<Administrator | null>(null);
-  // The list endpoint has no account_active field — fetched per-row (page-bounded
-  // by pagination) so Deactivate/Reactivate can show only the one that applies.
-  const accountActiveById = useMemo<Record<number, boolean | undefined>>(() => {
+
+  // The list endpoint returns account_active and has_account directly;
+  // systemAccounts provides a live fallback when available.
+  const accountActiveById = useMemo<Record<number, boolean>>(() => {
     const byEmail = new Map(
       (systemAccounts?.items ?? [])
         .filter((account) => account.email)
-        .map((account) => [account.email!.toLowerCase(), account.active]),
+        .map((account) => [account.email!.trim().toLowerCase(), account.active]),
     );
     return Object.fromEntries(
-      (administrators ?? []).map((admin) => [
-        admin.id,
-        admin.email ? byEmail.get(admin.email.toLowerCase()) : undefined,
-      ]),
+      (administrators ?? []).map((admin) => {
+        let active: boolean | undefined =
+          typeof admin.accountActive === "boolean" ? admin.accountActive : undefined;
+        if (active === undefined && admin.email) {
+          active = byEmail.get(admin.email.trim().toLowerCase());
+        }
+        return [admin.id, active ?? true];
+      }),
     );
   }, [administrators, systemAccounts]);
 
@@ -91,6 +96,7 @@ function AdministratorsPage() {
   }, [administrators, search, role, status, accountActiveById]);
 
   const pagination = usePagination(visibleAdministrators, `${search}|${role}|${status}`);
+
   async function handleEdit(input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) {
     if (!editTarget) return;
     const message = await administratorService.update(editTarget.id, input);
@@ -117,7 +123,6 @@ function AdministratorsPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title="Administrators"
-
         actions={
           <Button type="button" block={false} onClick={() => navigate("/administrators/new")}>
             <PlusIcon />
@@ -156,7 +161,8 @@ function AdministratorsPage() {
             </span>
             <input
               id="administrator-search"
-              type="search" placeholder="Search..."
+              type="search"
+              placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search"

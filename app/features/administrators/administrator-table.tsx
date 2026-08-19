@@ -40,100 +40,100 @@ export function AdministratorTable({
 
   return (
     <>
-    <Table>
-      <TableHead>
-        <TableHeader>Administrator</TableHeader>
-        <TableHeader>Department</TableHeader>
-        <TableHeader>Role</TableHeader>
-        <TableHeader>Status</TableHeader>
-        <TableHeader>
-          <span className="sr-only">Actions</span>
-        </TableHeader>
-      </TableHead>
-      <TableBody>
-        {administrators.map((admin) => {
-          const isActive = accountActiveById[admin.id];
-          return (
-            <TableRow key={admin.id}>
-              <TableCell>
-                <div className="flex min-w-0 items-center gap-2.5">
-                  {admin.profilePhotoUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => setViewer({ src: admin.profilePhotoUrl!, alt: displayName(admin) })}
-                      className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
-                      aria-label={`View ${displayName(admin)} profile photo`}
-                    >
-                      <img src={admin.profilePhotoUrl} alt="" className="size-9 rounded-full object-cover" />
-                    </button>
-                  ) : <ProfileAvatar gender={admin.gender} className="size-9" />}
-                  <div className="min-w-0">
-                    <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
-                      {displayName(admin)}
-                    </span>
-                    {admin.email && (
-                      <a href={`mailto:${admin.email}`} className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
-                        {admin.email}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-slate-600 dark:text-slate-300">
-                {admin.departmentCode || "—"}
-              </TableCell>
-              <TableCell>
-                <AdministratorRoleBadge role={admin.roleName} />
-              </TableCell>
-              <TableCell>
-                {isActive === undefined ? (
-                  <span className="text-xs text-slate-400 dark:text-slate-500">…</span>
-                ) : isActive ? (
-                  <Badge tone="emerald">Active</Badge>
-                ) : (
-                  <Badge tone="red">Deactivated</Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end gap-1">
-                  <IconButton
-                    onClick={() => onEdit(admin)}
-                    label={`Edit ${admin.firstName} ${admin.lastName}`}
-                    title="Edit"
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  {admin.roleName !== "Super Admin" && (
-                    isActive === undefined ? (
-                      <span className="grid size-8 place-items-center text-slate-300 dark:text-slate-600">…</span>
-                    ) : isActive ? (
-                      <IconButton
-                        variant="dangerSoft"
-                        onClick={() => onDeactivate(admin)}
-                        label={`Deactivate ${admin.firstName} ${admin.lastName}`}
-                        title="Deactivate"
+      <Table>
+        <TableHead>
+          <TableHeader>Administrator</TableHeader>
+          <TableHeader>Department</TableHeader>
+          <TableHeader>Role</TableHeader>
+          <TableHeader>Status</TableHeader>
+          <TableHeader>
+            <span className="sr-only">Actions</span>
+          </TableHeader>
+        </TableHead>
+        <TableBody>
+          {administrators.map((admin) => {
+            const isActive = accountActiveById[admin.id] ?? admin.accountActive ?? true;
+            return (
+              <TableRow key={admin.id} className="group">
+                <TableCell>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    {admin.profilePhotoUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setViewer({ src: admin.profilePhotoUrl!, alt: displayName(admin) })}
+                        className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+                        aria-label={`View ${displayName(admin)} profile photo`}
                       >
-                        <UserOffIcon />
-                      </IconButton>
+                        <img src={admin.profilePhotoUrl} alt="" className="size-9 rounded-full object-cover" />
+                      </button>
                     ) : (
-                      <IconButton
-                        variant="emerald"
-                        onClick={() => onReactivate(admin)}
-                        label={`Reactivate ${admin.firstName} ${admin.lastName}`}
-                        title="Reactivate"
-                      >
-                        <UserCheckIcon />
-                      </IconButton>
-                    )
+                      <ProfileAvatar gender={admin.gender} className="size-9" />
+                    )}
+                    <div className="min-w-0">
+                      <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
+                        {displayName(admin)}
+                      </span>
+                      {admin.email && (
+                        <a
+                          href={`mailto:${admin.email}`}
+                          className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                        >
+                          {admin.email}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-slate-600 dark:text-slate-300">
+                  {admin.departmentCode || "—"}
+                </TableCell>
+                <TableCell>
+                  <AdministratorRoleBadge role={admin.roleName} />
+                </TableCell>
+                <TableCell>
+                  {isActive ? (
+                    <Badge tone="emerald">Active</Badge>
+                  ) : (
+                    <Badge tone="red">Deactivated</Badge>
                   )}
-                </div>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
-    {viewer && <ImageViewer open onClose={() => setViewer(null)} src={viewer.src} alt={viewer.alt} />}
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
+                    <IconButton
+                      onClick={() => onEdit(admin)}
+                      label={`Edit ${admin.firstName} ${admin.lastName}`}
+                      title="Edit"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    {admin.roleName !== "Super Admin" &&
+                      (isActive ? (
+                        <IconButton
+                          variant="dangerSoft"
+                          onClick={() => onDeactivate(admin)}
+                          label={`Deactivate ${admin.firstName} ${admin.lastName}`}
+                          title="Deactivate"
+                        >
+                          <UserOffIcon />
+                        </IconButton>
+                      ) : (
+                        <IconButton
+                          variant="emerald"
+                          onClick={() => onReactivate(admin)}
+                          label={`Reactivate ${admin.firstName} ${admin.lastName}`}
+                          title="Reactivate"
+                        >
+                          <UserCheckIcon />
+                        </IconButton>
+                      ))}
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+      {viewer && <ImageViewer open onClose={() => setViewer(null)} src={viewer.src} alt={viewer.alt} />}
     </>
   );
 }

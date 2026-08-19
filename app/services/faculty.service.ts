@@ -36,6 +36,7 @@ async function list(): Promise<Faculty[]> {
     mobile: string | null;
     email: string | null;
     has_account: boolean;
+    account_active?: boolean | null;
     profile_photo_url: string | null;
     roles: { role_id: number; role_name: string; permissions: unknown[] }[];
   };
@@ -50,6 +51,12 @@ async function list(): Promise<Faculty[]> {
 
   return data.map((f) => {
     const deptParts = f.department.split(" - ");
+    const accountActive =
+      typeof f.account_active === "boolean"
+        ? f.account_active
+        : f.has_account
+          ? true
+          : null;
     return {
       id: f.faculty_id,
       firstName: f.first_name,
@@ -62,6 +69,7 @@ async function list(): Promise<Faculty[]> {
       mobile: f.mobile,
       email: f.email,
       hasAccount: f.has_account,
+      accountActive,
       profilePhotoUrl: f.profile_photo_url,
       roles: (f.roles ?? []).map((r) => ({ id: r.role_id, name: r.role_name })),
     };

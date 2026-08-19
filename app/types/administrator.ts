@@ -16,6 +16,8 @@ export type Administrator = {
   departmentCode: string;
   mobile: string | null;
   email: string | null;
+  hasAccount?: boolean;
+  accountActive?: boolean | null;
   roleName: AdministratorRole;
 };
 

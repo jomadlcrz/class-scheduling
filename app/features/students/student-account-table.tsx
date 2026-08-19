@@ -1,4 +1,4 @@
-﻿import { Badge } from "~/components/ui/badge";
+import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 import { IconButton } from "~/components/ui/icon-button";
 import { FileSearchIcon, UserCheckIcon, UserOffIcon } from "~/components/ui/icons";
@@ -77,9 +77,9 @@ export function StudentAccountTable({
       </TableHead>
       <TableBody>
         {students.map((student) => {
-          const isActive = accountActiveById[student.studentProfileId];
+          const isActive = accountActiveById[student.studentProfileId] ?? student.accountActive ?? (student.hasAccount ? true : null);
           return (
-          <TableRow key={student.studentProfileId}>
+          <TableRow key={student.studentProfileId} className="group">
             {canBulkSelect && (
               <TableCell>
                 {!student.hasAccount && (
@@ -128,7 +128,7 @@ export function StudentAccountTable({
               )}
             </TableCell>
             <TableCell>
-              <div className="flex justify-end gap-1">
+              <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                 {onView && (
                   <IconButton
                     onClick={() => onView(student)}
