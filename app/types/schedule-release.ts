@@ -71,3 +71,66 @@ export type DeanApprovalsInbox = {
   pending: ScheduleRelease[];
   recentlyReviewed: ScheduleRelease[];
 };
+
+export type InstructorReviewProgressItem = {
+  instructorId: number;
+  instructorName: string;
+  meetingCount: number;
+  responseType: "accept" | "suggest_change" | null;
+  respondedAt: string | null;
+  status: string;
+  reason: string | null;
+  proposedMeetings?: {
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    roomId: number;
+    roomName?: string | null;
+  }[];
+};
+
+export type DeanReviewProgress = {
+  releaseId: number;
+  totalInstructors: number;
+  respondedCount: number;
+  pendingCount: number;
+  acceptedCount: number;
+  suggestedCount: number;
+  allAccepted: boolean;
+  hasSuggestions: boolean;
+  instructors: InstructorReviewProgressItem[];
+};
+
+export type RegistrarRevisionWorkspaceSuggestion = {
+  responseId: number;
+  instructorId: number;
+  instructorName: string;
+  scheduleId: number;
+  subjectId: number | null;
+  subjectCode: string | null;
+  subjectTitle: string | null;
+  reason: string | null;
+  status: string;
+  currentMeeting: {
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    roomId: number;
+    roomName: string | null;
+  };
+  proposedMeetings: {
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    roomId: number;
+    roomName?: string | null;
+  }[];
+};
+
+export type RegistrarRevisionWorkspace = {
+  releaseId: number;
+  release: ScheduleRelease;
+  suggestions: RegistrarRevisionWorkspaceSuggestion[];
+  pendingSuggestionsCount: number;
+};
+

@@ -429,6 +429,17 @@ async function importRecords(rows: ImportStudentInput[]): Promise<ImportStudentR
   };
 }
 
+/** GET /students/me/enrollment-terms — terms the authenticated student is enrolled in. */
+async function getEnrollmentTerms(): Promise<
+  Array<{ sy_id: number; semester_number: number; school_year: string; semester_name: string }>
+> {
+  const data = await apiGet<
+    Array<{ sy_id: number; semester_number: number; school_year: string; semester_name: string }> |
+    { terms: Array<{ sy_id: number; semester_number: number; school_year: string; semester_name: string }> }
+  >("/students/me/enrollment-terms");
+  return Array.isArray(data) ? data : (data.terms ?? []);
+}
+
 export const studentService = {
   createRecord,
   bulkCreateRecords,
@@ -448,4 +459,5 @@ export const studentService = {
   deactivateAccount,
   reactivateAccount,
   importRecords,
+  getEnrollmentTerms,
 };

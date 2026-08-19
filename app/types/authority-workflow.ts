@@ -171,3 +171,70 @@ export type InstructorScheduleResponse = {
   createdAt: string;
   meetings: ProposedScheduleMeeting[];
 };
+
+export type InstructorScheduleReviewSummary = {
+  releaseId: number;
+  syId: number;
+  schoolYear: string;
+  semesterNumber: number;
+  setId: number;
+  setCode: string;
+  programAbbrev: string | null;
+  status: string;
+  responseType: "accept" | "suggest_change" | null;
+  respondedAt: string | null;
+  meetingCount: number;
+};
+
+export type InstructorScheduleReviewMeeting = {
+  scheduleId: number;
+  subjectId: number;
+  subjectCode: string;
+  subjectTitle: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  roomId: number;
+  roomName: string | null;
+  mode: string;
+};
+
+export type InstructorScheduleReviewDetail = {
+  releaseId: number;
+  syId: number;
+  schoolYear: string;
+  semesterNumber: number;
+  setId: number;
+  setCode: string;
+  programAbbrev: string | null;
+  responseType: "accept" | "suggest_change" | null;
+  status: string;
+  respondedAt: string | null;
+  reason: string | null;
+  meetings: InstructorScheduleReviewMeeting[];
+  proposedMeetings: ProposedScheduleMeeting[];
+};
+
+export type SuggestionDryRunAnalysis = {
+  responseId: number;
+  feasible: boolean;
+  conflicts: string[];
+  message: string;
+};
+
+export type AdvancedAnalysisResult = {
+  responseId: number;
+  level: number;
+  levelName: string;
+  feasible: boolean;
+  proposedMeetings: ProposedScheduleMeeting[];
+  adjustments?: Array<{
+    scheduleId: number;
+    subjectCode: string;
+    previous: { dayOfWeek: string; startTime: string; endTime: string; roomId: number };
+    proposed: { dayOfWeek: string; startTime: string; endTime: string; roomId: number };
+  }>;
+  conflicts?: string[];
+  message?: string;
+};
+

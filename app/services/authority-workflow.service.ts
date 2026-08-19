@@ -182,6 +182,73 @@ async function assignFloatingInstructor(scheduleId: number, instructorId: number
   return { message: apiMessage(data), schedule: data.schedule };
 }
 
+/** GET /instructors/schedule-reviews — list schedule releases open for instructor review. */
+async function listInstructorScheduleReviews(): Promise<import("~/types/authority-workflow").InstructorScheduleReviewSummary[]> {
+  const data = await apiGet<{ reviews: import("~/types/authority-workflow").InstructorScheduleReviewSummary[] }>(
+    "/instructors/schedule-reviews",
+  );
+  return data.reviews ?? [];
+}
+
+/** GET /instructors/schedule-reviews/{id} — instructor review detail with meetings. */
+async function getInstructorScheduleReview(releaseId: number): Promise<import("~/types/authority-workflow").InstructorScheduleReviewDetail> {
+  return apiGet<import("~/types/authority-workflow").InstructorScheduleReviewDetail>(
+    `/instructors/schedule-reviews/${releaseId}`,
+  );
+}
+
+/** POST /instructors/schedule-reviews/{id}/accept — instructor accepts assigned schedule. */
+async function acceptInstructorScheduleReview(releaseId: number): Promise<{ message: string; response?: unknown }> {
+  const data = await apiPost<MessageResponse & { response?: unknown }>(
+    `/instructors/schedule-reviews/${releaseId}/accept`,
+  );
+  return { message: apiMessage(data), response: data.response };
+}
+
+/** POST /instructors/schedule-reviews/{id}/suggest — instructor submits proposed meeting schedule. */
+async function suggestInstructorScheduleChange(
+  releaseId: number,
+  payload: { reason?: string; proposedMeetings: ProposedScheduleMeeting[] },
+): Promise<{ message: string; response?: unknown }> {
+  const data = await apiPost<MessageResponse & { response?: unknown }>(
+    `/instructors/schedule-reviews/${releaseId}/suggest`,
+    payload,
+  );
+  return { message: apiMessage(data), response: data.response };
+}
+
+/** POST /registrar/instructor-schedule-responses/{id}/analyze — dry-run analyze suggestion placement. */
+async function analyzeInstructorSuggestion(responseId: number): Promise<import("~/types/authority-workflow").SuggestionDryRunAnalysis> {
+  return apiPost<import("~/types/authority-workflow").SuggestionDryRunAnalysis>(
+    `/registrar/instructor-schedule-responses/${responseId}/analyze`,
+  );
+}
+
+/** POST /registrar/instructor-schedule-responses/{id}/apply — registrar applies approved suggestion to timetable. */
+async function applyInstructorSuggestion(responseId: number, note?: string): Promise<{ message: string; applied?: boolean }> {
+  const data = await apiPost<MessageResponse & { applied?: boolean }>(
+    `/registrar/instructor-schedule-responses/${responseId}/apply`,
+    note ? { note } : undefined,
+  );
+  return { message: apiMessage(data), applied: data.applied };
+}
+
+/** POST /registrar/instructor-schedule-responses/{id}/retain — registrar rejects suggestion, retaining original schedule. */
+async function retainInitialSchedule(responseId: number, note?: string): Promise<{ message: string; retained?: boolean }> {
+  const data = await apiPost<MessageResponse & { retained?: boolean }>(
+    `/registrar/instructor-schedule-responses/${responseId}/retain`,
+    note ? { note } : undefined,
+  );
+  return { message: apiMessage(data), retained: data.retained };
+}
+
+/** POST /registrar/instructor-schedule-responses/{id}/analyze-advanced — progressive multi-level dry-run solver. */
+async function analyzeAdvancedAdjustment(responseId: number): Promise<import("~/types/authority-workflow").AdvancedAnalysisResult> {
+  return apiPost<import("~/types/authority-workflow").AdvancedAnalysisResult>(
+    `/registrar/instructor-schedule-responses/${responseId}/analyze-advanced`,
+  );
+}
+
 export const authorityWorkflowService = {
   listAssignmentAuditLogs,
   listHoursAdjustmentRequests,
@@ -203,4 +270,13 @@ export const authorityWorkflowService = {
   listInstructorScheduleResponses,
   decideInstructorScheduleResponse,
   assignFloatingInstructor,
+  listInstructorScheduleReviews,
+  getInstructorScheduleReview,
+  acceptInstructorScheduleReview,
+  suggestInstructorScheduleChange,
+  analyzeInstructorSuggestion,
+  applyInstructorSuggestion,
+  retainInitialSchedule,
+  analyzeAdvancedAdjustment,
 };
+

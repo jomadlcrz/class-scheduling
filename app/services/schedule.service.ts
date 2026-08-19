@@ -914,6 +914,22 @@ async function listScheduleAuditLog(params: {
   return apiGet(`/schedule/audit-log${qs ? `?${qs}` : ""}`);
 }
 
+/** GET /regular_schedule/set/:setId/finalized-majors — preloads protected Registrar-finalized major meetings. */
+async function getFinalizedMajorPreload(
+  setId: number,
+  params: { syId: number; semesterNumber: number; programId?: number },
+): Promise<unknown[]> {
+  const query = new URLSearchParams({
+    syId: String(params.syId),
+    semesterNumber: String(params.semesterNumber),
+  });
+  if (params.programId != null) query.set("programId", String(params.programId));
+  const data = await apiGet<{ finalized_majors: unknown[] }>(
+    `/regular_schedule/set/${setId}/finalized-majors?${query}`,
+  );
+  return data.finalized_majors ?? [];
+}
+
 export const scheduleService = {
   view,
   viewAttestations,
@@ -935,4 +951,6 @@ export const scheduleService = {
   listSchedulePrograms,
   scheduleAuditLogFilters,
   listScheduleAuditLog,
+  getFinalizedMajorPreload,
 };
+

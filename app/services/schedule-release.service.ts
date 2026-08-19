@@ -127,6 +127,60 @@ async function rejectRelease(id: number, reason: string): Promise<{ message: str
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
+/** POST /deans/schedule-approvals/{id}/send-to-instructors — distributes review to instructors. */
+async function sendToInstructors(id: number): Promise<{ message: string; release: ScheduleRelease }> {
+  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
+    `/deans/schedule-approvals/${id}/send-to-instructors`,
+  );
+  return { message: apiMessage(data), release: mapRelease(data.release) };
+}
+
+/** GET /deans/schedule-approvals/{id}/review-progress — tracks instructor review progress. */
+async function getReviewProgress(id: number): Promise<import("~/types/schedule-release").DeanReviewProgress> {
+  return apiGet<import("~/types/schedule-release").DeanReviewProgress>(
+    `/deans/schedule-approvals/${id}/review-progress`,
+  );
+}
+
+/** POST /deans/schedule-approvals/{id}/forward-suggestions — forwards instructor suggestions to registrar. */
+async function forwardSuggestions(id: number): Promise<{ message: string; forwardedCount?: number }> {
+  const data = await apiPost<{ message?: string; forwardedCount?: number }>(
+    `/deans/schedule-approvals/${id}/forward-suggestions`,
+  );
+  return { message: apiMessage(data), forwardedCount: data.forwardedCount };
+}
+
+/** POST /deans/schedule-approvals/{id}/progress-to-final-approval — moves to final approval when all accepted. */
+async function progressToFinalApproval(id: number): Promise<{ message: string; release?: ScheduleRelease }> {
+  const data = await apiPost<{ message?: string; release?: ApiScheduleRelease }>(
+    `/deans/schedule-approvals/${id}/progress-to-final-approval`,
+  );
+  return { message: apiMessage(data), release: data.release ? mapRelease(data.release) : undefined };
+}
+
+/** POST /deans/schedule-approvals/{id}/final-approve — final dean signoff. */
+async function finalApprove(id: number): Promise<{ message: string; release?: ScheduleRelease }> {
+  const data = await apiPost<{ message?: string; release?: ApiScheduleRelease }>(
+    `/deans/schedule-approvals/${id}/final-approve`,
+  );
+  return { message: apiMessage(data), release: data.release ? mapRelease(data.release) : undefined };
+}
+
+/** GET /registrar/schedule-releases/{id}/revision-workspace — registrar review of forwarded suggestions. */
+async function getRevisionWorkspace(id: number): Promise<import("~/types/schedule-release").RegistrarRevisionWorkspace> {
+  return apiGet<import("~/types/schedule-release").RegistrarRevisionWorkspace>(
+    `/registrar/schedule-releases/${id}/revision-workspace`,
+  );
+}
+
+/** POST /registrar/schedule-releases/{id}/resubmit — registrar resubmits after resolving suggestions. */
+async function resubmitRelease(id: number): Promise<{ message: string; release?: ScheduleRelease }> {
+  const data = await apiPost<{ message?: string; release?: ApiScheduleRelease }>(
+    `/registrar/schedule-releases/${id}/resubmit`,
+  );
+  return { message: apiMessage(data), release: data.release ? mapRelease(data.release) : undefined };
+}
+
 /**
  * Converts a release preview's daySchedules into the Schedule[] shape so the existing
  * ScheduleGrid/ScheduleTable components can render it read-only — no new grid renderer needed.
@@ -176,5 +230,13 @@ export const scheduleReleaseService = {
   getApproval,
   approveRelease,
   rejectRelease,
+  sendToInstructors,
+  getReviewProgress,
+  forwardSuggestions,
+  progressToFinalApproval,
+  finalApprove,
+  getRevisionWorkspace,
+  resubmitRelease,
   mapPreviewToSchedules,
 };
+
