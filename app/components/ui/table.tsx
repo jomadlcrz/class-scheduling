@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 /** Composable table primitives sharing the card-style chrome of the app. */
 
@@ -52,7 +52,7 @@ export function TableRow({
 }) {
   return (
     <tr
-      className={`transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/5 ${className ?? ""}`}
+      className={`group transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/5 ${className ?? ""}`}
       onClick={onClick}
     >
       {children}

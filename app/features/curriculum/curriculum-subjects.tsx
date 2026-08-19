@@ -64,7 +64,7 @@ export function CurriculumSubjects({ group, onEdit, onArchive }: CurriculumSubje
             </TableCell>
             {manageable && (
               <TableCell>
-                <div className="flex justify-end gap-1">
+                <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                   {onEdit && (
                     <IconButton
                       onClick={() => onEdit(subject)}

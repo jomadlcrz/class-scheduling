@@ -1,4 +1,4 @@
-﻿import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, useReducedMotion, type Variants } from "motion/react";
 import { IconButton } from "~/components/ui/icon-button";
 import { ArchiveIcon, EditIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
@@ -62,7 +62,7 @@ export function SubjectCardGrid({ subjects, onEdit, onArchive }: SubjectCardGrid
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1.5">
             {manageable && (
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-0.5 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                 {onEdit && (
                   <IconButton
                     onClick={() => onEdit(subject)}

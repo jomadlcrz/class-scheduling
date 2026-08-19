@@ -1,4 +1,4 @@
-﻿import { IconButton } from "~/components/ui/icon-button";
+import { IconButton } from "~/components/ui/icon-button";
 import { EditIcon, ArchiveIcon } from "~/components/ui/icons";
 import { archiveActionButtonClassName } from "~/features/archive/archive-icon-styles";
 import { departmentLogoUrl, onDepartmentLogoError } from "~/lib/department-logo";
@@ -69,7 +69,7 @@ export function SetTable({ sets, programs, onEdit, onArchive }: SetTableProps) {
               </TableCell>
               <TableCell>{yearLevelLabel(set.yearLevel)}</TableCell>
               <TableCell>
-                <div className="flex justify-end gap-1">
+                <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                   <IconButton
                     onClick={() => onEdit(set)}
                     label={`Edit set ${set.setCode}`}
