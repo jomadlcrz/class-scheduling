@@ -424,11 +424,54 @@ async function getRegistration(enrollmentId: number): Promise<EnrollmentRegistra
   return apiGet<EnrollmentRegistration>(`/enrollments/${enrollmentId}/registration`);
 }
 
+export type AvailableSetPreview = {
+  setId: number;
+  setCode: string;
+  setName: string;
+  studentCount: number;
+  capacity: number;
+};
+
+/** GET /enrollments/available-set — current automatic-placement preview for a Regular student. */
+async function getAvailableSet(params: {
+  programId: number;
+  yearLevel: number;
+  syId: number;
+  semesterNumber: number;
+  offset?: number;
+}): Promise<AvailableSetPreview | null> {
+  const query = new URLSearchParams({
+    program_id: String(params.programId),
+    year_level: String(params.yearLevel),
+    sy_id: String(params.syId),
+    semester_number: String(params.semesterNumber),
+  });
+  if (params.offset != null) query.set("offset", String(params.offset));
+  const data = await apiGet<{
+    set: {
+      set_id: number;
+      set_code: string;
+      set_name: string;
+      student_count: number;
+      capacity: number;
+    } | null;
+  }>(`/enrollments/available-set?${query}`);
+  if (!data?.set) return null;
+  return {
+    setId: data.set.set_id,
+    setCode: data.set.set_code,
+    setName: data.set.set_name,
+    studentCount: data.set.student_count,
+    capacity: data.set.capacity,
+  };
+}
+
 export const enrollmentService = {
   listTermEnrollments,
   getFacets,
   getSetCapacity,
   updateSetCapacity,
+  getAvailableSet,
   bulkCreate,
   getReenrollDirectory,
   getEnrollment,
@@ -441,3 +484,4 @@ export const enrollmentService = {
 
 export type { UpdateEnrollmentInput };
 export type { BulkEnrollmentInput };
+
