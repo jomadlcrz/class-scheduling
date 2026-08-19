@@ -4,6 +4,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
 import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
+import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import {
   Table,
@@ -14,6 +15,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { usePagination } from "~/hooks/use-pagination";
 import { PageHeader } from "~/layouts/page-header";
 import { deanService } from "~/services/dean.service";
 
@@ -51,6 +53,8 @@ function DeanInstructorsPage() {
     );
   }, [instructors, search]);
 
+  const pagination = usePagination(visible, search);
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
@@ -86,51 +90,59 @@ function DeanInstructorsPage() {
               : "No instructors match your search."}
           </EmptyState>
         ) : (
-          <Table>
-            <TableHead>
-              <TableHeader>Name</TableHeader>
-              <TableHeader className="hidden sm:table-cell">Email</TableHeader>
-              <TableHeader className="hidden sm:table-cell">Mobile</TableHeader>
-              <TableHeader className="hidden md:table-cell">Gender</TableHeader>
-              <TableHeader className="hidden md:table-cell">Civil Status</TableHeader>
-              <TableHeader className="hidden lg:table-cell">Roles</TableHeader>
-            </TableHead>
-            <TableBody>
-              {visible.map((instructor) => (
-                <TableRow key={`${instructor.firstName}-${instructor.lastName}`}>
-                  <TableCell>
-                    <span className="font-medium text-navy-700 dark:text-mist-100">
-                      {instructor.lastName}, {instructor.firstName}
-                    </span>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-                    {instructor.email ? <a href={`mailto:${instructor.email}`} className="hover:underline">{instructor.email}</a> : "—"}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-                    {instructor.mobile ? <a href={`tel:${instructor.mobile}`} className="hover:underline">{instructor.mobile}</a> : "—"}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
-                    {instructor.gender}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
-                    {instructor.civilStatus}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <div className="flex flex-wrap gap-1">
-                      {instructor.roles.map((role) => (
-                        <span
-                          key={role}
-                          className="inline-block rounded-full bg-slate-100 px-2 py-0.5 font-body text-xs text-slate-600 dark:bg-white/10 dark:text-slate-300"
-                        >
-                          {role}
-                        </span>
-                      ))}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <>
+            <Table>
+              <TableHead>
+                <TableHeader>Name</TableHeader>
+                <TableHeader className="hidden sm:table-cell">Email</TableHeader>
+                <TableHeader className="hidden sm:table-cell">Mobile</TableHeader>
+                <TableHeader className="hidden md:table-cell">Gender</TableHeader>
+                <TableHeader className="hidden md:table-cell">Civil Status</TableHeader>
+                <TableHeader className="hidden lg:table-cell">Roles</TableHeader>
+              </TableHead>
+              <TableBody>
+                {pagination.pageItems.map((instructor) => (
+                  <TableRow key={`${instructor.firstName}-${instructor.lastName}`}>
+                    <TableCell>
+                      <span className="font-medium text-navy-700 dark:text-mist-100">
+                        {instructor.lastName}, {instructor.firstName}
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
+                      {instructor.email ? <a href={`mailto:${instructor.email}`} className="hover:underline">{instructor.email}</a> : "—"}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
+                      {instructor.mobile ? <a href={`tel:${instructor.mobile}`} className="hover:underline">{instructor.mobile}</a> : "—"}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
+                      {instructor.gender}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
+                      {instructor.civilStatus}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {instructor.roles.map((role) => (
+                          <span
+                            key={role}
+                            className="inline-block rounded-full bg-slate-100 px-2 py-0.5 font-body text-xs text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                          >
+                            {role}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <Pagination
+              page={pagination.page}
+              totalItems={pagination.totalItems}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setPage}
+            />
+          </>
         )}
       </div>
     </div>

@@ -208,16 +208,18 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                     {enrollment.enrollmentState}
                   </Badge>
                   <Badge tone={accountTone(student.accountStatus)}>{student.accountStatus}</Badge>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    block={false}
-                    disabled={printLoading}
-                    onClick={() => void handlePrintCOR()}
-                  >
-                    <PrinterIcon size={14} />
-                    Print COR
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      block={false}
+                      disabled={printLoading}
+                      onClick={() => void handlePrintCOR()}
+                    >
+                      <PrinterIcon size={14} />
+                      Print COR
+                    </Button>
+                  )}
                   {!readOnly && (
                     <Button type="button" variant="outline" block={false} onClick={() => setEditRecordOpen(true)}>
                       <EditIcon />
