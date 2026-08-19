@@ -84,15 +84,17 @@ export function CropDialog({
 
   const cropContainerClass = previewClassName
     ?? (cropShape === "round"
-      ? "relative aspect-square w-48 overflow-hidden rounded-full"
+      ? "relative aspect-square w-80 overflow-hidden rounded-full"
       : "relative overflow-hidden rounded-xl bg-navy-900");
+
+  const shouldCenter = Boolean(previewClassName || cropShape === "round");
 
   return (
     <Modal open={open} onClose={saving ? () => {} : handleBack} title={title} wide={wide}>
       <div className="flex flex-col gap-4">
         {error && <p className="font-body text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-        {previewClassName ? (
+        {shouldCenter ? (
           <div className="flex justify-center">
             <div className={cropContainerClass}>
               <Cropper

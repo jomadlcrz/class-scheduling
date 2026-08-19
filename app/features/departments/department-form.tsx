@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
+import { CropDialog } from "~/components/ui/crop-dialog";
 import { ModalActions } from "~/components/ui/modal";
 import { FileChooser } from "~/components/ui/file-chooser";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { departmentLogoSrc, onDepartmentLogoError } from "~/lib/department-logo";
 import { departmentSchema } from "~/schemas/department.schema";
 import type { Building } from "~/types/building";
 import type { CreateDepartmentInput, Department } from "~/types/department";
@@ -20,9 +20,6 @@ type DepartmentFormProps = {
   onSubmit: (input: CreateDepartmentInput, logoFile?: File | null) => Promise<void>;
   onCancel: () => void;
 };
-
-const logoThumbClassName =
-  "size-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1 dark:border-white/10 dark:bg-white/5";
 
 export function DepartmentForm({
   department,
@@ -38,15 +35,43 @@ export function DepartmentForm({
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoCropSrc, setLogoCropSrc] = useState("");
 
   useEffect(() => {
     if (!logoPreview) return;
     return () => URL.revokeObjectURL(logoPreview);
   }, [logoPreview]);
 
+  useEffect(() => {
+    return () => {
+      if (logoCropSrc) URL.revokeObjectURL(logoCropSrc);
+    };
+  }, [logoCropSrc]);
+
   function handleLogoSelect(file: File) {
-    setLogoFile(file);
-    setLogoPreview(URL.createObjectURL(file));
+    if (file.type.startsWith("image/")) {
+      if (logoCropSrc) URL.revokeObjectURL(logoCropSrc);
+      setLogoCropSrc(URL.createObjectURL(file));
+    } else {
+      setLogoFile(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  }
+
+  async function handleLogoCropSave(croppedFile: File) {
+    setLogoFile(croppedFile);
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoPreview(URL.createObjectURL(croppedFile));
+    if (logoCropSrc) URL.revokeObjectURL(logoCropSrc);
+    setLogoCropSrc("");
+  }
+
+  function handleLogoClear() {
+    setLogoFile(null);
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoPreview(null);
+    if (logoCropSrc) URL.revokeObjectURL(logoCropSrc);
+    setLogoCropSrc("");
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -84,21 +109,14 @@ export function DepartmentForm({
       {!isEdit && (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="dept-logo-file">Logo (optional)</Label>
-          <div className="flex items-center gap-3">
-            <img
-              src={departmentLogoSrc(logoPreview)}
-              alt=""
-              onError={onDepartmentLogoError}
-              className={logoThumbClassName}
-            />
-            <div className="min-w-0 flex-1">
-              <FileChooser
-                id="dept-logo-file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleLogoSelect}
-              />
-            </div>
-          </div>
+          <FileChooser
+            id="dept-logo-file"
+            accept="image/jpeg,image/png,image/webp"
+            fileName={logoFile?.name ?? null}
+            previewUrl={logoPreview}
+            onChange={handleLogoSelect}
+            onClear={handleLogoClear}
+          />
           <p className="font-body text-xs text-slate-400 dark:text-slate-500">
             JPG, PNG, or WEBP, up to 5 MB.
           </p>
@@ -172,6 +190,23 @@ export function DepartmentForm({
         </Button>
       </ModalActions>
       </form>
+
+      <CropDialog
+        open={Boolean(logoCropSrc)}
+        imageSrc={logoCropSrc}
+        aspect={1}
+        outputWidth={512}
+        outputHeight={512}
+        cropShape="round"
+        showGrid={false}
+        previewClassName="relative aspect-square w-80 overflow-hidden rounded-full"
+        title="Adjust Department Logo"
+        saveLabel="Save logo"
+        hint="Drag the image to position it, then click Save logo."
+        onClose={() => setLogoCropSrc("")}
+        onBack={() => setLogoCropSrc("")}
+        onSave={handleLogoCropSave}
+      />
     </>
   );
 }
