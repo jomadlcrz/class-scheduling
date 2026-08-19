@@ -268,6 +268,7 @@ async function getReenrollDirectory(
   filters: ReenrollDirectoryFilters = {},
   page = 1,
   perPage = 10,
+  directory: "eligible" | "already-enrolled" = "eligible",
 ): Promise<ReenrollDirectoryPage> {
   const query = new URLSearchParams();
   if (targetSyId != null && targetSemesterNumber != null) {
@@ -281,27 +282,31 @@ async function getReenrollDirectory(
   if (filters.enrolledStatus && filters.enrolledStatus !== "all") {
     query.set("enrolledStatus", filters.enrolledStatus);
   }
-  query.set("eligible_page", String(page));
-  query.set("already_page", String(page));
+  query.set("page", String(page));
   query.set("perPage", String(perPage));
   const suffix = query.size > 0 ? `?${query.toString()}` : "";
-  const data = await apiGetFresh<{ eligible: ApiReenrollDirectoryBlock; alreadyEnrolled: ApiReenrollDirectoryBlock }>(
-    `/enrollments/directory${suffix}`,
+  const data = await apiGetFresh<ApiReenrollDirectoryBlock>(
+    `/enrollments/directory/${directory}${suffix}`,
   );
-  const eligible = data?.eligible ?? { items: [], pagination: { page, perPage, totalItems: 0, totalPages: 1 } };
-  const alreadyEnrolled = data?.alreadyEnrolled ?? { items: [], pagination: { page, perPage, totalItems: 0, totalPages: 1 } };
-  const seen = new Set<number>();
-  const items = [...eligible.items, ...alreadyEnrolled.items].map(toReenrollRow).filter((row) => {
-    if (seen.has(row.studentProfileId)) return false;
-    seen.add(row.studentProfileId);
-    return true;
-  });
+  const block = data ?? { items: [], pagination: { page, perPage, totalItems: 0, totalPages: 1 } };
   return {
-    items,
-    total: eligible.pagination.totalItems + alreadyEnrolled.pagination.totalItems,
-    pages: Math.max(eligible.pagination.totalPages, alreadyEnrolled.pagination.totalPages),
-    currentPage: page,
+    items: block.items.map(toReenrollRow),
+    total: block.pagination.totalItems,
+    pages: block.pagination.totalPages,
+    currentPage: block.pagination.page,
   };
+}
+
+async function getAlreadyEnrolledDirectory(
+  targetSyId: number | null,
+  targetSemesterNumber: number | null,
+  filters: ReenrollDirectoryFilters = {},
+  page = 1,
+  perPage = 10,
+): Promise<ReenrollDirectoryPage> {
+  return getReenrollDirectory(
+    targetSyId, targetSemesterNumber, filters, page, perPage, "already-enrolled",
+  );
 }
 
 /** GET /enrollments/{id} — one enrollment row with its subject load. */
@@ -474,6 +479,7 @@ export const enrollmentService = {
   getAvailableSet,
   bulkCreate,
   getReenrollDirectory,
+  getAlreadyEnrolledDirectory,
   getEnrollment,
   updateEnrollment,
   setEnrollmentState,

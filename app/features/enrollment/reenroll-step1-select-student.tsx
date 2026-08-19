@@ -30,6 +30,7 @@ type ReenrollStep1SelectStudentProps = {
   directoryPage: number;
   directoryPageSize: number;
   onDirectoryPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
   selectedIds: Set<number>;
   onToggleSelect: (row: ReenrollDirectoryRow, checked: boolean) => void;
   onSelectAll: (checked: boolean, rows: ReenrollDirectoryRow[]) => void;
@@ -43,6 +44,7 @@ export function ReenrollStep1SelectStudent({
   directoryPage,
   directoryPageSize,
   onDirectoryPageChange,
+  hasActiveFilters,
   selectedIds,
   onToggleSelect,
   onSelectAll,
@@ -64,7 +66,9 @@ export function ReenrollStep1SelectStudent({
           </div>
         ) : results.length === 0 ? (
           <p className="px-2 py-6 text-center font-body text-sm text-slate-500 dark:text-slate-400">
-            No students match your search and filters.
+            {hasActiveFilters
+              ? "No students match your search and filters."
+              : "No students are eligible for re-enrollment in this term."}
           </p>
         ) : (
           <Table>

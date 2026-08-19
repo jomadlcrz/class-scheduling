@@ -220,6 +220,13 @@ export function ReenrollWizard({
   }
 
   const selectedRows = [...selectedStudents.values()];
+  const hasActiveDirectoryFilters = Boolean(
+    directoryFilters.search.trim()
+    || directoryFilters.program !== "all"
+    || directoryFilters.yearLevel !== "all"
+    || directoryFilters.semester !== "all"
+    || directoryFilters.enrolledStatus !== "all",
+  );
 
   return (
     <>
@@ -247,6 +254,7 @@ export function ReenrollWizard({
           directoryPage={directoryPage}
           directoryPageSize={directoryPageSize}
           onDirectoryPageChange={onDirectoryPageChange}
+          hasActiveFilters={hasActiveDirectoryFilters}
           selectedIds={new Set(selectedStudents.keys())}
           onToggleSelect={toggleStudent}
           onSelectAll={selectAllStudents}

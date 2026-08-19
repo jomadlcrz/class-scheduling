@@ -100,7 +100,21 @@ function EnrollmentReenrollPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title="Re-enroll Existing Student"
-
+        actions={
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" block={false} disabled>
+              Eligible Students
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => navigate("/enrollment/re-enroll/already-enrolled")}
+            >
+              Already Enrolled
+            </Button>
+          </div>
+        }
       />
 
       {noAcademicTerm ? (

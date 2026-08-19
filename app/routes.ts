@@ -70,6 +70,7 @@ export default [
     route("enrollment/irregular-students", "routes/app/enrollment/redirect-irregular-students.tsx"),
     route("enrollment/new", "routes/app/enrollment/new.tsx"),
     route("enrollment/re-enroll", "routes/app/enrollment/re-enroll.tsx"),
+    route("enrollment/re-enroll/already-enrolled", "routes/app/enrollment/re-enroll-already-enrolled.tsx"),
     route("classroom-mapping", "routes/app/classroom-mapping.tsx"),
     route("audit", "routes/app/audit.tsx"),
 
