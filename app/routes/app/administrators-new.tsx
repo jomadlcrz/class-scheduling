@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { SuccessDone } from "~/components/feedback/success-done";
 import { Card } from "~/components/ui/card";
 import { ConfirmDialog } from "~/components/ui/modal";
+import { Spinner } from "~/components/ui/spinner";
 import { AdministratorAccountForm } from "~/features/administrators/administrator-account-form";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
@@ -36,6 +38,8 @@ function AdministratorsNewPage() {
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
   const [enumOptions, setEnumOptions] = useState<EnumOptions | null>(null);
   const [rolePermissions, setRolePermissions] = useState<PermissionSummary[]>([]);
+  const [prerequisitesLoading, setPrerequisitesLoading] = useState(true);
+  const [prerequisitesError, setPrerequisitesError] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
@@ -43,16 +47,21 @@ function AdministratorsNewPage() {
     useUnsavedChangesGuard(isDirty, !isSaving);
 
   useEffect(() => {
-    departmentService
-      .list()
-      .then((items) =>
-        setDepartments(
-          items.map((item) => ({ id: item.id, abbrev: item.abbrev, name: item.name })),
-        ),
-      )
-      .catch(() => setDepartments([]));
-    enumService.getOptions().then(setEnumOptions).catch(() => setEnumOptions(null));
-    permissionService.list().then(setRolePermissions).catch(() => setRolePermissions([]));
+    let cancelled = false;
+    Promise.all([departmentService.list(), enumService.getOptions(), permissionService.list()])
+      .then(([departmentOptions, options, permissions]) => {
+        if (cancelled) return;
+        setDepartments(departmentOptions.map((item) => ({ id: item.id, abbrev: item.abbrev, name: item.name })));
+        setEnumOptions(options);
+        setRolePermissions(permissions);
+      })
+      .catch((error) => {
+        if (!cancelled) setPrerequisitesError(error instanceof Error ? error.message : "Unable to load form details.");
+      })
+      .finally(() => {
+        if (!cancelled) setPrerequisitesLoading(false);
+      });
+    return () => { cancelled = true; };
   }, []);
 
   async function handleCreate(input: CreateAdministratorAccountInput) {
@@ -76,7 +85,19 @@ function AdministratorsNewPage() {
       />
 
       <div className="mt-6">
-        {createdEmail ? (
+        {prerequisitesLoading ? (
+          <div role="status" aria-label="Loading form details" className="flex min-h-64 items-center justify-center text-navy-700 dark:text-slate-200">
+            <Spinner size={24} />
+          </div>
+        ) : prerequisitesError ? (
+          <EmptyState title="Unable to load form details">
+            {prerequisitesError}
+          </EmptyState>
+        ) : departments.length === 0 ? (
+          <EmptyState title="No departments available">
+            Create a department before adding an administrator account.
+          </EmptyState>
+        ) : createdEmail ? (
           <Card className="p-6">
             <SuccessDone
               title="Administrator registered"

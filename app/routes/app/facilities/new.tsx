@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
-import { Button } from "~/components/ui/button";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { ConfirmDialog } from "~/components/ui/modal";
+import { Spinner } from "~/components/ui/spinner";
 import { CreateBuildingWorkspace } from "~/features/facilities/create-building-workspace";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
@@ -33,17 +34,28 @@ function CreateFacilityPage() {
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [roomTypes, setRoomTypes] = useState<string[]>([]);
+  const [prerequisitesLoading, setPrerequisitesLoading] = useState(true);
+  const [prerequisitesError, setPrerequisitesError] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
     useUnsavedChangesGuard(isDirty, !isSaving);
 
   useEffect(() => {
-    programService.list().then(setPrograms).catch(() => setPrograms([]));
-    enumService
-      .getOptions()
-      .then((options) => setRoomTypes(options.roomType))
-      .catch(() => {});
+    let cancelled = false;
+    Promise.all([programService.list(), enumService.getOptions()])
+      .then(([programOptions, options]) => {
+        if (cancelled) return;
+        setPrograms(programOptions);
+        setRoomTypes(options.roomType);
+      })
+      .catch((error) => {
+        if (!cancelled) setPrerequisitesError(error instanceof Error ? error.message : "Unable to load form details.");
+      })
+      .finally(() => {
+        if (!cancelled) setPrerequisitesLoading(false);
+      });
+    return () => { cancelled = true; };
   }, []);
 
   async function handleCreate(input: CreateFacilitiesInput) {
@@ -71,12 +83,26 @@ function CreateFacilityPage() {
       <PageHeader title="New Facility" />
 
       <div className="mt-6">
-        <CreateBuildingWorkspace
-          roomTypes={roomTypes}
-          programs={programs}
-          onSubmit={handleCreate}
-          onDirtyChange={setIsDirty}
-        />
+        {prerequisitesLoading ? (
+          <div role="status" aria-label="Loading form details" className="flex min-h-64 items-center justify-center text-navy-700 dark:text-slate-200">
+            <Spinner size={24} />
+          </div>
+        ) : prerequisitesError ? (
+          <EmptyState title="Unable to load form details">
+            {prerequisitesError}
+          </EmptyState>
+        ) : roomTypes.length === 0 ? (
+          <EmptyState title="No room types available">
+            Configure a room type before creating a facility.
+          </EmptyState>
+        ) : (
+          <CreateBuildingWorkspace
+            roomTypes={roomTypes}
+            programs={programs}
+            onSubmit={handleCreate}
+            onDirtyChange={setIsDirty}
+          />
+        )}
       </div>
 
       <ConfirmDialog

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { Card } from "~/components/ui/card";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { SchedulingHubSkeleton } from "~/components/ui/skeleton";
@@ -31,8 +32,8 @@ export default function SchedulesHubRoute() {
 }
 
 function SchedulingHubPage() {
-  const { context: termContext, loading: termLoading } = useTermContext();
-  const { semesters, semesterLabel } = useSemesters();
+  const { context: termContext, loading: termLoading, error: termError } = useTermContext();
+  const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 
   const [syId, setSyId] = useState<number | null>(null);
   const [semester, setSemester] = useState<number>(1);
@@ -107,7 +108,19 @@ function SchedulingHubPage() {
       </Card>
 
       <div className="mt-6">
-        {termLoading || hub.loading ? (
+        {termError ? (
+          <EmptyState title="Unable to load academic term">
+            {termError}
+          </EmptyState>
+        ) : !termLoading && schoolYears.length === 0 ? (
+          <EmptyState title="No school years available">
+            Create a school year before using the scheduling hub.
+          </EmptyState>
+        ) : !semestersLoading && semesters.length === 0 ? (
+          <EmptyState title="No semesters available">
+            Create a semester before using the scheduling hub.
+          </EmptyState>
+        ) : termLoading || semestersLoading || hub.loading ? (
           <SchedulingHubSkeleton />
         ) : (
           <div className="flex flex-col gap-5">
