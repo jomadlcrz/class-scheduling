@@ -92,10 +92,16 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
           id="subject-units"
           label="Units"
           type="number"
+          inputMode="numeric"
           min={1}
           max={6}
           required
           defaultValue={subject.units}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-", "."].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
         />
         <FieldChrome id="subject-type" label="Subject Type">
           <Select

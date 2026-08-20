@@ -83,6 +83,11 @@ export function SemesterForm({ initialValue, defaultNumber, mode, onSubmit, onCa
           inputMode="numeric"
           required
           value={semesterNumber}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-", "."].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           onChange={handleNumberChange}
           disabled={isEdit}
           hint="Only 1 or 2 — the two global semesters."

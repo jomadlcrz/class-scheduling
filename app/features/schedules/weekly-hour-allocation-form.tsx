@@ -151,20 +151,32 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
               id="wh-lec-hours"
               label="Lecture Hours/Week"
               type="number"
+              inputMode="decimal"
               min={0}
               step={0.5}
               required
               value={lectureHours}
+              onKeyDown={(e) => {
+                if (["e", "E", "+", "-"].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
               onChange={(e) => { setLectureHours(e.target.value); setError(null); }}
             />
             <Input
               id="wh-lab-hours"
               label="Lab Hours/Week"
               type="number"
+              inputMode="decimal"
               min={0}
               step={0.5}
               disabled={!hasLab}
               value={hasLab ? labHours : ""}
+              onKeyDown={(e) => {
+                if (["e", "E", "+", "-"].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
               onChange={(e) => { setLabHours(e.target.value); setError(null); }}
             />
           </div>
@@ -173,11 +185,17 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
             id="wh-meetings"
             label="Meetings/Week"
             type="number"
+            inputMode="numeric"
             min={1}
             max={3}
             required
             disabled={hasLab}
             value={meetings}
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-", "."].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => { setMeetings(e.target.value); setError(null); }}
             hint={hasLab ? "Locked to 2 meetings (1 lecture, 1 lab)." : "Typically 1 or 2 meetings."}
           />

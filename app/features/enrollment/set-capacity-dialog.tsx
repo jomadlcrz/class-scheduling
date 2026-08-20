@@ -40,7 +40,21 @@ export function SetCapacityDialog({ open, onClose }: { open: boolean; onClose: (
       <FormError message={error} />
       {value == null ? !error && <p className="font-body text-sm text-slate-500 dark:text-slate-400">Loading…</p> : (
         <form className="flex flex-col gap-4" onSubmit={save} noValidate>
-          <Input id="set-capacity" name="capacity" type="number" min="1" label="Maximum students per set" defaultValue={value} required />
+          <Input
+            id="set-capacity"
+            name="capacity"
+            type="number"
+            inputMode="numeric"
+            min="1"
+            label="Maximum students per set"
+            defaultValue={value}
+            required
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-", "."].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+          />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" block={false} onClick={onClose}>Cancel</Button>
             <Button type="submit" block={false} isLoading={saving} loadingLabel="Saving…">Save</Button>

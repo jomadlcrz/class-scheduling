@@ -258,10 +258,20 @@ export function CreateBuildingWorkspace({
                 id="create-building-floors"
                 label="Number of Floors"
                 type="number"
+                inputMode="numeric"
                 required
                 min={1}
-                value={floorCount}
-                onChange={(e) => setFloorCount(Math.max(1, Number(e.target.value) || 1))}
+                value={floorCount === 0 ? "" : floorCount}
+                onKeyDown={(e) => {
+                  if (["e", "E", "+", "-", "."].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) => {
+                  const clean = e.target.value.replace(/[^0-9]/g, "");
+                  const num = clean === "" ? 0 : parseInt(clean, 10);
+                  setFloorCount(Number.isNaN(num) ? 0 : num);
+                }}
               />
             </div>
           </Card>

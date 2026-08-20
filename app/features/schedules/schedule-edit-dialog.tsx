@@ -89,7 +89,7 @@ export function ScheduleEditDialog({
               value={form.dayName}
               onValueChange={(value) => onFormChange((current) => ({ ...current, dayName: value as string }))}
             >
-              <SelectTrigger id="edit-day"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="edit-day"><SelectValue placeholder="Select day" /></SelectTrigger>
               <SelectContent>
                 {dayOptions.map((option) => (
                   <SelectItem key={option.id} value={option.name}>{option.name}</SelectItem>
@@ -103,7 +103,7 @@ export function ScheduleEditDialog({
               value={form.mode}
               onValueChange={(value) => onFormChange((current) => ({ ...current, mode: value as ScheduleMode }))}
             >
-              <SelectTrigger id="edit-mode"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="edit-mode"><SelectValue placeholder="Select mode" /></SelectTrigger>
               <SelectContent>
                 {SCHEDULE_MODES.map((mode) => <SelectItem key={mode} value={mode}>{mode}</SelectItem>)}
               </SelectContent>
@@ -115,7 +115,7 @@ export function ScheduleEditDialog({
               value={form.startTime}
               onValueChange={(value) => onFormChange((current) => ({ ...current, startTime: value as string }))}
             >
-              <SelectTrigger id="edit-start-time"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="edit-start-time"><SelectValue placeholder="Select start time" /></SelectTrigger>
               <SelectContent>
                 {timeOptions.map((time) => <SelectItem key={time} value={time}>{time}</SelectItem>)}
               </SelectContent>
@@ -129,7 +129,7 @@ export function ScheduleEditDialog({
               value={form.endTime}
               onValueChange={(value) => onFormChange((current) => ({ ...current, endTime: value as string }))}
             >
-              <SelectTrigger id="edit-end-time"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="edit-end-time"><SelectValue placeholder="Select end time" /></SelectTrigger>
               <SelectContent>
                 {timeOptions
                   .filter((time) => timeToMinutes(time) > timeToMinutes(form.startTime))
@@ -146,7 +146,7 @@ export function ScheduleEditDialog({
             value={form.roomId}
             onValueChange={(value) => onFormChange((current) => ({ ...current, roomId: value as string }))}
           >
-            <SelectTrigger id="edit-room"><SelectValue /></SelectTrigger>
+            <SelectTrigger id="edit-room"><SelectValue placeholder="Select room" /></SelectTrigger>
             <SelectContent>
               {rooms.map((room) => (
                 <SelectItem key={room.id} value={String(room.id)}>{room.roomName} ({room.buildingName})</SelectItem>

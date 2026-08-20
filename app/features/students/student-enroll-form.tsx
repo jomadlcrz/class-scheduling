@@ -142,26 +142,33 @@ export function StudentEnrollForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <FieldChrome id="enroll-program" label="Program" required>
-          <Select
-            items={[
-              { value: "", label: "Select a program" },
-              ...programs.map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` })),
-            ]}
-            value={programId}
-            onValueChange={(v) => setProgramId(v as string)}
-          >
-            <SelectTrigger id="enroll-program">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Select a program</SelectItem>
-              {programs.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>
-                  {p.abbrev} — {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {programs.length > 0 ? (
+            <Select
+              items={[
+                { value: "", label: "Select a program" },
+                ...programs.map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` })),
+              ]}
+              value={programId}
+              onValueChange={(v) => setProgramId(v as string)}
+            >
+              <SelectTrigger id="enroll-program">
+                <SelectValue placeholder="Select a program…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Select a program</SelectItem>
+                {programs.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.abbrev} — {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              <p className="font-medium text-navy-800 dark:text-mist-100">No programs available</p>
+              <p>Create a program curriculum before enrolling students.</p>
+            </div>
+          )}
         </FieldChrome>
 
         <FieldChrome id="enroll-status" label="Enrolled Status" required>
@@ -174,7 +181,7 @@ export function StudentEnrollForm({
             onValueChange={(v) => setEnrolledStatus(v as string)}
           >
             <SelectTrigger id="enroll-status">
-              <SelectValue />
+              <SelectValue placeholder="Select a status…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a status</SelectItem>
@@ -197,7 +204,7 @@ export function StudentEnrollForm({
             onValueChange={(v) => setStudentType(v as string)}
           >
             <SelectTrigger id="enroll-type">
-              <SelectValue />
+              <SelectValue placeholder="Select a type…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a type</SelectItem>
@@ -219,8 +226,8 @@ export function StudentEnrollForm({
             value={yearLevel}
             onValueChange={(v) => setYearLevel(v as string)}
           >
-            <SelectTrigger id="enroll-year">
-              <SelectValue />
+            <SelectTrigger id="enroll-year" disabled={!selectedProgram}>
+              <SelectValue placeholder="Select a year…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a year</SelectItem>
@@ -235,26 +242,33 @@ export function StudentEnrollForm({
 
         {!isIrregular && (
           <FieldChrome id="enroll-set" label="Set" required>
-            <Select
-              items={[
-                { value: "", label: "Select a set" },
-                ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode })),
-              ]}
-              value={setId}
-              onValueChange={(v) => setSetId(v as string)}
-            >
-              <SelectTrigger id="enroll-set">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Select a set</SelectItem>
-                {filteredSets.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
-                    {s.setCode}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {selectedProgram && yearLevel && filteredSets.length === 0 ? (
+              <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                <p className="font-medium text-navy-800 dark:text-mist-100">No sets found</p>
+                <p>No sets created for {selectedProgram.abbrev} Year {yearLevel}.</p>
+              </div>
+            ) : (
+              <Select
+                items={[
+                  { value: "", label: "Select a set" },
+                  ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode })),
+                ]}
+                value={setId}
+                onValueChange={(v) => setSetId(v as string)}
+              >
+                <SelectTrigger id="enroll-set" disabled={!selectedProgram || !yearLevel}>
+                  <SelectValue placeholder="Select a set…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a set</SelectItem>
+                  {filteredSets.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.setCode}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </FieldChrome>
         )}
 
@@ -268,7 +282,7 @@ export function StudentEnrollForm({
             onValueChange={(v) => setSyId(v as string)}
           >
             <SelectTrigger id="enroll-sy">
-              <SelectValue />
+              <SelectValue placeholder="Select a school year…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a school year</SelectItem>
@@ -291,7 +305,7 @@ export function StudentEnrollForm({
             onValueChange={(v) => setSemesterNumber(v as string)}
           >
             <SelectTrigger id="enroll-sem">
-              <SelectValue />
+              <SelectValue placeholder="Select a semester…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a semester</SelectItem>

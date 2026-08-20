@@ -273,18 +273,30 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
           id="sho-lecture-hours"
           label="Lecture Hours"
           type="number"
+          inputMode="decimal"
           min={0}
           step="0.5"
           value={lectureHours}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-"].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           onChange={(e) => { setLectureHours(e.target.value); setError(null); }}
         />
         <Input
           id="sho-lab-hours"
           label="Lab Hours"
           type="number"
+          inputMode="decimal"
           min={0}
           step="0.5"
           value={labHours}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-"].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           onChange={(e) => { setLabHours(e.target.value); setError(null); }}
         />
       </div>
@@ -294,10 +306,16 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
           id="sho-meetings"
           label={hasLab ? "Meetings / Week (locked to 2 for lab)" : "Meetings / Week"}
           type="number"
+          inputMode="numeric"
           min={1}
           max={4}
           step="1"
           value={meetings}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-", "."].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           onChange={(e) => { setMeetings(e.target.value); setError(null); }}
           disabled={hasLab}
         />
