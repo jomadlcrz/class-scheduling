@@ -150,7 +150,7 @@ export type MajorScheduleRequirement = {
   missingMeetingKinds: string[];
   isSatisfied: boolean;
   canCreateAdjustment: boolean;
-  assignedInstructors: Array<{ id?: number; instructorId?: number; fullName?: string }>;
+  assignedInstructors: Array<{ instructorId: number; displayName: string }>;
 };
 
 export type MajorScheduleRequirements = {

@@ -147,7 +147,7 @@ async function listMajorScheduleEditRequests(status?: string): Promise<MajorSche
 }
 
 async function getMajorScheduleConflicts(submissionId: number) {
-  return apiGet<{ conflicts: MajorScheduleConflict[]; conflictCount: number }>(`/registrar/major-schedule-submissions/${submissionId}/conflicts`);
+  return apiGet<{ message?: string; conflicts: MajorScheduleConflict[]; conflictCount: number }>(`/registrar/major-schedule-submissions/${submissionId}/conflicts`);
 }
 
 async function getMajorScheduleRequirements(submissionId: number): Promise<MajorScheduleRequirements> {
