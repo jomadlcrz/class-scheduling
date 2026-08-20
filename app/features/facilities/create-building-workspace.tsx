@@ -32,12 +32,12 @@ function newDraftKey(): string {
   return `room-${Date.now()}-${draftKeyCounter}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function newRoomDraft(roomType = ""): FacilityRoomDraft {
+function newRoomDraft(): FacilityRoomDraft {
   return {
     key: newDraftKey(),
     roomName: "",
-    roomType,
-    roomCapacity: 30,
+    roomType: "",
+    roomCapacity: 45,
     programIds: [],
   };
 }
@@ -111,7 +111,6 @@ export function CreateBuildingWorkspace({
   onSubmit,
   onDirtyChange,
 }: CreateBuildingWorkspaceProps) {
-  const defaultRoomType = roomTypes[0] ?? "";
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [buildingName, setBuildingName] = useState("");
@@ -122,7 +121,7 @@ export function CreateBuildingWorkspace({
   useEffect(() => {
     setFloors((current) => syncFloorCount(current, floorCount));
     setOpenFloors((current) => current.filter((level) => level <= floorCount));
-  }, [floorCount, defaultRoomType]);
+  }, [floorCount]);
 
   const summary = useMemo(
     () => computeSummary(buildingName, floorCount, floors),
@@ -147,7 +146,7 @@ export function CreateBuildingWorkspace({
   }
 
   function addRoom(floorLevel: number) {
-    updateFloorRooms(floorLevel, (rooms) => [...rooms, newRoomDraft(defaultRoomType)]);
+    updateFloorRooms(floorLevel, (rooms) => [...rooms, newRoomDraft()]);
     setOpenFloors((current) => (current.includes(floorLevel) ? current : [...current, floorLevel]));
   }
 
@@ -374,7 +373,7 @@ export function CreateBuildingWorkspace({
                                   updateRoom(floor.floorLevel, room.key, { roomName: e.target.value })
                                 }
                               />
-                              <FieldChrome id={`room-type-${room.key}`} label="Room Type">
+                              <FieldChrome id={`room-type-${room.key}`} label="Room Type" required>
                                 <Select
                                   items={roomTypes.map((t) => ({ value: t, label: t }))}
                                   value={room.roomType}

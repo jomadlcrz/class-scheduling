@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 
 /** Revalidates route data when an already-open app tab becomes active again. */
-export function useRefreshOnFocus(refresh: () => void | Promise<void>) {
+export function useRefreshOnFocus(refresh: () => void | Promise<void>, enabled = true) {
   const refreshRef = useRef(refresh);
+  const enabledRef = useRef(enabled);
   const refreshingRef = useRef(false);
 
   useEffect(() => {
@@ -10,8 +11,12 @@ export function useRefreshOnFocus(refresh: () => void | Promise<void>) {
   }, [refresh]);
 
   useEffect(() => {
+    enabledRef.current = enabled;
+  }, [enabled]);
+
+  useEffect(() => {
     function revalidate() {
-      if (refreshingRef.current) return;
+      if (!enabledRef.current || refreshingRef.current) return;
       refreshingRef.current = true;
       void Promise.resolve()
         .then(() => refreshRef.current())

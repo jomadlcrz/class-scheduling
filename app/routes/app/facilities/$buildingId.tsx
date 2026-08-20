@@ -1,13 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { EditBuildingSkeleton } from "~/components/ui/skeleton";
 import { EditBuildingWorkspace } from "~/features/facilities/edit-building-workspace";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useRefreshOnFocus } from "~/hooks/use-refresh-on-focus";
+import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { buildingService } from "~/services/building.service";
 import { enumService } from "~/services/enum.service";
@@ -38,6 +40,10 @@ function EditBuildingPage() {
   const navigate = useNavigate();
   const { buildingId } = useParams();
   const id = Number(buildingId);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
+    useUnsavedChangesGuard(isDirty, !isSaving);
 
   const { data: building, error, reload: refresh } = useCachedData(
     `facility-building:${Number.isFinite(id) ? id : "none"}`,
@@ -50,7 +56,7 @@ function EditBuildingPage() {
   const roomTypes = enumOptions?.roomType ?? [];
   const loading = Number.isFinite(id) && building === null && !error;
 
-  useRefreshOnFocus(refresh);
+  useRefreshOnFocus(refresh, !isDirty && !isSaving);
 
   useEffect(() => {
     if (!loading && !building) {
@@ -114,8 +120,34 @@ function EditBuildingPage() {
           onAddRooms={handleAddRooms}
           onArchiveRoom={handleArchiveRoom}
           onCancel={() => navigate("/facilities")}
+          onDirtyChange={setIsDirty}
+          onSavingChange={setIsSaving}
         />
       </div>
+
+      <ConfirmDialog
+        open={blocker.state === "blocked"}
+        onClose={() => blocker.reset?.()}
+        title="Discard unsaved facility changes?"
+        confirmLabel="Discard"
+        loadingLabel="Discarding…"
+        confirmVariant="danger"
+        onConfirm={async () => blocker.proceed?.()}
+      >
+        You have unsaved facility changes. Leaving this page will discard them.
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={reloadPromptOpen}
+        onClose={() => setReloadPromptOpen(false)}
+        title="Discard unsaved facility changes?"
+        confirmLabel="Reload"
+        loadingLabel="Reloading…"
+        confirmVariant="danger"
+        onConfirm={async () => confirmReload()}
+      >
+        You have unsaved facility changes. Reloading will discard them.
+      </ConfirmDialog>
     </div>
   );
 }

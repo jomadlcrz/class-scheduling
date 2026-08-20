@@ -35,6 +35,8 @@ type EditBuildingWorkspaceProps = {
   onAddRooms: (input: AddBuildingRoomsInput) => Promise<void>;
   onArchiveRoom: (room: Room) => Promise<void>;
   onCancel: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
+  onSavingChange?: (isSaving: boolean) => void;
 };
 
 type ExistingRoomDraft = {
@@ -69,12 +71,12 @@ function newDraftKey(): string {
   return `room-${Date.now()}-${draftKeyCounter}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function newRoomDraft(roomType = ""): NewRoomDraft {
+function newRoomDraft(): NewRoomDraft {
   return {
     key: newDraftKey(),
     roomName: "",
-    roomType,
-    roomCapacity: 30,
+    roomType: "",
+    roomCapacity: 45,
     programIds: [],
   };
 }
@@ -239,8 +241,9 @@ export function EditBuildingWorkspace({
   onAddRooms,
   onArchiveRoom,
   onCancel,
+  onDirtyChange,
+  onSavingChange,
 }: EditBuildingWorkspaceProps) {
-  const defaultRoomType = roomTypes[0] ?? "";
   const buildingSnapshot = { name: building.name, floorCount: building.floorCount };
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -271,6 +274,14 @@ export function EditBuildingWorkspace({
   );
   const hasChanges = buildingPayload !== null || summary.changes.added > 0 || summary.changes.modified > 0;
   const selectedFloorData = floors.find((floor) => floor.floorLevel === selectedFloor);
+
+  useEffect(() => {
+    onDirtyChange?.(hasChanges);
+  }, [hasChanges, onDirtyChange]);
+
+  useEffect(() => {
+    onSavingChange?.(isSaving);
+  }, [isSaving, onSavingChange]);
 
   function updateExistingDrafts(updater: (rooms: ExistingRoomDraft[]) => ExistingRoomDraft[]) {
     setExistingDrafts((current) => {
@@ -314,7 +325,7 @@ export function EditBuildingWorkspace({
   }, [floorCount]);
 
   function addRoom(floorLevel: number) {
-    updateNewRooms(floorLevel, (rooms) => [...rooms, newRoomDraft(defaultRoomType)]);
+    updateNewRooms(floorLevel, (rooms) => [...rooms, newRoomDraft()]);
     setSelectedFloor(floorLevel);
   }
 
@@ -755,7 +766,7 @@ export function EditBuildingWorkspace({
                       value={room.roomName}
                       onChange={(e) => updateNewRoom(selectedFloor, room.key, { roomName: e.target.value })}
                     />
-                    <FieldChrome id={`new-room-type-${room.key}`} label="Room Type">
+                    <FieldChrome id={`new-room-type-${room.key}`} label="Room Type" required>
                       <Select
                         items={roomTypes.map((t) => ({ value: t, label: t }))}
                         value={room.roomType}
