@@ -86,10 +86,20 @@ export function CurriculumBuilderHeader({
             label="Program Length"
             required
             type="number"
+            inputMode="numeric"
             min={1}
             max={10}
             value={newProgram.lengthYears === 0 ? "" : newProgram.lengthYears}
-            onChange={(e) => onNewProgramChange({ lengthYears: Number(e.target.value) })}
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-", "."].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => {
+              const clean = e.target.value.replace(/[^0-9]/g, "");
+              const num = clean === "" ? 0 : parseInt(clean, 10);
+              onNewProgramChange({ lengthYears: Number.isNaN(num) ? 0 : num });
+            }}
           />
           <FieldChrome id="new-prog-department" label="Department" required>
             <Select

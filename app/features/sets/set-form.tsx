@@ -78,7 +78,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
           <Select
             items={programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
             name="set-program"
-            defaultValue={set?.program ?? programs[0]?.abbrev}
+            defaultValue={set?.program ?? ""}
           >
             <SelectTrigger id="set-program">
               <SelectValue placeholder="Select a program…" />

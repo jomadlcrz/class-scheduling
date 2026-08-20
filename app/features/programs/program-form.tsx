@@ -145,10 +145,20 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
         <input
           id="prog-years"
           type="number"
+          inputMode="numeric"
           min={1}
           max={10}
-          value={lengthYears}
-          onChange={(e) => setLengthYears(Math.max(1, Number(e.target.value)))}
+          value={lengthYears === 0 ? "" : lengthYears}
+          onKeyDown={(e) => {
+            if (["e", "E", "+", "-", "."].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) => {
+            const clean = e.target.value.replace(/[^0-9]/g, "");
+            const num = clean === "" ? 0 : parseInt(clean, 10);
+            setLengthYears(Number.isNaN(num) ? 0 : num);
+          }}
           className={inputClassName}
         />
       </div>

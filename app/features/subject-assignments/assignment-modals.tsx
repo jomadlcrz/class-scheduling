@@ -115,28 +115,35 @@ export function AddProgramModal({ open, onClose, onAdd, programOptions }: AddPro
         <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
           Select Program
         </label>
-        <Select
-          items={programOptions.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
-          value={value}
-          onValueChange={(v) => setValue(v ?? "")}
-        >
-          <SelectTrigger id="add-program">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {programOptions.map((prog) => (
-              <SelectItem key={prog.abbrev} value={prog.abbrev}>
-                <span className="font-semibold">{prog.abbrev}</span>
-                <span className="ml-2 text-slate-500 dark:text-slate-400">{prog.name}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {programOptions.length > 0 ? (
+          <Select
+            items={programOptions.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
+            value={value}
+            onValueChange={(v) => setValue(v ?? "")}
+          >
+            <SelectTrigger id="add-program">
+              <SelectValue placeholder="Select a program…" />
+            </SelectTrigger>
+            <SelectContent>
+              {programOptions.map((prog) => (
+                <SelectItem key={prog.abbrev} value={prog.abbrev}>
+                  <span className="font-semibold">{prog.abbrev}</span>
+                  <span className="ml-2 text-slate-500 dark:text-slate-400">{prog.name}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+            <p className="font-medium text-navy-800 dark:text-mist-100">No programs available</p>
+            <p>All existing programs are already added or no programs are configured.</p>
+          </div>
+        )}
         <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" block={false} onClick={onClose}>
             Cancel
           </Button>
-          <Button type="button" block={false} disabled={!value} onClick={handleAdd}>
+          <Button type="button" block={false} disabled={!value || programOptions.length === 0} onClick={handleAdd}>
             Add Program
           </Button>
         </div>
@@ -144,6 +151,7 @@ export function AddProgramModal({ open, onClose, onAdd, programOptions }: AddPro
     </Modal>
   );
 }
+
 
 export type AssignSubjectModalProps = {
   open: boolean;

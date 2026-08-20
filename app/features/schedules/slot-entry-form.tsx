@@ -116,12 +116,13 @@ export function SlotEntryForm({
   const { dayLabels } = useDays();
 
   const defaultSubjectId = conflictPrefill
-    ? String(subjects.find((s) => s.code === conflictPrefill.subjectCode)?.id ?? subjects[0]?.id ?? "")
-    : String(initialSlot?.subjectId ?? subjects[0]?.id ?? "");
+    ? String(subjects.find((s) => s.code === conflictPrefill.subjectCode)?.id ?? "")
+    : String(initialSlot?.subjectId ?? "");
   const [selectedSubjectId, setSelectedSubjectId] = useState(defaultSubjectId);
   const [day, setDay] = useState<Day>(conflictPrefill?.day ?? initialSlot?.day ?? "M");
   const [startTime, setStartTime] = useState(conflictPrefill?.startTime ?? initialSlot?.startTime ?? "07:00");
   const [endTime, setEndTime] = useState(conflictPrefill?.endTime ?? initialSlot?.endTime ?? "10:00");
+
   // For conflict pre-fill: resolve the faculty ID from the name looked up in saved schedules.
   const conflictFaculty = conflictPrefill?.facultyName
     ? subjects.find((s) => s.code === conflictPrefill.subjectCode)
@@ -130,8 +131,8 @@ export function SlotEntryForm({
   const [facultyId, setFacultyId] = useState(String(initialSlot?.facultyId ?? conflictFaculty?.id ?? ""));
   const [facultyQuery, setFacultyQuery] = useState(initialSlot?.facultyName ?? conflictPrefill?.facultyName ?? "");
   const defaultRoomId = conflictPrefill
-    ? String(rooms.find((r) => r.roomName === conflictPrefill.roomName)?.id ?? rooms[0]?.id ?? "")
-    : String(initialSlot?.roomId ?? rooms[0]?.id ?? "");
+    ? String(rooms.find((r) => r.roomName === conflictPrefill.roomName)?.id ?? "")
+    : String(initialSlot?.roomId ?? "");
   const [roomId, setRoomId] = useState(defaultRoomId);
   const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "F2F");
 
@@ -148,6 +149,7 @@ export function SlotEntryForm({
   );
   const roomOptions = mergeRooms(rooms, isOriginalSubject ? initialSlot : undefined);
   const needsRoom = mode === "F2F";
+
   function handleSubjectChange(id: string) {
     setSelectedSubjectId(id);
     // Faculties are per subject — reset to the subject's first option.
@@ -212,7 +214,7 @@ export function SlotEntryForm({
           onValueChange={(v) => handleSubjectChange(v as string)}
         >
           <SelectTrigger id="slot-subject">
-            <SelectValue />
+            <SelectValue placeholder="Select a subject…" />
           </SelectTrigger>
           <SelectContent>
             {subjects.length === 0 ? (
@@ -237,7 +239,7 @@ export function SlotEntryForm({
           onValueChange={(v) => setDay(v as Day)}
         >
           <SelectTrigger id="slot-day">
-            <SelectValue />
+            <SelectValue placeholder="Select day…" />
           </SelectTrigger>
           <SelectContent>
             {DAYS.map((d) => (
@@ -257,7 +259,7 @@ export function SlotEntryForm({
             onValueChange={(v) => setStartTime(v as string)}
           >
             <SelectTrigger id="slot-start">
-              <SelectValue />
+              <SelectValue placeholder="Start time" />
             </SelectTrigger>
             <SelectContent>
               {TIME_SLOTS.slice(0, -1).map((t) => (
@@ -278,7 +280,7 @@ export function SlotEntryForm({
             onValueChange={(v) => setEndTime(v as string)}
           >
             <SelectTrigger id="slot-end">
-              <SelectValue />
+              <SelectValue placeholder="End time" />
             </SelectTrigger>
             <SelectContent>
               {TIME_SLOTS.filter((t) => timeToMinutes(t) > timeToMinutes(startTime)).map((t) => (
@@ -298,7 +300,7 @@ export function SlotEntryForm({
           onValueChange={(v) => setMode(v as ScheduleMode)}
         >
           <SelectTrigger id="slot-mode">
-            <SelectValue />
+            <SelectValue placeholder="Select mode…" />
           </SelectTrigger>
           <SelectContent>
             {classModes.map((m) => (
@@ -366,7 +368,7 @@ export function SlotEntryForm({
             onValueChange={(v) => setRoomId(v as string)}
           >
             <SelectTrigger id="slot-room">
-              <SelectValue />
+              <SelectValue placeholder="Select a room…" />
             </SelectTrigger>
             <SelectContent>
               {roomOptions.map((r) => (

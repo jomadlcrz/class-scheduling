@@ -131,7 +131,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
           }}
         >
           <SelectTrigger id="wh-subject-type">
-            <SelectValue />
+            <SelectValue placeholder="Select subject type…" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">— Select subject type —</SelectItem>
@@ -148,92 +148,99 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
         <>
           <div className="grid grid-cols-2 gap-3">
             <Input
-              id="wh-lecture-hours"
-              label="Lecture Hours"
+              id="wh-lec-hours"
+              label="Lecture Hours/Week"
               type="number"
               min={0}
-              step="0.25"
+              step={0.5}
+              required
               value={lectureHours}
-              onChange={(e) => setLectureHours(e.target.value)}
+              onChange={(e) => { setLectureHours(e.target.value); setError(null); }}
             />
-            {hasLab && (
-              <Input
-                id="wh-lab-hours"
-                label="Lab Hours"
-                type="number"
-                min={0}
-                step="0.25"
-                value={labHours}
-                onChange={(e) => setLabHours(e.target.value)}
-              />
-            )}
+            <Input
+              id="wh-lab-hours"
+              label="Lab Hours/Week"
+              type="number"
+              min={0}
+              step={0.5}
+              disabled={!hasLab}
+              value={hasLab ? labHours : ""}
+              onChange={(e) => { setLabHours(e.target.value); setError(null); }}
+            />
           </div>
 
           <Input
             id="wh-meetings"
-            label="Meetings / Week"
+            label="Meetings/Week"
             type="number"
             min={1}
             max={3}
-            step="1"
+            required
+            disabled={hasLab}
             value={meetings}
-            onChange={(e) => setMeetings(e.target.value)}
+            onChange={(e) => { setMeetings(e.target.value); setError(null); }}
+            hint={hasLab ? "Locked to 2 meetings (1 lecture, 1 lab)." : "Typically 1 or 2 meetings."}
           />
 
           {hasLab && (
             <div className="flex flex-col gap-2">
-              <label className="font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Laboratory Time Slots
+              <label className="font-body text-xs font-semibold text-navy-800 dark:text-mist-100">
+                Allowed Lab Time Slots <span className="text-red-500">*</span>
               </label>
-              {labSlots.map((slot, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Select
-                    items={[{ value: "", label: "Start" }, ...TIME_OPTIONS.map((t) => ({ value: t, label: t }))]}
-                    value={slot.start}
-                    onValueChange={(v) => updateLabSlot(i, "start", v as string)}
-                  >
-                    <SelectTrigger aria-label="Lab slot start time" className="flex-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Start</SelectItem>
-                      {TIME_OPTIONS.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <span className="text-slate-400">–</span>
-                  <Select
-                    items={[{ value: "", label: "End" }, ...TIME_OPTIONS.filter((t) => !slot.start || timeToMinutes(t) > timeToMinutes(slot.start)).map((t) => ({ value: t, label: t }))]}
-                    value={slot.end}
-                    onValueChange={(v) => updateLabSlot(i, "end", v as string)}
-                  >
-                    <SelectTrigger aria-label="Lab slot end time" className="flex-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">End</SelectItem>
-                      {TIME_OPTIONS.filter((t) => !slot.start || timeToMinutes(t) > timeToMinutes(slot.start)).map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {labSlots.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeLabSlot(i)}
-                      aria-label="Remove slot"
-                      className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10 dark:hover:text-red-400"
+              <p className="font-body text-xs text-slate-400 dark:text-slate-500">
+                Specify acceptable start and end times for the 3-hour lab block (e.g. 7:30 AM - 10:30 AM).
+              </p>
+              <div className="flex flex-col gap-2">
+                {labSlots.map((slot, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Select
+                      items={[{ value: "", label: "Start" }, ...TIME_OPTIONS.map((t) => ({ value: t, label: t }))]}
+                      value={slot.start}
+                      onValueChange={(v) => updateLabSlot(i, "start", v as string)}
                     >
-                      <TrashIcon />
-                    </button>
-                  )}
-                </div>
-              ))}
-              <Button type="button" variant="outline" block={false} onClick={addLabSlot}>
-                <PlusIcon />
-                Add Slot
-              </Button>
+                      <SelectTrigger aria-label="Lab slot start time" className="flex-1">
+                        <SelectValue placeholder="Start" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Start</SelectItem>
+                        {TIME_OPTIONS.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-slate-400">–</span>
+                    <Select
+                      items={[{ value: "", label: "End" }, ...TIME_OPTIONS.filter((t) => !slot.start || timeToMinutes(t) > timeToMinutes(slot.start)).map((t) => ({ value: t, label: t }))]}
+                      value={slot.end}
+                      onValueChange={(v) => updateLabSlot(i, "end", v as string)}
+                    >
+                      <SelectTrigger aria-label="Lab slot end time" className="flex-1">
+                        <SelectValue placeholder="End" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">End</SelectItem>
+                        {TIME_OPTIONS.filter((t) => !slot.start || timeToMinutes(t) > timeToMinutes(slot.start)).map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {labSlots.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLabSlot(i)}
+                        aria-label="Remove slot"
+                        className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10 dark:hover:text-red-400"
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <Button type="button" variant="outline" block={false} onClick={addLabSlot}>
+                  <PlusIcon />
+                  Add Slot
+                </Button>
+              </div>
             </div>
           )}
         </>
