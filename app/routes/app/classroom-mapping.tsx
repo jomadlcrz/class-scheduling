@@ -88,7 +88,6 @@ function ClassroomMappingPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title="Classroom Mapping"
-
       />
 
       <div className="mt-4 flex flex-col gap-4">
@@ -107,7 +106,7 @@ function ClassroomMappingPage() {
                 onValueChange={(v) => setSchoolYear(v as string)}
               >
                 <SelectTrigger id="cm-year" aria-label="School Year">
-                  <SelectValue />
+                  <SelectValue placeholder="School Year" />
                 </SelectTrigger>
                 <SelectContent>
                   {contextLoading ? (
@@ -115,7 +114,7 @@ function ClassroomMappingPage() {
                   ) : schoolYears.length === 0 ? (
                     <SelectItem value="">No school year</SelectItem>
                   ) : (
-                    schoolYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)
+                    schoolYears.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)
                   )}
                 </SelectContent>
               </Select>
@@ -136,7 +135,7 @@ function ClassroomMappingPage() {
                 onValueChange={(v) => setSemesterNumber(v ? Number(v) : null)}
               >
                 <SelectTrigger id="cm-sem" aria-label="Semester">
-                  <SelectValue />
+                  <SelectValue placeholder="Semester" />
                 </SelectTrigger>
                 <SelectContent>
                   {contextLoading ? (
@@ -163,11 +162,15 @@ function ClassroomMappingPage() {
                 onValueChange={(v) => setBuildingFilter(v as string)}
               >
                 <SelectTrigger id="cm-building" aria-label="Building">
-                  <SelectValue />
+                  <SelectValue placeholder="All buildings" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All buildings</SelectItem>
-                  {buildings.map(b => <SelectItem key={b.id} value={String(b.id)}>{b.name}</SelectItem>)}
+                  {buildings.map((b) => (
+                    <SelectItem key={b.id} value={String(b.id)}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -178,9 +181,10 @@ function ClassroomMappingPage() {
               <SearchIcon />
             </span>
             <input
-              type="search" placeholder="Search..."
+              type="search"
+              placeholder="Search..."
               value={rawSearch}
-              onChange={e => setRawSearch(e.target.value)}
+              onChange={(e) => setRawSearch(e.target.value)}
               aria-label="Search classrooms"
               className={`${inputClassName} pl-9 pr-4`}
             />

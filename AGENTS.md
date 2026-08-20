@@ -80,6 +80,23 @@ app/
 - **Forms:** uncontrolled inputs read via `new FormData(e.currentTarget)`; `noValidate` on the form; validation via `app/lib/validators.ts`; error string in `useState` rendered through `FormError`.
 - **Accessibility is non-negotiable:** label every input, `role="alert"` on errors, `aria-label` on icon-only buttons, `focus-visible:ring-2 focus-visible:ring-gold-400` on every interactive element.
 
+### Form, Select & Input Conventions
+
+- **Never auto-select the first element (`items[0]`) in creation forms:**
+  - Creation dialogs, wizards, and setup forms must start in an unselected/clean state (`""` or `null`) for parent relationships (e.g. Department, Program Type, Program, Class Set, Building, Room, Faculty).
+  - Never auto-default to `items[0]` or seed `departments[0]`/`programs[0]` in `useEffect` or draft initializers. This prevents accidental submissions against the wrong entity and avoids runtime `undefined` bugs when lists are empty.
+- **Conditional Empty States & Prerequisite Fallbacks:**
+  - When a form depends on parent entities that may not yet exist (e.g. Sets require Programs; Student enrollment requires Programs & Sets; Staff accounts require Departments; Overrides require Subjects):
+    - Always render a clear, helpful fallback banner when `items.length === 0` (e.g., *"No departments available — Create a department first under Departments."*).
+    - Disable the submit or advance action until the prerequisite entity exists.
+- **Explicit Select Placeholders:**
+  - Always supply an explicit placeholder to `<SelectValue placeholder="Select a program…" />`. Never leave bare `<SelectValue />` without a placeholder.
+- **Guarding Numeric & Integer Inputs:**
+  - For numeric inputs (e.g. Program Length, Units, Year Levels):
+    - Configure `type="number"` and `inputMode="numeric"`.
+    - Block non-numeric characters on keypress: `onKeyDown={(e) => { if (["e", "E", "+", "-", "."].includes(e.key)) e.preventDefault(); }}`.
+    - Sanitize pasted/typed input on change: `onChange={(e) => { const clean = e.target.value.replace(/[^0-9]/g, ""); ... }}`.
+
 ## Reuse before writing (live shared code)
 
 | Need | Use |

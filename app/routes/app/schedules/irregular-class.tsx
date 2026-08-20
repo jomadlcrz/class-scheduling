@@ -544,7 +544,7 @@ function IrregularClassPage() {
           value={schoolYear}
           onValueChange={(v) => setSchoolYear(v as string)}
         >
-          <SelectTrigger id="ic-school-year" aria-label="School Year"><SelectValue /></SelectTrigger>
+          <SelectTrigger id="ic-school-year" aria-label="School Year"><SelectValue placeholder="School Year" /></SelectTrigger>
           <SelectContent>
             {schoolYears.map((sy) => <SelectItem key={sy.id} value={sy.schoolYear}>{sy.schoolYear}</SelectItem>)}
           </SelectContent>
@@ -557,7 +557,7 @@ function IrregularClassPage() {
           value={semesterNumber}
           onValueChange={(v) => setSemesterNumber(v as string)}
         >
-          <SelectTrigger id="ic-semester" aria-label="Semester"><SelectValue /></SelectTrigger>
+          <SelectTrigger id="ic-semester" aria-label="Semester"><SelectValue placeholder="Semester" /></SelectTrigger>
           <SelectContent>
             {semesters.map((s) => <SelectItem key={s.semesterNumber} value={String(s.semesterNumber)}>{s.semester}</SelectItem>)}
           </SelectContent>
@@ -647,7 +647,7 @@ function IrregularClassPage() {
                             value={programFilter}
                             onValueChange={(v) => setProgramFilter(v as string)}
                           >
-                            <SelectTrigger aria-label="Filter by program"><SelectValue /></SelectTrigger>
+                            <SelectTrigger aria-label="Filter by program"><SelectValue placeholder="All Programs" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="all">All Programs</SelectItem>
                               {programs.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}

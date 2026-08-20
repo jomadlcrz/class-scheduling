@@ -53,31 +53,38 @@ export function ReenrollStep2Enrollment({
     <div className="flex flex-col gap-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <FieldChrome id="reenroll-program" label="Program" required>
-          <Select
-            items={[{ value: "", label: "Select a program" }, ...programs.map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` }))]}
-            value={academic.programId}
-            onValueChange={(v) =>
-              onAcademicChange({
-                programId: v as string,
-                yearLevel: "",
-                setId: "",
-                syId: "",
-                semesterNumber: "",
-              })
-            }
-          >
-            <SelectTrigger id="reenroll-program">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Select a program</SelectItem>
-              {programs.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>
-                  {p.abbrev} — {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {programs.length > 0 ? (
+            <Select
+              items={[{ value: "", label: "Select a program" }, ...programs.map((p) => ({ value: String(p.id), label: `${p.abbrev} — ${p.name}` }))]}
+              value={academic.programId}
+              onValueChange={(v) =>
+                onAcademicChange({
+                  programId: v as string,
+                  yearLevel: "",
+                  setId: "",
+                  syId: "",
+                  semesterNumber: "",
+                })
+              }
+            >
+              <SelectTrigger id="reenroll-program">
+                <SelectValue placeholder="Select a program…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Select a program</SelectItem>
+                {programs.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.abbrev} — {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              <p className="font-medium text-navy-800 dark:text-mist-100">No programs available</p>
+              <p>Create a program curriculum before re-enrolling students.</p>
+            </div>
+          )}
         </FieldChrome>
 
         <FieldChrome id="reenroll-year" label="Year Level" required>
@@ -94,7 +101,7 @@ export function ReenrollStep2Enrollment({
             }
           >
             <SelectTrigger id="reenroll-year" disabled={!selectedProgram}>
-              <SelectValue />
+              <SelectValue placeholder="Select a year…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a year</SelectItem>
@@ -129,7 +136,7 @@ export function ReenrollStep2Enrollment({
             onValueChange={(v) => onAcademicChange({ studentType: v as string })}
           >
             <SelectTrigger id="reenroll-type">
-              <SelectValue />
+              <SelectValue placeholder="Select a type…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a type</SelectItem>
@@ -144,32 +151,39 @@ export function ReenrollStep2Enrollment({
 
         {!isIrregular && (
           <FieldChrome id="reenroll-set" label="Class Set" required hint="Required for Regular students">
-            <Select
-              items={[{ value: "", label: "Select a set" }, ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode }))]}
-              value={academic.setId}
-              onValueChange={(v) =>
-                onAcademicChange({
-                  setId: v as string,
-                  syId: "",
-                  semesterNumber: "",
-                })
-              }
-            >
-              <SelectTrigger
-                id="reenroll-set"
-                disabled={!selectedProgram || !academic.yearLevel}
+            {selectedProgram && academic.yearLevel && filteredSets.length === 0 ? (
+              <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                <p className="font-medium text-navy-800 dark:text-mist-100">No class sets found</p>
+                <p>No sets created for {selectedProgram.abbrev} Year {academic.yearLevel}.</p>
+              </div>
+            ) : (
+              <Select
+                items={[{ value: "", label: "Select a set" }, ...filteredSets.map((s) => ({ value: String(s.id), label: s.setCode }))]}
+                value={academic.setId}
+                onValueChange={(v) =>
+                  onAcademicChange({
+                    setId: v as string,
+                    syId: "",
+                    semesterNumber: "",
+                  })
+                }
               >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Select a set</SelectItem>
-                {filteredSets.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
-                    {s.setCode}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  id="reenroll-set"
+                  disabled={!selectedProgram || !academic.yearLevel}
+                >
+                  <SelectValue placeholder="Select a set…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a set</SelectItem>
+                  {filteredSets.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.setCode}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </FieldChrome>
         )}
       </div>
@@ -187,7 +201,7 @@ export function ReenrollStep2Enrollment({
               id="reenroll-sy"
               disabled={isIrregular ? !academic.yearLevel : !academic.setId}
             >
-              <SelectValue />
+              <SelectValue placeholder="Select a school year…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a school year</SelectItem>
@@ -207,7 +221,7 @@ export function ReenrollStep2Enrollment({
             onValueChange={(v) => onAcademicChange({ semesterNumber: v as string })}
           >
             <SelectTrigger id="reenroll-sem" disabled={!academic.syId}>
-              <SelectValue />
+              <SelectValue placeholder="Select a semester…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Select a semester</SelectItem>

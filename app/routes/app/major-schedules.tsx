@@ -353,7 +353,7 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
           <div className="grid gap-3 sm:grid-cols-2">
             <FieldChrome id="major-instructor" label="Instructor" hint="Leave floating when an instructor has not been assigned.">
               <Select items={[{ value: "floating", label: "TBA / Floating" }, ...instructors.map((faculty) => ({ value: String(faculty.id), label: faculty.fullName }))]} value={instructorId} onValueChange={(value) => setInstructorId(value ?? "floating")}>
-                <SelectTrigger id="major-instructor"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="major-instructor"><SelectValue placeholder="TBA / Floating" /></SelectTrigger>
                 <SelectContent><SelectItem value="floating">TBA / Floating</SelectItem>{instructors.map((faculty) => <SelectItem key={faculty.id} value={String(faculty.id)}>{faculty.fullName}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
@@ -371,13 +371,13 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
           <div className="grid gap-3 sm:grid-cols-2">
             <FieldChrome id="major-day" label="Day" required>
               <Select items={Object.values(DAY_LABELS).map((day) => ({ value: day, label: day }))} value={dayOfWeek} onValueChange={(value) => setDayOfWeek(value ?? "Monday")}>
-                <SelectTrigger id="major-day"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="major-day"><SelectValue placeholder="Select day" /></SelectTrigger>
                 <SelectContent>{Object.values(DAY_LABELS).map((day) => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
             <FieldChrome id="major-mode" label="Meeting mode" required>
               <Select items={["Lecture", "Laboratory", "F2F", "Online"].map((item) => ({ value: item, label: item }))} value={mode} onValueChange={(value) => setMode(value ?? "Lecture")}>
-                <SelectTrigger id="major-mode"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="major-mode"><SelectValue placeholder="Select mode" /></SelectTrigger>
                 <SelectContent>{["Lecture", "Laboratory", "F2F", "Online"].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>

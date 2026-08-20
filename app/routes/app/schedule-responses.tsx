@@ -184,7 +184,7 @@ function ScheduleResponsesPage() {
           )}
           <FieldChrome id="schedule-response-type" label="Response" required>
             <Select items={[{ value: "accept", label: "Accept schedule" }, { value: "suggest_change", label: "Suggest a change" }]} value={responseType} onValueChange={(value) => { setResponseType((value ?? "accept") as typeof responseType); setFormError(null); }}>
-              <SelectTrigger id="schedule-response-type"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="schedule-response-type"><SelectValue placeholder="Select response" /></SelectTrigger>
               <SelectContent><SelectItem value="accept">Accept schedule</SelectItem><SelectItem value="suggest_change">Suggest a change</SelectItem></SelectContent>
             </Select>
           </FieldChrome>
@@ -199,7 +199,7 @@ function ScheduleResponsesPage() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <FieldChrome id={`response-day-${index}`} label="Day" required>
                       <Select items={Object.values(DAY_LABELS).map((day) => ({ value: day, label: day }))} value={meeting.dayOfWeek} onValueChange={(value) => updateMeeting(index, { dayOfWeek: value ?? "Monday" })}>
-                        <SelectTrigger id={`response-day-${index}`}><SelectValue /></SelectTrigger>
+                        <SelectTrigger id={`response-day-${index}`}><SelectValue placeholder="Select day" /></SelectTrigger>
                         <SelectContent>{Object.values(DAY_LABELS).map((day) => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent>
                       </Select>
                     </FieldChrome>
