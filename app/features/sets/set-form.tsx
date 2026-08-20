@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { FieldChrome } from "~/components/ui/input";
@@ -26,6 +27,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
   const [error, setError] = useState<string | null>(null);
 
   const isEdit = Boolean(set);
+  const hasPrograms = programs.length > 0;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,6 +36,11 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
     const program = String(data.get("set-program") ?? "").trim();
     const yearLevel = Number(data.get("set-year-level")) as YearLevel;
     const rawCodes = String(data.get("set-code") ?? "");
+
+    if (!program) {
+      setError("Please select a program.");
+      return;
+    }
 
     const codes = rawCodes
       .split("\n")
@@ -67,22 +74,34 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
       <FormError message={error} />
 
       <FieldChrome id="set-program" label="Program">
-        <Select
-          items={programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
-          name="set-program"
-          defaultValue={set?.program ?? programs[0]?.abbrev}
-        >
-          <SelectTrigger id="set-program">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {programs.map((p) => (
-              <SelectItem key={p.abbrev} value={p.abbrev}>
-                {p.abbrev} — {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {hasPrograms ? (
+          <Select
+            items={programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
+            name="set-program"
+            defaultValue={set?.program ?? programs[0]?.abbrev}
+          >
+            <SelectTrigger id="set-program">
+              <SelectValue placeholder="Select a program…" />
+            </SelectTrigger>
+            <SelectContent>
+              {programs.map((p) => (
+                <SelectItem key={p.abbrev} value={p.abbrev}>
+                  {p.abbrev} — {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+            <p className="font-medium text-navy-800 dark:text-mist-100">No programs available</p>
+            <p>
+              You need to configure at least one academic program first before creating sets.{" "}
+              <Link to="/program-curricula/new" className="font-semibold text-blue-600 underline hover:text-blue-500 dark:text-blue-400">
+                Create a program
+              </Link>
+            </p>
+          </div>
+        )}
       </FieldChrome>
 
       <FieldChrome id="set-year-level" label="Year Level">
@@ -92,7 +111,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
           defaultValue={set?.yearLevel ?? 1}
         >
           <SelectTrigger id="set-year-level">
-            <SelectValue />
+            <SelectValue placeholder="Select a year level…" />
           </SelectTrigger>
           <SelectContent>
             {yearLevelIds.map((year) => (
@@ -117,7 +136,12 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
-        <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
+        <Button
+          block={false}
+          disabled={!hasPrograms || isLoading}
+          isLoading={isLoading}
+          loadingLabel="Saving…"
+        >
           {isEdit ? "Save Changes" : "Add Sets"}
         </Button>
       </ModalActions>

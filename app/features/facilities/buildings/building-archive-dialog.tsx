@@ -37,7 +37,7 @@ export function BuildingArchiveDialog({ building, onClose, onConfirm }: Building
     buildingService
       .getArchivePreview(building.id)
       .then(setPreview)
-      .catch((err) => setError(err instanceof Error ? err.message : ""))
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : ""))
       .finally(() => setLoading(false));
   }, [building]);
 

@@ -13,12 +13,12 @@ export type NewProgramDraft = {
   description: string;
 };
 
-export function emptyNewProgramDraft(departments: Department[], degreeTypes: string[] = []): NewProgramDraft {
+export function emptyNewProgramDraft(departments: Department[] = [], degreeTypes: string[] = []): NewProgramDraft {
   return {
-    departmentName: departments[0]?.name ?? "",
+    departmentName: "",
     abbrev: "",
     name: "",
-    type: degreeTypes[0] ?? "",
+    type: "",
     lengthYears: 0,
     description: "",
   };
@@ -66,11 +66,11 @@ export function CurriculumBuilderHeader({
           <FieldChrome id="new-prog-type" label="Program Type" required>
             <Select
               items={degreeTypes.map((t) => ({ value: t, label: t }))}
-              value={newProgram.type}
-              onValueChange={(v) => onNewProgramChange({ type: v as string })}
+              value={newProgram.type || null}
+              onValueChange={(v) => onNewProgramChange({ type: (v as string) ?? "" })}
             >
               <SelectTrigger id="new-prog-type">
-                <SelectValue />
+                <SelectValue placeholder="Select program type…" />
               </SelectTrigger>
               <SelectContent>
                 {degreeTypes.map((t) => (
@@ -94,11 +94,11 @@ export function CurriculumBuilderHeader({
           <FieldChrome id="new-prog-department" label="Department" required>
             <Select
               items={departments.map((d) => ({ value: d.name, label: `${d.abbrev} — ${d.name}` }))}
-              value={newProgram.departmentName}
-              onValueChange={(v) => onNewProgramChange({ departmentName: v as string })}
+              value={newProgram.departmentName || null}
+              onValueChange={(v) => onNewProgramChange({ departmentName: (v as string) ?? "" })}
             >
               <SelectTrigger id="new-prog-department">
-                <SelectValue />
+                <SelectValue placeholder="Select department…" />
               </SelectTrigger>
               <SelectContent>
                 {departments.map((d) => (

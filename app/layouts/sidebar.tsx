@@ -209,6 +209,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Roles & Permissions", to: "/permissions", icon: <ShieldIcon />, roles: ["admin"] },
       { label: "Audit Log", to: "/audit", icon: <AuditLogIcon />, roles: ["admin"] },
+      { label: "Developer Tools", to: "/settings/dev-tools", icon: <RefreshCwIcon />, roles: ["admin"] },
     ],
   },
 ];

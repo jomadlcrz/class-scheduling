@@ -1,4 +1,4 @@
-﻿import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/public/home.tsx"),
@@ -13,7 +13,7 @@ export default [
   route("contact-us", "routes/public/contact-us.tsx"),
   route("unauthorized", "routes/unauthorized.tsx"),
 
-  // Authenticated area â€” AppShell provides theme, auth guard, and chrome.
+  // Authenticated area — AppShell provides theme, auth guard, and chrome.
   layout("layouts/app-shell.tsx", [
     route("dashboard", "routes/app/dashboard.tsx"),
     route("administrators", "routes/app/administrators.tsx"),
@@ -79,6 +79,7 @@ export default [
       route("settings/account-details", "routes/app/settings/account-details.tsx"),
       route("settings/security", "routes/app/settings/security.tsx"),
       route("settings/archive", "routes/app/settings/archive.tsx"),
+      route("settings/dev-tools", "routes/app/settings/dev-tools.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

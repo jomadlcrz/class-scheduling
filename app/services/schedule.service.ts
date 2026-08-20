@@ -930,6 +930,46 @@ async function getFinalizedMajorPreload(
   return data.finalized_majors ?? [];
 }
 
+/** POST /deans/instructor-schedule-responses/:responseId/decision — dean decision on instructor suggestions. */
+async function decideInstructorResponse(
+  responseId: number,
+  decision: "accepted" | "rejected",
+  notes?: string,
+): Promise<{ message?: string }> {
+  return apiPost(`/deans/instructor-schedule-responses/${responseId}/decision`, {
+    decision,
+    ...(notes ? { notes } : {}),
+  });
+}
+
+/** POST /registrar/instructor-schedule-responses/:responseId/decision — registrar decision on instructor suggestions. */
+async function decideRegistrarInstructorResponse(
+  responseId: number,
+  decision: "accepted" | "rejected",
+  notes?: string,
+): Promise<{ message?: string }> {
+  return apiPost(`/registrar/instructor-schedule-responses/${responseId}/decision`, {
+    decision,
+    ...(notes ? { notes } : {}),
+  });
+}
+
+/** PUT /registrar/major-schedules/:scheduleId — update registrar major schedule. */
+async function updateRegistrarMajorSchedule(
+  scheduleId: number,
+  payload: Record<string, unknown>,
+): Promise<{ message?: string }> {
+  return apiPut(`/registrar/major-schedules/${scheduleId}`, payload);
+}
+
+/** PUT /regular_schedule/:regularSchedId/reschedule — atomic reschedule regular class slot. */
+async function rescheduleRegularSchedule(
+  regularSchedId: number,
+  payload: Record<string, unknown>,
+): Promise<{ message?: string }> {
+  return apiPut(`/regular_schedule/${regularSchedId}/reschedule`, payload);
+}
+
 export const scheduleService = {
   view,
   viewAttestations,
@@ -952,5 +992,9 @@ export const scheduleService = {
   scheduleAuditLogFilters,
   listScheduleAuditLog,
   getFinalizedMajorPreload,
+  decideInstructorResponse,
+  decideRegistrarInstructorResponse,
+  updateRegistrarMajorSchedule,
+  rescheduleRegularSchedule,
 };
 

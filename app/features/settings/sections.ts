@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { ArchiveIcon, KeyIcon, UserIcon } from "~/components/ui/icons";
+import { ArchiveIcon, KeyIcon, UserIcon, AlertTriangleIcon } from "~/components/ui/icons";
 import type { Role } from "~/types/user";
 
 type SettingsSection = {
@@ -44,6 +44,13 @@ const SETTINGS_GROUPS: SettingsGroup[] = [
         href: "/settings/archive",
         icon: ArchiveIcon,
         roles: ["admin", "registrar"],
+      },
+      {
+        label: "Developer Tools",
+        description: "Database maintenance and fast testing reset tools.",
+        href: "/settings/dev-tools",
+        icon: AlertTriangleIcon,
+        roles: ["admin"],
       },
     ],
   },

@@ -609,35 +609,38 @@ async function getTermState(syId: number, semesterNumber: number): Promise<TermL
   );
 }
 
-/** GET /school-years/:id/terms/:semester/grading-periods. */
-async function listGradingPeriods(syId: number, semesterNumber: number): Promise<unknown> {
-  return apiGet(`/school-years/${syId}/terms/${semesterNumber}/grading-periods`);
-}
-
-/** GET /school-years/:id/terms/:semester/grading-periods/:period/state. */
-async function getGradingPeriodState(syId: number, semesterNumber: number, period: string): Promise<unknown> {
-  return apiGet(`/school-years/${syId}/terms/${semesterNumber}/grading-periods/${period}/state`);
-}
-
-/** GET /school-years/:id/terms/:semester/grading-periods/:period/state/preview. */
-async function previewGradingPeriodState(syId: number, semesterNumber: number, period: string): Promise<unknown> {
-  return apiGet(`/school-years/${syId}/terms/${semesterNumber}/grading-periods/${period}/state/preview`);
-}
-
-/** PATCH /school-years/:id/terms/:semester/grading-periods/:period/state. */
-async function patchGradingPeriodState(
-  syId: number,
-  semesterNumber: number,
-  period: string,
-  status: "open" | "closed",
-  reason?: string,
-): Promise<string> {
-  const data = await apiPatch<{ message?: string }>(
-    `/school-years/${syId}/terms/${semesterNumber}/grading-periods/${period}/state`,
-    { status, ...(reason ? { reason } : {}) },
-  );
-  return apiMessage(data);
-}
+// ── Grading periods (DEFERRED - FUTURE DEVELOPMENT) ────────────────────────
+// The following grading period methods are commented out as grading is scheduled for later dev:
+//
+// /** GET /school-years/:id/terms/:semester/grading-periods. */
+// async function listGradingPeriods(syId: number, semesterNumber: number): Promise<unknown> {
+//   return apiGet(`/school-years/${syId}/terms/${semesterNumber}/grading-periods`);
+// }
+//
+// /** GET /school-years/:id/terms/:semester/grading-periods/:period/state. */
+// async function getGradingPeriodState(syId: number, semesterNumber: number, period: string): Promise<unknown> {
+//   return apiGet(`/school-years/${syId}/terms/${semesterNumber}/grading-periods/${period}/state`);
+// }
+//
+// /** GET /school-years/:id/terms/:semester/grading-periods/:period/state/preview. */
+// async function previewGradingPeriodState(syId: number, semesterNumber: number, period: string): Promise<unknown> {
+//   return apiGet(`/school-years/${syId}/terms/${semesterNumber}/grading-periods/${period}/state/preview`);
+// }
+//
+// /** PATCH /school-years/:id/terms/:semester/grading-periods/:period/state. */
+// async function patchGradingPeriodState(
+//   syId: number,
+//   semesterNumber: number,
+//   period: string,
+//   status: "open" | "closed",
+//   reason?: string,
+// ): Promise<string> {
+//   const data = await apiPatch<{ message?: string }>(
+//     `/school-years/${syId}/terms/${semesterNumber}/grading-periods/${period}/state`,
+//     { status, ...(reason ? { reason } : {}) },
+//   );
+//   return apiMessage(data);
+// }
 
 export const termClosureService = {
   getContext,
@@ -653,8 +656,8 @@ export const termClosureService = {
   getTermState,
   getTermStatePreview,
   patchTermState,
-  listGradingPeriods,
-  getGradingPeriodState,
-  previewGradingPeriodState,
-  patchGradingPeriodState,
+  // listGradingPeriods,
+  // getGradingPeriodState,
+  // previewGradingPeriodState,
+  // patchGradingPeriodState,
 };

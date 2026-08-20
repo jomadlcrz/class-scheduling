@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type {
   Building,
   BuildingArchivePreview,
@@ -57,4 +57,10 @@ async function update(id: number, input: UpdateBuildingInput): Promise<string> {
   return apiMessage(data);
 }
 
-export const buildingService = { list, get, archive, getArchivePreview, update };
+/** POST /buildings/:id/rooms — batch adds rooms into a building. */
+async function addRooms(id: number, rooms: { roomName: string; roomType: string; roomCapacity: number }[]): Promise<string> {
+  const data = await apiPost<{ message?: string }>(`/buildings/${id}/rooms`, { rooms });
+  return apiMessage(data);
+}
+
+export const buildingService = { list, get, archive, getArchivePreview, update, addRooms };

@@ -440,6 +440,15 @@ async function getEnrollmentTerms(): Promise<
   return Array.isArray(data) ? data : (data.terms ?? []);
 }
 
+/** GET /students/me/registration — Certificate of Registration for the authenticated student. */
+async function getMyRegistration(params?: { syId?: number; semesterNumber?: number }): Promise<unknown> {
+  const query = new URLSearchParams();
+  if (params?.syId != null) query.set("sy_id", String(params.syId));
+  if (params?.semesterNumber != null) query.set("semester_number", String(params.semesterNumber));
+  const qs = query.toString();
+  return apiGet(`/students/me/registration${qs ? `?${qs}` : ""}`);
+}
+
 export const studentService = {
   createRecord,
   bulkCreateRecords,
@@ -460,4 +469,5 @@ export const studentService = {
   reactivateAccount,
   importRecords,
   getEnrollmentTerms,
+  getMyRegistration,
 };

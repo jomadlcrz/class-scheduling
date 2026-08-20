@@ -53,16 +53,7 @@ export function ProgramWizard({
   const [saveError, setSaveError] = useState<string | null>(null);
   const tempIdCounter = useRef(0);
 
-  // Seed the department/type defaults once each arrives, without clobbering user input.
-  // Seeded independently since departments and degree types load via separate requests
-  // that can resolve in either order.
-  useEffect(() => {
-    setNewProgram((current) => ({
-      ...current,
-      departmentName: current.departmentName || (departments[0]?.name ?? ""),
-      type: current.type || (degreeTypes[0] ?? ""),
-    }));
-  }, [departments, degreeTypes]);
+
 
   const prerequisiteOptions = useMemo(
     () => [
