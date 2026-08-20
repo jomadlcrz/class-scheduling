@@ -376,7 +376,7 @@ export function CreateBuildingWorkspace({
                                   }
                                 >
                                   <SelectTrigger id={`room-type-${room.key}`}>
-                                    <SelectValue />
+                                    <SelectValue placeholder="Select room type" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {roomTypes.map((t) => (
@@ -391,14 +391,22 @@ export function CreateBuildingWorkspace({
                                 id={`room-capacity-${room.key}`}
                                 label="Room Capacity"
                                 type="number"
+                                inputMode="numeric"
                                 required
                                 min={1}
-                                value={room.roomCapacity}
-                                onChange={(e) =>
+                                value={room.roomCapacity === 0 ? "" : room.roomCapacity}
+                                onKeyDown={(e) => {
+                                  if (["e", "E", "+", "-", "."].includes(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                onChange={(e) => {
+                                  const clean = e.target.value.replace(/[^0-9]/g, "");
+                                  const num = clean === "" ? 0 : parseInt(clean, 10);
                                   updateRoom(floor.floorLevel, room.key, {
-                                    roomCapacity: Number(e.target.value),
-                                  })
-                                }
+                                    roomCapacity: Number.isNaN(num) ? 0 : num,
+                                  });
+                                }}
                               />
                             </div>
 

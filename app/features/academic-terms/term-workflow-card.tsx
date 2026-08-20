@@ -137,7 +137,7 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
                 }}
               >
                 <SelectTrigger id="term-workflow-sy" aria-label="School year" className="w-44 bg-white dark:bg-surface-raised">
-                  <SelectValue />
+                  <SelectValue placeholder="Select school year" />
                 </SelectTrigger>
                 <SelectContent>
                   {schoolYears.map((row) => (

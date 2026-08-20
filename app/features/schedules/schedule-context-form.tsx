@@ -89,7 +89,7 @@ export function ScheduleContextForm({
           disabled={locked}
         >
           <SelectTrigger id="sn-school-year">
-            <SelectValue />
+            <SelectValue placeholder="Select a school year" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">
@@ -113,7 +113,7 @@ export function ScheduleContextForm({
           disabled={locked}
         >
           <SelectTrigger id="sn-semester">
-            <SelectValue />
+            <SelectValue placeholder="Select a semester" />
           </SelectTrigger>
           <SelectContent>
             {semesters.filter((s) => s.semesterNumber !== 3).map((s) => (
@@ -135,7 +135,7 @@ export function ScheduleContextForm({
           disabled={locked}
         >
           <SelectTrigger id="sn-program">
-            <SelectValue />
+            <SelectValue placeholder="Select a program" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Select a program</SelectItem>
@@ -165,7 +165,7 @@ export function ScheduleContextForm({
           disabled={locked}
         >
           <SelectTrigger id="sn-year-level">
-            <SelectValue />
+            <SelectValue placeholder="Select a year level" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">
@@ -204,7 +204,7 @@ export function ScheduleContextForm({
           disabled={locked}
         >
           <SelectTrigger id="sn-set">
-            <SelectValue />
+            <SelectValue placeholder="Select a set" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">

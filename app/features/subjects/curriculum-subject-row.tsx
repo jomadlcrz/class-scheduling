@@ -100,11 +100,21 @@ export function CurriculumSubjectRow({
           <div className="mx-auto w-20">
             <TableInput
               type="number"
+              inputMode="numeric"
               min={1}
               max={6}
               step={1}
               value={row.units === 0 ? "" : row.units}
-              onChange={(e) => onUpdatePending(row.tempId!, { units: Number(e.target.value) })}
+              onKeyDown={(e) => {
+                if (["e", "E", "+", "-", "."].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => {
+                const clean = e.target.value.replace(/[^0-9]/g, "");
+                const num = clean === "" ? 0 : parseInt(clean, 10);
+                onUpdatePending(row.tempId!, { units: Number.isNaN(num) ? 0 : num });
+              }}
               aria-label={`Units for ${row.code || "new subject"}`}
               className="px-1 text-center tabular-nums"
             />
@@ -124,7 +134,7 @@ export function CurriculumSubjectRow({
             onValueChange={(v) => onUpdatePending(row.tempId!, { subjectType: v as string })}
           >
             <SelectTrigger className="py-1.5 text-xs">
-              <SelectValue />
+              <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
               {subjectTypes.map((type) => (

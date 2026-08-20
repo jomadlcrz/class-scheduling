@@ -581,7 +581,7 @@ export function EditBuildingWorkspace({
                         }
                       >
                         <SelectTrigger id={`existing-room-type-${room.id}`}>
-                          <SelectValue />
+                          <SelectValue placeholder="Select room type" />
                         </SelectTrigger>
                         <SelectContent>
                           {roomTypes.map((t) => (
@@ -596,12 +596,20 @@ export function EditBuildingWorkspace({
                       id={`existing-room-capacity-${room.id}`}
                       label="Capacity"
                       type="number"
+                      inputMode="numeric"
                       required
                       min={1}
-                      value={room.roomCapacity}
-                      onChange={(e) =>
-                        updateExistingRoom(room.id, { roomCapacity: Number(e.target.value) })
-                      }
+                      value={room.roomCapacity === 0 ? "" : room.roomCapacity}
+                      onKeyDown={(e) => {
+                        if (["e", "E", "+", "-", "."].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) => {
+                        const clean = e.target.value.replace(/[^0-9]/g, "");
+                        const num = clean === "" ? 0 : parseInt(clean, 10);
+                        updateExistingRoom(room.id, { roomCapacity: Number.isNaN(num) ? 0 : num });
+                      }}
                     />
                   </div>
 
@@ -616,7 +624,7 @@ export function EditBuildingWorkspace({
                           }
                         >
                           <SelectTrigger id={`existing-room-status-${room.id}`}>
-                            <SelectValue />
+                            <SelectValue placeholder="Select status" />
                           </SelectTrigger>
                           <SelectContent>
                             {MANUAL_ROOM_STATUSES.map((s) => (
@@ -749,7 +757,7 @@ export function EditBuildingWorkspace({
                         }
                       >
                         <SelectTrigger id={`new-room-type-${room.key}`}>
-                          <SelectValue />
+                          <SelectValue placeholder="Select room type" />
                         </SelectTrigger>
                         <SelectContent>
                           {roomTypes.map((t) => (
@@ -764,12 +772,20 @@ export function EditBuildingWorkspace({
                       id={`new-room-capacity-${room.key}`}
                       label="Capacity"
                       type="number"
+                      inputMode="numeric"
                       required
                       min={1}
-                      value={room.roomCapacity}
-                      onChange={(e) =>
-                        updateNewRoom(selectedFloor, room.key, { roomCapacity: Number(e.target.value) })
-                      }
+                      value={room.roomCapacity === 0 ? "" : room.roomCapacity}
+                      onKeyDown={(e) => {
+                        if (["e", "E", "+", "-", "."].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) => {
+                        const clean = e.target.value.replace(/[^0-9]/g, "");
+                        const num = clean === "" ? 0 : parseInt(clean, 10);
+                        updateNewRoom(selectedFloor, room.key, { roomCapacity: Number.isNaN(num) ? 0 : num });
+                      }}
                     />
                   </div>
 
