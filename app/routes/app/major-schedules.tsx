@@ -25,7 +25,7 @@ import { deanService } from "~/services/dean.service";
 import { programService } from "~/services/program.service";
 import { scheduleService } from "~/services/schedule.service";
 import { setService } from "~/services/set.service";
-import type { MajorSchedule, MajorScheduleConflict, MajorScheduleEditRequest, MajorScheduleMeetingInput, MajorScheduleSubmission } from "~/types/authority-workflow";
+import type { MajorSchedule, MajorScheduleAuditLogResult, MajorScheduleConflict, MajorScheduleEditRequest, MajorScheduleMeetingInput, MajorScheduleRequirements, MajorScheduleSubmission } from "~/types/authority-workflow";
 import { DAY_LABELS, generateTimeSlots } from "~/types/schedule";
 
 export function meta() {
@@ -50,6 +50,7 @@ function MajorSchedulesPage() {
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<MajorSchedule | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MajorSchedule | null>(null);
+  const [registrarDeleteTarget, setRegistrarDeleteTarget] = useState<MajorSchedule | null>(null);
   const [editRequestTarget, setEditRequestTarget] = useState<MajorScheduleSubmission | null>(null);
   const [decisionTarget, setDecisionTarget] = useState<DecisionTarget | null>(null);
   const [conflicts, setConflicts] = useState<MajorScheduleConflict[] | null>(null);
@@ -58,6 +59,9 @@ function MajorSchedulesPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [requirements, setRequirements] = useState<MajorScheduleRequirements | null>(null);
+  const [requirementsOpen, setRequirementsOpen] = useState(false);
+  const [requirementsError, setRequirementsError] = useState<string | null>(null);
   const [floatingInstructorId, setFloatingInstructorId] = useState(0);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -81,6 +85,11 @@ function MajorSchedulesPage() {
     { enabled: user?.role === "registrar", cache: false },
   );
   const { data: labSlots } = useCachedData("major-schedule-lab-slots", () => authorityWorkflowService.listMajorLabTimeSlots());
+  const { data: auditLog } = useCachedData<MajorScheduleAuditLogResult>(
+    `major-schedule-audit:${syId}:${semesterNumber}`,
+    () => authorityWorkflowService.listMajorScheduleAuditLogs({ syId, semesterNumber, perPage: 20 }),
+    { enabled: scopeReady, cache: false },
+  );
   const { data: instructors } = useCachedData("major-schedule-instructors", () => deanService.listDepartmentInstructors());
   const regularSemesters = semesters.filter((row) => row.semesterNumber !== 3);
 
@@ -104,7 +113,7 @@ function MajorSchedulesPage() {
   async function submitMeeting(input: MajorScheduleMeetingInput) {
     const ok = await withRefresh(() => editTarget
       ? authorityWorkflowService.updateMajorSchedule(editTarget.id, input, user?.role === "registrar" ? "registrar" : "dean")
-      : authorityWorkflowService.createMajorSchedule(input));
+      : authorityWorkflowService.createMajorSchedule(input, user?.role === "registrar" ? "registrar" : "dean"));
     if (ok) { setMeetingOpen(false); setEditTarget(null); }
   }
 
@@ -113,9 +122,20 @@ function MajorSchedulesPage() {
     setDetailOpen(true);
   }
 
+  async function openRequirements(submissionId: number) {
+    setRequirementsOpen(true);
+    setRequirements(null);
+    setRequirementsError(null);
+    try {
+      setRequirements(await authorityWorkflowService.getMajorScheduleRequirements(submissionId));
+    } catch (err) {
+      setRequirementsError(err instanceof Error ? err.message : "");
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      <PageHeader title="Major Schedules" actions={user?.role === "dean" ? <Button type="button" block={false} onClick={() => { setEditTarget(null); setMeetingOpen(true); setFormError(null); }}>New Major Meeting</Button> : undefined} />
+      <PageHeader title="Major Schedules" actions={user && ["dean", "registrar"].includes(user.role) ? <Button type="button" block={false} onClick={() => { setEditTarget(null); setMeetingOpen(true); setFormError(null); }}>New Major Meeting</Button> : undefined} />
       <div className="mt-4 grid max-w-xl gap-3 sm:grid-cols-2">
         <FieldChrome id="major-school-year" label="School year">
           <Select items={schoolYears.map((year) => ({ value: String(year.id), label: year.schoolYear }))} value={syId ? String(syId) : ""} onValueChange={(value) => setSyId(Number(value))}>
@@ -146,7 +166,7 @@ function MajorSchedulesPage() {
                 </Button>
                 {user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.submitMajorSchedule(submission.id))}>Submit</Button>}
                 {user?.role === "dean" && ["submitted", "finalized"].includes(submission.status) && <Button type="button" variant="outline" block={false} onClick={() => { setEditRequestTarget(submission); setFormError(null); }}>Request Edit</Button>}
-                {user?.role === "registrar" && submission.status === "submitted" && <><Button type="button" variant="outline" block={false} onClick={async () => { setFormError(null); try { const result = await authorityWorkflowService.getMajorScheduleConflicts(submission.id); setConflicts(result.conflicts); } catch (err) { setFormError(err instanceof Error ? err.message : ""); } }}>Check Conflicts</Button><Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.finalizeMajorSchedule(submission.id))}>Finalize</Button></>}
+                {user?.role === "registrar" && submission.status === "submitted" && <><Button type="button" variant="outline" block={false} onClick={() => void openRequirements(submission.id)}>Requirements</Button><Button type="button" variant="outline" block={false} onClick={async () => { setFormError(null); try { const result = await authorityWorkflowService.getMajorScheduleConflicts(submission.id); setConflicts(result.conflicts); } catch (err) { setFormError(err instanceof Error ? err.message : ""); } }}>Check Conflicts</Button><Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.finalizeMajorSchedule(submission.id))}>Finalize</Button></>}
               </div>
             </div>
             <Table>
@@ -159,7 +179,11 @@ function MajorSchedulesPage() {
 
       {user?.role === "registrar" && (editRequests?.length ?? 0) > 0 && <section className="mt-8"><h2 className="mb-3 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Edit Requests</h2><Table><TableHead><TableHeader>Submission</TableHeader><TableHeader>Reason</TableHeader><TableHeader>Status</TableHeader><TableHeader><span className="sr-only">Actions</span></TableHeader></TableHead><TableBody>{editRequests!.map((request) => <TableRow key={request.id}><TableCell>Submission #{request.submissionId}</TableCell><TableCell>{request.reason}</TableCell><TableCell><Badge tone={STATUS_TONES[request.status] ?? "slate"}>{request.status}</Badge></TableCell><TableCell>{request.status === "pending" && <div className="flex justify-end gap-2"><Button type="button" block={false} onClick={() => setDecisionTarget({ request, approve: true })}>Approve</Button><Button type="button" variant="danger" block={false} onClick={() => setDecisionTarget({ request, approve: false })}>Reject</Button></div>}</TableCell></TableRow>)}</TableBody></Table></section>}
 
+      {auditLog && <section className="mt-8"><h2 className="mb-3 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Major Scheduling History</h2>{auditLog.items.length === 0 ? <EmptyState title="No history yet">Changes to this term's Major schedules will appear here.</EmptyState> : <Table><TableHead><TableHeader>Action</TableHeader><TableHeader>Submission</TableHeader><TableHeader>Performed by</TableHeader><TableHeader>Details</TableHeader></TableHead><TableBody>{auditLog.items.map((item) => <TableRow key={item.id}><TableCell>{item.actionLabel}</TableCell><TableCell>{item.departmentAbbrev ?? "—"}{item.submissionVersion != null ? ` · v${item.submissionVersion}` : ""}</TableCell><TableCell>{item.performedBy.name ?? "—"}</TableCell><TableCell>{item.reason ?? item.details ?? "—"}</TableCell></TableRow>)}</TableBody></Table>}</section>}
+      {user?.role === "registrar" && submissions && <RegistrarMajorControls submissions={submissions} onDelete={setRegistrarDeleteTarget} />}
       <MajorMeetingModal open={meetingOpen} schedule={editTarget} syId={syId} semesterNumber={semesterNumber} schoolYear={schoolYears.find((row) => row.id === syId)?.schoolYear ?? ""} saving={saving} error={formError} onClose={() => { setMeetingOpen(false); setEditTarget(null); }} onSubmit={submitMeeting} />
+      <RegistrarMajorDeleteDialog schedule={registrarDeleteTarget} saving={saving} error={formError} onClose={() => setRegistrarDeleteTarget(null)} onConfirm={async (reason) => { if (!registrarDeleteTarget) return; const ok = await withRefresh(() => authorityWorkflowService.deleteMajorSchedule(registrarDeleteTarget.id, "registrar", reason)); if (ok) setRegistrarDeleteTarget(null); }} />
+      <Modal open={requirementsOpen} onClose={() => setRequirementsOpen(false)} title="Major Requirements" wide>{requirementsError ? <DataLoadAlert title="Requirements unavailable" message={requirementsError} /> : !requirements ? <Skeleton className="h-52 rounded-xl" /> : <div className="space-y-3"><p className="font-body text-sm text-slate-500 dark:text-slate-400">{requirements.unsatisfiedCount === 0 ? "All requirements are satisfied." : `${requirements.unsatisfiedCount} requirement${requirements.unsatisfiedCount === 1 ? "" : "s"} still need attention.`}</p><Table><TableHead><TableHeader>Section</TableHeader><TableHeader>Subject</TableHeader><TableHeader>Required</TableHeader><TableHeader>Status</TableHeader></TableHead><TableBody>{requirements.requirements.map((item) => <TableRow key={`${item.setId}:${item.subjectId}`}><TableCell>{item.setName}</TableCell><TableCell>{item.subjectCode} — {item.subjectTitle}</TableCell><TableCell>{item.requiredMeetingKinds.join(" + ")}</TableCell><TableCell><Badge tone={item.isSatisfied ? "emerald" : "gold"}>{item.isSatisfied ? "Complete" : `Missing ${item.missingMeetingKinds.join(", ")}`}</Badge></TableCell></TableRow>)}</TableBody></Table></div>}</Modal>
       <Modal open={detailOpen} onClose={() => setDetailOpen(false)} title="Submission Details" wide>
         {detailLoading ? (
           <Skeleton className="h-52 rounded-xl" />
@@ -173,6 +197,7 @@ function MajorSchedulesPage() {
               <SubmissionField label="Status" value={submissionDetail.status} />
               <SubmissionField label="Meetings" value={String(submissionDetail.schedules.length)} />
             </dl>
+            {(submissionDetail.deletionNotes?.length ?? 0) > 0 && <div className="space-y-2"><h3 className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">Removed by the Registrar</h3>{submissionDetail.deletionNotes!.map((note) => <div key={note.id} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-white/10"><p className="font-medium text-navy-700 dark:text-mist-100">{note.subjectCode ?? "Major meeting"} · {note.setName ?? "—"}</p><p className="mt-1 text-slate-500 dark:text-slate-400">{note.reason}</p><p className="mt-1 text-xs text-slate-400">{note.deletedBy ?? "Registrar"}</p></div>)}</div>}
             <Table>
               <TableHead><TableHeader>Subject</TableHeader><TableHeader>Section</TableHeader><TableHeader>Schedule</TableHeader><TableHeader>Instructor</TableHeader></TableHead>
               <TableBody>{submissionDetail.schedules.map((schedule) => (
@@ -232,6 +257,26 @@ function MajorLaboratorySlotsCard({ slots, requiredMeetingHours }: { slots: { st
       </div>
     </Card>
   );
+}
+
+function RegistrarMajorControls({ submissions, onDelete }: { submissions: MajorScheduleSubmission[]; onDelete: (schedule: MajorSchedule) => void }) {
+  const schedules = submissions
+    .filter((submission) => ["submitted", "finalized"].includes(submission.status))
+    .flatMap((submission) => submission.schedules);
+  if (schedules.length === 0) return null;
+  return (
+    <section className="mt-8">
+      <h2 className="mb-1 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Registrar Major Schedule Control</h2>
+      <p className="mb-3 font-body text-sm text-slate-500 dark:text-slate-400">Removing a submitted or finalized meeting permanently records a note for the owning Dean.</p>
+      <Table><TableHead><TableHeader>Meeting</TableHeader><TableHeader>Section</TableHeader><TableHeader>Schedule</TableHeader><TableHeader><span className="sr-only">Action</span></TableHeader></TableHead><TableBody>{schedules.map((schedule) => <TableRow key={schedule.id}><TableCell>{schedule.subjectCode} — {schedule.subjectTitle}</TableCell><TableCell>{schedule.setName}</TableCell><TableCell>{schedule.dayOfWeek} · {schedule.startTime}–{schedule.endTime}</TableCell><TableCell><div className="flex justify-end"><Button type="button" variant="danger" block={false} onClick={() => onDelete(schedule)}>Remove</Button></div></TableCell></TableRow>)}</TableBody></Table>
+    </section>
+  );
+}
+
+function RegistrarMajorDeleteDialog({ schedule, saving, error, onClose, onConfirm }: { schedule: MajorSchedule | null; saving: boolean; error: string | null; onClose: () => void; onConfirm: (reason: string) => Promise<void> }) {
+  const [reason, setReason] = useState("");
+  useEffect(() => { if (schedule) setReason(""); }, [schedule]);
+  return <Modal open={schedule !== null} onClose={onClose} title="Remove Major Meeting"><form onSubmit={(event) => { event.preventDefault(); void onConfirm(reason.trim()); }} className="space-y-4" noValidate><FormError message={error} /><p className="font-body text-sm text-slate-600 dark:text-slate-300">Remove {schedule?.subjectCode} from {schedule?.setName}? This is permanent; the reason is sent to the owning Dean.</p><Textarea id="registrar-delete-reason" name="reason" label="Reason for removal" value={reason} onChange={(event) => setReason(event.target.value)} required minLength={10} /><ModalActions><Button type="button" variant="outline" block={false} onClick={onClose}>Cancel</Button><Button type="submit" variant="danger" block={false} isLoading={saving} loadingLabel="Removing…" disabled={reason.trim().length < 10}>Remove meeting</Button></ModalActions></form></Modal>;
 }
 
 function SubmissionField({ label, value }: { label: string; value: string }) {

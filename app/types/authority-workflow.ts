@@ -117,7 +117,73 @@ export type MajorScheduleSubmission = {
   finalizedAt: string | null;
   editRequestStatus: string | null;
   editRequestHistory: MajorScheduleEditHistory[];
+  deletionNotes?: MajorScheduleDeletionNote[];
   schedules: MajorSchedule[];
+};
+
+export type MajorScheduleDeletionNote = {
+  id: number;
+  scheduleId: number;
+  reason: string;
+  subjectCode: string | null;
+  subjectTitle: string | null;
+  programAbbrev: string | null;
+  setName: string | null;
+  roomName: string | null;
+  instructorDisplay: string | null;
+  dayOfWeek: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  deletedBy: string | null;
+  deletedAt: string;
+};
+
+export type MajorScheduleRequirement = {
+  setId: number;
+  setName: string;
+  subjectId: number;
+  subjectCode: string;
+  subjectTitle: string;
+  subjectType: string;
+  requiredMeetingKinds: string[];
+  satisfiedMeetingKinds: string[];
+  missingMeetingKinds: string[];
+  isSatisfied: boolean;
+  canCreateAdjustment: boolean;
+  assignedInstructors: Array<{ id?: number; instructorId?: number; fullName?: string }>;
+};
+
+export type MajorScheduleRequirements = {
+  submissionId: number;
+  departmentId: number;
+  syId: number;
+  semesterNumber: number;
+  status: string;
+  requirements: MajorScheduleRequirement[];
+  unsatisfiedCount: number;
+};
+
+export type MajorScheduleAuditLog = {
+  id: number;
+  action: string;
+  actionLabel: string;
+  workspace: "dean" | "registrar";
+  submissionId: number | null;
+  submissionVersion: number | null;
+  departmentAbbrev: string | null;
+  departmentName: string | null;
+  subjectLabel: string | null;
+  setName: string | null;
+  performedBy: { userId: number | null; name: string | null; role: string | null };
+  reason: string | null;
+  details: string | null;
+  createdAt: string | null;
+};
+
+export type MajorScheduleAuditLogResult = {
+  items: MajorScheduleAuditLog[];
+  actions: Array<{ value: string; label: string }>;
+  pagination: { page: number; perPage: number; total: number; pages: number };
 };
 
 export type MajorScheduleEditRequest = {
@@ -237,4 +303,3 @@ export type AdvancedAnalysisResult = {
   conflicts?: string[];
   message?: string;
 };
-

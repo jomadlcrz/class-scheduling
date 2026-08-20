@@ -42,6 +42,10 @@ export function resolveNotificationTarget(
     case "schedule_published_summary":
     case "schedule_rescheduled_summary":
       return "/dean/schedule-approvals";
+    case "major_schedule_submitted":
+    case "major_schedule_edit_requested":
+    case "major_schedule_deleted":
+      return "/major-schedules";
     case "schedule_published":
     case "schedule_rescheduled":
       return role === "student" ? "/student-schedule" : "/faculty-schedule";

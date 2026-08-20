@@ -879,8 +879,11 @@ async function listSubjectTypeOptions(): Promise<{ value: string; label: string 
 }
 
 /** GET /schedule/programs — program dropdown for schedule generation. */
-async function listSchedulePrograms(): Promise<unknown> {
-  return apiGet("/schedule/programs");
+async function listSchedulePrograms(params: { syId?: number; semesterNumber?: number } = {}): Promise<unknown> {
+  const query = new URLSearchParams();
+  if (params.syId != null) query.set("syId", String(params.syId));
+  if (params.semesterNumber != null) query.set("semesterNumber", String(params.semesterNumber));
+  return apiGet(`/schedule/programs${query.size ? `?${query}` : ""}`);
 }
 
 /** GET /schedule/audit-log/filters */

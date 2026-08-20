@@ -62,6 +62,12 @@ function notificationText(notification: NotificationItem): { title: string; deta
         detail: p.rejection_reason ? p.rejection_reason : period,
       };
     }
+    case "major_schedule_submitted":
+      return { title: "Major schedules submitted", detail: [p.department_abbrev, period].filter(Boolean).join(" · ") };
+    case "major_schedule_edit_requested":
+      return { title: "Major schedule edit requested", detail: p.reason ?? p.department_abbrev ?? "" };
+    case "major_schedule_deleted":
+      return { title: p.subject_code ? `${p.subject_code} removed from Major schedules` : "Major meeting removed", detail: p.reason ?? period };
     case "subject_assignment_changed": {
       const codes = Array.isArray(p.subject_codes) ? p.subject_codes : [];
       return {

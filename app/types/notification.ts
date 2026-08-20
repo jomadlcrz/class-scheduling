@@ -14,6 +14,9 @@ export type NotificationType =
   | "schedule_rescheduled_summary"
   | "schedule_approval_requested"
   | "schedule_approval_rejected"
+  | "major_schedule_submitted"
+  | "major_schedule_edit_requested"
+  | "major_schedule_deleted"
   | "subject_assignment_changed"
   | "student_enrolled"
   | "account_reactivated";
@@ -52,6 +55,9 @@ export type NotificationPayload = Record<string, unknown> & {
   new?: NotificationTimeBlock;
   submission_note?: string | null;
   rejection_reason?: string | null;
+  reason?: string | null;
+  department_abbrev?: string | null;
+  department_name?: string | null;
 };
 
 export type NotificationItem = {

@@ -5,6 +5,8 @@ import type {
   InstructorScheduleResponse,
   MajorSchedule,
   MajorScheduleConflict,
+  MajorScheduleAuditLogResult,
+  MajorScheduleRequirements,
   MajorScheduleEditRequest,
   MajorScheduleMeetingInput,
   MajorScheduleSubmission,
@@ -83,8 +85,8 @@ async function decideHoursAdjustment(requestId: number, decision: "approved" | "
   return { message: apiMessage(data), request: data.request };
 }
 
-async function createMajorSchedule(input: MajorScheduleMeetingInput) {
-  const data = await apiPost<MessageResponse & { schedule: MajorSchedule }>("/deans/major-schedules", input);
+async function createMajorSchedule(input: MajorScheduleMeetingInput, audience: "dean" | "registrar" = "dean") {
+  const data = await apiPost<MessageResponse & { schedule: MajorSchedule }>(`/${audience === "dean" ? "deans" : "registrar"}/major-schedules`, input);
   return { message: apiMessage(data), schedule: data.schedule };
 }
 
@@ -93,8 +95,11 @@ async function updateMajorSchedule(id: number, input: MajorScheduleMeetingInput,
   return { message: apiMessage(data), schedule: data.schedule };
 }
 
-async function deleteMajorSchedule(id: number): Promise<string> {
-  return apiMessage(await apiDelete<MessageResponse>(`/deans/major-schedules/${id}`));
+async function deleteMajorSchedule(id: number, audience: "dean" | "registrar" = "dean", reason?: string): Promise<string> {
+  return apiMessage(await apiDelete<MessageResponse>(
+    `/${audience === "dean" ? "deans" : "registrar"}/major-schedules/${id}`,
+    audience === "registrar" ? { reason } : undefined,
+  ));
 }
 
 async function listMajorScheduleSubmissions(params: {
@@ -114,13 +119,6 @@ async function listMajorScheduleSubmissions(params: {
   if (params.status) query.set("status", params.status);
   const data = await apiGet<{ submissions: MajorScheduleSubmission[] }>(`/major-schedule-submissions${query.size ? `?${query}` : ""}`);
   return data.submissions ?? [];
-}
-
-async function getMajorScheduleSubmission(submissionId: number): Promise<MajorScheduleSubmission> {
-  const data = await apiGet<MajorScheduleSubmission | { submission: MajorScheduleSubmission }>(
-    `/major-schedule-submissions/${submissionId}`,
-  );
-  return "submission" in data ? data.submission : data;
 }
 
 async function listMajorLabTimeSlots() {
@@ -150,6 +148,30 @@ async function listMajorScheduleEditRequests(status?: string): Promise<MajorSche
 
 async function getMajorScheduleConflicts(submissionId: number) {
   return apiGet<{ conflicts: MajorScheduleConflict[]; conflictCount: number }>(`/registrar/major-schedule-submissions/${submissionId}/conflicts`);
+}
+
+async function getMajorScheduleRequirements(submissionId: number): Promise<MajorScheduleRequirements> {
+  return apiGet<MajorScheduleRequirements>(`/registrar/major-schedule-submissions/${submissionId}/requirements`);
+}
+
+async function listMajorScheduleAuditLogs(params: {
+  syId?: number;
+  semesterNumber?: number;
+  departmentId?: number;
+  submissionId?: number;
+  action?: string;
+  page?: number;
+  perPage?: number;
+} = {}): Promise<MajorScheduleAuditLogResult> {
+  const query = new URLSearchParams();
+  if (params.syId != null) query.set("syId", String(params.syId));
+  if (params.semesterNumber != null) query.set("semesterNumber", String(params.semesterNumber));
+  if (params.departmentId != null) query.set("departmentId", String(params.departmentId));
+  if (params.submissionId != null) query.set("submissionId", String(params.submissionId));
+  if (params.action) query.set("action", params.action);
+  if (params.page != null) query.set("page", String(params.page));
+  if (params.perPage != null) query.set("perPage", String(params.perPage));
+  return apiGet<MajorScheduleAuditLogResult>(`/major-schedule-audit-logs${query.size ? `?${query}` : ""}`);
 }
 
 async function finalizeMajorSchedule(submissionId: number) {
@@ -258,13 +280,14 @@ export const authorityWorkflowService = {
   updateMajorSchedule,
   deleteMajorSchedule,
   listMajorScheduleSubmissions,
-  getMajorScheduleSubmission,
   listMajorLabTimeSlots,
   submitMajorSchedule,
   requestMajorScheduleEdit,
   decideMajorScheduleEdit,
   listMajorScheduleEditRequests,
   getMajorScheduleConflicts,
+  getMajorScheduleRequirements,
+  listMajorScheduleAuditLogs,
   finalizeMajorSchedule,
   respondToInstructorSchedule,
   listInstructorScheduleResponses,
@@ -279,4 +302,3 @@ export const authorityWorkflowService = {
   retainInitialSchedule,
   analyzeAdvancedAdjustment,
 };
-
