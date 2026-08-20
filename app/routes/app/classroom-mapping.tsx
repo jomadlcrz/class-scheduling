@@ -5,7 +5,6 @@ import { SearchIcon } from "~/components/ui/icons";
 import { inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { MappingSkeleton } from "~/components/ui/skeleton";
-import { ResultState } from "~/components/feedback/result-state";
 import { MappingGridView } from "~/features/classroom-mapping/mapping-grid-view";
 import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
 import { filterClassrooms } from "~/features/classroom-mapping/mapping-model";
@@ -73,6 +72,7 @@ function ClassroomMappingPage() {
         .then((result) => result.classrooms),
     { enabled: schoolYear !== "" && semesterNumber !== null },
   );
+  const noMatchingRooms = loadError?.toLowerCase().includes("no rooms found") ?? false;
 
   const search = useDeferredValue(rawSearch);
 
@@ -197,10 +197,14 @@ function ClassroomMappingPage() {
           <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
         </div>
 
-        {loadError && classrooms === null ? (
-          <ResultState tone="error" title="Unable to load">
+        {noMatchingRooms && classrooms === null ? (
+          <EmptyState title="No rooms found">
             {loadError}
-          </ResultState>
+          </EmptyState>
+        ) : loadError && classrooms === null ? (
+          <EmptyState title="Unable to load classrooms">
+            {loadError}
+          </EmptyState>
         ) : !contextLoading && schoolYears.length === 0 ? (
           <EmptyState title="No school year">
             No school year has been added yet.
