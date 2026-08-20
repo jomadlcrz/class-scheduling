@@ -184,7 +184,7 @@ export function StudentRecordForm({
                 defaultValue=""
               >
                 <SelectTrigger id="student-suffix" className="min-w-24">
-                  <SelectValue />
+                  <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">None</SelectItem>

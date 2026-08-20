@@ -659,7 +659,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     onValueChange={(v) => updateRow(index, (r) => ({ ...r, program: v as string, yearLevel: "", section: "" }))}
                   >
                     <SelectTrigger id={`s${index}-program`}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a program" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a program</SelectItem>
@@ -677,7 +677,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     disabled={!row.program}
                   >
                     <SelectTrigger id={`s${index}-yearLevel`}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a year" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a year</SelectItem>
@@ -696,7 +696,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     disabled={!row.program || !row.yearLevel}
                   >
                     <SelectTrigger id={`s${index}-section`}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a set" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a set</SelectItem>
@@ -716,7 +716,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     onValueChange={(v) => updateRow(index, (r) => ({ ...r, studentType: v as string }))}
                   >
                     <SelectTrigger id={`s${index}-studentType`}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a type</SelectItem>
@@ -733,7 +733,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     onValueChange={(v) => updateRow(index, (r) => ({ ...r, schoolYear: v as string }))}
                   >
                     <SelectTrigger id={`s${index}-schoolYear`}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a school year" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a school year</SelectItem>
@@ -750,7 +750,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     onValueChange={(v) => updateRow(index, (r) => ({ ...r, semester: v as string }))}
                   >
                     <SelectTrigger id={`s${index}-semester`}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a semester" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a semester</SelectItem>

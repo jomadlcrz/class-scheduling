@@ -47,7 +47,7 @@ export function ReenrollDirectoryToolbar({
             value={filters.program}
             onValueChange={(value) => onFiltersChange({ program: value as string })}
           >
-            <SelectTrigger aria-label="Filter by program"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by program"><SelectValue placeholder="All Programs" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Programs</SelectItem>
               {programs.map((program) => <SelectItem key={program.id} value={program.abbrev}>{program.abbrev}</SelectItem>)}
@@ -59,7 +59,7 @@ export function ReenrollDirectoryToolbar({
             value={filters.yearLevel}
             onValueChange={(value) => onFiltersChange({ yearLevel: value as string })}
           >
-            <SelectTrigger aria-label="Filter by year level"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by year level"><SelectValue placeholder="All Year Levels" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Year Levels</SelectItem>
               {yearLevelIds.map((year) => <SelectItem key={year} value={String(year)}>{yearLevelLabel(year)}</SelectItem>)}
@@ -71,7 +71,7 @@ export function ReenrollDirectoryToolbar({
             value={filters.semester}
             onValueChange={(value) => onFiltersChange({ semester: value as string })}
           >
-            <SelectTrigger aria-label="Filter by semester"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by semester"><SelectValue placeholder="All Semesters" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Semesters</SelectItem>
               {semesters.map((semester) => <SelectItem key={semester.semesterNumber} value={String(semester.semesterNumber)}>{semester.semester}</SelectItem>)}
@@ -83,7 +83,7 @@ export function ReenrollDirectoryToolbar({
             value={filters.enrolledStatus}
             onValueChange={(value) => onFiltersChange({ enrolledStatus: value as string })}
           >
-            <SelectTrigger aria-label="Filter by enrolled status"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by enrolled status"><SelectValue placeholder="All Enrolled Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Enrolled Status</SelectItem>
               {academicStatuses.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}

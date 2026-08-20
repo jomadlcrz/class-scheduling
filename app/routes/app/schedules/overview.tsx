@@ -224,7 +224,7 @@ function ScheduleOverviewPage() {
             onValueChange={(v) => setSyId(v ? Number(v) : null)}
           >
             <SelectTrigger id="so-school-year">
-              <SelectValue />
+              <SelectValue placeholder="Select school year" />
             </SelectTrigger>
             <SelectContent>
               {schoolYears.length === 0 ? (
@@ -248,7 +248,7 @@ function ScheduleOverviewPage() {
             onValueChange={(v) => setSemester(Number(v))}
           >
             <SelectTrigger id="so-semester">
-              <SelectValue />
+              <SelectValue placeholder="Select semester" />
             </SelectTrigger>
             <SelectContent>
               {semesters

@@ -206,7 +206,7 @@ export function FacilitiesViewWorkspace({
                 }}
               >
                 <SelectTrigger id="facilities-building-select" aria-label="Building">
-                  <SelectValue />
+                  <SelectValue placeholder="Select building" />
                 </SelectTrigger>
                 <SelectContent>
                   {buildings.map((entry) => (

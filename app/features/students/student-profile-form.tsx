@@ -83,7 +83,7 @@ export function StudentProfileForm({ profile, nameSuffixes, onSubmit, onCancel }
             disabled={isSaving}
           >
             <SelectTrigger id="student-profile-suffix">
-              <SelectValue />
+              <SelectValue placeholder="No suffix" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">No suffix</SelectItem>

@@ -119,7 +119,7 @@ export function AddStudentStep1Identity({
                     onValueChange={(v) => onIdentityChange({ suffix: v as string })}
                   >
                     <SelectTrigger id="new-student-suffix">
-                      <SelectValue />
+                      <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">None</SelectItem>
@@ -141,7 +141,7 @@ export function AddStudentStep1Identity({
                     onValueChange={(v) => onIdentityChange({ gender: v as string })}
                   >
                     <SelectTrigger id="new-student-gender">
-                      <SelectValue />
+                      <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select gender</SelectItem>

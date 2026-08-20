@@ -110,7 +110,7 @@ function HoursAdjustmentRequestsPage() {
       <div className="mt-4 w-52">
         <FieldChrome id="adjustment-status" label="Status">
           <Select items={[{ value: "all", label: "All requests" }, { value: "pending", label: "Pending" }, { value: "applied", label: "Applied" }, { value: "rejected", label: "Rejected" }]} value={status} onValueChange={(value) => setStatus(value ?? "all")}>
-            <SelectTrigger id="adjustment-status"><SelectValue /></SelectTrigger>
+            <SelectTrigger id="adjustment-status"><SelectValue placeholder="All requests" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All requests</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="applied">Applied</SelectItem><SelectItem value="rejected">Rejected</SelectItem></SelectContent>
           </Select>
         </FieldChrome>
@@ -172,7 +172,23 @@ function HoursAdjustmentRequestsPage() {
               <span className="shrink-0 text-slate-400"><ChevronDownIcon /></span>
             </button>
           </FieldChrome>
-          <Input id="requestedHours" label="Requested max weekly hours" type="number" min="0" max="60" step="0.5" required value={requestedHours} onChange={(event) => setRequestedHours(event.target.value)} />
+          <Input
+            id="requestedHours"
+            label="Requested max weekly hours"
+            type="number"
+            inputMode="decimal"
+            min="0"
+            max="60"
+            step="0.5"
+            required
+            value={requestedHours}
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-"].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            onChange={(event) => setRequestedHours(event.target.value)}
+          />
           <Textarea id="reason" name="reason" label="Reason" required />
           <ModalActions>
             <Button type="button" variant="outline" block={false} onClick={() => setRequestOpen(false)}>Cancel</Button>

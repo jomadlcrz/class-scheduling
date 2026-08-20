@@ -80,7 +80,7 @@ export function RegularClassFilters({
           onValueChange={(v) => onSchoolYearChange(v as string)}
         >
           <SelectTrigger id="rc-school-year">
-            <SelectValue />
+            <SelectValue placeholder="School Year" />
           </SelectTrigger>
           <SelectContent>
             {isLoading ? (
@@ -112,7 +112,7 @@ export function RegularClassFilters({
           onValueChange={(v) => onSemesterChange(Number(v) as ScheduleSemester)}
         >
           <SelectTrigger id="rc-semester">
-            <SelectValue />
+            <SelectValue placeholder="Semester" />
           </SelectTrigger>
           <SelectContent>
             {semestersLoading ? (
@@ -148,7 +148,7 @@ export function RegularClassFilters({
           onValueChange={(v) => onProgramChange(v as string)}
         >
           <SelectTrigger id="rc-program">
-            <SelectValue />
+            <SelectValue placeholder="Program" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">
@@ -179,7 +179,7 @@ export function RegularClassFilters({
           onValueChange={(v) => onYearLevelChange(v === "" ? "" : (Number(v) as YearLevel))}
         >
           <SelectTrigger id="rc-year-level">
-            <SelectValue />
+            <SelectValue placeholder="Year Level" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">
@@ -216,7 +216,7 @@ export function RegularClassFilters({
           onValueChange={(v) => onSetChange(v as string)}
         >
           <SelectTrigger id="rc-set">
-            <SelectValue />
+            <SelectValue placeholder="Set" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">

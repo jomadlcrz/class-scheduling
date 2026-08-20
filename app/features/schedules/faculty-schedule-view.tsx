@@ -57,7 +57,7 @@ export function FacultyScheduleView({
                   onValueChange={(v) => onSemesterChange(Number(v) as ScheduleSemester)}
                 >
                   <SelectTrigger className="border-0 px-2 py-1 font-body text-xs *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
-                    <SelectValue />
+                    <SelectValue placeholder="Semester" />
                   </SelectTrigger>
                   <SelectContent>
                     {semesters
@@ -88,7 +88,7 @@ export function FacultyScheduleView({
                   onValueChange={(v) => onSchoolYearChange(v as string)}
                 >
                   <SelectTrigger className="border-0 px-2 py-1 font-body text-xs *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
-                    <SelectValue />
+                    <SelectValue placeholder="School Year" />
                   </SelectTrigger>
                   <SelectContent>
                     {schoolYears.map((y) => (

@@ -61,9 +61,60 @@ export function SchedulingLoadPolicyDialog({ open, syId, semesterNumber, onClose
           {policy.isDefault && (
             <p className="font-body text-xs text-slate-500 dark:text-slate-400">Institution defaults are currently in force.</p>
           )}
-          <Input id="normal-load-hours" name="normalLoadHours" type="number" step="0.5" min="1" max="66" label="Normal load hours" defaultValue={policy.normalLoadHours} disabled={policy.isClosed} required />
-          <Input id="regular-daily-cap" name="regularDailyCap" type="number" step="0.5" min="1" max="11" label="Regular daily cap" defaultValue={policy.regularDailyCap} disabled={policy.isClosed} required />
-          <Input id="overload-daily-cap" name="overloadDailyCap" type="number" step="0.5" min="1" max="11" label="Overload daily cap" defaultValue={policy.overloadDailyCap} disabled={policy.isClosed} required />
+          <Input
+            id="normal-load-hours"
+            name="normalLoadHours"
+            type="number"
+            inputMode="decimal"
+            step="0.5"
+            min="1"
+            max="66"
+            label="Normal load hours"
+            defaultValue={policy.normalLoadHours}
+            disabled={policy.isClosed}
+            required
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-"].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+          />
+          <Input
+            id="regular-daily-cap"
+            name="regularDailyCap"
+            type="number"
+            inputMode="decimal"
+            step="0.5"
+            min="1"
+            max="11"
+            label="Regular daily cap"
+            defaultValue={policy.regularDailyCap}
+            disabled={policy.isClosed}
+            required
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-"].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+          />
+          <Input
+            id="overload-daily-cap"
+            name="overloadDailyCap"
+            type="number"
+            inputMode="decimal"
+            step="0.5"
+            min="1"
+            max="11"
+            label="Overload daily cap"
+            defaultValue={policy.overloadDailyCap}
+            disabled={policy.isClosed}
+            required
+            onKeyDown={(e) => {
+              if (["e", "E", "+", "-"].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+          />
           {policy.guidelines.length > 0 && (
             <ul className="list-disc space-y-1 pl-5 font-body text-xs text-slate-500 dark:text-slate-400">
               {policy.guidelines.map((guideline) => <li key={guideline}>{guideline}</li>)}

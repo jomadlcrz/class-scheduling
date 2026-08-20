@@ -63,7 +63,7 @@ export function EnrollmentEditForm({
           onValueChange={(v) => setSetId(v as string)}
         >
           <SelectTrigger id="enrollment-set">
-            <SelectValue />
+            <SelectValue placeholder="Keep current set" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Keep current set</SelectItem>
@@ -91,7 +91,7 @@ export function EnrollmentEditForm({
           onValueChange={(value) => setEnrollmentState(value as string)}
         >
           <SelectTrigger id="enrollment-state">
-            <SelectValue />
+            <SelectValue placeholder="Keep current state" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Keep current state</SelectItem>

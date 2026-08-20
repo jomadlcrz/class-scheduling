@@ -214,7 +214,7 @@ function SubjectHourOverridesPage() {
               onValueChange={(v) => setSchoolYear(v as string)}
             >
               <SelectTrigger id="sho-school-year">
-                <SelectValue />
+                <SelectValue placeholder="Select school year" />
               </SelectTrigger>
               <SelectContent>
                 {syLoading ? (
@@ -246,7 +246,7 @@ function SubjectHourOverridesPage() {
               onValueChange={(v) => setSemester(Number(v))}
             >
               <SelectTrigger id="sho-semester">
-                <SelectValue />
+                <SelectValue placeholder="Select semester" />
               </SelectTrigger>
               <SelectContent>
                 {semLoading ? (

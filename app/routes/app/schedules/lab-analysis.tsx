@@ -117,7 +117,7 @@ function LabAnalysisPage() {
               onValueChange={(v) => setSchoolYear(v as string)}
             >
               <SelectTrigger id="la-school-year">
-                <SelectValue />
+                <SelectValue placeholder="Select school year" />
               </SelectTrigger>
               <SelectContent>
                 {syLoading ? (
@@ -150,7 +150,7 @@ function LabAnalysisPage() {
               onValueChange={(v) => setSemester(Number(v))}
             >
               <SelectTrigger id="la-semester">
-                <SelectValue />
+                <SelectValue placeholder="Select semester" />
               </SelectTrigger>
               <SelectContent>
                 {semLoading ? (
@@ -180,7 +180,7 @@ function LabAnalysisPage() {
               onValueChange={(v) => setProgramFilter(v as string)}
             >
               <SelectTrigger id="la-program">
-                <SelectValue />
+                <SelectValue placeholder="All programs" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All programs</SelectItem>

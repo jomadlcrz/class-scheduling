@@ -130,7 +130,7 @@ export function DeanScheduleApprovalsPage() {
             onValueChange={(v) => setSelectedSchoolYearId(v as string)}
           >
             <SelectTrigger id="da-school-year">
-              <SelectValue />
+              <SelectValue placeholder="Select school year" />
             </SelectTrigger>
             <SelectContent>
               {termsLoading ? (
@@ -162,7 +162,7 @@ export function DeanScheduleApprovalsPage() {
             onValueChange={(v) => setSelectedSemesterNumber(v as string)}
           >
             <SelectTrigger id="da-semester">
-              <SelectValue />
+              <SelectValue placeholder="Select semester" />
             </SelectTrigger>
             <SelectContent>
               {semestersLoading ? (

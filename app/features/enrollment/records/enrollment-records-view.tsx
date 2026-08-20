@@ -168,7 +168,7 @@ export function EnrollmentRecordsView({
             onValueChange={(v) => onProgramFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by program">
-              <SelectValue />
+              <SelectValue placeholder="All Programs" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Programs</SelectItem>
@@ -185,7 +185,7 @@ export function EnrollmentRecordsView({
             onValueChange={(v) => onYearFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by year level">
-              <SelectValue />
+              <SelectValue placeholder="All Years" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Years</SelectItem>
@@ -202,7 +202,7 @@ export function EnrollmentRecordsView({
             onValueChange={(v) => onSetFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by set">
-              <SelectValue />
+              <SelectValue placeholder="All Sets" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Sets</SelectItem>

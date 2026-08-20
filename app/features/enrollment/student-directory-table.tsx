@@ -82,7 +82,8 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
           <SearchIcon />
         </span>
         <input
-          type="search" placeholder="Search..."
+          type="search"
+          placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search students"
@@ -97,7 +98,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
           onValueChange={(v) => setProgramFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by program">
-            <SelectValue />
+            <SelectValue placeholder="All Programs" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Programs</SelectItem>
@@ -115,7 +116,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
           onValueChange={(v) => setYearLevelFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by year level">
-            <SelectValue />
+            <SelectValue placeholder="All Years" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Years</SelectItem>
@@ -133,7 +134,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
           onValueChange={(v) => setSetFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by set">
-            <SelectValue />
+            <SelectValue placeholder="All Sets" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sets</SelectItem>
@@ -151,7 +152,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
           onValueChange={(v) => setStudentTypeFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by student type">
-            <SelectValue />
+            <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
@@ -169,7 +170,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
           onValueChange={(v) => setEnrollmentStateFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by enrollment state">
-            <SelectValue />
+            <SelectValue placeholder="All States" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All States</SelectItem>
@@ -206,7 +207,9 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
                   <div className="flex items-center gap-2">
                     {r.profilePhotoUrl ? (
                       <img src={r.profilePhotoUrl} alt={r.name} className="size-6 shrink-0 rounded-full object-cover" />
-                      ) : <ProfileAvatar gender={r.gender} className="size-6" />}
+                    ) : (
+                      <ProfileAvatar gender={r.gender} className="size-6" />
+                    )}
                     <div className="min-w-0">
                       <p className="truncate font-body text-xs font-medium text-navy-700 dark:text-mist-100">{r.name}</p>
                       {r.email && (

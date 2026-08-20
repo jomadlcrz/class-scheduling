@@ -93,7 +93,7 @@ export function IrregularStudentList({
           onValueChange={(v) => setProgramFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by program">
-            <SelectValue />
+            <SelectValue placeholder="All Programs" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Programs</SelectItem>

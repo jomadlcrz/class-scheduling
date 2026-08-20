@@ -67,7 +67,7 @@ function SchedulingHubPage() {
             onValueChange={(v) => setSyId(v ? Number(v) : null)}
           >
             <SelectTrigger id="hub-school-year">
-              <SelectValue />
+              <SelectValue placeholder="Select school year" />
             </SelectTrigger>
             <SelectContent>
               {schoolYears.length === 0 ? (
@@ -91,7 +91,7 @@ function SchedulingHubPage() {
             onValueChange={(v) => setSemester(Number(v))}
           >
             <SelectTrigger id="hub-semester">
-              <SelectValue />
+              <SelectValue placeholder="Select semester" />
             </SelectTrigger>
             <SelectContent>
               {semesters

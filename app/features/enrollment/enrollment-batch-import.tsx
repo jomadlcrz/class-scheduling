@@ -790,7 +790,7 @@ export function EnrollmentBatchImport({
                     onValueChange={(value) => updateRow(index, { studentType: value as string })}
                   >
                     <SelectTrigger id={`batch-${index}-type`} disabled={isLoading}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a type</SelectItem>
@@ -839,7 +839,7 @@ export function EnrollmentBatchImport({
                     onValueChange={(value) => updateRow(index, { suffix: value as string })}
                   >
                     <SelectTrigger id={`batch-${index}-suffix`} disabled={isLoading}>
-                      <SelectValue />
+                      <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">None</SelectItem>
@@ -863,7 +863,7 @@ export function EnrollmentBatchImport({
                     onValueChange={(value) => updateRow(index, { gender: value as string })}
                   >
                     <SelectTrigger id={`batch-${index}-gender`} disabled={isLoading}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select gender</SelectItem>
@@ -993,7 +993,7 @@ export function EnrollmentBatchImport({
                     }
                   >
                     <SelectTrigger id={`batch-${index}-program`} disabled={isLoading}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a program" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a program</SelectItem>
@@ -1027,7 +1027,7 @@ export function EnrollmentBatchImport({
                       id={`batch-${index}-year`}
                       disabled={isLoading || !selectedProgram}
                     >
-                      <SelectValue />
+                      <SelectValue placeholder="Select a year" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a year</SelectItem>
@@ -1062,7 +1062,7 @@ export function EnrollmentBatchImport({
                         id={`batch-${index}-set`}
                         disabled={isLoading || !selectedProgram || !row.yearLevel}
                       >
-                        <SelectValue />
+                        <SelectValue placeholder="Select a set" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">Select a set</SelectItem>
@@ -1110,7 +1110,7 @@ export function EnrollmentBatchImport({
                       id={`batch-${index}-sy`}
                       disabled={isLoading || (isIrregular ? !row.yearLevel : !row.setId)}
                     >
-                      <SelectValue />
+                      <SelectValue placeholder="Select a school year" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a school year</SelectItem>
@@ -1141,7 +1141,7 @@ export function EnrollmentBatchImport({
                       id={`batch-${index}-sem`}
                       disabled={isLoading || !row.syId}
                     >
-                      <SelectValue />
+                      <SelectValue placeholder="Select a semester" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">Select a semester</SelectItem>

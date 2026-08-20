@@ -173,7 +173,7 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
                   disabled={isSaving}
                 >
                   <SelectTrigger id="edit-suffix">
-                    <SelectValue />
+                    <SelectValue placeholder="None" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">None</SelectItem>
@@ -191,7 +191,7 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
                   disabled={isSaving}
                 >
                   <SelectTrigger id="edit-gender">
-                    <SelectValue />
+                    <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Select gender</SelectItem>
