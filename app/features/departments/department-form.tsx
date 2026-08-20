@@ -112,7 +112,7 @@ export function DepartmentForm({
     }
   }
 
-  const defaultBuildingId = String(department?.buildingId ?? buildings[0]?.id ?? "");
+  const defaultBuildingId = department?.buildingId ? String(department.buildingId) : "";
 
   const displayFileName =
     logoFile?.name ?? (logoPreview && !logoRemoved ? (department?.logoUrl ? "Current logo" : null) : null);
@@ -157,7 +157,7 @@ export function DepartmentForm({
           defaultValue={defaultBuildingId}
         >
           <SelectTrigger id="dept-building">
-            <SelectValue />
+            <SelectValue placeholder="No building" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">No building</SelectItem>
@@ -177,7 +177,7 @@ export function DepartmentForm({
           onValueChange={(v) => setType(v as string)}
         >
           <SelectTrigger id="dept-type">
-            <SelectValue />
+            <SelectValue placeholder="Select department type…" />
           </SelectTrigger>
           <SelectContent>
             {departmentTypes.map((t) => (

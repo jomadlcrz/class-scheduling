@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { StickyFooter } from "~/components/ui/sticky-footer";
@@ -111,27 +111,36 @@ export function FacultyAccountForm({
         <div className="flex flex-col gap-4">
 
           <FieldChrome id="faculty-department" label="Department" required>
-            <Select
-              items={[
-                { value: "", label: "Select a department" },
-                ...departments.map((d) => ({ value: d.id, label: `${d.abbrev} — ${d.name}` })),
-              ]}
-              name="faculty-department"
-              defaultValue=""
-              onValueChange={() => onDirtyChange?.(true)}
-            >
-              <SelectTrigger id="faculty-department">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Select a department</SelectItem>
-                {departments.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {d.abbrev} — {d.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {departments.length > 0 ? (
+              <Select
+                items={[
+                  { value: "", label: "Select a department" },
+                  ...departments.map((d) => ({ value: d.id, label: `${d.abbrev} — ${d.name}` })),
+                ]}
+                name="faculty-department"
+                defaultValue=""
+                onValueChange={() => onDirtyChange?.(true)}
+              >
+                <SelectTrigger id="faculty-department">
+                  <SelectValue placeholder="Select a department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a department</SelectItem>
+                  {departments.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.abbrev} — {d.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                <p className="font-medium text-navy-800 dark:text-mist-100">No departments available</p>
+                <p>
+                  Please create an academic department first before creating faculty accounts.
+                </p>
+              </div>
+            )}
           </FieldChrome>
 
           <div className="grid grid-cols-2 gap-3">
@@ -143,7 +152,7 @@ export function FacultyAccountForm({
                 onValueChange={() => onDirtyChange?.(true)}
               >
                 <SelectTrigger id="faculty-gender">
-                  <SelectValue />
+                  <SelectValue placeholder="Select a gender" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Select a gender</SelectItem>
@@ -166,7 +175,7 @@ export function FacultyAccountForm({
                 onValueChange={() => onDirtyChange?.(true)}
               >
                 <SelectTrigger id="faculty-civil-status">
-                  <SelectValue />
+                  <SelectValue placeholder="Select a status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Select a status</SelectItem>
@@ -194,7 +203,7 @@ export function FacultyAccountForm({
               }}
             >
               <SelectTrigger id="faculty-role">
-                <SelectValue />
+                <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Select a role</SelectItem>
@@ -216,7 +225,7 @@ export function FacultyAccountForm({
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
-        <Button block={false} isLoading={isLoading} loadingLabel="Creating…">
+        <Button block={false} disabled={departments.length === 0 || isLoading} isLoading={isLoading} loadingLabel="Creating…">
           Add Faculty
         </Button>
       </StickyFooter>

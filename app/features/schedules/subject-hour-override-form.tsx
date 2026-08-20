@@ -181,21 +181,30 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
       <FormError message={error} />
 
       <FieldChrome id="sho-subject" label="Subject">
-        <Select
-          value={selectedSubjectId}
-          onValueChange={(v) => handleSubjectChange(v as string)}
-        >
-          <SelectTrigger id="sho-subject">
-            <SelectValue>{selectedSubject ? `${selectedSubject.code} — ${selectedSubject.title}` : undefined}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {sortedSubjects.map((s) => (
-              <SelectItem key={s.id} value={String(s.id)}>
-                {s.code} — {s.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {subjects.length > 0 ? (
+          <Select
+            value={selectedSubjectId}
+            onValueChange={(v) => handleSubjectChange(v as string)}
+          >
+            <SelectTrigger id="sho-subject">
+              <SelectValue placeholder="Select a subject…">{selectedSubject ? `${selectedSubject.code} — ${selectedSubject.title}` : undefined}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {sortedSubjects.map((s) => (
+                <SelectItem key={s.id} value={String(s.id)}>
+                  {s.code} — {s.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+            <p className="font-medium text-navy-800 dark:text-mist-100">No subjects available</p>
+            <p>
+              You need to add subjects to a program curriculum before creating subject hour overrides.
+            </p>
+          </div>
+        )}
       </FieldChrome>
 
       {sets.length > 0 && (

@@ -104,7 +104,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
             defaultValue={subject.subjectType}
           >
             <SelectTrigger id="subject-type">
-              <SelectValue />
+              <SelectValue placeholder="Select subject type…" />
             </SelectTrigger>
             <SelectContent>
               {subjectTypes.map((type) => (

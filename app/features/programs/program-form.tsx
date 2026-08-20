@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { ModalActions } from "~/components/ui/modal";
@@ -21,15 +22,18 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
   const [error, setError] = useState<string | null>(null);
   const [degreeTypes, setDegreeTypes] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string>(program?.type ?? "");
+  const [selectedDept, setSelectedDept] = useState<string>(
+    departments.find((d) => d.abbrev === program?.departmentAbbrev)?.name ?? ""
+  );
   const [lengthYears, setLengthYears] = useState(program?.lengthYears ?? 1);
   const isEdit = Boolean(program);
+  const hasDepartments = departments.length > 0;
 
   useEffect(() => {
     enumService
       .getOptions()
       .then((options) => {
         setDegreeTypes(options.degreeType);
-        setSelectedType((current) => current || program?.type || options.degreeType[0] || "");
       })
       .catch(() => {});
   }, [program]);
@@ -37,10 +41,11 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const departmentName = String(data.get("prog-department") ?? "");
+    const departmentName = String(data.get("prog-department") ?? selectedDept ?? "").trim();
     const abbrev = String(data.get("prog-abbrev") ?? "").trim().toUpperCase();
     const name = String(data.get("prog-name") ?? "").trim();
-    const type = String(data.get("prog-type") ?? "");
+    const type = String(data.get("prog-type") ?? selectedType ?? "").trim();
+
     const result = programSchema.safeParse({ departmentName, abbrev, name, type, lengthYears });
     if (!result.success) {
       setError(result.error.issues[0].message);
@@ -57,32 +62,42 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
     }
   }
 
-  const defaultDeptName =
-    departments.find((d) => d.abbrev === program?.departmentAbbrev)?.name ??
-    departments[0]?.name ??
-    "";
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
+
       <FieldChrome id="prog-department" label="Department">
-        <Select
-          items={departments.map((d) => ({ value: d.name, label: `${d.abbrev} — ${d.name}` }))}
-          name="prog-department"
-          defaultValue={defaultDeptName}
-        >
-          <SelectTrigger id="prog-department">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {departments.map((d) => (
-              <SelectItem key={d.id} value={d.name}>
-                {d.abbrev} — {d.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {hasDepartments ? (
+          <Select
+            items={departments.map((d) => ({ value: d.name, label: `${d.abbrev} — ${d.name}` }))}
+            name="prog-department"
+            value={selectedDept || null}
+            onValueChange={(v) => setSelectedDept((v as string) ?? "")}
+          >
+            <SelectTrigger id="prog-department">
+              <SelectValue placeholder="Select department…" />
+            </SelectTrigger>
+            <SelectContent>
+              {departments.map((d) => (
+                <SelectItem key={d.id} value={d.name}>
+                  {d.abbrev} — {d.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+            <p className="font-medium text-navy-800 dark:text-mist-100">No departments available</p>
+            <p>
+              You need to configure at least one academic department first.{" "}
+              <Link to="/departments" className="font-semibold text-blue-600 underline hover:text-blue-500 dark:text-blue-400">
+                Go to Departments
+              </Link>
+            </p>
+          </div>
+        )}
       </FieldChrome>
+
       <div className="grid grid-cols-2 gap-3">
         <Input
           id="prog-abbrev"
@@ -95,15 +110,15 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
             event.currentTarget.value = event.currentTarget.value.toUpperCase();
           }}
         />
-          <FieldChrome id="prog-type" label="Type">
-            <Select
+        <FieldChrome id="prog-type" label="Type">
+          <Select
             items={degreeTypes.map((t) => ({ value: t, label: t }))}
             name="prog-type"
-            value={selectedType}
-            onValueChange={(v) => setSelectedType(v as string)}
+            value={selectedType || null}
+            onValueChange={(v) => setSelectedType((v as string) ?? "")}
           >
             <SelectTrigger id="prog-type">
-              <SelectValue />
+              <SelectValue placeholder="Select program type…" />
             </SelectTrigger>
             <SelectContent>
               {degreeTypes.map((t) => (
@@ -115,29 +130,40 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           </Select>
         </FieldChrome>
       </div>
+
       <Input
         id="prog-name"
         label="Program Name"
         required
         defaultValue={program?.name ?? ""}
       />
-      <FieldChrome id="prog-years" label="Length (Years)">
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="prog-years" className="font-body text-xs font-semibold text-navy-800 dark:text-mist-100">
+          Program Length (Years)
+        </label>
         <input
           id="prog-years"
-          name="prog-years"
           type="number"
-          value={lengthYears}
           min={1}
-          onChange={(e) => setLengthYears(Number(e.target.value))}
+          max={10}
+          value={lengthYears}
+          onChange={(e) => setLengthYears(Math.max(1, Number(e.target.value)))}
           className={inputClassName}
         />
-      </FieldChrome>
+      </div>
+
       <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
           Cancel
         </Button>
-        <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-          {isEdit ? "Save Changes" : "Add Program"}
+        <Button
+          block={false}
+          disabled={!hasDepartments || isLoading}
+          isLoading={isLoading}
+          loadingLabel="Saving…"
+        >
+          {isEdit ? "Save Changes" : "Create Program"}
         </Button>
       </ModalActions>
     </form>
