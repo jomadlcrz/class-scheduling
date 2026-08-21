@@ -235,6 +235,7 @@ export type InstructorScheduleResponse = {
   deanDecisionNote: string | null;
   registrarDecisionNote: string | null;
   createdAt: string;
+  respondedAt: string | null;
   meetings: ProposedScheduleMeeting[];
 };
 
