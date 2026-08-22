@@ -21,7 +21,7 @@ const LINKS = [
     href: "/contact-us",
     icon: MailIcon,
     title: "Contact Us",
-    description: "Reach the GWC IT Office or Registrar's Office for account access and support.",
+    description: "Reach the Office of the Registrar for account access and support.",
   },
 ];
 
@@ -41,9 +41,14 @@ export default function Help() {
         </div>
 
         <main className="relative z-10 mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-          <p className="font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
-            What do you need help with?
-          </p>
+          <section aria-labelledby="help-guidance">
+            <h2 id="help-guidance" className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
+              How can we help?
+            </h2>
+            <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
+              What do you need help with?
+            </p>
+          </section>
 
           <div className="mt-6 flex flex-col gap-4">
             {LINKS.map(({ href, icon: Icon, title, description }) => (

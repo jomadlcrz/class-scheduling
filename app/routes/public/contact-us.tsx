@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { ClockIcon, FacebookIcon, MailIcon, MapPinIcon, PhoneIcon } from "~/components/ui/icons";
-import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
+import { SiteHeader } from "~/landing/site-header";
 
 export function meta() {
   return [
@@ -15,12 +15,12 @@ const SECTIONS = [
   {
     id: "technical-support",
     heading: "Technical Support",
-    body: "Having trouble signing in, or something on the platform isn't working as expected? Reach the GWC IT Office through the official institutional channels listed on the Golden West Colleges, Inc. website.",
+    body: "Having trouble signing in, or something on the platform isn't working as expected? Contact the Office of the Registrar through the official institutional channels listed on the Golden West Colleges, Inc. website.",
   },
   {
     id: "account-access",
     heading: "Account & Access",
-    body: "Accounts are issued by your school's administrator or registrar. If you're expecting access to GWC Class Scheduling and haven't received your login credentials, contact the GWC IT Office or the Office of the Registrar.",
+    body: "Accounts are issued by your school's administrator or registrar. If you're expecting access to GWC Class Scheduling and haven't received your login credentials, contact the Office of the Registrar.",
   },
   {
     id: "general-inquiries",
@@ -55,25 +55,26 @@ export default function ContactUs() {
         </div>
 
         <main className="relative z-10 mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="rounded-sm border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-surface-overlay/60">
-            <div className="border-b border-slate-200 px-8 py-8 dark:border-white/10 sm:px-12">
-              <p className="font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
-                Here's who to reach out to depending on what you need help with.
-              </p>
-            </div>
+          <section aria-labelledby="contact-guidance" className="pb-8">
+            <h2 id="contact-guidance" className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
+              How can we help?
+            </h2>
+            <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
+              Here's who to reach out to depending on what you need help with.
+            </p>
+          </section>
 
-            <div className="divide-y divide-slate-100 px-8 dark:divide-white/5 sm:px-12">
-              {SECTIONS.map((s) => (
-                <section key={s.id} id={s.id} className="scroll-mt-24 py-8">
-                  <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
-                    {s.heading}
-                  </h2>
-                  <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
-                    {s.body}
-                  </p>
-                </section>
-              ))}
-            </div>
+          <div className="divide-y divide-slate-200 border-t border-slate-200 dark:divide-white/10 dark:border-white/10">
+            {SECTIONS.map((s) => (
+              <section key={s.id} id={s.id} className="scroll-mt-24 py-8">
+                <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
+                  {s.heading}
+                </h2>
+                <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
+                  {s.body}
+                </p>
+              </section>
+            ))}
           </div>
         </main>
 
@@ -93,9 +94,6 @@ function GetInTouch() {
           <h2 className="font-display text-4xl tracking-wide text-navy-700 dark:text-mist-100 sm:text-5xl">
             Get in Touch
           </h2>
-          <p className="mx-auto mt-3 max-w-lg font-body text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Connect with Golden West Colleges through the details below.
-          </p>
         </div>
 
         <div className="mt-10 grid gap-8 sm:grid-cols-2 xl:grid-cols-4">

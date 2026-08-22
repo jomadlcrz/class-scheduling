@@ -23,7 +23,7 @@ const SECTIONS = [
   {
     id: "data-retention",
     heading: "Data Retention",
-    body: "Account and scheduling data is retained for as long as your account remains active. You may request deletion of your account and associated data by contacting the GWC IT Office. Certain records may be retained for a limited period to comply with institutional audit requirements.",
+    body: "Account and scheduling data is retained for as long as your account remains active. You may request deletion of your account and associated data by contacting the Office of the Registrar. Certain records may be retained for a limited period to comply with institutional audit requirements.",
   },
   {
     id: "cookies",
@@ -43,7 +43,7 @@ const SECTIONS = [
   {
     id: "contact",
     heading: "Contact",
-    body: "Questions about this Privacy Policy can be directed to the GWC IT Office through the official institutional channels listed on the Golden West Colleges, Inc. website.",
+    body: "Questions about this Privacy Policy can be directed to the Office of the Registrar through the official institutional channels listed on the Golden West Colleges, Inc. website.",
   },
 ];
 
@@ -63,26 +63,28 @@ export default function PrivacyPolicy() {
         </div>
 
         <main className="relative z-10 mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="rounded-sm border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-surface-overlay/60">
-            <div className="border-b border-slate-200 px-8 py-8 dark:border-white/10 sm:px-12">
-              <p className="font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
-                This Privacy Policy describes how GWC Class Scheduling collects, uses, and protects
-                information about users of the scheduling platform operated by Golden West Colleges,
-                Inc..
-              </p>
-            </div>
-            <div className="divide-y divide-slate-100 px-8 dark:divide-white/5 sm:px-12">
-              {SECTIONS.map((s) => (
-                <section key={s.id} id={s.id} className="scroll-mt-24 py-8">
-                  <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
-                    {s.heading}
-                  </h2>
-                  <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
-                    {s.body}
-                  </p>
-                </section>
-              ))}
-            </div>
+          <section aria-labelledby="privacy-introduction" className="pb-8">
+            <h2 id="privacy-introduction" className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
+              Your privacy
+            </h2>
+            <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
+              This Privacy Policy describes how GWC Class Scheduling collects, uses, and protects
+              information about users of the scheduling platform operated by Golden West Colleges,
+              Inc..
+            </p>
+          </section>
+
+          <div className="divide-y divide-slate-200 border-t border-slate-200 dark:divide-white/10 dark:border-white/10">
+            {SECTIONS.map((s) => (
+              <section key={s.id} id={s.id} className="scroll-mt-24 py-8">
+                <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
+                  {s.heading}
+                </h2>
+                <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
+                  {s.body}
+                </p>
+              </section>
+            ))}
           </div>
         </main>
 

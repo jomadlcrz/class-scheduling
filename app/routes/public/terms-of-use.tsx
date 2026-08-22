@@ -18,12 +18,12 @@ const SECTIONS = [
   {
     id: "authorized-use",
     heading: "Authorized Use",
-    body: "GWC Class Scheduling is provided exclusively for creating, managing, and publishing academic timetables for Golden West Colleges, Inc.. Access is limited to individuals with valid institutional credentials issued by the GWC IT Office. Sharing credentials with unauthorized persons is prohibited.",
+    body: "GWC Class Scheduling is provided exclusively for creating, managing, and publishing academic timetables for Golden West Colleges, Inc.. Access is limited to individuals with valid institutional credentials issued by the Office of the Registrar. Sharing credentials with unauthorized persons is prohibited.",
   },
   {
     id: "account-responsibilities",
     heading: "Account Responsibilities",
-    body: "You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account. Notify the GWC IT Office immediately if you suspect unauthorized access. GWC is not liable for loss or damage arising from your failure to protect your credentials.",
+    body: "You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account. Notify the Office of the Registrar immediately if you suspect unauthorized access. GWC is not liable for loss or damage arising from your failure to protect your credentials.",
   },
   {
     id: "prohibited-activities",
@@ -58,7 +58,7 @@ const SECTIONS = [
   {
     id: "contact",
     heading: "Contact",
-    body: "Questions regarding these Terms of Use should be directed to the GWC IT Office or the Office of the Registrar through official institutional channels listed on the Golden West Colleges, Inc. website.",
+    body: "Questions regarding these Terms of Use should be directed to the Office of the Registrar through official institutional channels listed on the Golden West Colleges, Inc. website.",
   },
 ];
 
@@ -78,26 +78,28 @@ export default function TermsOfUse() {
         </div>
 
         <main className="relative z-10 mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="rounded-sm border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-surface-overlay/60">
-            <div className="border-b border-slate-200 px-8 py-8 dark:border-white/10 sm:px-12">
-              <p className="font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
-                These Terms of Use govern your access to and use of GWC Class Scheduling, a timetable
-                management platform operated by Golden West Colleges, Inc.. Please read them
-                carefully.
-              </p>
-            </div>
-            <div className="divide-y divide-slate-100 px-8 dark:divide-white/5 sm:px-12">
-              {SECTIONS.map((s) => (
-                <section key={s.id} id={s.id} className="scroll-mt-24 py-8">
-                  <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
-                    {s.heading}
-                  </h2>
-                  <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
-                    {s.body}
-                  </p>
-                </section>
-              ))}
-            </div>
+          <section aria-labelledby="terms-introduction" className="pb-8">
+            <h2 id="terms-introduction" className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
+              Using the system
+            </h2>
+            <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
+              These Terms of Use govern your access to and use of GWC Class Scheduling, a timetable
+              management platform operated by Golden West Colleges, Inc.. Please read them
+              carefully.
+            </p>
+          </section>
+
+          <div className="divide-y divide-slate-200 border-t border-slate-200 dark:divide-white/10 dark:border-white/10">
+            {SECTIONS.map((s) => (
+              <section key={s.id} id={s.id} className="scroll-mt-24 py-8">
+                <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
+                  {s.heading}
+                </h2>
+                <p className="mt-3 font-body text-sm leading-7 text-slate-600 dark:text-slate-300">
+                  {s.body}
+                </p>
+              </section>
+            ))}
           </div>
         </main>
 
