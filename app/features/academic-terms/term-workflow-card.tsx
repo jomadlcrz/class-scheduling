@@ -113,9 +113,12 @@ export function TermWorkflowCard({ onChanged, refreshKey = 0 }: TermWorkflowCard
   return (
     <>
       <Card className="overflow-hidden">
-        <div className="border-b border-slate-100 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/3">
+        <div className="border-b border-slate-100 bg-linear-to-br from-white to-slate-50/80 px-5 py-5 dark:border-white/10 dark:from-white/5 dark:to-white/2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
+              <p className="font-body text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gold-600 dark:text-gold-300">
+                Guided workflow
+              </p>
               <h2 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 Academic year workflow
               </h2>

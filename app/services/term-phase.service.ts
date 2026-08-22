@@ -14,6 +14,11 @@ async function getTermPhase(syId: number, semesterNumber: number): Promise<TermP
   return apiGet<TermPhaseResponse>(`/scheduling-terms/${syId}/${semesterNumber}`);
 }
 
+/** GET /scheduling-terms/current — the active running term's calendar. */
+async function getCurrentTermPhase(): Promise<TermPhaseResponse> {
+  return apiGet<TermPhaseResponse>("/scheduling-terms/current");
+}
+
 /** GET /registrar/scheduling-terms/{syId}/{semesterNumber}/readiness — term distribution readiness. */
 async function getDistributionReadiness(
   syId: number,
@@ -186,6 +191,7 @@ async function previewResolution(
 
 export const termPhaseService = {
   getTermPhase,
+  getCurrentTermPhase,
   getDistributionReadiness,
   getDepartmentReadiness,
   sendProgram,

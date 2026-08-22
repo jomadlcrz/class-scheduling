@@ -88,18 +88,46 @@ export function TermCalendarPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
 
-  // Default selection
+  // Initial selection: ask the backend which term is running
   useEffect(() => {
-    if (selectedSchoolYearId || schoolYears.length === 0) return;
-    const match = schoolYears.find((s) => s.schoolYear === defaultSchoolYear) ?? schoolYears[0];
-    if (match) setSelectedSchoolYearId(String(match.id));
-  }, [schoolYears, defaultSchoolYear, selectedSchoolYearId]);
+    if (selectedSchoolYearId && selectedSemesterNumber) return;
+    let cancelled = false;
 
-  useEffect(() => {
-    if (selectedSemesterNumber || semesters.length === 0) return;
-    const first = semesters.find((s) => s.semesterNumber !== 3) ?? semesters[0];
-    if (first) setSelectedSemesterNumber(String(first.semesterNumber));
-  }, [semesters, selectedSemesterNumber]);
+    termPhaseService
+      .getCurrentTermPhase()
+      .then((res) => {
+        if (cancelled) return;
+        if (res.syId && res.semesterNumber) {
+          if (!selectedSchoolYearId) setSelectedSchoolYearId(String(res.syId));
+          if (!selectedSemesterNumber) setSelectedSemesterNumber(String(res.semesterNumber));
+        } else {
+          // Fallback to local selector defaults
+          if (!selectedSchoolYearId && schoolYears.length > 0) {
+            const match = schoolYears.find((s) => s.schoolYear === defaultSchoolYear) ?? schoolYears[0];
+            if (match) setSelectedSchoolYearId(String(match.id));
+          }
+          if (!selectedSemesterNumber && semesters.length > 0) {
+            const first = semesters.find((s) => s.semesterNumber !== 3) ?? semesters[0];
+            if (first) setSelectedSemesterNumber(String(first.semesterNumber));
+          }
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        if (!selectedSchoolYearId && schoolYears.length > 0) {
+          const match = schoolYears.find((s) => s.schoolYear === defaultSchoolYear) ?? schoolYears[0];
+          if (match) setSelectedSchoolYearId(String(match.id));
+        }
+        if (!selectedSemesterNumber && semesters.length > 0) {
+          const first = semesters.find((s) => s.semesterNumber !== 3) ?? semesters[0];
+          if (first) setSelectedSemesterNumber(String(first.semesterNumber));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [schoolYears, defaultSchoolYear, semesters, selectedSchoolYearId, selectedSemesterNumber]);
 
   const syId = selectedSchoolYearId ? Number(selectedSchoolYearId) : null;
   const semesterNumber = selectedSemesterNumber ? Number(selectedSemesterNumber) : null;

@@ -41,17 +41,20 @@ export type TermPhaseItem = {
 };
 
 export type TermPhaseResponse = {
-  syId: number;
-  semesterNumber: number;
+  syId: number | null;
+  semesterNumber: number | null;
+  schoolYear: string | null;
+  semesterName: string | null;
+  termLabel: string | null;
   phase: TermSchedulingPhase;
   phaseLabel: string;
-  storedPhase: TermSchedulingPhase;
+  storedPhase: TermSchedulingPhase | null;
   governed: boolean;
   majorsDueAt: string | null;
   suggestionsDueAt: string | null;
   majorsDeadlinePassed: boolean;
   suggestionsDeadlinePassed: boolean;
-  phases?: TermPhaseItem[];
+  phases: TermPhaseItem[];
   distributedAt: string | null;
   resolvedAt: string | null;
   finalizedAt: string | null;

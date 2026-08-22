@@ -93,7 +93,6 @@ export function TermClosurePage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title="Term Closure"
-
         actions={
           <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
             <HelpCircleIcon />
@@ -106,12 +105,15 @@ export function TermClosurePage() {
         <TermWorkflowCard onChanged={refresh} refreshKey={workflowRevision} />
       </div>
 
-      <section className="mt-10" aria-labelledby="closure-history-heading">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <section className="mt-8" aria-labelledby="closure-history-heading">
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-4 dark:border-white/10">
           <div>
+            <p className="font-body text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gold-600 dark:text-gold-300">
+              Audit trail
+            </p>
             <h2
               id="closure-history-heading"
-              className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100"
+              className="mt-1 font-display text-xl tracking-wide text-navy-700 dark:text-mist-100"
             >
               Closure history
             </h2>
@@ -119,7 +121,7 @@ export function TermClosurePage() {
               Registrar-posted terms.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2" aria-label="Filter closure history">
             <FilterDropdown
               label="School Year"
               allLabel="All years"

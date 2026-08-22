@@ -35,17 +35,17 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!syId || !semesterNumber) {
-      setPhaseData(null);
-      return;
-    }
     let cancelled = false;
     setLoading(true);
 
-    termPhaseService
-      .getTermPhase(syId, semesterNumber)
+    const fetcher =
+      syId && semesterNumber
+        ? termPhaseService.getTermPhase(syId, semesterNumber)
+        : termPhaseService.getCurrentTermPhase();
+
+    fetcher
       .then((data) => {
-        if (!cancelled) setPhaseData(data);
+        if (!cancelled) setPhaseData(data.syId ? data : null);
       })
       .catch(() => {
         if (!cancelled) setPhaseData(null);
@@ -114,7 +114,7 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
         <div className="flex items-center gap-2.5">
           <span className="flex h-2.5 w-2.5 rounded-full bg-sky-500 ring-4 ring-sky-200 dark:ring-sky-900" />
           <span className="text-sm font-semibold text-navy-800 dark:text-mist-100">
-            Term Phase: {phaseLabel}
+            {phaseData.termLabel ? `${phaseData.termLabel} · ${phaseLabel}` : `Term Phase: ${phaseLabel}`}
           </span>
           <Badge tone="navy">
             Governed
