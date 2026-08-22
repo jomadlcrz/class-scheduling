@@ -55,6 +55,7 @@ function MajorSchedulesPage() {
   const [decisionTarget, setDecisionTarget] = useState<DecisionTarget | null>(null);
   const [conflicts, setConflicts] = useState<MajorScheduleConflict[] | null>(null);
   const [floatingTarget, setFloatingTarget] = useState<MajorSchedule | null>(null);
+  const [reopenTarget, setReopenTarget] = useState<MajorScheduleSubmission | null>(null);
   const [submissionDetail, setSubmissionDetail] = useState<MajorScheduleSubmission | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -167,11 +168,90 @@ function MajorSchedulesPage() {
                 {user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.submitMajorSchedule(submission.id))}>Submit</Button>}
                 {user?.role === "dean" && ["submitted", "finalized"].includes(submission.status) && <Button type="button" variant="outline" block={false} onClick={() => { setEditRequestTarget(submission); setFormError(null); }}>Request Edit</Button>}
                 {user?.role === "registrar" && submission.status === "submitted" && <><Button type="button" variant="outline" block={false} onClick={() => void openRequirements(submission.id)}>Requirements</Button><Button type="button" variant="outline" block={false} onClick={async () => { setFormError(null); try { const result = await authorityWorkflowService.getMajorScheduleConflicts(submission.id); setConflicts(result.conflicts); if (result.message) toast.success(result.message); } catch (err) { setFormError(err instanceof Error ? err.message : ""); } }}>Check Conflicts</Button><Button type="button" block={false} onClick={() => void withRefresh(() => authorityWorkflowService.finalizeMajorSchedule(submission.id))}>Finalize</Button></>}
+                {user?.role === "registrar" && submission.status === "finalized" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    onClick={() => {
+                      setReopenTarget(submission);
+                      setFormError(null);
+                    }}
+                  >
+                    Reopen
+                  </Button>
+                )}
               </div>
             </div>
             <Table>
-              <TableHead><TableHeader>Subject</TableHeader><TableHeader>Section</TableHeader><TableHeader>Schedule</TableHeader><TableHeader>Instructor</TableHeader><TableHeader>Status</TableHeader><TableHeader><span className="sr-only">Actions</span></TableHeader></TableHead>
-              <TableBody>{submission.schedules.map((schedule) => <TableRow key={schedule.id}><TableCell><span className="font-semibold text-navy-700 dark:text-mist-100">{schedule.subjectCode}</span><span className="block text-xs text-slate-400">{schedule.subjectTitle}</span></TableCell><TableCell>{schedule.setName}</TableCell><TableCell>{schedule.dayOfWeek} · {schedule.startTime}–{schedule.endTime}</TableCell><TableCell>{schedule.instructorDisplay}</TableCell><TableCell><Badge tone={schedule.floating ? "gold" : "emerald"}>{schedule.floating ? "Floating" : schedule.meetingKind}</Badge></TableCell><TableCell><div className="flex justify-end gap-2">{((user?.role === "dean" && ["draft", "reopened"].includes(submission.status)) || (user?.role === "registrar" && submission.status === "submitted")) && <Button type="button" variant="outline" block={false} onClick={() => { setEditTarget(schedule); setMeetingOpen(true); setFormError(null); }}>Edit</Button>}{user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && <Button type="button" variant="danger" block={false} onClick={() => setDeleteTarget(schedule)}>Delete</Button>}{user?.role === "registrar" && schedule.floating && <Button type="button" block={false} onClick={() => { setFloatingTarget(schedule); setFloatingInstructorId(0); setFormError(null); }}>Assign Instructor</Button>}</div></TableCell></TableRow>)}</TableBody>
+              <TableHead>
+                <TableHeader>Subject</TableHeader>
+                <TableHeader>Section</TableHeader>
+                <TableHeader>Schedule</TableHeader>
+                <TableHeader>Instructor</TableHeader>
+                <TableHeader>Status</TableHeader>
+                <TableHeader><span className="sr-only">Actions</span></TableHeader>
+              </TableHead>
+              <TableBody>
+                {submission.schedules.map((schedule) => (
+                  <TableRow key={schedule.id}>
+                    <TableCell>
+                      <span className="font-semibold text-navy-700 dark:text-mist-100">{schedule.subjectCode}</span>
+                      <span className="block text-xs text-slate-400">{schedule.subjectTitle}</span>
+                    </TableCell>
+                    <TableCell>{schedule.setName}</TableCell>
+                    <TableCell>{schedule.dayOfWeek} · {schedule.startTime}–{schedule.endTime}</TableCell>
+                    <TableCell>{schedule.instructorDisplay}</TableCell>
+                    <TableCell>
+                      <Badge tone={schedule.floating ? "gold" : "emerald"}>
+                        {schedule.floating ? "Floating" : schedule.meetingKind}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        {((user?.role === "dean" && ["draft", "reopened"].includes(submission.status)) ||
+                          (user?.role === "registrar" && submission.status === "submitted")) && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            block={false}
+                            onClick={() => {
+                              setEditTarget(schedule);
+                              setMeetingOpen(true);
+                              setFormError(null);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        )}
+                        {user?.role === "dean" && ["draft", "reopened"].includes(submission.status) && (
+                          <Button
+                            type="button"
+                            variant="danger"
+                            block={false}
+                            onClick={() => setDeleteTarget(schedule)}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                        {user?.role === "registrar" && schedule.floating && (
+                          <Button
+                            type="button"
+                            block={false}
+                            onClick={() => {
+                              setFloatingTarget(schedule);
+                              setFloatingInstructorId(0);
+                              setFormError(null);
+                            }}
+                          >
+                            Assign Instructor
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
           </section>
         ))}
@@ -217,6 +297,37 @@ function MajorSchedulesPage() {
       <Modal open={decisionTarget !== null} onClose={() => setDecisionTarget(null)} title={`${decisionTarget?.approve ? "Approve" : "Reject"} Edit Request`}><form onSubmit={async (event) => { event.preventDefault(); const note = String(new FormData(event.currentTarget).get("note") ?? ""); const ok = await withRefresh(() => authorityWorkflowService.decideMajorScheduleEdit(decisionTarget!.request.id, decisionTarget!.approve, note || undefined)); if (ok) setDecisionTarget(null); }} className="space-y-4"><FormError message={formError} /><Textarea id="note" name="note" label="Decision note" /><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setDecisionTarget(null)}>Cancel</Button><Button type="submit" variant={decisionTarget?.approve ? "primary" : "danger"} block={false} isLoading={saving} loadingLabel="Saving…">Confirm</Button></ModalActions></form></Modal>
       <Modal open={conflicts !== null} onClose={() => setConflicts(null)} title="Submission Conflicts" wide>{conflicts?.length === 0 ? <EmptyState title="No conflicts">This submission is ready to finalize.</EmptyState> : <div className="space-y-2">{conflicts?.map((conflict) => <div key={`${conflict.scheduleId}:${conflict.conflictingScheduleId}`} className="border-b border-slate-200 pb-2 text-sm dark:border-white/10"><strong>{conflict.schedule.subjectCode}</strong> conflicts with <strong>{conflict.conflictingSchedule.subjectCode}</strong> ({conflict.conflictTypes.join(", ")}).</div>)}</div>}</Modal>
       <Modal open={floatingTarget !== null} onClose={() => setFloatingTarget(null)} title="Assign Floating Instructor"><form onSubmit={async (event) => { event.preventDefault(); if (!floatingInstructorId) { setFormError("Select an instructor."); return; } const ok = await withRefresh(() => authorityWorkflowService.assignFloatingInstructor(floatingTarget!.id, floatingInstructorId)); if (ok) setFloatingTarget(null); }} className="space-y-4" noValidate><FormError message={formError} /><FieldChrome id="floating-instructor" label="Instructor" required><Select items={(instructors ?? []).map((instructor) => ({ value: String(instructor.instructorProfileId), label: `${instructor.firstName} ${instructor.lastName}` }))} value={floatingInstructorId ? String(floatingInstructorId) : ""} onValueChange={(value) => setFloatingInstructorId(Number(value))}><SelectTrigger id="floating-instructor"><SelectValue placeholder="Select instructor" /></SelectTrigger><SelectContent>{(instructors ?? []).map((instructor) => <SelectItem key={instructor.instructorProfileId} value={String(instructor.instructorProfileId)}>{instructor.firstName} {instructor.lastName}</SelectItem>)}</SelectContent></Select></FieldChrome><ModalActions><Button type="button" variant="outline" block={false} onClick={() => setFloatingTarget(null)}>Cancel</Button><Button type="submit" block={false} isLoading={saving} loadingLabel="Assigning…" disabled={!floatingInstructorId}>Assign Instructor</Button></ModalActions></form></Modal>
+      <Modal open={reopenTarget !== null} onClose={() => setReopenTarget(null)} title={`Reopen Finalized Submission (${reopenTarget?.departmentAbbrev ?? ""})`}>
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault();
+            const reason = String(new FormData(event.currentTarget).get("reason") ?? "").trim();
+            if (reason.length < 10) {
+              setFormError("Please provide an explanation of at least 10 characters.");
+              return;
+            }
+            const ok = await withRefresh(() =>
+              authorityWorkflowService.reopenFinalizedMajorSchedule(reopenTarget!.id, reason)
+            );
+            if (ok) setReopenTarget(null);
+          }}
+          className="space-y-4"
+        >
+          <FormError message={formError} />
+          <p className="font-body text-xs text-slate-500 dark:text-slate-400">
+            Reopening this finalized major schedule will unprotect its meetings and return the submission to Registrar control. Please provide an explanation.
+          </p>
+          <Textarea id="reopen-reason" name="reason" label="Reason for reopening" required minLength={10} />
+          <ModalActions>
+            <Button type="button" variant="outline" block={false} onClick={() => setReopenTarget(null)}>
+              Cancel
+            </Button>
+            <Button type="submit" block={false} isLoading={saving} loadingLabel="Reopening…">
+              Reopen Submission
+            </Button>
+          </ModalActions>
+        </form>
+      </Modal>
     </div>
   );
 }

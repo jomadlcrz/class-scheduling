@@ -174,8 +174,19 @@ async function listMajorScheduleAuditLogs(params: {
   return apiGet<MajorScheduleAuditLogResult>(`/major-schedule-audit-logs${query.size ? `?${query}` : ""}`);
 }
 
-async function finalizeMajorSchedule(submissionId: number) {
-  const data = await apiPost<MessageResponse & { submission: { id: number; status: string } }>(`/registrar/major-schedule-submissions/${submissionId}/finalize`);
+async function finalizeMajorSchedule(submissionId: number, reason: string = "Approved and protected by Registrar.") {
+  const data = await apiPost<MessageResponse & { submission: { id: number; status: string } }>(
+    `/registrar/major-schedule-submissions/${submissionId}/finalize`,
+    { reason },
+  );
+  return { message: apiMessage(data), submission: data.submission };
+}
+
+async function reopenFinalizedMajorSchedule(submissionId: number, reason: string) {
+  const data = await apiPost<MessageResponse & { submission: { id: number; status: string } }>(
+    `/registrar/major-schedule-submissions/${submissionId}/reopen`,
+    { reason },
+  );
   return { message: apiMessage(data), submission: data.submission };
 }
 
@@ -298,6 +309,7 @@ export const authorityWorkflowService = {
   getMajorScheduleRequirements,
   listMajorScheduleAuditLogs,
   finalizeMajorSchedule,
+  reopenFinalizedMajorSchedule,
   respondToInstructorSchedule,
   listInstructorScheduleResponses,
   decideInstructorScheduleResponse,
