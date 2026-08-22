@@ -271,6 +271,15 @@ async function analyzeAdvancedAdjustment(responseId: number): Promise<import("~/
   );
 }
 
+/** POST /registrar/instructor-schedule-responses/{id}/apply-with-adjustments — apply suggestion by adjusting blocking classes. */
+async function applySuggestionWithAdjustments(responseId: number, note?: string): Promise<{ message: string; applied?: boolean }> {
+  const data = await apiPost<MessageResponse & { applied?: boolean }>(
+    `/registrar/instructor-schedule-responses/${responseId}/apply-with-adjustments`,
+    note ? { note } : undefined,
+  );
+  return { message: apiMessage(data), applied: data.applied };
+}
+
 export const authorityWorkflowService = {
   listAssignmentAuditLogs,
   listHoursAdjustmentRequests,
@@ -299,6 +308,7 @@ export const authorityWorkflowService = {
   suggestInstructorScheduleChange,
   analyzeInstructorSuggestion,
   applyInstructorSuggestion,
+  applySuggestionWithAdjustments,
   retainInitialSchedule,
   analyzeAdvancedAdjustment,
 };

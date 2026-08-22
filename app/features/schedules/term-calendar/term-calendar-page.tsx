@@ -77,7 +77,9 @@ export function TermCalendarPage() {
 
   // Deadlines Form State
   const [majorsDueAtInput, setMajorsDueAtInput] = useState("");
+  const [generationDueAtInput, setGenerationDueAtInput] = useState("");
   const [suggestionsDueAtInput, setSuggestionsDueAtInput] = useState("");
+  const [resolutionDueAtInput, setResolutionDueAtInput] = useState("");
   const [savingDeadlines, setSavingDeadlines] = useState(false);
 
   // Modals State
@@ -120,7 +122,9 @@ export function TermCalendarPage() {
       setDeptReadiness(deptRes);
       setResolution(resRun);
       setMajorsDueAtInput(toLocalDatetimeInput(phaseRes.majorsDueAt));
+      setGenerationDueAtInput(toLocalDatetimeInput(phaseRes.generationDueAt ?? null));
       setSuggestionsDueAtInput(toLocalDatetimeInput(phaseRes.suggestionsDueAt));
+      setResolutionDueAtInput(toLocalDatetimeInput(phaseRes.resolutionDueAt ?? null));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load term scheduling calendar.");
     } finally {
@@ -150,7 +154,9 @@ export function TermCalendarPage() {
     try {
       const payload = {
         majorsDueAt: majorsDueAtInput ? new Date(majorsDueAtInput).toISOString() : null,
+        generationDueAt: generationDueAtInput ? new Date(generationDueAtInput).toISOString() : null,
         suggestionsDueAt: suggestionsDueAtInput ? new Date(suggestionsDueAtInput).toISOString() : null,
+        resolutionDueAt: resolutionDueAtInput ? new Date(resolutionDueAtInput).toISOString() : null,
         discardGenerated: forceReopen ? discardGenerated : false,
       };
       const res = await termPhaseService.setDeadlines(syId, semesterNumber, payload);
@@ -174,6 +180,34 @@ export function TermCalendarPage() {
       await loadData();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to advance phase.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleRewindPhase() {
+    if (!syId || !semesterNumber) return;
+    setActionLoading(true);
+    try {
+      const res = await termPhaseService.rewindPhase(syId, semesterNumber);
+      toast.success(res.message || "Term phase rewound.");
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to step back phase.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleOpenPhase(phase: string) {
+    if (!syId || !semesterNumber) return;
+    setActionLoading(true);
+    try {
+      const res = await termPhaseService.openPhase(syId, semesterNumber, phase);
+      toast.success(res.message || `Reopened ${phase}.`);
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reopen phase.");
     } finally {
       setActionLoading(false);
     }
@@ -344,10 +378,22 @@ export function TermCalendarPage() {
               {TERM_SCHEDULING_PHASE_ORDER.map((stepPhase, idx) => {
                 const isCurrent = phaseData.phase === stepPhase;
                 const isPast = idx < currentPhaseIndex;
+                const phaseItem = phaseData.phases?.find((p) => p.phase === stepPhase);
+                const deadlineField =
+                  stepPhase === "major_scheduling"
+                    ? phaseData.majorsDueAt
+                    : stepPhase === "generation"
+                      ? phaseData.generationDueAt
+                      : stepPhase === "suggestion_window"
+                        ? phaseData.suggestionsDueAt
+                        : stepPhase === "resolution"
+                          ? phaseData.resolutionDueAt
+                          : null;
+
                 return (
                   <div
                     key={stepPhase}
-                    className={`flex flex-col rounded-lg border p-3 transition-colors ${
+                    className={`flex flex-col justify-between rounded-lg border p-3 transition-colors ${
                       isCurrent
                         ? "border-sky-500 bg-sky-50/50 ring-2 ring-sky-300 dark:border-sky-400 dark:bg-sky-950/30 dark:ring-sky-800"
                         : isPast
@@ -355,25 +401,44 @@ export function TermCalendarPage() {
                           : "border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-400">
-                        0{idx + 1}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-400">
+                          0{idx + 1}
+                        </span>
+                        {isCurrent && (
+                          <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+                        )}
+                      </div>
+                      <span
+                        className={`mt-2 block text-xs font-semibold ${
+                          isCurrent
+                            ? "text-sky-900 dark:text-sky-200"
+                            : isPast
+                              ? "line-through text-slate-400 dark:text-slate-500"
+                              : "text-navy-700 dark:text-mist-100"
+                        }`}
+                      >
+                        {TERM_SCHEDULING_PHASE_LABELS[stepPhase]}
                       </span>
-                      {isCurrent && (
-                        <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+
+                      {deadlineField && (
+                        <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+                          Due: {new Date(deadlineField).toLocaleDateString([], { month: "short", day: "numeric" })}
+                        </p>
                       )}
                     </div>
-                    <span
-                      className={`mt-2 text-xs font-semibold ${
-                        isCurrent
-                          ? "text-sky-900 dark:text-sky-200"
-                          : isPast
-                            ? "line-through text-slate-400 dark:text-slate-500"
-                            : "text-navy-700 dark:text-mist-100"
-                      }`}
-                    >
-                      {TERM_SCHEDULING_PHASE_LABELS[stepPhase]}
-                    </span>
+
+                    {isPast && (
+                      <button
+                        type="button"
+                        className="mt-2 text-left text-[11px] font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400"
+                        disabled={actionLoading}
+                        onClick={() => handleOpenPhase(stepPhase)}
+                      >
+                        Reopen Phase →
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -406,7 +471,7 @@ export function TermCalendarPage() {
                 Deadlines Control
               </h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Yours to set and change whenever you need to. Extending a lapsed deadline reopens that phase for every department.
+                Every gating phase has its own deadline. Extending a lapsed deadline reopens that phase for all departments.
               </p>
             </div>
 
@@ -414,7 +479,7 @@ export function TermCalendarPage() {
               <div>
                 <Input
                   id="majors-due"
-                  label="Major Scheduling Deadline"
+                  label="1. Major Scheduling Deadline"
                   type="datetime-local"
                   value={majorsDueAtInput}
                   onChange={(e) => setMajorsDueAtInput(e.target.value)}
@@ -424,7 +489,7 @@ export function TermCalendarPage() {
                     Currently: {new Date(phaseData.majorsDueAt).toLocaleString()} ({formatCountdown(phaseData.majorsDueAt, phaseData.serverTime)})
                     {phaseData.majorsDeadlinePassed && (
                       <span className="ml-2 font-medium text-amber-600 dark:text-amber-400">
-                        ⚠ Deadline has passed. A later date reopens it.
+                        ⚠ Lapsed. Later date reopens it.
                       </span>
                     )}
                   </p>
@@ -433,8 +498,23 @@ export function TermCalendarPage() {
 
               <div>
                 <Input
+                  id="generation-due"
+                  label="2. Generation Deadline"
+                  type="datetime-local"
+                  value={generationDueAtInput}
+                  onChange={(e) => setGenerationDueAtInput(e.target.value)}
+                />
+                {phaseData.generationDueAt && (
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Currently: {new Date(phaseData.generationDueAt).toLocaleString()} ({formatCountdown(phaseData.generationDueAt, phaseData.serverTime)})
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Input
                   id="suggestions-due"
-                  label="Suggestions Deadline"
+                  label="3. Suggestions Window Deadline"
                   type="datetime-local"
                   value={suggestionsDueAtInput}
                   onChange={(e) => setSuggestionsDueAtInput(e.target.value)}
@@ -444,9 +524,24 @@ export function TermCalendarPage() {
                     Currently: {new Date(phaseData.suggestionsDueAt).toLocaleString()} ({formatCountdown(phaseData.suggestionsDueAt, phaseData.serverTime)})
                     {phaseData.suggestionsDeadlinePassed && (
                       <span className="ml-2 font-medium text-amber-600 dark:text-amber-400">
-                        ⚠ Deadline has passed. A later date reopens it.
+                        ⚠ Lapsed. Later date reopens it.
                       </span>
                     )}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Input
+                  id="resolution-due"
+                  label="4. Resolution Deadline"
+                  type="datetime-local"
+                  value={resolutionDueAtInput}
+                  onChange={(e) => setResolutionDueAtInput(e.target.value)}
+                />
+                {phaseData.resolutionDueAt && (
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Currently: {new Date(phaseData.resolutionDueAt).toLocaleString()} ({formatCountdown(phaseData.resolutionDueAt, phaseData.serverTime)})
                   </p>
                 )}
               </div>
@@ -459,7 +554,9 @@ export function TermCalendarPage() {
                 block={false}
                 onClick={() => {
                   setMajorsDueAtInput(toLocalDatetimeInput(phaseData.majorsDueAt));
+                  setGenerationDueAtInput(toLocalDatetimeInput(phaseData.generationDueAt ?? null));
                   setSuggestionsDueAtInput(toLocalDatetimeInput(phaseData.suggestionsDueAt));
+                  setResolutionDueAtInput(toLocalDatetimeInput(phaseData.resolutionDueAt ?? null));
                 }}
               >
                 Reset
@@ -717,13 +814,13 @@ export function TermCalendarPage() {
             )}
           </Card>
 
-          {/* Card 5: Advance Phase Actions */}
+          {/* Card 5: Stage Movement Actions */}
           <Card className="p-6">
             <h2 className="text-base font-semibold text-navy-800 dark:text-mist-100">
-              Move the Term Forward
+              Term Stage Controls
             </h2>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Advance the term manually to its next stage when ready.
+              Move the term forward or step back to the previous phase when adjustments are needed.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -739,30 +836,64 @@ export function TermCalendarPage() {
               )}
 
               {phaseData.phase === "generation" && (
-                <Button
-                  type="button"
-                  block={false}
-                  disabled={!readiness?.isReady || actionLoading}
-                  isLoading={actionLoading}
-                  onClick={() => handleAdvancePhase("distribute")}
-                >
-                  Distribute Term Schedules
-                </Button>
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    disabled={actionLoading}
+                    isLoading={actionLoading}
+                    onClick={handleRewindPhase}
+                  >
+                    ← Step Back to Major Scheduling
+                  </Button>
+                  <Button
+                    type="button"
+                    block={false}
+                    disabled={!readiness?.isReady || actionLoading}
+                    isLoading={actionLoading}
+                    onClick={() => handleAdvancePhase("distribute")}
+                  >
+                    Distribute Term Schedules
+                  </Button>
+                </>
               )}
 
               {phaseData.phase === "suggestion_window" && (
-                <Button
-                  type="button"
-                  block={false}
-                  isLoading={actionLoading}
-                  onClick={() => handleAdvancePhase("resolve")}
-                >
-                  Close Window &amp; Resolve Suggestions
-                </Button>
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    disabled={actionLoading}
+                    isLoading={actionLoading}
+                    onClick={handleRewindPhase}
+                  >
+                    ← Step Back to Generation
+                  </Button>
+                  <Button
+                    type="button"
+                    block={false}
+                    isLoading={actionLoading}
+                    onClick={() => handleAdvancePhase("resolve")}
+                  >
+                    Close Window &amp; Resolve Suggestions
+                  </Button>
+                </>
               )}
 
               {phaseData.phase === "resolution" && (
                 <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    disabled={actionLoading}
+                    isLoading={actionLoading}
+                    onClick={handleRewindPhase}
+                  >
+                    ← Reopen Suggestion Window
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -784,9 +915,21 @@ export function TermCalendarPage() {
               )}
 
               {phaseData.phase === "finalized" && (
-                <Badge tone="emerald">
-                  ✓ Term Finalized &amp; Published to All Users
-                </Badge>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge tone="emerald">
+                    ✓ Term Finalized &amp; Published to All Users
+                  </Badge>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    block={false}
+                    disabled={actionLoading}
+                    isLoading={actionLoading}
+                    onClick={handleRewindPhase}
+                  >
+                    ← Step Back to Resolution
+                  </Button>
+                </div>
               )}
             </div>
           </Card>

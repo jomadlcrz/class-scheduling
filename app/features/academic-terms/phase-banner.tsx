@@ -64,7 +64,7 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
     return null;
   }
 
-  const { phase, phaseLabel, majorsDueAt, suggestionsDueAt, serverTime } = phaseData;
+  const { phase, phaseLabel, majorsDueAt, generationDueAt, suggestionsDueAt, resolutionDueAt, serverTime } = phaseData;
 
   // Determine which deadline and message to show based on the viewer's role
   let deadlineText: string | null = null;
@@ -77,6 +77,18 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
       deadlineText = deadlineLapsed
         ? `Major scheduling deadline passed (${new Date(majorsDueAt).toLocaleDateString()})`
         : `Majors due ${countdown} (${new Date(majorsDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
+    } else if (phase === "generation" && generationDueAt) {
+      const countdown = formatCountdown(generationDueAt, serverTime);
+      deadlineLapsed = countdown === "passed";
+      deadlineText = deadlineLapsed
+        ? `Generation deadline passed (${new Date(generationDueAt).toLocaleDateString()})`
+        : `Generation due ${countdown} (${new Date(generationDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
+    } else if (phase === "resolution" && resolutionDueAt) {
+      const countdown = formatCountdown(resolutionDueAt, serverTime);
+      deadlineLapsed = countdown === "passed";
+      deadlineText = deadlineLapsed
+        ? `Resolution deadline passed (${new Date(resolutionDueAt).toLocaleDateString()})`
+        : `Resolution due ${countdown} (${new Date(resolutionDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
     }
   }
 
@@ -108,7 +120,7 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
 
   return (
     <div
-      className={`rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-indigo-50/40 p-4 text-slate-800 shadow-xs dark:border-sky-800/50 dark:from-sky-950/30 dark:to-indigo-950/20 dark:text-slate-200 ${className}`}
+      className={`rounded-xl border border-sky-200 bg-linear-to-r from-sky-50 to-indigo-50/40 p-4 text-slate-800 shadow-xs dark:border-sky-800/50 dark:from-sky-950/30 dark:to-indigo-950/20 dark:text-slate-200 ${className}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">

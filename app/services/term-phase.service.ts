@@ -127,6 +127,39 @@ async function advancePhase(
   };
 }
 
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/rewind — step term back one phase. */
+async function rewindPhase(
+  syId: number,
+  semesterNumber: number,
+): Promise<{ message: string; term: TermPhaseResponse; undone: string[] }> {
+  const data = await apiPost<{ message?: string; term: TermPhaseResponse; undone?: string[] }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/rewind`,
+  );
+  return {
+    ...data,
+    message: apiMessage(data),
+    term: data.term,
+    undone: data.undone || [],
+  };
+}
+
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/phases/{phase}/open — reopen a specific phase. */
+async function openPhase(
+  syId: number,
+  semesterNumber: number,
+  phase: string,
+): Promise<{ message: string; term: TermPhaseResponse; undone: string[] }> {
+  const data = await apiPost<{ message?: string; term: TermPhaseResponse; undone?: string[] }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phases/${encodeURIComponent(phase)}/open`,
+  );
+  return {
+    ...data,
+    message: apiMessage(data),
+    term: data.term,
+    undone: data.undone || [],
+  };
+}
+
 /** GET /registrar/scheduling-terms/{syId}/{semesterNumber}/resolution — latest resolution run or null. */
 async function getResolution(
   syId: number,
@@ -160,6 +193,8 @@ export const termPhaseService = {
   sendDepartment,
   setDeadlines,
   advancePhase,
+  rewindPhase,
+  openPhase,
   getResolution,
   previewResolution,
 };

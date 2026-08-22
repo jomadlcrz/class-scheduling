@@ -936,24 +936,32 @@ async function getFinalizedMajorPreload(
 /** POST /deans/instructor-schedule-responses/:responseId/decision — dean decision on instructor suggestions. */
 async function decideInstructorResponse(
   responseId: number,
-  decision: "accepted" | "rejected",
-  notes?: string,
+  approveOrDecision: boolean | "accepted" | "rejected" | "approve" | "reject",
+  note?: string,
 ): Promise<{ message?: string }> {
+  const approve =
+    typeof approveOrDecision === "boolean"
+      ? approveOrDecision
+      : approveOrDecision === "accepted" || approveOrDecision === "approve";
   return apiPost(`/deans/instructor-schedule-responses/${responseId}/decision`, {
-    decision,
-    ...(notes ? { notes } : {}),
+    approve,
+    ...(note ? { note } : {}),
   });
 }
 
 /** POST /registrar/instructor-schedule-responses/:responseId/decision — registrar decision on instructor suggestions. */
 async function decideRegistrarInstructorResponse(
   responseId: number,
-  decision: "accepted" | "rejected",
-  notes?: string,
+  approveOrDecision: boolean | "accepted" | "rejected" | "approve" | "reject",
+  note?: string,
 ): Promise<{ message?: string }> {
+  const approve =
+    typeof approveOrDecision === "boolean"
+      ? approveOrDecision
+      : approveOrDecision === "accepted" || approveOrDecision === "approve";
   return apiPost(`/registrar/instructor-schedule-responses/${responseId}/decision`, {
-    decision,
-    ...(notes ? { notes } : {}),
+    approve,
+    ...(note ? { note } : {}),
   });
 }
 
@@ -1000,4 +1008,3 @@ export const scheduleService = {
   updateRegistrarMajorSchedule,
   rescheduleRegularSchedule,
 };
-

@@ -30,6 +30,16 @@ export type TermPhaseGates = {
   perSetReleaseAllowed: boolean;
 };
 
+export type TermPhaseItem = {
+  phase: TermSchedulingPhase;
+  label: string;
+  deadlineField: string | null;
+  dueAt: string | null;
+  deadlinePassed: boolean;
+  isCurrent: boolean;
+  isPast: boolean;
+};
+
 export type TermPhaseResponse = {
   syId: number;
   semesterNumber: number;
@@ -38,12 +48,17 @@ export type TermPhaseResponse = {
   storedPhase: TermSchedulingPhase;
   governed: boolean;
   majorsDueAt: string | null;
+  generationDueAt?: string | null;
   suggestionsDueAt: string | null;
+  resolutionDueAt?: string | null;
   majorsDeadlinePassed: boolean;
   suggestionsDeadlinePassed: boolean;
+  phases?: TermPhaseItem[];
   distributedAt: string | null;
   resolvedAt: string | null;
   finalizedAt: string | null;
+  updatedAt?: string | null;
+  updatedByUserId?: number | null;
   gates: TermPhaseGates;
   serverTime: string;
 };
@@ -136,7 +151,9 @@ export type TermResolutionRun = {
 
 export type DeadlinesUpdatePayload = {
   majorsDueAt?: string | null;
+  generationDueAt?: string | null;
   suggestionsDueAt?: string | null;
+  resolutionDueAt?: string | null;
   discardGenerated?: boolean;
 };
 
@@ -169,3 +186,9 @@ export type TermAdvanceAction =
   | "resolve"
   | "forward_for_approval"
   | "finalize";
+
+export type TermPhaseStepResult = {
+  message: string;
+  term: TermPhaseResponse;
+  undone: string[];
+};
