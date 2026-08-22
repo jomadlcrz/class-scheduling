@@ -192,3 +192,28 @@ export type TermPhaseStepResult = {
   term: TermPhaseResponse;
   undone: string[];
 };
+
+export type PhaseWindowItem = {
+  phase: TermSchedulingPhase;
+  label: string;
+  opensAt: string | null;
+  closesAt: string | null;
+  canClose: boolean;
+};
+
+export type TermPhaseWindowsResponse = {
+  syId: number;
+  semesterNumber: number;
+  phases: PhaseWindowItem[];
+  warnings: string[];
+};
+
+export type SetPhaseWindowPayload = {
+  opensAt?: string | null;
+  closesAt?: string | null;
+};
+
+export type SetPhaseWindowResult = TermPhaseWindowsResponse & {
+  changes: { field: string; previous: string | null; next: string | null }[];
+  message: string;
+};
