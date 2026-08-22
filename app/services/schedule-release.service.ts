@@ -89,14 +89,87 @@ async function withdrawRelease(id: number): Promise<{ message: string; release: 
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
+/** POST /schedule-releases/{id}/catch-up — send stray set to dean after term distribution. */
+async function catchUpRelease(id: number, note?: string): Promise<{ message: string; release: ScheduleRelease }> {
+  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
+    `/schedule-releases/${id}/catch-up`,
+    note ? { note } : undefined,
+  );
+  return { message: apiMessage(data), release: mapRelease(data.release) };
+}
+
+export type ListApprovalsOptions = {
+  releaseStatus?: string;
+  programAbbrev?: string;
+  setId?: number;
+  yearLevel?: number;
+  sort?: string;
+  page?: number;
+  perPage?: number;
+};
+
 /** GET /deans/schedule-approvals?sy_id=&semester_number= — dean's inbox, scoped to their department. */
-async function listApprovals(syId: number, semesterNumber: number): Promise<DeanApprovalsInbox> {
+async function listApprovals(
+  syId: number,
+  semesterNumber: number,
+  options?: ListApprovalsOptions,
+): Promise<DeanApprovalsInbox> {
   const query = appendTermScopeParams(new URLSearchParams(), syId, semesterNumber);
+  if (options?.releaseStatus) query.set("release_status", options.releaseStatus);
+  if (options?.programAbbrev) query.set("program_abbrev", options.programAbbrev);
+  if (options?.setId != null) query.set("set_id", String(options.setId));
+  if (options?.yearLevel != null) query.set("year_level", String(options.yearLevel));
+  if (options?.sort) query.set("sort", options.sort);
+  if (options?.page) query.set("page", String(options.page));
+  if (options?.perPage) query.set("per_page", String(options.perPage));
+
   const data = await apiGet<ApiDeanApprovalsInbox>(`/deans/schedule-approvals?${query}`);
   return {
     term: data.term,
-    pending: data.pending.map(mapRelease),
-    recentlyReviewed: data.recentlyReviewed.map(mapRelease),
+    stageCounts: data.stageCounts,
+    summary: data.summary,
+    filterOptions: data.filterOptions,
+    items: data.items ? data.items.map(mapRelease) : undefined,
+    pagination: data.pagination,
+    pending: (data.pending || []).map(mapRelease),
+    recentlyReviewed: (data.recentlyReviewed || []).map(mapRelease),
+  };
+}
+
+/** POST /deans/program-approvals/{syId}/{semesterNumber}/{programId}/send-to-instructors — dean sends entire program to instructors. */
+async function sendProgramToInstructors(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+): Promise<import("~/types/schedule-release").DeanProgramApprovalResult> {
+  const data = await apiPost<import("~/types/schedule-release").DeanProgramApprovalResult & { message?: string }>(
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/send-to-instructors`,
+  );
+  return {
+    ...data,
+    message: apiMessage(data),
+    sentSetIds: data.sentSetIds || [],
+    blocked: data.blocked || [],
+    skippedSetIds: data.skippedSetIds || [],
+  };
+}
+
+/** POST /deans/program-approvals/{syId}/{semesterNumber}/{programId}/reject — dean returns entire program with reason. */
+async function rejectProgram(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+  reason: string,
+): Promise<import("~/types/schedule-release").DeanProgramRejectResult & { message: string }> {
+  const data = await apiPost<import("~/types/schedule-release").DeanProgramRejectResult & { message?: string }>(
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/reject`,
+    { reason },
+  );
+  return {
+    ...data,
+    message: apiMessage(data),
+    rejectedSetIds: data.rejectedSetIds || [],
+    skippedSetIds: data.skippedSetIds || [],
   };
 }
 
@@ -225,12 +298,15 @@ export const scheduleReleaseService = {
   getReleasePreview,
   submitRelease,
   withdrawRelease,
+  catchUpRelease,
   listApprovals,
   getApprovalPreview,
   getApproval,
   approveRelease,
   rejectRelease,
   sendToInstructors,
+  sendProgramToInstructors,
+  rejectProgram,
   getReviewProgress,
   forwardSuggestions,
   progressToFinalApproval,

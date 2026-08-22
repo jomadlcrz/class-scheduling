@@ -1,15 +1,20 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { FieldChrome } from "~/components/ui/input";
-import { ConfirmDialog } from "~/components/ui/modal";
+import { FieldChrome, Input } from "~/components/ui/input";
+import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { Textarea } from "~/components/ui/textarea";
+import { PhaseBanner } from "~/features/academic-terms/phase-banner";
 import { ScheduleApproveDialog } from "~/features/dean-approvals/schedule-approve-dialog";
 import { ScheduleRejectDialog } from "~/features/dean-approvals/schedule-reject-dialog";
 import {
   GroupedPendingApprovals,
+  SchedulePendingApprovalsTable,
   ScheduleRecentlyReviewedTable,
 } from "~/features/dean-approvals/schedule-approvals-table";
 import { useDeanScheduleApprovals } from "~/features/dean-approvals/use-dean-schedule-approvals";
@@ -18,7 +23,28 @@ import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { programService } from "~/services/program.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
-import type { ScheduleRelease } from "~/types/schedule-release";
+import type { ScheduleRelease, ScheduleReleaseStatus } from "~/types/schedule-release";
+
+type StageKey = "all" | ScheduleReleaseStatus;
+
+const STAGE_LABELS: Record<ScheduleReleaseStatus, string> = {
+  draft: "Draft",
+  pending_dean_review: "Pending Review",
+  instructor_review: "With Instructors",
+  registrar_revision: "Under Revision",
+  pending_final_approval: "Final Approval",
+  approved: "Approved & Signed",
+  rejected: "Returned",
+};
+
+const STAGES_ORDER: ScheduleReleaseStatus[] = [
+  "pending_dean_review",
+  "instructor_review",
+  "registrar_revision",
+  "pending_final_approval",
+  "approved",
+  "rejected",
+];
 
 export function DeanScheduleApprovalsPage() {
   const {
@@ -37,10 +63,18 @@ export function DeanScheduleApprovalsPage() {
     refresh,
   } = useDeanScheduleApprovals();
 
+  const [activeStage, setActiveStage] = useState<StageKey>("pending_dean_review");
+
   const [previewTarget, setPreviewTarget] = useState<ScheduleRelease | null>(null);
   const [sendTarget, setSendTarget] = useState<ScheduleRelease | null>(null);
   const [rejectTarget, setRejectTarget] = useState<ScheduleRelease | null>(null);
   const [sendCohort, setSendCohort] = useState<{ label: string; releases: ScheduleRelease[] } | null>(null);
+
+  // Program-level actions
+  const [sendProgramTarget, setSendProgramTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
+  const [rejectProgramTarget, setRejectProgramTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
+  const [rejectProgramReason, setRejectProgramReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   const contextReady = Boolean(selectedSchoolYearId && selectedSemesterNumber);
 
@@ -61,9 +95,18 @@ export function DeanScheduleApprovalsPage() {
       await refresh();
       setSendTarget(null);
     } catch (err) {
-      // Already reviewed / term closed: clear the stale row, then re-surface the backend message.
       await refresh().catch(() => {});
       throw err instanceof Error ? err : new Error("Unable to send the schedule to instructors.");
+    }
+  }
+
+  async function handleFinalApprove(release: ScheduleRelease) {
+    try {
+      const { message } = await scheduleReleaseService.finalApprove(release.id);
+      toast.success(message || "Schedule signed and approved.");
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to sign and approve schedule.");
     }
   }
 
@@ -80,11 +123,6 @@ export function DeanScheduleApprovalsPage() {
     }
   }
 
-  /**
-   * Approve every section in a Program→Year cohort. No atomic batch endpoint exists, so
-   * approve sequentially and keep going on failure — then summarise the outcome once, since
-   * one toast per section would drown the dean. Refresh reconciles whatever actually landed.
-   */
   async function handleSendCohort() {
     if (!sendCohort) return;
     const { releases } = sendCohort;
@@ -106,15 +144,78 @@ export function DeanScheduleApprovalsPage() {
     setSendCohort(null);
   }
 
-  const pending = inbox?.pending ?? [];
+  async function handleSendProgramSubmit() {
+    if (!sendProgramTarget || !selectedSchoolYearId || !selectedSemesterNumber) return;
+    setActionLoading(true);
+    try {
+      const res = await scheduleReleaseService.sendProgramToInstructors(
+        Number(selectedSchoolYearId),
+        Number(selectedSemesterNumber),
+        sendProgramTarget.programId,
+      );
+      toast.success(res.message);
+      if (res.blocked && res.blocked.length > 0) {
+        toast.warning(
+          `Some sections could not be sent: ${res.blocked.map((b) => `${b.setCode} (${b.reason})`).join(", ")}`,
+        );
+      }
+      setSendProgramTarget(null);
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send program schedules.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleRejectProgramSubmit() {
+    if (!rejectProgramTarget || !selectedSchoolYearId || !selectedSemesterNumber) return;
+    if (rejectProgramReason.trim().length < 10) {
+      toast.error("Rejection reason must be at least 10 characters.");
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const res = await scheduleReleaseService.rejectProgram(
+        Number(selectedSchoolYearId),
+        Number(selectedSemesterNumber),
+        rejectProgramTarget.programId,
+        rejectProgramReason.trim(),
+      );
+      toast.success(res.message);
+      setRejectProgramTarget(null);
+      setRejectProgramReason("");
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to return program schedules.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  const allPending = inbox?.pending ?? [];
   const recentlyReviewed = inbox?.recentlyReviewed ?? [];
+
+  // Filter items based on active stage
+  const pendingForStage = useMemo(() => {
+    if (activeStage === "all") return allPending;
+    if (activeStage === "pending_dean_review") return allPending.filter((r) => r.releaseStatus === "pending_dean_review");
+    if (activeStage === "pending_final_approval") return allPending.filter((r) => r.releaseStatus === "pending_final_approval");
+    return allPending.filter((r) => r.releaseStatus === activeStage);
+  }, [allPending, activeStage]);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      <PageHeader
-        title="Schedule Approvals"
+      <PageHeader title="Schedule Approvals" />
 
-      />
+      {/* Phase Banner */}
+      <div className="mt-4">
+        <PhaseBanner
+          syId={selectedSchoolYearId ? Number(selectedSchoolYearId) : null}
+          semesterNumber={selectedSemesterNumber ? Number(selectedSemesterNumber) : null}
+          role="dean"
+        />
+      </div>
 
       <Card className="mt-4 grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
         <FieldChrome id="da-school-year" label="School Year">
@@ -183,6 +284,41 @@ export function DeanScheduleApprovalsPage() {
         </FieldChrome>
       </Card>
 
+      {/* Stage Tracker Navigation */}
+      {inbox?.stageCounts && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {STAGES_ORDER.map((stage) => {
+            const count = inbox.stageCounts?.[stage] ?? 0;
+            const isSelected = activeStage === stage;
+            return (
+              <button
+                key={stage}
+                type="button"
+                onClick={() => setActiveStage(stage)}
+                className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                  isSelected
+                    ? "border-sky-500 bg-sky-50 text-sky-900 shadow-xs ring-2 ring-sky-300 dark:border-sky-400 dark:bg-sky-950/40 dark:text-sky-200 dark:ring-sky-800"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-navy-900 dark:text-mist-200 dark:hover:bg-white/5"
+                }`}
+              >
+                <span>{STAGE_LABELS[stage]}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-semibold tabular-nums ${
+                    count > 0
+                      ? isSelected
+                        ? "bg-sky-600 text-white"
+                        : "bg-slate-200 text-slate-700 dark:bg-navy-800 dark:text-mist-100"
+                      : "bg-transparent text-slate-400"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div className="mt-6">
         {loadError ? (
           <EmptyState title="Couldn't load schedule approvals">{loadError}</EmptyState>
@@ -193,26 +329,36 @@ export function DeanScheduleApprovalsPage() {
         ) : (
           <div className="flex flex-col gap-10">
             <section aria-labelledby="pending-heading">
-              <h2 id="pending-heading" className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-                Pending review
-                <span className="ml-1.5 font-body text-sm font-normal text-slate-400 dark:text-slate-500">
-                  ({pending.length})
+              <h2 id="pending-heading" className="text-base font-semibold text-navy-800 dark:text-mist-100">
+                {activeStage === "all" ? "All Schedules" : STAGE_LABELS[activeStage as ScheduleReleaseStatus] ?? "Pending review"}
+                <span className="ml-1.5 font-normal text-sm text-slate-400 dark:text-slate-500">
+                  ({pendingForStage.length})
                 </span>
               </h2>
               <div className="mt-3">
-                {pending.length === 0 ? (
-                  <EmptyState title="No section schedules waiting for approval this term">
-                    When the registrar submits a section timetable for this term, it will appear here — you'll
-                    also get a notification.
+                {pendingForStage.length === 0 ? (
+                  <EmptyState title="No section schedules in this stage">
+                    {activeStage === "pending_dean_review"
+                      ? "When the registrar submits a section timetable for this term, it will appear here."
+                      : "No sections currently match this stage."}
                   </EmptyState>
-                ) : (
+                ) : activeStage === "pending_dean_review" ? (
                   <GroupedPendingApprovals
-                    releases={pending}
+                    releases={pendingForStage}
                     programInfo={programInfo}
                     onPreview={setPreviewTarget}
                     onSendToInstructors={setSendTarget}
                     onReject={setRejectTarget}
+                    onFinalApprove={handleFinalApprove}
                     onSendCohort={(label, releases) => setSendCohort({ label, releases })}
+                    onSendProgram={(programId, programAbbrev) => setSendProgramTarget({ programId, programAbbrev })}
+                    onRejectProgram={(programId, programAbbrev) => setRejectProgramTarget({ programId, programAbbrev })}
+                  />
+                ) : (
+                  <SchedulePendingApprovalsTable
+                    releases={pendingForStage}
+                    onPreview={setPreviewTarget}
+                    onFinalApprove={handleFinalApprove}
                   />
                 )}
               </div>
@@ -224,7 +370,7 @@ export function DeanScheduleApprovalsPage() {
                   id="reviewed-heading"
                   className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100"
                 >
-                  Recently reviewed
+                  Recently reviewed &amp; signed
                 </h2>
                 <div className="mt-3">
                   <ScheduleRecentlyReviewedTable releases={recentlyReviewed} />
@@ -267,6 +413,63 @@ export function DeanScheduleApprovalsPage() {
         This asks each assigned instructor to review their section timetable. It does not publish schedules;
         publication happens only after every instructor accepts and the dean gives final approval.
       </ConfirmDialog>
+
+      {/* Program-Level Send Confirmation */}
+      <ConfirmDialog
+        open={sendProgramTarget !== null}
+        onClose={() => setSendProgramTarget(null)}
+        title={`Send all sections of ${sendProgramTarget?.programAbbrev ?? ""} to instructors?`}
+        confirmLabel="Send Program to Instructors"
+        loadingLabel="Sending…"
+        onConfirm={handleSendProgramSubmit}
+      >
+        This sends all sections under {sendProgramTarget?.programAbbrev} to instructors in one atomic action.
+      </ConfirmDialog>
+
+      {/* Program-Level Reject Dialog */}
+      <Modal
+        open={rejectProgramTarget !== null}
+        onClose={() => setRejectProgramTarget(null)}
+        title={`Return ${rejectProgramTarget?.programAbbrev ?? ""} to Registrar`}
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Explain what needs to be changed across the {rejectProgramTarget?.programAbbrev} schedule. The registrar will be notified with your feedback.
+          </p>
+          <Textarea
+            id="prog-reject-reason"
+            label="Feedback for the registrar"
+            value={rejectProgramReason}
+            onChange={(e) => setRejectProgramReason(e.target.value)}
+          />
+          <p className="text-right text-xs text-slate-400">
+            {rejectProgramReason.trim().length} / 10 characters minimum
+          </p>
+          <ModalActions>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => {
+                setRejectProgramTarget(null);
+                setRejectProgramReason("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="danger"
+              block={false}
+              isLoading={actionLoading}
+              disabled={rejectProgramReason.trim().length < 10}
+              onClick={handleRejectProgramSubmit}
+            >
+              Return Program to Registrar
+            </Button>
+          </ModalActions>
+        </div>
+      </Modal>
     </div>
   );
 }

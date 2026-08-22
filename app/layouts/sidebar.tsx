@@ -175,6 +175,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Scheduling",
     items: [
       { label: "Scheduling Hub", to: "/schedules", icon: <SchedulingHubIcon />, roles: ["registrar"] },
+      { label: "Scheduling Calendar", to: "/schedules/term-calendar", icon: <CalendarIcon />, roles: ["registrar"] },
       { label: "Schedule Overview", to: "/schedules/overview", icon: <ListIcon />, roles: ["registrar"] },
       { label: "Subject Offering", to: "/subject-offering", icon: <UserCheckIcon />, roles: ["registrar"] },
       { label: "Assignment Audit Logs", to: "/subject-offering/audit-logs", icon: <AuditLogIcon />, roles: ["registrar"] },

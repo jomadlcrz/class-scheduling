@@ -28,6 +28,7 @@ export function DeanScheduleApprovalDetailPage() {
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [finalApproveLoading, setFinalApproveLoading] = useState(false);
 
   useEffect(() => {
     if (!releaseId) return;
@@ -58,9 +59,22 @@ export function DeanScheduleApprovalDetailPage() {
       if (message) toast.success(message);
       navigate("/dean/schedule-approvals");
     } catch (err) {
-      // Already reviewed / term closed: refresh so the review buttons reflect the new status.
       await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
       throw err instanceof Error ? err : new Error("Unable to send the schedule to instructors.");
+    }
+  }
+
+  async function handleFinalApprove() {
+    setFinalApproveLoading(true);
+    try {
+      const { message } = await scheduleReleaseService.finalApprove(releaseId);
+      if (message) toast.success(message || "Schedule approved and signed.");
+      const updated = await scheduleReleaseService.getApproval(releaseId);
+      setPreview((prev) => (prev ? { ...prev, release: updated } : null));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to give final approval.");
+    } finally {
+      setFinalApproveLoading(false);
     }
   }
 
@@ -90,7 +104,6 @@ export function DeanScheduleApprovalDetailPage() {
       <div className="mx-auto w-full max-w-7xl px-4 py-8">
         <PageHeader
           title={error ? "Unable to load schedule" : "Schedule Not Found"}
-
           actions={
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/schedule-approvals")}>
               <ArrowLeftIcon /> Back
@@ -98,7 +111,11 @@ export function DeanScheduleApprovalDetailPage() {
           }
         />
         <div className="mt-6">
-          {error ? <DataLoadAlert title="Schedule unavailable" message={error} permission={error.toLowerCase().includes("permission")} /> : <p className="font-body text-sm text-slate-500 dark:text-slate-400">The requested schedule could not be found.</p>}
+          {error ? (
+            <DataLoadAlert title="Schedule unavailable" message={error} permission={error.toLowerCase().includes("permission")} />
+          ) : (
+            <p className="font-body text-sm text-slate-500 dark:text-slate-400">The requested schedule could not be found.</p>
+          )}
         </div>
       </div>
     );
@@ -107,12 +124,12 @@ export function DeanScheduleApprovalDetailPage() {
   const { release, daySchedules } = preview;
   const schedules = scheduleReleaseService.mapPreviewToSchedules(preview);
   const canReview = release.releaseStatus === "pending_dean_review";
+  const canFinalApprove = release.releaseStatus === "pending_final_approval";
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title={`${release.programAbbrev ?? ""} ${release.setCode ?? ""}`.trim()}
-
         actions={
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/schedule-approvals")}>
@@ -130,9 +147,37 @@ export function DeanScheduleApprovalDetailPage() {
                 </Button>
               </>
             )}
+            {canFinalApprove && (
+              <Button
+                type="button"
+                block={false}
+                isLoading={finalApproveLoading}
+                loadingLabel="Signing…"
+                onClick={handleFinalApprove}
+              >
+                <CheckIcon size={14} />
+                Final Approve (Sign Schedule)
+              </Button>
+            )}
           </div>
         }
       />
+
+      {release.releaseStatus === "approved" && release.approvedBy && (
+        <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-xs text-emerald-900 dark:border-emerald-800/40 dark:bg-emerald-950/20 dark:text-emerald-300">
+          <span className="shrink-0 text-emerald-600">
+            <CheckIcon size={18} />
+          </span>
+          <div>
+            <p className="font-semibold">Approved &amp; Signed by Dean {release.approvedBy.name}</p>
+            {release.approvedAt && (
+              <p className="text-emerald-700/80 dark:text-emerald-400">
+                {new Date(release.approvedAt).toLocaleString()}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4">
         <ScheduleLifecycleRail release={release} audience="dean" />

@@ -45,7 +45,27 @@ export function resolveNotificationTarget(
     case "major_schedule_submitted":
     case "major_schedule_edit_requested":
     case "major_schedule_deleted":
+    case "major_schedule_reopened":
       return "/major-schedules";
+    case "schedule_approval_approved":
+      return role === "dean" ? "/dean/schedule-approvals" : "/schedules";
+    case "schedule_review_distributed":
+      return role === "faculty" ? "/schedule-responses" : "/dean/schedule-approvals";
+    case "scheduling_deadline_updated":
+    case "scheduling_phase_changed":
+      return role === "registrar"
+        ? "/schedules/term-calendar"
+        : role === "dean"
+          ? "/dean/schedule-approvals"
+          : "/schedule-responses";
+    case "instructor_schedule_response":
+    case "instructor_suggestion_rejected":
+    case "suggestion_resolution_granted":
+      return "/schedule-responses";
+    case "suggestion_resolution_summary":
+      return role === "registrar" ? "/schedules/term-calendar" : "/schedule-responses";
+    case "subject_offering_updated":
+      return "/subject-offering";
     case "schedule_published":
     case "schedule_rescheduled":
       return role === "student" ? "/student-schedule" : "/faculty-schedule";

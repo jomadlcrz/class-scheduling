@@ -107,6 +107,7 @@ const SEARCH_ACTIONS: TopbarAction[] = [
   { label: "Major Schedules", to: "/major-schedules", roles: ["registrar", "dean"] },
   { label: "Schedule Responses", to: "/schedule-responses", roles: ["registrar", "dean", "faculty"] },
   { label: "Scheduling Hub", to: "/schedules", roles: ["registrar"] },
+  { label: "Scheduling Calendar", to: "/schedules/term-calendar", roles: ["registrar"] },
   { label: "Schedule Approvals", to: "/dean/schedule-approvals", roles: ["dean"] },
   { label: "Faculty Loads", to: "/faculty-loads", roles: ["dean"] },
   { label: "My Schedule", to: "/faculty-schedule", roles: ["faculty"] },

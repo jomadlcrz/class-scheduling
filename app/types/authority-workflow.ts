@@ -220,6 +220,20 @@ export type ProposedScheduleMeeting = {
   roomId: number;
 };
 
+export type SuggestionMoveSlot = {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  roomName: string | null;
+};
+
+export type SuggestionMove = {
+  subjectCode: string;
+  original: SuggestionMoveSlot;
+  proposed: SuggestionMoveSlot;
+  changed: boolean;
+};
+
 export type InstructorScheduleResponse = {
   id: number;
   scheduleId: number;
@@ -227,15 +241,24 @@ export type InstructorScheduleResponse = {
   instructorName: string;
   subjectId: number | null;
   subjectCode: string | null;
+  subjectTitle?: string | null;
+  programAbbrev?: string | null;
+  yearLevel?: number | null;
+  setCode?: string | null;
   setId: number | null;
   departmentId: number | null;
   responseType: "accept" | "suggest_change";
   status: string;
   reason: string | null;
   deanDecisionNote: string | null;
+  deanReviewedAt?: string | null;
   registrarDecisionNote: string | null;
+  registrarReviewedAt?: string | null;
+  resolutionOutcome?: "satisfied" | "rejected" | "blocked_by_major" | null;
+  resolutionRunId?: number | null;
   createdAt: string;
   respondedAt: string | null;
+  moves?: SuggestionMove[];
   meetings: ProposedScheduleMeeting[];
 };
 
@@ -266,6 +289,15 @@ export type InstructorScheduleReviewMeeting = {
   mode: string;
 };
 
+export type InstructorScheduleReviewResolution = {
+  outcome: "satisfied" | "rejected" | "blocked_by_major";
+  headline: string;
+  detail: string;
+  settled: boolean;
+  runId: number | null;
+  decidedAt: string | null;
+};
+
 export type InstructorScheduleReviewDetail = {
   releaseId: number;
   syId: number;
@@ -278,6 +310,8 @@ export type InstructorScheduleReviewDetail = {
   status: string;
   respondedAt: string | null;
   reason: string | null;
+  canRespond?: boolean;
+  resolution?: InstructorScheduleReviewResolution | null;
   meetings: InstructorScheduleReviewMeeting[];
   proposedMeetings: ProposedScheduleMeeting[];
 };

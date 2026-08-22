@@ -9,6 +9,7 @@ export type ScheduleReleaseStatus =
   | "rejected";
 
 export type ScheduleReleaseSubmitter = { userId: number; name: string | null };
+export type ScheduleReleaseApprover = { userId: number; name: string | null };
 
 /** Shared release object returned by both the registrar and dean endpoints. */
 export type ScheduleRelease = {
@@ -34,6 +35,7 @@ export type ScheduleRelease = {
   reviewedAt: string | null;
   rejectionReason: string | null;
   approvedAt: string | null;
+  approvedBy?: ScheduleReleaseApprover | null;
 };
 
 export type SchedulePreviewSession = {
@@ -68,8 +70,49 @@ export type DeanApprovalsInboxTerm = {
 
 export type DeanApprovalsInbox = {
   term: DeanApprovalsInboxTerm | null;
+  stageCounts?: Partial<Record<ScheduleReleaseStatus, number>>;
+  summary?: {
+    pending: number;
+    stale: number;
+    approved: number;
+    returned: number;
+  };
+  filterOptions?: {
+    programs: Array<{ abbrev: string; name: string }>;
+    yearLevels: number[];
+    sets: Array<{ setId: number; setCode: string; programAbbrev: string; yearLevel: number }>;
+  };
+  items?: ScheduleRelease[];
+  pagination?: {
+    page: number;
+    perPage: number;
+    totalItems: number;
+    totalPages: number;
+  };
   pending: ScheduleRelease[];
   recentlyReviewed: ScheduleRelease[];
+};
+
+export type DeanProgramApprovalBlockedSet = {
+  setId: number;
+  setCode: string;
+  reason: string;
+};
+
+export type DeanProgramApprovalResult = {
+  message: string;
+  programAbbrev: string;
+  sentSetIds: number[];
+  blocked: DeanProgramApprovalBlockedSet[];
+  skippedSetIds: number[];
+  termDistributed?: boolean;
+};
+
+export type DeanProgramRejectResult = {
+  message: string;
+  programAbbrev: string;
+  rejectedSetIds: number[];
+  skippedSetIds: number[];
 };
 
 export type InstructorReviewProgressItem = {

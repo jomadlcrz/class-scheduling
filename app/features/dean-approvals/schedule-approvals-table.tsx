@@ -35,11 +35,18 @@ function WaitingCell({ iso }: { iso: string | null }) {
 type PendingTableProps = {
   releases: ScheduleRelease[];
   onPreview: (release: ScheduleRelease) => void;
-  onSendToInstructors: (release: ScheduleRelease) => void;
-  onReject: (release: ScheduleRelease) => void;
+  onSendToInstructors?: (release: ScheduleRelease) => void;
+  onReject?: (release: ScheduleRelease) => void;
+  onFinalApprove?: (release: ScheduleRelease) => void;
 };
 
-export function SchedulePendingApprovalsTable({ releases, onPreview, onSendToInstructors, onReject }: PendingTableProps) {
+export function SchedulePendingApprovalsTable({
+  releases,
+  onPreview,
+  onSendToInstructors,
+  onReject,
+  onFinalApprove,
+}: PendingTableProps) {
   return (
     <Table>
       <TableHead>
@@ -73,14 +80,24 @@ export function SchedulePendingApprovalsTable({ releases, onPreview, onSendToIns
                   <EyeIcon />
                   Review
                 </TableActionButton>
-                <TableActionButton tone="amber" onClick={() => onSendToInstructors(row)}>
-                  <CheckIcon size={14} />
-                  Send to instructors
-                </TableActionButton>
-                <TableActionButton tone="slate" onClick={() => onReject(row)}>
-                  <CloseIcon size={14} />
-                  Reject
-                </TableActionButton>
+                {row.releaseStatus === "pending_dean_review" && onSendToInstructors && (
+                  <TableActionButton tone="amber" onClick={() => onSendToInstructors(row)}>
+                    <CheckIcon size={14} />
+                    Send to instructors
+                  </TableActionButton>
+                )}
+                {row.releaseStatus === "pending_dean_review" && onReject && (
+                  <TableActionButton tone="slate" onClick={() => onReject(row)}>
+                    <CloseIcon size={14} />
+                    Reject
+                  </TableActionButton>
+                )}
+                {row.releaseStatus === "pending_final_approval" && onFinalApprove && (
+                  <TableActionButton tone="amber" onClick={() => onFinalApprove(row)}>
+                    <CheckIcon size={14} />
+                    Sign &amp; Final Approve
+                  </TableActionButton>
+                )}
               </div>
             </TableCell>
           </TableRow>
@@ -91,24 +108,24 @@ export function SchedulePendingApprovalsTable({ releases, onPreview, onSendToIns
 }
 
 type YearCohort = { yearLevel: number; releases: ScheduleRelease[]; sessions: number };
-type ProgramGroup = { abbrev: string; total: number; years: YearCohort[] };
+type ProgramGroup = { programId: number; abbrev: string; total: number; years: YearCohort[] };
 
 /** Bucket pending releases into Program → Year-level cohorts, both sorted for stable display. */
 function groupByProgramYear(releases: ScheduleRelease[]): ProgramGroup[] {
-  const byProgram = new Map<string, Map<number, ScheduleRelease[]>>();
+  const byProgram = new Map<string, { programId: number; years: Map<number, ScheduleRelease[]> }>();
   for (const release of releases) {
     const abbrev = release.programAbbrev ?? "—";
     const year = release.yearLevel ?? 0;
-    const years = byProgram.get(abbrev) ?? new Map<number, ScheduleRelease[]>();
-    const rows = years.get(year) ?? [];
+    const existing = byProgram.get(abbrev) ?? { programId: release.programId, years: new Map<number, ScheduleRelease[]>() };
+    const rows = existing.years.get(year) ?? [];
     rows.push(release);
-    years.set(year, rows);
-    byProgram.set(abbrev, years);
+    existing.years.set(year, rows);
+    byProgram.set(abbrev, existing);
   }
 
   return [...byProgram.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([abbrev, years]) => {
+    .map(([abbrev, { programId, years }]) => {
       const cohorts: YearCohort[] = [...years.entries()]
         .sort(([a], [b]) => a - b)
         .map(([yearLevel, rows]) => ({
@@ -116,13 +133,17 @@ function groupByProgramYear(releases: ScheduleRelease[]): ProgramGroup[] {
           releases: [...rows].sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? "")),
           sessions: rows.reduce((sum, r) => sum + r.sessionCount, 0),
         }));
-      return { abbrev, total: cohorts.reduce((sum, c) => sum + c.releases.length, 0), years: cohorts };
+      return { programId, abbrev, total: cohorts.reduce((sum, c) => sum + c.releases.length, 0), years: cohorts };
     });
 }
 
 type GroupedPendingProps = PendingTableProps & {
   /** Approve every section in a Program→Year cohort at once. */
-  onSendCohort: (label: string, releases: ScheduleRelease[]) => void;
+  onSendCohort?: (label: string, releases: ScheduleRelease[]) => void;
+  /** Atomic send whole program to instructors. */
+  onSendProgram?: (programId: number, programAbbrev: string) => void;
+  /** Atomic return whole program with reason. */
+  onRejectProgram?: (programId: number, programAbbrev: string) => void;
   /** Program abbrev → full name + department code, for the group header logo/label. */
   programInfo?: Map<string, { name: string; departmentCode: string }>;
 };
@@ -138,7 +159,10 @@ export function GroupedPendingApprovals({
   onPreview,
   onSendToInstructors,
   onReject,
+  onFinalApprove,
   onSendCohort,
+  onSendProgram,
+  onRejectProgram,
 }: GroupedPendingProps) {
   const programs = useMemo(() => groupByProgramYear(releases), [releases]);
 
@@ -146,22 +170,48 @@ export function GroupedPendingApprovals({
     <div className="flex flex-col gap-8">
       {programs.map((program) => (
         <section key={program.abbrev} aria-label={program.abbrev}>
-          <Card className="flex items-center gap-3 p-4">
-            <img
-              src={departmentLogoUrl(programInfo?.get(program.abbrev)?.departmentCode ?? "")}
-              onError={onDepartmentLogoError}
-              alt=""
-              className="size-9 shrink-0 rounded-md object-contain"
-            />
-            <div className="min-w-0">
-              <h3 className="truncate font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-                {program.abbrev}
-                {programInfo?.get(program.abbrev)?.name && (
-                  <span className="ml-2 font-body text-sm font-normal text-slate-500 dark:text-slate-400">
-                    {programInfo.get(program.abbrev)?.name}
-                  </span>
-                )}
-              </h3>
+          <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <img
+                src={departmentLogoUrl(programInfo?.get(program.abbrev)?.departmentCode ?? "")}
+                onError={onDepartmentLogoError}
+                alt=""
+                className="size-9 shrink-0 rounded-md object-contain"
+              />
+              <div className="min-w-0">
+                <h3 className="truncate font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
+                  {program.abbrev}
+                  {programInfo?.get(program.abbrev)?.name && (
+                    <span className="ml-2 font-body text-sm font-normal text-slate-500 dark:text-slate-400">
+                      {programInfo.get(program.abbrev)?.name}
+                    </span>
+                  )}
+                </h3>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {onSendProgram && (
+                <Button
+                  type="button"
+                  block={false}
+                  onClick={() => onSendProgram(program.programId, program.abbrev)}
+                >
+                  <CheckIcon size={14} />
+                  Send Program ({program.total})
+                </Button>
+              )}
+              {onRejectProgram && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  onClick={() => onRejectProgram(program.programId, program.abbrev)}
+                >
+                  <CloseIcon size={14} />
+                  Return Program
+                </Button>
+              )}
             </div>
           </Card>
 
@@ -195,21 +245,24 @@ export function GroupedPendingApprovals({
                         session{cohort.sessions === 1 ? "" : "s"}
                       </span>
                     </span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      block={false}
-                      onClick={() => onSendCohort(label, cohort.releases)}
-                    >
-                      <CheckIcon size={14} />
-                      Send all ({cohort.releases.length})
-                    </Button>
+                    {onSendCohort && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        block={false}
+                        onClick={() => onSendCohort(label, cohort.releases)}
+                      >
+                        <CheckIcon size={14} />
+                        Send cohort ({cohort.releases.length})
+                      </Button>
+                    )}
                   </div>
                   <SchedulePendingApprovalsTable
                     releases={cohort.releases}
                     onPreview={onPreview}
                     onSendToInstructors={onSendToInstructors}
                     onReject={onReject}
+                    onFinalApprove={onFinalApprove}
                   />
                 </div>
               );
@@ -232,6 +285,7 @@ export function ScheduleRecentlyReviewedTable({ releases }: ReviewedTableProps) 
         <TableHeader>Set</TableHeader>
         <TableHeader>Decision</TableHeader>
         <TableHeader className="hidden md:table-cell">Reviewed</TableHeader>
+        <TableHeader className="hidden lg:table-cell">Signature / Approver</TableHeader>
         <TableHeader className="hidden lg:table-cell">Note</TableHeader>
       </TableHead>
       <TableBody>
@@ -250,7 +304,16 @@ export function ScheduleRecentlyReviewedTable({ releases }: ReviewedTableProps) 
             <TableCell className="hidden md:table-cell text-slate-600 dark:text-slate-300">
               <span title={formatDateTime(row.reviewedAt)}>{formatRelativeTime(row.reviewedAt) || "—"}</span>
             </TableCell>
-            <TableCell className="hidden lg:table-cell">{row.rejectionReason ?? "—"}</TableCell>
+            <TableCell className="hidden lg:table-cell text-slate-600 dark:text-slate-300">
+              {row.approvedBy ? (
+                <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                  {row.approvedBy.name}
+                </span>
+              ) : (
+                "—"
+              )}
+            </TableCell>
+            <TableCell className="hidden lg:table-cell">{row.rejectionReason ?? row.submissionNote ?? "—"}</TableCell>
           </TableRow>
         ))}
       </TableBody>
