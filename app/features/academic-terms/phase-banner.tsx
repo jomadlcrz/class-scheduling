@@ -64,7 +64,7 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
     return null;
   }
 
-  const { phase, phaseLabel, majorsDueAt, generationDueAt, suggestionsDueAt, resolutionDueAt, serverTime } = phaseData;
+  const { phase, phaseLabel, majorsDueAt, suggestionsDueAt, serverTime } = phaseData;
 
   // Determine which deadline and message to show based on the viewer's role
   let deadlineText: string | null = null;
@@ -77,18 +77,6 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
       deadlineText = deadlineLapsed
         ? `Major scheduling deadline passed (${new Date(majorsDueAt).toLocaleDateString()})`
         : `Majors due ${countdown} (${new Date(majorsDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
-    } else if (phase === "generation" && generationDueAt) {
-      const countdown = formatCountdown(generationDueAt, serverTime);
-      deadlineLapsed = countdown === "passed";
-      deadlineText = deadlineLapsed
-        ? `Generation deadline passed (${new Date(generationDueAt).toLocaleDateString()})`
-        : `Generation due ${countdown} (${new Date(generationDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
-    } else if (phase === "resolution" && resolutionDueAt) {
-      const countdown = formatCountdown(resolutionDueAt, serverTime);
-      deadlineLapsed = countdown === "passed";
-      deadlineText = deadlineLapsed
-        ? `Resolution deadline passed (${new Date(resolutionDueAt).toLocaleDateString()})`
-        : `Resolution due ${countdown} (${new Date(resolutionDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
     }
   }
 

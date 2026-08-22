@@ -184,33 +184,6 @@ async function previewResolution(
   };
 }
 
-/** GET /registrar/scheduling-terms/{syId}/{semesterNumber}/phase-windows — all five phase windows with opensAt and closesAt. */
-async function getPhaseWindows(
-  syId: number,
-  semesterNumber: number,
-): Promise<import("~/types/term-phase").TermPhaseWindowsResponse> {
-  return apiGet<import("~/types/term-phase").TermPhaseWindowsResponse>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phase-windows`,
-  );
-}
-
-/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/phase-windows/{phase} — set opensAt/closesAt for one phase. */
-async function setPhaseWindow(
-  syId: number,
-  semesterNumber: number,
-  phase: string,
-  payload: import("~/types/term-phase").SetPhaseWindowPayload,
-): Promise<import("~/types/term-phase").SetPhaseWindowResult> {
-  const data = await apiPut<import("~/types/term-phase").SetPhaseWindowResult>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phase-windows/${encodeURIComponent(phase)}`,
-    payload,
-  );
-  return {
-    ...data,
-    message: apiMessage(data),
-  };
-}
-
 export const termPhaseService = {
   getTermPhase,
   getDistributionReadiness,
@@ -224,6 +197,4 @@ export const termPhaseService = {
   openPhase,
   getResolution,
   previewResolution,
-  getPhaseWindows,
-  setPhaseWindow,
 };

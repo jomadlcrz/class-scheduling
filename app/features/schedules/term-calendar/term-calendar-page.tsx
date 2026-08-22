@@ -16,10 +16,8 @@ import { PageHeader } from "~/layouts/page-header";
 import { termPhaseService } from "~/services/term-phase.service";
 import type {
   DepartmentReadinessResponse,
-  PhaseWindowItem,
   TermDistributionReadiness,
   TermPhaseResponse,
-  TermPhaseWindowsResponse,
   TermResolutionRun,
 } from "~/types/term-phase";
 import { TERM_SCHEDULING_PHASE_LABELS, TERM_SCHEDULING_PHASE_ORDER } from "~/types/term-phase";
@@ -73,22 +71,14 @@ export function TermCalendarPage() {
   const [readiness, setReadiness] = useState<TermDistributionReadiness | null>(null);
   const [deptReadiness, setDeptReadiness] = useState<DepartmentReadinessResponse | null>(null);
   const [resolution, setResolution] = useState<TermResolutionRun | null>(null);
-  const [phaseWindows, setPhaseWindows] = useState<TermPhaseWindowsResponse | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Deadlines Form State
   const [majorsDueAtInput, setMajorsDueAtInput] = useState("");
-  const [generationDueAtInput, setGenerationDueAtInput] = useState("");
   const [suggestionsDueAtInput, setSuggestionsDueAtInput] = useState("");
-  const [resolutionDueAtInput, setResolutionDueAtInput] = useState("");
   const [savingDeadlines, setSavingDeadlines] = useState(false);
-
-  // Phase Windows Modal State
-  const [editingWindowPhase, setEditingWindowPhase] = useState<PhaseWindowItem | null>(null);
-  const [windowOpensAtInput, setWindowOpensAtInput] = useState("");
-  const [windowClosesAtInput, setWindowClosesAtInput] = useState("");
 
   // Modals State
   const [reopenMajorsModalOpen, setReopenMajorsModalOpen] = useState(false);
@@ -119,22 +109,18 @@ export function TermCalendarPage() {
     setLoading(true);
     setError(null);
     try {
-      const [phaseRes, readyRes, deptRes, resRun, windowsRes] = await Promise.all([
+      const [phaseRes, readyRes, deptRes, resRun] = await Promise.all([
         termPhaseService.getTermPhase(syId, semesterNumber),
         termPhaseService.getDistributionReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getDepartmentReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getResolution(syId, semesterNumber).catch(() => null),
-        termPhaseService.getPhaseWindows(syId, semesterNumber).catch(() => null),
       ]);
       setPhaseData(phaseRes);
       setReadiness(readyRes);
       setDeptReadiness(deptRes);
       setResolution(resRun);
-      setPhaseWindows(windowsRes);
       setMajorsDueAtInput(toLocalDatetimeInput(phaseRes.majorsDueAt));
-      setGenerationDueAtInput(toLocalDatetimeInput(phaseRes.generationDueAt ?? null));
       setSuggestionsDueAtInput(toLocalDatetimeInput(phaseRes.suggestionsDueAt));
-      setResolutionDueAtInput(toLocalDatetimeInput(phaseRes.resolutionDueAt ?? null));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load term scheduling calendar.");
     } finally {
@@ -164,9 +150,7 @@ export function TermCalendarPage() {
     try {
       const payload = {
         majorsDueAt: majorsDueAtInput ? new Date(majorsDueAtInput).toISOString() : null,
-        generationDueAt: generationDueAtInput ? new Date(generationDueAtInput).toISOString() : null,
         suggestionsDueAt: suggestionsDueAtInput ? new Date(suggestionsDueAtInput).toISOString() : null,
-        resolutionDueAt: resolutionDueAtInput ? new Date(resolutionDueAtInput).toISOString() : null,
         discardGenerated: forceReopen ? discardGenerated : false,
       };
       const res = await termPhaseService.setDeadlines(syId, semesterNumber, payload);
@@ -200,10 +184,10 @@ export function TermCalendarPage() {
     setActionLoading(true);
     try {
       const res = await termPhaseService.rewindPhase(syId, semesterNumber);
-      toast.success(res.message || "Term phase rewound.");
+      toast.success(res.message || "Phase rewound successfully.");
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to step back phase.");
+      toast.error(err instanceof Error ? err.message : "Failed to rewind phase.");
     } finally {
       setActionLoading(false);
     }
@@ -218,33 +202,6 @@ export function TermCalendarPage() {
       await loadData();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to reopen phase.");
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  function handleOpenEditWindow(item: PhaseWindowItem) {
-    setEditingWindowPhase(item);
-    setWindowOpensAtInput(toLocalDatetimeInput(item.opensAt));
-    setWindowClosesAtInput(toLocalDatetimeInput(item.closesAt));
-  }
-
-  async function handleSavePhaseWindow() {
-    if (!syId || !semesterNumber || !editingWindowPhase) return;
-    setActionLoading(true);
-    try {
-      const payload: { opensAt?: string | null; closesAt?: string | null } = {
-        opensAt: windowOpensAtInput ? new Date(windowOpensAtInput).toISOString() : null,
-      };
-      if (editingWindowPhase.canClose) {
-        payload.closesAt = windowClosesAtInput ? new Date(windowClosesAtInput).toISOString() : null;
-      }
-      const res = await termPhaseService.setPhaseWindow(syId, semesterNumber, editingWindowPhase.phase, payload);
-      toast.success(res.message || "Phase window updated.");
-      setEditingWindowPhase(null);
-      await loadData();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update phase window.");
     } finally {
       setActionLoading(false);
     }
@@ -323,50 +280,44 @@ export function TermCalendarPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      <PageHeader title="Scheduling Calendar" />
+      {/* Header */}
+      <PageHeader title="Term Scheduling Calendar" />
 
-      {/* Term Selector */}
-      <Card className="mt-4 grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-        <FieldChrome id="tc-school-year" label="School Year">
+      {/* Selectors */}
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldChrome id="term-calendar-sy" label="School Year">
           <Select
-            items={
-              termsLoading
-                ? [{ value: "", label: "Loading…" }]
-                : schoolYears.length === 0
-                  ? [{ value: "", label: "No school year" }]
-                  : schoolYears.map((y) => ({ value: String(y.id), label: y.schoolYear }))
-            }
             value={selectedSchoolYearId}
-            onValueChange={(v) => setSelectedSchoolYearId(v as string)}
+            onValueChange={(value) => setSelectedSchoolYearId(value ?? "")}
+            disabled={termsLoading || loading}
+            items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
           >
-            <SelectTrigger id="tc-school-year">
+            <SelectTrigger id="term-calendar-sy">
               <SelectValue placeholder="Select school year" />
             </SelectTrigger>
             <SelectContent>
-              {schoolYears.map((y) => (
-                <SelectItem key={y.id} value={String(y.id)}>
-                  {y.schoolYear}
+              {schoolYears.map((s) => (
+                <SelectItem key={s.id} value={String(s.id)}>
+                  {s.schoolYear}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </FieldChrome>
 
-        <FieldChrome id="tc-semester" label="Semester">
+        <FieldChrome id="term-calendar-sem" label="Semester">
           <Select
-            items={
-              semestersLoading
-                ? [{ value: "", label: "Loading…" }]
-                : semesters.length === 0
-                  ? [{ value: "", label: "No semester" }]
-                  : semesters
-                      .filter((s) => s.semesterNumber !== 3)
-                      .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))
-            }
             value={selectedSemesterNumber}
-            onValueChange={(v) => setSelectedSemesterNumber(v as string)}
+            onValueChange={(value) => setSelectedSemesterNumber(value ?? "")}
+            disabled={semestersLoading || loading}
+            items={semesters
+              .filter((s) => s.semesterNumber !== 3)
+              .map((s) => ({
+                value: String(s.semesterNumber),
+                label: semesterLabel(s.semesterNumber),
+              }))}
           >
-            <SelectTrigger id="tc-semester">
+            <SelectTrigger id="term-calendar-sem">
               <SelectValue placeholder="Select semester" />
             </SelectTrigger>
             <SelectContent>
@@ -380,31 +331,34 @@ export function TermCalendarPage() {
             </SelectContent>
           </Select>
         </FieldChrome>
-      </Card>
+      </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
+      {/* Body Content */}
+      {loading && !phaseData ? (
+        <div className="mt-8 flex justify-center py-12">
           <Spinner />
         </div>
       ) : error ? (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-          {error}
+        <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-6 text-center dark:border-red-900/40 dark:bg-red-950/20">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <Button type="button" variant="outline" className="mt-4" block={false} onClick={loadData}>
+            Retry
+          </Button>
         </div>
       ) : phaseData ? (
-        <div className="mt-6 flex flex-col gap-6">
-          {/* Card 1: Phase Timeline */}
+        <div className="mt-8 space-y-6">
+          {/* Card 1: Phase Progress Overview */}
           <Card className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-white/5">
               <div>
-                <h2 className="text-base font-semibold text-navy-800 dark:text-mist-100">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Current Term Status
+                </span>
+                <h1 className="mt-1 font-display text-2xl font-bold tracking-wide text-navy-800 dark:text-mist-100">
                   {phaseData.phaseLabel}
-                </h2>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {phaseData.governed
-                    ? "This term is governed by the batch scheduling lifecycle and deadlines."
-                    : "Not configured yet. Setting a deadline below will adopt the batch scheduling model for this term."}
-                </p>
+                </h1>
               </div>
+
               <Badge tone={phaseData.governed ? "navy" : "slate"}>
                 {phaseData.governed ? "Governed" : "Ungoverned"}
               </Badge>
@@ -415,17 +369,12 @@ export function TermCalendarPage() {
               {TERM_SCHEDULING_PHASE_ORDER.map((stepPhase, idx) => {
                 const isCurrent = phaseData.phase === stepPhase;
                 const isPast = idx < currentPhaseIndex;
-                const phaseItem = phaseData.phases?.find((p) => p.phase === stepPhase);
                 const deadlineField =
                   stepPhase === "major_scheduling"
                     ? phaseData.majorsDueAt
-                    : stepPhase === "generation"
-                      ? phaseData.generationDueAt
-                      : stepPhase === "suggestion_window"
-                        ? phaseData.suggestionsDueAt
-                        : stepPhase === "resolution"
-                          ? phaseData.resolutionDueAt
-                          : null;
+                    : stepPhase === "suggestion_window"
+                      ? phaseData.suggestionsDueAt
+                      : null;
 
                 return (
                   <div
@@ -508,7 +457,7 @@ export function TermCalendarPage() {
                 Deadlines Control
               </h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Every gating phase has its own deadline. Extending a lapsed deadline reopens that phase for all departments.
+                The college calendar owns two deadlines for external stakeholders (Deans and Instructors). Extending a lapsed deadline reopens that phase for all departments.
               </p>
             </div>
 
@@ -516,7 +465,7 @@ export function TermCalendarPage() {
               <div>
                 <Input
                   id="majors-due"
-                  label="1. Major Scheduling Deadline"
+                  label="1. Major Scheduling Deadline (Deans)"
                   type="datetime-local"
                   value={majorsDueAtInput}
                   onChange={(e) => setMajorsDueAtInput(e.target.value)}
@@ -535,23 +484,8 @@ export function TermCalendarPage() {
 
               <div>
                 <Input
-                  id="generation-due"
-                  label="2. Generation Deadline"
-                  type="datetime-local"
-                  value={generationDueAtInput}
-                  onChange={(e) => setGenerationDueAtInput(e.target.value)}
-                />
-                {phaseData.generationDueAt && (
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Currently: {new Date(phaseData.generationDueAt).toLocaleString()} ({formatCountdown(phaseData.generationDueAt, phaseData.serverTime)})
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Input
                   id="suggestions-due"
-                  label="3. Suggestions Window Deadline"
+                  label="2. Suggestions Window Deadline (Instructors)"
                   type="datetime-local"
                   value={suggestionsDueAtInput}
                   onChange={(e) => setSuggestionsDueAtInput(e.target.value)}
@@ -567,21 +501,6 @@ export function TermCalendarPage() {
                   </p>
                 )}
               </div>
-
-              <div>
-                <Input
-                  id="resolution-due"
-                  label="4. Resolution Deadline"
-                  type="datetime-local"
-                  value={resolutionDueAtInput}
-                  onChange={(e) => setResolutionDueAtInput(e.target.value)}
-                />
-                {phaseData.resolutionDueAt && (
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Currently: {new Date(phaseData.resolutionDueAt).toLocaleString()} ({formatCountdown(phaseData.resolutionDueAt, phaseData.serverTime)})
-                  </p>
-                )}
-              </div>
             </div>
 
             <div className="mt-4 flex justify-end gap-3">
@@ -591,9 +510,7 @@ export function TermCalendarPage() {
                 block={false}
                 onClick={() => {
                   setMajorsDueAtInput(toLocalDatetimeInput(phaseData.majorsDueAt));
-                  setGenerationDueAtInput(toLocalDatetimeInput(phaseData.generationDueAt ?? null));
                   setSuggestionsDueAtInput(toLocalDatetimeInput(phaseData.suggestionsDueAt));
-                  setResolutionDueAtInput(toLocalDatetimeInput(phaseData.resolutionDueAt ?? null));
                 }}
               >
                 Reset
@@ -609,90 +526,6 @@ export function TermCalendarPage() {
               </Button>
             </div>
           </Card>
-
-          {/* Card 3: Phase Windows (Dual-Bounded Opens & Closes) */}
-          {phaseWindows && (
-            <Card className="p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-white/5">
-                <div>
-                  <h2 className="text-base font-semibold text-navy-800 dark:text-mist-100">
-                    Phase Windows (Dual-Bounded Opens &amp; Closes)
-                  </h2>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Explicit opening and closing dates per phase. Unset dates allow manual lifecycle progression.
-                  </p>
-                </div>
-              </div>
-
-              {/* Warnings if sequence overlaps */}
-              {phaseWindows.warnings && phaseWindows.warnings.length > 0 && (
-                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs text-amber-800 dark:border-amber-800/40 dark:bg-amber-950/20 dark:text-amber-300">
-                  <span className="font-semibold">Sequence Discrepancy:</span>
-                  <ul className="mt-1 list-disc pl-4 space-y-0.5">
-                    {phaseWindows.warnings.map((w, i) => (
-                      <li key={i}>{w}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <div className="mt-4 overflow-x-auto">
-                <Table>
-                  <TableHead>
-                    <TableHeader>Phase</TableHeader>
-                    <TableHeader>Opens At</TableHeader>
-                    <TableHeader>Closes At</TableHeader>
-                    <TableHeader className="text-right">Action</TableHeader>
-                  </TableHead>
-                  <TableBody>
-                    {phaseWindows.phases.map((pw) => (
-                      <TableRow key={pw.phase}>
-                        <TableCell className="font-medium text-navy-700 dark:text-mist-100">
-                          {pw.label}
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-600 dark:text-slate-400">
-                          {pw.opensAt
-                            ? new Date(pw.opensAt).toLocaleString([], {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "— Unset"}
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-600 dark:text-slate-400">
-                          {!pw.canClose ? (
-                            <span className="italic text-slate-400">Terminal (No closing date)</span>
-                          ) : pw.closesAt ? (
-                            new Date(pw.closesAt).toLocaleString([], {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          ) : (
-                            "— Unset"
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            block={false}
-                            onClick={() => handleOpenEditWindow(pw)}
-                          >
-                            Configure
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
-          )}
 
           {/* Card 4: Department Schedules & Readiness */}
           <Card className="p-6">
@@ -1112,52 +945,6 @@ export function TermCalendarPage() {
               onClick={handleSendProgram}
             >
               Send Program
-            </Button>
-          </ModalActions>
-        </div>
-      </Modal>
-
-      {/* Edit Phase Window Modal */}
-      <Modal
-        open={editingWindowPhase !== null}
-        onClose={() => setEditingWindowPhase(null)}
-        title={`Configure Window: ${editingWindowPhase?.label ?? ""}`}
-      >
-        <div className="space-y-4">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Set the start and end boundary for this phase. Leave a date empty to allow manual progression.
-          </p>
-
-          <Input
-            id="window-opens-at"
-            label="Opens At"
-            type="datetime-local"
-            value={windowOpensAtInput}
-            onChange={(e) => setWindowOpensAtInput(e.target.value)}
-          />
-
-          {editingWindowPhase?.canClose && (
-            <Input
-              id="window-closes-at"
-              label="Closes At"
-              type="datetime-local"
-              value={windowClosesAtInput}
-              onChange={(e) => setWindowClosesAtInput(e.target.value)}
-            />
-          )}
-
-          <ModalActions>
-            <Button type="button" variant="outline" block={false} onClick={() => setEditingWindowPhase(null)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              block={false}
-              isLoading={actionLoading}
-              loadingLabel="Saving…"
-              onClick={handleSavePhaseWindow}
-            >
-              Save Window
             </Button>
           </ModalActions>
         </div>
