@@ -6,6 +6,7 @@ import { FieldChrome } from "~/components/ui/input";
 import { ModalActions } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { TabList } from "~/components/ui/tabs";
 import type { Program } from "~/types/program";
 import { setSchema } from "~/schemas/set.schema";
 import { type ClassSet, type CreateSetInput } from "~/types/set";
@@ -26,9 +27,14 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProgram, setSelectedProgram] = useState(set?.program ?? "");
+  const [activeYearLevel, setActiveYearLevel] = useState<number>(set?.yearLevel ?? 1);
+  const [codesByYearLevel, setCodesByYearLevel] = useState<Record<number, string>>({});
 
   const isEdit = Boolean(set);
   const hasPrograms = programs.length > 0;
+  const availableYearLevels = yearLevelIds.filter(
+    (level) => level <= (programs.find((item) => item.abbrev === selectedProgram)?.lengthYears ?? 0),
+  );
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,7 +42,6 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
 
     const program = String(data.get("set-program") ?? "").trim();
     const yearLevel = Number(data.get("set-year-level")) as YearLevel;
-    const programRecord = programs.find((item) => item.abbrev === program);
 
     if (!program) {
       setError("Please select a program.");
@@ -45,14 +50,14 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
 
     const targetYearLevels = isEdit
       ? [set?.yearLevel ?? yearLevel]
-      : yearLevelIds.filter((level) => level <= (programRecord?.lengthYears ?? 0));
+      : availableYearLevels;
     if (targetYearLevels.length === 0) {
       setError("The selected program has no available year levels.");
       return;
     }
     const inputs: CreateSetInput[] = [];
     for (const level of targetYearLevels) {
-      const codes = String(data.get(`set-code-${level}`) ?? "")
+      const codes = String(isEdit ? data.get(`set-code-${level}`) ?? "" : codesByYearLevel[level] ?? "")
         .split("\n")
         .map((code) => code.trim())
         .filter(Boolean);
@@ -87,7 +92,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
             items={programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
             name="set-program"
             value={selectedProgram}
-            onValueChange={(value) => setSelectedProgram(value ?? "")}
+            onValueChange={(value) => { setSelectedProgram(value ?? ""); setActiveYearLevel(1); setCodesByYearLevel({}); }}
           >
             <SelectTrigger id="set-program">
               <SelectValue placeholder="Select a program…" />
@@ -142,9 +147,10 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         hint={isEdit ? undefined : "One code per line — each line creates a separate set."}
       />}
 
-      {!isEdit && <div className="space-y-4">
-        <p className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 font-body text-xs text-blue-800 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-200">Add the needed sections for every year level at once. Each year can have different set codes.</p>
-        {selectedProgram && yearLevelIds.filter((level) => level <= (programs.find((item) => item.abbrev === selectedProgram)?.lengthYears ?? 0)).map((level) => <Textarea key={level} id={`set-code-${level}`} name={`set-code-${level}`} label={`${yearLevelLabel(level)} Set Code(s)`} rows={2} hint="Optional. One code per line." />)}
+      {!isEdit && selectedProgram && <div className="space-y-4">
+        <p className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 font-body text-xs text-blue-800 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-200">Add the needed sections for every year level. Each year can have different set codes.</p>
+        <TabList ariaLabel="Year level" tabs={availableYearLevels.map((level) => ({ value: level, label: yearLevelLabel(level) }))} value={activeYearLevel} onChange={setActiveYearLevel} />
+        {availableYearLevels.includes(activeYearLevel) && <Textarea id={`set-code-${activeYearLevel}`} label={`${yearLevelLabel(activeYearLevel)} Set Code(s)`} rows={4} value={codesByYearLevel[activeYearLevel] ?? ""} onChange={(event) => setCodesByYearLevel((current) => ({ ...current, [activeYearLevel]: event.target.value }))} hint="Optional. One code per line." />}
       </div>}
 
       <ModalActions>
