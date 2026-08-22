@@ -91,12 +91,22 @@ async function listUnscheduled(filters: {
  */
 async function create(inputs: CreateSetInput[]): Promise<string> {
   if (inputs.length === 0) return "";
-  const data = await apiPost<{ message?: string }>("/sets", {
-    programAbbrev: inputs[0].program,
-    yearLevel: inputs[0].yearLevel,
-    sets: inputs.map((input) => ({ setCode: input.setCode })),
-  });
-  return apiMessage(data);
+  const grouped = new Map<number, CreateSetInput[]>();
+  for (const input of inputs) {
+    const yearInputs = grouped.get(input.yearLevel) ?? [];
+    yearInputs.push(input);
+    grouped.set(input.yearLevel, yearInputs);
+  }
+  const messages: string[] = [];
+  for (const [yearLevel, yearInputs] of grouped) {
+    const data = await apiPost<{ message?: string }>("/sets", {
+      programAbbrev: inputs[0].program,
+      yearLevel,
+      sets: yearInputs.map((input) => ({ setCode: input.setCode })),
+    });
+    messages.push(apiMessage(data));
+  }
+  return messages.find(Boolean) ?? "";
 }
 
 /** PUT /sets/:id — only the set code is updatable. Returns the backend message. */

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { CloseIcon } from "~/components/ui/icons";
 import { useScrollLock } from "~/hooks/use-scroll-lock";
 
@@ -17,14 +18,17 @@ type DrawerProps = {
 
 /** Right-side off-canvas sheet. Mirrors the mobile-nav drawer animation/behavior. */
 export function Drawer({ open, onClose, title, description, wide, footer, children }: DrawerProps) {
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <DrawerPanel key="drawer" onClose={onClose} title={title} description={description} wide={wide} footer={footer}>
           {children}
         </DrawerPanel>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
 
@@ -63,7 +67,7 @@ function DrawerPanel({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-navy-950/40"
+        className="fixed inset-0 z-40 h-dvh w-dvw bg-navy-950/40"
         aria-hidden="true"
       />
 
@@ -76,7 +80,7 @@ function DrawerPanel({
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "tween", duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-        className={`fixed inset-y-0 right-0 z-50 flex w-full flex-col bg-white shadow-2xl dark:bg-surface-raised ${
+        className={`fixed right-0 top-0 z-50 flex h-dvh w-full flex-col bg-white shadow-2xl dark:bg-surface-raised ${
           wide ? "max-w-3xl" : "max-w-md"
         }`}
       >

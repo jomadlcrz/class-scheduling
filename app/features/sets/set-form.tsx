@@ -25,6 +25,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState(set?.program ?? "");
 
   const isEdit = Boolean(set);
   const hasPrograms = programs.length > 0;
@@ -35,29 +36,36 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
 
     const program = String(data.get("set-program") ?? "").trim();
     const yearLevel = Number(data.get("set-year-level")) as YearLevel;
-    const rawCodes = String(data.get("set-code") ?? "");
+    const programRecord = programs.find((item) => item.abbrev === program);
 
     if (!program) {
       setError("Please select a program.");
       return;
     }
 
-    const codes = rawCodes
-      .split("\n")
-      .map((c) => c.trim())
-      .filter(Boolean);
-
-    const result = setSchema.safeParse({ program, yearLevel, codes });
-    if (!result.success) {
-      setError(result.error.issues[0].message);
+    const targetYearLevels = isEdit
+      ? [set?.yearLevel ?? yearLevel]
+      : yearLevelIds.filter((level) => level <= (programRecord?.lengthYears ?? 0));
+    if (targetYearLevels.length === 0) {
+      setError("The selected program has no available year levels.");
       return;
     }
+    const inputs: CreateSetInput[] = [];
+    for (const level of targetYearLevels) {
+      const codes = String(data.get(`set-code-${level}`) ?? "")
+        .split("\n")
+        .map((code) => code.trim())
+        .filter(Boolean);
+      if (codes.length === 0) continue;
+      const result = setSchema.safeParse({ program, yearLevel: level, codes });
+      if (!result.success) { setError(result.error.issues[0].message); return; }
+      inputs.push(...result.data.codes.map((setCode) => ({ program: result.data.program, yearLevel: level as YearLevel, setCode })));
+    }
 
-    const inputs: CreateSetInput[] = result.data.codes.map((setCode) => ({
-      program: result.data.program,
-      yearLevel: result.data.yearLevel as YearLevel,
-      setCode,
-    }));
+    if (inputs.length === 0) {
+      setError("Enter at least one set code for a year level.");
+      return;
+    }
 
     setError(null);
     setIsLoading(true);
@@ -78,7 +86,8 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
           <Select
             items={programs.map((p) => ({ value: p.abbrev, label: `${p.abbrev} — ${p.name}` }))}
             name="set-program"
-            defaultValue={set?.program ?? ""}
+            value={selectedProgram}
+            onValueChange={(value) => setSelectedProgram(value ?? "")}
           >
             <SelectTrigger id="set-program">
               <SelectValue placeholder="Select a program…" />
@@ -104,7 +113,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         )}
       </FieldChrome>
 
-      <FieldChrome id="set-year-level" label="Year Level">
+      {isEdit && <FieldChrome id="set-year-level" label="Year Level">
         <Select
           items={yearLevelIds.map((year) => ({ value: year, label: yearLevelLabel(year) }))}
           name="set-year-level"
@@ -121,16 +130,22 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
             ))}
           </SelectContent>
         </Select>
-      </FieldChrome>
+      </FieldChrome>}
 
-      <Textarea
-        id="set-code"
+      {isEdit && <Textarea
+        id={`set-code-${set?.yearLevel ?? 1}`}
+        name={`set-code-${set?.yearLevel ?? 1}`}
         label={isEdit ? "Set Code" : "Set Code(s)"}
         rows={isEdit ? 2 : 4}
         required
         defaultValue={set?.setCode ?? ""}
         hint={isEdit ? undefined : "One code per line — each line creates a separate set."}
-      />
+      />}
+
+      {!isEdit && <div className="space-y-4">
+        <p className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 font-body text-xs text-blue-800 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-200">Add the needed sections for every year level at once. Each year can have different set codes.</p>
+        {selectedProgram && yearLevelIds.filter((level) => level <= (programs.find((item) => item.abbrev === selectedProgram)?.lengthYears ?? 0)).map((level) => <Textarea key={level} id={`set-code-${level}`} name={`set-code-${level}`} label={`${yearLevelLabel(level)} Set Code(s)`} rows={2} hint="Optional. One code per line." />)}
+      </div>}
 
       <ModalActions>
         <Button type="button" variant="outline" block={false} onClick={onCancel}>
