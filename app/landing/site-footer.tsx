@@ -1,12 +1,17 @@
 interface FooterColumn {
   heading: string;
-  links: readonly string[];
+  links: readonly { label: string; href: string }[];
 }
 
 const COLUMNS: readonly FooterColumn[] = [
-  { heading: "Product", links: ["Features", "Schedule builder", "Conflict checks", "Publishing"] },
-  { heading: "Colleges", links: ["CITE", "CBA", "COC", "COED"] },
-  { heading: "Resources", links: ["Documentation", "Support", "Status", "Changelog"] },
+  {
+    heading: "Help & Support",
+    links: [
+      { label: "Help Center", href: "/help" },
+      { label: "FAQs", href: "/faqs" },
+      { label: "Contact Us", href: "/contact-us" },
+    ],
+  },
 ];
 
 
@@ -18,7 +23,7 @@ export function SiteFooter() {
       <div className="h-px w-full bg-linear-to-r from-transparent via-gold-400/50 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-10">
-        <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
               {/* Colored mark on the light footer, white mark on the dark footer. */}
@@ -66,18 +71,35 @@ export function SiteFooter() {
               </h3>
               <ul className="mt-4 space-y-2.5">
                 {column.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.href}>
                     <a
-                      href="#"
-                      className="text-sm text-mist-100/70 transition-colors duration-200 hover:text-gold-300 focus-visible:text-gold-300 focus-visible:outline-none dark:text-slate-400 dark:hover:text-gold-300 dark:focus-visible:text-gold-300"
+                      href={link.href}
+                      className="rounded-sm text-sm text-mist-100/70 transition-colors duration-200 hover:text-gold-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-gold-300"
                     >
-                      {link}
+                      {link.label}
                     </a>
                   </li>
                 ))}
               </ul>
             </nav>
           ))}
+
+          <nav aria-label="Locate Us">
+            <h3 className="font-display text-lg tracking-wide text-mist-100 dark:text-mist-100">
+              Locate Us
+            </h3>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=San+Jose+Drive%2C+Alaminos%2C+Pangasinan"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 flex items-start gap-2 rounded-sm text-sm leading-relaxed text-mist-100/70 transition-colors duration-200 hover:text-gold-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:text-gold-300"
+            >
+              <MapPinIcon size={16} />
+              <span>
+                San Jose Drive, Alaminos, Pangasinan
+              </span>
+            </a>
+          </nav>
         </div>
       </div>
 
@@ -123,3 +145,4 @@ function FacebookIcon() {
     </svg>
   );
 }
+import { MapPinIcon } from "~/components/ui/icons";

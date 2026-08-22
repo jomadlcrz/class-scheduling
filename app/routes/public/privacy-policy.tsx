@@ -1,5 +1,4 @@
 import { ThemeProvider } from "~/components/theme/theme-provider";
-import { AmbientBackground } from "~/components/ui/ambient-background";
 import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
 
@@ -52,8 +51,6 @@ export default function PrivacyPolicy() {
   return (
     <ThemeProvider>
       <div className="relative min-h-dvh overflow-x-clip bg-cream-50 dark:bg-surface">
-        <AmbientBackground variant="page" />
-
         <SiteHeader />
 
         {/* Full-width page title bar */}
