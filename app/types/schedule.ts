@@ -14,14 +14,9 @@ export const DAY_LABELS: Record<Day, string> = {
 
 export type ScheduleSemester = number;
 
-export const SCHEDULE_MODES = ["F2F", "Online", "Modular"] as const;
-export type ScheduleMode = (typeof SCHEDULE_MODES)[number];
-
-export const SCHEDULE_MODE_LABELS: Record<ScheduleMode, string> = {
-  F2F: "F2F",
-  Online: "Online",
-  Modular: "Modular",
-};
+export type ClassMode = string;
+export type SessionMode = string;
+export type ScheduleMode = string;
 
 export type Schedule = {
   id: string;

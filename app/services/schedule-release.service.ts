@@ -2,7 +2,6 @@ import { apiGet, apiMessage, apiPost } from "~/lib/api";
 import { appendTermScopeParams } from "~/lib/term-scope";
 import {
   DAY_LABELS,
-  SCHEDULE_MODES,
   parseTime12h,
   type Day,
   type Schedule,
@@ -23,9 +22,8 @@ const DAY_BY_LABEL = Object.fromEntries(
   (Object.entries(DAY_LABELS) as [Day, string][]).map(([short, label]) => [label, short]),
 ) as Record<string, Day>;
 
-/** The backend title-cases modes on save ("F2F" is stored as "F2f") — same fix as schedule.service.ts. */
 function normalizeMode(mode: string): ScheduleMode {
-  return SCHEDULE_MODES.find((m) => m.toLowerCase() === mode.toLowerCase()) ?? "F2F";
+  return mode;
 }
 
 // The backend already serializes releases in camelCase (ScheduleReleaseService._serialize_release),
@@ -133,6 +131,33 @@ async function listApprovals(
     pagination: data.pagination,
     pending: (data.pending || []).map(mapRelease),
     recentlyReviewed: (data.recentlyReviewed || []).map(mapRelease),
+  };
+}
+
+/** GET /deans/program-approvals/{syId}/{semesterNumber} — dean's programs for the term, grouped by stage. */
+async function listProgramApprovals(
+  syId: number,
+  semesterNumber: number,
+): Promise<import("~/types/schedule-release").DeanProgramApprovalsResponse> {
+  return apiGet<import("~/types/schedule-release").DeanProgramApprovalsResponse>(
+    `/deans/program-approvals/${syId}/${semesterNumber}`,
+  );
+}
+
+/** POST /deans/program-approvals/{syId}/{semesterNumber}/send-to-instructors — dean passes all waiting programs to instructors in one act. */
+async function sendAllToInstructors(
+  syId: number,
+  semesterNumber: number,
+): Promise<import("~/types/schedule-release").DeanSendAllToInstructorsResult> {
+  const data = await apiPost<import("~/types/schedule-release").DeanSendAllToInstructorsResult & { message?: string }>(
+    `/deans/program-approvals/${syId}/${semesterNumber}/send-to-instructors`,
+  );
+  return {
+    ...data,
+    message: apiMessage(data),
+    sentSetIds: data.sentSetIds || [],
+    programIds: data.programIds || [],
+    blocked: data.blocked || [],
   };
 }
 
@@ -300,6 +325,8 @@ export const scheduleReleaseService = {
   withdrawRelease,
   catchUpRelease,
   listApprovals,
+  listProgramApprovals,
+  sendAllToInstructors,
   getApprovalPreview,
   getApproval,
   approveRelease,

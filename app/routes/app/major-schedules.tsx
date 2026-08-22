@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~
 import { Textarea } from "~/components/ui/textarea";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { useEnums } from "~/hooks/use-enums";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -262,8 +263,7 @@ function MajorSchedulesPage() {
       {auditLog && <section className="mt-8"><h2 className="mb-3 font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">Major Scheduling History</h2>{auditLog.items.length === 0 ? <EmptyState title="No history yet">Changes to this term's Major schedules will appear here.</EmptyState> : <Table><TableHead><TableHeader>Action</TableHeader><TableHeader>Submission</TableHeader><TableHeader>Performed by</TableHeader><TableHeader>Details</TableHeader></TableHead><TableBody>{auditLog.items.map((item) => <TableRow key={item.id}><TableCell>{item.actionLabel}</TableCell><TableCell>{item.departmentAbbrev ?? "—"}{item.submissionVersion != null ? ` · v${item.submissionVersion}` : ""}</TableCell><TableCell>{item.performedBy.name ?? "—"}</TableCell><TableCell>{item.reason ?? item.details ?? "—"}</TableCell></TableRow>)}</TableBody></Table>}</section>}
       {user?.role === "registrar" && submissions && <RegistrarMajorControls submissions={submissions} onDelete={setRegistrarDeleteTarget} />}
       <MajorMeetingModal open={meetingOpen} schedule={editTarget} syId={syId} semesterNumber={semesterNumber} schoolYear={schoolYears.find((row) => row.id === syId)?.schoolYear ?? ""} saving={saving} error={formError} onClose={() => { setMeetingOpen(false); setEditTarget(null); }} onSubmit={submitMeeting} />
-      <RegistrarMajorDeleteDialog schedule={registrarDeleteTarget} saving={saving} error={formError} onClose={() => setRegistrarDeleteTarget(null)} onConfirm={async (reason) => { if (!registrarDeleteTarget) return; const ok = await withRefresh(() => authorityWorkflowService.deleteMajorSchedule(registrarDeleteTarget.id, "registrar", reason)); if (ok) setRegistrarDeleteTarget(null); }} />
-      <Modal open={requirementsOpen} onClose={() => setRequirementsOpen(false)} title="Major Requirements" wide>{requirementsError ? <DataLoadAlert title="Requirements unavailable" message={requirementsError} /> : !requirements ? <Skeleton className="h-52 rounded-xl" /> : <div className="space-y-3"><p className="font-body text-sm text-slate-500 dark:text-slate-400">{requirements.unsatisfiedCount === 0 ? "All requirements are satisfied." : `${requirements.unsatisfiedCount} requirement${requirements.unsatisfiedCount === 1 ? "" : "s"} still need attention.`}</p><Table><TableHead><TableHeader>Section</TableHeader><TableHeader>Subject</TableHeader><TableHeader>Required</TableHeader><TableHeader>Status</TableHeader></TableHead><TableBody>{requirements.requirements.map((item) => <TableRow key={`${item.setId}:${item.subjectId}`}><TableCell>{item.setName}</TableCell><TableCell>{item.subjectCode} — {item.subjectTitle}</TableCell><TableCell>{item.requiredMeetingKinds.join(" + ")}</TableCell><TableCell><Badge tone={item.isSatisfied ? "emerald" : "gold"}>{item.isSatisfied ? "Complete" : `Missing ${item.missingMeetingKinds.join(", ")}`}</Badge></TableCell></TableRow>)}</TableBody></Table></div>}</Modal>
+      <Modal open={requirementsOpen} onClose={() => setRequirementsOpen(false)} title="Major Requirements" wide>{requirementsError ? <DataLoadAlert title="Requirements unavailable" message={requirementsError} /> : !requirements ? <Skeleton className="h-52 rounded-xl" /> : <div className="space-y-3"><p className="font-body text-sm text-slate-500 dark:text-slate-400">{requirements.unsatisfiedCount === 0 ? "All requirements are satisfied." : `${requirements.unsatisfiedCount} requirement${requirements.unsatisfiedCount === 1 ? "" : "s"} still need attention.`}</p><Table><TableHead><TableHeader>Section</TableHeader><TableHeader>Subject</TableHeader><TableHeader>Required</TableHeader><TableHeader>Status</TableHeader></TableHead><TableBody>{requirements.requirements.map((item) => <TableRow key={`${item.setId}:${item.subjectId}`}><TableCell>{item.setName}</TableCell><TableCell>{item.subjectCode} — {item.subjectTitle}</TableCell><TableCell>{(item.requiredSessionModes ?? item.requiredMeetingKinds ?? []).join(" + ")}</TableCell><TableCell><Badge tone={item.isSatisfied ? "emerald" : "gold"}>{item.isSatisfied ? "Complete" : item.blended && !item.blended.isPaired ? "Missing in-room session (Blended)" : `Missing ${(item.missingSessionModes ?? item.missingMeetingKinds ?? []).join(", ")}`}</Badge></TableCell></TableRow>)}</TableBody></Table></div>}</Modal>
       <Modal open={detailOpen} onClose={() => setDetailOpen(false)} title="Submission Details" wide>
         {detailLoading ? (
           <Skeleton className="h-52 rounded-xl" />
@@ -401,6 +401,10 @@ function SubmissionField({ label, value }: { label: string; value: string }) {
 
 function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, saving, error, onClose, onSubmit }: { open: boolean; schedule: MajorSchedule | null; syId: number; semesterNumber: number; schoolYear: string; saving: boolean; error: string | null; onClose: () => void; onSubmit: (input: MajorScheduleMeetingInput) => Promise<void> }) {
   const { semesterLabel } = useSemesters();
+  const { enums } = useEnums();
+  const days = enums?.dayOfWeek?.map((d) => d.name) ?? Object.values(DAY_LABELS);
+  const classModes = enums?.classMode ?? ["F2F", "Synchronous", "Asynchronous", "Blended"];
+
   const [programId, setProgramId] = useState(0);
   const [setId, setSetId] = useState(0);
   const [subjectId, setSubjectId] = useState(0);
@@ -409,7 +413,7 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
   const [dayOfWeek, setDayOfWeek] = useState("Monday");
   const [startTime, setStartTime] = useState("7:00 AM");
   const [endTime, setEndTime] = useState("8:00 AM");
-  const [mode, setMode] = useState("Lecture");
+  const [mode, setMode] = useState("F2F");
   const [validationError, setValidationError] = useState<string | null>(null);
   const { data: programs, error: programsError, reload: reloadPrograms } = useCachedData("major-meeting-programs", () => programService.list());
   const selectedProgram = (programs ?? []).find((row) => row.id === programId);
@@ -428,16 +432,16 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
     setSubjectId(schedule?.subjectId ?? 0);
     setInstructorId(schedule?.instructorId ? String(schedule.instructorId) : "floating");
     setRoomId(schedule?.roomId ?? 0);
-    setDayOfWeek(schedule?.dayOfWeek ?? "Monday");
+    setDayOfWeek(schedule?.dayOfWeek ?? days[0] ?? "Monday");
     setStartTime(schedule ? formatTime12h(schedule.startTime) : "7:00 AM");
     setEndTime(schedule ? formatTime12h(schedule.endTime) : "8:00 AM");
-    setMode(schedule?.meetingKind === "LAB" ? "Laboratory" : "Lecture");
+    setMode(schedule?.classMode ?? (schedule?.meetingKind === "LAB" ? "Laboratory" : "F2F"));
     setValidationError(null);
-  }, [open, schedule]);
+  }, [open, schedule, days]);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!programId || !setId || !subjectId || !roomId) {
+    if (!programId || !setId || !subjectId || (!roomId && mode === "F2F")) {
       setValidationError("Complete all required fields before saving.");
       return;
     }
@@ -457,7 +461,7 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
       setId,
       subjectId,
       instructorId: instructorId === "floating" ? null : Number(instructorId),
-      roomId,
+      roomId: roomId || null,
       dayOfWeek,
       startTime: normalizeTime(startTime),
       endTime: normalizeTime(endTime),
@@ -486,7 +490,7 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
             <FieldChrome id="major-program" label="Program" required>
               <Select items={(programs ?? []).map((program) => ({ value: String(program.id), label: `${program.abbrev} — ${program.name}` }))} value={programId ? String(programId) : ""} onValueChange={(value) => { setProgramId(Number(value)); setSetId(0); setSubjectId(0); setInstructorId("floating"); }}>
                 <SelectTrigger id="major-program"><SelectValue placeholder="Select program" /></SelectTrigger>
-                <SelectContent>{(programs ?? []).map((program) => <SelectItem key={program.id} value={String(program.id)}>{program.abbrev} — {program.name}</SelectItem>)}</SelectContent>
+                <SelectContent>{(programs ?? []).map((program) => <SelectItem key={program.id} value={String(program.id)}>{program.abbrev} — ${program.name}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
             <FieldChrome id="major-set" label="Section" required hint={programId ? undefined : "Select a program first."}>
@@ -513,9 +517,9 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
                 <SelectContent><SelectItem value="floating">TBA / Floating</SelectItem>{instructors.map((faculty) => <SelectItem key={faculty.id} value={String(faculty.id)}>{faculty.fullName}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
-            <FieldChrome id="major-room" label="Room" required>
+            <FieldChrome id="major-room" label="Room" required={mode === "F2F"}>
               <Select items={(rooms ?? []).map((room) => ({ value: String(room.id), label: `${room.buildingName} · ${room.roomName}` }))} value={roomId ? String(roomId) : ""} onValueChange={(value) => setRoomId(Number(value))}>
-                <SelectTrigger id="major-room"><SelectValue placeholder="Select room" /></SelectTrigger>
+                <SelectTrigger id="major-room"><SelectValue placeholder={mode === "F2F" ? "Select room" : "No room (Online)"} /></SelectTrigger>
                 <SelectContent>{(rooms ?? []).map((room) => <SelectItem key={room.id} value={String(room.id)}>{room.buildingName} · {room.roomName}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
@@ -526,15 +530,15 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
           <legend className="mb-3 font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">Meeting pattern</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             <FieldChrome id="major-day" label="Day" required>
-              <Select items={Object.values(DAY_LABELS).map((day) => ({ value: day, label: day }))} value={dayOfWeek} onValueChange={(value) => setDayOfWeek(value ?? "Monday")}>
+              <Select items={days.map((day) => ({ value: day, label: day }))} value={dayOfWeek} onValueChange={(value) => setDayOfWeek(value ?? days[0] ?? "Monday")}>
                 <SelectTrigger id="major-day"><SelectValue placeholder="Select day" /></SelectTrigger>
-                <SelectContent>{Object.values(DAY_LABELS).map((day) => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent>
+                <SelectContent>{days.map((day) => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
             <FieldChrome id="major-mode" label="Meeting mode" required>
-              <Select items={["Lecture", "Laboratory", "F2F", "Online"].map((item) => ({ value: item, label: item }))} value={mode} onValueChange={(value) => setMode(value ?? "Lecture")}>
+              <Select items={classModes.map((item) => ({ value: item, label: item }))} value={mode} onValueChange={(value) => setMode(value ?? classModes[0])}>
                 <SelectTrigger id="major-mode"><SelectValue placeholder="Select mode" /></SelectTrigger>
-                <SelectContent>{["Lecture", "Laboratory", "F2F", "Online"].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
+                <SelectContent>{classModes.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
             <FieldChrome id="major-start-time" label="Start time" required>

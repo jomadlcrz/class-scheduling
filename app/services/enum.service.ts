@@ -2,7 +2,7 @@ import { apiGet } from "~/lib/api";
 
 /**
  * Backend enum values (app/enums.py), fetched instead of duplicated in the
- * frontend — a pure pass-through of the options endpoint.
+ * frontend — a pure pass-through of the options endpoint (GET /enums).
  */
 
 export type DayOfWeekOption = {
@@ -16,40 +16,45 @@ export type YearLevelOption = {
 };
 
 export type EnumOptions = {
-  classMode: string[];
-  gender: string[];
-  civilStatus: string[];
-  classroomStatus: string[];
-  roleName: string[];
-  studentType: string[];
-  nameSuffix: string[];
   academicStatus: string[];
-  enrollmentState: string[];
-  personnelType: string[];
-  roomType: string[];
-  subjectType: string[];
-  departmentType: string[];
-  degreeType: string[];
+  civilStatus: string[];
+  classMode: string[];
+  classroomStatus: string[];
   dayOfWeek: DayOfWeekOption[];
+  degreeType: string[];
+  departmentType: string[];
+  enrollmentState: string[];
+  gender: string[];
+  nameSuffix: string[];
+  personnelType: string[];
+  roleName: string[];
+  roomType: string[];
+  sessionMode: string[];
+  studentType: string[];
+  subjectType: string[];
+  termStatus: string[];
+  yearLevel: string[];
   yearLevels: YearLevelOption[];
 };
 
 type EnumOptionsResponse = {
-  class_mode: string[];
-  gender: string[];
-  civil_status: string[];
-  classroom_status: string[];
-  role_name: string[];
-  student_type: string[];
-  name_suffix: string[];
   academic_status: string[];
-  enrollment_state: string[];
-  personnel_type: string[];
-  room_type: string[];
-  subject_type: string[];
-  department_type: string[];
-  degree_type: string[];
+  civil_status: string[];
+  class_mode: string[];
+  classroom_status: string[];
   day_of_week: DayOfWeekOption[];
+  degree_type: string[];
+  department_type: string[];
+  enrollment_state: string[];
+  gender: string[];
+  name_suffix: string[];
+  personnel_type: string[];
+  role_name: string[] | string;
+  room_type: string[];
+  session_mode: string[];
+  student_type: string[];
+  subject_type: string[];
+  term_status: string[];
   year_level: string[];
 };
 
@@ -58,25 +63,35 @@ let cached: Promise<EnumOptions> | null = null;
 
 function getOptions(): Promise<EnumOptions> {
   cached ??= apiGet<EnumOptionsResponse>("/enums")
-    .then((data) => ({
-      classMode: data.class_mode,
-      gender: data.gender,
-      civilStatus: data.civil_status,
-      classroomStatus: data.classroom_status,
-      roleName: data.role_name,
-      studentType: data.student_type,
-      nameSuffix: data.name_suffix,
-      academicStatus: data.academic_status,
-      enrollmentState: data.enrollment_state,
-      personnelType: data.personnel_type,
-      roomType: data.room_type,
-      subjectType: data.subject_type,
-      departmentType: data.department_type,
-      degreeType: data.degree_type,
-      dayOfWeek: data.day_of_week,
-      // Backend sends ordered YearLevelEnum labels; the level number is the position.
-      yearLevels: data.year_level.map((name, i) => ({ id: i + 1, name })),
-    }))
+    .then((data) => {
+      const roleName = Array.isArray(data.role_name)
+        ? data.role_name
+        : typeof data.role_name === "string"
+          ? (JSON.parse(data.role_name) as string[])
+          : [];
+
+      return {
+        academicStatus: data.academic_status ?? [],
+        civilStatus: data.civil_status ?? [],
+        classMode: data.class_mode ?? [],
+        classroomStatus: data.classroom_status ?? [],
+        dayOfWeek: data.day_of_week ?? [],
+        degreeType: data.degree_type ?? [],
+        departmentType: data.department_type ?? [],
+        enrollmentState: data.enrollment_state ?? [],
+        gender: data.gender ?? [],
+        nameSuffix: data.name_suffix ?? [],
+        personnelType: data.personnel_type ?? [],
+        roleName,
+        roomType: data.room_type ?? [],
+        sessionMode: data.session_mode ?? [],
+        studentType: data.student_type ?? [],
+        subjectType: data.subject_type ?? [],
+        termStatus: data.term_status ?? [],
+        yearLevel: data.year_level ?? [],
+        yearLevels: (data.year_level ?? []).map((name, i) => ({ id: i + 1, name })),
+      };
+    })
     .catch((err) => {
       cached = null; // allow a retry on the next call
       throw err;

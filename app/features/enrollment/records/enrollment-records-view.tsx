@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { EnrollmentDetailDrawer } from "~/features/enrollment/records/enrollment-detail-drawer";
+import { useEnums } from "~/hooks/use-enums";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { EnrollmentFacets, EnrollmentRow, EnrollmentStudent } from "~/types/enrollment";
 
@@ -23,13 +24,6 @@ const TYPE_TONES: Record<string, BadgeTone> = {
   Regular: "navy",
   Irregular: "slate",
 };
-
-const STATE_SEGMENTS: { value: string; label: string; countKey: keyof EnrollmentFacets["counts"] }[] = [
-  { value: "Enrolled", label: "Enrolled", countKey: "enrolled" },
-  { value: "Dropped", label: "Dropped", countKey: "dropped" },
-  { value: "Withdrawn", label: "Withdrawn", countKey: "withdrawn" },
-  { value: "Voided", label: "Voided", countKey: "voided" },
-];
 
 type DisplayRow = { key: string; student: EnrollmentStudent; enrollment: EnrollmentRow };
 
@@ -90,6 +84,9 @@ export function EnrollmentRecordsView({
   onPageChange,
   readOnly = false,
 }: Props) {
+  const { enums } = useEnums();
+  const academicStatuses = enums?.academicStatus ?? ["Regular", "Irregular"];
+  const enrollmentStates = enums?.enrollmentState ?? ["Enrolled", "Dropped", "Withdrawn", "Voided"];
   const { yearLevelIds, yearLevelLabel } = useYearLevels();
 
   const [selected, setSelected] = useState<DisplayRow | null>(null);
@@ -118,32 +115,39 @@ export function EnrollmentRecordsView({
           <button type="button" className={segmentClass(typeFilter === "all")} onClick={() => onTypeFilterChange("all")}>
             All{counts ? ` · ${counts.total}` : ""}
           </button>
-          <button type="button" className={segmentClass(typeFilter === "Regular")} onClick={() => onTypeFilterChange("Regular")}>
-            Regular{counts ? ` · ${counts.regular}` : ""}
-          </button>
-          <button
-            type="button"
-            className={segmentClass(typeFilter === "Irregular")}
-            onClick={() => onTypeFilterChange("Irregular")}
-          >
-            Irregular{counts ? ` · ${counts.irregular}` : ""}
-          </button>
+          {academicStatuses.map((status) => {
+            const count = status === "Regular" ? counts?.regular : status === "Irregular" ? counts?.irregular : undefined;
+            return (
+              <button
+                key={status}
+                type="button"
+                className={segmentClass(typeFilter === status)}
+                onClick={() => onTypeFilterChange(status)}
+              >
+                {status}{count !== undefined ? ` · ${count}` : ""}
+              </button>
+            );
+          })}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className={segmentClass(stateFilter === "all")} onClick={() => onStateFilterChange("all")}>
             Any state
           </button>
-          {STATE_SEGMENTS.map((seg) => (
-            <button
-              key={seg.value}
-              type="button"
-              className={segmentClass(stateFilter === seg.value)}
-              onClick={() => onStateFilterChange(seg.value)}
-            >
-              {seg.label}
-              {counts ? ` · ${counts[seg.countKey]}` : ""}
-            </button>
-          ))}
+          {enrollmentStates.map((state) => {
+            const countKey = state.toLowerCase() as keyof EnrollmentFacets["counts"];
+            const count = counts ? counts[countKey] : undefined;
+            return (
+              <button
+                key={state}
+                type="button"
+                className={segmentClass(stateFilter === state)}
+                onClick={() => onStateFilterChange(state)}
+              >
+                {state}
+                {count !== undefined ? ` · ${count}` : ""}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -154,7 +158,8 @@ export function EnrollmentRecordsView({
             <SearchIcon />
           </span>
           <input
-            type="search" placeholder="Search..."
+            type="search"
+            placeholder="Search..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             aria-label="Search students"
@@ -252,13 +257,18 @@ export function EnrollmentRecordsView({
                           alt={student.name}
                           className="size-6 shrink-0 rounded-full object-cover"
                         />
-                        ) : <ProfileAvatar gender={student.gender} className="size-6" />}
+                      ) : (
+                        <ProfileAvatar gender={student.gender} className="size-6" />
+                      )}
                       <div className="min-w-0">
                         <p className="truncate font-body text-xs font-medium text-navy-700 dark:text-mist-100">
                           {student.name}
                         </p>
                         {student.email && (
-                          <a href={`mailto:${student.email}`} className="block truncate font-body text-[0.7rem] text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
+                          <a
+                            href={`mailto:${student.email}`}
+                            className="block truncate font-body text-[0.7rem] text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                          >
                             {student.email}
                           </a>
                         )}

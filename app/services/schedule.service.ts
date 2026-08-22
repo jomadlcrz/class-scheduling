@@ -3,7 +3,6 @@ import { appendTermScopeParams, termScopeQuery } from "~/lib/term-scope";
 import { semesterService } from "~/services/semester.service";
 import {
   DAY_LABELS,
-  SCHEDULE_MODES,
   parseTime12h,
   type Attestation,
   type Day,
@@ -20,9 +19,8 @@ const DAY_BY_LABEL = Object.fromEntries(
   (Object.entries(DAY_LABELS) as [Day, string][]).map(([short, label]) => [label, short]),
 ) as Record<string, Day>;
 
-/** The backend title-cases modes on save ("F2F" is stored as "F2f"). */
 function normalizeMode(mode: string): ScheduleMode {
-  return SCHEDULE_MODES.find((m) => m.toLowerCase() === mode.toLowerCase()) ?? "F2F";
+  return mode as ScheduleMode;
 }
 
 type ViewScheduleResponse = {

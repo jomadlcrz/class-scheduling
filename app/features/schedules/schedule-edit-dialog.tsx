@@ -6,8 +6,9 @@ import { AlertIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { useClassModes } from "~/hooks/use-class-modes";
 import { timeToMinutes } from "~/lib/time";
-import { SCHEDULE_MODES, type ScheduleMode } from "~/types/schedule";
+import type { ScheduleMode } from "~/types/schedule";
 import type { ScheduleRoomOption } from "~/services/schedule.service";
 
 export type ScheduleEditForm = {
@@ -54,6 +55,8 @@ export function ScheduleEditDialog({
   disabled = false,
   disabledNote,
 }: ScheduleEditDialogProps) {
+  const { classModes } = useClassModes();
+
   return (
     <Modal
       open={open}
@@ -99,13 +102,13 @@ export function ScheduleEditDialog({
           </FieldChrome>
           <FieldChrome id="edit-mode" label="Mode">
             <Select
-              items={SCHEDULE_MODES.map((mode) => ({ value: mode, label: mode }))}
+              items={classModes.map((mode) => ({ value: mode, label: mode }))}
               value={form.mode}
               onValueChange={(value) => onFormChange((current) => ({ ...current, mode: value as ScheduleMode }))}
             >
               <SelectTrigger id="edit-mode"><SelectValue placeholder="Select mode" /></SelectTrigger>
               <SelectContent>
-                {SCHEDULE_MODES.map((mode) => <SelectItem key={mode} value={mode}>{mode}</SelectItem>)}
+                {classModes.map((mode) => <SelectItem key={mode} value={mode}>{mode}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldChrome>

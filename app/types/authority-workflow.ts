@@ -59,10 +59,12 @@ export type MajorScheduleMeetingInput = {
   setId: number;
   subjectId: number;
   instructorId?: number | null;
-  roomId: number;
+  roomId?: number | null;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
+  classMode?: string;
+  sessionMode?: "LAB" | "LEC" | string;
   mode?: string;
   overrideMeetingPattern?: boolean;
 };
@@ -79,11 +81,13 @@ export type MajorSchedule = {
   subjectCode: string;
   subjectTitle: string;
   subjectType: string;
-  meetingKind: "LAB" | "LEC";
+  sessionMode?: "LAB" | "LEC";
+  meetingKind?: "LAB" | "LEC";
+  classMode?: string;
   instructorId: number | null;
   instructorDisplay: string;
   floating: boolean;
-  roomId: number;
+  roomId: number | null;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -138,6 +142,13 @@ export type MajorScheduleDeletionNote = {
   deletedAt: string;
 };
 
+export type BlendedRequirementStatus = {
+  inRoomCount: number;
+  onlineCount: number;
+  missingBlendedHalves: string[];
+  isPaired: boolean;
+};
+
 export type MajorScheduleRequirement = {
   setId: number;
   setName: string;
@@ -145,12 +156,16 @@ export type MajorScheduleRequirement = {
   subjectCode: string;
   subjectTitle: string;
   subjectType: string;
-  requiredMeetingKinds: string[];
-  satisfiedMeetingKinds: string[];
-  missingMeetingKinds: string[];
+  requiredSessionModes?: string[];
+  satisfiedSessionModes?: string[];
+  missingSessionModes?: string[];
+  requiredMeetingKinds?: string[];
+  satisfiedMeetingKinds?: string[];
+  missingMeetingKinds?: string[];
   isSatisfied: boolean;
   canCreateAdjustment: boolean;
   assignedInstructors: Array<{ instructorId: number; displayName: string }>;
+  blended?: BlendedRequirementStatus | null;
 };
 
 export type MajorScheduleRequirements = {

@@ -108,11 +108,44 @@ export type DeanProgramApprovalResult = {
   termDistributed?: boolean;
 };
 
+export type DeanSendAllToInstructorsResult = {
+  message: string;
+  sentSetIds: number[];
+  programIds: number[];
+  blocked: DeanProgramApprovalBlockedSet[];
+};
+
 export type DeanProgramRejectResult = {
   message: string;
   programAbbrev: string;
   rejectedSetIds: number[];
   skippedSetIds: number[];
+};
+
+export type DeanProgramApprovalStage =
+  | "returned"
+  | "waiting"
+  | "with_instructors"
+  | "with_registrar"
+  | "final_approval"
+  | "published";
+
+export type DeanProgramApprovalItem = {
+  programId: number;
+  programAbbrev: string;
+  programName: string;
+  stage: DeanProgramApprovalStage;
+  stageLabel: string;
+  sectionCount: number;
+  pendingCount: number;
+  sessionCount: number;
+  representative: ScheduleRelease;
+  sections: ScheduleRelease[];
+};
+
+export type DeanProgramApprovalsResponse = {
+  programs: DeanProgramApprovalItem[];
+  waitingCount: number;
 };
 
 export type InstructorReviewProgressItem = {
