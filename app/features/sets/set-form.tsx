@@ -28,6 +28,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedProgram, setSelectedProgram] = useState(set?.program ?? "");
   const [activeYearLevel, setActiveYearLevel] = useState<number>(set?.yearLevel ?? 1);
+  const [editYearLevel, setEditYearLevel] = useState<number>(set?.yearLevel ?? 1);
   const [codesByYearLevel, setCodesByYearLevel] = useState<Record<number, string>>({});
 
   const isEdit = Boolean(set);
@@ -40,7 +41,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
 
-    const program = String(data.get("set-program") ?? "").trim();
+    const program = isEdit ? selectedProgram : String(data.get("set-program") ?? "").trim();
     const yearLevel = Number(data.get("set-year-level")) as YearLevel;
 
     if (!program) {
@@ -49,7 +50,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
     }
 
     const targetYearLevels = isEdit
-      ? [set?.yearLevel ?? yearLevel]
+      ? [editYearLevel || yearLevel]
       : availableYearLevels;
     if (targetYearLevels.length === 0) {
       setError("The selected program has no available year levels.");
@@ -93,6 +94,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
             name="set-program"
             value={selectedProgram}
             onValueChange={(value) => { setSelectedProgram(value ?? ""); setActiveYearLevel(1); setCodesByYearLevel({}); }}
+            disabled={isEdit}
           >
             <SelectTrigger id="set-program">
               <SelectValue placeholder="Select a program…" />
@@ -122,7 +124,8 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         <Select
           items={yearLevelIds.map((year) => ({ value: year, label: yearLevelLabel(year) }))}
           name="set-year-level"
-          defaultValue={set?.yearLevel ?? 1}
+          value={editYearLevel}
+          onValueChange={(value) => setEditYearLevel(Number(value ?? set?.yearLevel ?? 1))}
         >
           <SelectTrigger id="set-year-level">
             <SelectValue placeholder="Select a year level…" />
@@ -138,8 +141,8 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
       </FieldChrome>}
 
       {isEdit && <Textarea
-        id={`set-code-${set?.yearLevel ?? 1}`}
-        name={`set-code-${set?.yearLevel ?? 1}`}
+        id={`set-code-${editYearLevel}`}
+        name={`set-code-${editYearLevel}`}
         label={isEdit ? "Set Code" : "Set Code(s)"}
         rows={isEdit ? 2 : 4}
         required

@@ -102,7 +102,7 @@ export function CurriculumSubjectRow({
               type="number"
               inputMode="numeric"
               min={1}
-              max={6}
+              max={5}
               step={1}
               value={row.units === 0 ? "" : row.units}
               onKeyDown={(e) => {

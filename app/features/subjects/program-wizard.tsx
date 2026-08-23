@@ -166,8 +166,8 @@ export function ProgramWizard({
     for (const entry of pending) {
       if (!entry.code.trim()) return "Every new subject needs a subject code.";
       if (!entry.title.trim()) return "Every new subject needs a descriptive title.";
-      if (!Number.isFinite(entry.units) || entry.units < 1) {
-        return `${entry.code || "A subject"} must have at least 1 unit.`;
+      if (!Number.isFinite(entry.units) || entry.units < 1 || entry.units > 5) {
+        return `${entry.code || "A subject"} must have between 1 and 5 units.`;
       }
       if (!entry.subjectType) {
         return `${entry.code || "A subject"} needs a subject type.`;

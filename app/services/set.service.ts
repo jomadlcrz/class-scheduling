@@ -110,8 +110,8 @@ async function create(inputs: CreateSetInput[]): Promise<string> {
 }
 
 /** PUT /sets/:id — only the set code is updatable. Returns the backend message. */
-async function update(id: number, setCode: string): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/sets/${id}`, { setCode });
+async function update(id: number, input: Pick<CreateSetInput, "setCode" | "yearLevel">): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/sets/${id}`, { setCode: input.setCode, yearLevel: input.yearLevel });
   return apiMessage(data);
 }
 

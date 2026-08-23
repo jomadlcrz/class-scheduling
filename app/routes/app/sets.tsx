@@ -83,7 +83,7 @@ function SetsPage() {
 
   async function handleEdit(inputs: CreateSetInput[]) {
     if (!editTarget || inputs.length === 0) return;
-    const message = await setService.update(editTarget.id, inputs[0].setCode);
+    const message = await setService.update(editTarget.id, inputs[0]);
     if (message) toast.success(message);
     await refresh();
     setEditTarget(null);

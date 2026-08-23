@@ -1,0 +1,250 @@
+import { useEffect, useMemo, useState, useDeferredValue } from "react";
+import { toast } from "sonner";
+import { RoleGuard } from "~/auth/role-guard";
+import { useAuth } from "~/hooks/use-auth";
+import { EmptyState } from "~/components/feedback/empty-state";
+import { SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { MappingSkeleton } from "~/components/ui/skeleton";
+import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
+import { filterClassrooms } from "~/features/classroom-mapping/mapping-model";
+import { EditableMappingGrid } from "~/features/classroom-mapping/editable-mapping-grid";
+import { useCachedData } from "~/hooks/use-cached-data";
+import { PageHeader } from "~/layouts/page-header";
+import { buildingService } from "~/services/building.service";
+import { classroomMappingService } from "~/services/classroom-mapping.service";
+import { schoolYearService } from "~/services/school-year.service";
+import { semesterService } from "~/services/semester.service";
+import { authorityWorkflowService } from "~/services/authority-workflow.service";
+import type { Building } from "~/types/building";
+
+export function meta() {
+  return [
+    { title: "Classroom Mapping — GWC Class Scheduling" },
+    { name: "description", content: "Weekly schedule and availability for all classrooms." },
+  ];
+}
+
+export default function ClassroomMappingRoute() {
+  return (
+    <RoleGuard allow={["admin", "registrar", "dean"]}>
+      <ClassroomMappingPage />
+    </RoleGuard>
+  );
+}
+
+function ClassroomMappingPage() {
+  const { user } = useAuth();
+  const [schoolYear, setSchoolYear] = useState("");
+  const [semesterNumber, setSemesterNumber] = useState<number | null>(null);
+  const [buildingFilter, setBuildingFilter] = useState("all");
+  const [rawSearch, setRawSearch] = useState("");
+
+  const { data: semestersData } = useCachedData("semesters", () => semesterService.list());
+  const { data: schoolYearsData } = useCachedData("school-years", () => schoolYearService.list());
+  const { data: buildingsData } = useCachedData("buildings", () => buildingService.list());
+  const semesters = useMemo(() => semestersData ?? [], [semestersData]);
+  const schoolYears = useMemo(
+    () => (schoolYearsData ?? []).map((o) => o.schoolYear),
+    [schoolYearsData],
+  );
+  const buildings = buildingsData ?? [];
+  const contextLoading = semestersData === null || schoolYearsData === null;
+  const buildingName = buildings.find((b) => String(b.id) === buildingFilter)?.name;
+  const syId = schoolYearsData?.find((item) => item.schoolYear === schoolYear)?.id ?? 0;
+
+  // Default the term selectors to the first available option once loaded.
+  useEffect(() => {
+    if (semesters.length > 0 && semesterNumber === null) setSemesterNumber(semesters[0].semesterNumber);
+  }, [semesters, semesterNumber]);
+  useEffect(() => {
+    if (schoolYears.length > 0 && !schoolYear) setSchoolYear(schoolYears[0]);
+  }, [schoolYears, schoolYear]);
+
+  // Term + building scoped; cached per combination so revisits skip the skeleton.
+  const mappingKey = `classroom-mapping:${schoolYear}:${semesterNumber ?? "none"}:${buildingName ?? "all"}`;
+  const { data: classrooms, error: loadError, reload: reloadClassrooms } = useCachedData(
+    mappingKey,
+    () =>
+      classroomMappingService
+        .list({ schoolYear, semesterNumber: semesterNumber as number, building: buildingName })
+        .then((result) => result.classrooms),
+    { enabled: schoolYear !== "" && semesterNumber !== null },
+  );
+  const noMatchingRooms = loadError?.toLowerCase().includes("no rooms found") ?? false;
+  const { data: submissions, reload: reloadSubmissions } = useCachedData(
+    `classroom-mapping-major-submissions:${syId}:${semesterNumber ?? "none"}`,
+    () => authorityWorkflowService.listMajorScheduleSubmissions({ syId, semesterNumber: semesterNumber as number }),
+    { enabled: syId > 0 && semesterNumber !== null, cache: false },
+  );
+
+  const search = useDeferredValue(rawSearch);
+
+  const filtered = useMemo(
+    () => {
+      if (!classrooms) return [];
+      return filterClassrooms(classrooms, search);
+    },
+    [classrooms, search],
+  );
+
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <PageHeader
+        title="Classroom Mapping"
+      />
+
+      <div className="mt-4 flex flex-col gap-4">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem] md:items-end">
+          <div className="grid grid-cols-3 gap-3 md:flex md:flex-wrap">
+            <div className="md:w-44">
+              <Select
+                items={
+                  contextLoading
+                    ? [{ value: "", label: "Loading…" }]
+                    : schoolYears.length === 0
+                      ? [{ value: "", label: "No school year" }]
+                      : schoolYears.map((y) => ({ value: y, label: y }))
+                }
+                value={schoolYear}
+                onValueChange={(v) => setSchoolYear(v as string)}
+              >
+                <SelectTrigger id="cm-year" aria-label="School Year">
+                  <SelectValue placeholder="School Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contextLoading ? (
+                    <SelectItem value="">Loading…</SelectItem>
+                  ) : schoolYears.length === 0 ? (
+                    <SelectItem value="">No school year</SelectItem>
+                  ) : (
+                    schoolYears.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:w-44">
+              <Select
+                items={
+                  contextLoading
+                    ? [{ value: "", label: "Loading…" }]
+                    : semesters.length === 0
+                      ? [{ value: "", label: "No semester" }]
+                      : semesters.map((s) => ({
+                          value: String(s.semesterNumber),
+                          label: s.displayName ?? s.semester,
+                        }))
+                }
+                value={semesterNumber != null ? String(semesterNumber) : ""}
+                onValueChange={(v) => setSemesterNumber(v ? Number(v) : null)}
+              >
+                <SelectTrigger id="cm-sem" aria-label="Semester">
+                  <SelectValue placeholder="Semester" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contextLoading ? (
+                    <SelectItem value="">Loading…</SelectItem>
+                  ) : semesters.length === 0 ? (
+                    <SelectItem value="">No semester</SelectItem>
+                  ) : (
+                    semesters.map((s) => (
+                      <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                        {s.displayName ?? s.semester}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:w-44">
+              <Select
+                items={[
+                  { value: "all", label: "All buildings" },
+                  ...buildings.map((b) => ({ value: String(b.id), label: b.name })),
+                ]}
+                value={buildingFilter}
+                onValueChange={(v) => setBuildingFilter(v as string)}
+              >
+                <SelectTrigger id="cm-building" aria-label="Building">
+                  <SelectValue placeholder="All buildings" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All buildings</SelectItem>
+                  {buildings.map((b) => (
+                    <SelectItem key={b.id} value={String(b.id)}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="relative w-full md:self-end">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <SearchIcon />
+            </span>
+            <input
+              type="search"
+              placeholder="Search..."
+              value={rawSearch}
+              onChange={(e) => setRawSearch(e.target.value)}
+              aria-label="Search classrooms"
+              className={`${inputClassName} pl-9 pr-4`}
+            />
+          </div>
+        </div>
+
+        <MappingLegend />
+
+        {noMatchingRooms && classrooms === null ? (
+          <EmptyState title="No rooms found">
+            {loadError}
+          </EmptyState>
+        ) : loadError && classrooms === null ? (
+          <EmptyState title="Unable to load classrooms">
+            {loadError}
+          </EmptyState>
+        ) : !contextLoading && schoolYears.length === 0 ? (
+          <EmptyState title="No school year">
+            No school year has been added yet.
+          </EmptyState>
+        ) : !contextLoading && semesters.length === 0 ? (
+          <EmptyState title="No semester">
+            No semester has been configured yet.
+          </EmptyState>
+        ) : classrooms === null ? (
+          <MappingSkeleton rooms={4} />
+        ) : filtered.length === 0 ? (
+          <EmptyState title={rawSearch.trim() || buildingFilter !== "all" ? "No classrooms found" : "No classrooms configured"}>
+            {rawSearch.trim() || buildingFilter !== "all"
+              ? "No classrooms match the current search and filters."
+              : "No classrooms are configured for this term yet."}
+          </EmptyState>
+        ) : (
+          <EditableMappingGrid
+            classrooms={filtered}
+            syId={syId}
+            semesterNumber={semesterNumber as number}
+            schoolYear={schoolYear}
+            onCreate={async (input) => {
+              try {
+                const result = await authorityWorkflowService.createMajorSchedule(
+                  input,
+                  user?.role === "dean" ? "dean" : "registrar",
+                );
+                if (result.message) toast.success(result.message);
+                await Promise.all([reloadSubmissions(), reloadClassrooms()]);
+                return true;
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Unable to assign the schedule.");
+                return false;
+              }
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

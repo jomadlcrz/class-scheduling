@@ -94,7 +94,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
           type="number"
           inputMode="numeric"
           min={1}
-          max={6}
+          max={5}
           required
           defaultValue={subject.units}
           onKeyDown={(e) => {
