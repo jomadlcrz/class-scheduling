@@ -16,6 +16,8 @@ import { PageHeader } from "~/layouts/page-header";
 import { termPhaseService } from "~/services/term-phase.service";
 import type {
   DepartmentReadinessResponse,
+  SchedulingWindowName,
+  SchedulingWindowsSnapshot,
   TermDistributionReadiness,
   TermPhaseResponse,
   TermResolutionRun,
@@ -71,6 +73,7 @@ export function TermCalendarPage() {
   const [readiness, setReadiness] = useState<TermDistributionReadiness | null>(null);
   const [deptReadiness, setDeptReadiness] = useState<DepartmentReadinessResponse | null>(null);
   const [resolution, setResolution] = useState<TermResolutionRun | null>(null);
+  const [schedulingWindows, setSchedulingWindows] = useState<SchedulingWindowsSnapshot | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +90,8 @@ export function TermCalendarPage() {
   const [sendProgramNote, setSendProgramNote] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [windowTarget, setWindowTarget] = useState<SchedulingWindowName | null>(null);
+  const [windowClosingAt, setWindowClosingAt] = useState("");
 
   // Initial selection: ask the backend which term is running
   useEffect(() => {
@@ -137,16 +142,18 @@ export function TermCalendarPage() {
     setLoading(true);
     setError(null);
     try {
-      const [phaseRes, readyRes, deptRes, resRun] = await Promise.all([
+      const [phaseRes, readyRes, deptRes, resRun, windowsRes] = await Promise.all([
         termPhaseService.getTermPhase(syId, semesterNumber),
         termPhaseService.getDistributionReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getDepartmentReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getResolution(syId, semesterNumber).catch(() => null),
+        termPhaseService.getSchedulingWindows(syId, semesterNumber).catch(() => null),
       ]);
       setPhaseData(phaseRes);
       setReadiness(readyRes);
       setDeptReadiness(deptRes);
       setResolution(resRun);
+      setSchedulingWindows(windowsRes ?? phaseRes.schedulingWindows ?? null);
       setMajorsDueAtInput(toLocalDatetimeInput(phaseRes.majorsDueAt));
       setSuggestionsDueAtInput(toLocalDatetimeInput(phaseRes.suggestionsDueAt));
     } catch (err) {
@@ -246,6 +253,42 @@ export function TermCalendarPage() {
       toast.error(err instanceof Error ? err.message : "Failed to preview suggestion resolution.");
     } finally {
       setPreviewLoading(false);
+    }
+  }
+
+  function openWindowDialog(window: SchedulingWindowName) {
+    setWindowTarget(window);
+    setWindowClosingAt("");
+  }
+
+  async function handleOpenWindow(confirmed = false) {
+    if (!syId || !semesterNumber || !windowTarget || !windowClosingAt) return;
+    setActionLoading(true);
+    try {
+      const result = await termPhaseService.openSchedulingWindow(
+        syId, semesterNumber, windowTarget, new Date(windowClosingAt).toISOString(), confirmed,
+      );
+      toast.success(result.message);
+      setWindowTarget(null);
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to open the scheduling window.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleCloseWindow(window: SchedulingWindowName) {
+    if (!syId || !semesterNumber) return;
+    setActionLoading(true);
+    try {
+      const result = await termPhaseService.closeSchedulingWindow(syId, semesterNumber, window);
+      toast.success(result.message);
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to close the scheduling window.");
+    } finally {
+      setActionLoading(false);
     }
   }
 
@@ -386,7 +429,8 @@ export function TermCalendarPage() {
             {/* Timeline steps */}
             <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-5">
               {TERM_SCHEDULING_PHASE_ORDER.map((stepPhase, idx) => {
-                const isCurrent = phaseData.phase === stepPhase;
+                const phaseItem = phaseData.phases.find((item) => item.phase === stepPhase);
+                const isCurrent = phaseItem?.isCurrent ?? phaseData.phase === stepPhase;
                 const isPast = idx < currentPhaseIndex;
                 const deadlineField = stepPhase === "major_scheduling" ? phaseData.majorsDueAt : stepPhase === "suggestion_window" ? phaseData.suggestionsDueAt : null;
 
@@ -406,8 +450,8 @@ export function TermCalendarPage() {
                         <span className="text-xs font-semibold text-slate-400">
                           0{idx + 1}
                         </span>
-                        {isCurrent && (
-                          <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+                        {phaseItem?.isOpen && (
+                          <span title="Open for work" className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                         )}
                       </div>
                       <span
@@ -463,6 +507,26 @@ export function TermCalendarPage() {
               )}
             </div>
           </Card>
+
+          {/* The backend is authoritative about whether a window accepts work. */}
+          {schedulingWindows && (
+            <Card className="p-6">
+              <div className="border-b border-slate-100 pb-3 dark:border-white/5">
+                <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Scheduling Windows</h2>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Only one window can be open at a time. Opening the other closes the active window.</p>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {(["major", "suggestion"] as const).map((name) => {
+                  const window = schedulingWindows.windows[name];
+                  return <div key={name} className="rounded-lg border border-slate-200 p-4 dark:border-white/10">
+                    <div className="flex items-center justify-between gap-2"><span className="font-semibold text-navy-800 dark:text-mist-100">{window.label}</span><Badge tone={window.isOpen ? "emerald" : "slate"}>{window.isOpen ? "Open" : "Closed"}</Badge></div>
+                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{window.isOpen ? `Closes ${new Date(window.scheduledClosingAt!).toLocaleString()}` : window.closedAt ? `Closed ${new Date(window.closedAt).toLocaleString()}` : "Not opened for this term."}</p>
+                    <div className="mt-3 flex gap-2">{window.isOpen ? <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => void handleCloseWindow(name)}>Close now</Button> : <Button type="button" block={false} disabled={actionLoading} onClick={() => openWindowDialog(name)}>Open window</Button>}</div>
+                  </div>;
+                })}
+              </div>
+            </Card>
+          )}
 
           {/* Card 2: Deadlines Form */}
           <Card className="p-6">
@@ -921,6 +985,14 @@ export function TermCalendarPage() {
           </div>
         </div>
       </ConfirmDialog>
+
+      <Modal open={windowTarget !== null} onClose={() => setWindowTarget(null)} title={`Open ${windowTarget === "major" ? "Major Scheduling" : "Suggestion"} Window`}>
+        <div className="space-y-4">
+          <Input id="window-closing-at" label="Closes at" type="datetime-local" value={windowClosingAt} onChange={(event) => setWindowClosingAt(event.target.value)} />
+          {schedulingWindows?.openWindow && schedulingWindows.openWindow !== windowTarget && <p className="text-sm text-amber-700 dark:text-amber-300">Opening this window closes the active {schedulingWindows.windows[schedulingWindows.openWindow].label} window.</p>}
+          <ModalActions><Button type="button" variant="outline" block={false} onClick={() => setWindowTarget(null)}>Cancel</Button><Button type="button" block={false} disabled={!windowClosingAt} isLoading={actionLoading} loadingLabel="Opening…" onClick={() => void handleOpenWindow(Boolean(schedulingWindows?.openWindow && schedulingWindows.openWindow !== windowTarget))}>Open window</Button></ModalActions>
+        </div>
+      </Modal>
 
       {/* Send Program Modal */}
       <Modal

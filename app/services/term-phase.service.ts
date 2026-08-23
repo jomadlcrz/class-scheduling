@@ -7,6 +7,8 @@ import type {
   TermDistributionReadiness,
   TermPhaseResponse,
   TermResolutionRun,
+  SchedulingWindowName,
+  SchedulingWindowsSnapshot,
 } from "~/types/term-phase";
 
 /** GET /scheduling-terms/{syId}/{semesterNumber} — readable by every role. */
@@ -116,6 +118,43 @@ async function setDeadlines(
   };
 }
 
+/** GET /registrar/scheduling-terms/{syId}/{semesterNumber}/windows — current window state and history. */
+async function getSchedulingWindows(
+  syId: number,
+  semesterNumber: number,
+): Promise<SchedulingWindowsSnapshot> {
+  return apiGet<SchedulingWindowsSnapshot>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows`,
+  );
+}
+
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/open. */
+async function openSchedulingWindow(
+  syId: number,
+  semesterNumber: number,
+  window: SchedulingWindowName,
+  scheduledClosingAt: string,
+  confirmed = false,
+): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
+  const data = await apiPost<{ message?: string; state: SchedulingWindowsSnapshot }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/open`,
+    { scheduledClosingAt, confirmed },
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/close. */
+async function closeSchedulingWindow(
+  syId: number,
+  semesterNumber: number,
+  window: SchedulingWindowName,
+): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
+  const data = await apiPost<{ message?: string; state: SchedulingWindowsSnapshot }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/close`,
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
 /** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/advance — advance term phase. */
 async function advancePhase(
   syId: number,
@@ -198,6 +237,9 @@ export const termPhaseService = {
   withdrawProgram,
   sendDepartment,
   setDeadlines,
+  getSchedulingWindows,
+  openSchedulingWindow,
+  closeSchedulingWindow,
   advancePhase,
   rewindPhase,
   openPhase,

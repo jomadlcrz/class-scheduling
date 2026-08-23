@@ -64,7 +64,7 @@ export type MajorScheduleMeetingInput = {
   startTime: string;
   endTime: string;
   classMode?: string;
-  sessionMode?: "LAB" | "LEC" | string;
+  sessionMode?: string;
   mode?: string;
   overrideMeetingPattern?: boolean;
 };
@@ -81,8 +81,8 @@ export type MajorSchedule = {
   subjectCode: string;
   subjectTitle: string;
   subjectType: string;
-  sessionMode?: "LAB" | "LEC";
-  meetingKind?: "LAB" | "LEC";
+  sessionMode?: string;
+  meetingKind?: string;
   classMode?: string;
   instructorId: number | null;
   instructorDisplay: string;

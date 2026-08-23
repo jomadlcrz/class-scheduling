@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import {
@@ -134,7 +134,13 @@ export function SlotEntryForm({
     ? String(rooms.find((r) => r.roomName === conflictPrefill.roomName)?.id ?? "")
     : String(initialSlot?.roomId ?? "");
   const [roomId, setRoomId] = useState(defaultRoomId);
-  const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "F2F");
+  const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "");
+
+  // The backend owns the allowed delivery-mode vocabulary. New manual slots
+  // adopt its first option once /enums has loaded instead of assuming F2F.
+  useEffect(() => {
+    if (!mode && classModes[0]) setMode(classModes[0] as ScheduleMode);
+  }, [classModes, mode]);
 
   const isEditing = Boolean(initialSlot);
   const selectedSubject = subjects.find((s) => String(s.id) === selectedSubjectId);
@@ -171,6 +177,7 @@ export function SlotEntryForm({
     const room = roomOptions.find((r) => String(r.id) === roomId);
 
     if (!selectedSubject) { setError("Select a subject."); return; }
+    if (!mode) { setError("Class modes are still loading. Please try again shortly."); return; }
     if (!selectedFaculty) { setError("Select a faculty member."); return; }
     if (needsRoom && !room) { setError("Select a room."); return; }
 
@@ -298,6 +305,7 @@ export function SlotEntryForm({
           items={classModes.map((m) => ({ value: m, label: m }))}
           value={mode}
           onValueChange={(v) => setMode(v as ScheduleMode)}
+          disabled={classModes.length === 0}
         >
           <SelectTrigger id="slot-mode">
             <SelectValue placeholder="Select mode…" />

@@ -39,6 +39,7 @@ const STATUS_TONES: Record<string, BadgeTone> = {
 };
 
 const TIME_OPTIONS = generateTimeSlots().map(formatTime12h);
+const EMPTY_ENUM_OPTIONS: string[] = [];
 
 type DecisionTarget = { request: MajorScheduleEditRequest; approve: boolean };
 
@@ -403,7 +404,8 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
   const { semesterLabel } = useSemesters();
   const { enums } = useEnums();
   const days = enums?.dayOfWeek?.map((d) => d.name) ?? Object.values(DAY_LABELS);
-  const classModes = enums?.classMode ?? ["F2F", "Synchronous", "Asynchronous", "Blended"];
+  const classModes = enums?.classMode ?? EMPTY_ENUM_OPTIONS;
+  const sessionModes = enums?.sessionMode ?? EMPTY_ENUM_OPTIONS;
 
   const [programId, setProgramId] = useState(0);
   const [setId, setSetId] = useState(0);
@@ -413,7 +415,8 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
   const [dayOfWeek, setDayOfWeek] = useState("Monday");
   const [startTime, setStartTime] = useState("7:00 AM");
   const [endTime, setEndTime] = useState("8:00 AM");
-  const [mode, setMode] = useState("F2F");
+  const [mode, setMode] = useState("");
+  const [sessionMode, setSessionMode] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
   const { data: programs, error: programsError, reload: reloadPrograms } = useCachedData("major-meeting-programs", () => programService.list());
   const selectedProgram = (programs ?? []).find((row) => row.id === programId);
@@ -435,13 +438,14 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
     setDayOfWeek(schedule?.dayOfWeek ?? days[0] ?? "Monday");
     setStartTime(schedule ? formatTime12h(schedule.startTime) : "7:00 AM");
     setEndTime(schedule ? formatTime12h(schedule.endTime) : "8:00 AM");
-    setMode(schedule?.classMode ?? (schedule?.meetingKind === "LAB" ? "Laboratory" : "F2F"));
+    setMode(schedule?.classMode ?? classModes[0] ?? "");
+    setSessionMode(schedule?.sessionMode ?? schedule?.meetingKind ?? sessionModes[0] ?? "");
     setValidationError(null);
-  }, [open, schedule, days]);
+  }, [open, schedule, days, sessionModes]);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!programId || !setId || !subjectId || (!roomId && mode === "F2F")) {
+    if (!programId || !setId || !subjectId || !mode || !sessionMode || (!roomId && mode === "F2F")) {
       setValidationError("Complete all required fields before saving.");
       return;
     }
@@ -465,7 +469,8 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
       dayOfWeek,
       startTime: normalizeTime(startTime),
       endTime: normalizeTime(endTime),
-      mode,
+      classMode: mode,
+      sessionMode,
     });
   }
 
@@ -536,9 +541,15 @@ function MajorMeetingModal({ open, schedule, syId, semesterNumber, schoolYear, s
               </Select>
             </FieldChrome>
             <FieldChrome id="major-mode" label="Meeting mode" required>
-              <Select items={classModes.map((item) => ({ value: item, label: item }))} value={mode} onValueChange={(value) => setMode(value ?? classModes[0])}>
+              <Select items={classModes.map((item) => ({ value: item, label: item }))} value={mode} onValueChange={(value) => setMode(value ?? classModes[0] ?? "")} disabled={classModes.length === 0}>
                 <SelectTrigger id="major-mode"><SelectValue placeholder="Select mode" /></SelectTrigger>
                 <SelectContent>{classModes.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="major-session-mode" label="Session mode" required>
+              <Select items={sessionModes.map((item) => ({ value: item, label: item }))} value={sessionMode} onValueChange={(value) => setSessionMode(value ?? sessionModes[0] ?? "")} disabled={sessionModes.length === 0}>
+                <SelectTrigger id="major-session-mode"><SelectValue placeholder="Select session mode" /></SelectTrigger>
+                <SelectContent>{sessionModes.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
               </Select>
             </FieldChrome>
             <FieldChrome id="major-start-time" label="Start time" required>

@@ -37,7 +37,33 @@ export type TermPhaseItem = {
   dueAt: string | null;
   deadlinePassed: boolean;
   isCurrent: boolean;
+  /** Whether this phase is currently accepting work; distinct from isCurrent. */
+  isOpen?: boolean;
   isPast: boolean;
+};
+
+export type SchedulingWindowName = "major" | "suggestion";
+
+export type SchedulingWindow = {
+  window: SchedulingWindowName;
+  label: string;
+  status?: string;
+  isOpen: boolean;
+  openedAt: string | null;
+  scheduledClosingAt: string | null;
+  closedAt: string | null;
+  closeReason: "manual" | "scheduled" | "counterpart_opened" | null;
+  openedByUserId?: number | null;
+  closedByUserId?: number | null;
+};
+
+export type SchedulingWindowsSnapshot = {
+  syId: number;
+  semesterNumber: number;
+  openWindow: SchedulingWindowName | null;
+  windows: Record<SchedulingWindowName, SchedulingWindow>;
+  serverTime: string;
+  history?: SchedulingWindow[];
 };
 
 export type TermPhaseResponse = {
@@ -61,6 +87,7 @@ export type TermPhaseResponse = {
   updatedAt?: string | null;
   updatedByUserId?: number | null;
   gates: TermPhaseGates;
+  schedulingWindows?: SchedulingWindowsSnapshot;
   serverTime: string;
 };
 

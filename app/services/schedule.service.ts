@@ -93,7 +93,7 @@ async function view(): Promise<Schedule[]> {
       roomName: r.room_name ?? "",
       // The scheduling API renamed this from `mode` to `class_mode`.  Reading
       // both keeps schedules visible during a staggered frontend/backend deploy.
-      mode: normalizeMode(r.class_mode ?? r.mode ?? "F2F"),
+      mode: normalizeMode(r.class_mode ?? r.mode ?? ""),
       day: DAY_BY_LABEL[r.day_of_week] ?? "M",
       startTime: parseTime12h(start),
       endTime: parseTime12h(end ?? start),
@@ -383,8 +383,12 @@ type AutoGenerateResponse = {
       subject_code: string;
       subject_name: string;
       duration: number;
-      session_type: "Lecture" | "Lab";
-      mode: string;
+      /** Current API name; `session_type` is retained for older deployments. */
+      session_mode?: "LEC" | "LAB";
+      session_type?: "Lecture" | "Lab";
+      /** Current API name; `mode` is retained for older deployments. */
+      class_mode?: string;
+      mode?: string;
       instructor_id: number | null;
       instructor_name: string | null;
       room_id: number | null;
@@ -481,8 +485,8 @@ async function autoGenerate(input: {
         id: r.room_id,
         roomName: r.room_name,
       })),
-      mode: normalizeMode(s.mode),
-      sessionType: s.session_type,
+      mode: normalizeMode(s.class_mode ?? s.mode ?? ""),
+      sessionType: (s.session_mode === "LAB" || s.session_type === "Lab" ? "Lab" : "Lecture") as SlotDraft["sessionType"],
       validatedLastResortDailyExempt: s.validatedLastResortDailyExempt,
     })),
   );
