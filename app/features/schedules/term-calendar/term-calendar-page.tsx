@@ -307,11 +307,9 @@ export function TermCalendarPage() {
   const resolutionOutcomes = resolution?.outcome ?? [];
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      {/* Header */}
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 font-body">
       <PageHeader title="Term Scheduling Calendar" />
 
-      {/* Selectors */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FieldChrome id="term-calendar-sy" label="School Year">
           <Select
@@ -379,17 +377,10 @@ export function TermCalendarPage() {
           <Card className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-white/5">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Current Term Status
-                </span>
-                <h1 className="mt-1 font-display text-2xl font-bold tracking-wide text-navy-800 dark:text-mist-100">
-                  {phaseData.phaseLabel}
-                </h1>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Term Status</span>
+                <h1 className="mt-1 font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">{phaseData.phaseLabel}</h1>
               </div>
-
-              <Badge tone={phaseData.governed ? "navy" : "slate"}>
-                {phaseData.governed ? "Governed" : "Ungoverned"}
-              </Badge>
+              <Badge tone={phaseData.governed ? "navy" : "slate"}>{phaseData.governed ? "Governed" : "Ungoverned"}</Badge>
             </div>
 
             {/* Timeline steps */}
@@ -397,12 +388,7 @@ export function TermCalendarPage() {
               {TERM_SCHEDULING_PHASE_ORDER.map((stepPhase, idx) => {
                 const isCurrent = phaseData.phase === stepPhase;
                 const isPast = idx < currentPhaseIndex;
-                const deadlineField =
-                  stepPhase === "major_scheduling"
-                    ? phaseData.majorsDueAt
-                    : stepPhase === "suggestion_window"
-                      ? phaseData.suggestionsDueAt
-                      : null;
+                const deadlineField = stepPhase === "major_scheduling" ? phaseData.majorsDueAt : stepPhase === "suggestion_window" ? phaseData.suggestionsDueAt : null;
 
                 return (
                   <div
@@ -481,9 +467,7 @@ export function TermCalendarPage() {
           {/* Card 2: Deadlines Form */}
           <Card className="p-6">
             <div className="border-b border-slate-100 pb-3 dark:border-white/5">
-              <h2 className="text-base font-semibold text-navy-800 dark:text-mist-100">
-                Deadlines Control
-              </h2>
+              <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Deadlines Control</h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 The college calendar owns two deadlines for external stakeholders (Deans and Instructors). Extending a lapsed deadline reopens that phase for all departments.
               </p>
@@ -559,19 +543,12 @@ export function TermCalendarPage() {
           <Card className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-white/5">
               <div>
-                <h2 className="text-base font-semibold text-navy-800 dark:text-mist-100">
-                  Department Schedules &amp; Distribution Readiness
-                </h2>
+                <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Department Schedules &amp; Distribution Readiness</h2>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   All schedules for all departments must be complete before distributing the term. Finished departments can be sent ahead to their Deans.
                 </p>
               </div>
-
-              {readiness && (
-                <Badge tone={readiness.isReady ? "emerald" : "gold"}>
-                  {readiness.readyCount ?? 0} of {readiness.expected ?? 0} sets ready
-                </Badge>
-              )}
+              {readiness && <Badge tone={readiness.isReady ? "emerald" : "gold"}>{readiness.readyCount ?? 0} of {readiness.expected ?? 0} sets ready</Badge>}
             </div>
 
             {/* Unscheduled / Incomplete Sets Warning */}
@@ -704,7 +681,7 @@ export function TermCalendarPage() {
           <Card className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-white/5">
               <div>
-                <h2 className="text-base font-semibold text-navy-800 dark:text-mist-100">
+                <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
                   Suggestion Resolution Pass
                 </h2>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
@@ -798,7 +775,7 @@ export function TermCalendarPage() {
 
           {/* Card 5: Stage Movement Actions */}
           <Card className="p-6">
-            <h2 className="text-base font-semibold text-navy-800 dark:text-mist-100">
+            <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
               Term Stage Controls
             </h2>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
