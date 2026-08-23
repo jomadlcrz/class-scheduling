@@ -34,7 +34,9 @@ type ViewScheduleResponse = {
   set_name: string;
   program_name?: string | null;
   day_of_week: string;
-  mode: string;
+  /** Current API field; `mode` is kept for older deployed backends. */
+  class_mode?: string;
+  mode?: string;
   class_time: string;
   class_duration: string;
   dept_abbrev: string | null;
@@ -89,7 +91,9 @@ async function view(): Promise<Schedule[]> {
       facultyName: r.instructor_name,
       roomId: r.room_id != null ? String(r.room_id) : "",
       roomName: r.room_name ?? "",
-      mode: normalizeMode(r.mode),
+      // The scheduling API renamed this from `mode` to `class_mode`.  Reading
+      // both keeps schedules visible during a staggered frontend/backend deploy.
+      mode: normalizeMode(r.class_mode ?? r.mode ?? "F2F"),
       day: DAY_BY_LABEL[r.day_of_week] ?? "M",
       startTime: parseTime12h(start),
       endTime: parseTime12h(end ?? start),
@@ -601,7 +605,7 @@ async function createRegular(input: {
         startTime: s.startTime,
         endTime: s.endTime,
         subjectId: s.subjectId,
-        mode: s.mode,
+        classMode: s.mode,
         instructorId: s.facultyId,
         instructorName: s.facultyName,
         roomId: s.roomId,
@@ -660,7 +664,7 @@ async function updateRegular(
   if (input.dayOfWeek != null) payload.dayOfWeek = input.dayOfWeek;
   if (input.startTime != null) payload.startTime = input.startTime;
   if (input.endTime != null) payload.endTime = input.endTime;
-  if (input.mode != null) payload.mode = input.mode;
+  if (input.mode != null) payload.classMode = input.mode;
   if (input.instructorId != null) payload.instructorId = input.instructorId;
   if (input.roomId != null) payload.roomId = input.roomId;
   const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}`, payload);
