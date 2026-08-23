@@ -232,7 +232,10 @@ export type ProposedScheduleMeeting = {
   dayOfWeek: string;
   startTime: string;
   endTime: string;
-  roomId: number;
+  roomId: number | null;
+  /** Optional: omitting it preserves the meeting's current delivery mode. */
+  classMode?: string;
+  sessionMode?: string;
 };
 
 export type SuggestionMoveSlot = {
@@ -246,6 +249,7 @@ export type SuggestionMove = {
   subjectCode: string;
   original: SuggestionMoveSlot;
   proposed: SuggestionMoveSlot;
+  classMode?: string;
   changed: boolean;
 };
 

@@ -16,6 +16,8 @@ import { Textarea } from "~/components/ui/textarea";
 import { PhaseBanner } from "~/features/academic-terms/phase-banner";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { useClassModes } from "~/hooks/use-class-modes";
+import { useDays } from "~/hooks/use-days";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -37,11 +39,12 @@ const STATUS_TONES: Record<string, BadgeTone> = {
 };
 
 const TIME_OPTIONS = generateTimeSlots().map(formatTime12h);
-const emptyMeeting = (): ProposedScheduleMeeting => ({
-  dayOfWeek: "Monday",
+const emptyMeeting = (mode = "", dayOfWeek = ""): ProposedScheduleMeeting => ({
+  dayOfWeek,
   startTime: "7:00 AM",
   endTime: "8:00 AM",
-  roomId: 0,
+  roomId: null,
+  classMode: mode,
 });
 
 type TabType = "needs_you" | "in_flight" | "decided";
@@ -50,6 +53,9 @@ function ScheduleResponsesPage() {
   const { user } = useAuth();
   const { defaultSchoolYear, schoolYears } = useSchoolYears();
   const { semesters } = useSemesters();
+  const { classModes } = useClassModes();
+  const { dayLabels } = useDays();
+  const dayOptions = Object.values(dayLabels);
 
   const currentSyId = schoolYears.find((y) => y.schoolYear === defaultSchoolYear)?.id ?? null;
   const currentSemNum = semesters.find((s) => s.semesterNumber !== 3)?.semesterNumber ?? 1;
@@ -144,7 +150,10 @@ function ScheduleResponsesPage() {
         setFormError("Explain why you are proposing this schedule change.");
         return;
       }
-      const incomplete = meetings.some((meeting) => !meeting.dayOfWeek || !meeting.startTime || !meeting.endTime || !meeting.roomId);
+      const incomplete = meetings.some((meeting) =>
+        !meeting.dayOfWeek || !meeting.startTime || !meeting.endTime ||
+        (meeting.classMode === "F2F" && !meeting.roomId),
+      );
       if (incomplete) {
         setFormError("Complete every proposed meeting before submitting.");
         return;
@@ -288,7 +297,7 @@ function ScheduleResponsesPage() {
                       onClick={() => {
                         setResponseTarget(schedule);
                         setResponseType("accept");
-                        setMeetings([emptyMeeting()]);
+                        setMeetings([emptyMeeting(schedule.mode, dayOptions[0] ?? "")]);
                         setFormError(null);
                       }}
                     >
@@ -549,15 +558,15 @@ function ScheduleResponsesPage() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <FieldChrome id={`response-day-${index}`} label="Day" required>
                       <Select
-                        items={Object.values(DAY_LABELS).map((day) => ({ value: day, label: day }))}
+                        items={dayOptions.map((day) => ({ value: day, label: day }))}
                         value={meeting.dayOfWeek}
-                        onValueChange={(value) => updateMeeting(index, { dayOfWeek: value ?? "Monday" })}
+                        onValueChange={(value) => updateMeeting(index, { dayOfWeek: value ?? dayOptions[0] ?? "" })}
                       >
                         <SelectTrigger id={`response-day-${index}`}>
                           <SelectValue placeholder="Select day" />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.values(DAY_LABELS).map((day) => (
+                          {dayOptions.map((day) => (
                             <SelectItem key={day} value={day}>
                               {day}
                             </SelectItem>
@@ -565,15 +574,29 @@ function ScheduleResponsesPage() {
                         </SelectContent>
                       </Select>
                     </FieldChrome>
-                    <FieldChrome id={`response-room-${index}`} label="Room" required>
+                    <FieldChrome id={`response-mode-${index}`} label="Class mode">
+                      <Select
+                        items={classModes.map((mode) => ({ value: mode, label: mode }))}
+                        value={meeting.classMode ?? ""}
+                        onValueChange={(value) => updateMeeting(index, {
+                          classMode: value ?? "",
+                          ...(value === "Synchronous" || value === "Asynchronous" ? { roomId: null } : {}),
+                        })}
+                        disabled={classModes.length === 0}
+                      >
+                        <SelectTrigger id={`response-mode-${index}`}><SelectValue placeholder="Select class mode" /></SelectTrigger>
+                        <SelectContent>{classModes.map((mode) => <SelectItem key={mode} value={mode}>{mode}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </FieldChrome>
+                    <FieldChrome id={`response-room-${index}`} label="Room" required={meeting.classMode === "F2F"}>
                       <Select
                         items={(rooms ?? []).map((room) => ({
                           value: String(room.id),
                           label: `${room.buildingName} · ${room.roomName}`,
                         }))}
                         value={meeting.roomId ? String(meeting.roomId) : ""}
-                        onValueChange={(value) => updateMeeting(index, { roomId: Number(value) })}
-                        disabled={Boolean(roomsError)}
+                        onValueChange={(value) => updateMeeting(index, { roomId: value ? Number(value) : null })}
+                        disabled={Boolean(roomsError) || meeting.classMode === "Synchronous" || meeting.classMode === "Asynchronous"}
                       >
                         <SelectTrigger id={`response-room-${index}`}>
                           <SelectValue placeholder="Select room" />
@@ -643,7 +666,7 @@ function ScheduleResponsesPage() {
                 type="button"
                 variant="outline"
                 block={false}
-                onClick={() => setMeetings((current) => [...current, emptyMeeting()])}
+                onClick={() => setMeetings((current) => [...current, emptyMeeting(responseTarget?.mode ?? "", dayOptions[0] ?? "")])}
               >
                 Add Meeting
               </Button>
