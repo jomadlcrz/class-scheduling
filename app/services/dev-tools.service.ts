@@ -27,6 +27,11 @@ async function resetScheduleTallies(confirm: string = "RESET"): Promise<string> 
   return apiMessage(data);
 }
 
+async function resetSchedulingWorkflow(confirm: string = "RESET"): Promise<string> {
+  const data = await apiPost<{ message?: string }>("/dev-tools/reset/scheduling-workflow", { confirm });
+  return apiMessage(data);
+}
+
 async function resetSchedules(confirm: string = "RESET"): Promise<string> {
   const data = await apiPost<{ message?: string }>("/dev-tools/reset/schedules", { confirm });
   return apiMessage(data);
@@ -53,6 +58,7 @@ export const devToolsService = {
   resetInstructorAssignments,
   resetPrograms,
   resetScheduleTallies,
+  resetSchedulingWorkflow,
   resetSchedules,
   resetSections,
   resetStudents,

@@ -102,8 +102,13 @@ export function DeanScheduleApprovalsPage() {
 
   async function handleFinalApprove(release: ScheduleRelease) {
     try {
-      const { message } = await scheduleReleaseService.finalApprove(release.id);
-      toast.success(message || "Schedule signed and approved.");
+      const { message } = await scheduleReleaseService.finalApproveProgram(
+        release.syId,
+        release.semesterNumber,
+        release.programId,
+        release.programAbbrev ?? "",
+      );
+      if (message) toast.success(message);
       await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Unable to sign and approve schedule.");

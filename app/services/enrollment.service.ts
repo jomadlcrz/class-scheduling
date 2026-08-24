@@ -278,7 +278,9 @@ async function getReenrollDirectory(
   if (filters.search?.trim()) query.set("search", filters.search.trim());
   if (filters.program && filters.program !== "all") query.set("program", filters.program);
   if (filters.yearLevel && filters.yearLevel !== "all") query.set("yearLevel", filters.yearLevel);
-  if (filters.semester && filters.semester !== "all") query.set("semester", filters.semester);
+  if (filters.semester && filters.semester !== "all") {
+    query.set("lastSemesterNumber", filters.semester);
+  }
   if (filters.enrolledStatus && filters.enrolledStatus !== "all") {
     query.set("enrolledStatus", filters.enrolledStatus);
   }

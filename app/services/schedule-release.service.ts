@@ -198,6 +198,24 @@ async function rejectProgram(
   };
 }
 
+async function finalApproveProgram(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+  confirm: string,
+): Promise<{ message: string; approvedSetIds: number[]; blocked: unknown[]; [key: string]: unknown }> {
+  const data = await apiPost<{ message?: string; approvedSetIds?: number[]; blocked?: unknown[]; [key: string]: unknown }>(
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/final-approve`,
+    { confirm },
+  );
+  return {
+    ...data,
+    message: apiMessage(data),
+    approvedSetIds: data.approvedSetIds ?? [],
+    blocked: data.blocked ?? [],
+  };
+}
+
 /** GET /deans/schedule-approvals/{id}/preview */
 async function getApprovalPreview(id: number): Promise<SchedulePreview> {
   return mapPreview(await apiGet<ApiSchedulePreview>(`/deans/schedule-approvals/${id}/preview`));
@@ -334,6 +352,7 @@ export const scheduleReleaseService = {
   sendToInstructors,
   sendProgramToInstructors,
   rejectProgram,
+  finalApproveProgram,
   getReviewProgress,
   forwardSuggestions,
   progressToFinalApproval,

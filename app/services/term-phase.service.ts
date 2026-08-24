@@ -41,6 +41,40 @@ async function getDepartmentReadiness(
   );
 }
 
+export type TermResponseReadiness = {
+  allResponded: boolean;
+  pendingCount: number;
+  [key: string]: unknown;
+};
+
+async function getResponseReadiness(
+  syId: number,
+  semesterNumber: number,
+): Promise<TermResponseReadiness> {
+  return apiGet<TermResponseReadiness>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/response-readiness`,
+  );
+}
+
+export type SuggestionPolicy = {
+  attemptLimit: number | null;
+  previousLimit?: number | null;
+  changed?: boolean;
+  message: string;
+};
+
+async function setSuggestionPolicy(
+  syId: number,
+  semesterNumber: number,
+  attemptLimit: number | null,
+): Promise<SuggestionPolicy> {
+  const data = await apiPut<Omit<SuggestionPolicy, "message"> & { message?: string }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/suggestion-policy`,
+    { attemptLimit },
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
 /** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/send — sends one program's schedules to dean. */
 async function sendProgram(
   syId: number,
@@ -233,6 +267,8 @@ export const termPhaseService = {
   getCurrentTermPhase,
   getDistributionReadiness,
   getDepartmentReadiness,
+  getResponseReadiness,
+  setSuggestionPolicy,
   sendProgram,
   withdrawProgram,
   sendDepartment,

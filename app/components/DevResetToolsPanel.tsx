@@ -59,6 +59,13 @@ const RESET_ACTIONS: ResetAction[] = [
     color: "bg-teal-600 hover:bg-teal-500",
   },
   {
+    id: "scheduling-workflow",
+    title: "Reset Scheduling Workflow",
+    desc: "Clears the current scheduling workflow run while preserving its configuration.",
+    fn: (confirm) => devToolsService.resetSchedulingWorkflow(confirm),
+    color: "bg-cyan-700 hover:bg-cyan-600",
+  },
+  {
     id: "audits",
     title: "Reset System Audit Logs",
     desc: "Purges historical timetable schedule changes and audit logs.",

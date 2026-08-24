@@ -230,6 +230,25 @@ async function getInstructorScheduleReview(releaseId: number): Promise<import("~
   );
 }
 
+async function listInstructorScheduleReviewHistory(): Promise<unknown[]> {
+  const data = await apiGet<{ requests: unknown[] }>("/instructors/schedule-reviews/history");
+  return data.requests ?? [];
+}
+
+async function setAcceptedSchedules(releaseId: number, scheduleIds: number[], accepted: boolean) {
+  return apiPut<{ message?: string; acceptedScheduleIds: number[] }>(
+    `/instructors/schedule-reviews/${releaseId}/accepted-schedules`,
+    { scheduleIds, accepted },
+  );
+}
+
+async function acceptAllInstructorScheduleReviews(syId: number, semesterNumber: number) {
+  return apiPost<{ message?: string; [key: string]: unknown }>(
+    "/instructors/schedule-reviews/accept-all",
+    { syId, semesterNumber },
+  );
+}
+
 /** POST /instructors/schedule-reviews/{id}/accept — instructor accepts assigned schedule. */
 async function acceptInstructorScheduleReview(releaseId: number): Promise<{ message: string; response?: unknown }> {
   const data = await apiPost<MessageResponse & { response?: unknown }>(
@@ -275,6 +294,12 @@ async function retainInitialSchedule(responseId: number, note?: string): Promise
   return { message: apiMessage(data), retained: data.retained };
 }
 
+async function previewRetention(responseId: number) {
+  return apiPost<{ message?: string; [key: string]: unknown }>(
+    `/registrar/instructor-schedule-responses/${responseId}/retention-preview`,
+  );
+}
+
 /** POST /registrar/instructor-schedule-responses/{id}/analyze-advanced — progressive multi-level dry-run solver. */
 async function analyzeAdvancedAdjustment(responseId: number): Promise<import("~/types/authority-workflow").AdvancedAnalysisResult> {
   return apiPost<import("~/types/authority-workflow").AdvancedAnalysisResult>(
@@ -316,11 +341,15 @@ export const authorityWorkflowService = {
   assignFloatingInstructor,
   listInstructorScheduleReviews,
   getInstructorScheduleReview,
+  listInstructorScheduleReviewHistory,
+  setAcceptedSchedules,
+  acceptAllInstructorScheduleReviews,
   acceptInstructorScheduleReview,
   suggestInstructorScheduleChange,
   analyzeInstructorSuggestion,
   applyInstructorSuggestion,
   applySuggestionWithAdjustments,
   retainInitialSchedule,
+  previewRetention,
   analyzeAdvancedAdjustment,
 };
