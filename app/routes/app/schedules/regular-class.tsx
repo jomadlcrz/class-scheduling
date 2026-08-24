@@ -3,26 +3,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
-import { EmptyState } from "~/components/feedback/empty-state";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { AlertIcon, PlusIcon, PrinterIcon, RotateIcon, SendIcon, TrashIcon } from "~/components/ui/icons";
+import { AlertIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { ScheduleSkeleton } from "~/components/ui/skeleton";
+import { TabButtons } from "~/components/ui/underline-tabs";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
-import { openSchedulePrint } from "~/features/schedules/print-schedule";
-import { RegularClassFilters } from "~/features/schedules/regular-class-filters";
+import { MasterSchedulesTermBar } from "~/features/schedules/master-schedules-term-bar";
+import {
+  MasterSchedulesTree,
+  type ProgramTreeData,
+} from "~/features/schedules/master-schedules-tree";
 import { ScheduleClearDialog } from "~/features/schedules/schedule-clear-dialog";
 import { ScheduleEditDialog } from "~/features/schedules/schedule-edit-dialog";
-import { ScheduleGrid } from "~/features/schedules/schedule-grid";
-import { ScheduleLifecycleRail } from "~/features/schedules/schedule-lifecycle-rail";
 import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
-import { ScheduleTable } from "~/features/schedules/schedule-table";
-import {
-  ScheduleViewToggle,
-  type ScheduleViewMode,
-} from "~/features/schedules/schedule-view-toggle";
+import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -33,9 +30,6 @@ import { programService } from "~/services/program.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import {
   scheduleService,
-  type ScheduledSetOption,
-  type ScheduleRoomOption,
-  type ScheduleYearLevelOption,
   type UnseatedIrregularStudent,
 } from "~/services/schedule.service";
 import {
@@ -46,53 +40,93 @@ import {
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
-import type { Program } from "~/types/program";
 import type { ScheduleRelease } from "~/types/schedule-release";
-import type { ScheduleReleaseStatus } from "~/types/schedule-release";
-import type { YearLevel } from "~/types/subject";
 
 const TIME_OPTIONS = generateTimeSlots().map(formatTime);
 
 export function meta() {
   return [
-    { title: "Regular Class — GWC Class Scheduling" },
-    { name: "description", content: "Assign subjects to time slots and manage class schedules." },
+    { title: "Master Schedules — GWC Class Scheduling" },
+    { name: "description", content: "Assign subjects to time slots and manage master class schedules." },
   ];
 }
 
 export default function RegularClassRoute() {
   return (
     <RoleGuard allow={["registrar"]}>
-      <RegularClassPage />
+      <MasterSchedulesPage />
     </RoleGuard>
   );
 }
 
-function RegularClassPage() {
+function MasterSchedulesPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  // Deep-link prefill from the hub's "Needs your attention" queue (?sy&sem&program&yl&set).
   const prefillAppliedRef = useRef(false);
-  const hasSectionPrefill = Boolean(searchParams.get("set") || searchParams.get("program"));
+
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
   const { context: termContext, selectTerm } = useTermContext();
+
   const { data: schedules, error: loadError, setData: setSchedules } = useCachedData(
     "regular-class-schedules",
     () => scheduleService.view(),
   );
+
   const { data: scheduledSetsData, setData: setScheduledSetsData } = useCachedData(
     "scheduled-sets",
     () => scheduleService.getSetWithSchedules(),
   );
   const scheduledSets = scheduledSetsData ?? [];
+
   const { data: roomsData } = useCachedData("schedule-rooms", () =>
     scheduleService.listScheduleRooms(),
   );
   const rooms = roomsData ?? [];
+
   const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
   const dayOptions = enumOptions?.dayOfWeek ?? [];
+
+  const { data: creationContext } = useCachedData("schedule-creation-context", () =>
+    scheduleService.getCreationContext(),
+  );
+  const yearLevels = useMemo(() => creationContext?.yearLevels ?? [], [creationContext]);
+
+  const { data: programsData } = useCachedData("programs", () => programService.list());
+  const programs = programsData ?? [];
+
+  const { data: departmentsData } = useCachedData("academic-departments", () =>
+    departmentService.listAcademic(),
+  );
+  const departments = useMemo(
+    () => (departmentsData ?? []).filter((d) => d.departmentType !== "Administrative"),
+    [departmentsData],
+  );
+
+  // Active Term state (School Year & Semester)
+  const [schoolYear, setSchoolYear] = useState("");
+  const [semester, setSemester] = useState<ScheduleSemester>(1);
+
+  // Selected Department Underline Tab ("ALL" or department abbrev e.g. "CCS")
+  const [selectedDepartment, setSelectedDepartment] = useState("ALL");
+
+  // Global Schedule View Mode (Table vs Grid)
+  const [globalViewMode, setGlobalViewMode] = useState<ScheduleViewMode>("table");
+
+  // Controlled open accordions
+  const [openPrograms, setOpenPrograms] = useState<Set<string>>(new Set());
+  const [openYearLevels, setOpenYearLevels] = useState<Set<string>>(new Set());
+  const [openSets, setOpenSets] = useState<Set<string>>(new Set());
+  const initialAccordionSeededRef = useRef(false);
+
+  // Action / Mutation Dialogs
   const [actionError, setActionError] = useState<string | null>(null);
   const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [clearTargetSetId, setClearTargetSetId] = useState<number | null>(null);
+  const [submitTarget, setSubmitTarget] = useState<ScheduleRelease | null>(null);
+  const [withdrawTarget, setWithdrawTarget] = useState<ScheduleRelease | null>(null);
+
+  // Edit schedule state
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
@@ -104,215 +138,59 @@ function RegularClassPage() {
   });
   const [editSaving, setEditSaving] = useState(false);
 
-  const [submitTarget, setSubmitTarget] = useState<ScheduleRelease | null>(null);
-  const [withdrawTarget, setWithdrawTarget] = useState<ScheduleRelease | null>(null);
+  // Helper map: program abbrev -> Program object
+  const programMap = useMemo(() => {
+    const map = new Map<string, (typeof programs)[number]>();
+    for (const prog of programs) map.set(prog.abbrev, prog);
+    return map;
+  }, [programs]);
 
-  // Filters — pin the view to a single section's weekly schedule.
-  // Same cascade as /schedules/new: school year → semester → program → year level → set.
-  const [schoolYear, setSchoolYear] = useState("");
-  const [semester, setSemester] = useState<ScheduleSemester>(1);
-  const [selectedProgram, setSelectedProgram] = useState("");
-  const [selectedYearLevel, setSelectedYearLevel] = useState<YearLevel | "">("");
-  const [setName, setSetName] = useState("");
-
-  // Year-level labels come from the schedule-scoped creation context (same source
-  // /schedules/new uses), so the vocabulary matches the backend's own.
-  const { data: creationContext } = useCachedData("schedule-creation-context", () =>
-    scheduleService.getCreationContext(),
-  );
-  const yearLevels = useMemo(() => creationContext?.yearLevels ?? [], [creationContext]);
-  // Program list supplies the full names — schedules only carry the abbrev.
-  const { data: programsData } = useCachedData("programs", () => programService.list());
-  const programs = programsData ?? [];
-  const { data: departmentsData } = useCachedData("departments", () => departmentService.list());
-  const departments = departmentsData ?? [];
-
-  // Clear Schedule dialog (selection/loading/error live inside the dialog component).
-  const [clearDialogOpen, setClearDialogOpen] = useState(false);
-
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
-
-  // Deep-link prefill: seed the cascade from ?sy&sem&program&yl&set (from the hub
-  // action queue's Revise/Review/View). Runs once, before the default seeding below.
-  useEffect(() => {
-    if (prefillAppliedRef.current || !schedules) return;
-    const setParam = searchParams.get("set");
-    const programParam = searchParams.get("program");
-    if (!setParam && !programParam) return;
-    prefillAppliedRef.current = true;
-    const sy = searchParams.get("sy");
-    if (sy) setSchoolYear(sy);
-    const sem = searchParams.get("sem");
-    if (sem === "1" || sem === "2") setSemester(Number(sem) as ScheduleSemester);
-    if (programParam) setSelectedProgram(programParam);
-    const yl = searchParams.get("yl");
-    if (yl && [1, 2, 3, 4].includes(Number(yl))) setSelectedYearLevel(Number(yl) as YearLevel);
-    if (setParam) setSetName(setParam);
-  }, [schedules, searchParams]);
-
-  // Seed the cascading filters (school year → program → year level → set) from
-  // the loaded schedules on first load. Skipped when a deep link is pre-selecting a section.
-  useEffect(() => {
-    if (!schedules || schoolYear || hasSectionPrefill) return;
-    const years = [...new Set(schedules.map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a));
-    const firstYear = years[0] ?? "";
-    if (!firstYear) return;
-    setSchoolYear(firstYear);
-    const inTerm = schedules.filter((s) => s.schoolYear === firstYear && s.semester === 1);
-    const firstProgram = [...new Set(inTerm.map((s) => s.program))].sort()[0] ?? "";
-    setSelectedProgram(firstProgram);
-    const inProgram = inTerm.filter((s) => s.program === firstProgram);
-    const firstYearLevel = [...new Set(inProgram.map((s) => s.yearLevel))].sort((a, b) => a - b)[0];
-    setSelectedYearLevel(firstYearLevel ?? "");
-    const firstSet = inProgram.find((s) => s.yearLevel === firstYearLevel);
-    setSetName(firstSet?.setCode ?? "");
-  }, [schedules, schoolYear, hasSectionPrefill]);
-
+  // Year level label resolver
   const yearLevelLabel = useMemo(() => {
     const labels = new Map<number, string>();
     for (const option of yearLevels) labels.set(option.id, option.name);
     return (n: number) => labels.get(n) ?? `${n}th Year`;
   }, [yearLevels]);
 
-  // "BSIT — Bachelor of Science in Information Technology", like /schedules/new.
-  const programLabel = useMemo(() => {
-    const names = new Map<string, string>();
-    for (const program of programs) names.set(program.abbrev, program.name);
-    return (abbrev: string) => {
-      const name = names.get(abbrev);
-      return name ? `${abbrev} — ${name}` : abbrev;
-    };
-  }, [programs]);
+  // Department tabs list for UnderlineTabs
+  const departmentTabs = useMemo(() => {
+    const tabs = [{ value: "ALL", label: "All Departments" }];
+    for (const dept of departments) {
+      tabs.push({ value: dept.abbrev, label: dept.abbrev });
+    }
+    return tabs;
+  }, [departments]);
 
-  const schoolYears = useMemo(
-    () => [...new Set((schedules ?? []).map((s) => s.schoolYear))].sort((a, b) => b.localeCompare(a)),
-    [schedules],
-  );
+  // School years present in loaded schedules or term context
+  const schoolYears = useMemo(() => {
+    const fromSchedules = (schedules ?? []).map((s) => s.schoolYear);
+    const fromContext = (termContext?.schoolYears ?? []).map((y) => y.schoolYear);
+    return [...new Set([...fromSchedules, ...fromContext])].filter(Boolean).sort((a, b) => b.localeCompare(a));
+  }, [schedules, termContext]);
 
-  const availablePrograms = useMemo(
-    () =>
-      [
-        ...new Set(
-          (schedules ?? [])
-            .filter((s) => s.schoolYear === schoolYear && s.semester === semester)
-            .map((s) => s.program),
-        ),
-      ].sort(),
-    [schedules, schoolYear, semester],
-  );
+  // Seed active term on first load
+  useEffect(() => {
+    if (schoolYear) return;
+    if (termContext?.selection.syId) {
+      const activeSy = termContext.schoolYears.find((row) => row.id === termContext.selection.syId)?.schoolYear;
+      if (activeSy) {
+        setSchoolYear(activeSy);
+        setSemester(termContext.selection.semesterNumber as ScheduleSemester);
+        return;
+      }
+    }
+    if (schoolYears.length > 0) {
+      setSchoolYear(schoolYears[0]);
+    }
+  }, [schoolYear, schoolYears, termContext]);
 
-  const availableYearLevels = useMemo(
-    () =>
-      [
-        ...new Set(
-          (schedules ?? [])
-            .filter(
-              (s) =>
-                s.schoolYear === schoolYear &&
-                s.semester === semester &&
-                s.program === selectedProgram,
-            )
-            .map((s) => s.yearLevel),
-        ),
-      ].sort((a, b) => a - b),
-    [schedules, schoolYear, semester, selectedProgram],
-  );
-
-  const availableSets = useMemo(
-    () =>
-      [
-        ...new Set(
-          (schedules ?? [])
-            .filter(
-              (s) =>
-                s.schoolYear === schoolYear &&
-                s.semester === semester &&
-                s.program === selectedProgram &&
-                s.yearLevel === selectedYearLevel,
-            )
-            .map((s) => s.setCode),
-        ),
-      ].sort(),
-    [schedules, schoolYear, semester, selectedProgram, selectedYearLevel],
-  );
-
-  const visibleSchedules = useMemo(() => {
-    if (!schedules) return [];
-    return schedules
-      .filter(
-        (s) =>
-          s.setCode === setName &&
-          s.schoolYear === schoolYear &&
-          s.semester === semester &&
-          s.program === selectedProgram &&
-          s.yearLevel === selectedYearLevel,
-      )
-      .sort(
-        (a, b) =>
-          DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.startTime.localeCompare(b.startTime),
-      );
-  }, [schedules, setName, schoolYear, semester, selectedProgram, selectedYearLevel]);
-
+  // Resolved schoolYearId for releases
   const selectedSchoolYearId = useMemo(
     () => termContext?.schoolYears.find((row) => row.schoolYear === schoolYear)?.id ?? null,
     [schoolYear, termContext],
   );
 
-  const selectedScheduledSet = useMemo(
-    () =>
-      scheduledSets.find(
-        (row) =>
-          row.setCode === setName &&
-          row.schoolYear === schoolYear &&
-          row.semesterNumber === semester,
-      ) ?? null,
-    [scheduledSets, schoolYear, semester, setName],
-  );
-
-  const { releases, refresh: refreshReleases } = useScheduleReleases(selectedSchoolYearId, semester);
-
-  const setStatuses = useMemo(() => {
-    const releaseStatusBySetId = new Map(
-      releases.map((release) => [release.setId, release.releaseStatus] as const),
-    );
-    const statuses: Record<string, ScheduleReleaseStatus> = {};
-    for (const scheduledSet of scheduledSets) {
-      if (
-        scheduledSet.schoolYear === schoolYear &&
-        scheduledSet.semesterNumber === semester &&
-        availableSets.includes(scheduledSet.setCode)
-      ) {
-        const status = releaseStatusBySetId.get(scheduledSet.setId);
-        if (status) statuses[scheduledSet.setCode] = status;
-      }
-    }
-    return statuses;
-  }, [availableSets, releases, scheduledSets, schoolYear, semester]);
-
-  const selectedRelease = useMemo(
-    () => releases.find((row) => row.setId === selectedScheduledSet?.setId) ?? null,
-    [releases, selectedScheduledSet],
-  );
-
-  // Sets matching the current program + year level — the candidates for Clear Schedule.
-  const clearableSets = useMemo(
-    () =>
-      releases
-        .filter(
-          (row) =>
-            row.programAbbrev === selectedProgram && row.yearLevel === selectedYearLevel,
-        )
-        .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? "")),
-    [releases, selectedProgram, selectedYearLevel],
-  );
-
-  // Closed terms reject writes on the backend — disable the actions and explain why.
-  const termClosed = termContext?.term?.status === "Closed";
-  const termClosureReason = termContext?.term?.closedReasonLabel ?? null;
-  const termClosedNote = termClosureReason
-    ? `This term is closed — ${termClosureReason}.`
-    : "This term is closed.";
-
+  // Synchronize termContext when schoolYear/semester changes
   useEffect(() => {
     if (!selectedSchoolYearId) return;
     if (
@@ -324,73 +202,278 @@ function RegularClassPage() {
     void selectTerm(selectedSchoolYearId, semester);
   }, [selectedSchoolYearId, semester, selectTerm, termContext]);
 
-  // Keep the cascading selection valid as upstream filters change (program → year → set).
-  useEffect(() => {
-    if (selectedProgram && !availablePrograms.includes(selectedProgram)) {
-      setSelectedProgram(availablePrograms[0] ?? "");
-    }
-  }, [availablePrograms, selectedProgram]);
+  const { releases, refresh: refreshReleases } = useScheduleReleases(selectedSchoolYearId, semester);
 
-  useEffect(() => {
-    if (selectedYearLevel !== "" && !availableYearLevels.includes(selectedYearLevel)) {
-      setSelectedYearLevel(availableYearLevels[0] ?? "");
-    }
-  }, [availableYearLevels, selectedYearLevel]);
+  // Closed term checks
+  const termClosed = termContext?.term?.status === "Closed";
+  const termClosureReason = termContext?.term?.closedReasonLabel ?? null;
+  const termClosedNote = termClosureReason
+    ? `This term is closed — ${termClosureReason}.`
+    : "This term is closed.";
 
+  // Deep-link prefill handling (?sy&sem&program&yl&set)
   useEffect(() => {
-    if (setName && !availableSets.includes(setName)) {
-      setSetName(availableSets[0] ?? "");
-    }
-  }, [availableSets, setName]);
+    if (prefillAppliedRef.current || !schedules || schedules.length === 0) return;
+    const setParam = searchParams.get("set");
+    const programParam = searchParams.get("program");
+    const syParam = searchParams.get("sy");
+    const semParam = searchParams.get("sem");
+    const ylParam = searchParams.get("yl");
 
-  // Changing program re-seats year level and set to the first available option.
-  function handleProgramChange(program: string) {
-    setSelectedProgram(program);
-    const inProgram = (schedules ?? []).filter(
-      (s) => s.schoolYear === schoolYear && s.semester === semester && s.program === program,
+    if (!setParam && !programParam && !syParam) return;
+    prefillAppliedRef.current = true;
+
+    if (syParam) setSchoolYear(syParam);
+    if (semParam === "1" || semParam === "2") setSemester(Number(semParam) as ScheduleSemester);
+
+    if (programParam) {
+      const prog = programMap.get(programParam);
+      if (prog?.departmentAbbrev) {
+        setSelectedDepartment(prog.departmentAbbrev);
+      }
+      setOpenPrograms((prev) => new Set([...prev, programParam]));
+
+      if (ylParam) {
+        const yearKey = `${programParam}-${ylParam}`;
+        setOpenYearLevels((prev) => new Set([...prev, yearKey]));
+      }
+    }
+
+    if (setParam) {
+      setOpenSets((prev) => new Set([...prev, setParam]));
+    }
+  }, [schedules, searchParams, programMap]);
+
+  // Build the hierarchical tree of programs -> year levels -> sets for the active term
+  const programTreeData = useMemo<ProgramTreeData[]>(() => {
+    if (!schedules) return [];
+
+    const termSchedules = schedules.filter(
+      (s) => s.schoolYear === schoolYear && s.semester === semester,
     );
-    const firstYearLevel = [...new Set(inProgram.map((s) => s.yearLevel))].sort((a, b) => a - b)[0];
-    setSelectedYearLevel(firstYearLevel ?? "");
-    setSetName(firstYearLevel == null ? "" : inProgram.find((s) => s.yearLevel === firstYearLevel)?.setCode ?? "");
+
+    // Map releases by set code
+    const releaseBySetCode = new Map<string, ScheduleRelease>();
+    for (const rel of releases) {
+      if (rel.setCode) releaseBySetCode.set(rel.setCode, rel);
+    }
+
+    // Map scheduledSets by set code
+    const scheduledSetByCode = new Map<string, number>();
+    for (const ss of scheduledSets) {
+      if (ss.schoolYear === schoolYear && ss.semesterNumber === semester) {
+        scheduledSetByCode.set(ss.setCode, ss.setId);
+      }
+    }
+
+    // Unique program abbreviations in the current term schedules
+    const programAbbrevs = [...new Set(termSchedules.map((s) => s.program))].filter(Boolean).sort();
+
+    const tree: ProgramTreeData[] = [];
+
+    for (const abbrev of programAbbrevs) {
+      const progMeta = programMap.get(abbrev);
+      // Determine department
+      const deptAbbrev =
+        progMeta?.departmentAbbrev ||
+        departments.find((d) => d.programs.some((p) => p.abbrev === abbrev))?.abbrev ||
+        termSchedules.find((s) => s.program === abbrev)?.departmentCode ||
+        "General";
+
+      // Apply department tab filter
+      if (selectedDepartment !== "ALL" && deptAbbrev !== selectedDepartment) {
+        continue;
+      }
+
+      const inProgSchedules = termSchedules.filter((s) => s.program === abbrev);
+      const uniqueYearLevels = [...new Set(inProgSchedules.map((s) => s.yearLevel))].sort((a, b) => a - b);
+
+      const yearGroups = uniqueYearLevels.map((yl) => {
+        const inYearSchedules = inProgSchedules.filter((s) => s.yearLevel === yl);
+        const setCodes = [...new Set(inYearSchedules.map((s) => s.setCode))].sort();
+
+        const sets = setCodes.map((setCode) => {
+          const setScheds = inYearSchedules
+            .filter((s) => s.setCode === setCode)
+            .sort(
+              (a, b) =>
+                DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.startTime.localeCompare(b.startTime),
+            );
+
+          return {
+            setCode,
+            schedules: setScheds,
+            release: releaseBySetCode.get(setCode) ?? null,
+            scheduledSetId: scheduledSetByCode.get(setCode) ?? null,
+          };
+        });
+
+        return {
+          yearLevel: yl,
+          yearLabel: yearLevelLabel(yl),
+          sets,
+        };
+      });
+
+      tree.push({
+        abbrev,
+        name: progMeta?.name ?? "",
+        departmentAbbrev: deptAbbrev,
+        yearGroups,
+      });
+    }
+
+    return tree;
+  }, [
+    schedules,
+    schoolYear,
+    semester,
+    releases,
+    scheduledSets,
+    programMap,
+    departments,
+    selectedDepartment,
+    yearLevelLabel,
+  ]);
+
+  // Auto-expand first program, first year level, and first set on initial render
+  useEffect(() => {
+    if (initialAccordionSeededRef.current || programTreeData.length === 0) return;
+    initialAccordionSeededRef.current = true;
+
+    const firstProg = programTreeData[0];
+    if (firstProg) {
+      setOpenPrograms((prev) => new Set([...prev, firstProg.abbrev]));
+      const firstYear = firstProg.yearGroups[0];
+      if (firstYear) {
+        setOpenYearLevels((prev) => new Set([...prev, `${firstProg.abbrev}-${firstYear.yearLevel}`]));
+        const firstSet = firstYear.sets[0];
+        if (firstSet) {
+          setOpenSets((prev) => new Set([...prev, firstSet.setCode]));
+        }
+      }
+    }
+  }, [programTreeData]);
+
+  // Aggregate metrics
+  const totalSections = useMemo(
+    () => programTreeData.reduce((acc, p) => acc + p.yearGroups.reduce((ya, y) => ya + y.sets.length, 0), 0),
+    [programTreeData],
+  );
+
+  const totalClasses = useMemo(
+    () =>
+      programTreeData.reduce(
+        (acc, p) =>
+          acc +
+          p.yearGroups.reduce((ya, y) => ya + y.sets.reduce((sa, s) => sa + s.schedules.length, 0), 0),
+        0,
+      ),
+    [programTreeData],
+  );
+
+  // All clearable sets for the active term
+  const clearableSets = useMemo(
+    () =>
+      releases
+        .filter((row) => row.setCode)
+        .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? "")),
+    [releases],
+  );
+
+  // Expand / Collapse all toggles
+  const allExpanded = useMemo(() => {
+    if (programTreeData.length === 0) return false;
+    for (const p of programTreeData) {
+      if (!openPrograms.has(p.abbrev)) return false;
+      for (const y of p.yearGroups) {
+        if (!openYearLevels.has(`${p.abbrev}-${y.yearLevel}`)) return false;
+        for (const s of y.sets) {
+          if (!openSets.has(s.setCode)) return false;
+        }
+      }
+    }
+    return true;
+  }, [programTreeData, openPrograms, openYearLevels, openSets]);
+
+  function handleExpandAll() {
+    const newProgs = new Set<string>();
+    const newYears = new Set<string>();
+    const newSets = new Set<string>();
+
+    for (const p of programTreeData) {
+      newProgs.add(p.abbrev);
+      for (const y of p.yearGroups) {
+        newYears.add(`${p.abbrev}-${y.yearLevel}`);
+        for (const s of y.sets) {
+          newSets.add(s.setCode);
+        }
+      }
+    }
+
+    setOpenPrograms(newProgs);
+    setOpenYearLevels(newYears);
+    setOpenSets(newSets);
   }
 
-  function handleYearLevelChange(yearLevel: YearLevel | "") {
-    setSelectedYearLevel(yearLevel);
-    setSetName(
-      yearLevel === ""
-        ? ""
-        : (schedules ?? []).find(
-            (s) =>
-              s.schoolYear === schoolYear &&
-              s.semester === semester &&
-              s.program === selectedProgram &&
-              s.yearLevel === yearLevel,
-          )?.setCode ?? "",
-    );
+  function handleCollapseAll() {
+    setOpenPrograms(new Set());
+    setOpenYearLevels(new Set());
+    setOpenSets(new Set());
   }
 
-  // Clear each selected set, one call each; keep going if one fails, and return the failures.
+  function handleToggleProgram(abbrev: string, open: boolean) {
+    setOpenPrograms((prev) => {
+      const next = new Set(prev);
+      if (open) next.add(abbrev);
+      else next.delete(abbrev);
+      return next;
+    });
+  }
+
+  function handleToggleYearLevel(yearKey: string, open: boolean) {
+    setOpenYearLevels((prev) => {
+      const next = new Set(prev);
+      if (open) next.add(yearKey);
+      else next.delete(yearKey);
+      return next;
+    });
+  }
+
+  function handleToggleSet(setCode: string, open: boolean) {
+    setOpenSets((prev) => {
+      const next = new Set(prev);
+      if (open) next.add(setCode);
+      else next.delete(setCode);
+      return next;
+    });
+  }
+
+  // Clear set schedules (single or bulk)
   async function clearSets(setIds: number[]): Promise<string[]> {
     if (!selectedSchoolYearId || termClosed) return setIds.map(String);
-    const targets = clearableSets.filter((row) => setIds.includes(row.setId));
     const unseated: UnseatedIrregularStudent[] = [];
     const clearedSetCodes = new Set<string>();
     const clearedSetIds = new Set<number>();
     const failed: string[] = [];
-    for (const target of targets) {
+
+    for (const setId of setIds) {
+      const rel = releases.find((r) => r.setId === setId);
+      const setCodeName = rel?.setCode ?? `Set ${setId}`;
       try {
         const result = await scheduleService.removeSetSchedules(
-          target.setId,
+          setId,
           selectedSchoolYearId,
           semester,
         );
         unseated.push(...result.irregularStudentsUnseated);
-        if (target.setCode) clearedSetCodes.add(target.setCode);
-        clearedSetIds.add(target.setId);
+        if (rel?.setCode) clearedSetCodes.add(rel.setCode);
+        clearedSetIds.add(setId);
       } catch {
-        failed.push(target.setCode ?? `Set ${target.setId}`);
+        failed.push(setCodeName);
       }
     }
+
     if (clearedSetCodes.size > 0) {
       setSchedules((current) =>
         current?.filter(
@@ -398,19 +481,24 @@ function RegularClassPage() {
             !(
               row.schoolYear === schoolYear &&
               row.semester === semester &&
-              row.program === selectedProgram &&
-              row.yearLevel === selectedYearLevel &&
               clearedSetCodes.has(row.setCode)
             ),
         ) ?? [],
       );
       setScheduledSetsData((current) => (current ?? []).filter((row) => !clearedSetIds.has(row.setId)));
     }
+
     await refreshReleases();
     if (unseated.length > 0) setUnseatedStudents(unseated);
     return failed;
   }
 
+  function handleClearSingleSet(setId: number, _setCode: string) {
+    setClearTargetSetId(setId);
+    setClearDialogOpen(true);
+  }
+
+  // Release Workflow Handlers
   async function handleSubmitRelease(note: string) {
     if (!submitTarget || termClosed) return;
     try {
@@ -435,6 +523,7 @@ function RegularClassPage() {
     }
   }
 
+  // Schedule Slot Edit Handlers
   function openEdit(schedule: Schedule) {
     setEditTarget(schedule);
     setEditForm({
@@ -472,7 +561,9 @@ function RegularClassPage() {
                 startTime: parseTime12h(editForm.startTime),
                 endTime: parseTime12h(editForm.endTime),
                 roomId: editForm.roomId,
-                roomName: rooms.find((room) => String(room.id) === editForm.roomId)?.roomName ?? row.roomName,
+                roomName:
+                  rooms.find((room) => String(room.id) === editForm.roomId)?.roomName ??
+                  row.roomName,
                 mode: editForm.mode,
               }
             : row,
@@ -488,14 +579,11 @@ function RegularClassPage() {
   }
 
   const isLoading = schedules === null;
-  // Filters only make sense once there's at least one schedule to show.
-  const showContent = !isLoading && (schedules?.length ?? 0) > 0;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
-        title="Regular Schedule Builder"
-
+        title="Master Schedules"
         actions={
           <div className="flex flex-wrap justify-end gap-2">
             {clearableSets.length > 0 && (
@@ -504,7 +592,10 @@ function RegularClassPage() {
                 variant="outline"
                 block={false}
                 disabled={termClosed}
-                onClick={() => setClearDialogOpen(true)}
+                onClick={() => {
+                  setClearTargetSetId(null);
+                  setClearDialogOpen(true);
+                }}
               >
                 <TrashIcon />
                 Clear Schedule
@@ -518,124 +609,45 @@ function RegularClassPage() {
         }
       />
 
-      {/* Filters */}
-      {showContent && (
-        <div className="mt-4 flex flex-col gap-4">
-          <RegularClassFilters
-            isLoading={isLoading}
-            schoolYears={schoolYears}
-            schoolYear={schoolYear}
-            onSchoolYearChange={setSchoolYear}
-            semesters={semesters}
-            semestersLoading={semestersLoading}
-            semester={semester}
-            onSemesterChange={setSemester}
-            semesterLabel={semesterLabel}
-            programs={availablePrograms}
-            selectedProgram={selectedProgram}
-            onProgramChange={handleProgramChange}
-            programLabel={programLabel}
-            yearLevels={availableYearLevels}
-            selectedYearLevel={selectedYearLevel}
-            onYearLevelChange={handleYearLevelChange}
-            yearLevelLabel={yearLevelLabel}
-            sets={availableSets}
-            setStatuses={setStatuses}
-            setName={setName}
-            onSetChange={setSetName}
-          />
-
-          {termClosed && (
-            <p className="font-body text-xs text-amber-700 dark:text-amber-400">
-              {termClosedNote} Submissions, edits, and deletions are disabled for this term.
-            </p>
-          )}
-
-          {selectedRelease && (
-            <ScheduleLifecycleRail
-              release={selectedRelease}
-              audience="registrar"
-              action={
-                (selectedRelease.releaseStatus === "draft" ||
-                  selectedRelease.releaseStatus === "rejected") ? (
-                  <Button
-                    type="button"
-                    block={false}
-                    disabled={termClosed}
-                    onClick={() => setSubmitTarget(selectedRelease)}
-                  >
-                    <SendIcon />
-                    {selectedRelease.releaseStatus === "rejected" ? "Resubmit for Approval" : "Submit for Approval"}
-                  </Button>
-                ) : selectedRelease.releaseStatus === "pending_dean_review" ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    block={false}
-                    disabled={termClosed}
-                    onClick={() => setWithdrawTarget(selectedRelease)}
-                  >
-                    <RotateIcon />
-                    Withdraw
-                  </Button>
-                ) : undefined
-              }
-            />
-          )}
-        </div>
-      )}
-
-      {/* View toggle + print */}
-      {showContent && (
-        <div className="mt-4 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
-          <div className="hidden sm:block" />
-          <div className="flex justify-center">
-            <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              disabled={visibleSchedules.length === 0}
-              onClick={async () => {
-                const availableDepartments = departments.length > 0 ? departments : await departmentService.list();
-                const department = availableDepartments.find((item) =>
-                  item.programs.some((program) => program.abbrev === selectedRelease?.programAbbrev),
-                );
-                let approvedBy: { name: string; position: string; departmentAbbrev?: string } | null = null;
-                if (department) {
-                  try {
-                    const detail = await departmentService.getAcademicDetail(department.id);
-                    if (detail.dean) {
-                      approvedBy = {
-                        name: detail.dean.fullName,
-                        position: "Dean",
-                        departmentAbbrev: detail.departmentAbbrev,
-                      };
-                    }
-                  } catch {
-                    // Printing can still proceed when the optional dean profile cannot be loaded.
-                  }
-                }
-                openSchedulePrint(visibleSchedules, {
-                  schoolYear,
-                  semesterLabel: semesterLabel(semester),
-                  preparedBy: selectedRelease?.submittedBy?.name
-                    ? { name: selectedRelease.submittedBy.name, position: "Registrar" }
-                    : null,
-                  approvedBy,
-                })
-              }}
-            >
-              <PrinterIcon />
-              Print
-            </Button>
-          </div>
-        </div>
-      )}
-
+      {/* Term Context & Global View Mode Bar */}
       <div className="mt-4">
+        <MasterSchedulesTermBar
+          schoolYears={schoolYears}
+          schoolYear={schoolYear}
+          onSchoolYearChange={setSchoolYear}
+          semesters={semesters}
+          semestersLoading={semestersLoading}
+          semester={semester}
+          onSemesterChange={setSemester}
+          semesterLabel={semesterLabel}
+          globalViewMode={globalViewMode}
+          onGlobalViewModeChange={setGlobalViewMode}
+          onExpandAll={handleExpandAll}
+          onCollapseAll={handleCollapseAll}
+          allExpanded={allExpanded}
+          totalSections={totalSections}
+          totalClasses={totalClasses}
+        />
+      </div>
+
+      {termClosed && (
+        <p className="mt-3 font-body text-xs text-amber-700 dark:text-amber-400">
+          {termClosedNote} Submissions, edits, and deletions are disabled for this term.
+        </p>
+      )}
+
+      {/* Underline Tabs: Departments */}
+      <div className="mt-5 border-b border-slate-200 dark:border-white/10">
+        <TabButtons
+          ariaLabel="Departments"
+          tabs={departmentTabs}
+          value={selectedDepartment}
+          onChange={setSelectedDepartment}
+        />
+      </div>
+
+      {/* Main Accordion Hierarchy */}
+      <div className="mt-5">
         <AnimatePresence>
           {actionError && (
             <Alert key="action-error" variant="destructive" className="mb-4">
@@ -643,30 +655,42 @@ function RegularClassPage() {
               <AlertDescription>{actionError}</AlertDescription>
             </Alert>
           )}
-          {loadError && <DataLoadAlert className="mb-4" title="Schedules unavailable" message={loadError} permission={loadError.toLowerCase().includes("permission")} />}
+          {loadError && (
+            <DataLoadAlert
+              className="mb-4"
+              title="Schedules unavailable"
+              message={loadError}
+              permission={loadError.toLowerCase().includes("permission")}
+            />
+          )}
         </AnimatePresence>
 
         {isLoading ? (
           loadError ? null : <ScheduleSkeleton rows={8} />
-        ) : visibleSchedules.length === 0 ? (
-          <EmptyState
-            title="No schedules found"
-            action={
-              <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
-                <PlusIcon />
-                Create Schedule
-              </Button>
-            }
-          >
-            No schedules match the current filters. Create a schedule to get started.
-          </EmptyState>
-        ) : viewMode === "grid" ? (
-          <ScheduleGrid schedules={visibleSchedules} onEdit={openEdit} />
         ) : (
-          <ScheduleTable schedules={visibleSchedules} onEdit={openEdit} />
+          <MasterSchedulesTree
+            programs={programTreeData}
+            openPrograms={openPrograms}
+            onToggleProgram={handleToggleProgram}
+            openYearLevels={openYearLevels}
+            onToggleYearLevel={handleToggleYearLevel}
+            openSets={openSets}
+            onToggleSet={handleToggleSet}
+            globalViewMode={globalViewMode}
+            schoolYear={schoolYear}
+            semesterLabel={semesterLabel(semester)}
+            termClosed={termClosed}
+            departments={departments}
+            onCreateSchedule={() => navigate("/schedules/new")}
+            onEdit={openEdit}
+            onSubmitRelease={setSubmitTarget}
+            onWithdrawRelease={setWithdrawTarget}
+            onClearSet={handleClearSingleSet}
+          />
         )}
       </div>
 
+      {/* Schedule Edit Dialog */}
       <ScheduleEditDialog
         open={editTarget !== null}
         title={`Edit ${editTarget?.subjectCode ?? "schedule"}`}
@@ -679,22 +703,26 @@ function RegularClassPage() {
         timeOptions={TIME_OPTIONS}
         saving={editSaving}
         error={editError}
-        approvedWarning={selectedRelease?.releaseStatus === "approved"}
         disabled={termClosed}
         disabledNote={termClosedNote}
       />
 
+      {/* Clear Schedule Dialog */}
       <ScheduleClearDialog
         open={clearDialogOpen}
-        onClose={() => setClearDialogOpen(false)}
+        onClose={() => {
+          setClearDialogOpen(false);
+          setClearTargetSetId(null);
+        }}
         sets={clearableSets}
-        defaultSetId={selectedScheduledSet?.setId ?? null}
+        defaultSetId={clearTargetSetId}
         schoolYear={schoolYear}
         semesterLabel={semesterLabel(semester)}
         disabled={termClosed}
         onConfirm={clearSets}
       />
 
+      {/* Unseated Irregular Students Notification Modal */}
       <Modal
         open={unseatedStudents.length > 0}
         onClose={() => setUnseatedStudents([])}
@@ -702,7 +730,7 @@ function RegularClassPage() {
       >
         <div className="flex flex-col gap-4">
           <p className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-            Clearing the set removed these students from borrowed class offerings. They now need to be seated again.
+            Clearing the section removed these students from borrowed class offerings. They now need to be seated again.
           </p>
           <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-white/10 dark:border-white/10">
             {unseatedStudents.map((student) => (
@@ -722,6 +750,7 @@ function RegularClassPage() {
         </div>
       </Modal>
 
+      {/* Submit Release Dialog */}
       <ScheduleSubmitDialog
         open={submitTarget !== null}
         release={submitTarget}
@@ -729,6 +758,7 @@ function RegularClassPage() {
         onConfirm={handleSubmitRelease}
       />
 
+      {/* Withdraw Release Confirm Dialog */}
       <ConfirmDialog
         open={withdrawTarget !== null}
         onClose={() => setWithdrawTarget(null)}

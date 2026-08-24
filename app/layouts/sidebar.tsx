@@ -182,7 +182,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Major Schedules", to: "/major-schedules", icon: <CalendarCheckIcon />, roles: ["registrar"] },
       { label: "Hours Adjustments", to: "/hours-adjustment-requests", icon: <ClockIcon />, roles: ["registrar"] },
       { label: "Schedule Responses", to: "/schedule-responses", icon: <CalendarClockIcon />, roles: ["registrar"] },
-      { label: "Regular Class", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
+      { label: "Master Schedules", to: "/schedules/regular-class", icon: <CalendarCheckIcon />, roles: ["registrar"], matchPaths: ["/schedules/regular-class", "/schedules/new"] },
       { label: "Irregular Class", to: "/schedules/irregular-class", icon: <CalendarShuffleIcon />, roles: ["registrar"] },
       { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
       { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
