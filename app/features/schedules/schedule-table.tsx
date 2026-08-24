@@ -86,7 +86,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
               <th className={`${th} whitespace-nowrap`}>Time</th>
               <th className={`${th} text-center`}>Subject Code</th>
               <th className={th}>Descriptive Title</th>
-              <th className={`${th} text-center`}>Mode</th>
+              <th className={`${th} text-center`}>Mode / Session</th>
               {!hideInstructor && <th className={th}>Instructor</th>}
               <th className={`${th} text-center`}>Room</th>
               {showSet && <th className={th}>Set</th>}
@@ -125,7 +125,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                     {sched.subjectTitle}
                   </td>
                   <td className="px-3 py-2.5 text-center">
-                    <ModeBadge mode={sched.mode} />
+                    <div className="flex justify-center gap-1"><ModeBadge mode={sched.mode} />{sched.sessionMode && <ModeBadge mode={sched.sessionMode} />}</div>
                   </td>
                   {!hideInstructor && (
                     <td className="whitespace-nowrap px-3 py-2.5 text-slate-700 dark:text-slate-300">
@@ -237,6 +237,7 @@ function MobileDayCard({
               </span>
               <div className="flex items-center gap-1.5">
                 <ModeBadge mode={sched.mode} />
+                {sched.sessionMode && <ModeBadge mode={sched.sessionMode} />}
                 {onDuplicate && (
                   <DuplicateButton
                     days={availableDays(sched)}

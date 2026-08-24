@@ -547,7 +547,7 @@ function SchedulesNewPage() {
         roomId: p.roomId ?? null,
         roomName: p.room ?? "",
         mode: (p.mode as ScheduleMode) ?? "F2F",
-        sessionType: p.sessionType ?? (p.isLab ? "Lab" : "Lecture"),
+        sessionMode: p.sessionMode,
       };
     });
 
@@ -756,6 +756,7 @@ function SchedulesNewPage() {
           endTime: s.endTime,
           subjectId: s.subjectId,
           mode: s.mode,
+          sessionMode: s.sessionMode,
           facultyId: s.facultyId as number,
           facultyName: s.facultyName,
           roomId: s.roomId,

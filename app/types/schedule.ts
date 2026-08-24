@@ -38,6 +38,8 @@ export type Schedule = {
   roomId: string;
   roomName: string;
   mode: ScheduleMode;
+  /** Backend SessionMode value (for example, LEC or LAB). */
+  sessionMode?: string;
   day: Day;
   startTime: string;
   endTime: string;

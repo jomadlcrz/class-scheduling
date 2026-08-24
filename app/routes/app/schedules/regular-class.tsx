@@ -26,6 +26,7 @@ import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import { departmentService } from "~/services/department.service";
 import { enumService } from "~/services/enum.service";
+import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import {
@@ -85,6 +86,28 @@ function MasterSchedulesPage() {
 
   const { data: enumOptions } = useCachedData("enums", () => enumService.getOptions());
   const dayOptions = enumOptions?.dayOfWeek ?? [];
+  const sessionModes = enumOptions?.sessionMode ?? [];
+
+  const { data: facilitiesData } = useCachedData("facilities", () => facilityService.list());
+  const sessionModeByRoomId = useMemo(() => {
+    const backendValue = (code: "LEC" | "LAB") =>
+      sessionModes.find((value) => value.toUpperCase() === code) ?? code;
+    const values = new Map<string, string>();
+    for (const building of facilitiesData ?? []) {
+      for (const room of building.rooms) {
+        values.set(String(room.id), backendValue(room.type === "Laboratory" ? "LAB" : "LEC"));
+      }
+    }
+    return values;
+  }, [facilitiesData, sessionModes]);
+
+  const schedulesForDisplay = useMemo(
+    () => (schedules ?? []).map((schedule) => ({
+      ...schedule,
+      sessionMode: sessionModeByRoomId.get(schedule.roomId),
+    })),
+    [schedules, sessionModeByRoomId],
+  );
 
   const { data: creationContext } = useCachedData("schedule-creation-context", () =>
     scheduleService.getCreationContext(),
@@ -248,7 +271,7 @@ function MasterSchedulesPage() {
   const programTreeData = useMemo<ProgramTreeData[]>(() => {
     if (!schedules) return [];
 
-    const termSchedules = schedules.filter(
+    const termSchedules = schedulesForDisplay.filter(
       (s) => s.schoolYear === schoolYear && s.semester === semester,
     );
 
@@ -326,6 +349,7 @@ function MasterSchedulesPage() {
     return tree;
   }, [
     schedules,
+    schedulesForDisplay,
     schoolYear,
     semester,
     releases,

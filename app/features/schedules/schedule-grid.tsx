@@ -150,7 +150,7 @@ function GridClassCard({
         <strong className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
           {entry.subjectCode}
         </strong>
-        <ModeBadge mode={entry.mode} />
+        <div className="flex items-center gap-1"><ModeBadge mode={entry.mode} />{entry.sessionMode && <ModeBadge mode={entry.sessionMode} />}</div>
       </div>
       <p className="font-body text-[0.7rem] leading-snug text-slate-600 dark:text-slate-300">
         {entry.subjectTitle}

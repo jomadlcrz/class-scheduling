@@ -37,6 +37,7 @@ type ViewScheduleResponse = {
   /** Current API field; `mode` is kept for older deployed backends. */
   class_mode?: string;
   mode?: string;
+  session_mode?: string;
   class_time: string;
   class_duration: string;
   dept_abbrev: string | null;
@@ -94,6 +95,7 @@ async function view(): Promise<Schedule[]> {
       // The scheduling API renamed this from `mode` to `class_mode`.  Reading
       // both keeps schedules visible during a staggered frontend/backend deploy.
       mode: normalizeMode(r.class_mode ?? r.mode ?? ""),
+      sessionMode: r.session_mode,
       day: DAY_BY_LABEL[r.day_of_week] ?? "M",
       startTime: parseTime12h(start),
       endTime: parseTime12h(end ?? start),
@@ -249,7 +251,8 @@ export type SlotDraft = {
   roomId: number | null;
   roomName: string;
   mode: ScheduleMode;
-  sessionType?: "Lecture" | "Lab";
+  /** Backend SessionMode value returned by GET /enums (for example, LEC or LAB). */
+  sessionMode?: string;
   /**
    * Other instructors the auto-generate algorithm considered viable for this exact
    * slot (may include faculty from other programs' curricula that /schedule/subjects
@@ -293,7 +296,7 @@ type RepackPlacement = {
   instructorId: number;
   instructorName: string;
   mode: string;
-  sessionType: "Lecture" | "Lab";
+  sessionMode: string;
   /** Present when this slot was placed after a daily-hour-cap confirm (validated last resort). */
   validatedLastResortDailyExempt?: boolean;
 };
@@ -384,7 +387,7 @@ type AutoGenerateResponse = {
       subject_name: string;
       duration: number;
       /** Current API name; `session_type` is retained for older deployments. */
-      session_mode?: "LEC" | "LAB";
+      session_mode?: string;
       session_type?: "Lecture" | "Lab";
       /** Current API name; `mode` is retained for older deployments. */
       class_mode?: string;
@@ -486,7 +489,7 @@ async function autoGenerate(input: {
         roomName: r.room_name,
       })),
       mode: normalizeMode(s.class_mode ?? s.mode ?? ""),
-      sessionType: (s.session_mode === "LAB" || s.session_type === "Lab" ? "Lab" : "Lecture") as SlotDraft["sessionType"],
+      sessionMode: s.session_mode ?? (s.session_type === "Lab" ? "LAB" : "LEC"),
       validatedLastResortDailyExempt: s.validatedLastResortDailyExempt,
     })),
   );
@@ -540,7 +543,7 @@ async function autoGenerate(input: {
           instructorId: p.instructor_id,
           instructorName: p.instructor_name,
           mode: p.mode,
-          sessionType: p.session_type,
+          sessionMode: p.session_mode ?? (p.session_type === "Lab" ? "LAB" : "LEC"),
           validatedLastResortDailyExempt: p.validatedLastResortDailyExempt as boolean | undefined,
         })) as RepackPlacement[] | undefined,
         displaces: (r.displaces as Record<string, unknown>[] | undefined)?.map((d) => ({
@@ -578,6 +581,7 @@ type RegularSlotInput = {
   endTime: string;
   subjectId: number;
   mode: string;
+  sessionMode?: string;
   facultyId: number;
   facultyName: string;
   roomId: number | null;
@@ -610,6 +614,7 @@ async function createRegular(input: {
         endTime: s.endTime,
         subjectId: s.subjectId,
         classMode: s.mode,
+        sessionMode: s.sessionMode,
         instructorId: s.facultyId,
         instructorName: s.facultyName,
         roomId: s.roomId,

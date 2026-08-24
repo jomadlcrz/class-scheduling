@@ -7,6 +7,7 @@ const MODE_TONE: Record<string, BadgeTone> = {
   Blended: "gold",
   Online: "emerald",
   Modular: "violet",
+  LAB: "violet",
 };
 
 /** Colored pill for a class delivery mode. */

@@ -29,6 +29,7 @@ import {
 } from "~/types/schedule";
 import { useClassModes } from "~/hooks/use-class-modes";
 import { useDays } from "~/hooks/use-days";
+import { useSessionModes } from "~/hooks/use-session-modes";
 
 export type PendingSlot = SlotDraft & { tempId: string };
 
@@ -113,6 +114,7 @@ export function SlotEntryForm({
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { classModes } = useClassModes();
+  const { sessionModes } = useSessionModes();
   const { dayLabels } = useDays();
 
   const defaultSubjectId = conflictPrefill
@@ -135,12 +137,17 @@ export function SlotEntryForm({
     : String(initialSlot?.roomId ?? "");
   const [roomId, setRoomId] = useState(defaultRoomId);
   const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "");
+  const [sessionMode, setSessionMode] = useState(initialSlot?.sessionMode ?? "");
 
   // The backend owns the allowed delivery-mode vocabulary. New manual slots
   // adopt its first option once /enums has loaded instead of assuming F2F.
   useEffect(() => {
     if (!mode && classModes[0]) setMode(classModes[0] as ScheduleMode);
   }, [classModes, mode]);
+
+  useEffect(() => {
+    if (!sessionMode && sessionModes[0]) setSessionMode(sessionModes[0]);
+  }, [sessionMode, sessionModes]);
 
   const isEditing = Boolean(initialSlot);
   const selectedSubject = subjects.find((s) => String(s.id) === selectedSubjectId);
@@ -178,6 +185,7 @@ export function SlotEntryForm({
 
     if (!selectedSubject) { setError("Select a subject."); return; }
     if (!mode) { setError("Class modes are still loading. Please try again shortly."); return; }
+    if (!sessionMode) { setError("Session modes are still loading. Please try again shortly."); return; }
     if (!selectedFaculty) { setError("Select a faculty member."); return; }
     if (needsRoom && !room) { setError("Select a room."); return; }
 
@@ -193,7 +201,7 @@ export function SlotEntryForm({
       roomId: needsRoom && room ? room.id : null,
       roomName: needsRoom && room ? room.roomName : "",
       mode,
-      sessionType: initialSlot?.sessionType,
+      sessionMode,
     });
 
     setError(null);
@@ -317,6 +325,18 @@ export function SlotEntryForm({
               </SelectItem>
             ))}
           </SelectContent>
+        </Select>
+      </FieldChrome>
+
+      <FieldChrome id="slot-session-mode" label="Session mode">
+        <Select
+          items={sessionModes.map((value) => ({ value, label: value }))}
+          value={sessionMode}
+          onValueChange={(value) => setSessionMode(value ?? "")}
+          disabled={sessionModes.length === 0}
+        >
+          <SelectTrigger id="slot-session-mode"><SelectValue placeholder="Select session mode…" /></SelectTrigger>
+          <SelectContent>{sessionModes.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
         </Select>
       </FieldChrome>
 
