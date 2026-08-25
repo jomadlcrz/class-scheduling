@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
@@ -91,6 +92,13 @@ export function TermClosurePage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <Breadcrumb
+        items={[
+          { label: "Academic Terms", href: "/academic-terms" },
+          { label: "Term Closure" },
+        ]}
+        className="mb-4"
+      />
       <PageHeader
         title="Term Closure"
         actions={

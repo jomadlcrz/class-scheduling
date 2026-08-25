@@ -97,7 +97,7 @@ const SEARCH_ACTIONS: TopbarAction[] = [
   { label: "Faculty", to: "/faculty", roles: ["admin"] },
   { label: "Students", to: "/students", roles: ["admin"] },
   { label: "Roles & Permissions", to: "/permissions", roles: ["admin"] },
-  { label: "Academic Terms", to: "/academic-terms/school-years", roles: ["registrar"] },
+  { label: "Academic Terms", to: "/academic-terms", roles: ["registrar"] },
   { label: "Facilities", to: "/facilities", roles: ["registrar"] },
   { label: "Departments", to: "/departments", roles: ["registrar"] },
   { label: "Program Curricula", to: "/program-curricula", roles: ["registrar"] },
@@ -131,7 +131,7 @@ const HELP_ACTIONS: HelpAction[] = [
   {
     label: "Set up academic records",
     description: "Manage terms, facilities, departments, and curricula.",
-    to: "/academic-terms/school-years",
+    to: "/academic-terms",
     roles: ["registrar"],
   },
   {

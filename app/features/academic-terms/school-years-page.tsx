@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import { toast } from "sonner";
 import { Alert, AlertAction, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { HelpCircleIcon, PlusIcon } from "~/components/ui/icons";
+import {
+  AuditLogIcon,
+  CalendarIcon,
+  ChevronRightIcon,
+  HelpCircleIcon,
+  LockIcon,
+  PlusIcon,
+} from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Pagination } from "~/components/ui/pagination";
 import { SearchInput } from "~/components/ui/search-input";
@@ -64,8 +72,7 @@ export function SchoolYearsPage() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
-        title="School Years"
-
+        title="Academic Terms"
         actions={
           <>
             <Button type="button" variant="outline" block={false} onClick={() => setHelpOpen(true)}>
@@ -74,11 +81,80 @@ export function SchoolYearsPage() {
             </Button>
             <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
               <PlusIcon />
-              Create
+              Create School Year
             </Button>
           </>
         }
       />
+
+      {/* Quick Navigation Cards */}
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Link
+          to="/academic-terms/semesters"
+          className="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all duration-150 hover:border-gwc-blue hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-blue-400"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="grid size-9 place-items-center rounded-lg bg-blue-50 text-gwc-blue dark:bg-blue-400/10 dark:text-blue-300">
+              <CalendarIcon />
+            </div>
+            <span className="text-slate-400 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-gwc-blue dark:text-slate-500 dark:group-hover:text-blue-300">
+              <ChevronRightIcon />
+            </span>
+          </div>
+          <div className="mt-3">
+            <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+              Semesters
+            </h2>
+            <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+              Reference list of semesters used across all school years.
+            </p>
+          </div>
+        </Link>
+
+        <Link
+          to="/academic-terms/term-closure"
+          className="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all duration-150 hover:border-gwc-blue hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-blue-400"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="grid size-9 place-items-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300">
+              <LockIcon size={18} />
+            </div>
+            <span className="text-slate-400 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-gwc-blue dark:text-slate-500 dark:group-hover:text-blue-300">
+              <ChevronRightIcon />
+            </span>
+          </div>
+          <div className="mt-3">
+            <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+              Term Closure
+            </h2>
+            <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+              Post terms to lock schedules, grades, and enrollments.
+            </p>
+          </div>
+        </Link>
+
+        <Link
+          to="/academic-terms/audit-log"
+          className="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all duration-150 hover:border-gwc-blue hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-blue-400"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="grid size-9 place-items-center rounded-lg bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300">
+              <AuditLogIcon />
+            </div>
+            <span className="text-slate-400 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-gwc-blue dark:text-slate-500 dark:group-hover:text-blue-300">
+              <ChevronRightIcon />
+            </span>
+          </div>
+          <div className="mt-3">
+            <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+              Audit Log
+            </h2>
+            <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+              History of term postings, closures, and reopening events.
+            </p>
+          </div>
+        </Link>
+      </div>
 
       {missingCurrentYear && expectedYear && (
         <Alert variant="warning" className="mt-6">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PlusIcon } from "~/components/ui/icons";
@@ -37,9 +38,15 @@ export function SemestersPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <Breadcrumb
+        items={[
+          { label: "Academic Terms", href: "/academic-terms" },
+          { label: "Semesters" },
+        ]}
+        className="mb-4"
+      />
       <PageHeader
         title="Semesters"
-
         actions={
           !loading ? (
             <Button type="button" block={false} onClick={() => setCreateOpen(true)}>

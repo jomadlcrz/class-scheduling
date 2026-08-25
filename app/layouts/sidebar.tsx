@@ -107,19 +107,10 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Academic Terms",
+        to: "/academic-terms",
         icon: <CalendarIcon />,
         roles: ["registrar"],
-        subItems: [
-          {
-            label: "School Years",
-            to: "/academic-terms/school-years",
-            roles: ["registrar"],
-            matchPaths: ["/academic-term", "/academic-terms"],
-          },
-          { label: "Semesters", to: "/academic-terms/semesters", roles: ["registrar"] },
-          { label: "Term Closure", to: "/academic-terms/term-closure", roles: ["registrar"] },
-          { label: "Audit Log", to: "/academic-terms/audit-log", roles: ["registrar"] },
-        ],
+        matchPrefix: true,
       },
       { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", icon: <CalendarClockIcon />, roles: ["registrar"] },
       { label: "Subject Hour Overrides", to: "/schedules/subject-hour-overrides", icon: <ClockIcon />, roles: ["registrar"] },

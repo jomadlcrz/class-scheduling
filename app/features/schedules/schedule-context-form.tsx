@@ -67,7 +67,7 @@ export function ScheduleContextForm({
         labelEnd={
           schoolYears.length === 0 ? (
             <Link
-              to="/academic-term"
+              to="/academic-terms"
               className="font-body text-xs font-medium text-blue-700 hover:underline dark:text-blue-400"
             >
               + Add school year

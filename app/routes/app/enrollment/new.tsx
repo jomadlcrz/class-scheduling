@@ -127,7 +127,7 @@ function EnrollmentNewStudentPage() {
           <EmptyState
             title="No school years yet"
             action={
-              <Button type="button" block={false} onClick={() => navigate("/academic-term")}>
+              <Button type="button" block={false} onClick={() => navigate("/academic-terms")}>
                 Create academic term
               </Button>
             }

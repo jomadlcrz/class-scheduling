@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { Badge } from "~/components/ui/badge";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
+import { FilterDatePicker } from "~/components/ui/date-picker";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
 import { IconButton } from "~/components/ui/icon-button";
 import { LockIcon, RotateIcon, UnlockIcon } from "~/components/ui/icons";
-import { inputClassName } from "~/components/ui/input";
 import { Pagination } from "~/components/ui/pagination";
 import { TableSkeleton } from "~/components/ui/skeleton";
 import { TableLoadingSpinner } from "~/components/ui/spinner";
@@ -97,9 +98,15 @@ export function AcademicTermsAuditLogPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <Breadcrumb
+        items={[
+          { label: "Academic Terms", href: "/academic-terms" },
+          { label: "Audit Log" },
+        ]}
+        className="mb-4"
+      />
       <PageHeader
         title="Academic Terms Audit Log"
-
       />
 
       {!loadingFilters && (
@@ -144,32 +151,26 @@ export function AcademicTermsAuditLogPage() {
               setPage(1);
             }}
           />
-          <label className="flex items-center gap-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
-            <span>From</span>
-            <input
-              type="date"
-              aria-label="Audit log start date"
-              value={dateFrom}
-              onChange={(event) => {
-                setDateFrom(event.target.value);
-                setPage(1);
-              }}
-              className={`${inputClassName} w-auto py-1.5`}
-            />
-          </label>
-          <label className="flex items-center gap-1.5 font-body text-xs text-slate-500 dark:text-slate-400">
-            <span>To</span>
-            <input
-              type="date"
-              aria-label="Audit log end date"
-              value={dateTo}
-              onChange={(event) => {
-                setDateTo(event.target.value);
-                setPage(1);
-              }}
-              className={`${inputClassName} w-auto py-1.5`}
-            />
-          </label>
+          <FilterDatePicker
+            id="audit-date-from"
+            label="From"
+            value={dateFrom}
+            max={dateTo || undefined}
+            onChange={(value) => {
+              setDateFrom(value);
+              setPage(1);
+            }}
+          />
+          <FilterDatePicker
+            id="audit-date-to"
+            label="To"
+            value={dateTo}
+            min={dateFrom || undefined}
+            onChange={(value) => {
+              setDateTo(value);
+              setPage(1);
+            }}
+          />
           <Tooltip label="Reset filter">
             <IconButton label="Reset filter" title="" onClick={resetFilters}>
               <RotateIcon />
