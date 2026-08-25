@@ -3,7 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
-import { HelpCircleIcon, PlusIcon, UserIcon } from "~/components/ui/icons";
+import { HelpCircleIcon, PlusIcon, SearchIcon, UserIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { useCachedData } from "~/hooks/use-cached-data";
@@ -178,6 +178,13 @@ export function MajorSchedulesMappingGrid({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [panning, setPanning] = useState<{ x: number; y: number; left: number; top: number } | null>(null);
   const [pointerPosition, setPointerPosition] = useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenRoomQuery, setFullscreenRoomQuery] = useState("");
+  const visibleClassrooms = useMemo(() => {
+    const query = fullscreenRoomQuery.trim().toLowerCase();
+    if (!query) return enrichedClassrooms;
+    return enrichedClassrooms.filter((room) => room.name.toLowerCase().includes(query));
+  }, [enrichedClassrooms, fullscreenRoomQuery]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -191,6 +198,16 @@ export function MajorSchedulesMappingGrid({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
 
   function occupied(room: Classroom, day: DayOfWeek, minute: number) {
     return room.entries.some(
@@ -326,59 +343,89 @@ export function MajorSchedulesMappingGrid({
   }
 
   return (
-    <section className="space-y-3">
+    <section
+      className={
+        isFullscreen
+          ? "fixed inset-0 z-40 flex h-dvh flex-col gap-3 overflow-hidden bg-slate-50 p-4 dark:bg-surface-raised"
+          : "space-y-3"
+      }
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-body text-xs text-slate-500 dark:text-slate-400">
           <span className="font-semibold text-navy-700 dark:text-mist-100">Interactive Major Timetable:</span>{" "}
           Left-drag on any free slot to select a room and time range for quick assignment.
         </p>
-        <Popover
-          label="Controls Guide"
-          trigger={
-            <>
-              <span className="inline-flex size-4 items-center justify-center">
-                <HelpCircleIcon />
-              </span>
-              <span>Controls Guide</span>
-            </>
-          }
-          triggerClassName="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 font-body text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-surface-raised dark:text-slate-300"
-          className="w-72 p-3"
-        >
-          {() => (
-            <div>
-              <strong className="block font-body text-xs text-slate-800 dark:text-mist-100">
-                Timetable Controls
-              </strong>
-              <div className="mt-2 space-y-2 font-body text-xs text-slate-500 dark:text-slate-400">
-                <p className="flex justify-between gap-3">
-                  <span>Select schedule range</span>
-                  <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                    Left drag
-                  </kbd>
-                </p>
-                <p className="flex justify-between gap-3">
-                  <span>Pan timetable</span>
-                  <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                    Right drag
-                  </kbd>
-                </p>
-                <p className="flex justify-between gap-3">
-                  <span>View / Edit existing meeting</span>
-                  <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                    Left click
-                  </kbd>
-                </p>
-                <p className="flex justify-between gap-3">
-                  <span>Cancel selection</span>
-                  <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                    Esc
-                  </kbd>
-                </p>
-              </div>
-            </div>
+        <div className="flex items-center gap-2">
+          {isFullscreen && (
+            <label className="flex h-8 w-56 items-center gap-2 rounded-lg border border-slate-300 bg-white px-2.5 text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              <SearchIcon size={15} />
+              <input
+                type="search"
+                value={fullscreenRoomQuery}
+                onChange={(event) => setFullscreenRoomQuery(event.target.value)}
+                placeholder="Search rooms..."
+                aria-label="Search rooms"
+                className="min-w-0 flex-1 bg-transparent font-body text-xs text-slate-700 outline-none placeholder:text-slate-400 dark:text-mist-100"
+              />
+            </label>
           )}
-        </Popover>
+          <Button
+            type="button"
+            variant="outline"
+            block={false}
+            className="h-8 px-2.5 text-xs"
+            onClick={() => setIsFullscreen((value) => !value)}
+          >
+            {isFullscreen ? "Exit full screen" : "Full screen"}
+          </Button>
+          <Popover
+            label="Controls Guide"
+            trigger={
+              <>
+                <span className="inline-flex size-4 items-center justify-center">
+                  <HelpCircleIcon />
+                </span>
+                <span>Controls Guide</span>
+              </>
+            }
+            triggerClassName="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-2.5 font-body text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-surface-raised dark:text-slate-300"
+            className="w-72 p-3"
+          >
+            {() => (
+              <div>
+                <strong className="block font-body text-xs text-slate-800 dark:text-mist-100">
+                  Timetable Controls
+                </strong>
+                <div className="mt-2 space-y-2 font-body text-xs text-slate-500 dark:text-slate-400">
+                  <p className="flex justify-between gap-3">
+                    <span>Select schedule range</span>
+                    <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                      Left drag
+                    </kbd>
+                  </p>
+                  <p className="flex justify-between gap-3">
+                    <span>Pan timetable</span>
+                    <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                      Right drag
+                    </kbd>
+                  </p>
+                  <p className="flex justify-between gap-3">
+                    <span>View / Edit existing meeting</span>
+                    <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                      Left click
+                    </kbd>
+                  </p>
+                  <p className="flex justify-between gap-3">
+                    <span>Cancel selection</span>
+                    <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                      Esc
+                    </kbd>
+                  </p>
+                </div>
+              </div>
+            )}
+          </Popover>
+        </div>
       </div>
 
       <div
@@ -430,7 +477,9 @@ export function MajorSchedulesMappingGrid({
           }
         }}
         onPointerCancel={cancelDrag}
-        className="relative max-h-[70vh] overflow-auto rounded-xl border border-slate-300 bg-white [&::-webkit-scrollbar]:hidden dark:border-white/10 dark:bg-white/5"
+        className={`relative min-h-0 overflow-auto rounded-xl border border-slate-300 bg-white [&::-webkit-scrollbar]:hidden dark:border-white/10 dark:bg-white/5 ${
+          isFullscreen ? "flex-1" : "max-h-[70vh]"
+        }`}
         style={{
           cursor: deanCreationLocked ? "not-allowed" : panning ? "grabbing" : dragging ? "crosshair" : "grab",
           scrollbarWidth: "none",
@@ -474,7 +523,17 @@ export function MajorSchedulesMappingGrid({
             </tr>
           </thead>
           <tbody>
-            {enrichedClassrooms.flatMap((room, roomIndex) => [
+            {visibleClassrooms.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={slots.length + 2}
+                  className="px-4 py-10 text-center font-body text-sm text-slate-500 dark:text-slate-400"
+                >
+                  No rooms match “{fullscreenRoomQuery}”.
+                </td>
+              </tr>
+            ) : (
+              visibleClassrooms.flatMap((room, roomIndex) => [
               roomIndex > 0 ? (
                 <tr key={`${room.id}-gap`}>
                   <td
@@ -575,7 +634,8 @@ export function MajorSchedulesMappingGrid({
                   })}
                 </tr>
               )),
-            ])}
+              ])
+            )}
           </tbody>
         </table>
       </div>
