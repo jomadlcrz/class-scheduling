@@ -170,6 +170,9 @@ export function MajorSchedulesMappingGrid({
   }, [classrooms, rooms, allMajorSchedules]);
 
   const slots = useMemo(() => buildTimeSlots(enrichedClassrooms), [enrichedClassrooms]);
+  const deanCreationLocked = userRole === "dean" && submissions.some(
+    (submission) => !["draft", "reopened"].includes(submission.status),
+  );
   const [selection, setSelection] = useState<Selection | null>(null);
   const [dragging, setDragging] = useState<Selection | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -204,7 +207,7 @@ export function MajorSchedulesMappingGrid({
     day: DayOfWeek,
     minute: number,
   ) {
-    if (event.button !== 0 || occupied(room, day, minute)) return;
+    if (deanCreationLocked || event.button !== 0 || occupied(room, day, minute)) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     const next = { room, day, start: minute, end: minute + 30 };
     dragRef.current = next;
@@ -429,7 +432,7 @@ export function MajorSchedulesMappingGrid({
         onPointerCancel={cancelDrag}
         className="relative max-h-[70vh] overflow-auto rounded-xl border border-slate-300 bg-white [&::-webkit-scrollbar]:hidden dark:border-white/10 dark:bg-white/5"
         style={{
-          cursor: panning ? "grabbing" : dragging ? "crosshair" : "grab",
+          cursor: deanCreationLocked ? "not-allowed" : panning ? "grabbing" : dragging ? "crosshair" : "grab",
           scrollbarWidth: "none",
         }}
       >
@@ -561,7 +564,9 @@ export function MajorSchedulesMappingGrid({
                         className={`h-20 border-r border-b p-2 text-center font-body text-[0.72rem] italic outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 ${
                           active
                             ? "bg-blue-100 ring-2 ring-inset ring-blue-600 dark:bg-blue-400/20"
-                            : "cursor-crosshair text-slate-300 hover:bg-slate-50 dark:text-slate-600 dark:hover:bg-white/5"
+                            : deanCreationLocked
+                              ? "cursor-not-allowed text-slate-300 dark:text-slate-600"
+                              : "cursor-crosshair text-slate-300 hover:bg-slate-50 dark:text-slate-600 dark:hover:bg-white/5"
                         }`}
                       >
                         {active ? null : "Free"}
@@ -593,7 +598,7 @@ export function MajorSchedulesMappingGrid({
       )}
 
       <MajorAssignmentDrawer
-        open={drawerOpen || !!scheduleToEdit}
+        open={(drawerOpen && !deanCreationLocked) || !!scheduleToEdit}
         selection={selection}
         scheduleToEdit={scheduleToEdit}
         rooms={rooms}

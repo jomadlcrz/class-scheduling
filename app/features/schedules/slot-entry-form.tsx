@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import {
@@ -139,6 +139,26 @@ export function SlotEntryForm({
   const [mode, setMode] = useState<ScheduleMode>(initialSlot?.mode ?? "");
   const [sessionMode, setSessionMode] = useState(initialSlot?.sessionMode ?? "");
 
+  // An existing generated slot can outlive the current subject query after a
+  // curriculum change. Keep its label available instead of showing its ID.
+  const availableSubjects = useMemo(() => {
+    if (!initialSlot || subjects.some((subject) => subject.id === initialSlot.subjectId)) return subjects;
+    return [...subjects, {
+      id: initialSlot.subjectId,
+      code: initialSlot.subjectCode,
+      title: initialSlot.subjectTitle,
+      subjectType: "",
+      faculties: initialSlot.facultyChoices?.map((faculty) => ({
+        id: faculty.id,
+        fullName: faculty.fullName,
+        maxWeeklyHours: null,
+        currentWeeklyHours: null,
+      })) ?? (initialSlot.facultyId != null
+        ? [{ id: initialSlot.facultyId, fullName: initialSlot.facultyName, maxWeeklyHours: null, currentWeeklyHours: null }]
+        : []),
+    }];
+  }, [initialSlot, subjects]);
+
   // The backend owns the allowed delivery-mode vocabulary. New manual slots
   // adopt its first option once /enums has loaded instead of assuming F2F.
   useEffect(() => {
@@ -150,7 +170,8 @@ export function SlotEntryForm({
   }, [sessionMode, sessionModes]);
 
   const isEditing = Boolean(initialSlot);
-  const selectedSubject = subjects.find((s) => String(s.id) === selectedSubjectId);
+  const selectedSubject = availableSubjects.find((s) => String(s.id) === selectedSubjectId);
+  const isMajorWithLab = selectedSubject?.subjectType === "Major with Lab";
   const isOriginalSubject = isEditing && selectedSubjectId === String(initialSlot?.subjectId ?? "");
   const faculties = mergeFaculties(
     selectedSubject?.faculties ?? [],
@@ -166,12 +187,16 @@ export function SlotEntryForm({
   function handleSubjectChange(id: string) {
     setSelectedSubjectId(id);
     // Faculties are per subject — reset to the subject's first option.
-    const subject = subjects.find((s) => String(s.id) === id);
+    const subject = availableSubjects.find((s) => String(s.id) === id);
     const firstFaculty = subject?.faculties[0];
     setFacultyId(String(firstFaculty?.id ?? ""));
     setFacultyQuery(firstFaculty?.fullName ?? "");
     setError(null);
   }
+
+  useEffect(() => {
+    if (!isMajorWithLab && sessionMode !== "LEC") setSessionMode("LEC");
+  }, [isMajorWithLab, sessionMode]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -219,9 +244,9 @@ export function SlotEntryForm({
       <FieldChrome id="slot-subject" label="Subject">
         <Select
           items={
-            subjects.length === 0
+            availableSubjects.length === 0
               ? [{ value: "", label: "No subjects for this set" }]
-              : [...subjects]
+              : [...availableSubjects]
                   .sort((a, b) => a.code.localeCompare(b.code))
                   .map((s) => ({ value: String(s.id), label: `${s.code} — ${s.title}` }))
           }
@@ -229,13 +254,15 @@ export function SlotEntryForm({
           onValueChange={(v) => handleSubjectChange(v as string)}
         >
           <SelectTrigger id="slot-subject">
-            <SelectValue placeholder="Select a subject…" />
+            <SelectValue placeholder="Select a subject…">
+              {selectedSubject ? `${selectedSubject.code} — ${selectedSubject.title}` : undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {subjects.length === 0 ? (
+            {availableSubjects.length === 0 ? (
               <SelectItem value="">No subjects for this set</SelectItem>
             ) : (
-              [...subjects]
+              [...availableSubjects]
                 .sort((a, b) => a.code.localeCompare(b.code))
                 .map((s) => (
                   <SelectItem key={s.id} value={String(s.id)}>
@@ -328,16 +355,24 @@ export function SlotEntryForm({
         </Select>
       </FieldChrome>
 
-      <FieldChrome id="slot-session-mode" label="Session mode">
-        <Select
-          items={sessionModes.map((value) => ({ value, label: value }))}
-          value={sessionMode}
-          onValueChange={(value) => setSessionMode(value ?? "")}
-          disabled={sessionModes.length === 0}
-        >
-          <SelectTrigger id="slot-session-mode"><SelectValue placeholder="Select session mode…" /></SelectTrigger>
-          <SelectContent>{sessionModes.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
-        </Select>
+      <FieldChrome
+        id="slot-session-mode"
+        label="Session mode"
+        hint={isMajorWithLab ? undefined : "Regular/minor subjects are scheduled as lecture sessions."}
+      >
+        {isMajorWithLab ? (
+          <Select
+            items={sessionModes.map((value) => ({ value, label: value }))}
+            value={sessionMode}
+            onValueChange={(value) => setSessionMode(value ?? "")}
+            disabled={sessionModes.length === 0}
+          >
+            <SelectTrigger id="slot-session-mode"><SelectValue placeholder="Select session mode…" /></SelectTrigger>
+            <SelectContent>{sessionModes.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
+          </Select>
+        ) : (
+          <div className={`${inputClassName} flex items-center text-slate-600 dark:text-slate-300`}>LEC</div>
+        )}
       </FieldChrome>
 
       <FieldChrome id="slot-faculty" label="Faculty">
