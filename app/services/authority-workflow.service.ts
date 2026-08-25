@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { apiDelete, apiGet, apiGetFresh, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type {
   AssignmentAuditLog,
   HoursAdjustmentRequest,
@@ -117,7 +117,9 @@ async function listMajorScheduleSubmissions(params: {
   if (params.roomId != null) query.set("roomId", String(params.roomId));
   if (params.departmentId != null) query.set("departmentId", String(params.departmentId));
   if (params.status) query.set("status", params.status);
-  const data = await apiGet<{ submissions: MajorScheduleSubmission[] }>(`/major-schedule-submissions${query.size ? `?${query}` : ""}`);
+  // A Registrar can decide a Dean's edit request from a separate session.
+  // Submission status must therefore bypass the shared 60-second GET cache.
+  const data = await apiGetFresh<{ submissions: MajorScheduleSubmission[] }>(`/major-schedule-submissions${query.size ? `?${query}` : ""}`);
   return data.submissions ?? [];
 }
 

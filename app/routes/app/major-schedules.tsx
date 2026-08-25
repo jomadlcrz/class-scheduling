@@ -233,6 +233,10 @@ function MajorSchedulesPage() {
   const importDisabled = !scopeReady || (submissions ?? []).some(
     (submission) => !["draft", "reopened"].includes(submission.status),
   );
+  const pendingEditRequests = useMemo(
+    () => (editRequests ?? []).filter((request) => request.status === "pending"),
+    [editRequests],
+  );
 
   async function withRefresh(action: () => Promise<{ message?: string } | string>) {
     setSaving(true);
@@ -526,6 +530,17 @@ function MajorSchedulesPage() {
 
         <FormError message={formError} />
 
+        {user?.role === "registrar" && pendingEditRequests.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-400/20 dark:bg-amber-400/5">
+            <p className="font-body text-sm text-amber-900 dark:text-amber-100">
+              {pendingEditRequests.length} pending Dean edit request{pendingEditRequests.length === 1 ? "" : "s"}. Approving one reopens that submission for Dean editing.
+            </p>
+            <Button type="button" variant="outline" block={false} onClick={() => setViewMode("table")}>
+              Review Requests
+            </Button>
+          </div>
+        )}
+
         {/* Standard Lab Time Slots Reference Banner (Compact / Informative) */}
         {labSlots?.labTimeSlots.length ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50/60 px-4 py-2.5 dark:border-blue-400/15 dark:bg-blue-400/5">
@@ -724,7 +739,7 @@ function MajorSchedulesPage() {
             {user?.role === "registrar" && (editRequests?.length ?? 0) > 0 && (
               <section className="mt-8">
                 <h3 className="mb-3 font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-                  Pending Edit Requests
+                  Dean Edit Requests
                 </h3>
                 <Table>
                   <TableHead>
@@ -751,7 +766,7 @@ function MajorSchedulesPage() {
                                 block={false}
                                 onClick={() => setDecisionTarget({ request, approve: true })}
                               >
-                                Approve
+                                Approve & Reopen Dean
                               </Button>
                               <Button
                                 type="button"
@@ -1014,7 +1029,7 @@ function MajorSchedulesPage() {
       <Modal
         open={decisionTarget !== null}
         onClose={() => setDecisionTarget(null)}
-        title={`${decisionTarget?.approve ? "Approve" : "Reject"} Edit Request`}
+        title={`${decisionTarget?.approve ? "Approve & Reopen Dean" : "Reject"} Edit Request`}
       >
         <form
           onSubmit={async (event) => {
@@ -1044,7 +1059,7 @@ function MajorSchedulesPage() {
               isLoading={saving}
               loadingLabel="Saving…"
             >
-              Confirm {decisionTarget?.approve ? "Approval" : "Rejection"}
+              {decisionTarget?.approve ? "Approve & Reopen Dean" : "Confirm Rejection"}
             </Button>
           </ModalActions>
         </form>
