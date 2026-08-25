@@ -613,8 +613,12 @@ function MajorSchedulesPage() {
               <EmptyState title="No major schedules">
                 No major schedule submission exists for this term. Use the Room Map to select a room and time range to assign.
               </EmptyState>
+            ) : submissions.every((submission) => submission.schedules.length === 0) ? (
+              <EmptyState title="No major meetings yet">
+                This term has a Major Schedule submission, but it does not contain any timetable meetings yet. Use the Room Map to add meetings.
+              </EmptyState>
             ) : (
-              submissions.map((submission) => (
+              submissions.filter((submission) => submission.schedules.length > 0).map((submission) => (
                 <section key={submission.id} className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
