@@ -22,7 +22,6 @@ import {
   ListIcon,
   LockIcon,
   PlusIcon,
-  RotateIcon,
   SearchIcon,
   TrashIcon,
   UploadIcon,
@@ -128,7 +127,6 @@ function MajorSchedulesPage() {
   const [decisionTarget, setDecisionTarget] = useState<DecisionTarget | null>(null);
   const [conflicts, setConflicts] = useState<MajorScheduleConflict[] | null>(null);
   const [floatingTarget, setFloatingTarget] = useState<MajorSchedule | null>(null);
-  const [reopenTarget, setReopenTarget] = useState<MajorScheduleSubmission | null>(null);
   const [submitTarget, setSubmitTarget] = useState<MajorScheduleSubmission | null>(null);
   const [deletionNotesOpen, setDeletionNotesOpen] = useState(false);
   const [scheduleToEdit, setScheduleToEdit] = useState<MajorSchedule | null>(null);
@@ -1168,42 +1166,6 @@ function MajorSchedulesPage() {
       </Modal>
 
       {/* Reopen Finalized Submission Modal */}
-      <Modal
-        open={reopenTarget !== null}
-        onClose={() => setReopenTarget(null)}
-        title={`Reopen Finalized Submission (${reopenTarget?.departmentAbbrev ?? ""})`}
-      >
-        <form
-          onSubmit={async (event) => {
-            event.preventDefault();
-            const reason = String(new FormData(event.currentTarget).get("reopen-reason") ?? "").trim();
-            if (reason.length < 10) {
-              setFormError("Please provide an explanation of at least 10 characters.");
-              return;
-            }
-            const ok = await withRefresh(() =>
-              authorityWorkflowService.reopenFinalizedMajorSchedule(reopenTarget!.id, reason),
-            );
-            if (ok) setReopenTarget(null);
-          }}
-          className="space-y-4"
-        >
-          <FormError message={formError} />
-          <p className="font-body text-xs text-slate-500 dark:text-slate-400">
-            Reopening this finalized major schedule will unprotect its meetings and return the submission to Registrar control.
-          </p>
-          <Textarea id="reopen-reason" label="Reason for reopening" hint="Minimum 10 characters required" required minLength={10} />
-          <ModalActions>
-            <Button type="button" variant="outline" block={false} onClick={() => setReopenTarget(null)}>
-              Cancel
-            </Button>
-            <Button type="submit" block={false} isLoading={saving} loadingLabel="Reopening…">
-              Reopen Submission
-            </Button>
-          </ModalActions>
-        </form>
-      </Modal>
-
       {/* Assign Floating Instructor Modal */}
       <Modal
         open={floatingTarget !== null}
@@ -1369,13 +1331,6 @@ function MajorSchedulesPage() {
         onFinalize={(submissionId) =>
           void withRefresh(() => authorityWorkflowService.finalizeMajorSchedule(submissionId))
         }
-        onReopen={(submissionId) => {
-          const s = submissions?.find((sub) => sub.id === submissionId);
-          if (s) {
-            setReopenTarget(s);
-            setFormError(null);
-          }
-        }}
       />
     </div>
   );
@@ -1392,7 +1347,6 @@ function MajorScheduleStickyFooter({
   onOpenRequirements,
   onCheckConflicts,
   onFinalize,
-  onReopen,
 }: {
   submissions: MajorScheduleSubmission[];
   userRole: string;
@@ -1404,7 +1358,6 @@ function MajorScheduleStickyFooter({
   onOpenRequirements: (submissionId: number) => void;
   onCheckConflicts: (submissionId: number) => void;
   onFinalize: (submissionId: number) => void;
-  onReopen: (submissionId: number) => void;
 }) {
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
 
@@ -1542,19 +1495,6 @@ function MajorScheduleStickyFooter({
           </>
         )}
 
-        {userRole === "registrar" && activeSubmission.status === "finalized" && (
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            className="h-8 text-xs"
-            disabled={saving}
-            onClick={() => onReopen(activeSubmission.id)}
-          >
-            <RotateIcon />
-            <span>Reopen for Dean</span>
-          </Button>
-        )}
       </div>
     </StickyFooter>
   );
