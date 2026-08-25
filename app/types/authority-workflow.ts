@@ -292,7 +292,8 @@ export type InstructorScheduleReviewSummary = {
   setId: number;
   setCode: string;
   programAbbrev: string | null;
-  status: string;
+  releaseStatus: string;
+  responseStatus: string;
   responseType: "accept" | "suggest_change" | null;
   respondedAt: string | null;
   meetingCount: number;
@@ -329,7 +330,8 @@ export type InstructorScheduleReviewDetail = {
   setCode: string;
   programAbbrev: string | null;
   responseType: "accept" | "suggest_change" | null;
-  status: string;
+  releaseStatus: string;
+  responseStatus: string;
   respondedAt: string | null;
   reason: string | null;
   canRespond?: boolean;

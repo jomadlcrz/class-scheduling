@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -72,16 +72,31 @@ function FacultySchedulePage() {
   const { data: reviewReleases, reload: reloadReviewReleases } = useCachedData(
     "instructor-schedule-reviews",
     () => authorityWorkflowService.listInstructorScheduleReviews(),
+    { cache: false },
   );
   const { data: selectedReview, reload: reloadSelectedReview } = useCachedData<InstructorScheduleReviewDetail>(
     `instructor-schedule-review:${selectedReviewId ?? "none"}`,
     () => authorityWorkflowService.getInstructorScheduleReview(selectedReviewId!),
-    { enabled: selectedReviewId !== null },
+    { enabled: selectedReviewId !== null, cache: false },
   );
+
+  useEffect(() => {
+    if (selectedReviewId !== null && reviewReleases && !reviewReleases.some((review) => review.releaseId === selectedReviewId)) {
+      setSelectedReviewId(null);
+      setSuggestionOpen(false);
+    }
+  }, [reviewReleases, selectedReviewId]);
 
   async function handleAcceptReview(releaseId: number) {
     setReviewActionLoading(true);
     try {
+      const current = await authorityWorkflowService.getInstructorScheduleReview(releaseId);
+      if (!current.canRespond || current.releaseStatus !== "instructor_review") {
+        toast.error("This review is no longer accepting responses.");
+        await reloadReviewReleases();
+        setSelectedReviewId(null);
+        return;
+      }
       const result = await authorityWorkflowService.acceptInstructorScheduleReview(releaseId);
       toast.success(result.message || "Schedule accepted.");
       setSelectedReviewId(null);
@@ -94,26 +109,47 @@ function FacultySchedulePage() {
     }
   }
 
-  function openSuggestion(detail: InstructorScheduleReviewDetail) {
-    setSuggestionReason("");
-    setProposedMeetings(detail.meetings.map((meeting) => ({
-      scheduleId: meeting.scheduleId,
-      setId: detail.setId,
-      subjectId: meeting.subjectId,
-      dayOfWeek: meeting.dayOfWeek,
-      startTime: meeting.startTime,
-      endTime: meeting.endTime,
-      roomId: meeting.roomId,
-      classMode: meeting.mode,
-    })));
-    setSuggestionOpen(true);
+  async function openSuggestion(detail: InstructorScheduleReviewDetail) {
+    try {
+      const current = await authorityWorkflowService.getInstructorScheduleReview(detail.releaseId);
+      if (!current.canSuggest || current.releaseStatus !== "instructor_review") {
+        toast.error("This review is no longer accepting suggestions.");
+        await reloadReviewReleases();
+        setSelectedReviewId(null);
+        return;
+      }
+      setSuggestionReason("");
+      setProposedMeetings(current.meetings.map((meeting) => ({
+        scheduleId: meeting.scheduleId,
+        setId: current.setId,
+        subjectId: meeting.subjectId,
+        dayOfWeek: meeting.dayOfWeek,
+        startTime: meeting.startTime,
+        endTime: meeting.endTime,
+        roomId: meeting.roomId,
+        classMode: meeting.mode,
+      })));
+      setSuggestionOpen(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to open this review.");
+      await reloadReviewReleases();
+      setSelectedReviewId(null);
+    }
   }
 
   async function handleSuggestion() {
     if (!selectedReview) return;
     setReviewActionLoading(true);
     try {
-      const result = await authorityWorkflowService.suggestInstructorScheduleChange(selectedReview.releaseId, {
+      const current = await authorityWorkflowService.getInstructorScheduleReview(selectedReview.releaseId);
+      if (!current.canSuggest || current.releaseStatus !== "instructor_review") {
+        toast.error("This review is no longer accepting suggestions.");
+        await reloadReviewReleases();
+        setSuggestionOpen(false);
+        setSelectedReviewId(null);
+        return;
+      }
+      const result = await authorityWorkflowService.suggestInstructorScheduleChange(current.releaseId, {
         reason: suggestionReason,
         proposedMeetings,
       });
@@ -254,12 +290,12 @@ function FacultySchedulePage() {
                   <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Review the proposed meetings before accepting.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {selectedReview.canSuggest && (
+                  {selectedReview.releaseStatus === "instructor_review" && selectedReview.canSuggest && (
                     <Button type="button" variant="outline" block={false} disabled={reviewActionLoading} onClick={() => openSuggestion(selectedReview)}>
                       Suggest changes
                     </Button>
                   )}
-                  {selectedReview.canRespond && (
+                  {selectedReview.releaseStatus === "instructor_review" && selectedReview.canRespond && (
                     <Button type="button" block={false} isLoading={reviewActionLoading} onClick={() => handleAcceptReview(selectedReview.releaseId)}>
                       Accept schedule
                     </Button>
@@ -274,7 +310,7 @@ function FacultySchedulePage() {
                   </div>
                 ))}
               </div>
-              {!selectedReview.canRespond && (
+              {(!selectedReview.canRespond || selectedReview.releaseStatus !== "instructor_review") && (
                 <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
                   {selectedReview.resolution?.detail ?? "This review is not accepting responses right now. The Registrar controls when the Shift Request window is open."}
                 </div>
