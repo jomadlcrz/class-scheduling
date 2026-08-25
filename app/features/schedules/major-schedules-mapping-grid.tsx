@@ -889,9 +889,9 @@ export function MajorAssignmentDrawer({
         {(selection || scheduleToEdit) && (
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-400/20 dark:bg-blue-400/10">
             <div className="flex items-center justify-between">
-              <strong className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
+              <span className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
                 {selection?.room.name ?? rooms.find((r) => r.id === scheduleToEdit?.roomId)?.roomName ?? "Assigned Room"}
-              </strong>
+              </span>
               <Badge tone="navy">
                 {selection
                   ? duration(selection.start, selection.end)
