@@ -230,6 +230,9 @@ function MajorSchedulesPage() {
   const allDeletionNotes = useMemo(() => {
     return (submissions ?? []).flatMap((s) => s.deletionNotes ?? []);
   }, [submissions]);
+  const importDisabled = !scopeReady || (submissions ?? []).some(
+    (submission) => !["draft", "reopened"].includes(submission.status),
+  );
 
   async function withRefresh(action: () => Promise<{ message?: string } | string>) {
     setSaving(true);
@@ -494,10 +497,11 @@ function MajorSchedulesPage() {
                 trigger={<><UploadIcon size={16} />Import</>}
                 triggerClassName="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2 font-body text-sm font-medium text-navy-700 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
                 className="w-44 p-1.5"
+                disabled={importDisabled}
               >
                 {(close) => <>
-                  <button type="button" role="menuitem" onClick={() => { close(); openImportFilePicker(".csv"); }} disabled={!scopeReady} className="flex w-full items-center rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100">Import CSV</button>
-                  <button type="button" role="menuitem" onClick={() => { close(); openImportFilePicker(".xlsx,.xls"); }} disabled={!scopeReady} className="flex w-full items-center rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100">Import Excel</button>
+                  <button type="button" role="menuitem" onClick={() => { close(); openImportFilePicker(".csv"); }} className="flex w-full items-center rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100">Import CSV</button>
+                  <button type="button" role="menuitem" onClick={() => { close(); openImportFilePicker(".xlsx,.xls"); }} className="flex w-full items-center rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100">Import Excel</button>
                 </>}
               </Popover>
             </div>}
@@ -1137,7 +1141,7 @@ function MajorSchedulesPage() {
         <form
           onSubmit={async (event) => {
             event.preventDefault();
-            const reason = String(new FormData(event.currentTarget).get("reason") ?? "").trim();
+            const reason = String(new FormData(event.currentTarget).get("reopen-reason") ?? "").trim();
             if (reason.length < 10) {
               setFormError("Please provide an explanation of at least 10 characters.");
               return;
@@ -1499,17 +1503,6 @@ function MajorScheduleStickyFooter({
             >
               <CheckIcon size={14} />
               <span>Finalize</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              block={false}
-              className="h-8 text-xs"
-              disabled={saving}
-              onClick={() => onReopen(activeSubmission.id)}
-            >
-              <RotateIcon />
-              <span>Reopen for Dean</span>
             </Button>
           </>
         )}

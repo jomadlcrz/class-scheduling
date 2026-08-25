@@ -16,6 +16,8 @@ type PopoverProps = {
   children: (close: () => void) => ReactNode;
   /** Called with the new state whenever the popover opens or closes. */
   onOpenChange?: (open: boolean) => void;
+  /** Prevent opening the menu while preserving the trigger's visual style. */
+  disabled?: boolean;
 };
 
 const panelBase =
@@ -34,6 +36,7 @@ export function Popover({
   scrollable = true,
   children,
   onOpenChange,
+  disabled = false,
 }: PopoverProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -102,6 +105,7 @@ export function Popover({
         ref={btnRef}
         type="button"
         onClick={toggle}
+        disabled={disabled}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={label}

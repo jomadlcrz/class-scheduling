@@ -5,7 +5,7 @@ const Select = SelectPrimitive.Root;
 
 function SelectValue({ className = "", ...props }: SelectPrimitive.Value.Props) {
   return (
-    <SelectPrimitive.Value data-slot="select-value" className={`block truncate ${className}`.trim()} {...props} />
+    <SelectPrimitive.Value data-slot="select-value" className={`block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${className}`.trim()} {...props} />
   );
 }
 
@@ -13,7 +13,7 @@ function SelectTrigger({ className = "", children, ...props }: SelectPrimitive.T
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
-      className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 data-placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400 dark:data-placeholder:text-slate-500 ${className}`.trim()}
+      className={`grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 data-placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400 dark:data-placeholder:text-slate-500 ${className}`.trim()}
       {...props}
     >
       {children}
@@ -63,6 +63,7 @@ function SelectContent({
       <SelectPrimitive.Positioner
         data-slot="select-positioner"
         alignItemWithTrigger={alignItemWithTrigger}
+        positionMethod="fixed"
         sideOffset={sideOffset}
         collisionPadding={8}
         // Above the modal dialog (z-60) and drawer panel (z-50) so the popup
@@ -71,11 +72,11 @@ function SelectContent({
       >
         <SelectPrimitive.Popup
           data-slot="select-content"
-          className={`max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised ${className}`.trim()}
+          className={`max-h-(--available-height) min-w-(--anchor-width) max-w-[calc(100vw-1rem)] overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised ${className}`.trim()}
           {...props}
         >
           <SelectScrollUpArrow />
-          <SelectPrimitive.List data-slot="select-list" className="outline-none">
+          <SelectPrimitive.List data-slot="select-list" className="min-w-0 outline-none">
             {children}
           </SelectPrimitive.List>
           <SelectScrollDownArrow />

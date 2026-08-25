@@ -80,7 +80,7 @@ function DrawerPanel({
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "tween", duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-        className={`fixed right-0 top-0 z-50 flex h-dvh w-full flex-col bg-white shadow-2xl dark:bg-surface-raised ${
+        className={`fixed right-0 top-0 z-50 flex h-dvh w-full flex-col overflow-x-hidden bg-white shadow-2xl dark:bg-surface-raised ${
           wide ? "max-w-3xl" : "max-w-md"
         }`}
       >
@@ -104,7 +104,7 @@ function DrawerPanel({
             <CloseIcon />
           </button>
         </div>
-        <div className="scrollbar-thin flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div className="scrollbar-thin min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-6 py-5">{children}</div>
         {footer && (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4 dark:border-white/8 dark:bg-white/5">
             {footer}

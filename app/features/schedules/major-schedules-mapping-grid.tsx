@@ -910,7 +910,7 @@ export function MajorAssignmentDrawer({
           </div>
         )}
 
-        <fieldset className="space-y-3">
+        <fieldset className="space-y-3 border-t border-slate-200 pt-3 dark:border-white/10">
           <legend className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
             1. Academic Assignment
           </legend>
