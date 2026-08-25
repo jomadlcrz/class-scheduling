@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointer
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
 import { HelpCircleIcon, PlusIcon, SearchIcon, UserIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
@@ -374,7 +375,10 @@ export function MajorSchedulesMappingGrid({
             variant="outline"
             block={false}
             className="h-8 px-2.5 text-xs"
-            onClick={() => setIsFullscreen((value) => !value)}
+            onClick={() => {
+              setIsFullscreen((value) => !value);
+              if (isFullscreen) setFullscreenRoomQuery("");
+            }}
           >
             {isFullscreen ? "Exit full screen" : "Full screen"}
           </Button>
@@ -485,6 +489,15 @@ export function MajorSchedulesMappingGrid({
           scrollbarWidth: "none",
         }}
       >
+        {isFullscreen && visibleClassrooms.length === 0 ? (
+          <div className="flex h-full items-center justify-center">
+            <EmptyState title={fullscreenRoomQuery.trim() ? "No rooms found" : "No classrooms configured"}>
+              {fullscreenRoomQuery.trim()
+                ? `No rooms match “${fullscreenRoomQuery.trim()}”.`
+                : "No classrooms are available for this term and building."}
+            </EmptyState>
+          </div>
+        ) : (
         <table
           className="text-sm"
           style={{
@@ -638,6 +651,7 @@ export function MajorSchedulesMappingGrid({
             )}
           </tbody>
         </table>
+        )}
       </div>
 
       {selection && dragging && (

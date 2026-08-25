@@ -164,6 +164,7 @@ function MajorSchedulesPage() {
   const { data: buildingsData } = useCachedData("buildings", () => buildingService.list());
   const buildings = buildingsData ?? [];
   const selectedBuildingName = buildings.find((b) => String(b.id) === buildingFilter)?.name;
+  const selectedBuildingId = buildingFilter === "all" ? undefined : Number(buildingFilter);
 
   const { data: roomsData } = useCachedData(
     "major-schedule-rooms",
@@ -176,8 +177,12 @@ function MajorSchedulesPage() {
     error: submissionsError,
     reload: reloadSubmissions,
   } = useCachedData(
-    `major-schedule-submissions:${syId}:${semesterNumber}`,
-    () => authorityWorkflowService.listMajorScheduleSubmissions({ syId, semesterNumber }),
+    `major-schedule-submissions:${syId}:${semesterNumber}:${selectedBuildingId ?? "all"}`,
+    () => authorityWorkflowService.listMajorScheduleSubmissions({
+      syId,
+      semesterNumber,
+      buildingId: selectedBuildingId,
+    }),
     { enabled: scopeReady, cache: false },
   );
 
@@ -226,6 +231,15 @@ function MajorSchedulesPage() {
     if (!classrooms) return [];
     return filterClassrooms(classrooms, search);
   }, [classrooms, search]);
+  const noMatchingRooms = classroomsError?.toLowerCase().includes("no rooms found") ?? false;
+  // Keep this view's building selection identical to Classroom Mapping. The
+  // mapping endpoint supplies the authoritative list of rooms in a building.
+  const filteredRooms = useMemo(() => {
+    if (!selectedBuildingName) return rooms;
+    if (!classrooms) return [];
+    const mappedRoomNames = new Set(classrooms.map((room) => room.name.toLowerCase()));
+    return rooms.filter((room) => mappedRoomNames.has(room.roomName.toLowerCase()));
+  }, [classrooms, rooms, selectedBuildingName]);
 
   const allDeletionNotes = useMemo(() => {
     return (submissions ?? []).flatMap((s) => s.deletionNotes ?? []);
@@ -569,23 +583,25 @@ function MajorSchedulesPage() {
           <div className="space-y-3">
             <MappingLegend />
 
-            {classroomsError && classrooms === null && rooms.length === 0 ? (
+            {noMatchingRooms && classrooms === null ? (
+              <EmptyState title="No rooms found">{classroomsError}</EmptyState>
+            ) : classroomsError && classrooms === null ? (
               <EmptyState title="Unable to load classrooms">{classroomsError}</EmptyState>
-            ) : classrooms === null && rooms.length === 0 ? (
+            ) : classrooms === null ? (
               <MappingSkeleton rooms={4} />
-            ) : filteredClassrooms.length === 0 && rooms.length === 0 ? (
+            ) : filteredClassrooms.length === 0 ? (
               <EmptyState
-                title={rawSearch.trim() || buildingFilter !== "all" ? "No classrooms match" : "No classrooms configured"}
+                title={rawSearch.trim() || buildingFilter !== "all" ? "No classrooms found" : "No classrooms configured"}
               >
                 {rawSearch.trim() || buildingFilter !== "all"
-                  ? "No classrooms match your search or building filter."
+                  ? "No classrooms match the current search and filters."
                   : "No classrooms are configured for this term yet."}
               </EmptyState>
             ) : (
               <MajorSchedulesMappingGrid
                 classrooms={filteredClassrooms}
                 submissions={submissions ?? []}
-                rooms={rooms}
+                rooms={filteredRooms}
                 schoolYear={currentSchoolYear}
                 syId={syId}
                 semesterNumber={semesterNumber}
