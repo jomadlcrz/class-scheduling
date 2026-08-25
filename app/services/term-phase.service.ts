@@ -1,8 +1,9 @@
-import { apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
 import type {
   DeadlinesUpdatePayload,
   DeadlinesUpdateResult,
   DepartmentReadinessResponse,
+  MajorSchedulingExtension,
   TermAdvanceAction,
   TermDistributionReadiness,
   TermPhaseResponse,
@@ -39,6 +40,35 @@ async function getDepartmentReadiness(
   return apiGet<DepartmentReadinessResponse>(
     `/registrar/scheduling-terms/${syId}/${semesterNumber}/department-readiness`,
   );
+}
+
+async function getMajorExtensions(syId: number, semesterNumber: number): Promise<MajorSchedulingExtension[]> {
+  return apiGet<MajorSchedulingExtension[]>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-extensions`,
+  );
+}
+
+async function grantMajorExtension(
+  syId: number,
+  semesterNumber: number,
+  payload: { departmentId: number; extendedUntil: string; reason?: string },
+): Promise<{ message: string; extension: MajorSchedulingExtension }> {
+  const data = await apiPost<{ message?: string; extension: MajorSchedulingExtension }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-extensions`,
+    payload,
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
+async function revokeMajorExtension(
+  syId: number,
+  semesterNumber: number,
+  extensionId: number,
+): Promise<{ message: string }> {
+  const data = await apiDelete<{ message?: string }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-extensions/${extensionId}`,
+  );
+  return { message: apiMessage(data) };
 }
 
 export type TermResponseReadiness = {
@@ -267,6 +297,9 @@ export const termPhaseService = {
   getCurrentTermPhase,
   getDistributionReadiness,
   getDepartmentReadiness,
+  getMajorExtensions,
+  grantMajorExtension,
+  revokeMajorExtension,
   getResponseReadiness,
   setSuggestionPolicy,
   sendProgram,

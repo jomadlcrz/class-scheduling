@@ -326,9 +326,9 @@ type DailyLimitIncrease = {
 };
 
 export type ScheduleSuggestion = {
-  type: "subject_hour_override" | "move_existing_session" | "repack_instructor";
+  type: "change_subject_hours" | "move_session" | "rearrange_instructor_week";
   /** Only present for repack_instructor — which of the four repack flows this is. */
-  strategy?: "merge_places_at" | "repack_instructor" | "move_session_chain" | "confirm_daily_hour_increase";
+  strategy?: "merge_places_at" | "rearrange_instructor_week" | "move_session_chain" | "confirm_daily_hour_increase";
   subjectId?: number;
   subjectCode?: string;
   setId?: number;
@@ -451,12 +451,12 @@ async function autoGenerate(input: {
 }): Promise<AutoGenerateResult> {
   const endpoint =
     input.strategy === "resolve"
-      ? "/regular_schedule/auto-generate-schedule/resolve"
+      ? "/regular_schedule/generate-schedule/resolve-conflicts"
       : input.strategy === "greedy"
-        ? "/regular_schedule/auto-generate-schedule/greedy"
+        ? "/regular_schedule/generate-schedule/greedy"
         : input.withRebalance
-          ? "/regular_schedule/auto-generate-schedule/with-rebalance"
-          : "/regular_schedule/auto-generate-schedule";
+          ? "/regular_schedule/generate-schedule/with-rebalance"
+          : "/regular_schedule/generate-schedule";
   const data = await apiPost<AutoGenerateResponse>(endpoint, {
     schoolYear: input.schoolYear,
     semesterNumber: input.semester,

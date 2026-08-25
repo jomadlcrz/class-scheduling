@@ -30,6 +30,7 @@ export function resolveNotificationTarget(
 
   switch (notification.type) {
     case "schedule_approval_rejected":
+    case "schedule_approval_rejected_summary":
       // Registrar: the dean returned this schedule — open the section to revise and resubmit.
       return regularClassPath(p);
     case "schedule_approval_requested": {
@@ -39,6 +40,8 @@ export function resolveNotificationTarget(
         ? `/dean/schedule-approvals/${releaseId}`
         : "/dean/schedule-approvals";
     }
+    case "schedule_approval_requested_summary":
+      return "/dean/schedule-approvals";
     case "schedule_published_summary":
     case "schedule_rescheduled_summary":
       return "/dean/schedule-approvals";
@@ -48,6 +51,7 @@ export function resolveNotificationTarget(
     case "major_schedule_reopened":
       return "/major-schedules";
     case "schedule_approval_approved":
+    case "schedule_approval_approved_summary":
       return role === "dean" ? "/dean/schedule-approvals" : "/schedules";
     case "schedule_review_distributed":
       return role === "faculty" ? "/schedule-responses" : "/dean/schedule-approvals";

@@ -11,7 +11,7 @@ export type TermSchedulingPhase =
 export const TERM_SCHEDULING_PHASE_LABELS: Record<TermSchedulingPhase, string> = {
   major_scheduling: "Major Scheduling",
   generation: "Generation",
-  suggestion_window: "Suggestion Window",
+  suggestion_window: "Shift Request",
   resolution: "Resolution",
   finalized: "Finalized",
 };
@@ -140,6 +140,18 @@ export type DepartmentReadinessItem = {
 
 export type DepartmentReadinessResponse = {
   departments: DepartmentReadinessItem[];
+};
+
+export type MajorSchedulingExtension = {
+  id: number;
+  departmentId: number;
+  extendedUntil: string;
+  reason: string | null;
+  grantedAt: string;
+  grantedByUserId: number | null;
+  revokedAt: string | null;
+  revokedByUserId: number | null;
+  active: boolean;
 };
 
 export type TermResolutionOutcomeType = "satisfied" | "rejected" | "blocked_by_major";

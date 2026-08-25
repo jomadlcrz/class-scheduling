@@ -55,7 +55,7 @@ export function AutoGenerateIcon() {
  */
 function isMergePlacesAt(suggestion: ScheduleSuggestion) {
   return (
-    suggestion.type === "repack_instructor" &&
+    suggestion.type === "rearrange_instructor_week" &&
     suggestion.strategy !== "confirm_daily_hour_increase" &&
     (suggestion.strategy === "merge_places_at" ||
       ((suggestion.moves?.length ?? 0) === 0 && (suggestion.placesAt?.length ?? 0) > 0))
@@ -68,7 +68,7 @@ function isMergePlacesAt(suggestion: ScheduleSuggestion) {
  * school day). Requires an explicit confirm + regenerate — never merged client-side.
  */
 function isConfirmDailyHourIncrease(suggestion: ScheduleSuggestion) {
-  return suggestion.type === "repack_instructor" && suggestion.strategy === "confirm_daily_hour_increase";
+  return suggestion.type === "rearrange_instructor_week" && suggestion.strategy === "confirm_daily_hour_increase";
 }
 
 type ConflictSeverity = "error" | "warning" | "info";
@@ -144,12 +144,12 @@ export function GenerationConflictsAlert({
   onConfirmDailyHourIncrease?: (suggestion: ScheduleSuggestion) => void;
   onResolve?: () => void;
 }) {
-  const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "subject_hour_override");
-  const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_existing_session");
+  const overrideSuggestions = (suggestions ?? []).filter((s) => s.type === "change_subject_hours");
+  const moveSuggestions = (suggestions ?? []).filter((s) => s.type === "move_session");
   const confirmDailySuggestions = (suggestions ?? []).filter(isConfirmDailyHourIncrease);
   const mergeSuggestions = (suggestions ?? []).filter(isMergePlacesAt);
   const repackSuggestions = (suggestions ?? []).filter(
-    (s) => s.type === "repack_instructor" && !isMergePlacesAt(s) && !isConfirmDailyHourIncrease(s),
+    (s) => s.type === "rearrange_instructor_week" && !isMergePlacesAt(s) && !isConfirmDailyHourIncrease(s),
   );
   // merge_places_at never goes through Resolve — moves is empty, so a Resolve pass
   // applies nothing and returns the same incomplete preview every time.

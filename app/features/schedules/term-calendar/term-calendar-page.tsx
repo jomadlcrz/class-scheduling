@@ -16,6 +16,7 @@ import { PageHeader } from "~/layouts/page-header";
 import { termPhaseService } from "~/services/term-phase.service";
 import type {
   DepartmentReadinessResponse,
+  MajorSchedulingExtension,
   SchedulingWindowName,
   SchedulingWindowsSnapshot,
   TermDistributionReadiness,
@@ -72,6 +73,7 @@ export function TermCalendarPage() {
   const [phaseData, setPhaseData] = useState<TermPhaseResponse | null>(null);
   const [readiness, setReadiness] = useState<TermDistributionReadiness | null>(null);
   const [deptReadiness, setDeptReadiness] = useState<DepartmentReadinessResponse | null>(null);
+  const [majorExtensions, setMajorExtensions] = useState<MajorSchedulingExtension[]>([]);
   const [resolution, setResolution] = useState<TermResolutionRun | null>(null);
   const [schedulingWindows, setSchedulingWindows] = useState<SchedulingWindowsSnapshot | null>(null);
 
@@ -92,6 +94,9 @@ export function TermCalendarPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [windowTarget, setWindowTarget] = useState<SchedulingWindowName | null>(null);
   const [windowClosingAt, setWindowClosingAt] = useState("");
+  const [extensionDepartmentId, setExtensionDepartmentId] = useState("");
+  const [extensionUntil, setExtensionUntil] = useState("");
+  const [extensionReason, setExtensionReason] = useState("");
 
   // Initial selection: ask the backend which term is running
   useEffect(() => {
@@ -142,18 +147,20 @@ export function TermCalendarPage() {
     setLoading(true);
     setError(null);
     try {
-      const [phaseRes, readyRes, deptRes, resRun, windowsRes] = await Promise.all([
+      const [phaseRes, readyRes, deptRes, resRun, windowsRes, extensionsRes] = await Promise.all([
         termPhaseService.getTermPhase(syId, semesterNumber),
         termPhaseService.getDistributionReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getDepartmentReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getResolution(syId, semesterNumber).catch(() => null),
         termPhaseService.getSchedulingWindows(syId, semesterNumber).catch(() => null),
+        termPhaseService.getMajorExtensions(syId, semesterNumber).catch(() => []),
       ]);
       setPhaseData(phaseRes);
       setReadiness(readyRes);
       setDeptReadiness(deptRes);
       setResolution(resRun);
       setSchedulingWindows(windowsRes ?? phaseRes.schedulingWindows ?? null);
+      setMajorExtensions(extensionsRes);
       setMajorsDueAtInput(toLocalDatetimeInput(phaseRes.majorsDueAt));
       setSuggestionsDueAtInput(toLocalDatetimeInput(phaseRes.suggestionsDueAt));
     } catch (err) {
@@ -336,6 +343,41 @@ export function TermCalendarPage() {
       await loadData();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to send department schedules.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleGrantMajorExtension() {
+    if (!syId || !semesterNumber || !extensionDepartmentId || !extensionUntil) return;
+    setActionLoading(true);
+    try {
+      const result = await termPhaseService.grantMajorExtension(syId, semesterNumber, {
+        departmentId: Number(extensionDepartmentId),
+        extendedUntil: new Date(extensionUntil).toISOString(),
+        ...(extensionReason.trim() ? { reason: extensionReason.trim() } : {}),
+      });
+      toast.success(result.message);
+      setExtensionDepartmentId("");
+      setExtensionUntil("");
+      setExtensionReason("");
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to grant the extension.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleRevokeMajorExtension(extensionId: number) {
+    if (!syId || !semesterNumber) return;
+    setActionLoading(true);
+    try {
+      const result = await termPhaseService.revokeMajorExtension(syId, semesterNumber, extensionId);
+      toast.success(result.message);
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to revoke the extension.");
     } finally {
       setActionLoading(false);
     }
@@ -527,6 +569,78 @@ export function TermCalendarPage() {
               </div>
             </Card>
           )}
+
+          <Card className="p-6">
+            <div className="border-b border-slate-100 pb-3 dark:border-white/5">
+              <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Major Scheduling Extensions</h2>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Give one department more time without reopening Major Scheduling for every department. Shift Requests cannot be extended this way.
+              </p>
+            </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <FieldChrome id="extension-department" label="Department">
+                <Select
+                  value={extensionDepartmentId}
+                  onValueChange={(value) => setExtensionDepartmentId(value ?? "")}
+                  disabled={actionLoading || (deptReadiness?.departments.length ?? 0) === 0}
+                  items={(deptReadiness?.departments ?? []).map((department) => ({
+                    value: String(department.departmentId),
+                    label: `${department.departmentName} (${department.departmentAbbrev})`,
+                  }))}
+                >
+                  <SelectTrigger id="extension-department"><SelectValue placeholder="Select a department" /></SelectTrigger>
+                  <SelectContent>
+                    {(deptReadiness?.departments ?? []).map((department) => (
+                      <SelectItem key={department.departmentId} value={String(department.departmentId)}>
+                        {department.departmentName} ({department.departmentAbbrev})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldChrome>
+              <Input id="extension-until" label="Extended until" type="datetime-local" value={extensionUntil} onChange={(event) => setExtensionUntil(event.target.value)} />
+              <Textarea id="extension-reason" label="Reason (optional)" value={extensionReason} onChange={(event) => setExtensionReason(event.target.value)} />
+            </div>
+            {(deptReadiness?.departments.length ?? 0) === 0 && (
+              <p className="mt-3 text-xs text-amber-700 dark:text-amber-300">Department readiness is unavailable, so an extension cannot be granted yet.</p>
+            )}
+            <div className="mt-4 flex justify-end">
+              <Button type="button" block={false} isLoading={actionLoading} disabled={!extensionDepartmentId || !extensionUntil} onClick={handleGrantMajorExtension}>
+                Grant Extension
+              </Button>
+            </div>
+
+            {majorExtensions.length > 0 && (
+              <div className="mt-5 overflow-x-auto">
+                <Table>
+                  <TableHead>
+                    <TableHeader>Department</TableHeader>
+                    <TableHeader>Extended until</TableHeader>
+                    <TableHeader>Reason</TableHeader>
+                    <TableHeader>Status</TableHeader>
+                    <TableHeader><span className="sr-only">Actions</span></TableHeader>
+                  </TableHead>
+                  <TableBody>
+                    {majorExtensions.map((extension) => {
+                      const department = deptReadiness?.departments.find((item) => item.departmentId === extension.departmentId);
+                      return (
+                        <TableRow key={extension.id}>
+                          <TableCell>{department ? `${department.departmentName} (${department.departmentAbbrev})` : `Department #${extension.departmentId}`}</TableCell>
+                          <TableCell>{new Date(extension.extendedUntil).toLocaleString()}</TableCell>
+                          <TableCell>{extension.reason ?? "—"}</TableCell>
+                          <TableCell><Badge tone={extension.active ? "emerald" : "slate"}>{extension.active ? "Active" : extension.revokedAt ? "Revoked" : "Lapsed"}</Badge></TableCell>
+                          <TableCell>
+                            {extension.active && <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => handleRevokeMajorExtension(extension.id)}>Revoke</Button>}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </Card>
 
           {/* Card 2: Deadlines Form */}
           <Card className="p-6">
@@ -915,7 +1029,7 @@ export function TermCalendarPage() {
                     isLoading={actionLoading}
                     onClick={handleRewindPhase}
                   >
-                    ← Reopen Suggestion Window
+                    ← Reopen Shift Request
                   </Button>
                   <Button
                     type="button"

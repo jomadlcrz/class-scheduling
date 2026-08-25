@@ -56,10 +56,31 @@ function notificationText(notification: NotificationItem): { title: string; deta
         detail: [count > 0 ? `${count} session${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
       };
     }
+    case "schedule_approval_requested_summary": {
+      const count = typeof p.set_count === "number" ? p.set_count : 0;
+      return {
+        title: p.program_abbrev ? `Approval requested for ${p.program_abbrev}` : "Schedule approval requested",
+        detail: [count > 0 ? `${count} section${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
+      };
+    }
     case "schedule_approval_rejected": {
       return {
         title: label ? `Schedule returned for ${label}` : "Schedule returned",
         detail: p.rejection_reason ? p.rejection_reason : period,
+      };
+    }
+    case "schedule_approval_rejected_summary": {
+      const count = typeof p.set_count === "number" ? p.set_count : 0;
+      return {
+        title: p.program_abbrev ? `Schedules returned for ${p.program_abbrev}` : "Schedules returned",
+        detail: p.rejection_reason ?? (count > 0 ? `${count} section${count === 1 ? "" : "s"}` : period),
+      };
+    }
+    case "schedule_approval_approved_summary": {
+      const count = typeof p.set_count === "number" ? p.set_count : 0;
+      return {
+        title: p.program_abbrev ? `Schedules approved for ${p.program_abbrev}` : "Schedules approved",
+        detail: [count > 0 ? `${count} section${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
       };
     }
     case "major_schedule_submitted":

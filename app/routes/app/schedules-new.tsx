@@ -559,7 +559,7 @@ function SchedulesNewPage() {
     if (!pendingMove || !pendingMove.apply || !selectedSet || !selectedProgram || !selectedYearLevel) return;
     setSaveError(null);
     try {
-      if (pendingMove.type === "repack_instructor") {
+      if (pendingMove.type === "rearrange_instructor_week") {
         for (const move of pendingMove.moves ?? []) {
           const body = move.apply.body as Record<string, unknown>;
           await scheduleService.updateRegularSlot(move.scheduleId, {
@@ -1126,20 +1126,20 @@ function SchedulesNewPage() {
         open={pendingMove !== null}
         onClose={() => setPendingMove(null)}
         title={
-          pendingMove?.type === "repack_instructor"
+          pendingMove?.type === "rearrange_instructor_week"
             ? "Rearrange this instructor's week?"
             : "Move another section's class?"
         }
-        confirmLabel={pendingMove?.type === "repack_instructor" ? "Rearrange & apply" : "Move the class"}
-        loadingLabel={pendingMove?.type === "repack_instructor" ? "Rearranging…" : "Moving…"}
+        confirmLabel={pendingMove?.type === "rearrange_instructor_week" ? "Rearrange & apply" : "Move the class"}
+        loadingLabel={pendingMove?.type === "rearrange_instructor_week" ? "Rearranging…" : "Moving…"}
         confirmVariant={
-          pendingMove?.type === "repack_instructor" && (pendingMove.displaces ?? []).length > 0
+          pendingMove?.type === "rearrange_instructor_week" && (pendingMove.displaces ?? []).length > 0
             ? "danger"
             : "primary"
         }
         onConfirm={executePendingMove}
       >
-        {pendingMove && pendingMove.type === "repack_instructor" ? (
+        {pendingMove && pendingMove.type === "rearrange_instructor_week" ? (
           <div className="flex flex-col gap-3">
             <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
               {pendingMove.setName} · {pendingMove.subjectCode} · {pendingMove.instructorName}

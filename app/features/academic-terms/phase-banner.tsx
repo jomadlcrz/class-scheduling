@@ -85,8 +85,8 @@ export function PhaseBanner({ syId, semesterNumber, role = "registrar", classNam
       const countdown = formatCountdown(suggestionsDueAt, serverTime);
       deadlineLapsed = phaseData.suggestionsDeadlinePassed;
       deadlineText = deadlineLapsed
-        ? `Suggestion deadline passed (${new Date(suggestionsDueAt).toLocaleDateString()})`
-        : `Suggestions due ${countdown} (${new Date(suggestionsDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
+        ? `Shift request deadline passed (${new Date(suggestionsDueAt).toLocaleDateString()})`
+        : `Shift requests due ${countdown} (${new Date(suggestionsDueAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })})`;
     }
   }
 
