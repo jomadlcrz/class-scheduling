@@ -70,7 +70,7 @@ async function getReleasePreview(id: number): Promise<SchedulePreview> {
   return mapPreview(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`));
 }
 
-/** POST /schedule-releases/{id}/submit — draft/rejected → pending_approval. Notifies the department's deans. */
+/** POST /schedule-releases/{id}/submit — draft/rejected → pending_dean_review. */
 async function submitRelease(id: number, note?: string): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/schedule-releases/${id}/submit`,
@@ -79,7 +79,7 @@ async function submitRelease(id: number, note?: string): Promise<{ message: stri
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
-/** POST /schedule-releases/{id}/withdraw — pending_approval → draft. */
+/** POST /schedule-releases/{id}/withdraw — pending_dean_review → draft. */
 async function withdrawRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/schedule-releases/${id}/withdraw`,
@@ -226,7 +226,7 @@ async function getApproval(id: number): Promise<ScheduleRelease> {
   return mapRelease(await apiGet<ApiScheduleRelease>(`/deans/schedule-approvals/${id}`));
 }
 
-/** POST /deans/schedule-approvals/{id}/approve — pending_approval → approved. Publishes the schedule. */
+/** Legacy initial-approval endpoint. The active workflow sends schedules to instructors before final approval. */
 async function approveRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/deans/schedule-approvals/${id}/approve`,
@@ -234,7 +234,7 @@ async function approveRelease(id: number): Promise<{ message: string; release: S
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
-/** POST /deans/schedule-approvals/{id}/reject {reason} — pending_approval → rejected. Reason must be ≥10 chars. */
+/** POST /deans/schedule-approvals/{id}/reject {reason} — returns a schedule to the Registrar. Reason must be ≥10 chars. */
 async function rejectRelease(id: number, reason: string): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/deans/schedule-approvals/${id}/reject`,

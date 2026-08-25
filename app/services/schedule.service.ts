@@ -269,7 +269,7 @@ export type SlotDraft = {
   validatedLastResortDailyExempt?: boolean;
 };
 
-/** One relocated saved session within a repack_instructor suggestion. */
+/** One relocated saved session within a rearrange_instructor_week suggestion. */
 type RepackMove = {
   scheduleId: number;
   subjectCode: string;
@@ -327,7 +327,7 @@ type DailyLimitIncrease = {
 
 export type ScheduleSuggestion = {
   type: "change_subject_hours" | "move_session" | "rearrange_instructor_week";
-  /** Only present for repack_instructor — which of the four repack flows this is. */
+  /** Identifies the backend's rearrange_instructor_week strategy. */
   strategy?: "merge_places_at" | "rearrange_instructor_week" | "move_session_chain" | "confirm_daily_hour_increase";
   subjectId?: number;
   subjectCode?: string;
@@ -342,7 +342,7 @@ export type ScheduleSuggestion = {
     method: string;
     path?: string;
     body?: Record<string, unknown>;
-    /** present for repack_instructor — one apply spec per relocated session */
+    /** One apply specification per relocated session. */
     moves?: { method: string; path: string; body: Record<string, unknown> }[];
   };
   /** present for move_existing_session */
@@ -351,7 +351,7 @@ export type ScheduleSuggestion = {
   from?: { day: string; start: string; end: string; room: string };
   to?: { day: string; start: string; end: string; room: string; room_id: number };
   enables?: { subject_code: string; at: string };
-  /** present for repack_instructor */
+  /** Present for rearrange_instructor_week suggestions. */
   instructorId?: number;
   moves?: RepackMove[];
   placesAt?: RepackPlacement[];
@@ -428,7 +428,7 @@ type AutoGenerateResult = {
 };
 
 /**
- * POST /regular_schedule/auto-generate-schedule — returns a PROPOSAL (nothing
+ * POST /regular_schedule/generate-schedule — returns a PROPOSAL (nothing
  * is saved). Lab sessions are pinned to the lab time slots configured in
  * Weekly Hour Allocations; faculty/room come back null when no assignment fits.
  */

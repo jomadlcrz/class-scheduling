@@ -43,7 +43,7 @@ export function AutoGenerateIcon() {
 }
 
 /**
- * A repack_instructor suggestion with no moves is `merge_places_at`: valid slots
+ * A rearrange_instructor_week suggestion with no moves is `merge_places_at`: valid slots
  * already exist for this subject and nothing else needs to move. Resolve applies
  * zero moves and returns the same incomplete preview every time, so this strategy
  * gets its own client-side "Use suggested slots" card instead of the Resolve button.
