@@ -266,7 +266,7 @@ async function suggestInstructorScheduleChange(
 ): Promise<{ message: string; response?: unknown }> {
   const data = await apiPost<MessageResponse & { response?: unknown }>(
     `/instructors/schedule-reviews/${releaseId}/suggest`,
-    payload,
+    { reason: payload.reason, meetings: payload.proposedMeetings },
   );
   return { message: apiMessage(data), response: data.response };
 }

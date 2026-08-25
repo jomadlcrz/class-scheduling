@@ -23,7 +23,6 @@ import type {
   TermPhaseResponse,
   TermResolutionRun,
 } from "~/types/term-phase";
-import { TERM_SCHEDULING_PHASE_LABELS, TERM_SCHEDULING_PHASE_ORDER } from "~/types/term-phase";
 
 function toLocalDatetimeInput(isoString: string | null): string {
   if (!isoString) return "";
@@ -63,6 +62,37 @@ function formatCountdown(targetIso: string | null, serverTimeIso: string | null)
   return "in less than an hour";
 }
 
+const PHASE_GUIDANCE: Record<TermPhaseResponse["phase"], { title: string; description: string }> = {
+  major_scheduling: {
+    title: "Dean major schedules are being prepared",
+    description: "Keep Major Scheduling open until every department has submitted the major meetings that constrain generation.",
+  },
+  generation: {
+    title: "Build complete section timetables",
+    description: "Generate and save every section. Distribution sends complete department schedules to their Deans for the first review stage.",
+  },
+  suggestion_window: {
+    title: "Instructor shift requests are open",
+    description: "Instructors can accept or propose changes. When the window closes, run the term-wide resolution pass.",
+  },
+  resolution: {
+    title: "Resolve requests and collect final approvals",
+    description: "Review resolution outcomes, return resolved schedules for final Dean approval, then publish only after every required approval is complete.",
+  },
+  finalized: {
+    title: "Term published",
+    description: "Approved schedules are now visible to students and instructors. Further changes must use the controlled reopen/edit workflow.",
+  },
+};
+
+const TERM_WORKFLOW_STEPS = [
+  { key: "major", label: "Major Scheduling" },
+  { key: "distribution", label: "Distribution" },
+  { key: "shift", label: "Shift Request" },
+  { key: "resolution", label: "Resolution" },
+  { key: "finalized", label: "Finalized" },
+] as const;
+
 export function TermCalendarPage() {
   const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
@@ -87,6 +117,7 @@ export function TermCalendarPage() {
 
   // Modals State
   const [reopenMajorsModalOpen, setReopenMajorsModalOpen] = useState(false);
+  const [finalizeConfirmOpen, setFinalizeConfirmOpen] = useState(false);
   const [discardGenerated, setDiscardGenerated] = useState(false);
   const [sendProgramTarget, setSendProgramTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
   const [sendProgramNote, setSendProgramNote] = useState("");
@@ -207,15 +238,17 @@ export function TermCalendarPage() {
     }
   }
 
-  async function handleAdvancePhase(action: "close_majors" | "distribute" | "resolve" | "forward_for_approval" | "finalize") {
-    if (!syId || !semesterNumber) return;
+  async function handleAdvancePhase(action: "close_majors" | "distribute" | "resolve" | "forward_for_approval" | "finalize"): Promise<boolean> {
+    if (!syId || !semesterNumber) return false;
     setActionLoading(true);
     try {
       const res = await termPhaseService.advancePhase(syId, semesterNumber, action);
       toast.success(res.message || "Term phase advanced successfully.");
       await loadData();
+      return true;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to advance phase.");
+      return false;
     } finally {
       setActionLoading(false);
     }
@@ -383,9 +416,35 @@ export function TermCalendarPage() {
     }
   }
 
-  const currentPhaseIndex = phaseData
-    ? TERM_SCHEDULING_PHASE_ORDER.indexOf(phaseData.phase)
-    : 0;
+  // The backend persists only the two deadline-gated phases. Distribution,
+  // resolution, and finalization are completed actions proved by timestamps.
+  const termDistributed = Boolean(phaseData?.distributedAt);
+  const termResolved = Boolean(phaseData?.resolvedAt);
+  const termFinalized = Boolean(phaseData?.finalizedAt);
+  const releaseStatuses = deptReadiness?.departments.flatMap((department) =>
+    department.programs.flatMap((program) => program.sets.map((set) => set.releaseStatus)),
+  ) ?? [];
+  const awaitingInitialDeanReview = releaseStatuses.filter(
+    (status) => status === "draft" || status === "rejected" || status === "pending_dean_review",
+  ).length;
+  const awaitingFinalDeanApproval = releaseStatuses.filter(
+    (status) => status === "pending_final_approval",
+  ).length;
+  const allSetsApproved = releaseStatuses.length > 0 && releaseStatuses.every((status) => status === "approved");
+  const workflowTitle = termFinalized
+    ? "Finalized"
+    : termResolved
+      ? "Resolution complete"
+      : termDistributed
+        ? "Shift Request"
+        : phaseData?.phaseLabel ?? "Scheduling";
+  const workflowDescription = termFinalized
+    ? "The Registrar finalized the approved term. Schedules are published to students and instructors."
+    : termResolved
+      ? "Shift requests are closed and resolved. Send every section to its Dean for final approval, then publish once all are approved."
+      : phaseData
+        ? PHASE_GUIDANCE[phaseData.phase].description
+        : "";
 
   const unscheduledList = readiness?.unscheduled ?? [];
   const incompleteList = readiness?.incomplete ?? [];
@@ -463,18 +522,31 @@ export function TermCalendarPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-white/5">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Term Status</span>
-                <h1 className="mt-1 font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">{phaseData.phaseLabel}</h1>
+                <h1 className="mt-1 font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">{workflowTitle}</h1>
+                <p className="mt-1 max-w-2xl text-xs text-slate-500 dark:text-slate-400">
+                  <span className="font-semibold text-navy-700 dark:text-mist-100">Backend workflow. </span>
+                  {workflowDescription}
+                </p>
               </div>
-              <Badge tone={phaseData.governed ? "navy" : "slate"}>{phaseData.governed ? "Governed" : "Ungoverned"}</Badge>
+              <div className="flex flex-wrap justify-end gap-2">
+                <Badge tone={phaseData.governed ? "navy" : "slate"}>{phaseData.governed ? "Governed" : "Ungoverned"}</Badge>
+                <Badge tone={phaseData.gates.majorsOpen ? "emerald" : "slate"}>Majors {phaseData.gates.majorsOpen ? "open" : "closed"}</Badge>
+                <Badge tone={phaseData.gates.suggestionsOpen ? "violet" : "slate"}>Requests {phaseData.gates.suggestionsOpen ? "open" : "closed"}</Badge>
+              </div>
             </div>
 
-            {/* Timeline steps */}
+            {/* Only Major Scheduling and Shift Request are persisted phases; the other cards are action milestones. */}
             <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-5">
-              {TERM_SCHEDULING_PHASE_ORDER.map((stepPhase, idx) => {
-                const phaseItem = phaseData.phases.find((item) => item.phase === stepPhase);
-                const isCurrent = phaseItem?.isCurrent ?? phaseData.phase === stepPhase;
-                const isPast = idx < currentPhaseIndex;
-                const deadlineField = stepPhase === "major_scheduling" ? phaseData.majorsDueAt : stepPhase === "suggestion_window" ? phaseData.suggestionsDueAt : null;
+              {TERM_WORKFLOW_STEPS.map((step, idx) => {
+                const stepPhase = step.key === "major" ? "major_scheduling" : step.key === "distribution" ? "generation" : step.key === "shift" ? "suggestion_window" : step.key === "resolution" ? "resolution" : "finalized";
+                const isPast = step.key === "major" ? phaseData.phase !== "major_scheduling" : step.key === "distribution" ? termDistributed : step.key === "shift" ? termResolved : step.key === "resolution" ? termResolved : termFinalized;
+                const isCurrent = termFinalized
+                  ? step.key === "finalized"
+                  : (step.key === "major" && phaseData.phase === "major_scheduling") ||
+                    (step.key === "distribution" && phaseData.phase === "suggestion_window" && !termDistributed) ||
+                    (step.key === "shift" && termDistributed && !termResolved) ||
+                    (step.key === "resolution" && termResolved);
+                const deadlineField = step.key === "major" ? phaseData.majorsDueAt : step.key === "shift" ? phaseData.suggestionsDueAt : null;
 
                 return (
                   <div
@@ -492,7 +564,7 @@ export function TermCalendarPage() {
                         <span className="text-xs font-semibold text-slate-400">
                           0{idx + 1}
                         </span>
-                        {phaseItem?.isOpen && (
+                        {isCurrent && (
                           <span title="Open for work" className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                         )}
                       </div>
@@ -505,7 +577,7 @@ export function TermCalendarPage() {
                               : "text-navy-700 dark:text-mist-100"
                         }`}
                       >
-                        {TERM_SCHEDULING_PHASE_LABELS[stepPhase]}
+                        {step.label}
                       </span>
 
                       {deadlineField && (
@@ -515,7 +587,7 @@ export function TermCalendarPage() {
                       )}
                     </div>
 
-                    {isPast && (
+                    {step.key === "major" && isPast && !termDistributed && (
                       <button
                         type="button"
                         className="mt-2 text-left text-[11px] font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400"
@@ -957,7 +1029,7 @@ export function TermCalendarPage() {
               Term Stage Controls
             </h2>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Move the term forward or step back to the previous phase when adjustments are needed.
+              Complete each backend milestone in order. Resolution and finalization are recorded actions, not stored phases.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -991,12 +1063,12 @@ export function TermCalendarPage() {
                     isLoading={actionLoading}
                     onClick={() => handleAdvancePhase("distribute")}
                   >
-                    Distribute Term Schedules
+                    Distribute Complete Term for Dean Review
                   </Button>
                 </>
               )}
 
-              {phaseData.phase === "suggestion_window" && (
+              {phaseData.phase === "suggestion_window" && !termResolved && !termFinalized && (
                 <>
                   <Button
                     type="button"
@@ -1011,23 +1083,50 @@ export function TermCalendarPage() {
                   <Button
                     type="button"
                     block={false}
+                    disabled={actionLoading || (!termDistributed && !readiness?.isReady)}
                     isLoading={actionLoading}
-                    onClick={() => handleAdvancePhase("resolve")}
+                    onClick={() => handleAdvancePhase(termDistributed ? "resolve" : "distribute")}
                   >
-                    Close Window &amp; Resolve Suggestions
+                    {termDistributed ? "Close Shift Requests & Resolve Term" : "Distribute Complete Term for Dean Review"}
                   </Button>
                 </>
               )}
 
-              {phaseData.phase === "resolution" && (
+              {termResolved && !termFinalized && (
                 <>
+                  {!termDistributed ? (
+                    <>
+                      <p className="basis-full text-sm text-amber-700 dark:text-gold-300">
+                        This term was resolved before it was distributed. Send all complete schedules through initial Dean review before final approval or publication.
+                      </p>
+                      <Button
+                        type="button"
+                        block={false}
+                        disabled={actionLoading || !readiness?.isReady}
+                        isLoading={actionLoading}
+                        onClick={() => handleAdvancePhase("distribute")}
+                      >
+                        Distribute Complete Term for Dean Review
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                  {(awaitingInitialDeanReview > 0 || awaitingFinalDeanApproval > 0 || !allSetsApproved) && (
+                    <p className="basis-full text-sm text-slate-600 dark:text-slate-300">
+                      {awaitingInitialDeanReview > 0
+                        ? `${awaitingInitialDeanReview} set(s) still need initial Dean review before they can enter the final-approval step.`
+                        : awaitingFinalDeanApproval > 0
+                          ? `${awaitingFinalDeanApproval} set(s) are waiting for final Dean approval.`
+                          : "Publication remains unavailable until every set is finally approved by its Dean."}
+                    </p>
+                  )}
                   <Button
                     type="button"
                     variant="outline"
                     block={false}
                     disabled={actionLoading}
                     isLoading={actionLoading}
-                    onClick={handleRewindPhase}
+                    onClick={() => handleOpenPhase("suggestion_window")}
                   >
                     ← Reopen Shift Request
                   </Button>
@@ -1035,23 +1134,27 @@ export function TermCalendarPage() {
                     type="button"
                     variant="outline"
                     block={false}
+                    disabled={actionLoading || awaitingInitialDeanReview > 0}
                     isLoading={actionLoading}
                     onClick={() => handleAdvancePhase("forward_for_approval")}
                   >
-                    Forward Resolved Sets to Deans for Approval
+                    Return Term for Final Dean Approval
                   </Button>
                   <Button
                     type="button"
                     block={false}
+                    disabled={!allSetsApproved || actionLoading}
                     isLoading={actionLoading}
-                    onClick={() => handleAdvancePhase("finalize")}
+                    onClick={() => setFinalizeConfirmOpen(true)}
                   >
                     Finalize &amp; Publish Term
                   </Button>
+                    </>
+                  )}
                 </>
               )}
 
-              {phaseData.phase === "finalized" && (
+              {termFinalized && (
                 <div className="flex flex-wrap items-center gap-3">
                   <Badge tone="emerald">
                     ✓ Term Finalized &amp; Published to All Users
@@ -1072,6 +1175,26 @@ export function TermCalendarPage() {
           </Card>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={finalizeConfirmOpen}
+        onClose={() => setFinalizeConfirmOpen(false)}
+        title="Finalize and publish this term?"
+        confirmLabel="Finalize & Publish Term"
+        loadingLabel="Publishing…"
+        onConfirm={async () => {
+          if (await handleAdvancePhase("finalize")) setFinalizeConfirmOpen(false);
+        }}
+      >
+        <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <p>
+            This publishes the complete term only when every required section has final Dean approval.
+          </p>
+          <p>
+            Students and instructors will then be able to view the approved schedules. Later changes use the controlled reopen/edit workflow.
+          </p>
+        </div>
+      </ConfirmDialog>
 
       {/* Reopening Majors Confirmation Modal */}
       <ConfirmDialog

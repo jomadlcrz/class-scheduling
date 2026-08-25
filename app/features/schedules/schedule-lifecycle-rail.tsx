@@ -35,14 +35,42 @@ function stopsFor(status: ScheduleReleaseStatus): StopView[] {
     case "approved":
       return [
         { label: "Draft", state: "done", sub: "Submitted" },
-        { label: "Dean Review", state: "done", sub: "Reviewed" },
-        { label: "Approved", state: "done", sub: "Published" },
+        { label: "Dean Review", state: "done", sub: "Distributed" },
+        { label: "Instructor Review", state: "done", sub: "Complete" },
+        { label: "Final Approval", state: "done", sub: "Dean signed" },
+        { label: "Term Publication", state: "current", sub: "Registrar publishes" },
       ];
     case "pending_dean_review":
       return [
         { label: "Draft", state: "done", sub: "Submitted" },
         { label: "Dean Review", state: "current", sub: "In review" },
-        { label: "Approved", state: "upcoming", sub: "Publishes on approval" },
+        { label: "Instructor Review", state: "upcoming", sub: "Waiting" },
+        { label: "Final Approval", state: "upcoming", sub: "Waiting" },
+        { label: "Term Publication", state: "upcoming", sub: "Waiting" },
+      ];
+    case "instructor_review":
+      return [
+        { label: "Draft", state: "done", sub: "Submitted" },
+        { label: "Dean Review", state: "done", sub: "Distributed" },
+        { label: "Instructor Review", state: "current", sub: "Awaiting responses" },
+        { label: "Final Approval", state: "upcoming", sub: "Waiting" },
+        { label: "Term Publication", state: "upcoming", sub: "Waiting" },
+      ];
+    case "registrar_revision":
+      return [
+        { label: "Draft", state: "done", sub: "Submitted" },
+        { label: "Dean Review", state: "done", sub: "Distributed" },
+        { label: "Instructor Review", state: "done", sub: "Changes received" },
+        { label: "Registrar Revision", state: "current", sub: "Resolve changes" },
+        { label: "Final Approval", state: "upcoming", sub: "Waiting" },
+      ];
+    case "pending_final_approval":
+      return [
+        { label: "Draft", state: "done", sub: "Submitted" },
+        { label: "Dean Review", state: "done", sub: "Distributed" },
+        { label: "Instructor Review", state: "done", sub: "Complete" },
+        { label: "Registrar Revision", state: "done", sub: "Complete" },
+        { label: "Final Approval", state: "current", sub: "Awaiting dean" },
       ];
     case "rejected":
       return [
@@ -78,7 +106,28 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
           eyebrow: "Needs your review",
           description: `Submitted${submittedAgo ? ` ${submittedAgo}` : ""}${
             submitter ? ` by ${submitter}` : ""
-          }. Review the weekly schedule, then approve to publish it or reject with a note.`,
+          }. Review the weekly schedule, then send it to the assigned instructors or reject it with a note.`,
+        };
+      case "instructor_review":
+        return {
+          variant: "info",
+          icon: <ClockIcon />,
+          eyebrow: "With instructors",
+          description: "Assigned instructors are reviewing this timetable. Suggestions return to the Registrar for resolution.",
+        };
+      case "registrar_revision":
+        return {
+          variant: "info",
+          icon: <ClockIcon />,
+          eyebrow: "Registrar is revising",
+          description: "Instructor suggestions are being resolved before this timetable returns for final approval.",
+        };
+      case "pending_final_approval":
+        return {
+          variant: "info",
+          icon: <ClockIcon />,
+          eyebrow: "Needs final approval",
+          description: "Instructor review is complete. Give the final Dean approval when the timetable is ready for term publication.",
         };
       case "approved":
         return {
@@ -87,7 +136,7 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
           eyebrow: "Approved",
           description: `You approved this${
             approvedAgo || reviewedAgo ? ` ${approvedAgo || reviewedAgo}` : ""
-          }. It's published to the section's students and instructors.`,
+          }. It is ready for the Registrar to publish with the rest of the term.`,
         };
       case "rejected":
         return {
@@ -118,14 +167,35 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
           submittedAgo ? ` ${submittedAgo}` : ""
         } and waiting in the dean's review queue. You can withdraw it while it's still pending.`,
       };
+    case "instructor_review":
+      return {
+        variant: "info",
+        icon: <ClockIcon />,
+        eyebrow: "Awaiting instructors",
+        description: "The Dean distributed this timetable to assigned instructors. Monitor Schedule Responses for their decisions.",
+      };
+    case "registrar_revision":
+      return {
+        variant: "warning",
+        icon: <EditIcon />,
+        eyebrow: "Resolve instructor suggestions",
+        description: "Review each forwarded suggestion in Schedule Responses. After every suggestion is resolved, resubmit for final Dean approval.",
+      };
+    case "pending_final_approval":
+      return {
+        variant: "info",
+        icon: <ClockIcon />,
+        eyebrow: "Awaiting final Dean approval",
+        description: "The Registrar completed the revision stage. The Dean's final sign-off is required before term publication.",
+      };
     case "approved":
       return {
         variant: "success",
         icon: <CheckIcon />,
-        eyebrow: "Published",
+        eyebrow: "Approved — awaiting term publication",
         description: `Approved${
           approvedAgo ? ` ${approvedAgo}` : ""
-        } — now visible to the students and instructors in this section.`,
+        }. The Registrar publishes it by finalizing the entire term in Scheduling Calendar.`,
       };
     case "rejected":
       return {
@@ -133,17 +203,17 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
         icon: <AlertTriangleIcon />,
         eyebrow: "Changes requested",
         description:
-          "The dean returned this to draft with a note. Revise the sessions, then resubmit for approval.",
+          "The dean returned this to draft with a note. Revise the sessions, then submit it for Dean review.",
       };
     case "draft":
     default:
       return {
         variant: "warning",
         icon: <EditIcon />,
-        eyebrow: "Ready to submit",
+        eyebrow: "Ready for Dean review",
         description: `${release.sessionCount} session${
           release.sessionCount === 1 ? "" : "s"
-        } saved. When it's complete, submit it to the department dean for approval.`,
+        } saved. Submit it to the department dean for review, or distribute the complete term from Scheduling Calendar when the term workflow is governed.`,
       };
   }
 }
@@ -224,7 +294,7 @@ export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLif
   return (
     <Card className="p-4 sm:p-5">
       {/* Desktop: horizontal three-stop rail */}
-      <ol className="hidden grid-cols-3 sm:grid" aria-label="Approval progress">
+      <ol className="hidden grid-cols-5 sm:grid" aria-label="Release progress">
         {stops.map((stop, index) => {
           const isLast = index === stops.length - 1;
           return (

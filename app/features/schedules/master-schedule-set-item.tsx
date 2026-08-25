@@ -146,8 +146,8 @@ export function MasterScheduleSetItem({
                 >
                   <SendIcon />
                   {release.releaseStatus === "rejected"
-                    ? "Resubmit for Approval"
-                    : "Submit for Approval"}
+                    ? "Resubmit for Dean Review"
+                    : "Submit for Dean Review"}
                 </Button>
               ) : release.releaseStatus === "pending_dean_review" ? (
                 <Button

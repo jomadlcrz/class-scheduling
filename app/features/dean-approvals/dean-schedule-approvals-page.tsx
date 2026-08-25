@@ -74,6 +74,8 @@ export function DeanScheduleApprovalsPage() {
   const [sendProgramTarget, setSendProgramTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
   const [rejectProgramTarget, setRejectProgramTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
   const [rejectProgramReason, setRejectProgramReason] = useState("");
+  const [finalApproveTarget, setFinalApproveTarget] = useState<{ syId: number; semesterNumber: number; programId: number; programAbbrev: string } | null>(null);
+  const [finalApproveConfirm, setFinalApproveConfirm] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
   const contextReady = Boolean(selectedSchoolYearId && selectedSemesterNumber);
@@ -100,18 +102,29 @@ export function DeanScheduleApprovalsPage() {
     }
   }
 
-  async function handleFinalApprove(release: ScheduleRelease) {
+  async function handleFinalApprove() {
+    if (!finalApproveTarget) return;
+    const expectedConfirmation = `Publish ${finalApproveTarget.programAbbrev} Official Schedules`;
+    if (finalApproveConfirm.trim() !== expectedConfirmation) {
+      toast.error(`Type "${expectedConfirmation}" exactly to confirm.`);
+      return;
+    }
+    setActionLoading(true);
     try {
       const { message } = await scheduleReleaseService.finalApproveProgram(
-        release.syId,
-        release.semesterNumber,
-        release.programId,
-        release.programAbbrev ?? "",
+        finalApproveTarget.syId,
+        finalApproveTarget.semesterNumber,
+        finalApproveTarget.programId,
+        finalApproveConfirm.trim(),
       );
       if (message) toast.success(message);
       await refresh();
+      setFinalApproveTarget(null);
+      setFinalApproveConfirm("");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Unable to sign and approve schedule.");
+    } finally {
+      setActionLoading(false);
     }
   }
 
@@ -200,6 +213,10 @@ export function DeanScheduleApprovalsPage() {
 
   const allPending = inbox?.pending ?? [];
   const recentlyReviewed = inbox?.recentlyReviewed ?? [];
+  const initialReviewReleases = useMemo(
+    () => allPending.filter((release) => release.releaseStatus === "pending_dean_review"),
+    [allPending],
+  );
 
   // Filter items based on active stage
   const pendingForStage = useMemo(() => {
@@ -340,6 +357,23 @@ export function DeanScheduleApprovalsPage() {
                   ({pendingForStage.length})
                 </span>
               </h2>
+              {activeStage === "pending_dean_review" && initialReviewReleases.length > 0 && (
+                <Card className="mt-3 flex flex-wrap items-center justify-between gap-3 border-amber-200 bg-amber-50/60 p-4 dark:border-gold-400/25 dark:bg-gold-400/8">
+                  <div>
+                    <p className="font-semibold text-navy-800 dark:text-mist-100">Initial Dean review required</p>
+                    <p className="mt-1 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+                      Send these {initialReviewReleases.length} section schedule{initialReviewReleases.length === 1 ? "" : "s"} to their assigned instructors. This is the required first Dean action; final signing happens only after the term&apos;s shift requests are resolved.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    block={false}
+                    onClick={() => setSendCohort({ label: "this term", releases: initialReviewReleases })}
+                  >
+                    Send all to instructors ({initialReviewReleases.length})
+                  </Button>
+                </Card>
+              )}
               <div className="mt-3">
                 {pendingForStage.length === 0 ? (
                   <EmptyState title="No section schedules in this stage">
@@ -354,7 +388,10 @@ export function DeanScheduleApprovalsPage() {
                     onPreview={setPreviewTarget}
                     onSendToInstructors={setSendTarget}
                     onReject={setRejectTarget}
-                    onFinalApprove={handleFinalApprove}
+                    onFinalApprove={(release) => {
+                      setFinalApproveTarget({ syId: release.syId, semesterNumber: release.semesterNumber, programId: release.programId, programAbbrev: release.programAbbrev ?? "" });
+                      setFinalApproveConfirm("");
+                    }}
                     onSendCohort={(label, releases) => setSendCohort({ label, releases })}
                     onSendProgram={(programId, programAbbrev) => setSendProgramTarget({ programId, programAbbrev })}
                     onRejectProgram={(programId, programAbbrev) => setRejectProgramTarget({ programId, programAbbrev })}
@@ -363,7 +400,10 @@ export function DeanScheduleApprovalsPage() {
                   <SchedulePendingApprovalsTable
                     releases={pendingForStage}
                     onPreview={setPreviewTarget}
-                    onFinalApprove={handleFinalApprove}
+                    onFinalApprove={(release) => {
+                      setFinalApproveTarget({ syId: release.syId, semesterNumber: release.semesterNumber, programId: release.programId, programAbbrev: release.programAbbrev ?? "" });
+                      setFinalApproveConfirm("");
+                    }}
                   />
                 )}
               </div>
@@ -407,6 +447,34 @@ export function DeanScheduleApprovalsPage() {
         onConfirm={handleReject}
       />
 
+      <Modal
+        open={finalApproveTarget !== null}
+        onClose={() => {
+          setFinalApproveTarget(null);
+          setFinalApproveConfirm("");
+        }}
+        title={`Publish ${finalApproveTarget?.programAbbrev ?? ""} Official Schedules?`}
+      >
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          This signs every section of {finalApproveTarget?.programAbbrev ?? "this program"} that is waiting for final approval. It cannot be undone. The term becomes public once every required program is signed and the Registrar finalizes the term.
+        </p>
+        <label className="mt-4 block text-sm font-medium text-navy-800 dark:text-mist-100">
+          Type <span className="font-semibold">Publish {finalApproveTarget?.programAbbrev} Official Schedules</span> to confirm
+          <input
+            value={finalApproveConfirm}
+            onChange={(event) => setFinalApproveConfirm(event.target.value)}
+            className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-navy-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-white/15 dark:bg-navy-900 dark:text-mist-100"
+            autoComplete="off"
+          />
+        </label>
+        <ModalActions>
+          <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => setFinalApproveTarget(null)}>Cancel</Button>
+          <Button type="button" block={false} disabled={finalApproveConfirm.trim() !== `Publish ${finalApproveTarget?.programAbbrev ?? ""} Official Schedules` || actionLoading} isLoading={actionLoading} onClick={handleFinalApprove}>
+            Sign &amp; Final Approve Program
+          </Button>
+        </ModalActions>
+      </Modal>
+
       <ConfirmDialog
         open={sendCohort !== null}
         onClose={() => setSendCohort(null)}
@@ -416,7 +484,8 @@ export function DeanScheduleApprovalsPage() {
         onConfirm={handleSendCohort}
       >
         This asks each assigned instructor to review their section timetable. It does not publish schedules;
-        publication happens only after every instructor accepts and the dean gives final approval.
+        publication happens only after every instructor accepts, the dean gives final approval, and the
+        Registrar finalizes the complete term.
       </ConfirmDialog>
 
       {/* Program-Level Send Confirmation */}

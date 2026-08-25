@@ -34,9 +34,9 @@ export function HubStatStrip({
       tone: counts.pending_dean_review + counts.instructor_review + counts.pending_final_approval > 0 ? "text-sky-700 dark:text-sky-300" : "text-slate-500 dark:text-slate-400",
     },
     {
-      label: "Published",
+      label: "Final approved",
       value: String(counts.approved),
-      hint: "Live for instructors & students",
+      hint: "Awaiting term publication",
       tone: counts.approved > 0 ? "text-emerald-700 dark:text-emerald-300" : "text-slate-500 dark:text-slate-400",
     },
   ];

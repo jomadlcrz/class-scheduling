@@ -31,7 +31,7 @@ type ScheduleEditDialogProps = {
   timeOptions: string[];
   saving: boolean;
   error: string | null;
-  /** Warn that saving an approved schedule unpublishes it until re-approval. */
+  /** Warn that saving an approved schedule requires final approval again before term publication. */
   approvedWarning?: boolean;
   /** Disable saving (e.g. the term is closed) with an explanatory note. */
   disabled?: boolean;
@@ -71,8 +71,8 @@ export function ScheduleEditDialog({
           <Alert variant="warning">
             <AlertIcon />
             <AlertDescription>
-              Saving will unpublish this schedule. Students and instructors will lose access until the
-              dean approves it again.
+              Saving clears this schedule's final approval. It must pass the review workflow again
+              before the Registrar can publish the term.
             </AlertDescription>
           </Alert>
         )}

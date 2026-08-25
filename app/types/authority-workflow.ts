@@ -229,6 +229,9 @@ export type MajorScheduleConflict = {
 };
 
 export type ProposedScheduleMeeting = {
+  scheduleId?: number | null;
+  setId?: number | null;
+  subjectId?: number | null;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -330,6 +333,7 @@ export type InstructorScheduleReviewDetail = {
   respondedAt: string | null;
   reason: string | null;
   canRespond?: boolean;
+  canSuggest?: boolean;
   resolution?: InstructorScheduleReviewResolution | null;
   meetings: InstructorScheduleReviewMeeting[];
   proposedMeetings: ProposedScheduleMeeting[];

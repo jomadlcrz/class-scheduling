@@ -95,17 +95,28 @@ export function deriveHubStage({ hasTerm, total, unscheduled, counts }: HubStage
     return {
       tone: "action",
       eyebrow: "Your next step",
-      title: `Submit ${counts.draft} draft${counts.draft === 1 ? "" : "s"} for approval`,
-      line: "These timetables are built but not yet sent to the dean. Submit them to start approval.",
-      actionLabel: "Submit for approval",
-      to: "/schedules/regular-class",
+      title: `Prepare ${counts.draft} draft${counts.draft === 1 ? "" : "s"} for term distribution`,
+      line: "Every section must be complete before the Registrar distributes the term to Deans for review. Continue in Scheduling Calendar.",
+      actionLabel: "Open Scheduling Calendar",
+      to: "/schedules/term-calendar",
     };
   }
-  if (counts.pending_dean_review > 0) {
+  if (counts.registrar_revision > 0) {
+    return {
+      tone: "action",
+      eyebrow: "Registrar action needed",
+      title: `Resolve ${counts.registrar_revision} instructor revision${counts.registrar_revision === 1 ? "" : "s"}`,
+      line: "Instructor suggestions are waiting for a Registrar decision. Resolve each one before resubmitting for final Dean approval.",
+      actionLabel: "Open Schedule Responses",
+      to: "/schedule-responses",
+    };
+  }
+  if (counts.pending_dean_review + counts.instructor_review + counts.pending_final_approval > 0) {
+    const waiting = counts.pending_dean_review + counts.instructor_review + counts.pending_final_approval;
     return {
       tone: "wait",
-      eyebrow: "Waiting on the dean",
-      title: `${counts.pending_dean_review} section${counts.pending_dean_review === 1 ? "" : "s"} awaiting approval`,
+      eyebrow: "Review workflow in progress",
+      title: `${waiting} section${waiting === 1 ? "" : "s"} awaiting review`,
       line: "Everything built is submitted. The dean is reviewing — track progress on the overview.",
       actionLabel: "View overview",
       to: "/schedules/overview",
@@ -113,10 +124,10 @@ export function deriveHubStage({ hasTerm, total, unscheduled, counts }: HubStage
   }
   return {
     tone: "done",
-    eyebrow: "All done",
-    title: "Every section is published",
-    line: "All timetables for this term are approved and live for students and instructors.",
-    actionLabel: "Open section schedules",
-    to: "/schedules/regular-class",
+    eyebrow: "Ready for publication",
+    title: "Every section has final Dean approval",
+    line: "Finalize the term in Scheduling Calendar to publish all approved timetables together.",
+    actionLabel: "Open Scheduling Calendar",
+    to: "/schedules/term-calendar",
   };
 }

@@ -86,14 +86,21 @@ function StudentSchedulePage() {
     if (releaseStatus === "pending_dean_review" || releaseStatus === "instructor_review" || releaseStatus === "pending_final_approval") {
       return {
         title: "Schedule pending approval",
-        message: "Your class schedule is waiting for dean approval. It will appear here once approved.",
+        message: "Your class schedule is still in the review workflow. It will appear after final approval and term-wide publication.",
       };
     }
 
-    if (releaseStatus === "rejected") {
+    if (releaseStatus === "rejected" || releaseStatus === "registrar_revision") {
       return {
         title: "Schedule under revision",
-        message: "Your class schedule was returned for revision and will appear after it is updated and approved.",
+        message: "Your class schedule is being revised after review feedback. It will appear after final approval and term-wide publication.",
+      };
+    }
+
+    if (releaseStatus === "approved" || releaseStatus === "pending_publication") {
+      return {
+        title: "Schedule awaiting term publication",
+        message: "Your section has final approval. The Registrar must finalize the whole term before schedules become visible.",
       };
     }
 

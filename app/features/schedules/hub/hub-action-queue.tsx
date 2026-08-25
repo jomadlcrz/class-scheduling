@@ -6,7 +6,7 @@ import { Card } from "~/components/ui/card";
 import type { ScheduleRelease } from "~/types/schedule-release";
 import type { ClassSet } from "~/types/set";
 
-type Kind = "rejected" | "unscheduled" | "draft" | "pending";
+type Kind = "revision" | "rejected" | "unscheduled" | "draft" | "pending";
 
 type ActionItem = {
   id: string;
@@ -18,6 +18,7 @@ type ActionItem = {
 };
 
 const KIND_TONE: Record<Kind, BadgeTone> = {
+  revision: "gold",
   rejected: "red",
   unscheduled: "gold",
   draft: "slate",
@@ -25,13 +26,14 @@ const KIND_TONE: Record<Kind, BadgeTone> = {
 };
 
 const KIND_LABEL: Record<Kind, string> = {
+  revision: "Registrar revision",
   rejected: "Returned",
   unscheduled: "Unscheduled",
   draft: "Draft",
   pending: "Pending",
 };
 
-const PRIORITY: Record<Kind, number> = { rejected: 0, unscheduled: 1, draft: 2, pending: 3 };
+const PRIORITY: Record<Kind, number> = { revision: 0, rejected: 1, unscheduled: 2, draft: 3, pending: 4 };
 
 /** Full section label — program abbrev + year level + set code, e.g. "BSIT-4E". */
 function sectionLabel(program: string | null, yearLevel: number | null, setCode: string | null): string {
@@ -82,6 +84,18 @@ function buildQueue(
   const items: ActionItem[] = [];
 
   for (const r of releases) {
+    if (r.releaseStatus !== "registrar_revision") continue;
+    items.push({
+      id: `revision-${r.id}`,
+      kind: "revision",
+      title: releaseTitle(r),
+      detail: "Instructor suggestions need a Registrar decision before final Dean approval.",
+      to: "/schedule-responses",
+      actionLabel: "Resolve",
+    });
+  }
+
+  for (const r of releases) {
     if (r.releaseStatus !== "rejected") continue;
     items.push({
       id: `rejected-${r.id}`,
@@ -108,9 +122,9 @@ function buildQueue(
       id: `draft-${r.id}`,
       kind: "draft",
       title: releaseTitle(r),
-      detail: `${r.sessionCount} session${r.sessionCount === 1 ? "" : "s"} saved — submit to the dean when ready.`,
-      to: regularClassPath(schoolYear, r),
-      actionLabel: "Review",
+      detail: `${r.sessionCount} session${r.sessionCount === 1 ? "" : "s"} saved. Distribute the complete term from Scheduling Calendar.`,
+      to: "/schedules/term-calendar",
+      actionLabel: "Open Calendar",
     });
   }
   for (const r of releases) {
