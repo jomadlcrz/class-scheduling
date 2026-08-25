@@ -35,6 +35,7 @@ export type ScheduleReleaseStatusValue =
   | "instructor_review"
   | "registrar_revision"
   | "pending_final_approval"
+  | "pending_publication"
   | "approved"
   | "rejected";
 
@@ -49,6 +50,8 @@ export function scheduleReleaseStatusTone(status: ScheduleReleaseStatusValue | s
     case "registrar_revision":
       return "gold";
     case "pending_final_approval":
+      return "navy";
+    case "pending_publication":
       return "navy";
     case "approved":
       return "emerald";
@@ -71,6 +74,8 @@ export function scheduleReleaseStatusLabel(status: ScheduleReleaseStatusValue | 
       return "Registrar Revision";
     case "pending_final_approval":
       return "Pending Final Approval";
+    case "pending_publication":
+      return "Awaiting Term Publication";
     case "approved":
       return "Approved";
     case "rejected":

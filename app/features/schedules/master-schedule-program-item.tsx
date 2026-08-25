@@ -79,6 +79,9 @@ export function MasterScheduleProgramItem({
 
   const statusOrder: ScheduleReleaseStatus[] = [
     "approved",
+    "pending_final_approval",
+    "registrar_revision",
+    "instructor_review",
     "pending_dean_review",
     "rejected",
     "draft",

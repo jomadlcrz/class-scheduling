@@ -97,11 +97,14 @@ function buildTiles(data: StudentAnalytics): Tile[] {
     {
       title: "Schedule release",
       displayValue: scheduleReleaseStatusLabel(m.scheduleReleaseStatus),
-      unit: "approved schedules are visible",
+      unit:
+        m.scheduleReleaseStatus === "approved"
+          ? "official timetable is visible"
+          : "visible after Registrar term publication",
       tone:
         m.scheduleReleaseStatus === "approved"
           ? "good"
-          : ["pending_dean_review", "instructor_review", "pending_final_approval"].includes(m.scheduleReleaseStatus)
+          : ["pending_dean_review", "instructor_review", "pending_final_approval", "pending_publication"].includes(m.scheduleReleaseStatus)
             ? "warning"
             : "critical",
       badge: m.scheduleReleaseStatus === "approved" ? "Available" : "Waiting",
