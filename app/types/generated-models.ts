@@ -58,6 +58,28 @@ export interface BuildingModel {
   isActive: boolean;
 }
 
+/** Backend Model: ClassModePolicy (Table: `class_mode_policies`) */
+export interface BackendClassModePolicy {
+  id: number;
+  note: string | null;
+  online_meetings: number;
+  semester_number: number;
+  set_id: number | null;
+  subject_id: number | null;
+  sy_id: number;
+}
+
+/** Frontend camelCase Mapped Model: ClassModePolicy */
+export interface ClassModePolicyModel {
+  id: number;
+  note: string | null;
+  onlineMeetings: number;
+  semesterNumber: number;
+  setId: number | null;
+  subjectId: number | null;
+  syId: number;
+}
+
 /** Backend Model: CurriculumDetail (Table: `curriculum_details`) */
 export interface BackendCurriculumDetail {
   id: number;
@@ -115,14 +137,12 @@ export interface DeanContactInfoModel {
 /** Backend Model: DeanMajorSchedule (Table: `dean_major_schedules`) */
 export interface BackendDeanMajorSchedule {
   id: number;
-  mode: string;
   semester_number: number;
 }
 
 /** Frontend camelCase Mapped Model: DeanMajorSchedule */
 export interface DeanMajorScheduleModel {
   id: number;
-  mode: string;
   semesterNumber: number;
 }
 
@@ -250,6 +270,16 @@ export interface GradingPeriodClosureModel {
   semesterNumber: number;
 }
 
+/** Backend Model: InstructorAcceptedSchedule (Table: `instructor_accepted_schedules`) */
+export interface BackendInstructorAcceptedSchedule {
+  id: number;
+}
+
+/** Frontend camelCase Mapped Model: InstructorAcceptedSchedule */
+export interface InstructorAcceptedScheduleModel {
+  id: number;
+}
+
 /** Backend Model: InstructorAssignmentAuditLog (Table: `instructor_assignment_audit_logs`) */
 export interface BackendInstructorAssignmentAuditLog {
   action: string;
@@ -372,26 +402,6 @@ export interface InstructorProfileModel {
   userId: number;
 }
 
-/** Backend Model: InstructorScheduleProposalMeeting (Table: `instructor_schedule_proposal_meetings`) */
-export interface BackendInstructorScheduleProposalMeeting {
-  day_of_week: string;
-  end_time: string;
-  id: number;
-  response_id: number;
-  room_id: number;
-  start_time: string;
-}
-
-/** Frontend camelCase Mapped Model: InstructorScheduleProposalMeeting */
-export interface InstructorScheduleProposalMeetingModel {
-  dayOfWeek: string;
-  endTime: string;
-  id: number;
-  responseId: number;
-  roomId: number;
-  startTime: string;
-}
-
 /** Backend Model: InstructorScheduleResponse (Table: `instructor_schedule_responses`) */
 export interface BackendInstructorScheduleResponse {
   created_at: string;
@@ -405,6 +415,7 @@ export interface BackendInstructorScheduleResponse {
   registrar_reviewed_at: string | null;
   registrar_reviewed_by_user_id: number | null;
   regular_schedule_id: number;
+  resolution_outcome: string | null;
   responded_at: string | null;
   response_type: string;
   status: string;
@@ -423,6 +434,7 @@ export interface InstructorScheduleResponseModel {
   registrarReviewedAt: string | null;
   registrarReviewedByUserId: number | null;
   regularScheduleId: number;
+  resolutionOutcome: string | null;
   respondedAt: string | null;
   responseType: string;
   status: string;
@@ -440,6 +452,46 @@ export interface InstructorSubjectAssignmentModel {
   curriculumDetailId: number;
   id: number;
   teachingTermId: number;
+}
+
+/** Backend Model: InstructorSuggestedSchedule (Table: `instructor_suggested_schedules`) */
+export interface BackendInstructorSuggestedSchedule {
+  day_of_week: string;
+  end_time: string;
+  id: number;
+  original_slot: Record<string, unknown> | null;
+  room_id: number | null;
+  session_mode: string | null;
+  set_id: number;
+  start_time: string;
+}
+
+/** Frontend camelCase Mapped Model: InstructorSuggestedSchedule */
+export interface InstructorSuggestedScheduleModel {
+  dayOfWeek: string;
+  endTime: string;
+  id: number;
+  originalSlot: Record<string, unknown> | null;
+  roomId: number | null;
+  sessionMode: string | null;
+  setId: number;
+  startTime: string;
+}
+
+/** Backend Model: InstructorSuggestionValidation (Table: `instructor_suggestion_validations`) */
+export interface BackendInstructorSuggestionValidation {
+  check_code: string;
+  detail: string | null;
+  id: number;
+  status: string;
+}
+
+/** Frontend camelCase Mapped Model: InstructorSuggestionValidation */
+export interface InstructorSuggestionValidationModel {
+  checkCode: string;
+  detail: string | null;
+  id: number;
+  status: string;
 }
 
 /** Backend Model: InstructorTeachingTerm (Table: `instructor_teaching_terms`) */
@@ -508,7 +560,6 @@ export interface BackendMajorScheduleAuditLog {
   id: number;
   instructor_name: string | null;
   ip_address: string | null;
-  meeting_kind: string | null;
   new_data: Record<string, unknown> | null;
   performer_name: string | null;
   previous_data: Record<string, unknown> | null;
@@ -519,6 +570,7 @@ export interface BackendMajorScheduleAuditLog {
   schedule_id: number | null;
   school_year: string | null;
   semester_number: number | null;
+  session_mode: string | null;
   set_name: string | null;
   start_time: string | null;
   subject_label: string | null;
@@ -540,7 +592,6 @@ export interface MajorScheduleAuditLogModel {
   id: number;
   instructorName: string | null;
   ipAddress: string | null;
-  meetingKind: string | null;
   newData: Record<string, unknown> | null;
   performerName: string | null;
   previousData: Record<string, unknown> | null;
@@ -551,6 +602,7 @@ export interface MajorScheduleAuditLogModel {
   scheduleId: number | null;
   schoolYear: string | null;
   semesterNumber: number | null;
+  sessionMode: string | null;
   setName: string | null;
   startTime: string | null;
   subjectLabel: string | null;
@@ -761,14 +813,12 @@ export interface RegistrarContactInfoModel {
 /** Backend Model: RegistrarMajorSchedule (Table: `registrar_major_schedules`) */
 export interface BackendRegistrarMajorSchedule {
   id: number;
-  mode: string;
   semester_number: number;
 }
 
 /** Frontend camelCase Mapped Model: RegistrarMajorSchedule */
 export interface RegistrarMajorScheduleModel {
   id: number;
-  mode: string;
   semesterNumber: number;
 }
 
@@ -808,9 +858,7 @@ export interface BackendRegularSchedule {
   is_draft: boolean;
   is_protected: boolean;
   major_workflow_status: string | null;
-  mode: string;
   program_id: number;
-  room_id: number;
   schedule_origin: string;
   semester_number: number;
   set_id: number;
@@ -828,9 +876,7 @@ export interface RegularScheduleModel {
   isDraft: boolean;
   isProtected: boolean;
   majorWorkflowStatus: string | null;
-  mode: string;
   programId: number;
-  roomId: number;
   scheduleOrigin: string;
   semesterNumber: number;
   setId: number;
@@ -1304,6 +1350,32 @@ export interface TermClosureModel {
   reason: string | null;
   semesterNumber: number;
   syId: number;
+}
+
+/** Backend Model: TermResolutionRun (Table: `term_resolution_runs`) */
+export interface BackendTermResolutionRun {
+  committed: boolean;
+  committed_at: string | null;
+  error: string | null;
+  id: number;
+  outcome: Record<string, unknown> | null;
+  semester_number: number;
+  solved_at: string | null;
+  stats: Record<string, unknown> | null;
+  status: string;
+}
+
+/** Frontend camelCase Mapped Model: TermResolutionRun */
+export interface TermResolutionRunModel {
+  committed: boolean;
+  committedAt: string | null;
+  error: string | null;
+  id: number;
+  outcome: Record<string, unknown> | null;
+  semesterNumber: number;
+  solvedAt: string | null;
+  stats: Record<string, unknown> | null;
+  status: string;
 }
 
 /** Backend Model: TextPrerequisite (Table: `text_prerequisites`) */

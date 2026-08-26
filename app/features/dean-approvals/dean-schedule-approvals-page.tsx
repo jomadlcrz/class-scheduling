@@ -74,6 +74,8 @@ export function DeanScheduleApprovalsPage() {
   const [sendProgramTarget, setSendProgramTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
   const [rejectProgramTarget, setRejectProgramTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
   const [rejectProgramReason, setRejectProgramReason] = useState("");
+  const [returnRevisionTarget, setReturnRevisionTarget] = useState<{ programId: number; programAbbrev: string } | null>(null);
+  const [returnRevisionReason, setReturnRevisionReason] = useState("");
   const [finalApproveTarget, setFinalApproveTarget] = useState<{ syId: number; semesterNumber: number; programId: number; programAbbrev: string } | null>(null);
   const [finalApproveConfirm, setFinalApproveConfirm] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
@@ -206,6 +208,31 @@ export function DeanScheduleApprovalsPage() {
       await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to return program schedules.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleReturnForRevisionSubmit() {
+    if (!returnRevisionTarget || !selectedSchoolYearId || !selectedSemesterNumber) return;
+    if (returnRevisionReason.trim().length < 10) {
+      toast.error("Revision reason must be at least 10 characters.");
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const result = await scheduleReleaseService.returnProgramForRevision(
+        Number(selectedSchoolYearId),
+        Number(selectedSemesterNumber),
+        returnRevisionTarget.programId,
+        returnRevisionReason.trim(),
+      );
+      toast.success(result.message);
+      setReturnRevisionTarget(null);
+      setReturnRevisionReason("");
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to return the program for revision.");
     } finally {
       setActionLoading(false);
     }
@@ -404,6 +431,10 @@ export function DeanScheduleApprovalsPage() {
                       setFinalApproveTarget({ syId: release.syId, semesterNumber: release.semesterNumber, programId: release.programId, programAbbrev: release.programAbbrev ?? "" });
                       setFinalApproveConfirm("");
                     }}
+                    onReturnForRevision={(release) => {
+                      setReturnRevisionTarget({ programId: release.programId, programAbbrev: release.programAbbrev ?? "" });
+                      setReturnRevisionReason("");
+                    }}
                   />
                 )}
               </div>
@@ -473,6 +504,34 @@ export function DeanScheduleApprovalsPage() {
             Sign &amp; Final Approve Program
           </Button>
         </ModalActions>
+      </Modal>
+
+      <Modal
+        open={returnRevisionTarget !== null}
+        onClose={() => {
+          setReturnRevisionTarget(null);
+          setReturnRevisionReason("");
+        }}
+        title={`Return ${returnRevisionTarget?.programAbbrev ?? ""} for Registrar Revision`}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            This moves the program from final Dean approval back to Registrar Revision. It does not use the initial-review rejection path.
+          </p>
+          <Textarea
+            id="return-revision-reason"
+            label="Required revision reason"
+            value={returnRevisionReason}
+            onChange={(event) => setReturnRevisionReason(event.target.value)}
+          />
+          <p className="text-right text-xs text-slate-400">{returnRevisionReason.trim().length} / 10 characters minimum</p>
+          <ModalActions>
+            <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => setReturnRevisionTarget(null)}>Cancel</Button>
+            <Button type="button" variant="danger" block={false} isLoading={actionLoading} disabled={returnRevisionReason.trim().length < 10} onClick={handleReturnForRevisionSubmit}>
+              Return for Revision
+            </Button>
+          </ModalActions>
+        </div>
       </Modal>
 
       <ConfirmDialog

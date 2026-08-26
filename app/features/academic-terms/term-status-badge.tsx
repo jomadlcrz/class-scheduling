@@ -25,8 +25,8 @@ export function TermStatusBadge({ term, compact = false }: TermStatusBadgeProps)
         ? "Year ended"
         : "Closed — year ended"
       : compact
-        ? "Posted"
-        : "Closed — posted";
+        ? "Closed"
+        : "Closed";
 
   return (
     <StatusBadge tone={closedReasonTone(term.closedReason)} icon={<LockIcon size={12} />}>

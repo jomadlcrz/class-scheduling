@@ -237,6 +237,17 @@ async function listInstructorScheduleReviewHistory(): Promise<unknown[]> {
   return data.requests ?? [];
 }
 
+/** GET /instructor-schedule-responses/acceptance-summary — active, automatic, and awaiting acceptances. */
+async function getInstructorAcceptanceSummary(
+  syId: number,
+  semesterNumber: number,
+): Promise<import("~/types/authority-workflow").InstructorAcceptanceSummary> {
+  const query = new URLSearchParams({ syId: String(syId), semesterNumber: String(semesterNumber) });
+  return apiGet<import("~/types/authority-workflow").InstructorAcceptanceSummary>(
+    `/instructor-schedule-responses/acceptance-summary?${query}`,
+  );
+}
+
 async function setAcceptedSchedules(releaseId: number, scheduleIds: number[], accepted: boolean) {
   return apiPut<{ message?: string; acceptedScheduleIds: number[] }>(
     `/instructors/schedule-reviews/${releaseId}/accepted-schedules`,
@@ -344,6 +355,7 @@ export const authorityWorkflowService = {
   listInstructorScheduleReviews,
   getInstructorScheduleReview,
   listInstructorScheduleReviewHistory,
+  getInstructorAcceptanceSummary,
   setAcceptedSchedules,
   acceptAllInstructorScheduleReviews,
   acceptInstructorScheduleReview,

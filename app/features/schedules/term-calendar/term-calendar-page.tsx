@@ -13,6 +13,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
+import { ApiError } from "~/lib/api";
 import { termPhaseService } from "~/services/term-phase.service";
 import type {
   DepartmentReadinessResponse,
@@ -125,6 +126,7 @@ export function TermCalendarPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [windowTarget, setWindowTarget] = useState<SchedulingWindowName | null>(null);
   const [windowClosingAt, setWindowClosingAt] = useState("");
+  const [windowConfirmation, setWindowConfirmation] = useState<{ title: string; body: string; confirmLabel: string } | null>(null);
   const [extensionDepartmentId, setExtensionDepartmentId] = useState("");
   const [extensionUntil, setExtensionUntil] = useState("");
   const [extensionReason, setExtensionReason] = useState("");
@@ -312,6 +314,24 @@ export function TermCalendarPage() {
       setWindowTarget(null);
       await loadData();
     } catch (err) {
+      const details = err instanceof ApiError ? err.details : null;
+      const extra = details?.extra && typeof details.extra === "object" ? details.extra as Record<string, unknown> : details;
+      const confirmation = extra?.confirmation;
+      if (confirmation && typeof confirmation === "object") {
+        const challenge = confirmation as Record<string, unknown>;
+        if (
+          typeof challenge.title === "string" &&
+          typeof challenge.body === "string" &&
+          typeof challenge.confirmLabel === "string"
+        ) {
+          setWindowConfirmation({
+            title: challenge.title,
+            body: challenge.body,
+            confirmLabel: challenge.confirmLabel,
+          });
+          return;
+        }
+      }
       toast.error(err instanceof Error ? err.message : "Unable to open the scheduling window.");
     } finally {
       setActionLoading(false);
@@ -416,8 +436,8 @@ export function TermCalendarPage() {
     }
   }
 
-  // The backend persists only the two deadline-gated phases. Distribution,
-  // resolution, and finalization are completed actions proved by timestamps.
+  // The backend supplies the authoritative lifecycle and detail stage. Timestamps
+  // remain useful for history but must not decide which action is currently legal.
   const termDistributed = Boolean(phaseData?.distributedAt);
   const termResolved = Boolean(phaseData?.resolvedAt);
   const termFinalized = Boolean(phaseData?.finalizedAt);
@@ -431,20 +451,21 @@ export function TermCalendarPage() {
     (status) => status === "pending_final_approval",
   ).length;
   const allSetsApproved = releaseStatuses.length > 0 && releaseStatuses.every((status) => status === "approved");
-  const workflowTitle = termFinalized
-    ? "Finalized"
-    : termResolved
-      ? "Resolution complete"
-      : termDistributed
-        ? "Shift Request"
-        : phaseData?.phaseLabel ?? "Scheduling";
-  const workflowDescription = termFinalized
-    ? "The Registrar finalized the approved term. Schedules are published to students and instructors."
-    : termResolved
-      ? "Shift requests are closed and resolved. Send every section to its Dean for final approval, then publish once all are approved."
-      : phaseData
-        ? PHASE_GUIDANCE[phaseData.phase].description
-        : "";
+  const detailStage = phaseData?.detailStage;
+  const workflowTitle = detailStage
+    ? detailStage.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())
+    : phaseData?.phaseLabel ?? "Scheduling";
+  const workflowDescription = detailStage === "ready_for_suggestions"
+    ? "Every required schedule has reached instructor review. Start the Shift Request window when ready."
+    : detailStage === "final_approval"
+      ? "Resolved schedules are waiting for final Dean approval."
+      : detailStage === "ready_for_publication"
+        ? "Every required release is approved. The Registrar can now finalize and publish the term."
+        : detailStage === "finalized"
+          ? "The Registrar finalized the approved term. Schedules are published to students and instructors."
+          : phaseData
+            ? PHASE_GUIDANCE[phaseData.phase].description
+            : "";
 
   const unscheduledList = readiness?.unscheduled ?? [];
   const incompleteList = readiness?.incomplete ?? [];
@@ -587,7 +608,7 @@ export function TermCalendarPage() {
                       )}
                     </div>
 
-                    {step.key === "major" && isPast && !termDistributed && (
+                    {step.key === "major" && isPast && !termDistributed && phaseData.gates.majorReopenAllowed && (
                       <button
                         type="button"
                         className="mt-2 text-left text-[11px] font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400"
@@ -655,7 +676,7 @@ export function TermCalendarPage() {
                 <Select
                   value={extensionDepartmentId}
                   onValueChange={(value) => setExtensionDepartmentId(value ?? "")}
-                  disabled={actionLoading || (deptReadiness?.departments.length ?? 0) === 0}
+                  disabled={actionLoading || !phaseData.gates.majorReopenAllowed || (deptReadiness?.departments.length ?? 0) === 0}
                   items={(deptReadiness?.departments ?? []).map((department) => ({
                     value: String(department.departmentId),
                     label: `${department.departmentName} (${department.departmentAbbrev})`,
@@ -671,14 +692,17 @@ export function TermCalendarPage() {
                   </SelectContent>
                 </Select>
               </FieldChrome>
-              <Input id="extension-until" label="Extended until" type="datetime-local" value={extensionUntil} onChange={(event) => setExtensionUntil(event.target.value)} />
-              <Textarea id="extension-reason" label="Reason (optional)" value={extensionReason} onChange={(event) => setExtensionReason(event.target.value)} />
+              <Input id="extension-until" label="Extended until" type="datetime-local" value={extensionUntil} onChange={(event) => setExtensionUntil(event.target.value)} disabled={!phaseData.gates.majorReopenAllowed} />
+              <Textarea id="extension-reason" label="Reason (optional)" value={extensionReason} onChange={(event) => setExtensionReason(event.target.value)} disabled={!phaseData.gates.majorReopenAllowed} />
             </div>
             {(deptReadiness?.departments.length ?? 0) === 0 && (
               <p className="mt-3 text-xs text-amber-700 dark:text-amber-300">Department readiness is unavailable, so an extension cannot be granted yet.</p>
             )}
+            {!phaseData.gates.majorReopenAllowed && (
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Shift Request has started for this term, so Major Scheduling extensions are permanently unavailable.</p>
+            )}
             <div className="mt-4 flex justify-end">
-              <Button type="button" block={false} isLoading={actionLoading} disabled={!extensionDepartmentId || !extensionUntil} onClick={handleGrantMajorExtension}>
+              <Button type="button" block={false} isLoading={actionLoading} disabled={!phaseData.gates.majorReopenAllowed || !extensionDepartmentId || !extensionUntil} onClick={handleGrantMajorExtension}>
                 Grant Extension
               </Button>
             </div>
@@ -1033,7 +1057,7 @@ export function TermCalendarPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              {phaseData.phase === "major_scheduling" && (
+              {detailStage === "major_scheduling" && (
                 <Button
                   type="button"
                   block={false}
@@ -1044,7 +1068,7 @@ export function TermCalendarPage() {
                 </Button>
               )}
 
-              {phaseData.phase === "generation" && (
+              {detailStage === "generation" && (
                 <>
                   <Button
                     type="button"
@@ -1068,7 +1092,7 @@ export function TermCalendarPage() {
                 </>
               )}
 
-              {phaseData.phase === "suggestion_window" && !termResolved && !termFinalized && (
+              {detailStage === "suggestion_window" && (
                 <>
                   <Button
                     type="button"
@@ -1092,7 +1116,7 @@ export function TermCalendarPage() {
                 </>
               )}
 
-              {termResolved && !termFinalized && (
+              {["resolution", "final_approval", "ready_for_publication"].includes(detailStage ?? "") && (
                 <>
                   {!termDistributed ? (
                     <>
@@ -1124,16 +1148,6 @@ export function TermCalendarPage() {
                     type="button"
                     variant="outline"
                     block={false}
-                    disabled={actionLoading}
-                    isLoading={actionLoading}
-                    onClick={() => handleOpenPhase("suggestion_window")}
-                  >
-                    ← Reopen Shift Request
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    block={false}
                     disabled={actionLoading || awaitingInitialDeanReview > 0}
                     isLoading={actionLoading}
                     onClick={() => handleAdvancePhase("forward_for_approval")}
@@ -1143,7 +1157,7 @@ export function TermCalendarPage() {
                   <Button
                     type="button"
                     block={false}
-                    disabled={!allSetsApproved || actionLoading}
+                    disabled={detailStage !== "ready_for_publication" || actionLoading}
                     isLoading={actionLoading}
                     onClick={() => setFinalizeConfirmOpen(true)}
                   >
@@ -1154,21 +1168,11 @@ export function TermCalendarPage() {
                 </>
               )}
 
-              {termFinalized && (
+              {detailStage === "finalized" && (
                 <div className="flex flex-wrap items-center gap-3">
                   <Badge tone="emerald">
                     ✓ Term Finalized &amp; Published to All Users
                   </Badge>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    block={false}
-                    disabled={actionLoading}
-                    isLoading={actionLoading}
-                    onClick={handleRewindPhase}
-                  >
-                    ← Step Back to Resolution
-                  </Button>
                 </div>
               )}
             </div>
@@ -1223,13 +1227,29 @@ export function TermCalendarPage() {
         </div>
       </ConfirmDialog>
 
-      <Modal open={windowTarget !== null} onClose={() => setWindowTarget(null)} title={`Open ${windowTarget === "major" ? "Major Scheduling" : "Suggestion"} Window`}>
+      <Modal open={windowTarget !== null} onClose={() => setWindowTarget(null)} title={`Open ${windowTarget === "major" ? "Major Scheduling" : "Shift Request"} Window`}>
         <div className="space-y-4">
           <Input id="window-closing-at" label="Closes at" type="datetime-local" value={windowClosingAt} onChange={(event) => setWindowClosingAt(event.target.value)} />
           {schedulingWindows?.openWindow && schedulingWindows.openWindow !== windowTarget && <p className="text-sm text-amber-700 dark:text-amber-300">Opening this window closes the active {schedulingWindows.windows[schedulingWindows.openWindow].label} window.</p>}
           <ModalActions><Button type="button" variant="outline" block={false} onClick={() => setWindowTarget(null)}>Cancel</Button><Button type="button" block={false} disabled={!windowClosingAt} isLoading={actionLoading} loadingLabel="Opening…" onClick={() => void handleOpenWindow(Boolean(schedulingWindows?.openWindow && schedulingWindows.openWindow !== windowTarget))}>Open window</Button></ModalActions>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={windowConfirmation !== null}
+        onClose={() => setWindowConfirmation(null)}
+        title={windowConfirmation?.title ?? "Confirm scheduling window"}
+        confirmLabel={windowConfirmation?.confirmLabel ?? "Confirm"}
+        loadingLabel="Opening…"
+        onConfirm={async () => {
+          await handleOpenWindow(true);
+          setWindowConfirmation(null);
+        }}
+      >
+        <p className="whitespace-pre-line text-sm text-slate-600 dark:text-slate-300">
+          {windowConfirmation?.body}
+        </p>
+      </ConfirmDialog>
 
       {/* Send Program Modal */}
       <Modal

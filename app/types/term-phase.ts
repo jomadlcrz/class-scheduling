@@ -27,8 +27,24 @@ export const TERM_SCHEDULING_PHASE_ORDER: TermSchedulingPhase[] = [
 export type TermPhaseGates = {
   majorsOpen: boolean;
   suggestionsOpen: boolean;
+  shiftRequestHasStarted: boolean;
+  majorReopenAllowed: boolean;
   perSetReleaseAllowed: boolean;
 };
+
+export type TermLifecycleStatus = "major_scheduling" | "distributed" | "resolved" | "finalized";
+
+export type TermDetailStage =
+  | "not_started"
+  | "major_scheduling"
+  | "generation"
+  | "initial_review"
+  | "ready_for_suggestions"
+  | "suggestion_window"
+  | "resolution"
+  | "final_approval"
+  | "ready_for_publication"
+  | "finalized";
 
 export type TermPhaseItem = {
   phase: TermSchedulingPhase;
@@ -74,6 +90,10 @@ export type TermPhaseResponse = {
   termLabel: string | null;
   phase: TermSchedulingPhase;
   phaseLabel: string;
+  /** Backend-owned workflow progress; do not infer this from timestamps in the UI. */
+  lifecycleStatus: TermLifecycleStatus;
+  /** Backend-owned detailed current stage, used to determine the Registrar's next action. */
+  detailStage: TermDetailStage;
   storedPhase: TermSchedulingPhase | null;
   governed: boolean;
   majorsDueAt: string | null;
@@ -87,6 +107,10 @@ export type TermPhaseResponse = {
   updatedAt?: string | null;
   updatedByUserId?: number | null;
   gates: TermPhaseGates;
+  suggestionWindowReadiness?: {
+    isReady: boolean;
+    [key: string]: unknown;
+  } | null;
   schedulingWindows?: SchedulingWindowsSnapshot;
   serverTime: string;
 };

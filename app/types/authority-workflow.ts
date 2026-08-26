@@ -280,8 +280,18 @@ export type InstructorScheduleResponse = {
   resolutionRunId?: number | null;
   createdAt: string;
   respondedAt: string | null;
+  /** True when Shift Request closed without an instructor response. */
+  automaticallyAccepted?: boolean;
   moves?: SuggestionMove[];
   meetings: ProposedScheduleMeeting[];
+};
+
+export type InstructorAcceptanceSummary = {
+  total: number;
+  accepted: number;
+  automaticallyAccepted: number;
+  awaitingResponse: number;
+  suggestedChange: number;
 };
 
 export type InstructorScheduleReviewSummary = {

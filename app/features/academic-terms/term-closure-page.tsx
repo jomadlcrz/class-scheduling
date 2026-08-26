@@ -126,7 +126,7 @@ export function TermClosurePage() {
               Closure history
             </h2>
             <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-              Registrar-posted terms.
+              Registrar-closed terms.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2" aria-label="Filter closure history">
@@ -156,9 +156,9 @@ export function TermClosurePage() {
           {loading ? (
             <TermClosureSkeleton />
           ) : filtered.length === 0 ? (
-            <EmptyState title={closures.length === 0 ? "No terms posted yet" : "No matches"}>
+            <EmptyState title={closures.length === 0 ? "No terms closed yet" : "No matches"}>
               {closures.length === 0
-                ? "Use the workflow above to post a semester when scheduling is complete. Posted terms will appear here."
+                ? "Use the workflow above to close a semester when scheduling is complete. Closed terms will appear here."
                 : "Try different filters."}
             </EmptyState>
           ) : (
@@ -227,7 +227,7 @@ export function TermClosurePage() {
             <p className="mb-2 font-semibold text-navy-800 dark:text-mist-100">What posting a term does</p>
             <p className="text-sm">
               Posting locks destructive deletes — schedules, enrollments, faculty loads, and seat bookings.
-              Views, reports, and exports remain available. You can reopen a posted term while the school year
+              Views, reports, and exports remain available. You can reopen a closed term while the school year
               is still running.
             </p>
           </div>
@@ -239,8 +239,8 @@ export function TermClosurePage() {
                 <span>Accepts changes.</span>
               </li>
               <li className="flex items-center gap-2">
-                <StatusBadge tone="gold">Closed — Posted</StatusBadge>
-                <span>Registrar posted; reopen while the school year runs.</span>
+                <StatusBadge tone="gold">Closed</StatusBadge>
+                <span>Registrar closed; reopen while the school year runs.</span>
               </li>
               <li className="flex items-center gap-2">
                 <StatusBadge tone="slate">Closed — Year ended</StatusBadge>

@@ -79,6 +79,12 @@ function ScheduleResponsesPage() {
     { cache: false },
   );
 
+  const { data: acceptanceSummary } = useCachedData(
+    `instructor-acceptance-summary:${currentSyId ?? "none"}:${currentSemNum}`,
+    () => authorityWorkflowService.getInstructorAcceptanceSummary(currentSyId ?? 0, currentSemNum),
+    { enabled: currentSyId != null, cache: false },
+  );
+
   const {
     data: schedules,
     error: schedulesError,
@@ -250,6 +256,24 @@ function ScheduleResponsesPage() {
           <p className="text-xs text-slate-500 dark:text-slate-400">Decided</p>
         </Card>
       </div>
+
+      {acceptanceSummary && (
+        <Card className="mt-4 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-navy-800 dark:text-mist-100">Instructor acceptance</h2>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Acceptance is separate from suggested changes. Instructors who did not respond become automatically accepted only after Shift Request closes.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <Badge tone="emerald">{acceptanceSummary.accepted} accepted</Badge>
+              <Badge tone="slate">{acceptanceSummary.automaticallyAccepted} automatically accepted</Badge>
+              <Badge tone="gold">{acceptanceSummary.awaitingResponse} awaiting response</Badge>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {user?.role === "faculty" && schedulesError && (
         <DataLoadAlert

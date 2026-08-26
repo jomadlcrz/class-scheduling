@@ -128,7 +128,7 @@ export function SchoolYearsPage() {
               Term Closure
             </h2>
             <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-              Post terms to lock schedules, grades, and enrollments.
+              Close terms to lock schedules, grades, and enrollments.
             </p>
           </div>
         </Link>

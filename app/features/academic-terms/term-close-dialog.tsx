@@ -40,7 +40,7 @@ export function TermCloseDialog({ open, syId, semesterNumber, onClose, onConfirm
         if (!cancelled) {
           setPreview(data);
           const defaultReason =
-            semesterNumber === 1 ? "1st semester posted" : semesterNumber === 2 ? "2nd semester posted" : "";
+            semesterNumber === 1 ? "1st semester closed" : semesterNumber === 2 ? "2nd semester closed" : "";
           setReason(defaultReason);
         }
       })
@@ -72,14 +72,14 @@ export function TermCloseDialog({ open, syId, semesterNumber, onClose, onConfirm
       await onConfirm(reason.trim());
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to post term.");
+      setError(err instanceof Error ? err.message : "Unable to close term.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title={preview?.confirmation.title ?? "Post term"} wide>
+    <Modal open={open} onClose={handleClose} title={preview?.confirmation.title ?? "Close term"} wide>
       <div className="flex flex-col gap-4">
         <FormError message={error} />
 
@@ -117,7 +117,7 @@ export function TermCloseDialog({ open, syId, semesterNumber, onClose, onConfirm
             loadingLabel="Posting…"
             onClick={handleConfirm}
           >
-            Post term
+            Close term
           </Button>
         </div>
       </div>

@@ -38,6 +38,7 @@ type PendingTableProps = {
   onSendToInstructors?: (release: ScheduleRelease) => void;
   onReject?: (release: ScheduleRelease) => void;
   onFinalApprove?: (release: ScheduleRelease) => void;
+  onReturnForRevision?: (release: ScheduleRelease) => void;
 };
 
 export function SchedulePendingApprovalsTable({
@@ -46,6 +47,7 @@ export function SchedulePendingApprovalsTable({
   onSendToInstructors,
   onReject,
   onFinalApprove,
+  onReturnForRevision,
 }: PendingTableProps) {
   return (
     <Table>
@@ -96,6 +98,12 @@ export function SchedulePendingApprovalsTable({
                   <TableActionButton tone="amber" onClick={() => onFinalApprove(row)}>
                     <CheckIcon size={14} />
                     Sign &amp; Final Approve
+                  </TableActionButton>
+                )}
+                {row.releaseStatus === "pending_final_approval" && onReturnForRevision && (
+                  <TableActionButton tone="slate" onClick={() => onReturnForRevision(row)}>
+                    <CloseIcon size={14} />
+                    Return for revision
                   </TableActionButton>
                 )}
               </div>

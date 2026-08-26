@@ -198,6 +198,25 @@ async function rejectProgram(
   };
 }
 
+/** POST .../return-for-revision — sends final-approval schedules back to Registrar revision. */
+async function returnProgramForRevision(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+  reason: string,
+): Promise<import("~/types/schedule-release").DeanProgramRejectResult & { message: string }> {
+  const data = await apiPost<{ message?: string; programAbbrev?: string; returnedSetIds?: number[] }>(
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/return-for-revision`,
+    { reason },
+  );
+  return {
+    programAbbrev: data.programAbbrev ?? "",
+    message: apiMessage(data),
+    rejectedSetIds: data.returnedSetIds ?? [],
+    skippedSetIds: [],
+  };
+}
+
 async function finalApproveProgram(
   syId: number,
   semesterNumber: number,
@@ -352,6 +371,7 @@ export const scheduleReleaseService = {
   sendToInstructors,
   sendProgramToInstructors,
   rejectProgram,
+  returnProgramForRevision,
   finalApproveProgram,
   getReviewProgress,
   forwardSuggestions,
