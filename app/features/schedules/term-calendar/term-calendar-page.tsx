@@ -535,12 +535,12 @@ export function TermCalendarPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8 font-body">
       <PageHeader title="Term Scheduling Calendar" />
 
-      <Card className="mt-5 p-4 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <Card className="mt-5 overflow-hidden">
+        <div className="flex flex-col gap-4 bg-slate-50/70 px-4 py-4 dark:bg-white/2.5 sm:px-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Viewing term</p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Choose the term whose scheduling workflow you want to manage.
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Term context</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Deadlines, releases, and approval progress for the selected academic term.
             </p>
           </div>
           <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:max-w-2xl">
@@ -609,8 +609,12 @@ export function TermCalendarPage() {
       ) : phaseData ? (
         <div className="mt-8 space-y-6">
           <Card className="overflow-hidden">
-            <div className="border-b border-slate-200 px-5 py-3 dark:border-white/10">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Term workflow workspace</p>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-3.5 dark:border-white/10 dark:bg-white/2.5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Registrar workspace</p>
+                <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">Focus on one responsibility at a time.</p>
+              </div>
+              <Badge tone={detailStage === "finalized" ? "emerald" : "sky"}>{workflowTitle}</Badge>
             </div>
             <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 dark:divide-white/10 lg:grid-cols-4 lg:divide-y-0">
               {TERM_CALENDAR_PANELS.map((panel, index) => {
@@ -620,16 +624,17 @@ export function TermCalendarPage() {
                     key={panel.key}
                     type="button"
                     onClick={() => setActivePanel(panel.key)}
-                    className={`min-w-0 px-4 py-3 text-left transition-colors ${
+                    className={`relative min-w-0 px-4 py-4 text-left transition-colors sm:px-5 ${
                       selected
-                        ? "bg-sky-50 text-sky-900 dark:bg-sky-950/30 dark:text-sky-100"
+                        ? "bg-sky-50/70 text-navy-800 dark:bg-sky-950/25 dark:text-mist-100"
                         : "bg-white text-slate-600 hover:bg-slate-50 dark:bg-navy-900 dark:text-slate-300 dark:hover:bg-white/3"
                     }`}
                   >
+                    {selected && <span className="absolute inset-x-0 top-0 h-0.5 bg-gold-400" />}
                     <span className={`text-xs font-semibold ${selected ? "text-sky-600 dark:text-sky-300" : "text-slate-400"}`}>
                       0{index + 1}
                     </span>
-                    <span className="mt-1 block text-sm font-semibold">{panel.label}</span>
+                    <span className="mt-1 block text-sm font-semibold tracking-tight">{panel.label}</span>
                     <span className="mt-0.5 block text-xs leading-4 text-slate-500 dark:text-slate-400">{panel.description}</span>
                   </button>
                 );
@@ -639,12 +644,12 @@ export function TermCalendarPage() {
 
           {/* Card 1: Phase Progress Overview */}
           <Card className={activePanel === "overview" ? "overflow-hidden" : "hidden"}>
-            <div className="border-b border-slate-200 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/3 sm:px-6">
+            <div className="border-b border-slate-200 bg-slate-50/70 px-5 py-5 dark:border-white/10 dark:bg-white/2.5 sm:px-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current stage</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current responsibility</span>
                 <h2 className="mt-1 font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">{workflowTitle}</h2>
-                <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {workflowDescription}
                 </p>
               </div>
@@ -674,7 +679,7 @@ export function TermCalendarPage() {
                     key={stepPhase}
                     className={`flex min-h-28 flex-col justify-between px-4 py-4 transition-colors ${
                       isCurrent
-                        ? "bg-sky-50/70 dark:bg-sky-950/20"
+                        ? "bg-sky-50/70 shadow-[inset_0_3px_0_0_#eab308] dark:bg-sky-950/20"
                         : isPast
                           ? "bg-slate-50/70 text-slate-400 dark:bg-white/2 dark:text-slate-500"
                           : "bg-white dark:bg-navy-900"
