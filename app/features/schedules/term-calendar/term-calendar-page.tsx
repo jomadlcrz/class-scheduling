@@ -656,7 +656,7 @@ export function TermCalendarPage() {
                   return <div key={name} className="rounded-lg border border-slate-200 p-4 dark:border-white/10">
                     <div className="flex items-center justify-between gap-2"><span className="font-semibold text-navy-800 dark:text-mist-100">{window.label}</span><Badge tone={window.isOpen ? "emerald" : "slate"}>{window.isOpen ? "Open" : "Closed"}</Badge></div>
                     <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{window.isOpen ? `Closes ${new Date(window.scheduledClosingAt!).toLocaleString()}` : window.closedAt ? `Closed ${new Date(window.closedAt).toLocaleString()}` : "Not opened for this term."}</p>
-                    <div className="mt-3 flex gap-2">{window.isOpen ? <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => void handleCloseWindow(name)}>Close now</Button> : <Button type="button" block={false} disabled={actionLoading} onClick={() => openWindowDialog(name)}>Open window</Button>}</div>
+                    <div className="mt-3 flex gap-2">{window.isOpen ? <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => void handleCloseWindow(name)}>Close now</Button> : <Button type="button" block={false} disabled={actionLoading || (name === "major" && !phaseData.gates.majorReopenAllowed)} onClick={() => openWindowDialog(name)}>Open window</Button>}</div>
                   </div>;
                 })}
               </div>

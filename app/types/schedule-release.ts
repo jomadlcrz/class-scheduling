@@ -10,6 +10,7 @@ export type ScheduleReleaseStatus =
 
 export type ScheduleReleaseSubmitter = { userId: number; name: string | null };
 export type ScheduleReleaseApprover = { userId: number; name: string | null };
+export type ScheduleReleasePublisher = { userId: number; name: string | null };
 
 /** Shared release object returned by both the registrar and dean endpoints. */
 export type ScheduleRelease = {
@@ -36,6 +37,10 @@ export type ScheduleRelease = {
   rejectionReason: string | null;
   approvedAt: string | null;
   approvedBy?: ScheduleReleaseApprover | null;
+  /** Publication is term-wide and happens only when the Registrar finalizes the term. */
+  termFinalized?: boolean;
+  publishedAt?: string | null;
+  publishedBy?: ScheduleReleasePublisher | null;
 };
 
 export type SchedulePreviewSession = {
@@ -209,4 +214,3 @@ export type RegistrarRevisionWorkspace = {
   suggestions: RegistrarRevisionWorkspaceSuggestion[];
   pendingSuggestionsCount: number;
 };
-

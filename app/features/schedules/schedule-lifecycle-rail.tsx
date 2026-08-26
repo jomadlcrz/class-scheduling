@@ -30,15 +30,17 @@ type StopView = { label: string; state: NodeState; sub: string };
  * A rejection isn't a fourth stop — it sends the release back to Draft carrying a
  * note, so it renders as the Draft stop flagged "changes requested".
  */
-function stopsFor(status: ScheduleReleaseStatus): StopView[] {
-  switch (status) {
+function stopsFor(release: ScheduleRelease): StopView[] {
+  switch (release.releaseStatus) {
     case "approved":
       return [
         { label: "Draft", state: "done", sub: "Submitted" },
         { label: "Dean Review", state: "done", sub: "Distributed" },
         { label: "Instructor Review", state: "done", sub: "Complete" },
         { label: "Final Approval", state: "done", sub: "Dean signed" },
-        { label: "Term Publication", state: "current", sub: "Registrar publishes" },
+        release.termFinalized
+          ? { label: "Term Publication", state: "done", sub: "Published" }
+          : { label: "Term Publication", state: "current", sub: "Awaiting Registrar" },
       ];
     case "pending_dean_review":
       return [
@@ -133,10 +135,10 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
         return {
           variant: "success",
           icon: <CheckIcon />,
-          eyebrow: "Approved",
-          description: `You approved this${
+          eyebrow: release.termFinalized ? "Published" : "Approved",
+          description: `${release.termFinalized ? "The Registrar published this term" : "You approved this"}${
             approvedAgo || reviewedAgo ? ` ${approvedAgo || reviewedAgo}` : ""
-          }. It is ready for the Registrar to publish with the rest of the term.`,
+          }. ${release.termFinalized ? "It is now visible in the official schedule." : "It is ready for the Registrar to publish with the rest of the term."}`,
         };
       case "rejected":
         return {
@@ -192,10 +194,10 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
       return {
         variant: "success",
         icon: <CheckIcon />,
-        eyebrow: "Approved — awaiting term publication",
-        description: `Approved${
+        eyebrow: release.termFinalized ? "Published" : "Approved — awaiting term publication",
+        description: `${release.termFinalized ? "Published" : "Approved"}${
           approvedAgo ? ` ${approvedAgo}` : ""
-        }. The Registrar publishes it by finalizing the entire term in Scheduling Calendar.`,
+        }. ${release.termFinalized ? "The official schedule is now visible to instructors and students." : "The Registrar publishes it by finalizing the entire term in Scheduling Calendar."}`,
       };
     case "rejected":
       return {
@@ -287,7 +289,7 @@ function subTone(state: NodeState): string {
  * inbox detail so the lifecycle reads the same everywhere.
  */
 export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLifecycleRailProps) {
-  const stops = stopsFor(release.releaseStatus);
+  const stops = stopsFor(release);
   const guidance = guidanceFor(release, audience);
   const showNote = release.releaseStatus === "rejected" && Boolean(release.rejectionReason);
 
@@ -381,6 +383,12 @@ export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLif
           <dt className="text-slate-400 dark:text-slate-500">Approved</dt>
           <dd className="mt-0.5">{formatDateTime(release.approvedAt) || "—"}</dd>
         </div>
+        {release.termFinalized && (
+          <div>
+            <dt className="text-slate-400 dark:text-slate-500">Published</dt>
+            <dd className="mt-0.5">{formatDateTime(release.publishedAt ?? null) || "—"}</dd>
+          </div>
+        )}
         {release.submissionNote && (
           <div className="col-span-2 sm:col-span-4">
             <dt className="text-slate-400 dark:text-slate-500">Submission note</dt>
