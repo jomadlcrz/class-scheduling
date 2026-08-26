@@ -35,6 +35,8 @@ export type DatePickerProps = {
   toYear?: number;
   /** FormData key; defaults to `id` so it drops into uncontrolled forms. */
   name?: string;
+  /** Prevents a picker in a compact dialog from flipping above its field. */
+  keepPopoverBelow?: boolean;
 };
 
 /**
@@ -63,6 +65,7 @@ export function DatePicker({
   fromYear,
   toYear,
   name,
+  keepPopoverBelow = false,
 }: DatePickerProps) {
   const isControlled = value !== undefined;
   const [internal, setInternal] = useState(defaultValue ?? "");
@@ -140,7 +143,11 @@ export function DatePicker({
             align="start"
             sideOffset={6}
             collisionPadding={8}
-            collisionAvoidance={{ side: "flip", align: "shift", fallbackAxisSide: "none" }}
+            collisionAvoidance={{
+              side: keepPopoverBelow ? "shift" : "flip",
+              align: "shift",
+              fallbackAxisSide: "none",
+            }}
             className="z-70 outline-none"
           >
             <Popover.Popup className="rounded-lg border border-slate-200 bg-white shadow-[0_0_0_1px_#d1d9e080,0_6px_12px_-3px_#25292e0a,0_6px_18px_0_#25292e1f] outline-none dark:border-white/10 dark:bg-surface-raised dark:shadow-[0_0_0_1px_#ffffff14,0_6px_12px_-3px_#0000005c,0_6px_18px_0_#00000080]">

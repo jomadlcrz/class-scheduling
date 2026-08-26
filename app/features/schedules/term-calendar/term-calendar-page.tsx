@@ -4,8 +4,9 @@ import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
+import { DatePicker } from "~/components/ui/date-picker";
 import { FieldChrome, Input } from "~/components/ui/input";
-import { Modal, ModalActions, ConfirmDialog } from "~/components/ui/modal";
+import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
@@ -38,6 +39,55 @@ function toLocalDatetimeInput(isoString: string | null): string {
   } catch {
     return "";
   }
+}
+
+function datePart(value: string): string {
+  return value.slice(0, 10);
+}
+
+function timePart(value: string): string {
+  return value.slice(11, 16);
+}
+
+function mergeLocalDateTime(date: string, time: string): string {
+  return date ? `${date}T${time || "00:00"}` : "";
+}
+
+function DateTimePicker({
+  id,
+  label,
+  value,
+  onChange,
+  disabled = false,
+  keepPopoverBelow = false,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  keepPopoverBelow?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_8.5rem]">
+      <DatePicker
+        id={`${id}-date`}
+        label={label}
+        value={datePart(value)}
+        disabled={disabled}
+        keepPopoverBelow={keepPopoverBelow}
+        onChange={(date) => onChange(mergeLocalDateTime(date, timePart(value)))}
+      />
+      <Input
+        id={`${id}-time`}
+        label="Time"
+        type="time"
+        value={timePart(value)}
+        disabled={disabled}
+        onChange={(event) => onChange(mergeLocalDateTime(datePart(value), event.target.value))}
+      />
+    </div>
+  );
 }
 
 function formatCountdown(targetIso: string | null, serverTimeIso: string | null): string {
@@ -94,12 +144,22 @@ const TERM_WORKFLOW_STEPS = [
   { key: "finalized", label: "Finalized" },
 ] as const;
 
+const TERM_CALENDAR_PANELS = [
+  { key: "overview", label: "Overview", description: "Term stage and next action" },
+  { key: "calendar", label: "Calendar", description: "Windows, deadlines, and extensions" },
+  { key: "readiness", label: "Dean review", description: "Readiness and distribution" },
+  { key: "resolution", label: "Resolution", description: "Requests and publication" },
+] as const;
+
+type TermCalendarPanel = (typeof TERM_CALENDAR_PANELS)[number]["key"];
+
 export function TermCalendarPage() {
   const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 
   const [selectedSchoolYearId, setSelectedSchoolYearId] = useState("");
   const [selectedSemesterNumber, setSelectedSemesterNumber] = useState("");
+  const [activePanel, setActivePanel] = useState<TermCalendarPanel>("overview");
 
   const [phaseData, setPhaseData] = useState<TermPhaseResponse | null>(null);
   const [readiness, setReadiness] = useState<TermDistributionReadiness | null>(null);
@@ -475,54 +535,64 @@ export function TermCalendarPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8 font-body">
       <PageHeader title="Term Scheduling Calendar" />
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <FieldChrome id="term-calendar-sy" label="School Year">
-          <Select
-            value={selectedSchoolYearId}
-            onValueChange={(value) => setSelectedSchoolYearId(value ?? "")}
-            disabled={termsLoading || loading}
-            items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
-          >
-            <SelectTrigger id="term-calendar-sy">
-              <SelectValue placeholder="Select school year" />
-            </SelectTrigger>
-            <SelectContent>
-              {schoolYears.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.schoolYear}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FieldChrome>
+      <Card className="mt-5 p-4 sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Viewing term</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Choose the term whose scheduling workflow you want to manage.
+            </p>
+          </div>
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:max-w-2xl">
+            <FieldChrome id="term-calendar-sy" label="School Year">
+              <Select
+                value={selectedSchoolYearId}
+                onValueChange={(value) => setSelectedSchoolYearId(value ?? "")}
+                disabled={termsLoading || loading}
+                items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
+              >
+                <SelectTrigger id="term-calendar-sy">
+                  <SelectValue placeholder="Select school year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schoolYears.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.schoolYear}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
 
-        <FieldChrome id="term-calendar-sem" label="Semester">
-          <Select
-            value={selectedSemesterNumber}
-            onValueChange={(value) => setSelectedSemesterNumber(value ?? "")}
-            disabled={semestersLoading || loading}
-            items={semesters
-              .filter((s) => s.semesterNumber !== 3)
-              .map((s) => ({
-                value: String(s.semesterNumber),
-                label: semesterLabel(s.semesterNumber),
-              }))}
-          >
-            <SelectTrigger id="term-calendar-sem">
-              <SelectValue placeholder="Select semester" />
-            </SelectTrigger>
-            <SelectContent>
-              {semesters
-                .filter((s) => s.semesterNumber !== 3)
-                .map((s) => (
-                  <SelectItem key={s.id} value={String(s.semesterNumber)}>
-                    {semesterLabel(s.semesterNumber)}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </FieldChrome>
-      </div>
+            <FieldChrome id="term-calendar-sem" label="Semester">
+              <Select
+                value={selectedSemesterNumber}
+                onValueChange={(value) => setSelectedSemesterNumber(value ?? "")}
+                disabled={semestersLoading || loading}
+                items={semesters
+                  .filter((s) => s.semesterNumber !== 3)
+                  .map((s) => ({
+                    value: String(s.semesterNumber),
+                    label: semesterLabel(s.semesterNumber),
+                  }))}
+              >
+                <SelectTrigger id="term-calendar-sem">
+                  <SelectValue placeholder="Select semester" />
+                </SelectTrigger>
+                <SelectContent>
+                  {semesters
+                    .filter((s) => s.semesterNumber !== 3)
+                    .map((s) => (
+                      <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                        {semesterLabel(s.semesterNumber)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+          </div>
+        </div>
+      </Card>
 
       {/* Body Content */}
       {loading && !phaseData ? (
@@ -538,14 +608,43 @@ export function TermCalendarPage() {
         </div>
       ) : phaseData ? (
         <div className="mt-8 space-y-6">
+          <Card className="overflow-hidden">
+            <div className="border-b border-slate-200 px-5 py-3 dark:border-white/10">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Term workflow workspace</p>
+            </div>
+            <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 dark:divide-white/10 lg:grid-cols-4 lg:divide-y-0">
+              {TERM_CALENDAR_PANELS.map((panel, index) => {
+                const selected = panel.key === activePanel;
+                return (
+                  <button
+                    key={panel.key}
+                    type="button"
+                    onClick={() => setActivePanel(panel.key)}
+                    className={`min-w-0 px-4 py-3 text-left transition-colors ${
+                      selected
+                        ? "bg-sky-50 text-sky-900 dark:bg-sky-950/30 dark:text-sky-100"
+                        : "bg-white text-slate-600 hover:bg-slate-50 dark:bg-navy-900 dark:text-slate-300 dark:hover:bg-white/3"
+                    }`}
+                  >
+                    <span className={`text-xs font-semibold ${selected ? "text-sky-600 dark:text-sky-300" : "text-slate-400"}`}>
+                      0{index + 1}
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold">{panel.label}</span>
+                    <span className="mt-0.5 block text-xs leading-4 text-slate-500 dark:text-slate-400">{panel.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
           {/* Card 1: Phase Progress Overview */}
-          <Card className="p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-white/5">
+          <Card className={activePanel === "overview" ? "overflow-hidden" : "hidden"}>
+            <div className="border-b border-slate-200 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/3 sm:px-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Term Status</span>
-                <h1 className="mt-1 font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">{workflowTitle}</h1>
-                <p className="mt-1 max-w-2xl text-xs text-slate-500 dark:text-slate-400">
-                  <span className="font-semibold text-navy-700 dark:text-mist-100">Backend workflow. </span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current stage</span>
+                <h2 className="mt-1 font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">{workflowTitle}</h2>
+                <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
                   {workflowDescription}
                 </p>
               </div>
@@ -554,10 +653,11 @@ export function TermCalendarPage() {
                 <Badge tone={phaseData.gates.majorsOpen ? "emerald" : "slate"}>Majors {phaseData.gates.majorsOpen ? "open" : "closed"}</Badge>
                 <Badge tone={phaseData.gates.suggestionsOpen ? "violet" : "slate"}>Requests {phaseData.gates.suggestionsOpen ? "open" : "closed"}</Badge>
               </div>
+              </div>
             </div>
 
             {/* Only Major Scheduling and Shift Request are persisted phases; the other cards are action milestones. */}
-            <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-5">
+            <div className="grid grid-cols-1 divide-y divide-slate-200 dark:divide-white/10 sm:grid-cols-5 sm:divide-x sm:divide-y-0">
               {TERM_WORKFLOW_STEPS.map((step, idx) => {
                 const stepPhase = step.key === "major" ? "major_scheduling" : step.key === "distribution" ? "generation" : step.key === "shift" ? "suggestion_window" : step.key === "resolution" ? "resolution" : "finalized";
                 const isPast = step.key === "major" ? phaseData.phase !== "major_scheduling" : step.key === "distribution" ? termDistributed : step.key === "shift" ? termResolved : step.key === "resolution" ? termResolved : termFinalized;
@@ -572,17 +672,17 @@ export function TermCalendarPage() {
                 return (
                   <div
                     key={stepPhase}
-                    className={`flex flex-col justify-between rounded-lg border p-3 transition-colors ${
+                    className={`flex min-h-28 flex-col justify-between px-4 py-4 transition-colors ${
                       isCurrent
-                        ? "border-sky-500 bg-sky-50/50 ring-2 ring-sky-300 dark:border-sky-400 dark:bg-sky-950/30 dark:ring-sky-800"
+                        ? "bg-sky-50/70 dark:bg-sky-950/20"
                         : isPast
-                          ? "border-slate-200 bg-slate-50/70 text-slate-400 dark:border-white/5 dark:bg-white/3 dark:text-slate-500"
-                          : "border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900"
+                          ? "bg-slate-50/70 text-slate-400 dark:bg-white/2 dark:text-slate-500"
+                          : "bg-white dark:bg-navy-900"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-400">
+                        <span className={`text-xs font-semibold ${isCurrent ? "text-sky-600 dark:text-sky-300" : "text-slate-400"}`}>
                           0{idx + 1}
                         </span>
                         {isCurrent && (
@@ -624,7 +724,7 @@ export function TermCalendarPage() {
             </div>
 
             {/* Lifecycle Timestamps */}
-            <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-slate-200 px-5 py-3 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400 sm:px-6">
               {phaseData.distributedAt && (
                 <span>
                   Distributed: {new Date(phaseData.distributedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -644,26 +744,29 @@ export function TermCalendarPage() {
           </Card>
 
           {/* The backend is authoritative about whether a window accepts work. */}
+          <div className={activePanel === "calendar" ? "grid gap-6 xl:grid-cols-2 xl:items-start" : "hidden"}>
           {schedulingWindows && (
-            <Card className="p-6">
+            <Card className="p-5 sm:p-6">
               <div className="border-b border-slate-100 pb-3 dark:border-white/5">
                 <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Scheduling Windows</h2>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Only one window can be open at a time. Opening the other closes the active window.</p>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="mt-4 grid gap-3">
                 {(["major", "suggestion"] as const).map((name) => {
                   const window = schedulingWindows.windows[name];
-                  return <div key={name} className="rounded-lg border border-slate-200 p-4 dark:border-white/10">
-                    <div className="flex items-center justify-between gap-2"><span className="font-semibold text-navy-800 dark:text-mist-100">{window.label}</span><Badge tone={window.isOpen ? "emerald" : "slate"}>{window.isOpen ? "Open" : "Closed"}</Badge></div>
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{window.isOpen ? `Closes ${new Date(window.scheduledClosingAt!).toLocaleString()}` : window.closedAt ? `Closed ${new Date(window.closedAt).toLocaleString()}` : "Not opened for this term."}</p>
-                    <div className="mt-3 flex gap-2">{window.isOpen ? <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => void handleCloseWindow(name)}>Close now</Button> : <Button type="button" block={false} disabled={actionLoading || (name === "major" && !phaseData.gates.majorReopenAllowed)} onClick={() => openWindowDialog(name)}>Open window</Button>}</div>
+                  return <div key={name} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-4 dark:border-white/10">
+                    <div>
+                      <div className="flex items-center gap-2"><span className="font-semibold text-navy-800 dark:text-mist-100">{window.label}</span><Badge tone={window.isOpen ? "emerald" : "slate"}>{window.isOpen ? "Open" : "Closed"}</Badge></div>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{window.isOpen ? `Closes ${new Date(window.scheduledClosingAt!).toLocaleString()}` : window.closedAt ? `Closed ${new Date(window.closedAt).toLocaleString()}` : "Not opened for this term."}</p>
+                    </div>
+                    <div>{window.isOpen ? <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => void handleCloseWindow(name)}>Close now</Button> : <Button type="button" block={false} disabled={actionLoading || (name === "major" && !phaseData.gates.majorReopenAllowed)} onClick={() => openWindowDialog(name)}>Open window</Button>}</div>
                   </div>;
                 })}
               </div>
             </Card>
           )}
 
-          <Card className="p-6">
+          <Card className="p-5 sm:p-6 xl:col-span-2">
             <div className="border-b border-slate-100 pb-3 dark:border-white/5">
               <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Major Scheduling Extensions</h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
@@ -692,7 +795,13 @@ export function TermCalendarPage() {
                   </SelectContent>
                 </Select>
               </FieldChrome>
-              <Input id="extension-until" label="Extended until" type="datetime-local" value={extensionUntil} onChange={(event) => setExtensionUntil(event.target.value)} disabled={!phaseData.gates.majorReopenAllowed} />
+              <DateTimePicker
+                id="extension-until"
+                label="Extended until"
+                value={extensionUntil}
+                onChange={setExtensionUntil}
+                disabled={!phaseData.gates.majorReopenAllowed}
+              />
               <Textarea id="extension-reason" label="Reason (optional)" value={extensionReason} onChange={(event) => setExtensionReason(event.target.value)} disabled={!phaseData.gates.majorReopenAllowed} />
             </div>
             {(deptReadiness?.departments.length ?? 0) === 0 && (
@@ -739,7 +848,7 @@ export function TermCalendarPage() {
           </Card>
 
           {/* Card 2: Deadlines Form */}
-          <Card className="p-6">
+          <Card className={activePanel === "calendar" ? "p-5 sm:p-6 xl:col-span-2" : "hidden"}>
             <div className="border-b border-slate-100 pb-3 dark:border-white/5">
               <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Deadlines Control</h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
@@ -749,12 +858,11 @@ export function TermCalendarPage() {
 
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <Input
+                <DateTimePicker
                   id="majors-due"
                   label="1. Major Scheduling Deadline (Deans)"
-                  type="datetime-local"
                   value={majorsDueAtInput}
-                  onChange={(e) => setMajorsDueAtInput(e.target.value)}
+                  onChange={setMajorsDueAtInput}
                 />
                 {phaseData.majorsDueAt && (
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -769,12 +877,11 @@ export function TermCalendarPage() {
               </div>
 
               <div>
-                <Input
+                <DateTimePicker
                   id="suggestions-due"
                   label="2. Suggestions Window Deadline (Instructors)"
-                  type="datetime-local"
                   value={suggestionsDueAtInput}
-                  onChange={(e) => setSuggestionsDueAtInput(e.target.value)}
+                  onChange={setSuggestionsDueAtInput}
                 />
                 {phaseData.suggestionsDueAt && (
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -812,9 +919,10 @@ export function TermCalendarPage() {
               </Button>
             </div>
           </Card>
+          </div>
 
           {/* Card 4: Department Schedules & Readiness */}
-          <Card className="p-6">
+          <Card className={activePanel === "readiness" ? "p-5 sm:p-6" : "hidden"}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-white/5">
               <div>
                 <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">Department Schedules &amp; Distribution Readiness</h2>
@@ -952,7 +1060,7 @@ export function TermCalendarPage() {
           </Card>
 
           {/* Card 4: Suggestion Resolution & Solver */}
-          <Card className="p-6">
+          <Card className={activePanel === "resolution" ? "p-5 sm:p-6" : "hidden"}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-white/5">
               <div>
                 <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
@@ -1048,12 +1156,18 @@ export function TermCalendarPage() {
           </Card>
 
           {/* Card 5: Stage Movement Actions */}
-          <Card className="p-6">
-            <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
-              Term Stage Controls
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Complete each backend milestone in order. Resolution and finalization are recorded actions, not stored phases.
+          <Card className={activePanel === "overview" ? "border-sky-200 bg-sky-50/40 p-5 dark:border-sky-900/60 dark:bg-sky-950/10 sm:p-6" : "hidden"}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-300">Next step</p>
+                <h2 className="mt-1 font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">
+                  Continue the term workflow
+                </h2>
+              </div>
+              <Badge tone={detailStage === "finalized" ? "emerald" : "sky"}>{workflowTitle}</Badge>
+            </div>
+            <p className="mt-1 max-w-3xl text-sm text-slate-600 dark:text-slate-300">
+              Complete the available backend milestone below. The next stage unlocks only when its required reviews are finished.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -1229,7 +1343,13 @@ export function TermCalendarPage() {
 
       <Modal open={windowTarget !== null} onClose={() => setWindowTarget(null)} title={`Open ${windowTarget === "major" ? "Major Scheduling" : "Shift Request"} Window`}>
         <div className="space-y-4">
-          <Input id="window-closing-at" label="Closes at" type="datetime-local" value={windowClosingAt} onChange={(event) => setWindowClosingAt(event.target.value)} />
+          <DateTimePicker
+            id="window-closing-at"
+            label="Closes at"
+            value={windowClosingAt}
+            onChange={setWindowClosingAt}
+            keepPopoverBelow
+          />
           {schedulingWindows?.openWindow && schedulingWindows.openWindow !== windowTarget && <p className="text-sm text-amber-700 dark:text-amber-300">Opening this window closes the active {schedulingWindows.windows[schedulingWindows.openWindow].label} window.</p>}
           <ModalActions><Button type="button" variant="outline" block={false} onClick={() => setWindowTarget(null)}>Cancel</Button><Button type="button" block={false} disabled={!windowClosingAt} isLoading={actionLoading} loadingLabel="Opening…" onClick={() => void handleOpenWindow(Boolean(schedulingWindows?.openWindow && schedulingWindows.openWindow !== windowTarget))}>Open window</Button></ModalActions>
         </div>
