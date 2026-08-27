@@ -28,6 +28,7 @@ import type {
   TermDistributionReadiness,
   TermPhaseResponse,
   TermResolutionRun,
+  TermResponseReadiness,
 } from "~/types/term-phase";
 
 function toLocalDatetimeInput(isoString: string | null): string {
@@ -186,6 +187,7 @@ export function TermCalendarPage() {
   const [savingMajorEditLimit, setSavingMajorEditLimit] = useState(false);
   const [suggestionLimitDraft, setSuggestionLimitDraft] = useState("1");
   const [savingSuggestionLimit, setSavingSuggestionLimit] = useState(false);
+  const [responseReadiness, setResponseReadiness] = useState<TermResponseReadiness | null>(null);
 
   // Modals State
   const [reopenMajorsModalOpen, setReopenMajorsModalOpen] = useState(false);
@@ -251,7 +253,7 @@ export function TermCalendarPage() {
     setLoading(true);
     setError(null);
     try {
-      const [phaseRes, readyRes, deptRes, resRun, windowsRes, extensionsRes, editAttemptsRes] = await Promise.all([
+      const [phaseRes, readyRes, deptRes, resRun, windowsRes, extensionsRes, editAttemptsRes, respReadinessRes] = await Promise.all([
         termPhaseService.getTermPhase(syId, semesterNumber),
         termPhaseService.getDistributionReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getDepartmentReadiness(syId, semesterNumber).catch(() => null),
@@ -259,6 +261,7 @@ export function TermCalendarPage() {
         termPhaseService.getSchedulingWindows(syId, semesterNumber).catch(() => null),
         termPhaseService.getMajorExtensions(syId, semesterNumber).catch(() => []),
         termPhaseService.getMajorEditRequestAttempts(syId, semesterNumber).catch(() => null),
+        termPhaseService.getResponseReadiness(syId, semesterNumber).catch(() => null),
       ]);
       setPhaseData(phaseRes);
       setReadiness(readyRes);
@@ -267,6 +270,7 @@ export function TermCalendarPage() {
       setSchedulingWindows(windowsRes ?? phaseRes.schedulingWindows ?? null);
       setMajorExtensions(extensionsRes);
       setMajorEditRequestAttempts(editAttemptsRes);
+      setResponseReadiness(respReadinessRes);
       setMajorsDueAtInput(toLocalDatetimeInput(phaseRes.majorsDueAt));
       setSuggestionsDueAtInput(toLocalDatetimeInput(phaseRes.suggestionsDueAt));
       if (phaseRes.majorEditRequestLimit != null) {
@@ -820,6 +824,17 @@ export function TermCalendarPage() {
                     <div>
                       <div className="flex items-center gap-2"><span className="font-semibold text-navy-800 dark:text-mist-100">{window.label}</span><Badge tone={window.isOpen ? "emerald" : "slate"}>{window.isOpen ? "Open" : "Closed"}</Badge></div>
                       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{window.isOpen ? `Closes ${new Date(window.scheduledClosingAt!).toLocaleString()}` : window.closedAt ? `Closed ${new Date(window.closedAt).toLocaleString()}` : "Not opened for this term."}</p>
+                      {name === "suggestion" && responseReadiness && (
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          {responseReadiness.respondedCount ?? 0} of {responseReadiness.expected ?? 0} instructor(s) responded
+                          {(responseReadiness.silentCount ?? 0) > 0 ? ` (${responseReadiness.silentCount} silent)` : ""}.
+                          {responseReadiness.canCloseEarly && (
+                            <span className="ml-1.5 font-medium text-emerald-600 dark:text-emerald-400">
+                              ✓ All responded (ready to close early).
+                            </span>
+                          )}
+                        </p>
+                      )}
                     </div>
                     <div>{window.isOpen ? <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => void handleCloseWindow(name)}>Close now</Button> : <Button type="button" block={false} disabled={actionLoading || (name === "major" && !phaseData.gates.majorReopenAllowed)} onClick={() => openWindowDialog(name)}>Open window</Button>}</div>
                   </div>;

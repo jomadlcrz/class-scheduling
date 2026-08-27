@@ -2,6 +2,7 @@ import { apiDelete, apiGet, apiGetFresh, apiMessage, apiPatch, apiPost, apiPut }
 import type {
   AssignmentAuditLog,
   HoursAdjustmentRequest,
+  InstructorResponseSummary,
   InstructorScheduleResponse,
   MajorSchedule,
   MajorScheduleConflict,
@@ -250,6 +251,47 @@ async function getInstructorAcceptanceSummary(
   );
 }
 
+/** GET /instructor-schedule-responses/summary — suggestion counts by status. */
+async function getInstructorResponseSummary(
+  syId?: number,
+  semesterNumber?: number,
+): Promise<InstructorResponseSummary> {
+  const query = new URLSearchParams();
+  if (syId != null) query.set("syId", String(syId));
+  if (semesterNumber != null) query.set("semesterNumber", String(semesterNumber));
+  return apiGet<InstructorResponseSummary>(
+    `/instructor-schedule-responses/summary${query.size ? `?${query}` : ""}`,
+  );
+}
+
+/** GET /instructor-schedule-responses/accepted — instructors whose generated schedule is accepted. */
+async function listAcceptedInstructorResponses(
+  syId?: number,
+  semesterNumber?: number,
+): Promise<InstructorScheduleResponse[]> {
+  const query = new URLSearchParams();
+  if (syId != null) query.set("syId", String(syId));
+  if (semesterNumber != null) query.set("semesterNumber", String(semesterNumber));
+  const data = await apiGet<{ responses: InstructorScheduleResponse[] }>(
+    `/instructor-schedule-responses/accepted${query.size ? `?${query}` : ""}`,
+  );
+  return data.responses ?? [];
+}
+
+/** GET /instructor-schedule-responses/awaiting-response — instructors who have not yet answered. */
+async function listAwaitingResponseInstructors(
+  syId?: number,
+  semesterNumber?: number,
+): Promise<InstructorScheduleResponse[]> {
+  const query = new URLSearchParams();
+  if (syId != null) query.set("syId", String(syId));
+  if (semesterNumber != null) query.set("semesterNumber", String(semesterNumber));
+  const data = await apiGet<{ responses: InstructorScheduleResponse[] }>(
+    `/instructor-schedule-responses/awaiting-response${query.size ? `?${query}` : ""}`,
+  );
+  return data.responses ?? [];
+}
+
 async function setAcceptedSchedules(releaseId: number, scheduleIds: number[], accepted: boolean) {
   return apiPut<{ message?: string; acceptedScheduleIds: number[] }>(
     `/instructors/schedule-reviews/${releaseId}/accepted-schedules`,
@@ -358,6 +400,9 @@ export const authorityWorkflowService = {
   getInstructorScheduleReview,
   listInstructorScheduleReviewHistory,
   getInstructorAcceptanceSummary,
+  getInstructorResponseSummary,
+  listAcceptedInstructorResponses,
+  listAwaitingResponseInstructors,
   setAcceptedSchedules,
   acceptAllInstructorScheduleReviews,
   acceptInstructorScheduleReview,

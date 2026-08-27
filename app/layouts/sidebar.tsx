@@ -114,6 +114,7 @@ const NAV_GROUPS: NavGroup[] = [
       },
       { label: "Weekly Hour Allocations", to: "/schedules/weekly-hour-allocations", icon: <CalendarClockIcon />, roles: ["registrar"] },
       { label: "Subject Hour Overrides", to: "/schedules/subject-hour-overrides", icon: <ClockIcon />, roles: ["registrar"] },
+      { label: "Class Delivery Modes", to: "/schedules/class-mode-policies", icon: <LayersIcon />, roles: ["registrar"] },
     ],
   },
   {

@@ -307,6 +307,14 @@ export type InstructorAcceptanceSummary = {
   suggestedChange: number;
 };
 
+export type InstructorResponseSummary = {
+  pendingWithDean: number;
+  withRegistrar: number;
+  applied: number;
+  rejected: number;
+  total: number;
+};
+
 export type InstructorScheduleReviewSummary = {
   releaseId: number;
   syId: number;

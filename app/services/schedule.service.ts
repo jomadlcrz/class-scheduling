@@ -10,7 +10,9 @@ import {
   type Schedule,
   type ScheduleMode,
   type ScheduleSemester,
+  type ClassModePolicy,
 } from "~/types/schedule";
+export type { ClassModePolicy } from "~/types/schedule";
 import { type YearLevel } from "~/types/subject";
 
 /** Regular class schedules (registrar_admin schedules module). */
@@ -906,9 +908,62 @@ async function reconcileInstructorLedgers(
   );
 }
 
+/** GET /schedule/subject-type-options — string array of subject types. */
+async function getSubjectTypeOptions(): Promise<string[]> {
+  const data = await apiGet<{ subject_types: string }[]>("/schedule/subject-type-options");
+  return data.map((d) => d.subject_types);
+}
+
+/** GET /schedule/class-mode-policies — list class mode policies for a term. */
+async function listClassModePolicies(params: {
+  syId: number;
+  semesterNumber: number;
+}): Promise<ClassModePolicy[]> {
+  const query = appendTermScopeParams(
+    new URLSearchParams(),
+    params.syId,
+    params.semesterNumber,
+  );
+  return apiGet<ClassModePolicy[]>(`/schedule/class-mode-policies?${query}`);
+}
+
+/** POST /schedule/class-mode-policies — create or update class mode policy. */
+async function upsertClassModePolicy(input: {
+  syId: number;
+  semesterNumber: number;
+  classMode: string;
+  subjectId?: number | null;
+  subjectType?: string | null;
+  setId?: number | null;
+  onlineMeetings?: number;
+  note?: string | null;
+}): Promise<{ id: number; created: boolean; message: string }> {
+  const data = await apiPost<{ id: number; created: boolean; message?: string }>(
+    "/schedule/class-mode-policies",
+    {
+      syId: input.syId,
+      semesterNumber: input.semesterNumber,
+      classMode: input.classMode,
+      subjectId: input.subjectId ?? null,
+      subjectType: input.subjectType ?? null,
+      setId: input.setId ?? null,
+      onlineMeetings: input.onlineMeetings ?? 0,
+      note: input.note ?? null,
+    },
+  );
+  return { id: data.id, created: data.created, message: apiMessage(data) };
+}
+
+/** DELETE /schedule/class-mode-policies/:id — delete class mode policy. */
+async function deleteClassModePolicy(id: number): Promise<string> {
+  const data = await apiDelete<{ message?: string }>(`/schedule/class-mode-policies/${id}`);
+  return apiMessage(data);
+}
+
 /** GET /schedule/subject-type-options — subject type dropdown for weekly hour allocation. */
 async function listSubjectTypeOptions(): Promise<{ value: string; label: string }[]> {
-  return apiGet("/schedule/subject-type-options");
+  const data = await apiGet<{ subject_types: string }[]>("/schedule/subject-type-options");
+  return data.map((d) => ({ value: d.subject_types, label: d.subject_types }));
 }
 
 /** GET /schedule/programs — program dropdown for schedule generation. */
@@ -1032,6 +1087,10 @@ export const scheduleService = {
   getSetWithSchedules,
   reconcileInstructorLedgers,
   listSubjectTypeOptions,
+  getSubjectTypeOptions,
+  listClassModePolicies,
+  upsertClassModePolicy,
+  deleteClassModePolicy,
   listSchedulePrograms,
   scheduleAuditLogFilters,
   listScheduleAuditLog,

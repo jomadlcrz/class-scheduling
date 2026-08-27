@@ -274,3 +274,14 @@ export type MajorEditRequestAttemptSummary = {
     canRequestEdit: boolean;
   }[];
 };
+
+export type TermResponseReadiness = {
+  allResponded: boolean;
+  pendingCount: number;
+  expected?: number;
+  respondedCount?: number;
+  silentCount?: number;
+  canCloseEarly?: boolean;
+  [key: string]: unknown;
+};
+

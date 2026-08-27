@@ -47,7 +47,7 @@ const emptyMeeting = (mode = "", dayOfWeek = ""): ProposedScheduleMeeting => ({
   classMode: mode,
 });
 
-type TabType = "needs_you" | "in_flight" | "decided";
+type TabType = "needs_you" | "in_flight" | "decided" | "accepted" | "awaiting";
 
 function ScheduleResponsesPage() {
   const { user } = useAuth();
@@ -78,6 +78,26 @@ function ScheduleResponsesPage() {
     () => authorityWorkflowService.listInstructorScheduleResponses(),
     { cache: false },
   );
+
+  const { data: workflowSummary } = useCachedData(
+    `instructor-response-summary:${currentSyId ?? "none"}:${currentSemNum}`,
+    () => authorityWorkflowService.getInstructorResponseSummary(currentSyId ?? undefined, currentSemNum),
+    { enabled: currentSyId != null, cache: false },
+  );
+
+  const { data: acceptedResponsesData } = useCachedData(
+    `instructor-responses-accepted:${currentSyId ?? "none"}:${currentSemNum}`,
+    () => authorityWorkflowService.listAcceptedInstructorResponses(currentSyId ?? undefined, currentSemNum),
+    { enabled: currentSyId != null, cache: false },
+  );
+  const acceptedResponses = acceptedResponsesData ?? [];
+
+  const { data: awaitingResponsesData } = useCachedData(
+    `instructor-responses-awaiting:${currentSyId ?? "none"}:${currentSemNum}`,
+    () => authorityWorkflowService.listAwaitingResponseInstructors(currentSyId ?? undefined, currentSemNum),
+    { enabled: currentSyId != null, cache: false },
+  );
+  const awaitingResponses = awaitingResponsesData ?? [];
 
   const { data: acceptanceSummary } = useCachedData(
     `instructor-acceptance-summary:${currentSyId ?? "none"}:${currentSemNum}`,
@@ -115,21 +135,26 @@ function ScheduleResponsesPage() {
   }, [user?.role, availableSchedules.length, allResponses]);
 
   const withDeanCount = useMemo(
-    () => allResponses.filter((r) => r.status === "pending").length,
-    [allResponses],
+    () => workflowSummary?.pendingWithDean ?? allResponses.filter((r) => r.status === "pending").length,
+    [workflowSummary, allResponses],
   );
 
   const withRegistrarCount = useMemo(
-    () => allResponses.filter((r) => r.status === "forwarded").length,
-    [allResponses],
+    () => workflowSummary?.withRegistrar ?? allResponses.filter((r) => r.status === "forwarded").length,
+    [workflowSummary, allResponses],
   );
 
   const decidedCount = useMemo(
-    () => allResponses.filter((r) => r.status === "applied" || r.status === "rejected" || r.resolutionOutcome != null).length,
-    [allResponses],
+    () =>
+      workflowSummary != null
+        ? workflowSummary.applied + workflowSummary.rejected
+        : allResponses.filter((r) => r.status === "applied" || r.status === "rejected" || r.resolutionOutcome != null).length,
+    [workflowSummary, allResponses],
   );
 
   const filteredResponses = useMemo(() => {
+    if (activeTab === "accepted") return acceptedResponses;
+    if (activeTab === "awaiting") return awaitingResponses;
     if (activeTab === "needs_you") {
       if (user?.role === "dean") return allResponses.filter((r) => r.status === "pending");
       if (user?.role === "registrar") return allResponses.filter((r) => r.status === "forwarded");
@@ -145,7 +170,7 @@ function ScheduleResponsesPage() {
     }
     // "decided"
     return allResponses.filter((r) => r.status === "applied" || r.status === "rejected" || r.resolutionOutcome != null);
-  }, [activeTab, allResponses, user?.role]);
+  }, [activeTab, allResponses, user?.role, acceptedResponses, awaitingResponses]);
 
   async function submitResponse(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -370,6 +395,28 @@ function ScheduleResponsesPage() {
         >
           Decided ({decidedCount})
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("accepted")}
+          className={`border-b-2 px-4 py-2 text-xs font-semibold tracking-wide transition-colors ${
+            activeTab === "accepted"
+              ? "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-mist-200"
+          }`}
+        >
+          Accepted ({acceptedResponses.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("awaiting")}
+          className={`border-b-2 px-4 py-2 text-xs font-semibold tracking-wide transition-colors ${
+            activeTab === "awaiting"
+              ? "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-mist-200"
+          }`}
+        >
+          Awaiting response ({awaitingResponses.length})
+        </button>
       </div>
 
       {/* Responses Table */}
@@ -389,7 +436,11 @@ function ScheduleResponsesPage() {
               ? "You have no responses waiting on your review."
               : activeTab === "in_flight"
                 ? "No schedule responses are currently in-flight."
-                : "No schedule responses have been decided yet."}
+                : activeTab === "accepted"
+                  ? "No accepted instructor schedules for this term."
+                  : activeTab === "awaiting"
+                    ? "No instructors are currently awaiting response."
+                    : "No schedule responses have been decided yet."}
           </EmptyState>
         ) : (
           <Table>

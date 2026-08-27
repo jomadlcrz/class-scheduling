@@ -25,6 +25,7 @@ import {
   SearchIcon,
   TrashIcon,
   UploadIcon,
+  RefreshCwIcon,
 } from "~/components/ui/icons";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
@@ -131,6 +132,8 @@ function MajorSchedulesPage() {
   const [submitTarget, setSubmitTarget] = useState<MajorScheduleSubmission | null>(null);
   const [deletionNotesOpen, setDeletionNotesOpen] = useState(false);
   const [scheduleToEdit, setScheduleToEdit] = useState<MajorSchedule | null>(null);
+  const [reopenTarget, setReopenTarget] = useState<MajorScheduleSubmission | null>(null);
+  const [reopenReason, setReopenReason] = useState("");
 
   const [requirements, setRequirements] = useState<MajorScheduleRequirements | null>(null);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
@@ -1189,6 +1192,69 @@ function MajorSchedulesPage() {
       </Modal>
 
       {/* Reopen Finalized Submission Modal */}
+      <Modal
+        open={reopenTarget !== null}
+        onClose={() => {
+          setReopenTarget(null);
+          setReopenReason("");
+        }}
+        title="Reopen Finalized Schedules?"
+      >
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault();
+            if (!reopenTarget || reopenReason.trim().length < 10) return;
+            const ok = await withRefresh(() =>
+              authorityWorkflowService.reopenFinalizedMajorSchedule(
+                reopenTarget.id,
+                reopenReason.trim(),
+              ),
+            );
+            if (ok) {
+              setReopenTarget(null);
+              setReopenReason("");
+            }
+          }}
+          className="space-y-4"
+        >
+          <FormError message={formError} />
+          <p className="font-body text-xs text-slate-500 dark:text-slate-400">
+            Reopening <strong>{reopenTarget?.departmentName}</strong>'s finalized schedule unlocks it for controlled Registrar edits and conflict adjustments.
+          </p>
+          <Textarea
+            id="reopen-reason"
+            label="Reason for reopening"
+            hint="Minimum 10 characters explaining why the finalized schedule is being reopened."
+            required
+            minLength={10}
+            value={reopenReason}
+            onChange={(e) => setReopenReason(e.target.value)}
+          />
+          <ModalActions>
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={() => {
+                setReopenTarget(null);
+                setReopenReason("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              block={false}
+              isLoading={saving}
+              loadingLabel="Reopening…"
+              disabled={reopenReason.trim().length < 10}
+            >
+              Reopen Schedules
+            </Button>
+          </ModalActions>
+        </form>
+      </Modal>
+
       {/* Assign Floating Instructor Modal */}
       <Modal
         open={floatingTarget !== null}
@@ -1354,6 +1420,11 @@ function MajorSchedulesPage() {
         onFinalize={(submissionId) =>
           void withRefresh(() => authorityWorkflowService.finalizeMajorSchedule(submissionId))
         }
+        onReopen={(submission) => {
+          setReopenTarget(submission);
+          setReopenReason("");
+          setFormError(null);
+        }}
       />
     </div>
   );
@@ -1370,6 +1441,7 @@ function MajorScheduleStickyFooter({
   onOpenRequirements,
   onCheckConflicts,
   onFinalize,
+  onReopen,
 }: {
   submissions: MajorScheduleSubmission[];
   userRole: string;
@@ -1381,6 +1453,7 @@ function MajorScheduleStickyFooter({
   onOpenRequirements: (submissionId: number) => void;
   onCheckConflicts: (submissionId: number) => void;
   onFinalize: (submissionId: number) => void;
+  onReopen: (submission: MajorScheduleSubmission) => void;
 }) {
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
 
@@ -1536,6 +1609,20 @@ function MajorScheduleStickyFooter({
               <span>Finalize</span>
             </Button>
           </>
+        )}
+
+        {userRole === "registrar" && activeSubmission.status === "finalized" && (
+          <Button
+            type="button"
+            variant="outline"
+            block={false}
+            className="h-8 text-xs"
+            disabled={saving}
+            onClick={() => onReopen(activeSubmission)}
+          >
+            <RefreshCwIcon size={14} />
+            <span>Reopen Finalized</span>
+          </Button>
         )}
 
       </div>

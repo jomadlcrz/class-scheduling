@@ -100,3 +100,21 @@ import { getSlotDuration } from "~/lib/time";
 export function getSlotDurationHours(startTime: string, endTime: string): number {
   return getSlotDuration(`${startTime}-${endTime}`);
 }
+
+export type ClassModePolicy = {
+  id: number;
+  syId: number;
+  semesterNumber: number;
+  subjectId: number | null;
+  subjectCode: string | null;
+  descriptiveTitle: string | null;
+  setId: number | null;
+  setName: string | null;
+  subjectType: string | null;
+  scope: "subject_type" | "subject" | "section";
+  classMode: string;
+  /** Blended only: how many of the week's meetings run online. */
+  onlineMeetings: number;
+  note: string | null;
+};
+
