@@ -98,6 +98,7 @@ type SlotEntryFormProps = {
   };
   /** True when opening from a conflict suggestion (moving an existing slot). */
   isConflictMove?: boolean;
+  savedSessionEdit?: boolean;
 };
 
 const TIME_SLOTS = generateTimeSlots();
@@ -111,6 +112,7 @@ export function SlotEntryForm({
   onCancelEdit,
   conflictPrefill,
   isConflictMove,
+  savedSessionEdit = false,
 }: SlotEntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { classModes } = useClassModes();
@@ -413,8 +415,10 @@ export function SlotEntryForm({
         <InstructorLoad
           faculty={selectedFaculty}
           existingSlots={existingSlots}
+          initialSlot={initialSlot}
           startTime={startTime}
           endTime={endTime}
+          savedSessionEdit={savedSessionEdit}
         />
       )}
 
@@ -464,22 +468,35 @@ export function SlotEntryForm({
 function InstructorLoad({
   faculty,
   existingSlots,
+  initialSlot,
   startTime,
   endTime,
+  savedSessionEdit = false,
 }: {
   faculty: { id: number; fullName: string; maxWeeklyHours: number | null; currentWeeklyHours: number | null };
   existingSlots: PendingSlot[];
+  initialSlot?: PendingSlot;
   startTime: string;
   endTime: string;
+  savedSessionEdit?: boolean;
 }) {
   const maxHours = faculty.maxWeeklyHours;
   if (!maxHours || maxHours <= 0) return null;
 
-  const currentHours =
-    (faculty.currentWeeklyHours ?? 0) +
-    existingSlots
-      .filter((s) => s.facultyId === faculty.id)
-      .reduce((sum, s) => sum + getSlotDurationHours(s.startTime, s.endTime), 0);
+  let currentHours: number;
+  if (savedSessionEdit) {
+    const wasTheirs = initialSlot != null && initialSlot.facultyId === faculty.id;
+    const originalDuration = wasTheirs
+      ? getSlotDurationHours(initialSlot!.startTime, initialSlot!.endTime)
+      : 0;
+    currentHours = (faculty.currentWeeklyHours ?? 0) - originalDuration;
+  } else {
+    currentHours =
+      (faculty.currentWeeklyHours ?? 0) +
+      existingSlots
+        .filter((s) => s.tempId !== initialSlot?.tempId && s.facultyId === faculty.id)
+        .reduce((sum, s) => sum + getSlotDurationHours(s.startTime, s.endTime), 0);
+  }
 
   const proposedHours =
     startTime && endTime && startTime < endTime ? getSlotDurationHours(startTime, endTime) : 0;

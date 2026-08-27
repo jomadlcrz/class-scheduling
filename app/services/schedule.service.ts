@@ -81,6 +81,7 @@ async function view(): Promise<Schedule[]> {
       subjectId: "",
       subjectCode: r.subject_code,
       subjectTitle: r.desc_title,
+      subjectType: r.subject_type,
       units: r.units,
       setId: r.set_name ?? "",
       setCode: r.set_name ?? "",
@@ -147,6 +148,13 @@ export type ScheduleSubjectOption = {
   title: string;
   subjectType: string;
   faculties: ScheduleFacultyOption[];
+  offerings?: {
+    programId: number;
+    programAbbrev: string;
+    setId: number;
+    setName: string;
+    yearLevel: number;
+  }[];
 };
 
 type ScheduleSubjectsResponse = {
@@ -161,13 +169,20 @@ type ScheduleSubjectsResponse = {
       max_weekly_hours: number | string | null;
       current_weekly_hours: number | string | null;
     }[];
+    offerings?: {
+      program_id: number;
+      program_abbrev: string;
+      set_id: number;
+      set_name: string;
+      year_level: number;
+    }[];
   }[];
 };
 
 /** GET /schedule/subjects — curriculum subjects with their assigned faculties for a term. */
 async function listScheduleSubjects(params: {
   schoolYear: string;
-  programId: number;
+  programId?: number;
   yearLevel?: number;
   semester: ScheduleSemester;
   /** Include subjects from already-scheduled sets (backend `include_scheduled_sets`) — used when
@@ -176,9 +191,9 @@ async function listScheduleSubjects(params: {
 }): Promise<ScheduleSubjectOption[]> {
   const query = new URLSearchParams({
     school_year: params.schoolYear,
-    program_id: String(params.programId),
     semester_number: String(params.semester),
   });
+  if (params.programId != null) query.set("program_id", String(params.programId));
   if (params.yearLevel != null) query.set("year_level", String(params.yearLevel));
   if (params.includeScheduledSets) query.set("include_scheduled_sets", "true");
   const data = await apiGet<ScheduleSubjectsResponse | []>(`/schedule/subjects?${query}`);
@@ -188,6 +203,13 @@ async function listScheduleSubjects(params: {
     code: s.subject_code,
     title: s.descriptive_title,
     subjectType: s.subject_type,
+    offerings: (s.offerings ?? []).map((offering) => ({
+      programId: offering.program_id,
+      programAbbrev: offering.program_abbrev,
+      setId: offering.set_id,
+      setName: offering.set_name,
+      yearLevel: offering.year_level,
+    })),
     faculties: (s.instructors ?? []).map((f) => ({
       id: f.instructor_id,
       fullName: f.full_name,

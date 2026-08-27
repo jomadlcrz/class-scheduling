@@ -7,7 +7,9 @@ import type {
   MajorScheduleConflict,
   MajorScheduleAuditLogResult,
   MajorScheduleRequirements,
+  MajorScheduleEditHistory,
   MajorScheduleEditRequest,
+  MajorScheduleEditRequestResult,
   MajorScheduleMeetingInput,
   MajorScheduleSubmission,
   ProposedScheduleMeeting,
@@ -133,7 +135,7 @@ async function submitMajorSchedule(submissionId: number) {
 }
 
 async function requestMajorScheduleEdit(submissionId: number, reason: string) {
-  const data = await apiPost<MessageResponse & { editRequest: { id: number; status: string } }>(`/deans/major-schedule-submissions/${submissionId}/edit-requests`, { reason });
+  const data = await apiPost<MessageResponse & { editRequest: MajorScheduleEditRequestResult }>(`/deans/major-schedule-submissions/${submissionId}/edit-requests`, { reason });
   return { message: apiMessage(data), editRequest: data.editRequest };
 }
 

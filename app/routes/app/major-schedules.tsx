@@ -39,6 +39,7 @@ import { filterClassrooms } from "~/features/classroom-mapping/mapping-model";
 import {
   MajorSchedulesMappingGrid,
 } from "~/features/schedules/major-schedules-mapping-grid";
+import { EditRequestAttemptMeter } from "~/features/schedules/edit-request-attempt-meter";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useEnums } from "~/hooks/use-enums";
@@ -1025,18 +1026,40 @@ function MajorSchedulesPage() {
           className="space-y-4"
         >
           <FormError message={formError} />
+          {editRequestTarget && (
+            <EditRequestAttemptMeter
+              attemptsUsed={editRequestTarget.editRequestAttemptsUsed ?? 0}
+              attemptLimit={editRequestTarget.editRequestAttemptLimit ?? 2}
+              showCount
+              caption={
+                editRequestTarget.editRequestAttemptsRemaining === 0
+                  ? "You have reached the maximum number of edit requests allowed for this term."
+                  : `Submitting this request will use attempt ${Math.min(
+                      (editRequestTarget.editRequestAttemptsUsed ?? 0) + 1,
+                      editRequestTarget.editRequestAttemptLimit ?? 2,
+                    )} of ${editRequestTarget.editRequestAttemptLimit ?? 2}.`
+              }
+            />
+          )}
           <Textarea
             id="reason"
             label="Reason for unlocking"
             hint="Explain what changes need to be made (minimum 10 characters)"
             required
             minLength={10}
+            disabled={editRequestTarget?.editRequestAttemptsRemaining === 0}
           />
           <ModalActions>
             <Button type="button" variant="outline" block={false} onClick={() => setEditRequestTarget(null)}>
               Cancel
             </Button>
-            <Button type="submit" block={false} isLoading={saving} loadingLabel="Sending…">
+            <Button
+              type="submit"
+              block={false}
+              isLoading={saving}
+              loadingLabel="Sending…"
+              disabled={editRequestTarget?.editRequestAttemptsRemaining === 0}
+            >
               Send Request
             </Button>
           </ModalActions>
@@ -1448,16 +1471,36 @@ function MajorScheduleStickyFooter({
         )}
 
         {userRole === "dean" && ["submitted", "finalized"].includes(activeSubmission.status) && (
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            className="h-8 text-xs"
-            onClick={() => onRequestEdit(activeSubmission)}
-          >
-            <EditIcon />
-            <span>Request Edit</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            {activeSubmission.editRequestAttemptLimit > 0 && (
+              <span
+                className="text-[11px] font-medium text-slate-500 dark:text-slate-400"
+                title={`Edit requests used: ${activeSubmission.editRequestAttemptsUsed}/${activeSubmission.editRequestAttemptLimit}`}
+              >
+                Attempts: {activeSubmission.editRequestAttemptsUsed}/{activeSubmission.editRequestAttemptLimit}
+              </span>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              className="h-8 text-xs"
+              disabled={
+                activeSubmission.editRequestStatus === "pending" ||
+                activeSubmission.editRequestAttemptsRemaining === 0
+              }
+              onClick={() => onRequestEdit(activeSubmission)}
+            >
+              <EditIcon />
+              <span>
+                {activeSubmission.editRequestStatus === "pending"
+                  ? "Request Pending"
+                  : activeSubmission.editRequestAttemptsRemaining === 0
+                    ? "Attempts Exhausted"
+                    : "Request Edit"}
+              </span>
+            </Button>
+          </div>
         )}
 
         {/* Registrar buttons */}

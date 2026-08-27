@@ -25,6 +25,8 @@ export type Schedule = {
   subjectId: string;
   subjectCode: string;
   subjectTitle: string;
+  /** Subject classification when supplied by the schedule API. */
+  subjectType?: string;
   /** Only populated when read via scheduleService.view() (GET /schedule/view). */
   units?: number;
   setId: string;
@@ -98,6 +100,3 @@ import { getSlotDuration } from "~/lib/time";
 export function getSlotDurationHours(startTime: string, endTime: string): number {
   return getSlotDuration(`${startTime}-${endTime}`);
 }
-
-// Re-export schedule-day constants from lib/schedule-days.ts.
-;

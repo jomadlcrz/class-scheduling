@@ -15,9 +15,13 @@ import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
+import { InfoCircleIcon } from "~/components/ui/icons";
+import { Tooltip } from "~/components/ui/tooltip";
+import { EditRequestAttemptMeter } from "~/features/schedules/edit-request-attempt-meter";
 import { termPhaseService } from "~/services/term-phase.service";
 import type {
   DepartmentReadinessResponse,
+  MajorEditRequestAttemptSummary,
   MajorSchedulingExtension,
   SchedulingWindowName,
   SchedulingWindowsSnapshot,
@@ -176,6 +180,13 @@ export function TermCalendarPage() {
   const [suggestionsDueAtInput, setSuggestionsDueAtInput] = useState("");
   const [savingDeadlines, setSavingDeadlines] = useState(false);
 
+  // Policy Limits State
+  const [majorEditRequestAttempts, setMajorEditRequestAttempts] = useState<MajorEditRequestAttemptSummary | null>(null);
+  const [majorEditLimitDraft, setMajorEditLimitDraft] = useState("2");
+  const [savingMajorEditLimit, setSavingMajorEditLimit] = useState(false);
+  const [suggestionLimitDraft, setSuggestionLimitDraft] = useState("1");
+  const [savingSuggestionLimit, setSavingSuggestionLimit] = useState(false);
+
   // Modals State
   const [reopenMajorsModalOpen, setReopenMajorsModalOpen] = useState(false);
   const [finalizeConfirmOpen, setFinalizeConfirmOpen] = useState(false);
@@ -240,13 +251,14 @@ export function TermCalendarPage() {
     setLoading(true);
     setError(null);
     try {
-      const [phaseRes, readyRes, deptRes, resRun, windowsRes, extensionsRes] = await Promise.all([
+      const [phaseRes, readyRes, deptRes, resRun, windowsRes, extensionsRes, editAttemptsRes] = await Promise.all([
         termPhaseService.getTermPhase(syId, semesterNumber),
         termPhaseService.getDistributionReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getDepartmentReadiness(syId, semesterNumber).catch(() => null),
         termPhaseService.getResolution(syId, semesterNumber).catch(() => null),
         termPhaseService.getSchedulingWindows(syId, semesterNumber).catch(() => null),
         termPhaseService.getMajorExtensions(syId, semesterNumber).catch(() => []),
+        termPhaseService.getMajorEditRequestAttempts(syId, semesterNumber).catch(() => null),
       ]);
       setPhaseData(phaseRes);
       setReadiness(readyRes);
@@ -254,14 +266,59 @@ export function TermCalendarPage() {
       setResolution(resRun);
       setSchedulingWindows(windowsRes ?? phaseRes.schedulingWindows ?? null);
       setMajorExtensions(extensionsRes);
+      setMajorEditRequestAttempts(editAttemptsRes);
       setMajorsDueAtInput(toLocalDatetimeInput(phaseRes.majorsDueAt));
       setSuggestionsDueAtInput(toLocalDatetimeInput(phaseRes.suggestionsDueAt));
+      if (phaseRes.majorEditRequestLimit != null) {
+        setMajorEditLimitDraft(String(phaseRes.majorEditRequestLimit));
+      }
+      if (phaseRes.suggestionAttemptLimit != null) {
+        setSuggestionLimitDraft(String(phaseRes.suggestionAttemptLimit));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load term scheduling calendar.");
     } finally {
       setLoading(false);
     }
   }, [syId, semesterNumber]);
+
+  async function handleSaveMajorEditLimit() {
+    if (!syId || !semesterNumber) return;
+    const limit = Number(majorEditLimitDraft);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 999) {
+      toast.error("Enter a whole number from 1 to 999.");
+      return;
+    }
+    setSavingMajorEditLimit(true);
+    try {
+      const res = await termPhaseService.setMajorEditRequestPolicy(syId, semesterNumber, limit);
+      toast.success(res.message || "Institution-wide Major edit-request limit updated.");
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update Major edit-request limit.");
+    } finally {
+      setSavingMajorEditLimit(false);
+    }
+  }
+
+  async function handleSaveSuggestionLimit() {
+    if (!syId || !semesterNumber) return;
+    const limit = Number(suggestionLimitDraft);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 999) {
+      toast.error("Enter a whole number from 1 to 999.");
+      return;
+    }
+    setSavingSuggestionLimit(true);
+    try {
+      const res = await termPhaseService.setSuggestionPolicy(syId, semesterNumber, limit);
+      toast.success(res.message || "Instructor suggestion limit updated.");
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update suggestion limit.");
+    } finally {
+      setSavingSuggestionLimit(false);
+    }
+  }
 
   useEffect(() => {
     loadData();
@@ -923,6 +980,173 @@ export function TermCalendarPage() {
                 Save Deadlines
               </Button>
             </div>
+          </Card>
+
+          {/* Card 3: Scheduling Policies & Limits */}
+          <Card className={activePanel === "calendar" ? "p-5 sm:p-6 xl:col-span-2 space-y-6" : "hidden"}>
+            <div className="border-b border-slate-100 pb-3 dark:border-white/5">
+              <h2 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
+                Scheduling Policies &amp; Attempt Limits
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Institution-wide policy limits enforce how many revisions Deans and Instructors can request per term.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* Institution-wide Major edit-request limit */}
+              <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.025]">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                        Major Schedule edit-request limit
+                      </h3>
+                      <Tooltip
+                        wrap
+                        direction="top"
+                        label="Rules: The configured limit gives every Dean the same maximum number of Major Scheduling edit requests for the term. Each successfully submitted request uses one attempt whether it is approved or rejected. The limit can be changed only while Major Scheduling is open."
+                      >
+                        <button
+                          type="button"
+                          aria-label="Major Scheduling edit-request limit rules"
+                          className="cursor-help text-slate-400 transition-colors hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:text-mist-100"
+                        >
+                          <InfoCircleIcon size={16} />
+                        </button>
+                      </Tooltip>
+                    </div>
+                    <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                      One limit applies equally to every Dean during Major scheduling edit requests.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="major-edit-request-limit"
+                      type="number"
+                      min={1}
+                      max={999}
+                      step={1}
+                      value={majorEditLimitDraft}
+                      onChange={(event) => setMajorEditLimitDraft(event.target.value)}
+                      className="h-9 w-20 rounded-lg border border-slate-300 bg-white px-3 text-center font-body text-sm font-semibold tabular-nums text-navy-800 outline-none transition focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 dark:border-white/15 dark:bg-surface-raised dark:text-mist-100"
+                    />
+                    <Button
+                      type="button"
+                      block={false}
+                      isLoading={savingMajorEditLimit}
+                      loadingLabel="Saving"
+                      disabled={savingMajorEditLimit || majorEditLimitDraft === String(phaseData.majorEditRequestLimit ?? 2)}
+                      onClick={handleSaveMajorEditLimit}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <EditRequestAttemptMeter
+                    attemptsUsed={0}
+                    attemptLimit={Number(majorEditLimitDraft) || phaseData.majorEditRequestLimit || 2}
+                    limitOnly
+                  />
+                </div>
+              </div>
+
+              {/* Instructor suggestion limit */}
+              <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.025]">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                        Instructor suggestion attempt limit
+                      </h3>
+                      <Tooltip
+                        wrap
+                        direction="top"
+                        label="Rules: The configured limit gives every instructor the same maximum number of suggestions for the term. Only a successfully submitted and validated suggestion uses one attempt; accepting a schedule does not."
+                      >
+                        <button
+                          type="button"
+                          aria-label="Shift Request suggestion-limit rules"
+                          className="cursor-help text-slate-400 transition-colors hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:text-mist-100"
+                        >
+                          <InfoCircleIcon size={16} />
+                        </button>
+                      </Tooltip>
+                    </div>
+                    <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                      One limit applies equally to every instructor during Shift Request.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="suggestion-attempt-limit"
+                      type="number"
+                      min={1}
+                      max={999}
+                      step={1}
+                      value={suggestionLimitDraft}
+                      onChange={(event) => setSuggestionLimitDraft(event.target.value)}
+                      className="h-9 w-20 rounded-lg border border-slate-300 bg-white px-3 text-center font-body text-sm font-semibold tabular-nums text-navy-800 outline-none transition focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 dark:border-white/15 dark:bg-surface-raised dark:text-mist-100"
+                    />
+                    <Button
+                      type="button"
+                      block={false}
+                      isLoading={savingSuggestionLimit}
+                      loadingLabel="Saving"
+                      disabled={savingSuggestionLimit || suggestionLimitDraft === String(phaseData.suggestionAttemptLimit ?? 1)}
+                      onClick={handleSaveSuggestionLimit}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <EditRequestAttemptMeter
+                    attemptsUsed={0}
+                    attemptLimit={Number(suggestionLimitDraft) || phaseData.suggestionAttemptLimit || 1}
+                    limitOnly
+                    label="Suggestion attempt limit"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Dean department edit-request attempts summary table */}
+            {majorEditRequestAttempts && majorEditRequestAttempts.departments.length > 0 && (
+              <div className="mt-6 border-t border-slate-100 pt-4 dark:border-white/5">
+                <h3 className="font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Dean Edit-Request Usage by Department ({majorEditRequestAttempts.departments.length})
+                </h3>
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {majorEditRequestAttempts.departments.map((dept) => (
+                    <div
+                      key={dept.departmentId}
+                      className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-white/10 dark:bg-white/5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-navy-800 dark:text-mist-100 text-xs">
+                          {dept.departmentAbbrev}
+                        </span>
+                        <Badge tone={dept.canRequestEdit ? "emerald" : "gold"}>
+                          {dept.submissionStatus}
+                        </Badge>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-slate-500 truncate" title={dept.departmentName}>
+                        {dept.departmentName}
+                      </p>
+                      <div className="mt-2">
+                        <EditRequestAttemptMeter
+                          attemptsUsed={dept.attemptsUsed}
+                          attemptLimit={majorEditRequestAttempts.attemptLimit}
+                          showCount
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </Card>
           </div>
 

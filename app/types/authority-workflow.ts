@@ -113,6 +113,7 @@ export type MajorScheduleSubmission = {
   departmentId: number;
   departmentName: string;
   departmentAbbrev: string;
+  deanName: string | null;
   syId: number;
   semesterNumber: number;
   version: number;
@@ -120,9 +121,21 @@ export type MajorScheduleSubmission = {
   submittedAt: string | null;
   finalizedAt: string | null;
   editRequestStatus: string | null;
+  /** Registrar-configured request limit for this Dean/department and term. */
+  editRequestAttemptLimit: number;
+  editRequestAttemptsUsed: number;
+  editRequestAttemptsRemaining: number;
   editRequestHistory: MajorScheduleEditHistory[];
   deletionNotes?: MajorScheduleDeletionNote[];
   schedules: MajorSchedule[];
+};
+
+export type MajorScheduleEditRequestResult = {
+  id: number;
+  status: string;
+  attemptLimit: number;
+  attemptsUsed: number;
+  attemptsRemaining: number;
 };
 
 export type MajorScheduleDeletionNote = {

@@ -292,7 +292,7 @@ function SchedulesNewPage() {
         programId: selectedProgram.id,
         yearLevel: selectedYearLevel,
         semester,
-        includeScheduledSets: isPrefill,
+        includeScheduledSets: true,
       })
       .then((result) => {
         if (!stale) setSubjects(result);

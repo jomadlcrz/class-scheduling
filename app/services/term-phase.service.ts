@@ -87,8 +87,8 @@ async function getResponseReadiness(
 }
 
 export type SuggestionPolicy = {
-  attemptLimit: number | null;
-  previousLimit?: number | null;
+  attemptLimit: number;
+  previousLimit?: number;
   changed?: boolean;
   message: string;
 };
@@ -96,13 +96,42 @@ export type SuggestionPolicy = {
 async function setSuggestionPolicy(
   syId: number,
   semesterNumber: number,
-  attemptLimit: number | null,
+  attemptLimit: number,
 ): Promise<SuggestionPolicy> {
   const data = await apiPut<Omit<SuggestionPolicy, "message"> & { message?: string }>(
     `/registrar/scheduling-terms/${syId}/${semesterNumber}/suggestion-policy`,
     { attemptLimit },
   );
   return { ...data, message: apiMessage(data) };
+}
+
+export type MajorEditRequestPolicy = {
+  attemptLimit: number;
+  previousLimit?: number;
+  changed?: boolean;
+  message: string;
+};
+
+async function setMajorEditRequestPolicy(
+  syId: number,
+  semesterNumber: number,
+  attemptLimit: number,
+): Promise<MajorEditRequestPolicy> {
+  const data = await apiPut<Omit<MajorEditRequestPolicy, "message"> & { message?: string }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-edit-request-policy`,
+    { attemptLimit },
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
+/** GET .../major-edit-request-attempts — Dean counters for the Major window. */
+async function getMajorEditRequestAttempts(
+  syId: number,
+  semesterNumber: number,
+): Promise<import("~/types/term-phase").MajorEditRequestAttemptSummary> {
+  return apiGet<import("~/types/term-phase").MajorEditRequestAttemptSummary>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-edit-request-attempts`,
+  );
 }
 
 /** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/send — sends one program's schedules to dean. */
@@ -302,6 +331,8 @@ export const termPhaseService = {
   revokeMajorExtension,
   getResponseReadiness,
   setSuggestionPolicy,
+  setMajorEditRequestPolicy,
+  getMajorEditRequestAttempts,
   sendProgram,
   withdrawProgram,
   sendDepartment,

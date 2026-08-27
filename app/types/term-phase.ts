@@ -98,6 +98,10 @@ export type TermPhaseResponse = {
   governed: boolean;
   majorsDueAt: string | null;
   suggestionsDueAt: string | null;
+  /** Successful suggestion submissions allowed per instructor; defaults to 1. */
+  suggestionAttemptLimit?: number;
+  /** One institution-wide limit used to check every Dean independently. */
+  majorEditRequestLimit?: number;
   majorsDeadlinePassed: boolean;
   suggestionsDeadlinePassed: boolean;
   phases: TermPhaseItem[];
@@ -253,4 +257,20 @@ export type TermPhaseStepResult = {
   message: string;
   term: TermPhaseResponse;
   undone: string[];
+};
+
+/** Institution-wide policy plus Registrar-only usage counters for each Dean. */
+export type MajorEditRequestAttemptSummary = {
+  attemptLimit: number;
+  departments: {
+    submissionId: number;
+    departmentId: number;
+    departmentName: string;
+    departmentAbbrev: string;
+    submissionStatus: string;
+    attemptsUsed: number;
+    attemptsRemaining: number;
+    hasPendingRequest: boolean;
+    canRequestEdit: boolean;
+  }[];
 };

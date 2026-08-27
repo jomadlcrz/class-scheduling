@@ -877,3 +877,13 @@ export function SendIcon({ size = 16 }: { size?: number }) {
   );
 }
 
+/** Circle “i” — short explanations on actions and fields. */
+export function InfoCircleIcon({ size = 18 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </IconBase>
+  );
+}
