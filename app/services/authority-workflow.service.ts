@@ -1,4 +1,5 @@
 import { apiDelete, apiGet, apiGetFresh, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { normalizeTime } from "~/lib/time";
 import type {
   AssignmentAuditLog,
   HoursAdjustmentRequest,
@@ -200,7 +201,18 @@ async function respondToInstructorSchedule(scheduleId: number, input: {
   reason?: string;
   meetings?: ProposedScheduleMeeting[];
 }) {
-  const data = await apiPost<MessageResponse & { response: { id: number; status: string; responseType: string } }>(`/instructors/schedules/${scheduleId}/response`, input);
+  const normalizedPayload = {
+    ...input,
+    meetings: input.meetings?.map((m) => ({
+      ...m,
+      startTime: normalizeTime(m.startTime),
+      endTime: normalizeTime(m.endTime),
+    })),
+  };
+  const data = await apiPost<MessageResponse & { response: { id: number; status: string; responseType: string } }>(
+    `/instructors/schedules/${scheduleId}/response`,
+    normalizedPayload,
+  );
   return { message: apiMessage(data), response: data.response };
 }
 
@@ -319,9 +331,14 @@ async function suggestInstructorScheduleChange(
   releaseId: number,
   payload: { reason?: string; proposedMeetings: ProposedScheduleMeeting[] },
 ): Promise<{ message: string; response?: unknown }> {
+  const normalizedMeetings = payload.proposedMeetings?.map((m) => ({
+    ...m,
+    startTime: normalizeTime(m.startTime),
+    endTime: normalizeTime(m.endTime),
+  }));
   const data = await apiPost<MessageResponse & { response?: unknown }>(
     `/instructors/schedule-reviews/${releaseId}/suggest`,
-    { reason: payload.reason, meetings: payload.proposedMeetings },
+    { reason: payload.reason, meetings: normalizedMeetings },
   );
   return { message: apiMessage(data), response: data.response };
 }
@@ -373,6 +390,45 @@ async function applySuggestionWithAdjustments(responseId: number, note?: string)
   return { message: apiMessage(data), applied: data.applied };
 }
 
+/** GET /instructor-schedule-responses/suggestion-attempt-indicators — instructor suggestion attempt usage against the term limit. */
+async function getSuggestionAttemptIndicators(
+  syId?: number,
+  semesterNumber?: number,
+): Promise<import("~/types/authority-workflow").SuggestionAttemptIndicator[]> {
+  const query = new URLSearchParams();
+  if (syId != null) query.set("syId", String(syId));
+  if (semesterNumber != null) query.set("semesterNumber", String(semesterNumber));
+  const data = await apiGet<{ indicators: import("~/types/authority-workflow").SuggestionAttemptIndicator[] }>(
+    `/instructor-schedule-responses/suggestion-attempt-indicators${query.size ? `?${query}` : ""}`,
+  );
+  return data.indicators ?? [];
+}
+
+/** GET /major-schedule-summary — readiness, coverage, resources, and time for one academic term. */
+async function getMajorScheduleSummary(
+  syId?: number,
+  semesterNumber?: number,
+): Promise<import("~/types/authority-workflow").MajorScheduleSummary> {
+  const query = new URLSearchParams();
+  if (syId != null) query.set("syId", String(syId));
+  if (semesterNumber != null) query.set("semesterNumber", String(semesterNumber));
+  return apiGet<import("~/types/authority-workflow").MajorScheduleSummary>(
+    `/major-schedule-summary${query.size ? `?${query}` : ""}`,
+  );
+}
+
+async function createRegistrarMajorSchedule(input: MajorScheduleMeetingInput) {
+  return createMajorSchedule(input, "registrar");
+}
+
+async function updateRegistrarMajorSchedule(id: number, input: MajorScheduleMeetingInput) {
+  return updateMajorSchedule(id, input, "registrar");
+}
+
+async function deleteRegistrarMajorSchedule(id: number, reason: string) {
+  return deleteMajorSchedule(id, "registrar", reason);
+}
+
 export const authorityWorkflowService = {
   listAssignmentAuditLogs,
   listHoursAdjustmentRequests,
@@ -381,7 +437,11 @@ export const authorityWorkflowService = {
   createMajorSchedule,
   updateMajorSchedule,
   deleteMajorSchedule,
+  createRegistrarMajorSchedule,
+  updateRegistrarMajorSchedule,
+  deleteRegistrarMajorSchedule,
   listMajorScheduleSubmissions,
+  getMajorScheduleSummary,
   listMajorLabTimeSlots,
   submitMajorSchedule,
   requestMajorScheduleEdit,
@@ -401,6 +461,7 @@ export const authorityWorkflowService = {
   listInstructorScheduleReviewHistory,
   getInstructorAcceptanceSummary,
   getInstructorResponseSummary,
+  getSuggestionAttemptIndicators,
   listAcceptedInstructorResponses,
   listAwaitingResponseInstructors,
   setAcceptedSchedules,
@@ -414,3 +475,4 @@ export const authorityWorkflowService = {
   previewRetention,
   analyzeAdvancedAdjustment,
 };
+

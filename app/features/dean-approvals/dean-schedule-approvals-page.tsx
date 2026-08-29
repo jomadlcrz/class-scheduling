@@ -106,7 +106,7 @@ export function DeanScheduleApprovalsPage() {
 
   async function handleFinalApprove() {
     if (!finalApproveTarget) return;
-    const expectedConfirmation = `Publish ${finalApproveTarget.programAbbrev} Official Schedules`;
+    const expectedConfirmation = `Approve ${finalApproveTarget.programAbbrev} Final Schedules`;
     if (finalApproveConfirm.trim() !== expectedConfirmation) {
       toast.error(`Type "${expectedConfirmation}" exactly to confirm.`);
       return;
@@ -484,13 +484,13 @@ export function DeanScheduleApprovalsPage() {
           setFinalApproveTarget(null);
           setFinalApproveConfirm("");
         }}
-        title={`Publish ${finalApproveTarget?.programAbbrev ?? ""} Official Schedules?`}
+        title={`Approve ${finalApproveTarget?.programAbbrev ?? ""} Final Schedules?`}
       >
         <p className="text-sm text-slate-600 dark:text-slate-300">
           This signs every section of {finalApproveTarget?.programAbbrev ?? "this program"} that is waiting for final approval. It cannot be undone. The term becomes public once every required program is signed and the Registrar finalizes the term.
         </p>
         <label className="mt-4 block text-sm font-medium text-navy-800 dark:text-mist-100">
-          Type <span className="font-semibold">Publish {finalApproveTarget?.programAbbrev} Official Schedules</span> to confirm
+          Type <span className="font-semibold">Approve {finalApproveTarget?.programAbbrev} Final Schedules</span> to confirm
           <input
             value={finalApproveConfirm}
             onChange={(event) => setFinalApproveConfirm(event.target.value)}
@@ -500,7 +500,7 @@ export function DeanScheduleApprovalsPage() {
         </label>
         <ModalActions>
           <Button type="button" variant="outline" block={false} disabled={actionLoading} onClick={() => setFinalApproveTarget(null)}>Cancel</Button>
-          <Button type="button" block={false} disabled={finalApproveConfirm.trim() !== `Publish ${finalApproveTarget?.programAbbrev ?? ""} Official Schedules` || actionLoading} isLoading={actionLoading} onClick={handleFinalApprove}>
+          <Button type="button" block={false} disabled={finalApproveConfirm.trim() !== `Approve ${finalApproveTarget?.programAbbrev ?? ""} Final Schedules` || actionLoading} isLoading={actionLoading} onClick={handleFinalApprove}>
             Sign &amp; Final Approve Program
           </Button>
         </ModalActions>

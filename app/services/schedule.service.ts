@@ -1053,12 +1053,36 @@ async function decideRegistrarInstructorResponse(
   });
 }
 
+/** POST /registrar/major-schedules — create registrar major schedule. */
+async function createRegistrarMajorSchedule(
+  payload: Record<string, unknown>,
+): Promise<{ message?: string; schedule?: unknown }> {
+  return apiPost("/registrar/major-schedules", payload);
+}
+
 /** PUT /registrar/major-schedules/:scheduleId — update registrar major schedule. */
 async function updateRegistrarMajorSchedule(
   scheduleId: number,
   payload: Record<string, unknown>,
-): Promise<{ message?: string }> {
+): Promise<{ message?: string; schedule?: unknown }> {
   return apiPut(`/registrar/major-schedules/${scheduleId}`, payload);
+}
+
+/** DELETE /registrar/major-schedules/:scheduleId — delete registrar major schedule with required reason. */
+async function deleteRegistrarMajorSchedule(
+  scheduleId: number,
+  reason: string,
+): Promise<{ message?: string; deleted?: unknown }> {
+  return apiDelete(`/registrar/major-schedules/${scheduleId}`, { reason });
+}
+
+/** POST /registrar/scheduling-terms/:syId/:semesterNumber/programs/:programId/publish — publish program schedule. */
+async function publishProgramSchedule(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+): Promise<{ message?: string; programAbbrev?: string; published?: number; alreadyPublished?: number; setIds?: number[]; termFinalized?: boolean }> {
+  return apiPost(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`);
 }
 
 /** PUT /regular_schedule/:regularSchedId/reschedule — atomic reschedule regular class slot. */
@@ -1097,6 +1121,10 @@ export const scheduleService = {
   getFinalizedMajorPreload,
   decideInstructorResponse,
   decideRegistrarInstructorResponse,
+  createRegistrarMajorSchedule,
   updateRegistrarMajorSchedule,
+  deleteRegistrarMajorSchedule,
+  publishProgramSchedule,
   rescheduleRegularSchedule,
 };
+

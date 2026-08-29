@@ -394,3 +394,47 @@ export type AdvancedAnalysisResult = {
   conflicts?: string[];
   message?: string;
 };
+
+export type SuggestionAttemptIndicator = {
+  instructorId: number;
+  instructorName: string;
+  departmentAbbrev: string | null;
+  departmentName: string | null;
+  programAbbrev: string | null;
+  programName: string | null;
+  syId: number;
+  semesterNumber: number;
+  suggestionAttemptsUsed: number;
+  suggestionAttemptLimit: number | null;
+};
+
+export type MajorScheduleSummaryMetrics = {
+  requiredSetCount: number;
+  completedSetCount: number;
+  uniqueSubjectCount: number;
+  meetingCount: number;
+  lecMeetingCount: number;
+  labMeetingCount: number;
+  scheduledHours: number;
+  requiredHours: number;
+  roomCount: number;
+  lectureRoomCount: number;
+  laboratoryRoomCount: number;
+  onlineMeetingCount: number;
+  instructorCount: number;
+  tbaMeetingCount: number;
+};
+
+export type MajorScheduleSummary = {
+  scope: "dean" | "registrar";
+  syId: number;
+  semesterNumber: number;
+  submissionStatus: string | null;
+  readyToSubmit: boolean;
+  totals: MajorScheduleSummaryMetrics;
+  workflow: {
+    requiredDepartmentCount: number;
+    finalizedDepartmentCount: number;
+  };
+};
+

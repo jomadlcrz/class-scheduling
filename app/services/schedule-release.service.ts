@@ -316,6 +316,30 @@ async function resubmitRelease(id: number): Promise<{ message: string; release?:
   return { message: apiMessage(data), release: data.release ? mapRelease(data.release) : undefined };
 }
 
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/publish — publish program's schedule independently. */
+async function publishProgramSchedule(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+): Promise<import("~/types/schedule-release").ProgramPublishResult> {
+  const data = await apiPost<{
+    message?: string;
+    programAbbrev: string;
+    published: number;
+    alreadyPublished: number;
+    setIds: number[];
+    termFinalized: boolean;
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`);
+  return {
+    message: apiMessage(data),
+    programAbbrev: data.programAbbrev,
+    published: data.published,
+    alreadyPublished: data.alreadyPublished,
+    setIds: data.setIds,
+    termFinalized: data.termFinalized,
+  };
+}
+
 /**
  * Converts a release preview's daySchedules into the Schedule[] shape so the existing
  * ScheduleGrid/ScheduleTable components can render it read-only — no new grid renderer needed.
@@ -373,6 +397,7 @@ export const scheduleReleaseService = {
   rejectProgram,
   returnProgramForRevision,
   finalApproveProgram,
+  publishProgramSchedule,
   getReviewProgress,
   forwardSuggestions,
   progressToFinalApproval,
@@ -381,4 +406,5 @@ export const scheduleReleaseService = {
   resubmitRelease,
   mapPreviewToSchedules,
 };
+
 

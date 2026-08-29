@@ -21,7 +21,7 @@ import { useDays } from "~/hooks/use-days";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
-import { formatTime12h, timeToMinutes } from "~/lib/time";
+import { formatTime12h, normalizeTime, timeToMinutes } from "~/lib/time";
 import { authorityWorkflowService } from "~/services/authority-workflow.service";
 import { scheduleService } from "~/services/schedule.service";
 import type { InstructorScheduleResponse, ProposedScheduleMeeting } from "~/types/authority-workflow";
@@ -201,7 +201,11 @@ function ScheduleResponsesPage() {
       const result = await authorityWorkflowService.respondToInstructorSchedule(Number(responseTarget.id), {
         responseType,
         reason: String(values.get("reason") ?? "") || undefined,
-        meetings: responseType === "suggest_change" ? meetings : [],
+        meetings: responseType === "suggest_change" ? meetings.map((m) => ({
+          ...m,
+          startTime: normalizeTime(m.startTime),
+          endTime: normalizeTime(m.endTime),
+        })) : [],
       });
       if (result.message) toast.success(result.message);
       setResponseTarget(null);

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { InfoCircleIcon } from "~/components/ui/icons";
 
@@ -29,16 +30,15 @@ export function ClassModePoliciesRulesDrawer() {
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="outline"
+        block={false}
         onClick={() => setOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 font-body text-xs font-semibold tracking-wide text-navy-700 shadow-sm transition-colors hover:border-gold-300 hover:bg-gold-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:text-mist-100 dark:hover:border-gold-400/40 dark:hover:bg-gold-400/10"
       >
         <InfoCircleIcon size={16} />
-        <span>RULES</span>
-      </button>
+        Rules
+      </Button>
 
       <Drawer
         open={open}

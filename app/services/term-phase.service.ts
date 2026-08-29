@@ -42,33 +42,9 @@ async function getDepartmentReadiness(
   );
 }
 
-async function getMajorExtensions(syId: number, semesterNumber: number): Promise<MajorSchedulingExtension[]> {
-  return apiGet<MajorSchedulingExtension[]>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-extensions`,
-  );
-}
-
-async function grantMajorExtension(
-  syId: number,
-  semesterNumber: number,
-  payload: { departmentId: number; extendedUntil: string; reason?: string },
-): Promise<{ message: string; extension: MajorSchedulingExtension }> {
-  const data = await apiPost<{ message?: string; extension: MajorSchedulingExtension }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-extensions`,
-    payload,
-  );
-  return { ...data, message: apiMessage(data) };
-}
-
-async function revokeMajorExtension(
-  syId: number,
-  semesterNumber: number,
-  extensionId: number,
-): Promise<{ message: string }> {
-  const data = await apiDelete<{ message?: string }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-extensions/${extensionId}`,
-  );
-  return { message: apiMessage(data) };
+/** @deprecated Major scheduling extensions were removed — window is institution-wide only. */
+async function getMajorExtensions(_syId: number, _semesterNumber: number): Promise<MajorSchedulingExtension[]> {
+  return [];
 }
 
 export type TermResponseReadiness = {
@@ -321,14 +297,43 @@ async function previewResolution(
   };
 }
 
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/publish — publish program's schedule independently. */
+async function publishProgramSchedule(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+): Promise<{
+  message: string;
+  programAbbrev: string;
+  published: number;
+  alreadyPublished: number;
+  setIds: number[];
+  termFinalized: boolean;
+}> {
+  const data = await apiPost<{
+    message?: string;
+    programAbbrev: string;
+    published: number;
+    alreadyPublished: number;
+    setIds: number[];
+    termFinalized: boolean;
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`);
+  return {
+    message: apiMessage(data),
+    programAbbrev: data.programAbbrev,
+    published: data.published,
+    alreadyPublished: data.alreadyPublished,
+    setIds: data.setIds,
+    termFinalized: data.termFinalized,
+  };
+}
+
 export const termPhaseService = {
   getTermPhase,
   getCurrentTermPhase,
   getDistributionReadiness,
   getDepartmentReadiness,
   getMajorExtensions,
-  grantMajorExtension,
-  revokeMajorExtension,
   getResponseReadiness,
   setSuggestionPolicy,
   setMajorEditRequestPolicy,
@@ -336,6 +341,7 @@ export const termPhaseService = {
   sendProgram,
   withdrawProgram,
   sendDepartment,
+  publishProgramSchedule,
   setDeadlines,
   getSchedulingWindows,
   openSchedulingWindow,
@@ -346,3 +352,4 @@ export const termPhaseService = {
   getResolution,
   previewResolution,
 };
+

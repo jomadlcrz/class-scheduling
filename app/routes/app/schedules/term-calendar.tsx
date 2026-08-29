@@ -6,15 +6,17 @@ export function meta() {
     { title: "Scheduling Calendar — GWC Class Scheduling" },
     {
       name: "description",
-      content: "Term-batch scheduling lifecycle, deadlines, readiness, and suggestion resolution across all departments.",
+      content:
+        "Set the term's major-scheduling and suggestion deadlines and move the term through its phases.",
     },
   ];
 }
 
 export default function TermCalendarRoute() {
   return (
-    <RoleGuard allow={["registrar"]}>
+    <RoleGuard allow={["registrar", "admin"]}>
       <TermCalendarPage />
     </RoleGuard>
   );
 }
+

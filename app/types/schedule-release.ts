@@ -214,3 +214,13 @@ export type RegistrarRevisionWorkspace = {
   suggestions: RegistrarRevisionWorkspaceSuggestion[];
   pendingSuggestionsCount: number;
 };
+
+export type ProgramPublishResult = {
+  message: string;
+  programAbbrev: string;
+  published: number;
+  alreadyPublished: number;
+  setIds: number[];
+  termFinalized: boolean;
+};
+
