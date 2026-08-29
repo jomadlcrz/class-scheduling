@@ -271,7 +271,7 @@ const subItemVariants = {
 
 function isLeafActive(pathname: string, leaf: NavLeaf): boolean {
   if (leaf.matchPaths) {
-    return leaf.matchPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+    return leaf.matchPaths.some((p) => pathname === p);
   }
   if (leaf.matchPrefix) {
     return pathname === leaf.to || pathname.startsWith(`${leaf.to}/`);

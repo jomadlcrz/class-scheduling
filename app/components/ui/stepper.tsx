@@ -12,9 +12,11 @@ type StepperProps = {
   steps: StepDefinition[];
   /** Zero-based index of the step currently shown. */
   currentIndex: number;
-  /** Steps at or before this index are click-navigable; later steps are inert. */
-  maxUnlockedIndex: number;
-  onStepClick: (index: number) => void;
+  /** Steps at or before this index are click-navigable; later steps are inert. Defaults to currentIndex. */
+  maxUnlockedIndex?: number;
+  onStepClick?: (index: number) => void;
+  /** If true, renders purely as a read-only progress indicator with no buttons or click interactions. */
+  readOnly?: boolean;
 };
 
 function statusFor(index: number, currentIndex: number): StepStatus {
@@ -74,43 +76,61 @@ function StepNode({ status, index }: { status: StepStatus; index: number }) {
 }
 
 /**
- * Interactive step-gate control: click a node to jump to any unlocked step.
- * Full labeled row on tablet/desktop; a compact number-only bar on mobile so
- * it doesn't crowd a data-heavy step underneath.
+ * Step-gate control: click a node to jump to any unlocked step in wizard mode,
+ * or render as a static read-only progress indicator when readOnly is true.
+ * Full labeled row on tablet/desktop; a compact number-only bar on mobile.
  */
-export function Stepper({ steps, currentIndex, maxUnlockedIndex, onStepClick }: StepperProps) {
+export function Stepper({
+  steps,
+  currentIndex,
+  maxUnlockedIndex = currentIndex,
+  onStepClick,
+  readOnly = false,
+}: StepperProps) {
   return (
-    <nav aria-label="Wizard progress" className="w-full px-1 py-2 sm:px-2">
+    <nav aria-label={readOnly ? "Workflow progress status" : "Wizard progress"} className="w-full px-1 py-2 sm:px-2">
       <ol className="hidden items-center sm:flex">
         {steps.map((step, index) => {
           const status = statusFor(index, currentIndex);
           const isLast = index === steps.length - 1;
-          const isClickable = index <= maxUnlockedIndex;
+          const isClickable = !readOnly && onStepClick && index <= maxUnlockedIndex;
 
-          return (
-            <li key={step.key} className={`flex min-w-0 items-center ${isLast ? "" : "flex-1"}`}>
-              <button
-                type="button"
-                disabled={!isClickable}
-                aria-current={status === "current" ? "step" : undefined}
-                onClick={() => onStepClick(index)}
-                className={`flex shrink-0 items-center gap-3 rounded-lg px-1 py-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                  isClickable ? "cursor-pointer" : "cursor-default"
+          const content = (
+            <>
+              <StepNode status={status} index={index} />
+              <span
+                className={`whitespace-nowrap font-body text-sm font-semibold tracking-tight transition-all duration-300 ${
+                  status === "current"
+                    ? "rounded-full bg-navy-800/10 px-3 py-1.5 text-navy-700 dark:bg-mist-100/10 dark:text-mist-100"
+                    : status === "upcoming"
+                      ? "text-slate-400 dark:text-slate-500"
+                      : "text-navy-700 dark:text-mist-100"
                 }`}
               >
-                <StepNode status={status} index={index} />
-                <span
-                  className={`whitespace-nowrap font-body text-sm font-semibold tracking-tight transition-all duration-300 ${
-                    status === "current"
-                      ? "rounded-full bg-navy-800/10 px-3 py-1.5 text-navy-700 dark:bg-mist-100/10 dark:text-mist-100"
-                      : status === "upcoming"
-                        ? "text-slate-400 dark:text-slate-500"
-                        : "text-navy-700 dark:text-mist-100"
-                  }`}
+                {step.label}
+              </span>
+            </>
+          );
+
+          return (
+            <li
+              key={step.key}
+              aria-current={status === "current" ? "step" : undefined}
+              className={`flex min-w-0 items-center ${isLast ? "" : "flex-1"}`}
+            >
+              {isClickable ? (
+                <button
+                  type="button"
+                  onClick={() => onStepClick(index)}
+                  className="flex shrink-0 cursor-pointer items-center gap-3 rounded-lg px-1 py-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
                 >
-                  {step.label}
-                </span>
-              </button>
+                  {content}
+                </button>
+              ) : (
+                <div className="flex shrink-0 cursor-default select-none items-center gap-3 px-1 py-1">
+                  {content}
+                </div>
+              )}
               {!isLast && (
                 <span
                   aria-hidden="true"

@@ -775,13 +775,12 @@ export function TermCalendarPage() {
               </Card>
             )}
 
-            {/* Reusable Stepper Component */}
+            {/* Reusable Stepper Component (Read-only Phase Progress) */}
             <div className="w-full max-w-2xl">
               <Stepper
                 steps={SCHEDULING_STEPS}
                 currentIndex={currentStepIndex}
-                maxUnlockedIndex={maxUnlockedIndex}
-                onStepClick={() => {}}
+                readOnly
               />
             </div>
 
