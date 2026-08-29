@@ -104,18 +104,38 @@ function mapTeachingTermsToEntries(teachingTerms: TeachingTerm[]): FacultyLoadin
   });
 }
 
-export function useSubjectAssignments() {
+export function useSubjectAssignments(options?: {
+  departmentId?: number | null;
+  initialTerm?: { syId: number | null; semesterNumber: number | null };
+}) {
+  const departmentId = options?.departmentId ?? null;
+  const initialTerm = options?.initialTerm;
+
   const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 
-  const [selectedSchoolYearId, setSelectedSchoolYearId] = useState("");
-  const [selectedSemesterNumber, setSelectedSemesterNumber] = useState("");
+  const [selectedSchoolYearId, setSelectedSchoolYearId] = useState(() =>
+    initialTerm?.syId ? String(initialTerm.syId) : "",
+  );
+  const [selectedSemesterNumber, setSelectedSemesterNumber] = useState(() =>
+    initialTerm?.semesterNumber ? String(initialTerm.semesterNumber) : "",
+  );
 
   const [instructors, setInstructors] = useState<DepartmentInstructor[] | null>(null);
   const [subjects, setSubjects] = useState<DepartmentSubjectProgram[] | null>(null);
   const [entries, setEntries] = useState<FacultyLoadingEntry[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [mutating, setMutating] = useState(false);
+
+  // Sync from initialTerm if updated from outside
+  useEffect(() => {
+    if (initialTerm?.syId) {
+      setSelectedSchoolYearId(String(initialTerm.syId));
+    }
+    if (initialTerm?.semesterNumber) {
+      setSelectedSemesterNumber(String(initialTerm.semesterNumber));
+    }
+  }, [initialTerm?.syId, initialTerm?.semesterNumber]);
 
   // Default school year
   useEffect(() => {
@@ -131,12 +151,12 @@ export function useSubjectAssignments() {
     if (first) setSelectedSemesterNumber(String(first.semesterNumber));
   }, [semesters, selectedSemesterNumber]);
 
-  // Fetch instructors + subjects + programs (term-independent)
+  // Fetch instructors + subjects + programs (scoped to departmentId if provided)
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      deanService.listDepartmentInstructors(),
-      deanService.listDepartmentSubjects(),
+      deanService.listDepartmentInstructors({ departmentId }),
+      deanService.listDepartmentSubjects({ departmentId, semesterNumber: selectedSemesterNumber ? Number(selectedSemesterNumber) : null }),
       programService.list().catch(() => [] as Awaited<ReturnType<typeof programService.list>>),
     ]).then(([inst, subj, progs]) => {
       if (cancelled) return;
@@ -156,7 +176,7 @@ export function useSubjectAssignments() {
       }
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [departmentId, selectedSemesterNumber]);
 
   const refresh = useCallback(() => {
     if (!selectedSchoolYearId || !selectedSemesterNumber) return;
@@ -168,7 +188,7 @@ export function useSubjectAssignments() {
     const semesterNumber = Number(selectedSemesterNumber);
     if (!semesterNumber) return;
 
-    deanService.listTeachingTerms({ syId, semesterNumber })
+    deanService.listTeachingTerms({ syId, semesterNumber, departmentId })
       .then((teachingTerms) => {
         if (cancelled) return;
         setEntries(mapTeachingTermsToEntries(teachingTerms));
@@ -180,7 +200,7 @@ export function useSubjectAssignments() {
       });
 
     return () => { cancelled = true; };
-  }, [selectedSchoolYearId, selectedSemesterNumber]);
+  }, [selectedSchoolYearId, selectedSemesterNumber, departmentId]);
 
   const reloadEntries = useCallback(async () => {
     if (!selectedSchoolYearId || !selectedSemesterNumber) return;
@@ -188,9 +208,9 @@ export function useSubjectAssignments() {
     const semesterNumber = Number(selectedSemesterNumber);
     if (!semesterNumber) return;
 
-    const teachingTerms = await deanService.listTeachingTerms({ syId, semesterNumber });
+    const teachingTerms = await deanService.listTeachingTerms({ syId, semesterNumber, departmentId });
     setEntries(mapTeachingTermsToEntries(teachingTerms));
-  }, [selectedSchoolYearId, selectedSemesterNumber]);
+  }, [selectedSchoolYearId, selectedSemesterNumber, departmentId]);
 
   useEffect(() => {
     const cleanup = refresh();

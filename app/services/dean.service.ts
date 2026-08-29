@@ -76,11 +76,16 @@ type DepartmentSubjectsResponse = {
   }[];
 }[];
 
-/** GET /deans/instructors — the dean's own department instructor roster. */
-async function listDepartmentInstructors(): Promise<DepartmentInstructor[]> {
+/** GET /deans/instructors — the dean's own department instructor roster (or scoped by departmentId for registrar). */
+async function listDepartmentInstructors(params?: {
+  departmentId?: number | null;
+}): Promise<DepartmentInstructor[]> {
+  const query = new URLSearchParams();
+  if (params?.departmentId != null) query.set("department_id", String(params.departmentId));
+  const qs = query.toString();
   let raw: DepartmentInstructorsResponse;
   try {
-    raw = await apiGet<DepartmentInstructorsResponse>("/deans/instructors");
+    raw = await apiGet<DepartmentInstructorsResponse>(`/deans/instructors${qs ? `?${qs}` : ""}`);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -102,13 +107,25 @@ async function listDepartmentInstructors(): Promise<DepartmentInstructor[]> {
 }
 
 /**
- * GET /deans/curricula — the dean's own department curriculum tree.
+ * GET /deans/curricula — the dean's own department curriculum tree (or scoped by departmentId for registrar).
  * Uses the program name directly (no /programs call — deans may lack programs:read).
  */
-async function listDepartmentSubjects(): Promise<DepartmentSubjectProgram[]> {
+async function listDepartmentSubjects(params?: {
+  semesterNumber?: number | null;
+  departmentId?: number | null;
+}): Promise<DepartmentSubjectProgram[]> {
+  const query = new URLSearchParams();
+  if (params?.semesterNumber) {
+    query.set("semester_number", String(params.semesterNumber));
+  }
+  if (params?.departmentId != null) {
+    query.set("department_id", String(params.departmentId));
+  }
+  const qs = query.toString();
+  const path = qs ? `/deans/curricula?${qs}` : "/deans/curricula";
   let data: DepartmentSubjectsResponse;
   try {
-    data = await apiGet<DepartmentSubjectsResponse>("/deans/curricula");
+    data = await apiGet<DepartmentSubjectsResponse>(path);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -201,14 +218,16 @@ async function createSubjectAssignments(
   return messages.join(" ") || "Assignments saved.";
 }
 
-/** GET /deans/teaching-terms — all teaching terms visible to the caller (dean: own department). */
+/** GET /deans/teaching-terms — all teaching terms visible to the caller (dean: own department, registrar: scoped by departmentId if provided). */
 async function listTeachingTerms(params?: {
   syId?: number;
   semesterNumber?: number;
+  departmentId?: number | null;
 }): Promise<TeachingTerm[]> {
   const query = new URLSearchParams();
   if (params?.syId != null) query.set("sy_id", String(params.syId));
   if (params?.semesterNumber != null) query.set("semester_number", String(params.semesterNumber));
+  if (params?.departmentId != null) query.set("department_id", String(params.departmentId));
   const qs = query.toString();
   const data = await apiGet<TeachingTermDetail[]>(`/deans/teaching-terms${qs ? `?${qs}` : ""}`);
   return data.map((t) => ({
@@ -268,7 +287,7 @@ async function removeSubjectAssignment(
 }
 
 type DepartmentProgramResponse = {
-  department: {
+  department?: {
     department_id: number;
     department_abbrev: string;
     department_name: string;
@@ -308,6 +327,7 @@ async function listDepartmentPrograms(semesterNumber?: number): Promise<{
     units: number;
     yearLevel: number;
     semesterCategory: number;
+    subjectType?: string | null;
   }[];
 }[]> {
   let data: DepartmentProgramResponse;
@@ -330,6 +350,7 @@ async function listDepartmentPrograms(semesterNumber?: number): Promise<{
       units: s.units,
       yearLevel: s.year_level,
       semesterCategory: s.semester_number,
+      subjectType: s.subject_type,
     })),
   }));
 }

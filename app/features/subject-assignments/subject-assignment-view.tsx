@@ -1,32 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import { Accordion } from "~/components/ui/accordion";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { PlusIcon } from "~/components/ui/icons";
+import { AuditLogIcon, PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { ImageViewer } from "~/components/ui/image-viewer";
 import { inputClassName } from "~/components/ui/input";
-import { Skeleton } from "~/components/ui/skeleton";
-import { StatCard } from "~/components/ui/stat-card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SubjectAssignmentToolbar } from "~/features/subject-assignments/subject-assignment-toolbar";
 import { SchedulingLoadPolicyDialog } from "~/features/subject-assignments/scheduling-load-policy-dialog";
 import { useSubjectAssignments } from "~/features/subject-assignments/use-subject-assignments";
 import { useAuth } from "~/hooks/use-auth";
-import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { facultyKey, formatInstructorName } from "~/lib/faculty-load";
 import { authorityWorkflowService } from "~/services/authority-workflow.service";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
+import { departmentService } from "~/services/department.service";
 import type { HoursAdjustmentRequest } from "~/types/authority-workflow";
-import type { OfferingCoverage } from "~/types/offering-coverage";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
 import { AssignmentLoadSummary } from "./assignment-load-summary";
@@ -69,52 +64,42 @@ type Instructor = {
   programs: ProgramGroup[];
 };
 
-type OfferingRow = {
-  key: string;
-  department: string;
-  programAbbrev: string;
-  programName: string;
-  subjectCode: string;
-  descriptiveTitle: string;
-  yearLevel: number;
-  subjectType: string | null;
-  assigned: boolean;
-  instructors: string[];
-};
-
-function flattenOfferingCoverage(coverage: OfferingCoverage | null): OfferingRow[] {
-  return (coverage?.departments ?? []).flatMap((department) =>
-    department.programs.flatMap((program) =>
-      program.subjects.map((subject) => ({
-        key: `${department.department_id}:${subject.curriculum_detail_id}`,
-        department: department.department_abbrev,
-        programAbbrev: program.program_abbrev,
-        programName: program.program_name,
-        subjectCode: subject.subject_code,
-        descriptiveTitle: subject.descriptive_title,
-        yearLevel: subject.year_level,
-        subjectType: subject.subject_type,
-        assigned: subject.assigned,
-        instructors: subject.instructors,
-      })),
-    ),
-  );
-}
-
 export function SubjectAssignmentView() {
-  const apiData = useSubjectAssignments();
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const isRegistrar = user?.role === "registrar";
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // For Registrar: list academic departments and manage selected department
+  const { data: departmentsData } = useCachedData(
+    "academic-departments",
+    () => departmentService.listAcademic(),
+    { enabled: isRegistrar },
+  );
+  const departments = departmentsData ?? [];
+
+  const queryDeptId = searchParams.get("department_id") ?? "";
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>(() => queryDeptId);
+
+  // Sync default department for registrar once loaded
+  useEffect(() => {
+    if (!isRegistrar || selectedDepartmentId || departments.length === 0) return;
+    const initialDept = departments[0]?.id ? String(departments[0].id) : "";
+    if (initialDept) {
+      setSelectedDepartmentId(initialDept);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (!next.has("department_id")) next.set("department_id", initialDept);
+        return next;
+      }, { replace: true });
+    }
+  }, [isRegistrar, departments, selectedDepartmentId, setSearchParams]);
+
+  const departmentId = isRegistrar ? (selectedDepartmentId ? Number(selectedDepartmentId) : null) : null;
+
+  const apiData = useSubjectAssignments({ departmentId });
   const selectedSyId = Number(apiData.selectedSchoolYearId);
   const selectedSemesterNumber = Number(apiData.selectedSemesterNumber);
-  const offeringScopeReady = selectedSyId > 0 && selectedSemesterNumber > 0;
-  const {
-    data: offeringCoverage,
-    error: offeringCoverageError,
-  } = useCachedData(
-    `subject-offering-coverage:${selectedSyId || "none"}:${selectedSemesterNumber || "none"}`,
-    () => deanService.getOfferingCoverage(selectedSyId, selectedSemesterNumber),
-    { enabled: offeringScopeReady },
-  );
+
   const [programOptions, setProgramOptions] = useState<{
     id: number;
     abbrev: string;
@@ -131,15 +116,14 @@ export function SubjectAssignmentView() {
   }[]>([]);
 
   useEffect(() => {
-    deanService.listDepartmentPrograms().then(setProgramOptions).catch(() => {});
-  }, []);
-
-  // Auth context
-  const { user } = useAuth();
+    deanService
+      .listDepartmentPrograms(selectedSemesterNumber || undefined)
+      .then(setProgramOptions)
+      .catch(() => {});
+  }, [selectedSemesterNumber]);
 
   // Search filter
   const [search, setSearch] = useState("");
-  const [showUnassignedOnly, setShowUnassignedOnly] = useState(true);
   const [policyOpen, setPolicyOpen] = useState(false);
 
   // Instructors list — starts empty, populated from API data
@@ -276,10 +260,10 @@ export function SubjectAssignmentView() {
     return apiData.instructors.filter((inst) => !addedIds.has(facultyKey(inst.firstName, inst.lastName)));
   }, [apiData.instructors, instructors]);
 
-  // Reset instructors when term filter changes
+  // Reset instructors when term filter or department changes
   useEffect(() => {
     setInstructors([]);
-  }, [apiData.selectedSchoolYearId, apiData.selectedSemesterNumber]);
+  }, [apiData.selectedSchoolYearId, apiData.selectedSemesterNumber, selectedDepartmentId]);
 
   // Initialize instructors from existing entries (instructors with teaching terms this term)
   useEffect(() => {
@@ -335,11 +319,17 @@ export function SubjectAssignmentView() {
 
   // Compute available programs for "Add Existing Program" (exclude already-assigned ones)
   const availableProgramOptions = useMemo(() => {
-    if (!addProgramTarget) return programOptions;
+    if (!addProgramTarget) {
+      return programOptions.map((p) => ({ abbrev: p.abbrev, name: p.name }));
+    }
     const instructor = instructors.find((i) => i.id === addProgramTarget);
-    if (!instructor) return programOptions;
+    if (!instructor) {
+      return programOptions.map((p) => ({ abbrev: p.abbrev, name: p.name }));
+    }
     const assignedAbbrevs = new Set(instructor.programs.map((p) => p.programAbbrev));
-    return programOptions.filter((p) => !assignedAbbrevs.has(p.abbrev));
+    return programOptions
+      .filter((p) => !assignedAbbrevs.has(p.abbrev))
+      .map((p) => ({ abbrev: p.abbrev, name: p.name }));
   }, [addProgramTarget, instructors, programOptions]);
 
   const [assignSubjectTarget, setAssignSubjectTarget] = useState<{
@@ -356,6 +346,7 @@ export function SubjectAssignmentView() {
     teachingTermId: number | null;
     assignmentId: number | null;
   } | null>(null);
+
   // Handlers
   const handleMaxHoursChange = (instructorId: string, hours: number | null) => {
     setInstructors((prev) =>
@@ -458,7 +449,6 @@ export function SubjectAssignmentView() {
     if (!removeSubjectTarget) return;
     const { instructorId, programId, subjectCode, teachingTermId, assignmentId } = removeSubjectTarget;
     
-    // Call backend API if we have the IDs
     if (teachingTermId && assignmentId) {
       try {
         await apiData.deleteAssignment(teachingTermId, assignmentId);
@@ -466,14 +456,13 @@ export function SubjectAssignmentView() {
         if (error instanceof ApiError) {
           toast.error(error.message);
         } else {
-          toast.error(error instanceof Error ? error.message : 'Failed to remove subject');
+          toast.error(error instanceof Error ? error.message : "Failed to remove subject");
         }
         setRemoveSubjectTarget(null);
         return;
       }
     }
     
-    // Update local state
     setInstructors((prev) =>
       prev.map((inst) => {
         if (inst.id !== instructorId) return inst;
@@ -493,24 +482,21 @@ export function SubjectAssignmentView() {
   const handleConfirmRemoveInstructor = async () => {
     if (!removeInstructorTarget) return;
     
-    // Find the entry for this instructor to get the teachingTermId
     const entry = apiData.entries?.find((e) => e.instructorName === removeInstructorTarget.name);
     
-    // Call backend API if we have a teaching term
     if (entry?.teachingTermId) {
       try {
-        await apiData.deleteTeachingTerm(entry.teachingTermId, true); // cascade=true to remove all assignments
+        await apiData.deleteTeachingTerm(entry.teachingTermId, true);
       } catch (error) {
         if (error instanceof ApiError) {
           toast.error(error.message);
         } else {
-          toast.error(error instanceof Error ? error.message : 'Failed to remove instructor');
+          toast.error(error instanceof Error ? error.message : "Failed to remove instructor");
         }
         return;
       }
     }
     
-    // Update local state
     setInstructors((prev) => prev.filter((i) => i.id !== removeInstructorTarget.id));
     setRemoveInstructorTarget(null);
     toast.success(`Instructor removed.`);
@@ -542,7 +528,6 @@ export function SubjectAssignmentView() {
       if (entry) {
         apiData.syncEntryFromInstructor(inst.name, inst);
       }
-      // Reload the backend-computed load classification after assignment changes.
       await apiData.reloadEntries();
     } catch (error) {
       if (error instanceof ApiError) {
@@ -604,20 +589,6 @@ export function SubjectAssignmentView() {
           ),
       ),
   );
-  const offeringRows = useMemo(() => flattenOfferingCoverage(offeringCoverage), [offeringCoverage]);
-  const filteredOfferingRows = offeringRows.filter((offering) => {
-    if (showUnassignedOnly && offering.assigned) return false;
-    if (!normalizedSearch) return true;
-    return (
-      offering.subjectCode.toLowerCase().includes(normalizedSearch) ||
-      offering.descriptiveTitle.toLowerCase().includes(normalizedSearch) ||
-      offering.programAbbrev.toLowerCase().includes(normalizedSearch) ||
-      offering.programName.toLowerCase().includes(normalizedSearch) ||
-      offering.department.toLowerCase().includes(normalizedSearch) ||
-      offering.instructors.some((instructor) => instructor.toLowerCase().includes(normalizedSearch))
-    );
-  });
-  const totalUnassignedOfferings = offeringRows.filter((offering) => !offering.assigned).length;
 
   function uniqueAssignedHours(inst: Instructor): number {
     const seen = new Set<string>();
@@ -661,29 +632,58 @@ export function SubjectAssignmentView() {
     { underload: 0, regular: 0, overload: 0 },
   );
 
-  if (apiData.instructors === null || apiData.entries === null || (apiData.entries.length > 0 && instructors.length === 0)) {
-    return (
-      <div className="mx-auto w-full max-w-7xl px-4 py-8">
-        <PageHeader
-          title="Subject Offering"
-        />
-        <div className="flex items-center justify-center py-20">
-          <Spinner />
-        </div>
-      </div>
-    );
-  }
+  const handleDepartmentChange = (newDeptId: string) => {
+    setSelectedDepartmentId(newDeptId);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newDeptId) next.set("department_id", newDeptId);
+      else next.delete("department_id");
+      return next;
+    });
+  };
+
+  const selectedDepartment = useMemo(
+    () => departments.find((d) => String(d.id) === selectedDepartmentId),
+    [departments, selectedDepartmentId],
+  );
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       {/* Page Header */}
       <PageHeader
-        title="Subject Offering"
-        actions={<Button type="button" variant="outline" block={false} onClick={() => setPolicyOpen(true)}>Load Policy</Button>}
+        title={
+          isRegistrar && selectedDepartment
+            ? `Subject Offering — ${selectedDepartment.abbrev}`
+            : "Subject Offering"
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              disabled={!selectedSyId || !selectedSemesterNumber}
+              onClick={() => setPolicyOpen(true)}
+            >
+              Load Policy
+            </Button>
+            <Link
+              to="/subject-offering/audit-logs"
+              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 font-body text-sm font-medium text-navy-700 transition-all duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 active:scale-[0.97] active:brightness-95 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
+              aria-label="Subject Offering Audit Logs"
+            >
+              <AuditLogIcon />
+              <span className="hidden sm:inline">Audit Logs</span>
+            </Link>
+          </div>
+        }
       />
 
       {/* Toolbar */}
       <SubjectAssignmentToolbar
+        departments={isRegistrar ? departments : undefined}
+        selectedDepartmentId={selectedDepartmentId}
+        onDepartmentChange={isRegistrar ? handleDepartmentChange : undefined}
         schoolYears={apiData.schoolYears}
         selectedSchoolYearId={apiData.selectedSchoolYearId}
         onSchoolYearChange={apiData.setSelectedSchoolYearId}
@@ -694,101 +694,6 @@ export function SubjectAssignmentView() {
         search={search}
         onSearchChange={setSearch}
       />
-
-      {/* Offering coverage */}
-      <section className="mt-6 space-y-4" aria-labelledby="offering-coverage-heading">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 id="offering-coverage-heading" className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
-              Subject Offerings
-            </h2>
-            <p className="mt-1 font-body text-sm text-slate-500 dark:text-slate-400">
-              Curriculum subjects available this term and their current instructor coverage.
-            </p>
-          </div>
-          <Checkbox
-            id="subject-offering-unassigned-only"
-            label="Show unassigned only"
-            checked={showUnassignedOnly}
-            onChange={setShowUnassignedOnly}
-          />
-        </div>
-
-        {offeringCoverageError && offeringCoverage === null ? (
-          <EmptyState title="Couldn't load subject offerings">{offeringCoverageError}</EmptyState>
-        ) : offeringCoverage === null ? (
-          <div className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Skeleton className="h-24 rounded-xl" />
-              <Skeleton className="h-24 rounded-xl" />
-            </div>
-            <Skeleton className="h-64 rounded-xl" />
-          </div>
-        ) : offeringRows.length === 0 ? (
-          <EmptyState title="No subject offerings">
-            There are no offerable subjects for the selected academic term.
-          </EmptyState>
-        ) : (
-          <>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <StatCard
-                label="Without instructor"
-                value={totalUnassignedOfferings}
-                hint="Offerings still requiring an assignment"
-                valueClassName={totalUnassignedOfferings > 0 ? "text-amber-600 dark:text-gold-300" : "text-emerald-600 dark:text-emerald-400"}
-              />
-              <StatCard
-                label="Total offerings"
-                value={offeringRows.length}
-                hint="Subjects available in the selected term"
-              />
-            </div>
-
-            {filteredOfferingRows.length === 0 ? (
-              <EmptyState title="No offerings found">
-                No subject offerings match the current search and coverage filter.
-              </EmptyState>
-            ) : (
-              <Table>
-                <TableHead>
-                  <TableHeader>Subject</TableHeader>
-                  <TableHeader>Program</TableHeader>
-                  <TableHeader className="hidden md:table-cell">Department</TableHeader>
-                  <TableHeader className="hidden sm:table-cell">Year</TableHeader>
-                  <TableHeader className="hidden lg:table-cell">Type</TableHeader>
-                  <TableHeader>Current Instructor</TableHeader>
-                  <TableHeader className="text-right">Status</TableHeader>
-                </TableHead>
-                <TableBody>
-                  {filteredOfferingRows.map((offering) => (
-                    <TableRow key={offering.key}>
-                      <TableCell>
-                        <span className="font-semibold text-navy-700 dark:text-mist-100">{offering.subjectCode}</span>
-                        <span className="block max-w-sm text-xs text-slate-500 dark:text-slate-400">{offering.descriptiveTitle}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-semibold text-navy-700 dark:text-mist-100">{offering.programAbbrev}</span>
-                        <span className="hidden max-w-48 truncate text-xs text-slate-500 dark:text-slate-400 xl:block">{offering.programName}</span>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">{offering.department}</TableCell>
-                      <TableCell className="hidden sm:table-cell">Year {offering.yearLevel}</TableCell>
-                      <TableCell className="hidden lg:table-cell">{offering.subjectType ?? "—"}</TableCell>
-                      <TableCell>
-                        {offering.instructors.length > 0 ? offering.instructors.join(", ") : <span className="text-slate-400 dark:text-slate-500">—</span>}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Badge tone={offering.assigned ? "emerald" : "gold"}>
-                          {offering.assigned ? "Assigned" : "Unassigned"}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </>
-        )}
-      </section>
 
       <SchedulingLoadPolicyDialog
         open={policyOpen}
@@ -810,7 +715,13 @@ export function SubjectAssignmentView() {
           <h2 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100 sm:text-base">
             Instructor Subject Assignments
           </h2>
-          <Button type="button" variant="primary" block={false} onClick={() => setAddInstructorModalOpen(true)}>
+          <Button
+            type="button"
+            variant="primary"
+            block={false}
+            disabled={apiData.instructors === null || apiData.entries === null}
+            onClick={() => setAddInstructorModalOpen(true)}
+          >
             <PlusIcon />
             <span className="hidden sm:inline">Add Existing Instructor</span>
             <span className="sm:hidden">Add Instructor</span>
@@ -819,11 +730,24 @@ export function SubjectAssignmentView() {
 
         {apiData.loadError ? (
           <EmptyState title="Couldn't load instructor assignments">{apiData.loadError}</EmptyState>
+        ) : apiData.instructors === null || apiData.entries === null ? (
+          <div className="flex items-center justify-center py-20">
+            <Spinner />
+          </div>
+        ) : isRegistrar && !selectedDepartmentId ? (
+          <EmptyState title="Select a department">
+            Choose a department from the filter above to view and manage its instructor subject assignments.
+          </EmptyState>
         ) : filteredInstructors.length === 0 ? (
           <EmptyState title="No instructors found">
             {apiData.entries && apiData.entries.length > 0
               ? "No instructors match your current search criteria."
-              : <>No instructors are assigned subjects for this term. Click <strong>Add Existing Instructor</strong> to assign one.</>}
+              : (
+                <>
+                  No instructors are assigned subjects for this term. Click{" "}
+                  <strong>Add Existing Instructor</strong> to assign one.
+                </>
+              )}
           </EmptyState>
         ) : (
           <Accordion>
@@ -846,13 +770,13 @@ export function SubjectAssignmentView() {
                     });
                   }}
                   onRemoveSubject={(programId, subjectCode) => {
-                    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+                    const matchedEntry = apiData.entries?.find((e) => e.instructorName === inst.name);
                     setRemoveSubjectTarget({
                       instructorId: inst.id,
                       programId,
                       subjectCode,
-                      teachingTermId: entry?.teachingTermId ?? null,
-                      assignmentId: entry?.subjectAssignmentIds?.get(subjectCode) ?? null,
+                      teachingTermId: matchedEntry?.teachingTermId ?? null,
+                      assignmentId: matchedEntry?.subjectAssignmentIds?.get(subjectCode) ?? null,
                     });
                   }}
                   onRemoveProgram={(programId) => {
@@ -866,14 +790,17 @@ export function SubjectAssignmentView() {
                   }}
                   onUpdateAssignment={() => handleUpdateAssignment(inst.id)}
                   onViewTeachingTerm={() => {
-                    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
                     if (entry?.teachingTermId) {
-                      navigate(`/teaching-terms/${entry.teachingTermId}`);
+                      window.open(`/teaching-terms/${entry.teachingTermId}`, "_blank");
                     }
                   }}
-                  onViewAvatar={inst.avatarUrl ? () => setAvatarViewer({ src: inst.avatarUrl!, alt: `${inst.name} profile photo` }) : undefined}
+                  onViewAvatar={() => {
+                    if (inst.avatarUrl) {
+                      setAvatarViewer({ src: inst.avatarUrl, alt: `${inst.name}'s photo` });
+                    }
+                  }}
                   onRemoveInstructor={() => setRemoveInstructorTarget(inst)}
-                  hoursRole={user?.role === "registrar" || user?.role === "dean" ? user.role : undefined}
+                  hoursRole={isRegistrar ? "registrar" : "dean"}
                   teachingTermExists={entry?.teachingTermId != null}
                   hoursAdjustmentRequest={hoursRequest}
                   onRequestHoursAdjustment={() => openRegistrarHoursRequest(inst)}
@@ -890,18 +817,15 @@ export function SubjectAssignmentView() {
         )}
       </div>
 
-      {/* Sticky Bottom Summary Bar Component */}
-      {filteredInstructors.length > 0 && (
-        <AssignmentSummaryFooter
-          totalInstructors={totalInstructors}
-          totalPrograms={totalPrograms}
-          totalSubjectsAssigned={totalSubjectsAssigned}
-          totalWeeklyHours={totalWeeklyHours}
-          exceedingInstructorsCount={exceedingInstructors.length}
-        />
-      )}
+      <AssignmentSummaryFooter
+        totalInstructors={totalInstructors}
+        totalPrograms={totalPrograms}
+        totalSubjectsAssigned={totalSubjectsAssigned}
+        totalWeeklyHours={totalWeeklyHours}
+        exceedingInstructorsCount={exceedingInstructors.length}
+      />
 
-      {/* Feature Modals */}
+      {/* Add Instructor Modal */}
       <AddInstructorModal
         open={addInstructorModalOpen}
         onClose={() => setAddInstructorModalOpen(false)}
@@ -909,122 +833,109 @@ export function SubjectAssignmentView() {
         onAdd={handleAddInstructor}
       />
 
-      {avatarViewer && (
-        <ImageViewer
-          open
-          src={avatarViewer.src}
-          alt={avatarViewer.alt}
-          onClose={() => setAvatarViewer(null)}
-        />
-      )}
-
+      {/* Add Program Modal */}
       <AddProgramModal
         open={addProgramTarget !== null}
         onClose={() => setAddProgramTarget(null)}
-        onAdd={handleAddProgram}
         programOptions={availableProgramOptions}
+        onAdd={handleAddProgram}
       />
 
-      <AssignSubjectModal
-        open={assignSubjectTarget !== null}
-        availableSubjects={assignSubjectTarget ? (availableSubjectsByProgram.get(assignSubjectTarget.programId) ?? []) : []}
-        assignedSubjectCodes={assignSubjectTarget?.assignedCodes ?? new Set()}
-        instructorName={assignSubjectTarget ? instructors.find((i) => i.id === assignSubjectTarget.instructorId)?.name : undefined}
-        onClose={() => setAssignSubjectTarget(null)}
-        onAssign={handleAssignSubject}
-      />
+      {/* Assign Subject Modal */}
+      {assignSubjectTarget && (
+        <AssignSubjectModal
+          open={true}
+          onClose={() => setAssignSubjectTarget(null)}
+          availableSubjects={availableSubjectsByProgram.get(assignSubjectTarget.programId) ?? []}
+          assignedSubjectCodes={assignSubjectTarget.assignedCodes}
+          onAssign={handleAssignSubject}
+        />
+      )}
 
-      {/* Action Dialogs */}
+      {/* Confirm Remove Subject Dialog */}
       <ConfirmDialog
         open={removeSubjectTarget !== null}
         onClose={() => setRemoveSubjectTarget(null)}
         title="Remove Subject Assignment"
-        confirmLabel="Remove Subject"
-        loadingLabel="Removing…"
+        confirmLabel="Remove"
+        loadingLabel="Removing..."
         confirmVariant="danger"
         onConfirm={handleConfirmRemoveSubject}
       >
-        <p>
-          Are you sure you want to remove subject <strong>{removeSubjectTarget?.subjectCode}</strong> from this program load?
-        </p>
+        {removeSubjectTarget
+          ? `Are you sure you want to remove ${removeSubjectTarget.subjectCode} from this instructor?`
+          : ""}
       </ConfirmDialog>
 
+      {/* Confirm Remove Instructor Dialog */}
       <ConfirmDialog
         open={removeInstructorTarget !== null}
         onClose={() => setRemoveInstructorTarget(null)}
         title="Remove Instructor"
-        confirmLabel="Remove Instructor"
-        loadingLabel="Removing…"
+        confirmLabel="Remove"
+        loadingLabel="Removing..."
         confirmVariant="danger"
         onConfirm={handleConfirmRemoveInstructor}
       >
-        <p>
-          Are you sure you want to remove <strong>{removeInstructorTarget?.name}</strong> from teaching loads?
-        </p>
+        {removeInstructorTarget
+          ? `Are you sure you want to remove ${removeInstructorTarget.name} from this term's subject assignments? All assigned subjects will be removed.`
+          : ""}
       </ConfirmDialog>
 
-      <ConfirmDialog
-        open={blocker.state === "blocked"}
-        onClose={() => blocker.reset?.()}
-        title="Discard unsaved assignments?"
-        confirmLabel="Discard"
-        loadingLabel="Discarding…"
-        confirmVariant="danger"
-        onConfirm={async () => blocker.proceed?.()}
-      >
-        You have unsaved subject assignments. Leaving this page will discard them.
-      </ConfirmDialog>
+      {/* Profile Photo Viewer */}
+      <ImageViewer
+        open={avatarViewer !== null}
+        src={avatarViewer?.src ?? ""}
+        alt={avatarViewer?.alt ?? ""}
+        onClose={() => setAvatarViewer(null)}
+      />
 
-      <ConfirmDialog
-        open={reloadPromptOpen}
-        onClose={() => setReloadPromptOpen(false)}
-        title="Discard unsaved assignments?"
-        confirmLabel="Reload"
-        loadingLabel="Reloading…"
-        confirmVariant="danger"
-        onConfirm={async () => confirmReload()}
-      >
-        You have unsaved subject assignments. Reloading will discard them.
-      </ConfirmDialog>
-
-      {/* Request Max Weekly Hours Adjustment (Registrar) */}
+      {/* Registrar Hours Adjustment Request Dialog */}
       <Modal
         open={hoursRequestTarget !== null}
         onClose={() => !hoursActionBusy && setHoursRequestTarget(null)}
-        title="Request Max Weekly Hours Adjustment"
+        title="Request Maximum Weekly Hours Adjustment"
       >
-        <div className="space-y-4 font-body text-sm text-slate-600 dark:text-slate-300">
-          <p>
-            Request the Dean of <strong>{hoursRequestTarget?.department}</strong> to authorize a
-            new limit for <strong>{hoursRequestTarget?.name}</strong>. The current limit remains in
-            force until approval; approval applies the requested value immediately.
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Submit a request to adjust the maximum weekly teaching hours for{" "}
+            <strong>{hoursRequestTarget?.name}</strong>. The Dean will review and decide on this request.
           </p>
-          {hoursActionError && <p className="text-sm text-red-600 dark:text-red-400">{hoursActionError}</p>}
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Requested Max Weekly Hours *</span>
+
+          <div>
+            <label htmlFor="req-hours" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              Requested Max Weekly Hours
+            </label>
             <input
+              id="req-hours"
               type="number"
-              min={0}
+              min={1}
               max={60}
               value={requestedHours ?? ""}
-              onChange={(event) => {
-                const raw = event.target.value;
-                setRequestedHours(raw === "" ? null : Math.min(60, Math.max(0, Number(raw))));
-              }}
-              className={inputClassName}
+              onChange={(e) => setRequestedHours(e.target.value ? Number(e.target.value) : null)}
+              className={`${inputClassName} mt-1 w-full`}
             />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Reason *</span>
+          </div>
+
+          <div>
+            <label htmlFor="req-reason" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              Reason for Adjustment <span className="text-red-500">*</span>
+            </label>
             <textarea
+              id="req-reason"
+              rows={3}
+              placeholder="e.g. Additional general education classes needed this semester."
               value={requestReason}
-              onChange={(event) => setRequestReason(event.target.value)}
-              rows={4}
-              placeholder="Explain why this instructor's weekly limit must change."
-              className={`${inputClassName} resize-y`}
+              onChange={(e) => setRequestReason(e.target.value)}
+              className={`${inputClassName} mt-1 w-full`}
             />
-          </label>
-          <div className="flex justify-end gap-2">
+          </div>
+
+          {hoursActionError && (
+            <p className="text-xs text-red-600 dark:text-red-400">{hoursActionError}</p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -1038,44 +949,59 @@ export function SubjectAssignmentView() {
               type="button"
               variant="primary"
               block={false}
-              disabled={!requestReason.trim() || requestedHours == null || requestedHours < 0 || requestedHours > 60}
               isLoading={hoursActionBusy}
-              loadingLabel="Sending…"
+              disabled={!requestReason.trim() || requestedHours == null || requestedHours <= 0}
               onClick={submitHoursRequest}
             >
-              Send Request
+              Submit Request
             </Button>
           </div>
         </div>
       </Modal>
 
-      {/* Review Max Weekly Hours Request (Dean) */}
+      {/* Dean Review Hours Adjustment Dialog */}
       <Modal
         open={hoursReviewTarget !== null}
         onClose={() => !hoursActionBusy && setHoursReviewTarget(null)}
-        title="Review Max Weekly Hours Request"
+        title="Review Hours Adjustment Request"
       >
-        <div className="space-y-4 font-body text-sm text-slate-600 dark:text-slate-300">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-            <p><strong>{hoursReviewTarget?.instructor?.full_name}</strong></p>
-            <p className="mt-1">
-              Current: {hoursReviewTarget?.term?.current_max_weekly_hours} hrs · Requested:{" "}
-              <strong>{hoursReviewTarget?.requested_hours} hrs</strong>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm dark:border-white/10 dark:bg-white/5">
+            <p className="font-semibold text-navy-700 dark:text-mist-100">
+              {hoursReviewTarget?.instructor.full_name}
             </p>
-            <p className="mt-2 whitespace-pre-wrap">Reason: {hoursReviewTarget?.reason}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Requested hours: <strong>{hoursReviewTarget?.requested_hours} hrs/week</strong>
+            </p>
+            {hoursReviewTarget?.reason && (
+              <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                &ldquo;{hoursReviewTarget.reason}&rdquo;
+              </p>
+            )}
+            <p className="mt-1 text-[11px] text-slate-400">
+              Requested by {hoursReviewTarget?.requested_by.name} ({hoursReviewTarget?.requested_by.role})
+            </p>
           </div>
-          {hoursActionError && <p className="text-sm text-red-600 dark:text-red-400">{hoursActionError}</p>}
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Decision message (optional)</span>
+
+          <div>
+            <label htmlFor="decision-msg" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              Decision Note / Feedback (optional)
+            </label>
             <textarea
+              id="decision-msg"
+              rows={2}
+              placeholder="Add an optional comment for the registrar..."
               value={decisionMessage}
-              onChange={(event) => setDecisionMessage(event.target.value)}
-              rows={3}
-              placeholder="Add guidance for the Registrar."
-              className={`${inputClassName} resize-y`}
+              onChange={(e) => setDecisionMessage(e.target.value)}
+              className={`${inputClassName} mt-1 w-full`}
             />
-          </label>
-          <div className="flex justify-end gap-2">
+          </div>
+
+          {hoursActionError && (
+            <p className="text-xs text-red-600 dark:text-red-400">{hoursActionError}</p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -1089,8 +1015,8 @@ export function SubjectAssignmentView() {
               type="button"
               variant="danger"
               block={false}
-              disabled={hoursActionBusy}
-              onClick={() => void decideHoursRequest("rejected")}
+              isLoading={hoursActionBusy}
+              onClick={() => decideHoursRequest("rejected")}
             >
               Reject
             </Button>
@@ -1099,14 +1025,32 @@ export function SubjectAssignmentView() {
               variant="primary"
               block={false}
               isLoading={hoursActionBusy}
-              loadingLabel="Saving…"
-              onClick={() => void decideHoursRequest("approved")}
+              onClick={() => decideHoursRequest("approved")}
             >
               Approve
             </Button>
           </div>
         </div>
       </Modal>
+
+      {/* Unsaved changes confirmation dialog */}
+      <ConfirmDialog
+        open={blocker.state === "blocked" || reloadPromptOpen}
+        onClose={() => {
+          if (blocker.state === "blocked") blocker.reset();
+          else setReloadPromptOpen(false);
+        }}
+        title="Unsaved Changes"
+        confirmLabel="Leave without saving"
+        loadingLabel="Leaving..."
+        confirmVariant="danger"
+        onConfirm={async () => {
+          if (blocker.state === "blocked") blocker.proceed();
+          else confirmReload();
+        }}
+      >
+        You have unsaved changes to instructor assignments. Are you sure you want to leave without saving?
+      </ConfirmDialog>
     </div>
   );
 }

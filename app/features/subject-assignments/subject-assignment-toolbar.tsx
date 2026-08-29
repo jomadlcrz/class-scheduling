@@ -2,10 +2,14 @@ import { SearchIcon } from "~/components/ui/icons";
 import { Card } from "~/components/ui/card";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import type { Department } from "~/types/department";
 import type { SchoolYearOption } from "~/services/school-year.service";
 import type { Semester } from "~/types/semester";
 
 type SubjectAssignmentToolbarProps = {
+  departments?: Department[];
+  selectedDepartmentId?: string;
+  onDepartmentChange?: (value: string) => void;
   schoolYears: SchoolYearOption[];
   selectedSchoolYearId: string;
   onSchoolYearChange: (value: string) => void;
@@ -18,6 +22,9 @@ type SubjectAssignmentToolbarProps = {
 };
 
 export function SubjectAssignmentToolbar({
+  departments,
+  selectedDepartmentId,
+  onDepartmentChange,
   schoolYears,
   selectedSchoolYearId,
   onSchoolYearChange,
@@ -29,9 +36,40 @@ export function SubjectAssignmentToolbar({
   onSearchChange,
 }: SubjectAssignmentToolbarProps) {
   const academicSemesters = semesters.filter((semester) => semester.semesterNumber !== 3);
+  const showDepartments = Boolean(departments && departments.length > 0 && onDepartmentChange);
 
   return (
-    <Card className="mt-4 grid gap-3 p-3 sm:gap-4 sm:p-4 sm:grid-cols-2 lg:grid-cols-[minmax(11rem,.8fr)_minmax(11rem,.8fr)_minmax(17rem,1.5fr)]">
+    <Card
+      className={`mt-4 grid gap-3 p-3 sm:gap-4 sm:p-4 sm:grid-cols-2 ${
+        showDepartments
+          ? "lg:grid-cols-[minmax(13rem,1fr)_minmax(10rem,.8fr)_minmax(10rem,.8fr)_minmax(14rem,1.2fr)]"
+          : "lg:grid-cols-[minmax(11rem,.8fr)_minmax(11rem,.8fr)_minmax(17rem,1.5fr)]"
+      }`}
+    >
+      {showDepartments && (
+        <FieldChrome id="subject-assignment-department" label="Department">
+          <Select
+            items={(departments ?? []).map((dept) => ({
+              value: String(dept.id),
+              label: `${dept.abbrev} — ${dept.name}`,
+            }))}
+            value={selectedDepartmentId ?? ""}
+            onValueChange={(value) => onDepartmentChange?.(value ?? "")}
+          >
+            <SelectTrigger id="subject-assignment-department">
+              <SelectValue placeholder="Select department" />
+            </SelectTrigger>
+            <SelectContent>
+              {(departments ?? []).map((dept) => (
+                <SelectItem key={dept.id} value={String(dept.id)}>
+                  {dept.abbrev} — {dept.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+      )}
+
       <FieldChrome id="subject-assignment-school-year" label="School Year">
         <Select
           items={schoolYears.map((year) => ({ value: String(year.id), label: year.schoolYear }))}
@@ -50,6 +88,7 @@ export function SubjectAssignmentToolbar({
           </SelectContent>
         </Select>
       </FieldChrome>
+
       <FieldChrome id="subject-assignment-semester" label="Semester">
         <Select
           items={academicSemesters.map((semester) => ({
@@ -71,7 +110,8 @@ export function SubjectAssignmentToolbar({
           </SelectContent>
         </Select>
       </FieldChrome>
-      <div className="sm:col-span-2 lg:col-span-1">
+
+      <div className={showDepartments ? "" : "sm:col-span-2 lg:col-span-1"}>
         <FieldChrome id="subject-assignment-search" label="Search">
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-slate-500">
