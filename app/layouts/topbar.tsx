@@ -103,7 +103,6 @@ const SEARCH_ACTIONS: TopbarAction[] = [
   { label: "Program Curricula", to: "/program-curricula", roles: ["registrar"] },
   { label: "Subject Offering", to: "/subject-offering", roles: ["registrar", "dean"] },
   { label: "Assignment Audit Logs", to: "/subject-offering/audit-logs", roles: ["registrar", "dean"] },
-  { label: "Hours Adjustment Requests", to: "/hours-adjustment-requests", roles: ["registrar", "dean"] },
   { label: "Major Schedules", to: "/major-schedules", roles: ["registrar", "dean"] },
   { label: "Schedule Responses", to: "/schedule-responses", roles: ["registrar", "dean", "faculty"] },
   { label: "Scheduling Hub", to: "/schedules", roles: ["registrar"] },

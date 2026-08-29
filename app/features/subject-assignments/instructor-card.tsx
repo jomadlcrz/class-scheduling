@@ -44,6 +44,8 @@ const LOAD_BADGES: Record<NonNullable<InstructorData["loadClassification"]>, { l
   overload: { label: "Overload", tone: "red" },
 };
 
+import type { HoursAdjustmentRequest } from "~/types/authority-workflow";
+
 type InstructorCardProps = {
   instructor: InstructorData;
   hasChanges: boolean;
@@ -56,6 +58,11 @@ type InstructorCardProps = {
   onViewTeachingTerm?: () => void;
   onViewAvatar?: () => void;
   onRemoveInstructor: () => void;
+  hoursRole?: "dean" | "registrar";
+  teachingTermExists?: boolean;
+  hoursAdjustmentRequest?: HoursAdjustmentRequest;
+  onRequestHoursAdjustment?: () => void;
+  onReviewHoursAdjustment?: () => void;
 };
 
 export function InstructorCard({
@@ -70,6 +77,11 @@ export function InstructorCard({
   onViewTeachingTerm,
   onViewAvatar,
   onRemoveInstructor,
+  hoursRole,
+  teachingTermExists = false,
+  hoursAdjustmentRequest,
+  onRequestHoursAdjustment,
+  onReviewHoursAdjustment,
 }: InstructorCardProps) {
   const subjectHours = new Map<string, number>();
   for (const prog of instructor.programs) {
@@ -142,11 +154,14 @@ export function InstructorCard({
                 type="number"
                 min="0"
                 value={maxHours ?? ""}
+                disabled={hoursRole === "registrar"}
                 onChange={(e) => {
                   const v = e.target.value;
                   onMaxHoursChange(v === "" ? null : Math.max(0, parseInt(v) || 0));
                 }}
-                className="w-12 py-1 text-center font-body text-xs font-bold text-navy-800 placeholder:text-slate-300 focus:outline-none dark:text-mist-100 dark:placeholder:text-slate-600"
+                className={`w-12 py-1 text-center font-body text-xs font-bold text-navy-800 placeholder:text-slate-300 focus:outline-none dark:text-mist-100 dark:placeholder:text-slate-600 ${
+                  hoursRole === "registrar" ? "cursor-not-allowed opacity-75" : ""
+                }`}
               />
               <span className="border-l border-slate-200 px-2 py-1 font-body text-xs text-slate-400 dark:border-white/10">
                 hrs
@@ -167,8 +182,8 @@ export function InstructorCard({
                   statusBadgeType === "exceeds"
                     ? "bg-red-500 dark:bg-red-500"
                     : statusBadgeType === "approaching"
-                    ? "bg-amber-500 dark:bg-amber-500"
-                    : "bg-emerald-500 dark:bg-emerald-500"
+                    ? "bg-amber-500 dark:bg-amber-400"
+                    : "bg-emerald-500 dark:bg-emerald-400"
                 }`}
                 style={{ width: `${progressPercent}%` }}
               />
@@ -176,7 +191,7 @@ export function InstructorCard({
           </div>
 
           <div className="flex flex-col font-body text-xs">
-            <span className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">Remaining Hours</span>
+            <span className="uppercase tracking-wide text-slate-400 dark:text-slate-500">Remaining Hours</span>
             <span
               className={`mt-0.5 font-bold ${
                 remainingHours == null
@@ -196,7 +211,7 @@ export function InstructorCard({
             {statusBadgeType === "within" && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 font-body text-xs font-medium text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                 <CheckIcon size={14} />
-                <span>Within Load</span>
+                <span>Within Limit</span>
               </span>
             )}
             {statusBadgeType === "approaching" && (
@@ -232,14 +247,39 @@ export function InstructorCard({
             Add Existing Program
           </Button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {hoursRole === "registrar" && teachingTermExists && onRequestHoursAdjustment && (
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                disabled={hoursAdjustmentRequest?.status === "pending"}
+                onClick={onRequestHoursAdjustment}
+              >
+                {hoursAdjustmentRequest?.status === "pending"
+                  ? "Adjustment Pending"
+                  : hoursAdjustmentRequest?.status === "rejected"
+                    ? "Request Again (Rejected)"
+                    : "Request Hours Adjustment"}
+              </Button>
+            )}
+            {hoursRole === "dean" && hoursAdjustmentRequest?.status === "pending" && onReviewHoursAdjustment && (
+              <Button
+                type="button"
+                variant="primary"
+                block={false}
+                onClick={onReviewHoursAdjustment}
+              >
+                Review Hours Request
+              </Button>
+            )}
             {onViewTeachingTerm && (
               <Button type="button" variant="outline" block={false} onClick={onViewTeachingTerm}>
                 <EyeIcon />
                 View Term
               </Button>
             )}
-              <Button type="button" variant="outline" block={false} disabled={!hasChanges} onClick={onUpdateAssignment}>
+            <Button type="button" variant="outline" block={false} disabled={!hasChanges} onClick={onUpdateAssignment}>
               <EditIcon />
               Assign
             </Button>

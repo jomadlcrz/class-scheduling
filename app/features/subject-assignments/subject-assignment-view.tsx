@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -8,20 +8,24 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { PlusIcon } from "~/components/ui/icons";
-import { ConfirmDialog } from "~/components/ui/modal";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { ImageViewer } from "~/components/ui/image-viewer";
+import { inputClassName } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
 import { StatCard } from "~/components/ui/stat-card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { SubjectAssignmentToolbar } from "~/features/subject-assignments/subject-assignment-toolbar";
 import { SchedulingLoadPolicyDialog } from "~/features/subject-assignments/scheduling-load-policy-dialog";
 import { useSubjectAssignments } from "~/features/subject-assignments/use-subject-assignments";
+import { useAuth } from "~/hooks/use-auth";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { facultyKey, formatInstructorName } from "~/lib/faculty-load";
+import { authorityWorkflowService } from "~/services/authority-workflow.service";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
+import type { HoursAdjustmentRequest } from "~/types/authority-workflow";
 import type { OfferingCoverage } from "~/types/offering-coverage";
 import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assignment-modals";
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
@@ -130,6 +134,9 @@ export function SubjectAssignmentView() {
     deanService.listDepartmentPrograms().then(setProgramOptions).catch(() => {});
   }, []);
 
+  // Auth context
+  const { user } = useAuth();
+
   // Search filter
   const [search, setSearch] = useState("");
   const [showUnassignedOnly, setShowUnassignedOnly] = useState(true);
@@ -137,6 +144,100 @@ export function SubjectAssignmentView() {
 
   // Instructors list — starts empty, populated from API data
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+
+  // Hours Adjustment Requests state (Registrar request / Dean review)
+  const [hoursRequests, setHoursRequests] = useState<HoursAdjustmentRequest[]>([]);
+  const [hoursRequestTarget, setHoursRequestTarget] = useState<Instructor | null>(null);
+  const [hoursReviewTarget, setHoursReviewTarget] = useState<HoursAdjustmentRequest | null>(null);
+  const [requestedHours, setRequestedHours] = useState<number | null>(null);
+  const [requestReason, setRequestReason] = useState("");
+  const [decisionMessage, setDecisionMessage] = useState("");
+  const [hoursActionBusy, setHoursActionBusy] = useState(false);
+  const [hoursActionError, setHoursActionError] = useState<string | null>(null);
+
+  const reloadHoursRequests = useCallback(async () => {
+    if (!selectedSyId || !selectedSemesterNumber) {
+      setHoursRequests([]);
+      return;
+    }
+    try {
+      const list = await authorityWorkflowService.listHoursAdjustmentRequests({
+        syId: selectedSyId,
+        semesterNumber: selectedSemesterNumber,
+      });
+      setHoursRequests(list);
+    } catch {
+      setHoursRequests([]);
+    }
+  }, [selectedSyId, selectedSemesterNumber]);
+
+  useEffect(() => {
+    void reloadHoursRequests();
+  }, [reloadHoursRequests]);
+
+  const latestHoursRequest = (teachingTermId: number | null | undefined) =>
+    teachingTermId == null
+      ? undefined
+      : hoursRequests.find((row) => row.teaching_term_id === teachingTermId);
+
+  const openRegistrarHoursRequest = (inst: Instructor) => {
+    setHoursRequestTarget(inst);
+    setRequestedHours(inst.maxWeeklyHours === 40 ? 41 : Math.min(60, (inst.maxWeeklyHours ?? 40) + 1));
+    setRequestReason("");
+    setHoursActionError(null);
+  };
+
+  const submitHoursRequest = async () => {
+    if (!hoursRequestTarget) return;
+    const entry = apiData.entries?.find((e) => e.instructorName === hoursRequestTarget.name);
+    if (!entry?.teachingTermId || !requestReason.trim() || requestedHours == null) return;
+    setHoursActionBusy(true);
+    setHoursActionError(null);
+    try {
+      const { message, request: created } = await authorityWorkflowService.requestHoursAdjustment(
+        entry.teachingTermId,
+        requestedHours,
+        requestReason.trim(),
+      );
+      if (message) toast.success(message);
+      setHoursRequests((prev) => [created, ...prev.filter((row) => row.id !== created.id)]);
+      setHoursRequestTarget(null);
+    } catch (error) {
+      setHoursActionError(error instanceof Error ? error.message : "Unable to send the request.");
+    } finally {
+      setHoursActionBusy(false);
+    }
+  };
+
+  const decideHoursRequest = async (decision: "approved" | "rejected") => {
+    if (!hoursReviewTarget) return;
+    setHoursActionBusy(true);
+    setHoursActionError(null);
+    try {
+      const { message, request: updated } = await authorityWorkflowService.decideHoursAdjustment(
+        hoursReviewTarget.id,
+        decision,
+        decisionMessage.trim() || undefined,
+      );
+      if (message) toast.success(message);
+      setHoursRequests((prev) => prev.map((row) => (row.id === updated.id ? updated : row)));
+      if (decision === "approved") {
+        setInstructors((prev) =>
+          prev.map((i) =>
+            i.instructorProfileId === updated.instructor.instructor_profile_id
+              ? { ...i, maxWeeklyHours: updated.requested_hours }
+              : i,
+          ),
+        );
+      }
+      setHoursReviewTarget(null);
+      setDecisionMessage("");
+    } catch (error) {
+      setHoursActionError(error instanceof Error ? error.message : "Unable to record decision.");
+    } finally {
+      setHoursActionBusy(false);
+    }
+  };
 
   // Track program names from the subjects data for lookup when adding instructors
   const programNames = useMemo(() => {
@@ -726,51 +827,65 @@ export function SubjectAssignmentView() {
           </EmptyState>
         ) : (
           <Accordion>
-            {filteredInstructors.map((inst) => (
-              <InstructorCard
-                key={inst.id}
-                instructor={inst}
-                hasChanges={hasAssignmentChanges(inst)}
-                onMaxHoursChange={(hours) => handleMaxHoursChange(inst.id, hours)}
-                onAddProgram={() => setAddProgramTarget(inst.id)}
-                onAssignSubject={(programId) => {
-                  const prog = inst.programs.find((p) => p.id === programId);
-                  setAssignSubjectTarget({
-                    instructorId: inst.id,
-                    programId,
-                    assignedCodes: new Set(prog?.subjects.map((s) => s.subjectCode) ?? []),
-                  });
-                }}
-                onRemoveSubject={(programId, subjectCode) => {
-                  const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
-                  setRemoveSubjectTarget({
-                    instructorId: inst.id,
-                    programId,
-                    subjectCode,
-                    teachingTermId: entry?.teachingTermId ?? null,
-                    assignmentId: entry?.subjectAssignmentIds?.get(subjectCode) ?? null,
-                  });
-                }}
-                onRemoveProgram={(programId) => {
-                  setInstructors((prev) =>
-                    prev.map((i) =>
-                      i.id === inst.id
-                        ? { ...i, programs: i.programs.filter((p) => p.id !== programId) }
-                        : i,
-                    ),
-                  );
-                }}
-                onUpdateAssignment={() => handleUpdateAssignment(inst.id)}
-                onViewTeachingTerm={() => {
-                  const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
-                  if (entry?.teachingTermId) {
-                    navigate(`/teaching-terms/${entry.teachingTermId}`);
-                  }
-                }}
-                onViewAvatar={inst.avatarUrl ? () => setAvatarViewer({ src: inst.avatarUrl!, alt: `${inst.name} profile photo` }) : undefined}
-                onRemoveInstructor={() => setRemoveInstructorTarget(inst)}
-              />
-            ))}
+            {filteredInstructors.map((inst) => {
+              const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+              const hoursRequest = latestHoursRequest(entry?.teachingTermId);
+              return (
+                <InstructorCard
+                  key={inst.id}
+                  instructor={inst}
+                  hasChanges={hasAssignmentChanges(inst)}
+                  onMaxHoursChange={(hours) => handleMaxHoursChange(inst.id, hours)}
+                  onAddProgram={() => setAddProgramTarget(inst.id)}
+                  onAssignSubject={(programId) => {
+                    const prog = inst.programs.find((p) => p.id === programId);
+                    setAssignSubjectTarget({
+                      instructorId: inst.id,
+                      programId,
+                      assignedCodes: new Set(prog?.subjects.map((s) => s.subjectCode) ?? []),
+                    });
+                  }}
+                  onRemoveSubject={(programId, subjectCode) => {
+                    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+                    setRemoveSubjectTarget({
+                      instructorId: inst.id,
+                      programId,
+                      subjectCode,
+                      teachingTermId: entry?.teachingTermId ?? null,
+                      assignmentId: entry?.subjectAssignmentIds?.get(subjectCode) ?? null,
+                    });
+                  }}
+                  onRemoveProgram={(programId) => {
+                    setInstructors((prev) =>
+                      prev.map((i) =>
+                        i.id === inst.id
+                          ? { ...i, programs: i.programs.filter((p) => p.id !== programId) }
+                          : i,
+                      ),
+                    );
+                  }}
+                  onUpdateAssignment={() => handleUpdateAssignment(inst.id)}
+                  onViewTeachingTerm={() => {
+                    const entry = apiData.entries?.find((e) => e.instructorName === inst.name);
+                    if (entry?.teachingTermId) {
+                      navigate(`/teaching-terms/${entry.teachingTermId}`);
+                    }
+                  }}
+                  onViewAvatar={inst.avatarUrl ? () => setAvatarViewer({ src: inst.avatarUrl!, alt: `${inst.name} profile photo` }) : undefined}
+                  onRemoveInstructor={() => setRemoveInstructorTarget(inst)}
+                  hoursRole={user?.role === "registrar" || user?.role === "dean" ? user.role : undefined}
+                  teachingTermExists={entry?.teachingTermId != null}
+                  hoursAdjustmentRequest={hoursRequest}
+                  onRequestHoursAdjustment={() => openRegistrarHoursRequest(inst)}
+                  onReviewHoursAdjustment={() => {
+                    if (!hoursRequest) return;
+                    setHoursReviewTarget(hoursRequest);
+                    setDecisionMessage("");
+                    setHoursActionError(null);
+                  }}
+                />
+              );
+            })}
           </Accordion>
         )}
       </div>
@@ -871,6 +986,127 @@ export function SubjectAssignmentView() {
       >
         You have unsaved subject assignments. Reloading will discard them.
       </ConfirmDialog>
+
+      {/* Request Max Weekly Hours Adjustment (Registrar) */}
+      <Modal
+        open={hoursRequestTarget !== null}
+        onClose={() => !hoursActionBusy && setHoursRequestTarget(null)}
+        title="Request Max Weekly Hours Adjustment"
+      >
+        <div className="space-y-4 font-body text-sm text-slate-600 dark:text-slate-300">
+          <p>
+            Request the Dean of <strong>{hoursRequestTarget?.department}</strong> to authorize a
+            new limit for <strong>{hoursRequestTarget?.name}</strong>. The current limit remains in
+            force until approval; approval applies the requested value immediately.
+          </p>
+          {hoursActionError && <p className="text-sm text-red-600 dark:text-red-400">{hoursActionError}</p>}
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Requested Max Weekly Hours *</span>
+            <input
+              type="number"
+              min={0}
+              max={60}
+              value={requestedHours ?? ""}
+              onChange={(event) => {
+                const raw = event.target.value;
+                setRequestedHours(raw === "" ? null : Math.min(60, Math.max(0, Number(raw))));
+              }}
+              className={inputClassName}
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Reason *</span>
+            <textarea
+              value={requestReason}
+              onChange={(event) => setRequestReason(event.target.value)}
+              rows={4}
+              placeholder="Explain why this instructor's weekly limit must change."
+              className={`${inputClassName} resize-y`}
+            />
+          </label>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              disabled={hoursActionBusy}
+              onClick={() => setHoursRequestTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              block={false}
+              disabled={!requestReason.trim() || requestedHours == null || requestedHours < 0 || requestedHours > 60}
+              isLoading={hoursActionBusy}
+              loadingLabel="Sending…"
+              onClick={submitHoursRequest}
+            >
+              Send Request
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Review Max Weekly Hours Request (Dean) */}
+      <Modal
+        open={hoursReviewTarget !== null}
+        onClose={() => !hoursActionBusy && setHoursReviewTarget(null)}
+        title="Review Max Weekly Hours Request"
+      >
+        <div className="space-y-4 font-body text-sm text-slate-600 dark:text-slate-300">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+            <p><strong>{hoursReviewTarget?.instructor?.full_name}</strong></p>
+            <p className="mt-1">
+              Current: {hoursReviewTarget?.term?.current_max_weekly_hours} hrs · Requested:{" "}
+              <strong>{hoursReviewTarget?.requested_hours} hrs</strong>
+            </p>
+            <p className="mt-2 whitespace-pre-wrap">Reason: {hoursReviewTarget?.reason}</p>
+          </div>
+          {hoursActionError && <p className="text-sm text-red-600 dark:text-red-400">{hoursActionError}</p>}
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Decision message (optional)</span>
+            <textarea
+              value={decisionMessage}
+              onChange={(event) => setDecisionMessage(event.target.value)}
+              rows={3}
+              placeholder="Add guidance for the Registrar."
+              className={`${inputClassName} resize-y`}
+            />
+          </label>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              disabled={hoursActionBusy}
+              onClick={() => setHoursReviewTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              block={false}
+              disabled={hoursActionBusy}
+              onClick={() => void decideHoursRequest("rejected")}
+            >
+              Reject
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              block={false}
+              isLoading={hoursActionBusy}
+              loadingLabel="Saving…"
+              onClick={() => void decideHoursRequest("approved")}
+            >
+              Approve
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

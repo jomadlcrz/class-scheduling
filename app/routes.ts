@@ -34,7 +34,6 @@ export default [
     route("dean/instructors", "routes/app/dean-instructors.tsx"),
     route("subject-offering", "routes/app/subject-offering.tsx"),
     route("subject-offering/audit-logs", "routes/app/assignment-audit-logs.tsx"),
-    route("hours-adjustment-requests", "routes/app/hours-adjustment-requests.tsx"),
     route("major-schedules", "routes/app/major-schedules.tsx"),
     route("schedule-responses", "routes/app/schedule-responses.tsx"),
     route("teaching-terms/:id", "routes/app/teaching-term.tsx"),
