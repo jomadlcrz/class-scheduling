@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -17,7 +18,6 @@ import {
 } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { Stepper, type StepDefinition } from "~/components/ui/stepper";
 import { Tooltip } from "~/components/ui/tooltip";
@@ -251,11 +251,15 @@ function TermCalendarRulesDrawer({ open, onClose }: { open: boolean; onClose: ()
 /* -------------------------------------------------------------------------- */
 
 export function TermCalendarPage() {
+  const [searchParams] = useSearchParams();
+  const initialSyId = searchParams.get("syId") ?? "";
+  const initialSemesterNumber = searchParams.get("semesterNumber") ?? "";
+
   const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 
-  const [selectedSchoolYearId, setSelectedSchoolYearId] = useState("");
-  const [selectedSemesterNumber, setSelectedSemesterNumber] = useState("");
+  const [selectedSchoolYearId, setSelectedSchoolYearId] = useState(initialSyId);
+  const [selectedSemesterNumber, setSelectedSemesterNumber] = useState(initialSemesterNumber);
 
   const [phaseData, setPhaseData] = useState<TermPhaseResponse | null>(null);
   const [readiness, setReadiness] = useState<TermDistributionReadiness | null>(null);
@@ -520,7 +524,7 @@ export function TermCalendarPage() {
     }
     setSavingMajorEditLimit(true);
     try {
-      const res = await termPhaseService.setMajorEditRequestPolicy(syId, semesterNumber, limit);
+      const res = await termPhaseService.saveMajorEditRequestLimit(syId, semesterNumber, limit);
       toast.success(res.message || "Major edit-request limit updated.");
       await loadData();
     } catch (err) {
@@ -539,7 +543,7 @@ export function TermCalendarPage() {
     }
     setSavingSuggestionLimit(true);
     try {
-      const res = await termPhaseService.setSuggestionPolicy(syId, semesterNumber, limit);
+      const res = await termPhaseService.saveSuggestionAttemptLimit(syId, semesterNumber, limit);
       toast.success(res.message || "Suggestion attempt limit updated.");
       await loadData();
     } catch (err) {
@@ -568,64 +572,6 @@ export function TermCalendarPage() {
           </Button>
         }
       />
-
-      {/* Term Context Card */}
-      <Card className="overflow-hidden">
-        <div className="flex flex-col gap-4 bg-slate-50/70 px-5 py-4 dark:bg-white/2.5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Term Context</p>
-            <p className="mt-0.5 text-sm font-semibold text-navy-800 dark:text-mist-100">{termLabel}</p>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:max-w-md">
-            <FieldChrome id="term-calendar-sy" label="School Year">
-              <Select
-                value={selectedSchoolYearId}
-                onValueChange={(value) => setSelectedSchoolYearId(value ?? "")}
-                disabled={termsLoading || loading}
-                items={schoolYears.map((s) => ({ value: String(s.id), label: s.schoolYear }))}
-              >
-                <SelectTrigger id="term-calendar-sy">
-                  <SelectValue placeholder="Select school year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {schoolYears.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.schoolYear}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-
-            <FieldChrome id="term-calendar-sem" label="Semester">
-              <Select
-                value={selectedSemesterNumber}
-                onValueChange={(value) => setSelectedSemesterNumber(value ?? "")}
-                disabled={semestersLoading || loading}
-                items={semesters
-                  .filter((s) => s.semesterNumber !== 3)
-                  .map((s) => ({
-                    value: String(s.semesterNumber),
-                    label: semesterLabel(s.semesterNumber),
-                  }))}
-              >
-                <SelectTrigger id="term-calendar-sem">
-                  <SelectValue placeholder="Select semester" />
-                </SelectTrigger>
-                <SelectContent>
-                  {semesters
-                    .filter((s) => s.semesterNumber !== 3)
-                    .map((s) => (
-                      <SelectItem key={s.id} value={String(s.semesterNumber)}>
-                        {semesterLabel(s.semesterNumber)}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </FieldChrome>
-          </div>
-        </div>
-      </Card>
 
       {/* Main Content Area */}
       {loading && !phaseData ? (

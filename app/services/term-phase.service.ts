@@ -224,6 +224,99 @@ async function closeSchedulingWindow(
   return { ...data, message: apiMessage(data) };
 }
 
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/reopen. */
+async function reopenSchedulingWindow(
+  syId: number,
+  semesterNumber: number,
+  window: SchedulingWindowName,
+  closingAt: string,
+  options?: { confirmed?: boolean; discardGenerated?: boolean },
+): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
+  const data = await apiPost<{ message?: string; state: SchedulingWindowsSnapshot }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/reopen`,
+    {
+      closingAt,
+      confirmed: options?.confirmed ?? false,
+      discardGenerated: options?.discardGenerated ?? false,
+    },
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
+/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/deadline. */
+async function updateSchedulingWindowDeadline(
+  syId: number,
+  semesterNumber: number,
+  window: SchedulingWindowName,
+  closingAt: string,
+  options?: { confirmed?: boolean },
+): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
+  const data = await apiPut<{ message?: string; state: SchedulingWindowsSnapshot }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/deadline`,
+    {
+      closingAt,
+      confirmed: options?.confirmed ?? false,
+    },
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
+/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/major-edit-request-limit */
+async function saveMajorEditRequestLimit(
+  syId: number,
+  semesterNumber: number,
+  limit: number,
+): Promise<{ majorEditRequestLimit: number; message: string }> {
+  const data = await apiPut<{
+    major_edit_request_limit?: number;
+    majorEditRequestLimit?: number;
+    message?: string;
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/major-edit-request-limit`, {
+    limit,
+  });
+  return {
+    majorEditRequestLimit: data.majorEditRequestLimit ?? data.major_edit_request_limit ?? limit,
+    message: apiMessage(data) || "Edit-request limit saved.",
+  };
+}
+
+/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/suggestion-attempt-limit */
+async function saveSuggestionAttemptLimit(
+  syId: number,
+  semesterNumber: number,
+  limit: number,
+): Promise<{ suggestionAttemptLimit: number; message: string }> {
+  const data = await apiPut<{
+    suggestion_attempt_limit?: number;
+    suggestionAttemptLimit?: number;
+    message?: string;
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/suggestion-attempt-limit`, {
+    limit,
+  });
+  return {
+    suggestionAttemptLimit: data.suggestionAttemptLimit ?? data.suggestion_attempt_limit ?? limit,
+    message: apiMessage(data) || "Suggestion limit saved.",
+  };
+}
+
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/phases/{phase}/start — start phase. */
+async function startPhase(
+  syId: number,
+  semesterNumber: number,
+  phase: string,
+  closingAt: string,
+  options?: { confirmed?: boolean },
+): Promise<{ message: string; term: TermPhaseResponse; [key: string]: unknown }> {
+  const data = await apiPost<{ message?: string; term: TermPhaseResponse; [key: string]: unknown }>(
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phases/${encodeURIComponent(phase)}/start`,
+    {
+      closingAt,
+      confirmed: options?.confirmed ?? false,
+    },
+  );
+  return { ...data, message: apiMessage(data) };
+}
+
 /** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/advance — advance term phase. */
 async function advancePhase(
   syId: number,
@@ -337,6 +430,8 @@ export const termPhaseService = {
   getResponseReadiness,
   setSuggestionPolicy,
   setMajorEditRequestPolicy,
+  saveMajorEditRequestLimit,
+  saveSuggestionAttemptLimit,
   getMajorEditRequestAttempts,
   sendProgram,
   withdrawProgram,
@@ -346,6 +441,9 @@ export const termPhaseService = {
   getSchedulingWindows,
   openSchedulingWindow,
   closeSchedulingWindow,
+  reopenSchedulingWindow,
+  updateSchedulingWindowDeadline,
+  startPhase,
   advancePhase,
   rewindPhase,
   openPhase,

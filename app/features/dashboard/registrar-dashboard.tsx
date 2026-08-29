@@ -156,8 +156,9 @@ function buildTiles(data: RegistrarAnalyticsResponse): Tile[] {
   ];
 }
 
-function UnscheduledSetsTable({ sets }: { sets: RegistrarAnalyticsResponse["schedule_completion"]["unscheduled_sets"] }) {
-  if (sets.length === 0) {
+function UnscheduledSetsTable({ sets = [] }: { sets?: RegistrarAnalyticsResponse["schedule_completion"]["unscheduled_sets"] }) {
+  const safeSets = sets ?? [];
+  if (safeSets.length === 0) {
     return (
       <motion.div
         variants={popCard}
@@ -167,8 +168,8 @@ function UnscheduledSetsTable({ sets }: { sets: RegistrarAnalyticsResponse["sche
       </motion.div>
     );
   }
-  const shown = sets.slice(0, 12);
-  const overflow = sets.length - shown.length;
+  const shown = safeSets.slice(0, 12);
+  const overflow = safeSets.length - shown.length;
   return (
     <motion.div variants={popCard}>
       <Table>
@@ -202,8 +203,9 @@ function UnscheduledSetsTable({ sets }: { sets: RegistrarAnalyticsResponse["sche
   );
 }
 
-function NotEnrolledStudentsTable({ students }: { students: RegistrarAnalyticsResponse["enrollment"]["not_enrolled_students"] }) {
-  if (students.length === 0) {
+function NotEnrolledStudentsTable({ students = [] }: { students?: RegistrarAnalyticsResponse["enrollment"]["not_enrolled_students"] }) {
+  const safeStudents = students ?? [];
+  if (safeStudents.length === 0) {
     return (
       <motion.div
         variants={popCard}
@@ -213,8 +215,8 @@ function NotEnrolledStudentsTable({ students }: { students: RegistrarAnalyticsRe
       </motion.div>
     );
   }
-  const shown = students.slice(0, 12);
-  const overflow = students.length - shown.length;
+  const shown = safeStudents.slice(0, 12);
+  const overflow = safeStudents.length - shown.length;
   return (
     <motion.div variants={popCard}>
       <Table>
@@ -388,9 +390,9 @@ export function RegistrarDashboard() {
                 >
                   <ChartCard
                     title="Lab capacity"
-                    subtitle={`${data.lab_capacity.laboratories.length} lab room${data.lab_capacity.laboratories.length === 1 ? "" : "s"} this term, booked hours against the operating-day window.`}
+                    subtitle={`${data.lab_capacity?.laboratories?.length ?? 0} lab room${(data.lab_capacity?.laboratories?.length ?? 0) === 1 ? "" : "s"} this term, booked hours against the operating-day window.`}
                   >
-                    <LabCapacityMeters laboratories={data.lab_capacity.laboratories} />
+                    <LabCapacityMeters laboratories={data.lab_capacity?.laboratories ?? []} />
                   </ChartCard>
                   <ChartCard
                     title="Teaching capacity by department"

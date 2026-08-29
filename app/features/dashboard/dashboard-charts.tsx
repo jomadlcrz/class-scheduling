@@ -262,9 +262,10 @@ export function StatTile({
 
 // ── Load bands (horizontal bar, ordinal ramp) ───────────────────────────────
 
-export function LoadBandChart({ bands }: { bands: LoadBand[] }) {
+export function LoadBandChart({ bands = [] }: { bands?: LoadBand[] }) {
   const c = useChartColors();
-  const data = bands.map((b) => ({ name: b.band, count: b.count, description: b.description }));
+  const safeBands = bands ?? [];
+  const data = safeBands.map((b) => ({ name: b.band, count: b.count, description: b.description }));
   if (data.every((d) => d.count === 0)) {
     return <ChartEmpty message="No instructors in the roster for this term." />;
   }
@@ -296,9 +297,10 @@ export function LoadBandChart({ bands }: { bands: LoadBand[] }) {
 
 // ── Booked hours by day (vertical bar, one hue, peak highlighted) ───────────
 
-export function DailyHoursChart({ days }: { days: DailyLoadHour[] }) {
+export function DailyHoursChart({ days = [] }: { days?: DailyLoadHour[] }) {
   const c = useChartColors();
-  const data = days.map((d) => ({ name: d.day_name, hours: d.hours }));
+  const safeDays = days ?? [];
+  const data = safeDays.map((d) => ({ name: d.day_name, hours: d.hours }));
   const max = Math.max(...data.map((d) => d.hours), 0);
   if (data.every((d) => d.hours === 0)) {
     return <ChartEmpty message="No sessions are booked for this term yet." />;
@@ -377,8 +379,9 @@ function StackedBarRows({
   );
 }
 
-export function CoverageStackedChart({ rows }: { rows: CoverageByProgram[] }) {
-  const data = rows.map((r) => ({
+export function CoverageStackedChart({ rows = [] }: { rows?: CoverageByProgram[] }) {
+  const safeRows = rows ?? [];
+  const data = safeRows.map((r) => ({
     program: r.program_abbrev,
     Staffed: r.staffed_subjects,
     Unstaffed: r.unstaffed_subjects,
@@ -396,8 +399,9 @@ export function CoverageStackedChart({ rows }: { rows: CoverageByProgram[] }) {
   );
 }
 
-export function ScheduleCompletionChart({ programs }: { programs: ScheduleCompletionProgram[] }) {
-  const data = programs.map((p) => ({
+export function ScheduleCompletionChart({ programs = [] }: { programs?: ScheduleCompletionProgram[] }) {
+  const safePrograms = programs ?? [];
+  const data = safePrograms.map((p) => ({
     program: p.program_abbrev,
     Scheduled: p.scheduled_sets,
     Unscheduled: p.unscheduled_sets,
@@ -718,17 +722,18 @@ export function SubjectCoverageDonut({ subjects }: { subjects: { is_scheduled: b
 // ── Lab capacity meters ──────────────────────────────────────────────────────
 
 export function LabCapacityMeters({
-  laboratories,
+  laboratories = [],
   limit = 8,
 }: {
-  laboratories: LabSummary[];
+  laboratories?: LabSummary[];
   limit?: number;
 }) {
-  if (laboratories.length === 0) {
+  const safeLabs = laboratories ?? [];
+  if (safeLabs.length === 0) {
     return <ChartEmpty message="No lab rooms configured for this term." />;
   }
-  const shown = laboratories.slice(0, limit);
-  const overflow = laboratories.length - shown.length;
+  const shown = safeLabs.slice(0, limit);
+  const overflow = safeLabs.length - shown.length;
   return (
     <div className="space-y-3">
       {shown.map((lab, i) => {
@@ -827,17 +832,18 @@ const BAND_TONES: Record<string, string> = {
 };
 
 export function InstructorLoadMeters({
-  loads,
+  loads = [],
   limit = 8,
 }: {
-  loads: InstructorLoad[];
+  loads?: InstructorLoad[];
   limit?: number;
 }) {
-  if (loads.length === 0) {
+  const safeLoads = loads ?? [];
+  if (safeLoads.length === 0) {
     return <ChartEmpty message="No teaching terms exist for this term." />;
   }
-  const shown = loads.slice(0, limit);
-  const overflow = loads.length - shown.length;
+  const shown = safeLoads.slice(0, limit);
+  const overflow = safeLoads.length - shown.length;
   return (
     <div className="space-y-3">
       {shown.map((load, i) => {

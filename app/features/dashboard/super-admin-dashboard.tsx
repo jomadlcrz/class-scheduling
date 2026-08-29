@@ -105,8 +105,9 @@ function buildTiles(data: SuperAdminAnalytics): Tile[] {
   ];
 }
 
-function PendingFirstLoginTable({ accounts }: { accounts: SuperAdminAccount[] }) {
-  if (accounts.length === 0) {
+function PendingFirstLoginTable({ accounts = [] }: { accounts?: SuperAdminAccount[] }) {
+  const safeAccounts = accounts ?? [];
+  if (safeAccounts.length === 0) {
     return (
       <motion.div
         variants={popCard}
@@ -116,8 +117,8 @@ function PendingFirstLoginTable({ accounts }: { accounts: SuperAdminAccount[] })
       </motion.div>
     );
   }
-  const shown = accounts.slice(0, 12);
-  const overflow = accounts.length - shown.length;
+  const shown = safeAccounts.slice(0, 12);
+  const overflow = safeAccounts.length - shown.length;
   return (
     <motion.div variants={popCard}>
       <Table>
@@ -155,8 +156,9 @@ function PendingFirstLoginTable({ accounts }: { accounts: SuperAdminAccount[] })
   );
 }
 
-function StudentsWithoutLoginTable({ students }: { students: StudentProfileWithoutLogin[] }) {
-  if (students.length === 0) {
+function StudentsWithoutLoginTable({ students = [] }: { students?: StudentProfileWithoutLogin[] }) {
+  const safeStudents = students ?? [];
+  if (safeStudents.length === 0) {
     return (
       <motion.div
         variants={popCard}
@@ -166,8 +168,8 @@ function StudentsWithoutLoginTable({ students }: { students: StudentProfileWitho
       </motion.div>
     );
   }
-  const shown = students.slice(0, 12);
-  const overflow = students.length - shown.length;
+  const shown = safeStudents.slice(0, 12);
+  const overflow = safeStudents.length - shown.length;
   return (
     <motion.div variants={popCard}>
       <Table>

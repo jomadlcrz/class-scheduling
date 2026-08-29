@@ -119,8 +119,9 @@ function buildDayHours(subjects: InstructorSubject[]): DailyLoadHour[] {
   }));
 }
 
-function SubjectsTable({ subjects }: { subjects: InstructorSubject[] }) {
-  if (subjects.length === 0) {
+function SubjectsTable({ subjects = [] }: { subjects?: InstructorSubject[] }) {
+  const safeSubjects = subjects ?? [];
+  if (safeSubjects.length === 0) {
     return (
       <motion.div
         variants={popCard}
@@ -130,8 +131,8 @@ function SubjectsTable({ subjects }: { subjects: InstructorSubject[] }) {
       </motion.div>
     );
   }
-  const shown = subjects.slice(0, 12);
-  const overflow = subjects.length - shown.length;
+  const shown = safeSubjects.slice(0, 12);
+  const overflow = safeSubjects.length - shown.length;
   return (
     <motion.div variants={popCard}>
       <Table>
@@ -188,8 +189,9 @@ function SubjectsTable({ subjects }: { subjects: InstructorSubject[] }) {
   );
 }
 
-function ScheduleTable({ schedule }: { schedule: InstructorScheduleEntry[] }) {
-  if (schedule.length === 0) {
+function ScheduleTable({ schedule = [] }: { schedule?: InstructorScheduleEntry[] }) {
+  const safeSchedule = schedule ?? [];
+  if (safeSchedule.length === 0) {
     return (
       <motion.div
         variants={popCard}
@@ -199,8 +201,8 @@ function ScheduleTable({ schedule }: { schedule: InstructorScheduleEntry[] }) {
       </motion.div>
     );
   }
-  const shown = schedule.slice(0, 12);
-  const overflow = schedule.length - shown.length;
+  const shown = safeSchedule.slice(0, 12);
+  const overflow = safeSchedule.length - shown.length;
   return (
     <motion.div variants={popCard}>
       <Table>
