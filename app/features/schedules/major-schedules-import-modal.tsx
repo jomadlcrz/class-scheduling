@@ -6,7 +6,6 @@ import { Button } from "~/components/ui/button";
 import {
   AlertTriangleIcon,
   CheckIcon,
-  CloseIcon,
   DownloadIcon,
   FileSearchIcon,
   UploadIcon,
@@ -213,7 +212,6 @@ export function MajorSchedulesImportModal({
   const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null);
   const [filterMode, setFilterMode] = useState<"all" | "valid" | "invalid">("all");
   const [changeFileConfirmOpen, setChangeFileConfirmOpen] = useState(false);
-  const [removeFileConfirmOpen, setRemoveFileConfirmOpen] = useState(false);
 
   const validCount = useMemo(() => parsedRows.filter((r) => r.isValid).length, [parsedRows]);
   const invalidCount = useMemo(() => parsedRows.filter((r) => !r.isValid).length, [parsedRows]);
@@ -241,14 +239,6 @@ export function MajorSchedulesImportModal({
     } else {
       resetState();
       fileInputRef.current?.click();
-    }
-  }
-
-  function handleRemoveFileClick() {
-    if (parsedRows.length > 0) {
-      setRemoveFileConfirmOpen(true);
-    } else {
-      resetState();
     }
   }
 
@@ -623,28 +613,16 @@ export function MajorSchedulesImportModal({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  block={false}
-                  className="h-8 text-xs"
-                  disabled={parsing}
-                  onClick={handleChangeFileClick}
-                >
-                  Change File
-                </Button>
-                <button
-                  type="button"
-                  disabled={parsing}
-                  onClick={handleRemoveFileClick}
-                  aria-label="Remove file"
-                  title="Remove file"
-                  className="grid size-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-200"
-                >
-                  <CloseIcon size={16} />
-                </button>
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                className="h-8 text-xs"
+                disabled={parsing}
+                onClick={handleChangeFileClick}
+              >
+                Change File
+              </Button>
             </div>
           )}
 
@@ -927,27 +905,6 @@ export function MajorSchedulesImportModal({
         </p>
         <p className="mt-2 text-xs text-slate-500">
           Selecting a new file will discard the current preview and validation results. Are you sure you want to continue?
-        </p>
-      </ConfirmDialog>
-
-      {/* Remove File Confirmation Dialog */}
-      <ConfirmDialog
-        open={removeFileConfirmOpen}
-        onClose={() => setRemoveFileConfirmOpen(false)}
-        onConfirm={async () => {
-          setRemoveFileConfirmOpen(false);
-          resetState();
-        }}
-        title="Remove Selected File?"
-        confirmLabel="Remove File"
-        confirmVariant="danger"
-        loadingLabel="Removing…"
-      >
-        <p>
-          Are you sure you want to remove <strong>{selectedFile?.name}</strong>?
-        </p>
-        <p className="mt-2 text-xs text-slate-500">
-          The <strong>{parsedRows.length}</strong> loaded schedule row{parsedRows.length === 1 ? "" : "s"} and diagnostic results will be discarded.
         </p>
       </ConfirmDialog>
     </Modal>
