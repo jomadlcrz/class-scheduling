@@ -49,7 +49,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                     className="size-11 shrink-0 cursor-pointer rounded-full object-cover"
                     onClick={() => setViewerSrc(detail.dean!.profilePhotoUrl)}
                   />
-                  ) : <ProfileAvatar gender={detail.dean.gender} className="size-11" />}
+                  ) : <ProfileAvatar className="size-11" />}
                 <div className="min-w-0">
                   <p className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                     {detail.dean.fullName}
@@ -162,7 +162,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                             className="size-6 shrink-0 cursor-pointer rounded-full object-cover"
                             onClick={() => setViewerSrc(student.profilePhotoUrl!)}
                           />
-                          ) : <ProfileAvatar gender={student.gender} className="size-6" />}
+                          ) : <ProfileAvatar className="size-6" />}
                         <span className="font-medium text-navy-700 dark:text-mist-100">
                           {student.fullName}
                         </span>

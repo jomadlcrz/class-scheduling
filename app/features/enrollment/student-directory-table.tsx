@@ -208,7 +208,7 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
                     {r.profilePhotoUrl ? (
                       <img src={r.profilePhotoUrl} alt={r.name} className="size-6 shrink-0 rounded-full object-cover" />
                     ) : (
-                      <ProfileAvatar gender={r.gender} className="size-6" />
+                      <ProfileAvatar className="size-6" />
                     )}
                     <div className="min-w-0">
                       <p className="truncate font-body text-xs font-medium text-navy-700 dark:text-mist-100">{r.name}</p>

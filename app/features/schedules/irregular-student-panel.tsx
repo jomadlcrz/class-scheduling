@@ -32,7 +32,7 @@ export function IrregularStudentPanel({ student }: IrregularStudentPanelProps) {
             />
           </button>
         ) : student ? (
-          <ProfileAvatar gender={student.gender} className="size-10" />
+          <ProfileAvatar className="size-10" />
         ) : (
           <span
             aria-hidden="true"

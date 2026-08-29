@@ -120,7 +120,7 @@ export function InstructorCard({
                 onViewAvatar?.();
               }}
             />
-          ) : <ProfileAvatar gender={instructor.gender} className="size-11 ring-2 ring-slate-100 dark:ring-white/10" />}
+          ) : <ProfileAvatar className="size-11 ring-2 ring-slate-100 dark:ring-white/10" />}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">

@@ -42,7 +42,7 @@ export function SettingsSidebar() {
           Your account
         </p>
         <div className="mt-3 flex items-center gap-3">
-          <ProfileAvatar src={photoUrl} gender={photoData?.gender} className="size-9" />
+          <ProfileAvatar src={photoUrl} className="size-9" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-body text-sm font-semibold text-slate-800 dark:text-mist-100">
               {user.name}

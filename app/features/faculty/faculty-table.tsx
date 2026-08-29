@@ -61,7 +61,7 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                     className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
                     onClick={() => setViewerSrc(member.profilePhotoUrl)}
                   />
-                  ) : <ProfileAvatar gender={member.gender} className="size-8" />}
+                  ) : <ProfileAvatar className="size-8" />}
                 <div className="min-w-0">
                   <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
                     {displayName(member)}

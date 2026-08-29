@@ -64,7 +64,7 @@ export function PhotoUploadField({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <StudentAvatar firstName={firstName} lastName={lastName} photoUrl={previewUrl} gender={gender} />
+      <StudentAvatar firstName={firstName} lastName={lastName} photoUrl={previewUrl} />
 
       <input
         ref={inputRef}

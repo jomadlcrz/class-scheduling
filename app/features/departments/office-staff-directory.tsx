@@ -50,7 +50,7 @@ export function OfficeStaffDirectory({ staff }: { staff: OfficeStaffMember[] }) 
                     className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
                     onClick={() => setViewerSrc(member.profilePhotoUrl!)}
                   />
-                  ) : <ProfileAvatar gender={member.gender} className="size-8" />}
+                  ) : <ProfileAvatar className="size-8" />}
                 <span className="font-medium text-navy-700 dark:text-mist-100">
                   {displayName(member)}
                 </span>

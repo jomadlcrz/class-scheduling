@@ -560,7 +560,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           label="Open user menu"
           trigger={
             <span className="flex items-center">
-              <ProfileAvatar src={photoUrl} gender={photoData?.gender} className="size-7" />
+              <ProfileAvatar src={photoUrl} className="size-7" />
             </span>
           }
           triggerClassName={`${iconButtonClassName} ml-1`}
@@ -579,7 +579,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                     setProfilePictureOpen(true);
                   }}
                 >
-                  <ProfileAvatar src={photoUrl} gender={photoData?.gender} className="size-full" />
+                  <ProfileAvatar src={photoUrl} className="size-full" />
                   <span
                     aria-hidden="true"
                     className="absolute inset-0 grid place-items-center rounded-full bg-navy-950/65 font-body text-[10px] font-semibold text-white opacity-100 transition-opacity duration-150 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-visible:opacity-100"
@@ -678,7 +678,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   >
                     <img src={photoUrl} alt="Profile" className="size-24 rounded-full object-cover" />
                   </button>
-                ) : <ProfileAvatar gender={photoData?.gender} className="size-24" />}
+                ) : <ProfileAvatar className="size-24" />}
               </div>
 
               {photoUrl && (

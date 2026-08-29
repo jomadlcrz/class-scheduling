@@ -67,7 +67,7 @@ export function AdministratorTable({
                         <img src={admin.profilePhotoUrl} alt="" className="size-9 rounded-full object-cover" />
                       </button>
                     ) : (
-                      <ProfileAvatar gender={admin.gender} className="size-9" />
+                      <ProfileAvatar className="size-9" />
                     )}
                     <div className="min-w-0">
                       <span className="block truncate font-medium text-navy-700 dark:text-mist-100">

@@ -194,7 +194,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                     className="size-16 rounded-full object-cover"
                   />
                 </button>
-                ) : <ProfileAvatar gender={student.gender} className="size-16" />}
+                ) : <ProfileAvatar className="size-16" />}
               <div className="flex min-w-0 flex-col gap-1">
                 <h3 className="truncate font-body text-base font-semibold text-navy-800 dark:text-mist-100">
                   {student.name}

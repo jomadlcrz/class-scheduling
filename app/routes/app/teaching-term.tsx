@@ -378,7 +378,6 @@ function TeachingTermPage() {
         <div className="flex items-center gap-4">
           <ProfileAvatar
             src={instructor.profile_photo_url}
-            gender={instructor.gender}
             className="size-14"
           />
           <div>

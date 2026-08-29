@@ -99,7 +99,6 @@ export function AccountDetails() {
                 >
                   <ProfileAvatar
                     src={profile?.profilePhotoUrl}
-                    gender={profile?.gender}
                     alt="Profile"
                     className="size-full transition-opacity duration-150 group-hover:opacity-90"
                   />
@@ -189,7 +188,7 @@ export function AccountDetails() {
                   >
                     <img src={photoUrl} alt="Profile" className="size-24 rounded-full object-cover" />
                   </button>
-                ) : <ProfileAvatar gender={profile?.gender} className="size-24" />}
+                ) : <ProfileAvatar className="size-24" />}
               </div>
 
               {photoUrl && (

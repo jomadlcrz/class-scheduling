@@ -102,7 +102,7 @@ export function StudentAccountTable({
                     className="size-8 shrink-0 cursor-pointer rounded-full object-cover"
                     onClick={() => setViewerSrc(student.profilePhotoUrl!)}
                   />
-                  ) : <ProfileAvatar gender={student.gender} className="size-8" />}
+                  ) : <ProfileAvatar className="size-8" />}
                 <div className="min-w-0">
                   <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
                     {displayName(student)}
