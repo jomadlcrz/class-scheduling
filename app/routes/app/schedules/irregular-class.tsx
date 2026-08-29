@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { ResultState } from "~/components/feedback/result-state";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { SearchIcon, TrashIcon } from "~/components/ui/icons";
@@ -592,6 +593,14 @@ function IrregularClassPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <Breadcrumb
+        items={[
+          { label: "Scheduling Hub", href: "/schedules" },
+          { label: "Irregular Class" },
+        ]}
+        className="mb-4"
+      />
+
       <PageHeader title="Irregular Schedule Builder" />
 
       {students === null ? (

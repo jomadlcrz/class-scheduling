@@ -9,6 +9,7 @@ import { useTermContext } from "~/features/academic-terms/term-context-provider"
 import { HubActionQueue } from "~/features/schedules/hub/hub-action-queue";
 import { HubNextStepCard } from "~/features/schedules/hub/hub-next-step-card";
 import { HubStatStrip } from "~/features/schedules/hub/hub-stat-strip";
+import { SchedulingModuleNav } from "~/features/schedules/hub/scheduling-module-nav";
 import { useSchedulingHubData } from "~/features/schedules/hub/use-scheduling-hub-data";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -125,6 +126,13 @@ function SchedulingHubPage() {
         ) : (
           <div className="flex flex-col gap-5">
             <HubStatStrip built={hub.built} total={hub.total} counts={hub.counts} />
+            <SchedulingModuleNav
+              total={hub.total}
+              built={hub.built}
+              unscheduled={hub.unscheduled}
+              counts={hub.counts}
+              hasTerm={hub.hasTerm}
+            />
             <HubNextStepCard stage={hub.stage} />
             <HubActionQueue
               releases={hub.releases}

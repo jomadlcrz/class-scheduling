@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { AlertIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
@@ -126,8 +127,16 @@ function MasterSchedulesPage() {
   );
 
   // Active Term state (School Year & Semester)
-  const [schoolYear, setSchoolYear] = useState("");
-  const [semester, setSemester] = useState<ScheduleSemester>(1);
+  const [schoolYear, setSchoolYear] = useState<string>(() => {
+    if (termContext?.selection.syId) {
+      const activeSy = termContext.schoolYears.find((row) => row.id === termContext.selection.syId)?.schoolYear;
+      if (activeSy) return activeSy;
+    }
+    return "";
+  });
+  const [semester, setSemester] = useState<ScheduleSemester>(() => {
+    return (termContext?.selection.semesterNumber as ScheduleSemester) || 1;
+  });
 
   // Selected Department Underline Tab ("ALL" or department abbrev e.g. "CCS")
   const [selectedDepartment, setSelectedDepartment] = useState("ALL");
@@ -191,7 +200,7 @@ function MasterSchedulesPage() {
     return [...new Set([...fromSchedules, ...fromContext])].filter(Boolean).sort((a, b) => b.localeCompare(a));
   }, [schedules, termContext]);
 
-  // Seed active term on first load
+  // Seed active term if not initialized yet
   useEffect(() => {
     if (schoolYear) return;
     if (termContext?.selection.syId) {
@@ -602,10 +611,22 @@ function MasterSchedulesPage() {
     }
   }
 
-  const isLoading = schedules === null;
+  const isLoading =
+    schedules === null ||
+    scheduledSetsData === null ||
+    departmentsData === null ||
+    programsData === null;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <Breadcrumb
+        items={[
+          { label: "Scheduling Hub", href: "/schedules" },
+          { label: "Master Schedules" },
+        ]}
+        className="mb-4"
+      />
+
       <PageHeader
         title="Master Schedules"
         actions={
@@ -633,86 +654,90 @@ function MasterSchedulesPage() {
         }
       />
 
-      {/* Term Context & Global View Mode Bar */}
-      <div className="mt-4">
-        <MasterSchedulesTermBar
-          schoolYears={schoolYears}
-          schoolYear={schoolYear}
-          onSchoolYearChange={setSchoolYear}
-          semesters={semesters}
-          semestersLoading={semestersLoading}
-          semester={semester}
-          onSemesterChange={setSemester}
-          semesterLabel={semesterLabel}
-          globalViewMode={globalViewMode}
-          onGlobalViewModeChange={setGlobalViewMode}
-          onExpandAll={handleExpandAll}
-          onCollapseAll={handleCollapseAll}
-          allExpanded={allExpanded}
-          totalSections={totalSections}
-          totalClasses={totalClasses}
-        />
-      </div>
-
-      {termClosed && (
-        <p className="mt-3 font-body text-xs text-amber-700 dark:text-amber-400">
-          {termClosedNote} Submissions, edits, and deletions are disabled for this term.
-        </p>
-      )}
-
-      {/* Underline Tabs: Departments */}
-      <div className="mt-5 border-b border-slate-200 dark:border-white/10">
-        <TabButtons
-          ariaLabel="Departments"
-          tabs={departmentTabs}
-          value={selectedDepartment}
-          onChange={setSelectedDepartment}
-        />
-      </div>
-
-      {/* Main Accordion Hierarchy */}
-      <div className="mt-5">
-        <AnimatePresence>
-          {actionError && (
-            <Alert key="action-error" variant="destructive" className="mb-4">
-              <AlertIcon />
-              <AlertDescription>{actionError}</AlertDescription>
-            </Alert>
-          )}
-          {loadError && (
-            <DataLoadAlert
-              className="mb-4"
-              title="Schedules unavailable"
-              message={loadError}
-              permission={loadError.toLowerCase().includes("permission")}
+      {isLoading ? (
+        <div className="mt-6">
+          <ScheduleSkeleton rows={8} />
+        </div>
+      ) : (
+        <>
+          {/* Term Context & Global View Mode Bar */}
+          <div className="mt-4">
+            <MasterSchedulesTermBar
+              schoolYears={schoolYears}
+              schoolYear={schoolYear}
+              onSchoolYearChange={setSchoolYear}
+              semesters={semesters}
+              semestersLoading={semestersLoading}
+              semester={semester}
+              onSemesterChange={setSemester}
+              semesterLabel={semesterLabel}
+              globalViewMode={globalViewMode}
+              onGlobalViewModeChange={setGlobalViewMode}
+              onExpandAll={handleExpandAll}
+              onCollapseAll={handleCollapseAll}
+              allExpanded={allExpanded}
+              totalSections={totalSections}
+              totalClasses={totalClasses}
             />
-          )}
-        </AnimatePresence>
+          </div>
 
-        {isLoading ? (
-          loadError ? null : <ScheduleSkeleton rows={8} />
-        ) : (
-          <MasterSchedulesTree
-            programs={programTreeData}
-            openPrograms={openPrograms}
-            onToggleProgram={handleToggleProgram}
-            openYearLevels={openYearLevels}
-            onToggleYearLevel={handleToggleYearLevel}
-            openSets={openSets}
-            onToggleSet={handleToggleSet}
-            globalViewMode={globalViewMode}
-            schoolYear={schoolYear}
-            semesterLabel={semesterLabel(semester)}
-            termClosed={termClosed}
-            departments={departments}
-            onCreateSchedule={() => navigate("/schedules/new")}
-            onEdit={openEdit}
-            onSubmitRelease={setSubmitTarget}
-            onWithdrawRelease={setWithdrawTarget}
-            onClearSet={handleClearSingleSet}
-          />
-        )}
-      </div>
+          {termClosed && (
+            <p className="mt-3 font-body text-xs text-amber-700 dark:text-amber-400">
+              {termClosedNote} Submissions, edits, and deletions are disabled for this term.
+            </p>
+          )}
+
+          {/* Underline Tabs: Departments */}
+          <div className="mt-5 border-b border-slate-200 dark:border-white/10">
+            <TabButtons
+              ariaLabel="Departments"
+              tabs={departmentTabs}
+              value={selectedDepartment}
+              onChange={setSelectedDepartment}
+            />
+          </div>
+
+          {/* Main Accordion Hierarchy */}
+          <div className="mt-5">
+            <AnimatePresence>
+              {actionError && (
+                <Alert key="action-error" variant="destructive" className="mb-4">
+                  <AlertIcon />
+                  <AlertDescription>{actionError}</AlertDescription>
+                </Alert>
+              )}
+              {loadError && (
+                <DataLoadAlert
+                  className="mb-4"
+                  title="Schedules unavailable"
+                  message={loadError}
+                  permission={loadError.toLowerCase().includes("permission")}
+                />
+              )}
+            </AnimatePresence>
+
+            <MasterSchedulesTree
+              programs={programTreeData}
+              openPrograms={openPrograms}
+              onToggleProgram={handleToggleProgram}
+              openYearLevels={openYearLevels}
+              onToggleYearLevel={handleToggleYearLevel}
+              openSets={openSets}
+              onToggleSet={handleToggleSet}
+              globalViewMode={globalViewMode}
+              schoolYear={schoolYear}
+              semesterLabel={semesterLabel(semester)}
+              termClosed={termClosed}
+              departments={departments}
+              onCreateSchedule={() => navigate("/schedules/new")}
+              onEdit={openEdit}
+              onSubmitRelease={setSubmitTarget}
+              onWithdrawRelease={setWithdrawTarget}
+              onClearSet={handleClearSingleSet}
+            />
+          </div>
+        </>
+      )}
 
       {/* Schedule Edit Dialog */}
       <ScheduleEditDialog

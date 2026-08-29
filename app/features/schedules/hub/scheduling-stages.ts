@@ -117,9 +117,9 @@ export function deriveHubStage({ hasTerm, total, unscheduled, counts }: HubStage
       tone: "wait",
       eyebrow: "Review workflow in progress",
       title: `${waiting} section${waiting === 1 ? "" : "s"} awaiting review`,
-      line: "Everything built is submitted. The dean is reviewing — track progress on the overview.",
-      actionLabel: "View overview",
-      to: "/schedules/overview",
+      line: "Everything built is submitted. The dean is reviewing — track progress in the scheduling hub.",
+      actionLabel: "Open Scheduling Hub",
+      to: "/schedules",
     };
   }
   return {

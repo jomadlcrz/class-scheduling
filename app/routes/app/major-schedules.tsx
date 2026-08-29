@@ -1367,7 +1367,7 @@ function MajorScheduleStickyFooter({
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-sm font-semibold tracking-wide text-navy-800 dark:text-mist-100">
+            <h2 className="font-display text-sm tracking-wide text-navy-800 dark:text-mist-100">
               {activeSubmission.departmentAbbrev}
             </h2>
             <span className="hidden text-xs text-slate-400 sm:inline">

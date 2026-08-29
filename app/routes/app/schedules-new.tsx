@@ -836,8 +836,8 @@ function SchedulesNewPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <Breadcrumb
         items={[
-          { label: "Regular Class", href: "/schedules/regular-class" },
-          { label: "New Schedule" },
+          { label: "Scheduling Hub", href: "/schedules" },
+          { label: "Generate Schedule" },
         ]}
         className="mb-4"
       />
