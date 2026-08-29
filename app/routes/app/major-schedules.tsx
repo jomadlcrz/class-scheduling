@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
 import { RoleGuard } from "~/auth/role-guard";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -29,7 +28,6 @@ import {
 } from "~/components/ui/icons";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
 import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
-import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { MappingSkeleton, TableSkeleton } from "~/components/ui/skeleton";
 import { StickyFooter } from "~/components/ui/sticky-footer";
@@ -40,6 +38,7 @@ import { filterClassrooms } from "~/features/classroom-mapping/mapping-model";
 import {
   MajorSchedulesMappingGrid,
 } from "~/features/schedules/major-schedules-mapping-grid";
+import { MajorSchedulesImportModal } from "~/features/schedules/major-schedules-import-modal";
 import { EditRequestAttemptMeter } from "~/features/schedules/edit-request-attempt-meter";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
@@ -87,30 +86,6 @@ const STATUS_TONES: Record<string, BadgeTone> = {
 type DecisionTarget = { request: MajorScheduleEditRequest; approve: boolean };
 type ViewMode = "grid" | "table" | "audit";
 
-type ImportRow = Record<string, unknown>;
-type ImportIssue = { row: number; message: string };
-
-const IMPORT_HEADERS = ["Set", "Subject Code", "Room", "Day", "Start Time", "End Time", "Instructor Email", "Override Pattern", "Class Mode", "Session Mode"];
-
-function importValue(row: ImportRow, name: string) {
-  const key = Object.keys(row).find((candidate) => candidate.trim().toLowerCase() === name.toLowerCase());
-  return String(key == null ? "" : row[key] ?? "").trim();
-}
-
-function importTime(value: string) {
-  const match = value.trim().match(/^(\d{1,2}):(\d{2})(?:\s*([AaPp][Mm]))?$/);
-  if (!match) return null;
-  let hour = Number(match[1]);
-  const minute = Number(match[2]);
-  if (minute > 59) return null;
-  if (match[3]) {
-    if (hour < 1 || hour > 12) return null;
-    if (match[3].toLowerCase() === "pm" && hour !== 12) hour += 12;
-    if (match[3].toLowerCase() === "am" && hour === 12) hour = 0;
-  } else if (hour > 23) return null;
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
 function MajorSchedulesPage() {
   const { user } = useAuth();
   const { schoolYears } = useSchoolYears();
@@ -142,11 +117,7 @@ function MajorSchedulesPage() {
   const [floatingInstructorId, setFloatingInstructorId] = useState(0);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const importInputRef = useRef<HTMLInputElement>(null);
-  const [importRows, setImportRows] = useState<ImportRow[]>([]);
-  const [importIssues, setImportIssues] = useState<ImportIssue[]>([]);
   const [importOpen, setImportOpen] = useState(false);
-  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     if (!syId && schoolYears.length) setSyId(schoolYears[0].id);
@@ -297,87 +268,7 @@ function MajorSchedulesPage() {
     });
   }
 
-  async function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    try {
-      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json<ImportRow>(sheet, { defval: "", raw: false })
-        .filter((row) => Object.values(row).some((value) => String(value).trim()));
-      const headers = new Set(rows.length ? Object.keys(rows[0]).map((header) => header.trim().toLowerCase()) : []);
-      const missing = IMPORT_HEADERS.filter((header) => !headers.has(header.toLowerCase()));
-      if (missing.length) throw new Error(`Missing column${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}.`);
-      if (!rows.length) throw new Error("The selected file has no schedule rows.");
-      setImportRows(rows);
-      setImportIssues([]);
-      setImportOpen(true);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to read the selected file.");
-    }
-  }
 
-  function openImportFilePicker(accept: string) {
-    if (!importInputRef.current) return;
-    importInputRef.current.accept = accept;
-    importInputRef.current.click();
-  }
-
-  async function importSchedules() {
-    if (!scopeReady || !importRows.length) return;
-    setImporting(true);
-    setImportIssues([]);
-    try {
-      const [programs, sets, subjects, importRooms, importInstructors] = await Promise.all([
-        programService.list(), setService.list({ syId, semesterNumber }), subjectService.list(),
-        scheduleService.listScheduleRooms(), deanService.listDepartmentInstructors(),
-      ]);
-      const issues: ImportIssue[] = [];
-      const inputs: MajorScheduleMeetingInput[] = [];
-      for (const [index, row] of importRows.entries()) {
-        const setName = importValue(row, "Set");
-        const match = setName.match(/^(.+)-(\d+)([A-Za-z]+)$/);
-        const subjectCode = importValue(row, "Subject Code");
-        const roomName = importValue(row, "Room");
-        const instructorEmail = importValue(row, "Instructor Email");
-        const classMode = (importValue(row, "Class Mode") || "F2F").toUpperCase();
-        const sessionMode = (importValue(row, "Session Mode") || "LEC").toUpperCase();
-        const startTime = importTime(importValue(row, "Start Time"));
-        const endTime = importTime(importValue(row, "End Time"));
-        const dayOfWeek = importValue(row, "Day");
-        const program = match && programs.find((item) => item.abbrev.toLowerCase() === match[1].toLowerCase());
-        const set = match && sets.find((item) => item.program.toLowerCase() === match[1].toLowerCase() && item.yearLevel === Number(match[2]) && item.setCode.toLowerCase() === match[3].toLowerCase());
-        const subject = match && subjects.find((item) => item.program.toLowerCase() === match[1].toLowerCase() && item.yearLevel === Number(match[2]) && item.semester === semesterNumber && item.code.toLowerCase() === subjectCode.toLowerCase());
-        const room = roomName ? importRooms.find((item) => item.roomName.toLowerCase() === roomName.toLowerCase()) : undefined;
-        const instructor = instructorEmail ? importInstructors.find((item) => item.email?.toLowerCase() === instructorEmail.toLowerCase()) : undefined;
-        const errors = [
-          !match && "valid Set (for example BSIT-1A)", !program && "program", !set && "set for this term",
-          !subject && "subject for this set and semester", !dayOfWeek && "day", !startTime && "start time", !endTime && "end time",
-          roomName && !room && "room", instructorEmail && !instructor && "instructor email",
-          classMode === "F2F" && !room && "room for F2F",
-        ].filter(Boolean);
-        if (errors.length) { issues.push({ row: index + 2, message: `Missing or invalid ${errors.join(", ")}.` }); continue; }
-        inputs.push({ syId, semesterNumber, programId: program!.id, setId: set!.id, subjectId: subject!.id,
-          instructorId: instructor?.instructorProfileId ?? null, roomId: room?.id ?? null, dayOfWeek,
-          startTime: startTime!, endTime: endTime!, classMode, sessionMode,
-          overrideMeetingPattern: ["true", "yes", "1"].includes(importValue(row, "Override Pattern").toLowerCase()),
-        });
-      }
-      if (issues.length) { setImportIssues(issues); return; }
-      let imported = 0;
-      for (const input of inputs) {
-        await authorityWorkflowService.createMajorSchedule(input, user?.role === "dean" ? "dean" : "registrar");
-        imported++;
-      }
-      await Promise.all([reloadSubmissions(), reloadClassrooms(), viewMode === "audit" ? reloadAuditLog() : Promise.resolve()]);
-      toast.success(`Imported ${imported} major schedule${imported === 1 ? "" : "s"}.`);
-      setImportOpen(false);
-      setImportRows([]);
-    } catch (err) {
-      setImportIssues([{ row: 0, message: err instanceof Error ? err.message : "Import stopped unexpectedly." }]);
-    } finally { setImporting(false); }
-  }
 
   async function openRequirements(submissionId: number) {
     setRequirementsOpen(true);
@@ -510,21 +401,18 @@ function MajorSchedulesPage() {
               </button>
             </div>
 
-            {user?.role === "dean" && <div>
-              <input ref={importInputRef} type="file" className="sr-only" onChange={handleImportFile} />
-              <Popover
-                label="Import"
-                trigger={<><UploadIcon size={16} />Import</>}
-                triggerClassName="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2 font-body text-sm font-medium text-navy-700 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
-                className="w-44 p-1.5"
+            {user?.role === "dean" && (
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
                 disabled={importDisabled}
+                onClick={() => setImportOpen(true)}
               >
-                {(close) => <>
-                  <button type="button" role="menuitem" onClick={() => { close(); openImportFilePicker(".csv"); }} className="flex w-full items-center rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100">Import CSV</button>
-                  <button type="button" role="menuitem" onClick={() => { close(); openImportFilePicker(".xlsx,.xls"); }} className="flex w-full items-center rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100">Import Excel</button>
-                </>}
-              </Popover>
-            </div>}
+                <UploadIcon size={16} />
+                <span>Import</span>
+              </Button>
+            )}
 
             {viewMode === "grid" && (
               <div className="relative w-full sm:w-56">
@@ -1363,36 +1251,20 @@ function MajorSchedulesPage() {
         </div>
       </Modal>
 
-      <Modal open={importOpen} onClose={() => !importing && setImportOpen(false)} title="Import Major Schedules" wide>
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            {importRows.length} row{importRows.length === 1 ? "" : "s"} ready for {currentSchoolYear}, {semesterLabel(semesterNumber)}. The import uses the selected term above.
-          </p>
-          <p className="text-xs text-slate-500">
-            Required columns: {IMPORT_HEADERS.join(", ")}. Sets, subjects, rooms, and instructor emails must already exist.
-          </p>
-          {importIssues.length > 0 && (
-            <div className="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-400/20 dark:bg-red-400/5 dark:text-red-200">
-              {importIssues.map((issue, index) => <p key={`${issue.row}:${index}`}>{issue.row ? `Row ${issue.row}: ` : ""}{issue.message}</p>)}
-            </div>
-          )}
-          <div className="max-h-64 overflow-auto rounded-lg border border-slate-200 dark:border-white/10">
-            <Table>
-              <TableHead><TableHeader>Set</TableHeader><TableHeader>Subject</TableHeader><TableHeader>Day / Time</TableHeader><TableHeader>Room</TableHeader><TableHeader>Instructor</TableHeader></TableHead>
-              <TableBody>
-                {importRows.slice(0, 20).map((row, index) => (
-                  <TableRow key={index}><TableCell>{importValue(row, "Set")}</TableCell><TableCell>{importValue(row, "Subject Code")}</TableCell><TableCell>{importValue(row, "Day")} · {importValue(row, "Start Time")}–{importValue(row, "End Time")}</TableCell><TableCell>{importValue(row, "Room") || "—"}</TableCell><TableCell>{importValue(row, "Instructor Email") || "Floating"}</TableCell></TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {importRows.length > 20 && <p className="text-xs text-slate-500">Showing the first 20 rows.</p>}
-          <ModalActions>
-            <Button type="button" variant="outline" block={false} onClick={() => setImportOpen(false)} disabled={importing}>Cancel</Button>
-            <Button type="button" block={false} onClick={() => void importSchedules()} isLoading={importing} loadingLabel="Importing…">Import {importRows.length} Rows</Button>
-          </ModalActions>
-        </div>
-      </Modal>
+      <MajorSchedulesImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        syId={syId}
+        semesterNumber={semesterNumber}
+        userRole={user?.role ?? ""}
+        onImportSuccess={async () => {
+          await Promise.all([
+            reloadSubmissions(),
+            reloadClassrooms(),
+            viewMode === "audit" ? reloadAuditLog() : Promise.resolve(),
+          ]);
+        }}
+      />
 
       {/* Sticky Submission Footer */}
       <MajorScheduleStickyFooter

@@ -32,16 +32,39 @@ type ModalProps = {
   xl?: boolean;
   /** Pinned action bar rendered in a distinct footer band below the body. */
   footer?: ReactNode;
+  /** When true, omits the top-right X button. */
+  hideCloseButton?: boolean;
+  /** When true, ignores ESC and disables close actions. */
+  disableClose?: boolean;
   children: ReactNode;
 };
 
-export function Modal({ open, onClose, title, wide, xl, footer, children }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  wide,
+  xl,
+  footer,
+  hideCloseButton,
+  disableClose,
+  children,
+}: ModalProps) {
   if (typeof document === "undefined") return null;
 
   return createPortal(
     <AnimatePresence>
       {open && (
-        <ModalContent key="modal" onClose={onClose} title={title} wide={wide} xl={xl} footer={footer}>
+        <ModalContent
+          key="modal"
+          onClose={onClose}
+          title={title}
+          wide={wide}
+          xl={xl}
+          footer={footer}
+          hideCloseButton={hideCloseButton}
+          disableClose={disableClose}
+        >
           {children}
         </ModalContent>
       )}
@@ -153,6 +176,8 @@ function ModalContent({
   wide,
   xl,
   footer,
+  hideCloseButton,
+  disableClose,
   children,
 }: {
   onClose: () => void;
@@ -160,6 +185,8 @@ function ModalContent({
   wide?: boolean;
   xl?: boolean;
   footer?: ReactNode;
+  hideCloseButton?: boolean;
+  disableClose?: boolean;
   children: ReactNode;
 }) {
   // Freeze body scroll while open (shared counter — only restores when all overlays close).
@@ -174,12 +201,13 @@ function ModalContent({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (disableClose) return;
       // Escape closes only the top-most dialog, leaving the opener untouched.
       if (e.key === "Escape" && depth >= openModalCount) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, depth]);
+  }, [onClose, depth, disableClose]);
 
   return (
     <>
@@ -215,14 +243,17 @@ function ModalContent({
               <h2 className="min-w-0 font-display text-lg tracking-wide text-navy-700 sm:text-xl dark:text-mist-100">
                 {title}
               </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close dialog"
-                className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
-              >
-                <CloseIcon />
-              </button>
+              {!hideCloseButton && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={disableClose}
+                  aria-label="Close dialog"
+                  className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
+                >
+                  <CloseIcon />
+                </button>
+              )}
             </div>
             {/* Body — scrolls with the whole overlay when tall. */}
             <div className="px-4 py-4 sm:px-5">{children}</div>
