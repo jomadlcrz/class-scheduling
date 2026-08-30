@@ -98,11 +98,17 @@ function CoverageSubjectRow({ subject }: { subject: OfferingCoverageSubject }) {
 }
 
 /** One program's offered subjects — every subject listed, assigned and not. */
-function ProgramCoverageRow({ program }: { program: OfferingCoverageProgram }) {
-  const [collapsed, setCollapsed] = useState(true);
+function ProgramCoverageRow({
+  program,
+  defaultOpen = false,
+}: {
+  program: OfferingCoverageProgram;
+  defaultOpen?: boolean;
+}) {
+  const [collapsed, setCollapsed] = useState(!defaultOpen);
 
   return (
-    <div className="px-3 py-2.5">
+    <div>
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
@@ -274,7 +280,7 @@ export function OfferingCoverageOverview({
     );
   }
 
-  const statusBadges = (
+  const coverageBadges = (withUnassigned: boolean) => (
     <div className="flex flex-wrap items-center gap-2">
       <Tooltip label={COVERAGE_NOTE} direction="bottom" wrap>
         <span
@@ -286,6 +292,11 @@ export function OfferingCoverageOverview({
         </span>
       </Tooltip>
       <Badge tone="slate">Majors not included</Badge>
+      {withUnassigned && (
+        <Badge tone={coverageStats.unassigned > 0 ? "gold" : "green"}>
+          {coverageStats.unassigned} unassigned
+        </Badge>
+      )}
     </div>
   );
 
@@ -346,8 +357,14 @@ export function OfferingCoverageOverview({
           title="Shared Subject Coverage"
           description="Minor subjects and the instructors currently covering them"
         >
-          {statusBadges}
-          <div className="mt-4">{departmentsList}</div>
+          {coverageBadges(true)}
+          <div className="mt-3 flex flex-col gap-2">
+            {(data.departments ?? [])
+              .flatMap((department) => department.programs)
+              .map((program) => (
+                <ProgramCoverageRow key={program.program_id} program={program} defaultOpen />
+              ))}
+          </div>
         </Drawer>
       </>
     );
@@ -359,7 +376,7 @@ export function OfferingCoverageOverview({
         <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
           College coverage — who still needs a faculty
         </h2>
-        {statusBadges}
+        {coverageBadges(false)}
       </div>
       {departmentsList}
     </div>
