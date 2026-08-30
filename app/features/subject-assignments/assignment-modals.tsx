@@ -13,8 +13,8 @@ import {
 import { inputClassName } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import type { DepartmentInstructor } from "~/services/dean.service";
 import { formatInstructorName } from "~/lib/faculty-load";
+import type { DepartmentInstructor } from "~/services/dean.service";
 import { SUBJECT_TYPE_LABELS } from "~/types/subject";
 
 type Subject = {
@@ -258,6 +258,7 @@ export function AssignSubjectModal({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search subjects by code or title"
           className={inputClassName}
         />
         <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">

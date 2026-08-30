@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Spinner } from "~/components/ui/spinner";
 import { Accordion } from "~/components/ui/accordion";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { AuditLogIcon, PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
@@ -65,7 +66,20 @@ type Instructor = {
   programs: ProgramGroup[];
 };
 
-export function SubjectAssignmentView() {
+type SubjectAssignmentViewProps = {
+  /** Full department heading for the drilled-in registrar view. */
+  departmentName?: string;
+  /** Abbreviated department label for the breadcrumb's last crumb. */
+  departmentAbbrev?: string;
+  /** Registrar drill-in — department is chosen in the Colleges overview, so hide the toolbar select. */
+  hideDepartmentSelect?: boolean;
+};
+
+export function SubjectAssignmentView({
+  departmentName,
+  departmentAbbrev,
+  hideDepartmentSelect = false,
+}: SubjectAssignmentViewProps = {}) {
   const { user } = useAuth();
   const isRegistrar = user?.role === "registrar";
   // The registrar manages only MINOR subjects; the dean manages only MAJOR
@@ -107,7 +121,13 @@ export function SubjectAssignmentView() {
 
   const departmentId = isRegistrar ? (selectedDepartmentId ? Number(selectedDepartmentId) : null) : null;
 
-  const apiData = useSubjectAssignments({ departmentId });
+  const querySyId = Number(searchParams.get("sy_id"));
+  const querySemester = Number(searchParams.get("semester_number"));
+  const hasQueryTerm =
+    Number.isInteger(querySyId) && querySyId > 0 && (querySemester === 1 || querySemester === 2);
+  const initialTerm = hasQueryTerm ? { syId: querySyId, semesterNumber: querySemester } : undefined;
+
+  const apiData = useSubjectAssignments({ departmentId, initialTerm });
   const selectedSyId = Number(apiData.selectedSchoolYearId);
   const selectedSemesterNumber = Number(apiData.selectedSemesterNumber);
 
@@ -260,22 +280,31 @@ export function SubjectAssignmentView() {
   const availableSubjectsByProgram = useMemo(() => {
     const map = new Map<string, Subject[]>();
     for (const program of programOptions) {
-      map.set(program.abbrev, program.subjects.map((subject) => ({
-        curriculumDetailId: subject.curriculumDetailId,
-        subjectId: subject.id,
-        subjectCode: subject.code,
-        descriptiveTitle: subject.title,
-        units: subject.units,
-        lecHours: subject.units,
-        labHours: 0,
-        weeklyHours: subject.units,
-        yearLevel: subject.yearLevel,
-        semesterCategory: subject.semesterCategory,
-        subjectType: subject.subjectType,
-      })).filter((s) => shouldShowSubject(s.subjectType)));
+      map.set(
+        program.abbrev,
+        program.subjects
+          .filter(
+            (subject) =>
+              !selectedSemesterNumber || subject.semesterCategory === selectedSemesterNumber,
+          )
+          .map((subject) => ({
+            curriculumDetailId: subject.curriculumDetailId,
+            subjectId: subject.id,
+            subjectCode: subject.code,
+            descriptiveTitle: subject.title,
+            units: subject.units,
+            lecHours: subject.units,
+            labHours: 0,
+            weeklyHours: subject.units,
+            yearLevel: subject.yearLevel,
+            semesterCategory: subject.semesterCategory,
+            subjectType: subject.subjectType,
+          }))
+          .filter((s) => shouldShowSubject(s.subjectType)),
+      );
     }
     return map;
-  }, [programOptions, shouldShowSubject]);
+  }, [programOptions, shouldShowSubject, selectedSemesterNumber]);
 
   // Compute available instructors (exclude already-added ones)
   const availableInstructors = useMemo(() => {
@@ -674,6 +703,35 @@ export function SubjectAssignmentView() {
     });
   };
 
+  const handleSchoolYearChange = (value: string) => {
+    apiData.setSelectedSchoolYearId(value);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) next.set("sy_id", value);
+      else next.delete("sy_id");
+      return next;
+    }, { replace: true });
+  };
+
+  const handleSemesterChange = (value: string) => {
+    apiData.setSelectedSemesterNumber(value);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) next.set("semester_number", value);
+      else next.delete("semester_number");
+      return next;
+    }, { replace: true });
+  };
+
+  const overviewHref = useMemo(() => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("department_id");
+    next.delete("department_name");
+    next.delete("department_abbrev");
+    const qs = next.toString();
+    return qs ? `/subject-offering?${qs}` : "/subject-offering";
+  }, [searchParams]);
+
   const selectedDepartment = useMemo(
     () => departments.find((d) => String(d.id) === selectedDepartmentId),
     [departments, selectedDepartmentId],
@@ -681,12 +739,23 @@ export function SubjectAssignmentView() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      {hideDepartmentSelect && (
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: "Colleges overview", href: overviewHref },
+            { label: departmentAbbrev || departmentName || "Department" },
+          ]}
+        />
+      )}
       {/* Page Header */}
       <PageHeader
         title={
-          isRegistrar && selectedDepartment
-            ? `Subject Offering — ${selectedDepartment.abbrev}`
-            : `Subject Offering — ${roleSubjectLabel}`
+          departmentName
+            ? `Subject Offering — ${departmentName}`
+            : isRegistrar && selectedDepartment
+              ? `Subject Offering — ${selectedDepartment.abbrev}`
+              : `Subject Offering — ${roleSubjectLabel}`
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -713,16 +782,16 @@ export function SubjectAssignmentView() {
 
       {/* Toolbar */}
       <SubjectAssignmentToolbar
-        departments={isRegistrar ? departments : undefined}
+        departments={!hideDepartmentSelect && isRegistrar ? departments : undefined}
         selectedDepartmentId={selectedDepartmentId}
-        onDepartmentChange={isRegistrar ? handleDepartmentChange : undefined}
+        onDepartmentChange={!hideDepartmentSelect && isRegistrar ? handleDepartmentChange : undefined}
         schoolYears={apiData.schoolYears}
         selectedSchoolYearId={apiData.selectedSchoolYearId}
-        onSchoolYearChange={apiData.setSelectedSchoolYearId}
+        onSchoolYearChange={handleSchoolYearChange}
         semesters={apiData.semesters}
         selectedSemesterNumber={apiData.selectedSemesterNumber}
         semesterLabel={apiData.semesterLabel}
-        onSemesterChange={apiData.setSelectedSemesterNumber}
+        onSemesterChange={handleSemesterChange}
         search={search}
         onSearchChange={setSearch}
       />

@@ -14,6 +14,8 @@ export type OfferingCoverageSubject = {
   descriptive_title: string;
   subject_type: string | null;
   year_level: number;
+  /** Present in current payloads; kept optional so old cached payloads fail safe. */
+  semester_number?: number;
   assigned: boolean;
   instructors: string[];
 };
