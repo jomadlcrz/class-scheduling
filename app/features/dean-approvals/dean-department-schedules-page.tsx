@@ -504,6 +504,11 @@ export function DeanDepartmentSchedulesPage() {
   const syNumber = selectedSchoolYearId ? Number(selectedSchoolYearId) : null;
   const semNumber = selectedSemesterNumber ? Number(selectedSemesterNumber) : null;
 
+  const waitingProgramCount = useMemo(
+    () => groups.filter((g) => g.pendingCount > 0).length,
+    [groups],
+  );
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
@@ -596,22 +601,23 @@ export function DeanDepartmentSchedulesPage() {
                     Initial Dean Review Required
                   </p>
                   <p className="mt-0.5 font-body text-sm text-slate-600 dark:text-slate-300">
-                    {waiting} section schedule{waiting === 1 ? "" : "s"} across{" "}
-                    {groups.filter((g) => g.pendingCount > 0).length} program(s) waiting for you to
-                    pass them to instructors.
+                    {waiting} section schedule{waiting === 1 ? "" : "s"} across {waitingProgramCount}{" "}
+                    program(s) waiting for you to pass them to instructors.
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  block={false}
-                  disabled={actionLoading}
-                  isLoading={actionLoading}
-                  loadingLabel="Sending…"
-                  onClick={() => setSendAllTarget(true)}
-                >
-                  <SendIcon />
-                  Send all to instructors ({waiting})
-                </Button>
+                {waitingProgramCount > 1 && (
+                  <Button
+                    type="button"
+                    block={false}
+                    disabled={actionLoading}
+                    isLoading={actionLoading}
+                    loadingLabel="Sending…"
+                    onClick={() => setSendAllTarget(true)}
+                  >
+                    <SendIcon />
+                    Send all to instructors ({waiting})
+                  </Button>
+                )}
               </Card>
             )}
 

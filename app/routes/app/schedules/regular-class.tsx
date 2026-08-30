@@ -35,6 +35,8 @@ import {
   type UnseatedIrregularStudent,
 } from "~/services/schedule.service";
 import { termPhaseService } from "~/services/term-phase.service";
+import { DepartmentBlockAlert } from "~/features/schedules/department-block-alert";
+import { ApiError } from "~/lib/api";
 import {
   DAYS,
   formatTime,
@@ -44,8 +46,22 @@ import {
   type ScheduleSemester,
 } from "~/types/schedule";
 import type { ScheduleRelease } from "~/types/schedule-release";
+import type { TermDepartmentEntry } from "~/types/term-scheduling";
 
 const TIME_OPTIONS = generateTimeSlots().map(formatTime);
+
+type DepartmentBlock = {
+  reason: string;
+  department: TermDepartmentEntry;
+};
+
+function departmentBlockFromError(err: unknown): DepartmentBlock | null {
+  if (!(err instanceof ApiError) || !err.details) return null;
+  const reason = err.details.reason;
+  const department = err.details.department;
+  if (typeof reason !== "string" || !department || typeof department !== "object") return null;
+  return { reason, department: department as TermDepartmentEntry };
+}
 
 export function meta() {
   return [
@@ -153,6 +169,10 @@ function MasterSchedulesPage() {
 
   // Action / Mutation Dialogs
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionBlock, setActionBlock] = useState<{
+    reason: string;
+    department: TermDepartmentEntry;
+  } | null>(null);
   const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [clearTargetSetId, setClearTargetSetId] = useState<number | null>(null);
@@ -546,6 +566,8 @@ function MasterSchedulesPage() {
   // Program & Release Workflow Handlers
   async function handleSendProgram(programId: number, programAbbrev: string) {
     if (termClosed || !selectedSchoolYearId) return;
+    setActionError(null);
+    setActionBlock(null);
     try {
       const res = await termPhaseService.sendProgram(selectedSchoolYearId, semester, programId);
       toast.success(res.message || `${programAbbrev} schedules submitted to Dean.`);
@@ -554,11 +576,14 @@ function MasterSchedulesPage() {
       const msg = err instanceof Error ? err.message : "Unable to submit program schedules.";
       toast.error(msg);
       setActionError(msg);
+      setActionBlock(departmentBlockFromError(err));
     }
   }
 
   async function handleWithdrawProgram(programId: number, programAbbrev: string) {
     if (termClosed || !selectedSchoolYearId) return;
+    setActionError(null);
+    setActionBlock(null);
     try {
       const res = await termPhaseService.withdrawProgram(selectedSchoolYearId, semester, programId);
       toast.success(res.message || `${programAbbrev} schedules withdrawn from Dean review.`);
@@ -567,11 +592,14 @@ function MasterSchedulesPage() {
       const msg = err instanceof Error ? err.message : "Unable to withdraw program schedules.";
       toast.error(msg);
       setActionError(msg);
+      setActionBlock(departmentBlockFromError(err));
     }
   }
 
   async function handlePublishProgram(programId: number, programAbbrev: string) {
     if (termClosed || !selectedSchoolYearId) return;
+    setActionError(null);
+    setActionBlock(null);
     try {
       const res = await termPhaseService.publishProgramSchedule(selectedSchoolYearId, semester, programId);
       toast.success(res.message || `${programAbbrev} official schedule published.`);
@@ -580,6 +608,7 @@ function MasterSchedulesPage() {
       const msg = err instanceof Error ? err.message : "Unable to publish program schedule.";
       toast.error(msg);
       setActionError(msg);
+      setActionBlock(departmentBlockFromError(err));
     }
   }
 
@@ -759,11 +788,20 @@ function MasterSchedulesPage() {
           {/* Main Accordion Hierarchy */}
           <div className="mt-5">
             <AnimatePresence>
-              {actionError && (
-                <Alert key="action-error" variant="destructive" className="mb-4">
-                  <AlertIcon />
-                  <AlertDescription>{actionError}</AlertDescription>
-                </Alert>
+              {actionBlock ? (
+                <DepartmentBlockAlert
+                  key="action-block"
+                  message={actionError ?? "This program cannot be sent yet."}
+                  reason={actionBlock.reason}
+                  department={actionBlock.department}
+                />
+              ) : (
+                actionError && (
+                  <Alert key="action-error" variant="destructive" className="mb-4">
+                    <AlertIcon />
+                    <AlertDescription>{actionError}</AlertDescription>
+                  </Alert>
+                )
               )}
               {loadError && (
                 <DataLoadAlert

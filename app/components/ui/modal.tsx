@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CloseIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
 import { useScrollLock } from "~/hooks/use-scroll-lock";
 
 /** Overlays currently mounted. Each dialog reserves a slot so a nested dialog's
@@ -100,6 +101,10 @@ type ConfirmDialogProps = {
   loadingLabel: string;
   /** Button style for the confirm action; "danger" for destructive ones. */
   confirmVariant?: "primary" | "danger";
+  /** When set, an input appears that must be typed exactly before confirm enables. */
+  confirmationText?: string;
+  /** Extra conditions that keep the confirm button disabled (e.g. invalid input). */
+  confirmDisabled?: boolean;
   onConfirm: () => Promise<void>;
   children: ReactNode;
 };
@@ -112,15 +117,23 @@ export function ConfirmDialog({
   confirmLabel,
   loadingLabel,
   confirmVariant = "primary",
+  confirmationText,
+  confirmDisabled = false,
   onConfirm,
   children,
 }: ConfirmDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [typedConfirm, setTypedConfirm] = useState("");
+  const confirmationInputId = useId();
+
+  const confirmationMismatch =
+    confirmationText !== undefined && typedConfirm !== confirmationText;
 
   function handleClose() {
     if (isLoading) return;
     setError(null);
+    setTypedConfirm("");
     onClose();
   }
 
@@ -129,6 +142,7 @@ export function ConfirmDialog({
     setIsLoading(true);
     try {
       await onConfirm();
+      setTypedConfirm("");
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
@@ -151,6 +165,7 @@ export function ConfirmDialog({
             type="button"
             variant={confirmVariant}
             block={false}
+            disabled={confirmDisabled || confirmationMismatch}
             isLoading={isLoading}
             loadingLabel={loadingLabel}
             onClick={handleConfirm}
@@ -165,6 +180,16 @@ export function ConfirmDialog({
         <div className="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           {children}
         </div>
+        {confirmationText !== undefined && (
+          <Input
+            id={confirmationInputId}
+            label={`Type ${confirmationText} to confirm`}
+            value={typedConfirm}
+            onChange={(event) => setTypedConfirm(event.target.value)}
+            autoComplete="off"
+            spellCheck={false}
+          />
+        )}
       </div>
     </Modal>
   );

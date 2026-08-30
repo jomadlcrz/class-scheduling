@@ -1,7 +1,7 @@
 import type { ReactNode, TextareaHTMLAttributes } from "react";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
 
-type TextareaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "id" | "className" | "placeholder"> & {
+type TextareaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "id" | "className"> & {
   id: string;
   label: string;
   labelEnd?: ReactNode;
