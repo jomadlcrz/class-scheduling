@@ -18,6 +18,8 @@ export type OfferingCoverageSubject = {
   semester_number?: number;
   assigned: boolean;
   instructors: string[];
+  /** Instructor names plus their home department abbrev — present in current payloads. */
+  instructor_details?: { name: string; department_abbrev: string | null }[];
 };
 
 export type OfferingCoverageProgram = {

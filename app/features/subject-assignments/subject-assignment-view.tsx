@@ -752,6 +752,14 @@ export function SubjectAssignmentView({
     [departments, selectedDepartmentId],
   );
 
+  const departmentAbbrevByName = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const d of departments) {
+      if (d.name) map[d.name] = d.abbrev;
+    }
+    return map;
+  }, [departments]);
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       {hideDepartmentSelect && (
@@ -834,6 +842,7 @@ export function SubjectAssignmentView({
             programs={programOptions}
             entries={apiData.entries}
             semesterNumber={selectedSemesterNumber}
+            departmentAbbrevByName={departmentAbbrevByName}
           />
         </div>
       )}

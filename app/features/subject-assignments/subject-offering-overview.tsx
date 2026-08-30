@@ -36,7 +36,11 @@ type SubjectRow = {
   title: string;
   subjectType?: string | null;
   yearLevel: number;
-  instructors: { name: string; department: string | null }[];
+  instructors: {
+    name: string;
+    department: string | null;
+    departmentAbbrev: string | null;
+  }[];
 };
 
 type SubjectOfferingOverviewProps = {
@@ -44,6 +48,8 @@ type SubjectOfferingOverviewProps = {
   entries: EntryLike[] | null;
   /** The selected term's semester (1 or 2); subjects are limited to it. */
   semesterNumber: number | null;
+  /** Department full name -> abbreviation, to label each instructor's department. */
+  departmentAbbrevByName?: Record<string, string>;
 };
 
 /** One subject dropdown; its badge is the number of assigned instructors. */
@@ -113,7 +119,7 @@ function SubjectInstructorRow({
                       <span>{instructor.name}</span>
                       {instructor.department ? (
                         <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                          {instructor.department}
+                          {instructor.departmentAbbrev ?? instructor.department}
                         </span>
                       ) : null}
                     </li>
@@ -139,6 +145,7 @@ export function SubjectOfferingOverview({
   programs,
   entries,
   semesterNumber,
+  departmentAbbrevByName = {},
 }: SubjectOfferingOverviewProps) {
   const [openCodes, setOpenCodes] = useState<Set<string>>(new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -181,13 +188,17 @@ export function SubjectOfferingOverview({
       .map((s) => ({
         ...s,
         instructors: [...(instructorsByCode.get(s.code) ?? new Map<string, string | null>())]
-          .map(([name, department]) => ({ name, department }))
+          .map(([name, department]) => ({
+            name,
+            department,
+            departmentAbbrev: department ? departmentAbbrevByName[department] ?? null : null,
+          }))
           .sort((a, b) => a.name.localeCompare(b.name)),
       }))
       .sort((a, b) => a.code.localeCompare(b.code));
 
     return rows.sort((a, b) => a.yearLevel - b.yearLevel || a.code.localeCompare(b.code));
-  }, [programs, entries, semesterNumber]);
+  }, [programs, entries, semesterNumber, departmentAbbrevByName]);
   const unassignedCount = subjects.filter((subject) => subject.instructors.length === 0).length;
 
   function toggleCode(code: string) {

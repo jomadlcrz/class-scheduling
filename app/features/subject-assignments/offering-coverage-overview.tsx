@@ -81,12 +81,21 @@ function CoverageSubjectRow({ subject }: { subject: OfferingCoverageSubject }) {
             </p>
           ) : (
             <ul className="flex flex-col gap-1 pb-0.5">
-              {subject.instructors.map((name) => (
+              {(subject.instructor_details ??
+                subject.instructors.map((name) => ({
+                  name,
+                  department_abbrev: null as string | null,
+                }))).map((instructor) => (
                 <li
-                  key={name}
+                  key={`${instructor.name}:${instructor.department_abbrev ?? ""}`}
                   className="flex items-baseline gap-2 font-body text-sm font-medium text-navy-800 dark:text-mist-100"
                 >
-                  <span>{name}</span>
+                  <span>{instructor.name}</span>
+                  {instructor.department_abbrev ? (
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                      {instructor.department_abbrev}
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>
