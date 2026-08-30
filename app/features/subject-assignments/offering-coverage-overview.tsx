@@ -43,11 +43,7 @@ function CoverageSubjectRow({ subject }: { subject: OfferingCoverageSubject }) {
 
   return (
     <li
-      className={`rounded-lg border px-3 py-2.5 ${
-        subject.assigned
-          ? "border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-400/20 dark:bg-emerald-400/[0.07]"
-          : "border-slate-200/80 bg-transparent dark:border-white/10"
-      }`}
+      className="rounded-lg border border-slate-200/80 px-3 py-2.5 dark:border-white/10"
     >
       <button
         type="button"
@@ -103,10 +99,20 @@ function CoverageSubjectRow({ subject }: { subject: OfferingCoverageSubject }) {
 
 /** One program's offered subjects — every subject listed, assigned and not. */
 function ProgramCoverageRow({ program }: { program: OfferingCoverageProgram }) {
+  const [collapsed, setCollapsed] = useState(true);
+
   return (
-    <div className="rounded-lg bg-slate-50/70 px-3 py-2.5 dark:bg-white/5">
-      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 text-left">
+    <div className="px-3 py-2.5">
+      <button
+        type="button"
+        onClick={() => setCollapsed(!collapsed)}
+        aria-expanded={!collapsed}
+        className="flex w-full items-center justify-between gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+      >
         <span className="flex min-w-0 items-baseline gap-2">
+          <span className={`text-slate-400 transition-transform duration-150 ${collapsed ? "-rotate-90" : ""}`} aria-hidden="true">
+            <ChevronDownIcon />
+          </span>
           <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
             {program.program_abbrev}
           </span>
@@ -114,8 +120,11 @@ function ProgramCoverageRow({ program }: { program: OfferingCoverageProgram }) {
             {program.program_name}
           </span>
         </span>
-      </div>
-      {program.subjects.length > 0 && (
+        <span className="shrink-0 font-body text-xs text-slate-400 dark:text-slate-500">
+          {program.subjects.length} subject{program.subjects.length === 1 ? "" : "s"}
+        </span>
+      </button>
+      {!collapsed && program.subjects.length > 0 && (
         <ul className="mt-2 flex flex-col gap-1.5">
           {program.subjects.map((subject) => (
             <CoverageSubjectRow key={subject.curriculum_detail_id} subject={subject} />
@@ -166,13 +175,11 @@ function DepartmentAccordionItem({
       }
       adornment={
         <div className="flex flex-wrap items-center gap-2">
-          {!readOnly && (
-            <Badge tone={coveredThisTerm.unassigned > 0 ? "gold" : "green"}>
-              {coveredThisTerm.unassigned > 0
-                ? `${coveredThisTerm.unassigned} unassigned`
-                : "fully covered"}
-            </Badge>
-          )}
+          <Badge tone={coveredThisTerm.unassigned > 0 ? "gold" : "green"}>
+            {coveredThisTerm.unassigned > 0
+              ? `${coveredThisTerm.unassigned} unassigned`
+              : "fully covered"}
+          </Badge>
           {!readOnly && onDrillIn && (
             <Button
               type="button"
@@ -279,9 +286,6 @@ export function OfferingCoverageOverview({
         </span>
       </Tooltip>
       <Badge tone="slate">Majors not included</Badge>
-      <Badge tone={coverageStats.unassigned > 0 ? "gold" : "green"}>
-        {coverageStats.unassigned} unassigned
-      </Badge>
     </div>
   );
 

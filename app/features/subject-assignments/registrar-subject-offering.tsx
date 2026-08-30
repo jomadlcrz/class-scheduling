@@ -113,6 +113,7 @@ export function RegistrarSubjectOffering() {
         departmentName={selected.name}
         departmentAbbrev={selected.abbrev}
         hideDepartmentSelect
+        showOfferingOverview
       />
     );
   }

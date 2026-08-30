@@ -28,6 +28,7 @@ import { AssignmentSummaryFooter } from "./assignment-summary-footer";
 import { AssignmentLoadSummary } from "./assignment-load-summary";
 import { InstructorCard } from "./instructor-card";
 import { OfferingCoverageOverview } from "./offering-coverage-overview";
+import { SubjectOfferingOverview } from "./subject-offering-overview";
 
 type Subject = {
   curriculumDetailId?: number;
@@ -74,12 +75,15 @@ type SubjectAssignmentViewProps = {
   departmentAbbrev?: string;
   /** Registrar drill-in — department is chosen in the Colleges overview, so hide the toolbar select. */
   hideDepartmentSelect?: boolean;
+  /** Registrar's department-scoped subject offering overview (majors excluded). */
+  showOfferingOverview?: boolean;
 };
 
 export function SubjectAssignmentView({
   departmentName,
   departmentAbbrev,
   hideDepartmentSelect = false,
+  showOfferingOverview = false,
 }: SubjectAssignmentViewProps = {}) {
   const { user } = useAuth();
   const isRegistrar = user?.role === "registrar";
@@ -820,6 +824,16 @@ export function SubjectAssignmentView({
             syId={selectedSyId}
             semesterNumber={selectedSemesterNumber}
             readOnly
+          />
+        </div>
+      )}
+
+      {showOfferingOverview && (
+        <div className="mt-4">
+          <SubjectOfferingOverview
+            programs={programOptions}
+            entries={apiData.entries}
+            semesterNumber={selectedSemesterNumber}
           />
         </div>
       )}
