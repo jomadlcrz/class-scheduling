@@ -7,7 +7,7 @@ import { scheduleReleaseService } from "~/services/schedule-release.service";
 /**
  * Pending schedule-approval count for the dean's current term, for the nav badge.
  * Returns 0 for non-deans and makes no request for them. Resolves the term the
- * same way `useDeanScheduleApprovals` does (default school year + first non-3 semester).
+ * same way `useDeanDepartmentSchedules` does (default school year + first non-3 semester).
  */
 export function useDeanPendingApprovalsCount(): number {
   const { user } = useAuth();

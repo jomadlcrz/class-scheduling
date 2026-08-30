@@ -278,7 +278,7 @@ function ProgramCard({
   );
 }
 
-export function DeanScheduleApprovalsPage() {
+export function DeanDepartmentSchedulesPage() {
   const { context: termContext, selectTerm } = useTermContext();
   const { schoolYears, defaultSchoolYear, loading: schoolYearsLoading } = useSchoolYears();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();

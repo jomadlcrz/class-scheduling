@@ -9,7 +9,6 @@ import {
   CalendarClockIcon,
   CalendarIcon,
   CalendarShuffleIcon,
-  CheckIcon,
   ChevronRightIcon,
   ClockIcon,
   DashboardIcon,
@@ -35,8 +34,8 @@ import { useRegistrarPendingScheduleCount } from "~/features/schedules/use-regis
 import { useAuth } from "~/hooks/use-auth";
 import type { Role } from "~/types/user";
 
-/** Nav item that carries a live pending-count badge (dean approvals inbox). */
-const SCHEDULE_APPROVALS_PATH = "/dean/schedule-approvals";
+/** Nav item that carries a live pending-count badge (dean's department schedules). */
+const DEPARTMENT_SCHEDULES_PATH = "/dean/department-schedules";
 
 /** Nav item that carries a live pending-count badge (registrar scheduling hub). */
 const SCHEDULING_HUB_PATH = "/schedules";
@@ -136,7 +135,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Rooms & Capacity",
     items: [
       { label: "Classroom Mapping", to: "/classroom-mapping", icon: <MapIcon />, roles: ["dean", "registrar"] },
-      { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["dean", "registrar"] },
+      { label: "Laboratory Analysis", to: "/schedules/lab-analysis", icon: <FlaskConicalIcon />, roles: ["registrar"] },
     ],
   },
   {
@@ -191,7 +190,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "My Department",
     items: [
-      { label: "Schedule Approvals", to: "/dean/schedule-approvals", icon: <CheckIcon />, roles: ["dean"], matchPrefix: true },
+      { label: "Department Schedules", to: "/dean/department-schedules", icon: <FolderOpenIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
       { label: "Subject Offering", to: "/subject-offering", icon: <UserCheckIcon />, roles: ["dean"] },
       { label: "Assignment Audit Logs", to: "/subject-offering/audit-logs", icon: <AuditLogIcon />, roles: ["dean"] },
@@ -536,7 +535,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                             {item.label}
                           </motion.span>
                         )}
-                        {!collapsed && item.to === SCHEDULE_APPROVALS_PATH && pendingApprovals > 0 && (
+                        {!collapsed && item.to === DEPARTMENT_SCHEDULES_PATH && pendingApprovals > 0 && (
                           <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 font-body text-[0.7rem] font-bold leading-none tabular-nums text-mist-100">
                             {pendingApprovals}
                           </span>
@@ -548,7 +547,7 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
                         )}
                       </NavLink>
                     </Tooltip>
-                    {collapsed && item.to === SCHEDULE_APPROVALS_PATH && pendingApprovals > 0 && (
+                    {collapsed && item.to === DEPARTMENT_SCHEDULES_PATH && pendingApprovals > 0 && (
                       <span
                         aria-hidden="true"
                         className="absolute right-1 top-1 size-2 rounded-full bg-white ring-2 ring-gwc-blue"

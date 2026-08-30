@@ -5,11 +5,11 @@ import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { DeanApprovalsInbox } from "~/types/schedule-release";
 
 /**
- * Dean's schedule-approvals inbox for a selected school year + semester.
+ * Dean's department-schedules inbox for a selected school year + semester.
  * Term selection is local state (no shared context needed), mirroring
  * useDeanFacultyLoading — same default-selection pattern.
  */
-export function useDeanScheduleApprovals() {
+export function useDeanDepartmentSchedules() {
   const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
   const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
 

@@ -106,7 +106,7 @@ const SEARCH_ACTIONS: TopbarAction[] = [
   { label: "Shift Requests", to: "/shift-requests", roles: ["faculty"] },
   { label: "Scheduling Hub", to: "/schedules", roles: ["registrar"] },
   { label: "Scheduling Calendar", to: "/schedules/term-calendar", roles: ["registrar"] },
-  { label: "Schedule Approvals", to: "/dean/schedule-approvals", roles: ["dean"] },
+  { label: "Department Schedules", to: "/dean/department-schedules", roles: ["dean"] },
   { label: "Faculty Loads", to: "/faculty-loads", roles: ["dean"] },
   { label: "My Schedule", to: "/faculty-schedule", roles: ["faculty"] },
   { label: "Faculty Loading", to: "/faculty-loading", roles: ["faculty"] },
@@ -139,9 +139,9 @@ const HELP_ACTIONS: HelpAction[] = [
     roles: ["registrar"],
   },
   {
-    label: "Review schedule approvals",
+    label: "Review department schedules",
     description: "Inspect and decide on submitted schedules.",
-    to: "/dean/schedule-approvals",
+    to: "/dean/department-schedules",
     roles: ["dean"],
   },
   {
@@ -228,8 +228,8 @@ const PAGE_HELP: PageHelp[] = [
     description: "Confirm the academic term, program, year level, and section before saving a student enrollment.",
   },
   {
-    matches: (pathname) => pathname.startsWith("/dean/schedule-approvals"),
-    title: "Schedule approvals",
+    matches: (pathname) => pathname.startsWith("/dean/department-schedules"),
+    title: "Department schedules",
     description: "Review conflicts, room use, instructor availability, and faculty load before approving a submitted schedule.",
   },
   {

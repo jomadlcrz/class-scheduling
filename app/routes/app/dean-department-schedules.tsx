@@ -1,17 +1,17 @@
 import { RoleGuard } from "~/auth/role-guard";
-import { DeanScheduleApprovalsPage } from "~/features/dean-approvals/dean-schedule-approvals-page";
+import { DeanDepartmentSchedulesPage } from "~/features/dean-approvals/dean-department-schedules-page";
 
 export function meta() {
   return [
-    { title: "Schedule Approvals — GWC Class Scheduling" },
+    { title: "Department Schedules — GWC Class Scheduling" },
     { name: "description", content: "Review and approve schedules submitted by the registrar for your department." },
   ];
 }
 
-export default function DeanScheduleApprovalsRoute() {
+export default function DeanDepartmentSchedulesRoute() {
   return (
     <RoleGuard allow={["dean"]}>
-      <DeanScheduleApprovalsPage />
+      <DeanDepartmentSchedulesPage />
     </RoleGuard>
   );
 }

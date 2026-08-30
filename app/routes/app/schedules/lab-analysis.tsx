@@ -30,7 +30,7 @@ export function meta() {
 
 export default function LabAnalysisRoute() {
   return (
-    <RoleGuard allow={["admin", "registrar", "dean"]}>
+    <RoleGuard allow={["admin", "registrar"]}>
       <LabAnalysisPage />
     </RoleGuard>
   );

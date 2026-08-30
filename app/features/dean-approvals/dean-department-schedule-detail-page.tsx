@@ -17,7 +17,7 @@ import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { SchedulePreview } from "~/types/schedule-release";
 
 /** Deep-link target for the "schedule submitted for approval" notification. */
-export function DeanScheduleApprovalDetailPage() {
+export function DeanDepartmentScheduleDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const releaseId = Number(id);
@@ -57,7 +57,7 @@ export function DeanScheduleApprovalDetailPage() {
     try {
       const { message } = await scheduleReleaseService.sendToInstructors(releaseId);
       if (message) toast.success(message);
-      navigate("/dean/schedule-approvals");
+      navigate("/dean/department-schedules");
     } catch (err) {
       await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
       throw err instanceof Error ? err : new Error("Unable to send the schedule to instructors.");
@@ -82,7 +82,7 @@ export function DeanScheduleApprovalDetailPage() {
     try {
       const { message } = await scheduleReleaseService.rejectRelease(releaseId, reason);
       if (message) toast.success(message);
-      navigate("/dean/schedule-approvals");
+      navigate("/dean/department-schedules");
     } catch (err) {
       await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
       throw err instanceof Error ? err : new Error("Unable to reject the schedule.");
@@ -105,7 +105,7 @@ export function DeanScheduleApprovalDetailPage() {
         <PageHeader
           title={error ? "Unable to load schedule" : "Schedule Not Found"}
           actions={
-            <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/schedule-approvals")}>
+            <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/department-schedules")}>
               <ArrowLeftIcon /> Back
             </Button>
           }
@@ -132,7 +132,7 @@ export function DeanScheduleApprovalDetailPage() {
         title={`${release.programAbbrev ?? ""} ${release.setCode ?? ""}`.trim()}
         actions={
           <div className="flex flex-wrap justify-end gap-2">
-            <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/schedule-approvals")}>
+            <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/department-schedules")}>
               <ArrowLeftIcon /> Back
             </Button>
             {canReview && (

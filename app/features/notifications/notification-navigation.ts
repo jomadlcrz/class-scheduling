@@ -37,14 +37,14 @@ export function resolveNotificationTarget(
       // Dean: land on the purpose-built approval detail page for this release when we have its id.
       const releaseId = p.release_id;
       return typeof releaseId === "number"
-        ? `/dean/schedule-approvals/${releaseId}`
-        : "/dean/schedule-approvals";
+        ? `/dean/department-schedules/${releaseId}`
+        : "/dean/department-schedules";
     }
     case "schedule_approval_requested_summary":
-      return "/dean/schedule-approvals";
+      return "/dean/department-schedules";
     case "schedule_published_summary":
     case "schedule_rescheduled_summary":
-      return "/dean/schedule-approvals";
+      return "/dean/department-schedules";
     case "major_schedule_submitted":
     case "major_schedule_edit_requested":
     case "major_schedule_deleted":
@@ -52,15 +52,15 @@ export function resolveNotificationTarget(
       return "/major-schedules";
     case "schedule_approval_approved":
     case "schedule_approval_approved_summary":
-      return role === "dean" ? "/dean/schedule-approvals" : "/schedules";
+      return role === "dean" ? "/dean/department-schedules" : "/schedules";
     case "schedule_review_distributed":
-      return role === "faculty" ? "/schedule-responses" : "/dean/schedule-approvals";
+      return role === "faculty" ? "/schedule-responses" : "/dean/department-schedules";
     case "scheduling_deadline_updated":
     case "scheduling_phase_changed":
       return role === "registrar"
         ? "/schedules/term-calendar"
         : role === "dean"
-          ? "/dean/schedule-approvals"
+          ? "/dean/department-schedules"
           : "/schedule-responses";
     case "instructor_schedule_response":
     case "instructor_suggestion_rejected":
