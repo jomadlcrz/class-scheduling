@@ -31,20 +31,12 @@ type OfferingCoverageOverviewProps = {
 const COVERAGE_NOTE =
   "Non-major subjects are shared across programs. Once one is assigned to an instructor in any program, it counts as covered for every curriculum carrying it, even when the instructor belongs to another department. Major subjects are excluded because they are assigned by the Dean.";
 
-function ProgramCoverageRow({
-  program,
-  semesterNumber,
-}: {
-  program: OfferingCoverageProgram;
-  semesterNumber: number;
-}) {
-  const shown = program.subjects.filter(
-    (subject) => !subject.assigned && subject.semester_number === semesterNumber,
-  );
+function ProgramCoverageRow({ program }: { program: OfferingCoverageProgram }) {
+  const shown = program.subjects.filter((subject) => !subject.assigned);
 
   return (
     <div className="rounded-lg bg-slate-50/70 px-3 py-2.5 dark:bg-white/5">
-      <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 text-left">
+      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 text-left">
         <span className="flex min-w-0 items-baseline gap-2">
           <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
             {program.program_abbrev}
@@ -53,9 +45,6 @@ function ProgramCoverageRow({
             {program.program_name}
           </span>
         </span>
-        <Badge tone={shown.length > 0 ? "gold" : "green"}>
-          {shown.length > 0 ? `${shown.length} unassigned` : "all covered"}
-        </Badge>
       </div>
       {shown.length > 0 && (
         <ul className="mt-2 flex flex-col gap-1.5">
@@ -85,25 +74,21 @@ function ProgramCoverageRow({
 
 function DepartmentAccordionItem({
   department,
-  semesterNumber,
   onDrillIn,
 }: {
   department: OfferingCoverageDepartment;
-  semesterNumber: number;
   onDrillIn?: (target: CoverageDrillTarget) => void;
 }) {
   const coveredThisTerm = useMemo(() => {
     const status = new Map<number, boolean>();
     for (const program of department.programs) {
       for (const subject of program.subjects) {
-        if (subject.semester_number === semesterNumber) {
-          status.set(subject.subject_id, subject.assigned);
-        }
+        status.set(subject.subject_id, subject.assigned);
       }
     }
     const unassigned = [...status.values()].filter((assigned) => !assigned).length;
     return { total: status.size, unassigned };
-  }, [department.programs, semesterNumber]);
+  }, [department.programs]);
 
   return (
     <AccordionItem
@@ -149,13 +134,9 @@ function DepartmentAccordionItem({
       }
       adornmentPosition="below"
     >
-      <div className="flex flex-col gap-2 p-3 sm:p-4">
+<div className="flex flex-col gap-2 p-3 sm:p-4">
         {department.programs.map((program) => (
-          <ProgramCoverageRow
-            key={program.program_id}
-            program={program}
-            semesterNumber={semesterNumber}
-          />
+          <ProgramCoverageRow key={program.program_id} program={program} />
         ))}
       </div>
     </AccordionItem>
@@ -177,14 +158,13 @@ export function OfferingCoverageOverview({ syId, semesterNumber, onDrillIn }: Of
     { enabled: hasTerm },
   );
 
+  // The coverage API is scoped to the selected term, so rows are shown as-is.
   const coverageStats = useMemo(() => {
     const status = new Map<number, boolean>();
     for (const department of data?.departments ?? []) {
       for (const program of department.programs) {
         for (const subject of program.subjects) {
-          if (subject.semester_number === semesterNumber) {
-            status.set(subject.subject_id, subject.assigned);
-          }
+          status.set(subject.subject_id, subject.assigned);
         }
       }
     }
@@ -192,7 +172,7 @@ export function OfferingCoverageOverview({ syId, semesterNumber, onDrillIn }: Of
       total: status.size,
       unassigned: [...status.values()].filter((assigned) => !assigned).length,
     };
-  }, [data, semesterNumber]);
+  }, [data]);
 
   if (!hasTerm) {
     return (
@@ -239,17 +219,13 @@ export function OfferingCoverageOverview({ syId, semesterNumber, onDrillIn }: Of
             </span>
           </Tooltip>
           <Badge tone="slate">Majors not included</Badge>
-          <Badge tone={coverageStats.unassigned > 0 ? "gold" : "green"}>
-            {coverageStats.unassigned} unassigned
-          </Badge>
         </div>
       </div>
-      <Accordion>
+<Accordion>
         {data.departments.map((department) => (
           <DepartmentAccordionItem
             key={department.department_id}
             department={department}
-            semesterNumber={semesterNumber}
             onDrillIn={onDrillIn}
           />
         ))}
