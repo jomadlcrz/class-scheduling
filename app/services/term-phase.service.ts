@@ -261,40 +261,44 @@ async function updateSchedulingWindowDeadline(
   return { ...data, message: apiMessage(data) };
 }
 
-/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/major-edit-request-limit */
+/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/major-edit-request-policy */
 async function saveMajorEditRequestLimit(
   syId: number,
   semesterNumber: number,
   limit: number,
 ): Promise<{ majorEditRequestLimit: number; message: string }> {
   const data = await apiPut<{
+    attemptLimit?: number;
     major_edit_request_limit?: number;
     majorEditRequestLimit?: number;
     message?: string;
-  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/major-edit-request-limit`, {
-    limit,
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/major-edit-request-policy`, {
+    attemptLimit: limit,
   });
   return {
-    majorEditRequestLimit: data.majorEditRequestLimit ?? data.major_edit_request_limit ?? limit,
+    majorEditRequestLimit:
+      data.attemptLimit ?? data.majorEditRequestLimit ?? data.major_edit_request_limit ?? limit,
     message: apiMessage(data) || "Edit-request limit saved.",
   };
 }
 
-/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/suggestion-attempt-limit */
+/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/suggestion-policy */
 async function saveSuggestionAttemptLimit(
   syId: number,
   semesterNumber: number,
   limit: number,
 ): Promise<{ suggestionAttemptLimit: number; message: string }> {
   const data = await apiPut<{
+    attemptLimit?: number;
     suggestion_attempt_limit?: number;
     suggestionAttemptLimit?: number;
     message?: string;
-  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/suggestion-attempt-limit`, {
-    limit,
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/suggestion-policy`, {
+    attemptLimit: limit,
   });
   return {
-    suggestionAttemptLimit: data.suggestionAttemptLimit ?? data.suggestion_attempt_limit ?? limit,
+    suggestionAttemptLimit:
+      data.attemptLimit ?? data.suggestionAttemptLimit ?? data.suggestion_attempt_limit ?? limit,
     message: apiMessage(data) || "Suggestion limit saved.",
   };
 }
