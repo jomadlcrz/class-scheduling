@@ -36,6 +36,8 @@ export default [
     route("subject-offering/audit-logs", "routes/app/assignment-audit-logs.tsx"),
     route("major-schedules", "routes/app/major-schedules.tsx"),
     route("schedule-responses", "routes/app/schedule-responses.tsx"),
+    route("shift-requests", "routes/app/shift-requests.tsx"),
+    route("shift-requests/:releaseId", "routes/app/shift-request-detail.tsx"),
     route("teaching-terms/:id", "routes/app/teaching-term.tsx"),
     route("dean/schedule-approvals", "routes/app/dean-schedule-approvals.tsx"),
     route("dean/schedule-approvals/:id", "routes/app/dean-schedule-approval-detail.tsx"),

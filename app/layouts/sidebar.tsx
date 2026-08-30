@@ -184,7 +184,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Schedule Responses", to: "/schedule-responses", icon: <CalendarClockIcon />, roles: ["registrar"] },
       { label: "My Schedule", to: "/faculty-schedule", icon: <CalendarIcon />, roles: ["faculty"] },
       { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
-      { label: "Schedule Responses", to: "/schedule-responses", icon: <CalendarClockIcon />, roles: ["faculty"] },
+      { label: "Shift Requests", to: "/shift-requests", icon: <CalendarClockIcon />, roles: ["faculty"], matchPrefix: true },
       { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
     ],
   },

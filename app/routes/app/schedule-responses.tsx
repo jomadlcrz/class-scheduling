@@ -800,7 +800,7 @@ function ScheduleResponsesPage() {
 
 export default function ScheduleResponsesRoute() {
   return (
-    <RoleGuard allow={["faculty", "dean", "registrar"]}>
+    <RoleGuard allow={["dean", "registrar"]}>
       <ScheduleResponsesPage />
     </RoleGuard>
   );
