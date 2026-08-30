@@ -50,7 +50,8 @@ export type SchedulePreviewSession = {
   instructorName: string | null;
   roomId: number | null;
   roomName: string | null;
-  mode: string;
+  classMode: string | null;
+  sessionMode: string | null;
   /** "9:00 AM"-style, same format as scheduleService.view()'s class_time. */
   startTime: string;
   endTime: string;

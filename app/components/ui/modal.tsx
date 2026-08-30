@@ -4,7 +4,8 @@ import { createPortal } from "react-dom";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { CloseIcon } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
+import { inputClassName } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { useScrollLock } from "~/hooks/use-scroll-lock";
 
 /** Overlays currently mounted. Each dialog reserves a slot so a nested dialog's
@@ -181,14 +182,24 @@ export function ConfirmDialog({
           {children}
         </div>
         {confirmationText !== undefined && (
-          <Input
-            id={confirmationInputId}
-            label={`Type ${confirmationText} to confirm`}
-            value={typedConfirm}
-            onChange={(event) => setTypedConfirm(event.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={confirmationInputId}>
+              Type{" "}
+              <span className="font-semibold text-navy-800 dark:text-mist-100">
+                {confirmationText}
+              </span>{" "}
+              to confirm
+            </Label>
+            <input
+              id={confirmationInputId}
+              type="text"
+              autoComplete="off"
+              spellCheck={false}
+              value={typedConfirm}
+              onChange={(event) => setTypedConfirm(event.target.value)}
+              className={inputClassName}
+            />
+          </div>
         )}
       </div>
     </Modal>
