@@ -53,6 +53,10 @@ type InstructorCardProps = {
   onAddProgram: () => void;
   onAssignSubject: (programId: string) => void;
   onRemoveSubject: (programId: string, subjectCode: string) => void;
+  /** Whether the current role may remove this subject (by type). */
+  canRemoveSubject?: (subjectCode: string) => boolean;
+  /** The subject's type (for the Type column). */
+  getSubjectType?: (subjectCode: string) => string | undefined;
   onRemoveProgram: (programId: string) => void;
   onUpdateAssignment: () => void;
   onViewTeachingTerm?: () => void;
@@ -72,6 +76,8 @@ export function InstructorCard({
   onAddProgram,
   onAssignSubject,
   onRemoveSubject,
+  canRemoveSubject,
+  getSubjectType,
   onRemoveProgram,
   onUpdateAssignment,
   onViewTeachingTerm,
@@ -235,6 +241,8 @@ export function InstructorCard({
           <ProgramTablePanel
             key={prog.id}
             program={prog}
+            canRemoveSubject={canRemoveSubject}
+            getSubjectType={getSubjectType}
             onAssignSubject={() => onAssignSubject(prog.id)}
             onRemoveSubject={(code) => onRemoveSubject(prog.id, code)}
             onRemoveProgram={prog.isNew ? () => onRemoveProgram(prog.id) : undefined}

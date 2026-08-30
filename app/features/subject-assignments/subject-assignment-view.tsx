@@ -18,7 +18,7 @@ import { useCachedData } from "~/hooks/use-cached-data";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
-import { facultyKey, formatInstructorName, isMajorSubject } from "~/lib/faculty-load";
+import { facultyKey, formatInstructorName, isMajorSubject, MAJOR_SUBJECT_TYPES } from "~/lib/faculty-load";
 import { authorityWorkflowService } from "~/services/authority-workflow.service";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { departmentService } from "~/services/department.service";
@@ -27,6 +27,7 @@ import { AddInstructorModal, AddProgramModal, AssignSubjectModal } from "./assig
 import { AssignmentSummaryFooter } from "./assignment-summary-footer";
 import { AssignmentLoadSummary } from "./assignment-load-summary";
 import { InstructorCard } from "./instructor-card";
+import { OfferingCoverageOverview } from "./offering-coverage-overview";
 
 type Subject = {
   curriculumDetailId?: number;
@@ -277,6 +278,22 @@ export function SubjectAssignmentView({
     return map;
   }, [programOptions]);
 
+  // Role-split rule for removing subjects: the registrar manages only non-major
+  // (minor) subjects, the dean only majors. Unknown type (not loaded yet) is
+  // allowed here; the backend enforces the rule regardless.
+  const canManageSubjectType = (type: string | undefined): boolean => {
+    if (!type) return true;
+    const isMajor = MAJOR_SUBJECT_TYPES.has(type);
+    if (user?.role === "registrar") return !isMajor;
+    if (user?.role === "dean") return isMajor;
+    return true;
+  };
+
+  const canRemoveSubject = (subjectCode: string): boolean =>
+    canManageSubjectType(subjectTypeByCode.get(subjectCode) ?? undefined);
+
+  const getSubjectType = (subjectCode: string) => subjectTypeByCode.get(subjectCode) ?? undefined;
+
   const availableSubjectsByProgram = useMemo(() => {
     const map = new Map<string, Subject[]>();
     for (const program of programOptions) {
@@ -333,18 +350,16 @@ export function SubjectAssignmentView({
         id: p.programAbbrev,
         programAbbrev: p.programAbbrev,
         programName: p.programName ?? programNames.get(p.programAbbrev) ?? p.programAbbrev,
-        subjects: p.subjects
-          .map((s) => ({
-            curriculumDetailId: s.curriculumDetailId,
-            subjectCode: s.subjectCode,
-            descriptiveTitle: s.descriptiveTitle,
-            units: s.units,
-            lecHours: s.lecHours,
-            labHours: s.labHours,
-            weeklyHours: s.lecHours + s.labHours,
-            subjectType: subjectTypeByCode.get(s.subjectCode),
-          }))
-          .filter((s) => shouldShowSubject(s.subjectType)),
+        subjects: p.subjects.map((s) => ({
+          curriculumDetailId: s.curriculumDetailId,
+          subjectCode: s.subjectCode,
+          descriptiveTitle: s.descriptiveTitle,
+          units: s.units,
+          lecHours: s.lecHours,
+          labHours: s.labHours,
+          weeklyHours: s.lecHours + s.labHours,
+          subjectType: subjectTypeByCode.get(s.subjectCode),
+        })),
       }));
 
       return {
@@ -368,7 +383,7 @@ export function SubjectAssignmentView({
       const localOnly = prev.filter((i) => !apiIds.has(i.id));
       return [...mapped, ...localOnly];
     });
-  }, [apiData.entries, apiData.instructors, programNames, subjectTypeByCode, shouldShowSubject]);
+  }, [apiData.entries, apiData.instructors, programNames, subjectTypeByCode]);
 
   const [addInstructorModalOpen, setAddInstructorModalOpen] = useState(false);
   const [addProgramTarget, setAddProgramTarget] = useState<string | null>(null);
@@ -418,18 +433,16 @@ export function SubjectAssignmentView({
       id: p.programAbbrev,
       programAbbrev: p.programAbbrev,
       programName: p.programName ?? programNames.get(p.programAbbrev) ?? p.programAbbrev,
-      subjects: p.subjects
-        .map((s) => ({
-          curriculumDetailId: s.curriculumDetailId,
-          subjectCode: s.subjectCode,
-          descriptiveTitle: s.descriptiveTitle,
-          units: s.units,
-          lecHours: s.lecHours,
-          labHours: s.labHours,
-          weeklyHours: s.lecHours + s.labHours,
-          subjectType: subjectTypeByCode.get(s.subjectCode),
-        }))
-        .filter((s) => shouldShowSubject(s.subjectType)),
+      subjects: p.subjects.map((s) => ({
+        curriculumDetailId: s.curriculumDetailId,
+        subjectCode: s.subjectCode,
+        descriptiveTitle: s.descriptiveTitle,
+        units: s.units,
+        lecHours: s.lecHours,
+        labHours: s.labHours,
+        weeklyHours: s.lecHours + s.labHours,
+        subjectType: subjectTypeByCode.get(s.subjectCode),
+      })),
     }));
 
     const newInst: Instructor = {
@@ -605,9 +618,7 @@ export function SubjectAssignmentView({
 
     const originalKeys = new Set(
       (entry.programs ?? []).flatMap((p) =>
-        p.subjects
-          .filter((s) => shouldShowSubject(subjectTypeByCode.get(s.subjectCode)))
-          .map((s) => `${p.programAbbrev}|${s.subjectCode}`),
+        p.subjects.map((s) => `${p.programAbbrev}|${s.subjectCode}`),
       ),
     );
     const currentKeys = new Set(
@@ -625,7 +636,7 @@ export function SubjectAssignmentView({
 
   const isDirty = useMemo(
     () => instructors.some((inst) => hasAssignmentChanges(inst)),
-    [instructors, apiData.entries, subjectTypeByCode, shouldShowSubject],
+    [instructors, apiData.entries, subjectTypeByCode],
   );
 
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
@@ -803,6 +814,16 @@ export function SubjectAssignmentView({
         onClose={() => setPolicyOpen(false)}
       />
 
+      {!isRegistrar && selectedSyId > 0 && (selectedSemesterNumber === 1 || selectedSemesterNumber === 2) && (
+        <div className="mt-4">
+          <OfferingCoverageOverview
+            syId={selectedSyId}
+            semesterNumber={selectedSemesterNumber}
+            readOnly
+          />
+        </div>
+      )}
+
       <AssignmentLoadSummary
         instructors={totalInstructors}
         underload={loadCounts.underload}
@@ -860,6 +881,8 @@ export function SubjectAssignmentView({
                   key={inst.id}
                   instructor={inst}
                   hasChanges={hasAssignmentChanges(inst)}
+                  canRemoveSubject={canRemoveSubject}
+                  getSubjectType={getSubjectType}
                   onMaxHoursChange={(hours) => handleMaxHoursChange(inst.id, hours)}
                   onAddProgram={() => setAddProgramTarget(inst.id)}
                   onAssignSubject={(programId) => {
