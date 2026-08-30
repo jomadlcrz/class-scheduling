@@ -15,6 +15,7 @@ import { Modal } from "~/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { DepartmentInstructor } from "~/services/dean.service";
 import { formatInstructorName } from "~/lib/faculty-load";
+import { SUBJECT_TYPE_LABELS } from "~/types/subject";
 
 type Subject = {
   curriculumDetailId?: number;
@@ -27,6 +28,7 @@ type Subject = {
   weeklyHours: number;
   yearLevel?: number;
   semesterCategory?: number;
+  subjectType?: string | null;
 };
 
 type SubjectGroup = {
@@ -358,9 +360,16 @@ export function AssignSubjectModal({
                         </td>
                         <td className="px-3 py-2 align-middle leading-none text-slate-500 dark:text-slate-400">
                           <span className="flex items-center gap-2">
-                            {s.descriptiveTitle}
+                            <span className="min-w-0">
+                              <span className="block truncate">{s.descriptiveTitle}</span>
+                              {s.subjectType && (
+                                <span className="mt-0.5 block text-[10px] font-medium uppercase leading-none tracking-wide text-slate-400 dark:text-slate-500">
+                                  {SUBJECT_TYPE_LABELS[s.subjectType] ?? s.subjectType}
+                                </span>
+                              )}
+                            </span>
                             {isAssigned && (
-                              <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                              <span className="shrink-0 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
                                 Assigned
                               </span>
                             )}

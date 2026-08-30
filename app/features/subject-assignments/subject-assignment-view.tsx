@@ -17,7 +17,7 @@ import { useCachedData } from "~/hooks/use-cached-data";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
-import { facultyKey, formatInstructorName } from "~/lib/faculty-load";
+import { facultyKey, formatInstructorName, isMajorSubject } from "~/lib/faculty-load";
 import { authorityWorkflowService } from "~/services/authority-workflow.service";
 import { deanService, type DepartmentInstructor } from "~/services/dean.service";
 import { departmentService } from "~/services/department.service";
@@ -38,6 +38,7 @@ type Subject = {
   weeklyHours: number;
   yearLevel?: number;
   semesterCategory?: number;
+  subjectType?: string | null;
 };
 
 type ProgramGroup = {
@@ -67,6 +68,16 @@ type Instructor = {
 export function SubjectAssignmentView() {
   const { user } = useAuth();
   const isRegistrar = user?.role === "registrar";
+  // The registrar manages only MINOR subjects; the dean manages only MAJOR
+  // subjects — mirroring the backend's write-time role gate on assignments.
+  const managesMajor = !isRegistrar;
+  const roleSubjectLabel = isRegistrar ? "Minor" : "Major";
+  const shouldShowSubject = useCallback(
+    (subjectType: string | null | undefined) =>
+      // Unknown type — leave it visible rather than risk hiding an existing assignment.
+      subjectType == null || isMajorSubject(subjectType) === managesMajor,
+    [managesMajor],
+  );
   const [searchParams, setSearchParams] = useSearchParams();
 
   // For Registrar: list academic departments and manage selected department
@@ -112,6 +123,7 @@ export function SubjectAssignmentView() {
       units: number;
       yearLevel: number;
       semesterCategory: number;
+      subjectType?: string | null;
     }[];
   }[]>([]);
 
@@ -234,6 +246,17 @@ export function SubjectAssignmentView() {
 
   // Keep the full curriculum available so the picker can group subjects by
   // year level and semester. The curriculum detail id is used when saving.
+  // Each role only sees the subject type it manages (dean: major, registrar: minor).
+  const subjectTypeByCode = useMemo(() => {
+    const map = new Map<string, string | null | undefined>();
+    for (const program of programOptions) {
+      for (const subject of program.subjects) {
+        map.set(subject.code, subject.subjectType);
+      }
+    }
+    return map;
+  }, [programOptions]);
+
   const availableSubjectsByProgram = useMemo(() => {
     const map = new Map<string, Subject[]>();
     for (const program of programOptions) {
@@ -248,10 +271,11 @@ export function SubjectAssignmentView() {
         weeklyHours: subject.units,
         yearLevel: subject.yearLevel,
         semesterCategory: subject.semesterCategory,
-      })));
+        subjectType: subject.subjectType,
+      })).filter((s) => shouldShowSubject(s.subjectType)));
     }
     return map;
-  }, [programOptions]);
+  }, [programOptions, shouldShowSubject]);
 
   // Compute available instructors (exclude already-added ones)
   const availableInstructors = useMemo(() => {
@@ -280,15 +304,18 @@ export function SubjectAssignmentView() {
         id: p.programAbbrev,
         programAbbrev: p.programAbbrev,
         programName: p.programName ?? programNames.get(p.programAbbrev) ?? p.programAbbrev,
-        subjects: p.subjects.map((s) => ({
-          curriculumDetailId: s.curriculumDetailId,
-          subjectCode: s.subjectCode,
-          descriptiveTitle: s.descriptiveTitle,
-          units: s.units,
-          lecHours: s.lecHours,
-          labHours: s.labHours,
-          weeklyHours: s.lecHours + s.labHours,
-        })),
+        subjects: p.subjects
+          .map((s) => ({
+            curriculumDetailId: s.curriculumDetailId,
+            subjectCode: s.subjectCode,
+            descriptiveTitle: s.descriptiveTitle,
+            units: s.units,
+            lecHours: s.lecHours,
+            labHours: s.labHours,
+            weeklyHours: s.lecHours + s.labHours,
+            subjectType: subjectTypeByCode.get(s.subjectCode),
+          }))
+          .filter((s) => shouldShowSubject(s.subjectType)),
       }));
 
       return {
@@ -312,7 +339,7 @@ export function SubjectAssignmentView() {
       const localOnly = prev.filter((i) => !apiIds.has(i.id));
       return [...mapped, ...localOnly];
     });
-  }, [apiData.entries, apiData.instructors, programNames]);
+  }, [apiData.entries, apiData.instructors, programNames, subjectTypeByCode, shouldShowSubject]);
 
   const [addInstructorModalOpen, setAddInstructorModalOpen] = useState(false);
   const [addProgramTarget, setAddProgramTarget] = useState<string | null>(null);
@@ -362,15 +389,18 @@ export function SubjectAssignmentView() {
       id: p.programAbbrev,
       programAbbrev: p.programAbbrev,
       programName: p.programName ?? programNames.get(p.programAbbrev) ?? p.programAbbrev,
-      subjects: p.subjects.map((s) => ({
-        curriculumDetailId: s.curriculumDetailId,
-        subjectCode: s.subjectCode,
-        descriptiveTitle: s.descriptiveTitle,
-        units: s.units,
-        lecHours: s.lecHours,
-        labHours: s.labHours,
-        weeklyHours: s.lecHours + s.labHours,
-      })),
+      subjects: p.subjects
+        .map((s) => ({
+          curriculumDetailId: s.curriculumDetailId,
+          subjectCode: s.subjectCode,
+          descriptiveTitle: s.descriptiveTitle,
+          units: s.units,
+          lecHours: s.lecHours,
+          labHours: s.labHours,
+          weeklyHours: s.lecHours + s.labHours,
+          subjectType: subjectTypeByCode.get(s.subjectCode),
+        }))
+        .filter((s) => shouldShowSubject(s.subjectType)),
     }));
 
     const newInst: Instructor = {
@@ -546,7 +576,9 @@ export function SubjectAssignmentView() {
 
     const originalKeys = new Set(
       (entry.programs ?? []).flatMap((p) =>
-        p.subjects.map((s) => `${p.programAbbrev}|${s.subjectCode}`),
+        p.subjects
+          .filter((s) => shouldShowSubject(subjectTypeByCode.get(s.subjectCode)))
+          .map((s) => `${p.programAbbrev}|${s.subjectCode}`),
       ),
     );
     const currentKeys = new Set(
@@ -564,7 +596,7 @@ export function SubjectAssignmentView() {
 
   const isDirty = useMemo(
     () => instructors.some((inst) => hasAssignmentChanges(inst)),
-    [instructors, apiData.entries],
+    [instructors, apiData.entries, subjectTypeByCode, shouldShowSubject],
   );
 
   const { blocker, reloadPromptOpen, setReloadPromptOpen, confirmReload } =
@@ -654,7 +686,7 @@ export function SubjectAssignmentView() {
         title={
           isRegistrar && selectedDepartment
             ? `Subject Offering — ${selectedDepartment.abbrev}`
-            : "Subject Offering"
+            : `Subject Offering — ${roleSubjectLabel}`
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -713,7 +745,7 @@ export function SubjectAssignmentView() {
       <div className="mt-4 sm:mt-6">
         <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <h2 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100 sm:text-base">
-            Instructor Subject Assignments
+            {roleSubjectLabel} Subject Assignments
           </h2>
           <Button
             type="button"
@@ -740,14 +772,14 @@ export function SubjectAssignmentView() {
           </EmptyState>
         ) : filteredInstructors.length === 0 ? (
           <EmptyState title="No instructors found">
-            {apiData.entries && apiData.entries.length > 0
-              ? "No instructors match your current search criteria."
-              : (
-                <>
-                  No instructors are assigned subjects for this term. Click{" "}
-                  <strong>Add Existing Instructor</strong> to assign one.
-                </>
-              )}
+              {apiData.entries && apiData.entries.length > 0
+                ? "No instructors match your current search criteria."
+                : (
+                  <>
+                    No {roleSubjectLabel.toLowerCase()} subjects are assigned to instructors for this
+                    term. Click <strong>Add Existing Instructor</strong> to assign one.
+                  </>
+                )}
           </EmptyState>
         ) : (
           <Accordion>
