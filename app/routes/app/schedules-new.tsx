@@ -739,8 +739,52 @@ function SchedulesNewPage() {
     setSlots((current) => [...current, { ...slot, day, tempId: `tmp-${tempIdCounter.current}` }]);
   }
 
+  /**
+   * Move the picker to the next set the registrar has to schedule.
+   *
+   * Registrars work a program straight through — 1A, 1B, 1C, then 2A — so after
+   * a save the next one is almost always what they want, and re-picking it by
+   * hand every time is the same three clicks repeated for every section.
+   *
+   * Advances within the year level first, then to the first set of the next
+   * year that has any. At the end of the last year it stops and leaves the
+   * selection alone rather than wrapping round to the start: wrapping would
+   * quietly point them at a section they already did.
+   *
+   * Nothing here locks the picker. It is a starting point for the next one,
+   * and every dropdown stays free — a registrar who wants to redo a set can
+   * still pick it.
+   */
+  function advanceToNextSet(justSaved: { id: number; yearLevel?: number | null }) {
+    const year = (justSaved.yearLevel ?? selectedYearLevel) as YearLevel;
+    const inYear = sets
+      .filter((row) => row.program === selectedProgram?.abbrev && row.yearLevel === year)
+      .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? ""));
+
+    const at = inYear.findIndex((row) => row.id === justSaved.id);
+    const nextInYear = at >= 0 ? inYear[at + 1] : undefined;
+    if (nextInYear) {
+      setSelectedSetId(String(nextInYear.id));
+      return;
+    }
+
+    const laterYears = availableYearLevels.filter((level) => level > year);
+    for (const level of laterYears) {
+      const firstOfYear = sets
+        .filter((row) => row.program === selectedProgram?.abbrev && row.yearLevel === level)
+        .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? ""))[0];
+      if (firstOfYear) {
+        setSelectedYearLevel(level);
+        setSelectedSetId(String(firstOfYear.id));
+        return;
+      }
+    }
+  }
+
   async function handleSave() {
     if (!selectedSet || !selectedProgram) return;
+
+    const savedSet = selectedSet;
 
     setSaveError(null);
     setIsSaving(true);
@@ -749,7 +793,7 @@ function SchedulesNewPage() {
         schoolYear,
         semester,
         programId: selectedProgram.id,
-        setId: selectedSet.id,
+        setId: savedSet.id,
         slots: slots.map((s) => ({
           day: s.day,
           startTime: s.startTime,
@@ -780,8 +824,9 @@ function SchedulesNewPage() {
       setConflictLoading(false);
       setDeleteTarget(null);
       setPendingMove(null);
-      setSets((current) => current.filter((s) => s.id !== selectedSet.id));
-      setSelectedSetId("");
+      // The canvas belonged to the saved set. Clear it, then hand the picker
+      // to the next set so the registrar can work straight through the program.
+      advanceToNextSet(savedSet);
       setIsSaving(false);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "");
