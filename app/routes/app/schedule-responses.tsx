@@ -480,7 +480,12 @@ function ScheduleResponsesPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {row.responseType === "accept" ? (
+                      {row.automaticallyAccepted ? (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge tone="emerald">Accepted</Badge>
+                          <Badge tone="slate">Automatic</Badge>
+                        </div>
+                      ) : row.responseType === "accept" ? (
                         <Badge tone="emerald">Accepted</Badge>
                       ) : (
                         <Badge tone="slate">Suggested change</Badge>
@@ -506,7 +511,11 @@ function ScheduleResponsesPage() {
                       )}
                     </TableCell>
                     <TableCell className="hidden max-w-md md:table-cell text-xs text-slate-600 dark:text-slate-300">
-                      {row.moves && row.moves.length > 0 ? (
+                      {row.automaticallyAccepted ? (
+                        <span className="italic text-slate-400 dark:text-slate-500">
+                          Accepted automatically after Shift Request closed with no response.
+                        </span>
+                      ) : row.moves && row.moves.length > 0 ? (
                         <div className="space-y-1">
                           {row.moves.map((m, idx) => (
                             <div key={idx} className="flex items-center gap-1.5 font-mono text-[11px]">
@@ -518,10 +527,8 @@ function ScheduleResponsesPage() {
                             </div>
                           ))}
                         </div>
-                      ) : row.reason ? (
-                        <span>{row.reason}</span>
                       ) : (
-                        "—"
+                        <span className="text-slate-400">—</span>
                       )}
                     </TableCell>
                     {activeTab === "needs_you" && user?.role !== "faculty" && (

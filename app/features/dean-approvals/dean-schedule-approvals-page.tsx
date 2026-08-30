@@ -88,6 +88,7 @@ function ProgramCard({
   group,
   onAccept,
   onApproveFinal,
+  onProgressToFinal,
   onReturn,
   onReturnForRevision,
   onPreview,
@@ -97,6 +98,7 @@ function ProgramCard({
   group: DeanProgramApprovalItem;
   onAccept: (group: DeanProgramApprovalItem) => void;
   onApproveFinal: (group: DeanProgramApprovalItem) => void;
+  onProgressToFinal: (group: DeanProgramApprovalItem) => void;
   onReturn: (group: DeanProgramApprovalItem) => void;
   onReturnForRevision: (group: DeanProgramApprovalItem) => void;
   onPreview: (release: ScheduleRelease) => void;
@@ -218,11 +220,30 @@ function ProgramCard({
               Final Approve
             </Button>
           </div>
+        ) : group.stage === "with_instructors" ? (
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              disabled={busy}
+              isLoading={busy}
+              loadingLabel="Checking…"
+              onClick={() => onProgressToFinal(group)}
+            >
+              Advance to Final Approval
+            </Button>
+          </div>
         ) : null}
       </div>
 
       {open && (
         <div className="p-4">
+          {group.stage === "with_instructors" && (
+            <div className="mb-4 rounded-lg border border-sky-200 bg-sky-50/70 p-3 text-xs text-sky-800 dark:border-sky-900/40 dark:bg-sky-950/20 dark:text-sky-300">
+              <strong>Shift Request in Progress:</strong> Sections are with instructors. Once all instructors accept or the Shift Request window closes (where unresponded schedules are accepted automatically at deadline), click <em>Advance to Final Approval</em> to proceed.
+            </div>
+          )}
           {rail && (
             <div className="pb-4">
               <ScheduleLifecycleRail release={rail} audience="dean" />
@@ -440,6 +461,46 @@ export function DeanScheduleApprovalsPage() {
     }
   }
 
+  const handleProgressToFinal = useCallback(
+    async (group: DeanProgramApprovalItem) => {
+      const instructorReviewSections = group.sections.filter(
+        (r) => r.releaseStatus === "instructor_review",
+      );
+      if (instructorReviewSections.length === 0) {
+        toast.info("No sections in this program are currently in instructor review.");
+        return;
+      }
+      setBusyId(group.programId);
+      try {
+        let advancedCount = 0;
+        const errors: string[] = [];
+        for (const section of instructorReviewSections) {
+          try {
+            await scheduleReleaseService.progressToFinalApproval(section.id);
+            advancedCount++;
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Failed to advance section.";
+            if (!errors.includes(msg)) errors.push(msg);
+          }
+        }
+        if (advancedCount > 0) {
+          toast.success(
+            `${advancedCount} of ${instructorReviewSections.length} section(s) advanced to Final Approval.`,
+          );
+        }
+        if (errors.length > 0) {
+          for (const errorMsg of errors) {
+            toast.warning(errorMsg);
+          }
+        }
+        await load();
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [load],
+  );
+
   const syNumber = selectedSchoolYearId ? Number(selectedSchoolYearId) : null;
   const semNumber = selectedSemesterNumber ? Number(selectedSemesterNumber) : null;
 
@@ -561,6 +622,7 @@ export function DeanScheduleApprovalsPage() {
                   group={group}
                   onAccept={setAcceptTarget}
                   onApproveFinal={setFinalTarget}
+                  onProgressToFinal={handleProgressToFinal}
                   onReturn={(next) => {
                     setReason("");
                     setReturnTarget(next);

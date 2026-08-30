@@ -289,6 +289,7 @@ export function TermCalendarPage() {
   const [closeNowModalOpen, setCloseNowModalOpen] = useState(false);
   const [reopenModalOpen, setReopenModalOpen] = useState(false);
   const [discardGenerated, setDiscardGenerated] = useState(false);
+  const [finalizeModalOpen, setFinalizeModalOpen] = useState(false);
   const [shiftRequestChallenge, setShiftRequestChallenge] = useState<{
     title: string;
     body: string;
@@ -515,6 +516,21 @@ export function TermCalendarPage() {
     }
   }
 
+  async function handleFinalizeAndPublish() {
+    if (!syId || !semesterNumber) return;
+    setActionLoading(true);
+    try {
+      const res = await termPhaseService.advancePhase(syId, semesterNumber, "finalize");
+      toast.success(res.message || "Term finalized and published.");
+      setFinalizeModalOpen(false);
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to finalize and publish term.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   async function handleSaveMajorEditLimit() {
     if (!syId || !semesterNumber) return;
     const limit = Number(majorEditLimitDraft);
@@ -586,11 +602,69 @@ export function TermCalendarPage() {
           </Button>
         </Card>
       ) : phaseData ? (
-        <Card className="overflow-hidden">
-          {/* Term Title */}
-          <div className="px-5 pb-3 pt-5 text-center">
-            <h2 className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">{termLabel}</h2>
-          </div>
+        <div className="space-y-6">
+          {phaseData.detailStage === "ready_for_publication" && (
+            <Card className="flex flex-wrap items-center justify-between gap-4 border-emerald-300 bg-emerald-50/70 p-5 dark:border-emerald-700/40 dark:bg-emerald-950/20">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-base font-semibold text-navy-800 dark:text-mist-100">
+                    Ready for Publication
+                  </h3>
+                  <Badge tone="emerald">All Deans Approved</Badge>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  All program schedules have completed Final Dean Approval. Finalizing publishes class timetables institution-wide to students and instructors.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="primary"
+                block={false}
+                disabled={actionLoading}
+                onClick={() => setFinalizeModalOpen(true)}
+              >
+                Finalize &amp; Publish Term
+              </Button>
+            </Card>
+          )}
+
+          {phaseData.detailStage === "finalized" && (
+            <Card className="flex flex-wrap items-center justify-between gap-4 border-emerald-300 bg-emerald-50/70 p-5 dark:border-emerald-700/40 dark:bg-emerald-950/20">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-base font-semibold text-navy-800 dark:text-mist-100">
+                    Term Finalized &amp; Published
+                  </h3>
+                  <Badge tone="emerald">Published</Badge>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Class schedules are live and published. Students and instructors can view their official timetables in their portals.
+                </p>
+              </div>
+            </Card>
+          )}
+
+          {phaseData.detailStage === "final_approval" && (
+            <Card className="flex flex-wrap items-center justify-between gap-4 border-sky-300 bg-sky-50/70 p-5 dark:border-sky-700/40 dark:bg-sky-950/20">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-base font-semibold text-navy-800 dark:text-mist-100">
+                    Final Dean Approval in Progress
+                  </h3>
+                  <Badge tone="sky">Dean Sign-off</Badge>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Shift requests have been processed. Deans are currently conducting final reviews and signing off on their department schedules.
+                </p>
+              </div>
+            </Card>
+          )}
+
+          <Card className="overflow-hidden">
+            {/* Term Title */}
+            <div className="px-5 pb-3 pt-5 text-center">
+              <h2 className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">{termLabel}</h2>
+            </div>
 
           {/* Phase Tab Strip */}
           <div className="border-b border-slate-200 dark:border-white/10">
@@ -921,7 +995,8 @@ export function TermCalendarPage() {
             )}
           </div>
         </Card>
-      ) : null}
+      </div>
+    ) : null}
 
       {/* Start Phase Dialog */}
       <Modal
@@ -1035,6 +1110,21 @@ export function TermCalendarPage() {
       >
         <p className="whitespace-pre-line text-sm text-slate-600 dark:text-slate-300">
           {shiftRequestChallenge?.body}
+        </p>
+      </ConfirmDialog>
+
+      {/* Finalize & Publish Term Dialog */}
+      <ConfirmDialog
+        open={finalizeModalOpen}
+        onClose={() => setFinalizeModalOpen(false)}
+        title="Finalize & Publish Term Schedules?"
+        confirmLabel="Finalize & Publish"
+        loadingLabel="Publishing…"
+        confirmVariant="primary"
+        onConfirm={handleFinalizeAndPublish}
+      >
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          This will officially finalize all approved schedules and publish them to student and faculty portals. This action is the final step in the term scheduling workflow.
         </p>
       </ConfirmDialog>
 

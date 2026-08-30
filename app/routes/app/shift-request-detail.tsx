@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
 import { PageHeader } from "~/layouts/page-header";
@@ -16,7 +17,7 @@ import type { Room } from "~/types/room";
 import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 export function meta() {
-  return [{ title: "Request Schedule Shift — GWC Class Scheduling" }];
+  return [{ title: "Shift Request — GWC Class Scheduling" }];
 }
 
 function setLabelOf(detail: InstructorReviewDetail): string {
@@ -103,52 +104,64 @@ export default function ShiftRequestDetailRoute() {
 
   return (
     <RoleGuard allow={["faculty"]}>
-      <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8">
-        <PageHeader title="Shift Requests" />
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
+        <Breadcrumb
+          items={[
+            { label: "Shift Requests", href: "/shift-requests" },
+            { label: detail ? setLabelOf(detail) : "Shift Request" },
+          ]}
+          className="mb-4"
+        />
 
-        {loading ? (
-          <div
-            role="status"
-            aria-label="Loading schedule review"
-            className="grid min-h-52 place-items-center rounded-xl border border-slate-300 bg-white text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-          >
-            <Spinner />
-          </div>
-        ) : error || !detail ? (
-          <Card className="p-5">
-            <EmptyState title="Couldn't open shift request">{error || "Review not found."}</EmptyState>
-          </Card>
-        ) : !detail.canRespond && !detail.canSuggest ? (
-          <Card className="p-5">
-            <EmptyState
-              title={
-                detail.responseType === "accept"
-                  ? "You already accepted this schedule"
-                  : detail.responseStatus === "pending" || detail.responseStatus === "forwarded"
-                    ? "Your suggestion is awaiting a decision"
-                    : "This schedule review is no longer open"
-              }
+        <PageHeader
+          title={detail ? `${setLabelOf(detail)} — Shift Request` : "Shift Request"}
+        />
+
+        <div className="mt-6">
+          {loading ? (
+            <div
+              role="status"
+              aria-label="Loading schedule review"
+              className="grid min-h-52 place-items-center py-12"
             >
-              {detail.responseType === "suggest_change" &&
-              (detail.responseStatus === "pending" || detail.responseStatus === "forwarded")
-                ? "Wait for the Dean and Registrar to decide your current suggestion."
-                : detail.responseType === "accept"
-                  ? "Your acceptance is recorded for this schedule."
-                  : "Your response is recorded and the review window is now closed."}
+              <Spinner />
+            </div>
+          ) : error || !detail ? (
+            <EmptyState title="Couldn't open shift request">
+              {error || "Review not found."}
             </EmptyState>
-          </Card>
-        ) : (
-          <InstructorProposalEditor
-            detail={detail}
-            setLabel={setLabelOf(detail)}
-            rooms={rooms}
-            roomsError={roomsError}
-            allocations={allocations}
-            distributed={distributed}
-            onCancel={backToOverview}
-            onSubmitted={backToOverview}
-          />
-        )}
+          ) : !detail.canRespond && !detail.canSuggest ? (
+            <Card className="p-6">
+              <EmptyState
+                title={
+                  detail.responseType === "accept"
+                    ? "You already accepted this schedule"
+                    : detail.responseStatus === "pending" || detail.responseStatus === "forwarded"
+                      ? "Your suggestion is awaiting a decision"
+                      : "This schedule review is no longer open"
+                }
+              >
+                {detail.responseType === "suggest_change" &&
+                (detail.responseStatus === "pending" || detail.responseStatus === "forwarded")
+                  ? "Wait for the Dean and Registrar to decide your current suggestion."
+                  : detail.responseType === "accept"
+                    ? "Your acceptance is recorded for this schedule."
+                    : "Your response is recorded and the review window is now closed."}
+              </EmptyState>
+            </Card>
+          ) : (
+            <InstructorProposalEditor
+              detail={detail}
+              setLabel={setLabelOf(detail)}
+              rooms={rooms}
+              roomsError={roomsError}
+              allocations={allocations}
+              distributed={distributed}
+              onCancel={backToOverview}
+              onSubmitted={backToOverview}
+            />
+          )}
+        </div>
       </div>
     </RoleGuard>
   );
