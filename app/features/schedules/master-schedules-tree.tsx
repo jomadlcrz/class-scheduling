@@ -23,6 +23,7 @@ export type ProgramTreeData = {
   abbrev: string;
   name: string;
   departmentAbbrev: string;
+  programId?: number;
   yearGroups: YearGroupData[];
 };
 
@@ -44,6 +45,9 @@ type MasterSchedulesTreeProps = {
   onSubmitRelease: (release: ScheduleRelease) => void;
   onWithdrawRelease: (release: ScheduleRelease) => void;
   onClearSet: (setId: number, setCode: string) => void;
+  onSendProgram?: (programId: number, programAbbrev: string) => void;
+  onWithdrawProgram?: (programId: number, programAbbrev: string) => void;
+  onPublishProgram?: (programId: number, programAbbrev: string) => void;
 };
 
 /** The full department/program accordion tree for Master Schedules. */
@@ -65,6 +69,9 @@ export function MasterSchedulesTree({
   onSubmitRelease,
   onWithdrawRelease,
   onClearSet,
+  onSendProgram,
+  onWithdrawProgram,
+  onPublishProgram,
 }: MasterSchedulesTreeProps) {
   if (programs.length === 0) {
     return (
@@ -89,6 +96,7 @@ export function MasterSchedulesTree({
           key={program.abbrev}
           abbrev={program.abbrev}
           name={program.name}
+          programId={program.programId}
           yearGroups={program.yearGroups}
           isOpen={openPrograms.has(program.abbrev)}
           onOpenChange={(open) => onToggleProgram(program.abbrev, open)}
@@ -105,6 +113,9 @@ export function MasterSchedulesTree({
           onSubmitRelease={onSubmitRelease}
           onWithdrawRelease={onWithdrawRelease}
           onClearSet={onClearSet}
+          onSendProgram={onSendProgram}
+          onWithdrawProgram={onWithdrawProgram}
+          onPublishProgram={onPublishProgram}
         />
       ))}
     </Accordion>

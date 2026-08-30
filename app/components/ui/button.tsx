@@ -30,7 +30,7 @@ type ButtonProps = {
   /** Label shown next to the spinner while loading. */
   loadingLabel?: string;
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   children: ReactNode;
 };

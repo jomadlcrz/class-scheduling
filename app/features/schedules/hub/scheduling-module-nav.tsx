@@ -60,20 +60,20 @@ export function SchedulingModuleNav({
     {
       key: "regular-class",
       title: "Master Schedules",
-      subtitle: "Module B · Registrar → Dean",
+      subtitle: "Module B · Registrar",
       to: "/schedules/regular-class",
       icon: <SendIcon />,
       line:
         built === 0
           ? "Build timetables before review."
           : toSubmit > 0
-            ? `${toSubmit} draft${toSubmit === 1 ? "" : "s"} ready to submit.`
+            ? `${toSubmit} draft${toSubmit === 1 ? "" : "s"} ready for review.`
             : pendingCount > 0
               ? `${pendingCount} waiting on the dean.`
               : counts.approved > 0
                 ? `${counts.approved} published this term.`
-                : "Saved set timetables, release lifecycle, editing, and printing.",
-      actionLabel: toSubmit > 0 ? "Review & submit" : "Section schedules",
+                : "Saved set timetables, review lifecycle, editing, and printing.",
+      actionLabel: toSubmit > 0 ? "Review schedules" : "Section schedules",
       badge:
         toSubmit > 0
           ? `${toSubmit} drafts`

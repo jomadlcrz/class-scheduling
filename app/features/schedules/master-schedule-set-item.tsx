@@ -108,6 +108,36 @@ export function MasterScheduleSetItem({
     });
   }
 
+  const effectiveRelease: ScheduleRelease | null = useMemo(() => {
+    if (release) return release;
+    if (schedules.length === 0) return null;
+    const firstSched = schedules[0];
+    return {
+      id: targetSetId ?? 0,
+      referenceCode: null,
+      syId: 0,
+      semesterNumber: 0,
+      setId: targetSetId ?? (firstSched ? Number(firstSched.setId) : 0),
+      setCode,
+      yearLevel: firstSched?.yearLevel ?? null,
+      programId: 0,
+      programAbbrev: firstSched?.program ?? null,
+      releaseStatus: "draft",
+      allowedTransitions: ["pending_dean_review"],
+      sessionCount: schedules.length,
+      subjectCount: new Set(schedules.map((s) => s.subjectId)).size,
+      generatedMeetingCount: schedules.length,
+      majorMeetingCount: 0,
+      tbaCount: 0,
+      submissionNote: null,
+      submittedAt: null,
+      submittedBy: null,
+      reviewedAt: null,
+      rejectionReason: null,
+      approvedAt: null,
+    };
+  }, [release, schedules, targetSetId, setCode]);
+
   return (
     <AccordionItem
       variant="flat"
@@ -118,9 +148,9 @@ export function MasterScheduleSetItem({
           <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
             {setCode}
           </span>
-          {release && (
-            <Badge tone={scheduleReleaseStatusTone(release.releaseStatus)}>
-              {scheduleReleaseStatusLabel(release.releaseStatus)}
+          {effectiveRelease && (
+            <Badge tone={scheduleReleaseStatusTone(effectiveRelease.releaseStatus)}>
+              {scheduleReleaseStatusLabel(effectiveRelease.releaseStatus)}
             </Badge>
           )}
           <span className="font-body text-xs text-slate-500 dark:text-slate-400">
@@ -132,30 +162,30 @@ export function MasterScheduleSetItem({
       }
     >
       <div className="flex flex-col gap-4 px-2 py-3 sm:px-4">
-        {release && (
+        {effectiveRelease && (
           <ScheduleLifecycleRail
-            release={release}
+            release={effectiveRelease}
             audience="registrar"
             action={
-              release.releaseStatus === "draft" || release.releaseStatus === "rejected" ? (
+              effectiveRelease.releaseStatus === "draft" || effectiveRelease.releaseStatus === "rejected" ? (
                 <Button
                   type="button"
                   block={false}
                   disabled={termClosed}
-                  onClick={() => onSubmitRelease(release)}
+                  onClick={() => onSubmitRelease(effectiveRelease)}
                 >
                   <SendIcon />
-                  {release.releaseStatus === "rejected"
+                  {effectiveRelease.releaseStatus === "rejected"
                     ? "Resubmit for Dean Review"
                     : "Submit for Dean Review"}
                 </Button>
-              ) : release.releaseStatus === "pending_dean_review" ? (
+              ) : effectiveRelease.releaseStatus === "pending_dean_review" ? (
                 <Button
                   type="button"
                   variant="outline"
                   block={false}
                   disabled={termClosed}
-                  onClick={() => onWithdrawRelease(release)}
+                  onClick={() => onWithdrawRelease(effectiveRelease)}
                 >
                   <RotateIcon />
                   Withdraw

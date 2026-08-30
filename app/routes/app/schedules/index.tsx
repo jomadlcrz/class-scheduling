@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { SchedulingHubSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
@@ -55,58 +54,61 @@ function SchedulingHubPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      <PageHeader title="Scheduling Hub" />
-
-      <Card className="mt-4 grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-        <FieldChrome id="hub-school-year" label="School Year">
-          <Select
-            items={
-              schoolYears.length === 0
-                ? [{ value: "", label: "No school year" }]
-                : schoolYears.map((y) => ({ value: String(y.id), label: y.schoolYear }))
-            }
-            value={syId != null ? String(syId) : ""}
-            onValueChange={(v) => setSyId(v ? Number(v) : null)}
-          >
-            <SelectTrigger id="hub-school-year">
-              <SelectValue placeholder="Select school year" />
-            </SelectTrigger>
-            <SelectContent>
-              {schoolYears.length === 0 ? (
-                <SelectItem value="">No school year</SelectItem>
-              ) : (
-                schoolYears.map((y) => (
-                  <SelectItem key={y.id} value={String(y.id)}>
-                    {y.schoolYear}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-        </FieldChrome>
-        <FieldChrome id="hub-semester" label="Semester">
-          <Select
-            items={semesters
-              .filter((s) => s.semesterNumber !== 3)
-              .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))}
-            value={String(semester)}
-            onValueChange={(v) => setSemester(Number(v))}
-          >
-            <SelectTrigger id="hub-semester">
-              <SelectValue placeholder="Select semester" />
-            </SelectTrigger>
-            <SelectContent>
-              {semesters
-                .filter((s) => s.semesterNumber !== 3)
-                .map((s) => (
-                  <SelectItem key={s.id} value={String(s.semesterNumber)}>
-                    {semesterLabel(s.semesterNumber)}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </FieldChrome>
-      </Card>
+      <PageHeader
+        title="Scheduling Hub"
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="w-48">
+              <Select
+                items={
+                  schoolYears.length === 0
+                    ? [{ value: "", label: "No school year" }]
+                    : schoolYears.map((y) => ({ value: String(y.id), label: y.schoolYear }))
+                }
+                value={syId != null ? String(syId) : ""}
+                onValueChange={(v) => setSyId(v ? Number(v) : null)}
+              >
+                <SelectTrigger id="hub-school-year" className="h-9">
+                  <SelectValue placeholder="Select school year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schoolYears.length === 0 ? (
+                    <SelectItem value="">No school year</SelectItem>
+                  ) : (
+                    schoolYears.map((y) => (
+                      <SelectItem key={y.id} value={String(y.id)}>
+                        {y.schoolYear}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-40">
+              <Select
+                items={semesters
+                  .filter((s) => s.semesterNumber !== 3)
+                  .map((s) => ({ value: String(s.semesterNumber), label: semesterLabel(s.semesterNumber) }))}
+                value={String(semester)}
+                onValueChange={(v) => setSemester(Number(v))}
+              >
+                <SelectTrigger id="hub-semester" className="h-9">
+                  <SelectValue placeholder="Select semester" />
+                </SelectTrigger>
+                <SelectContent>
+                  {semesters
+                    .filter((s) => s.semesterNumber !== 3)
+                    .map((s) => (
+                      <SelectItem key={s.id} value={String(s.semesterNumber)}>
+                        {semesterLabel(s.semesterNumber)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        }
+      />
 
       <div className="mt-6">
         {termError ? (

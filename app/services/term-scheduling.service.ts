@@ -107,7 +107,7 @@ export const termSchedulingService = {
     departmentId: number,
   ): Promise<TermDepartmentSendResult> {
     return apiPost<TermDepartmentSendResult>(
-      `/scheduling-terms/${syId}/${semesterNumber}/departments/${departmentId}/send`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/departments/${departmentId}/send`,
       {},
     );
   },
@@ -118,7 +118,7 @@ export const termSchedulingService = {
     programId: number,
   ): Promise<TermProgramSendResult> {
     return apiPost<TermProgramSendResult>(
-      `/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/send`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/send`,
       {},
     );
   },
@@ -129,7 +129,7 @@ export const termSchedulingService = {
     programId: number,
   ): Promise<TermProgramPublishResult> {
     return apiPost<TermProgramPublishResult>(
-      `/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`,
       {},
     );
   },
@@ -140,7 +140,7 @@ export const termSchedulingService = {
     programId: number,
   ): Promise<TermProgramWithdrawResult> {
     return apiPost<TermProgramWithdrawResult>(
-      `/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/withdraw`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/withdraw`,
       {},
     );
   },
@@ -152,7 +152,7 @@ export const termSchedulingService = {
     payload: Record<string, unknown> = {},
   ): Promise<TermAdvanceResult> {
     return apiPost<TermAdvanceResult>(
-      `/scheduling-terms/${syId}/${semesterNumber}/advance`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/advance`,
       { action, ...payload },
     );
   },

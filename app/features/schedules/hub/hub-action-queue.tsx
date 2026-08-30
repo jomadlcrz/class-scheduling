@@ -122,9 +122,9 @@ function buildQueue(
       id: `draft-${r.id}`,
       kind: "draft",
       title: releaseTitle(r),
-      detail: `${r.sessionCount} session${r.sessionCount === 1 ? "" : "s"} saved. Distribute the complete term from Scheduling Calendar.`,
-      to: "/schedules/term-calendar",
-      actionLabel: "Open Calendar",
+      detail: `${r.sessionCount} session${r.sessionCount === 1 ? "" : "s"} saved — review section timetable.`,
+      to: regularClassPath(schoolYear, r),
+      actionLabel: "Review",
     });
   }
   for (const r of releases) {

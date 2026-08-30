@@ -1,5 +1,7 @@
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { CheckIcon, RotateIcon, SendIcon } from "~/components/ui/icons";
 import { MasterScheduleYearItem } from "~/features/schedules/master-schedule-year-item";
 import {
   scheduleReleaseStatusLabel,
@@ -25,6 +27,7 @@ type YearGroupData = {
 type MasterScheduleProgramItemProps = {
   abbrev: string;
   name: string;
+  programId?: number;
   yearGroups: YearGroupData[];
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,12 +44,16 @@ type MasterScheduleProgramItemProps = {
   onSubmitRelease: (release: ScheduleRelease) => void;
   onWithdrawRelease: (release: ScheduleRelease) => void;
   onClearSet: (setId: number, setCode: string) => void;
+  onSendProgram?: (programId: number, programAbbrev: string) => void;
+  onWithdrawProgram?: (programId: number, programAbbrev: string) => void;
+  onPublishProgram?: (programId: number, programAbbrev: string) => void;
 };
 
 /** Accordion item for a program, containing its year levels and sets. */
 export function MasterScheduleProgramItem({
   abbrev,
   name,
+  programId,
   yearGroups,
   isOpen,
   onOpenChange,
@@ -63,6 +70,9 @@ export function MasterScheduleProgramItem({
   onSubmitRelease,
   onWithdrawRelease,
   onClearSet,
+  onSendProgram,
+  onWithdrawProgram,
+  onPublishProgram,
 }: MasterScheduleProgramItemProps) {
   const allSets = yearGroups.flatMap((y) => y.sets);
   const totalSets = allSets.length;
@@ -76,6 +86,12 @@ export function MasterScheduleProgramItem({
     }
     return acc;
   }, {});
+
+  const hasDrafts = (statusCounts["draft"] ?? 0) + (statusCounts["rejected"] ?? 0) > 0 ||
+    allSets.some((s) => !s.release && s.schedules.length > 0);
+  const isPendingDean = (statusCounts["pending_dean_review"] ?? 0) > 0;
+  const allApproved = totalSets > 0 && (statusCounts["approved"] ?? 0) === totalSets;
+  const isPublished = allSets.every((s) => s.release?.publishedAt != null);
 
   const statusOrder: ScheduleReleaseStatus[] = [
     "approved",
@@ -105,7 +121,7 @@ export function MasterScheduleProgramItem({
         </div>
       }
       adornment={
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge tone="slate">
             {totalSets} section{totalSets === 1 ? "" : "s"}
           </Badge>
@@ -119,6 +135,49 @@ export function MasterScheduleProgramItem({
                 {statusCounts[st]} {scheduleReleaseStatusLabel(st)}
               </StatusBadge>
             ) : null,
+          )}
+          {!termClosed && programId != null && onSendProgram && hasDrafts && (
+            <Button
+              type="button"
+              block={false}
+              className="ml-1 text-xs"
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation();
+                onSendProgram(programId, abbrev);
+              }}
+            >
+              <SendIcon />
+              Submit {abbrev} to Dean
+            </Button>
+          )}
+          {!termClosed && programId != null && onWithdrawProgram && isPendingDean && (
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              className="ml-1 text-xs"
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation();
+                onWithdrawProgram(programId, abbrev);
+              }}
+            >
+              <RotateIcon />
+              Withdraw {abbrev}
+            </Button>
+          )}
+          {!termClosed && programId != null && onPublishProgram && allApproved && !isPublished && (
+            <Button
+              type="button"
+              block={false}
+              className="ml-1 text-xs"
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation();
+                onPublishProgram(programId, abbrev);
+              }}
+            >
+              <CheckIcon />
+              Publish Schedule
+            </Button>
           )}
         </div>
       }

@@ -133,6 +133,7 @@ export type DeanProgramApprovalStage =
   | "with_instructors"
   | "with_registrar"
   | "final_approval"
+  | "final_approval_complete"
   | "published";
 
 export type DeanProgramApprovalItem = {
@@ -143,6 +144,8 @@ export type DeanProgramApprovalItem = {
   stageLabel: string;
   sectionCount: number;
   pendingCount: number;
+  awaitingFinalCount: number;
+  completesFinalApprovals?: boolean;
   sessionCount: number;
   representative: ScheduleRelease;
   sections: ScheduleRelease[];

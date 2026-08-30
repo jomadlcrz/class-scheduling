@@ -34,6 +34,7 @@ import {
   scheduleService,
   type UnseatedIrregularStudent,
 } from "~/services/schedule.service";
+import { termPhaseService } from "~/services/term-phase.service";
 import {
   DAYS,
   formatTime,
@@ -284,10 +285,12 @@ function MasterSchedulesPage() {
       (s) => s.schoolYear === schoolYear && s.semester === semester,
     );
 
-    // Map releases by set code
+    // Map releases by set code and set ID
     const releaseBySetCode = new Map<string, ScheduleRelease>();
+    const releaseBySetId = new Map<string, ScheduleRelease>();
     for (const rel of releases) {
-      if (rel.setCode) releaseBySetCode.set(rel.setCode, rel);
+      if (rel.setCode) releaseBySetCode.set(rel.setCode.toLowerCase(), rel);
+      if (rel.setId) releaseBySetId.set(String(rel.setId), rel);
     }
 
     // Map scheduledSets by set code
@@ -332,11 +335,19 @@ function MasterSchedulesPage() {
                 DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.startTime.localeCompare(b.startTime),
             );
 
+          const setId = setScheds[0]?.setId;
+          const scheduledSetId = scheduledSetByCode.get(setCode) ?? null;
+          const release =
+            (setId ? releaseBySetId.get(String(setId)) : null) ??
+            (scheduledSetId ? releaseBySetId.get(String(scheduledSetId)) : null) ??
+            releaseBySetCode.get(setCode.toLowerCase()) ??
+            null;
+
           return {
             setCode,
             schedules: setScheds,
-            release: releaseBySetCode.get(setCode) ?? null,
-            scheduledSetId: scheduledSetByCode.get(setCode) ?? null,
+            release,
+            scheduledSetId,
           };
         });
 
@@ -351,6 +362,7 @@ function MasterSchedulesPage() {
         abbrev,
         name: progMeta?.name ?? "",
         departmentAbbrev: deptAbbrev,
+        programId: progMeta?.id,
         yearGroups,
       });
     }
@@ -531,12 +543,55 @@ function MasterSchedulesPage() {
     setClearDialogOpen(true);
   }
 
-  // Release Workflow Handlers
-  async function handleSubmitRelease(note: string) {
-    if (!submitTarget || termClosed) return;
+  // Program & Release Workflow Handlers
+  async function handleSendProgram(programId: number, programAbbrev: string) {
+    if (termClosed || !selectedSchoolYearId) return;
     try {
-      const { message } = await scheduleReleaseService.submitRelease(submitTarget.id, note);
-      if (message) toast.success(message);
+      const res = await termPhaseService.sendProgram(selectedSchoolYearId, semester, programId);
+      toast.success(res.message || `${programAbbrev} schedules submitted to Dean.`);
+      await refreshReleases();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unable to submit program schedules.";
+      toast.error(msg);
+      setActionError(msg);
+    }
+  }
+
+  async function handleWithdrawProgram(programId: number, programAbbrev: string) {
+    if (termClosed || !selectedSchoolYearId) return;
+    try {
+      const res = await termPhaseService.withdrawProgram(selectedSchoolYearId, semester, programId);
+      toast.success(res.message || `${programAbbrev} schedules withdrawn from Dean review.`);
+      await refreshReleases();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unable to withdraw program schedules.";
+      toast.error(msg);
+      setActionError(msg);
+    }
+  }
+
+  async function handlePublishProgram(programId: number, programAbbrev: string) {
+    if (termClosed || !selectedSchoolYearId) return;
+    try {
+      const res = await termPhaseService.publishProgramSchedule(selectedSchoolYearId, semester, programId);
+      toast.success(res.message || `${programAbbrev} official schedule published.`);
+      await refreshReleases();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unable to publish program schedule.";
+      toast.error(msg);
+      setActionError(msg);
+    }
+  }
+
+  async function handleSubmitRelease(note: string) {
+    if (!submitTarget || termClosed || !selectedSchoolYearId) return;
+    const progId = submitTarget.programId || programMap.get(submitTarget.programAbbrev ?? "")?.id;
+    if (!progId) {
+      throw new Error("Program not found for this schedule.");
+    }
+    try {
+      const res = await termPhaseService.sendProgram(selectedSchoolYearId, semester, progId, note);
+      toast.success(res.message || `${res.programAbbrev || "Program"} schedules submitted to Dean.`);
       await refreshReleases();
       setSubmitTarget(null);
     } catch (err) {
@@ -545,10 +600,14 @@ function MasterSchedulesPage() {
   }
 
   async function handleWithdrawRelease() {
-    if (!withdrawTarget || termClosed) return;
+    if (!withdrawTarget || termClosed || !selectedSchoolYearId) return;
+    const progId = withdrawTarget.programId || programMap.get(withdrawTarget.programAbbrev ?? "")?.id;
+    if (!progId) {
+      throw new Error("Program not found for this schedule.");
+    }
     try {
-      const { message } = await scheduleReleaseService.withdrawRelease(withdrawTarget.id);
-      if (message) toast.success(message);
+      const res = await termPhaseService.withdrawProgram(selectedSchoolYearId, semester, progId);
+      toast.success(res.message || `${res.programAbbrev || "Program"} withdrawn from Dean review.`);
       await refreshReleases();
       setWithdrawTarget(null);
     } catch (err) {
@@ -734,6 +793,9 @@ function MasterSchedulesPage() {
               onSubmitRelease={setSubmitTarget}
               onWithdrawRelease={setWithdrawTarget}
               onClearSet={handleClearSingleSet}
+              onSendProgram={handleSendProgram}
+              onWithdrawProgram={handleWithdrawProgram}
+              onPublishProgram={handlePublishProgram}
             />
           </div>
         </>
