@@ -41,8 +41,6 @@ export const termSchedulingService = {
       {
         majorsDueAt: payload.majors_due_at,
         suggestionsDueAt: payload.suggestions_due_at,
-        suggestionAttemptLimit: payload.suggestion_attempt_limit,
-        majorEditRequestLimit: payload.major_edit_request_limit,
         discardGenerated: payload.force,
       },
     );
@@ -52,7 +50,7 @@ export const termSchedulingService = {
     syId: number,
     semesterNumber: number,
     window: SchedulingWindowName,
-    payload: { scheduledClosingAt?: string | null; force?: boolean } = {},
+    payload: { scheduledClosingAt?: string | null; confirmed?: boolean } = {},
   ): Promise<{ message: string; window: SchedulingWindowState }> {
     return apiPost<{ message: string; window: SchedulingWindowState }>(
       `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/open`,
@@ -159,7 +157,7 @@ export const termSchedulingService = {
   ): Promise<TermAdvanceResult> {
     return apiPost<TermAdvanceResult>(
       `/registrar/scheduling-terms/${syId}/${semesterNumber}/advance`,
-      { action, ...payload },
+      { action },
     );
   },
 };

@@ -121,7 +121,7 @@ export const instructorReviewService = {
   ): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
       `/registrar/instructor-schedule-responses/${responseId}/apply`,
-      payload ?? {},
+      payload?.remarks ? { note: payload.remarks } : {},
     );
   },
 
@@ -157,7 +157,7 @@ export const instructorReviewService = {
   ): Promise<{ message: string; relocatedCount?: number }> {
     return apiPost<{ message: string; relocatedCount?: number }>(
       `/registrar/instructor-schedule-responses/${responseId}/apply-with-adjustments`,
-      payload,
+      { note: payload.remarks || undefined },
     );
   },
 
