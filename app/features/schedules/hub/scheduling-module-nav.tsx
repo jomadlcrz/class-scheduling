@@ -60,20 +60,20 @@ export function SchedulingModuleNav({
     {
       key: "regular-class",
       title: "Master Schedules",
-      subtitle: "Module B · Registrar",
+      subtitle: "Module B · Registrar → Dean",
       to: "/schedules/regular-class",
       icon: <SendIcon />,
       line:
         built === 0
           ? "Build timetables before review."
           : toSubmit > 0
-            ? `${toSubmit} draft${toSubmit === 1 ? "" : "s"} ready for review.`
+            ? `${toSubmit} draft${toSubmit === 1 ? "" : "s"} ready to submit.`
             : pendingCount > 0
               ? `${pendingCount} waiting on the dean.`
               : counts.approved > 0
                 ? `${counts.approved} published this term.`
-                : "Saved set timetables, review lifecycle, editing, and printing.",
-      actionLabel: toSubmit > 0 ? "Review schedules" : "Section schedules",
+                : "Saved set timetables, release lifecycle, editing, and printing.",
+      actionLabel: toSubmit > 0 ? "Review & submit" : "Section schedules",
       badge:
         toSubmit > 0
           ? `${toSubmit} drafts`
@@ -91,7 +91,7 @@ export function SchedulingModuleNav({
     },
     {
       key: "irregular-class",
-      title: "Irregular Class",
+      title: "Irregular Schedules",
       subtitle: "Module C · Registrar",
       to: "/schedules/irregular-class",
       icon: <CalendarShuffleIcon />,
