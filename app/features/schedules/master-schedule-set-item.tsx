@@ -16,6 +16,7 @@ import {
   ScheduleViewToggle,
   type ScheduleViewMode,
 } from "~/features/schedules/schedule-view-toggle";
+import { useDays } from "~/hooks/use-days";
 import { getSlotDurationHours, type Schedule } from "~/types/schedule";
 import type { ScheduleRelease } from "~/types/schedule-release";
 import type { Department } from "~/types/department";
@@ -59,6 +60,7 @@ export function MasterScheduleSetItem({
 }: MasterScheduleSetItemProps) {
   const [localViewMode, setLocalViewMode] = useState<ScheduleViewMode | null>(null);
   const viewMode = localViewMode ?? globalViewMode;
+  const { dayLabels } = useDays();
 
   const totalUnits = useMemo(
     () => schedules.reduce((acc, curr) => acc + (curr.units ?? 0), 0),
@@ -105,6 +107,7 @@ export function MasterScheduleSetItem({
         ? { name: release.submittedBy.name, position: "Registrar" }
         : null,
       approvedBy,
+      dayLabels,
     });
   }
 

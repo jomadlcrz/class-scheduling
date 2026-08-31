@@ -25,7 +25,7 @@ import { formatTime12h, normalizeTime, timeToMinutes } from "~/lib/time";
 import { authorityWorkflowService } from "~/services/authority-workflow.service";
 import { scheduleService } from "~/services/schedule.service";
 import type { InstructorScheduleResponse, ProposedScheduleMeeting } from "~/types/authority-workflow";
-import { DAY_LABELS, generateTimeSlots, type Schedule } from "~/types/schedule";
+import { generateTimeSlots, type Schedule } from "~/types/schedule";
 
 export function meta() {
   return [{ title: "Schedule Responses — GWC Class Scheduling" }];
@@ -340,7 +340,7 @@ function ScheduleResponsesPage() {
                   </TableCell>
                   <TableCell>{schedule.setCode}</TableCell>
                   <TableCell>
-                    {DAY_LABELS[schedule.day]} · {formatTime12h(schedule.startTime)}–
+                    {dayLabels[schedule.day]} · {formatTime12h(schedule.startTime)}–
                     {formatTime12h(schedule.endTime)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -591,7 +591,7 @@ function ScheduleResponsesPage() {
                 Assigned schedule
               </p>
               <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
-                {DAY_LABELS[responseTarget.day]} · {formatTime12h(responseTarget.startTime)}–
+                {dayLabels[responseTarget.day]} · {formatTime12h(responseTarget.startTime)}–
                 {formatTime12h(responseTarget.endTime)}
               </p>
             </div>

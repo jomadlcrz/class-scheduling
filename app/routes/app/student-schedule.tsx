@@ -14,6 +14,7 @@ import { TodayClasses } from "~/features/schedules/today-classes";
 import { useMySchedule } from "~/features/schedules/use-my-schedule";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
+import { useDays } from "~/hooks/use-days";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
@@ -38,6 +39,7 @@ function StudentSchedulePage() {
   const { user } = useAuth();
   const { semesterLabel } = useSemesters();
   const { yearLevelLabel } = useYearLevels();
+  const { dayLabels } = useDays();
   const { context: termContext, loading: termContextLoading } = useTermContext();
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
 
@@ -171,6 +173,7 @@ function StudentSchedulePage() {
                   yearLevel: studentYearLevel,
                   semesterNumber: semester,
                   attestations,
+                  dayLabels,
                 })
               }
               className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-mist-100"

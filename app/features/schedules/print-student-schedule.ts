@@ -1,4 +1,4 @@
-import { DAYS, DAY_LABELS, formatTime, type Attestation, type Day, type Schedule } from "~/types/schedule";
+import { DAYS, formatTime, type Attestation, type Day, type Schedule } from "~/types/schedule";
 
 function safe(value: string | number | null | undefined): string {
   return String(value ?? "—")
@@ -9,7 +9,7 @@ function safe(value: string | number | null | undefined): string {
     .replaceAll("'", "&#39;");
 }
 
-function renderDayBody(day: Day, slots: Schedule[], showSet: boolean, colSpan: number): string {
+function renderDayBody(day: Day, slots: Schedule[], showSet: boolean, colSpan: number, dayLabels: Record<Day, string>): string {
   const rows = slots
     .map(
       (schedule) => `
@@ -28,7 +28,7 @@ function renderDayBody(day: Day, slots: Schedule[], showSet: boolean, colSpan: n
 
   return `
     <tbody class="sp-day">
-      <tr class="sp-day-head"><td colspan="${colSpan}">${safe(DAY_LABELS[day]).toUpperCase()}</td></tr>
+      <tr class="sp-day-head"><td colspan="${colSpan}">${safe(dayLabels[day] ?? "").toUpperCase()}</td></tr>
       ${rows}
     </tbody>
   `;
@@ -46,6 +46,7 @@ export function openStudentSchedulePrint(
     yearLevel?: string;
     semesterNumber?: number;
     attestations?: Attestation[];
+    dayLabels: Record<Day, string>;
   },
 ): boolean {
   if (schedules.length === 0) return false;
@@ -78,7 +79,7 @@ export function openStudentSchedulePrint(
       .sort((a, b) => a.startTime.localeCompare(b.startTime)),
   }))
     .filter(({ slots }) => slots.length > 0)
-    .map(({ day, slots }) => renderDayBody(day, slots, showSet, colSpan))
+    .map(({ day, slots }) => renderDayBody(day, slots, showSet, colSpan, context.dayLabels))
     .join("");
 
   const html = `<!doctype html>

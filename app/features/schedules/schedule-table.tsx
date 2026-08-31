@@ -1,4 +1,4 @@
-import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+import { CopyIcon, EditIcon, LockIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
@@ -100,7 +100,9 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
           <tbody>
             {groups.map(({ day, slots }) => {
               const accent = DAY_ACCENT[day];
-              return slots.map((sched, i) => (
+              return slots.map((sched, i) => {
+                const isMajor = sched.origin === "dean_major";
+                return (
                 <tr
                   key={sched.id}
                   className={`group transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/5 ${
@@ -119,10 +121,18 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                     {formatTime(sched.startTime)} – {formatTime(sched.endTime)}
                   </td>
                   <td className="px-3 py-2.5 text-center font-semibold text-navy-700 dark:text-mist-100">
-                    {sched.subjectCode}
+                    <span className="inline-flex items-center gap-1">
+                      {sched.subjectCode}
+                      {isMajor && <LockIcon size={12} className="text-violet-500 dark:text-violet-400" />}
+                    </span>
                   </td>
                   <td className="px-3 py-2.5 text-slate-600 dark:text-slate-300">
                     {sched.subjectTitle}
+                    {isMajor && (
+                      <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-violet-100 px-1.5 py-0.5 font-body text-[0.6rem] font-medium text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
+                        Major
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-2.5 text-center">
                     <div className="flex justify-center gap-1"><ModeBadge mode={sched.mode} />{sched.sessionMode && <ModeBadge mode={sched.sessionMode} />}</div>
@@ -146,7 +156,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                       {sched.setCode}
                     </td>
                   )}
-                  {showActions && (
+                  {showActions && !isMajor && (
                     <td className="px-3 py-2.5">
                       <div className="flex justify-end gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
                         {onDuplicate && (
@@ -182,7 +192,8 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                     </td>
                   )}
                 </tr>
-              ));
+              );
+              });
             })}
           </tbody>
         </table>
@@ -229,23 +240,34 @@ function MobileDayCard({
         {dayLabels[day]}
       </div>
       <ul className="divide-y divide-slate-200 dark:divide-white/10">
-        {slots.map((sched) => (
-          <li key={sched.id} className="flex flex-col gap-1.5 p-3">
+        {slots.map((sched) => {
+          const isMajor = sched.origin === "dean_major";
+          return (
+          <li
+            key={sched.id}
+            className="flex flex-col gap-1.5 p-3"
+          >
             <div className="flex items-center justify-between gap-2">
               <span className="whitespace-nowrap font-body text-xs text-slate-600 dark:text-slate-300">
                 {formatTime(sched.startTime)} – {formatTime(sched.endTime)}
               </span>
               <div className="flex items-center gap-1.5">
+                {isMajor && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 px-1.5 py-0.5 font-body text-[0.6rem] font-medium text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
+                    <LockIcon size={10} />
+                    Major
+                  </span>
+                )}
                 <ModeBadge mode={sched.mode} />
                 {sched.sessionMode && <ModeBadge mode={sched.sessionMode} />}
-                {onDuplicate && (
+                {!isMajor && onDuplicate && (
                   <DuplicateButton
                     days={availableDays(sched)}
                     dayLabels={dayLabels}
                     onPick={(d) => onDuplicate(sched, d)}
                   />
                 )}
-                {onEdit && (
+                {!isMajor && onEdit && (
                   <button
                     type="button"
                     onClick={() => onEdit(sched)}
@@ -256,7 +278,7 @@ function MobileDayCard({
                     <EditIcon />
                   </button>
                 )}
-                {onDelete && (
+                {!isMajor && onDelete && (
                   <button
                     type="button"
                     onClick={() => onDelete(sched)}
@@ -296,7 +318,8 @@ function MobileDayCard({
               </span>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

@@ -3,7 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { formatTime12h, timeToMinutes } from "~/lib/time";
 import { SCHEDULE_DAY_NAMES } from "~/lib/schedule-days";
-import { DAYS, DAY_LABELS, type Day, type Schedule } from "~/types/schedule";
+import { DAYS, type Day, type Schedule } from "~/types/schedule";
 import { ModeBadge } from "~/features/schedules/mode-badge";
 
 type TodayClassesProps = {
@@ -24,8 +24,8 @@ const JS_DAY_TO_NAME: (string | null)[] = [
 ];
 
 const DAY_BY_LABEL: Record<string, Day> = Object.fromEntries(
-  DAYS.map((d) => [DAY_LABELS[d], d]),
-);
+  SCHEDULE_DAY_NAMES.map((name, i) => [name, DAYS[i]]),
+) as Record<string, Day>;
 
 function getTodayDay(): Day | null {
   const name = JS_DAY_TO_NAME[new Date().getDay()];

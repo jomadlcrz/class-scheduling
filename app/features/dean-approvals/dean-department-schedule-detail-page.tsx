@@ -12,6 +12,7 @@ import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleLifecycleRail } from "~/features/schedules/schedule-lifecycle-rail";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
+import { getDayMapping } from "~/lib/day-utils";
 import { PageHeader } from "~/layouts/page-header";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { SchedulePreview } from "~/types/schedule-release";
@@ -28,6 +29,7 @@ export function DeanDepartmentScheduleDetailPage() {
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [dayMap, setDayMap] = useState<Awaited<ReturnType<typeof getDayMapping>>>(null);
   const [finalApproveLoading, setFinalApproveLoading] = useState(false);
 
   useEffect(() => {
@@ -52,6 +54,10 @@ export function DeanDepartmentScheduleDetailPage() {
       cancelled = true;
     };
   }, [releaseId]);
+
+  useEffect(() => {
+    getDayMapping().then(setDayMap);
+  }, []);
 
   async function handleSendToInstructors() {
     try {
@@ -122,7 +128,7 @@ export function DeanDepartmentScheduleDetailPage() {
   }
 
   const { release, daySchedules } = preview;
-  const schedules = scheduleReleaseService.mapPreviewToSchedules(preview);
+  const schedules = scheduleReleaseService.mapPreviewToSchedules(preview, dayMap);
   const canReview = release.releaseStatus === "pending_dean_review";
   const canFinalApprove = release.releaseStatus === "pending_final_approval";
 

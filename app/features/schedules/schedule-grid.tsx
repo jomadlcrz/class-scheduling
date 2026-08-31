@@ -1,4 +1,4 @@
-import { CopyIcon, EditIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
+import { CopyIcon, EditIcon, LockIcon, MapPinIcon, TrashIcon, UserSmallIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
@@ -142,6 +142,8 @@ function GridClassCard({
       instructorTooltip = `Weekly teaching load: ${load.currentWeeklyHours} / ${load.maxWeeklyHours} hrs (${remaining} hrs remaining)`;
     }
   }
+  const isMajor = entry.origin === "dean_major";
+
   return (
     <article
       className={`flex flex-col gap-1 rounded-lg border border-l-4 border-slate-300 p-2 dark:border-white/10 ${accent.borderL} ${accent.cardBg}`}
@@ -150,7 +152,15 @@ function GridClassCard({
         <strong className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
           {entry.subjectCode}
         </strong>
-        <div className="flex items-center gap-1"><ModeBadge mode={entry.mode} />{entry.sessionMode && <ModeBadge mode={entry.sessionMode} />}</div>
+        <div className="flex items-center gap-1">
+          {isMajor && (
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 px-1.5 py-0.5 font-body text-[0.6rem] font-medium text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
+              <LockIcon size={10} />
+              Major
+            </span>
+          )}
+          <ModeBadge mode={entry.mode} />{entry.sessionMode && <ModeBadge mode={entry.sessionMode} />}
+        </div>
       </div>
       <p className="font-body text-[0.7rem] leading-snug text-slate-600 dark:text-slate-300">
         {entry.subjectTitle}
@@ -176,7 +186,7 @@ function GridClassCard({
         <MapPinIcon />
         {entry.roomName}
       </small>
-      {showActions && (
+      {showActions && !isMajor && (
         <div className="mt-0.5 flex items-center justify-end gap-0.5 border-t border-slate-200 pt-1 dark:border-white/8">
           {onDuplicate && (
             <Popover

@@ -1,4 +1,4 @@
-import { DAYS, DAY_LABELS, formatTime, type AttestationPerson, type Day, type Schedule } from "~/types/schedule";
+import { DAYS, formatTime, type AttestationPerson, type Day, type Schedule } from "~/types/schedule";
 
 function safe(value: string): string {
   return value
@@ -10,7 +10,7 @@ function safe(value: string): string {
 }
 
 /** A day is a tbody within one shared table, keeping column headings to a single print header. */
-function renderDayBody(day: Day, slots: Schedule[]): string {
+function renderDayBody(day: Day, slots: Schedule[], dayLabels: Record<Day, string>): string {
   const rows = slots
     .map(
       (s) => `
@@ -28,7 +28,7 @@ function renderDayBody(day: Day, slots: Schedule[]): string {
 
   return `
     <tbody class="sp-day">
-      <tr class="sp-day-head"><td colspan="6">${safe(DAY_LABELS[day]).toUpperCase()}</td></tr>
+      <tr class="sp-day-head"><td colspan="6">${safe(dayLabels[day] ?? "").toUpperCase()}</td></tr>
       ${rows}
     </tbody>
   `;
@@ -47,6 +47,7 @@ export function openSchedulePrint(
     semesterLabel: string;
     preparedBy?: AttestationPerson | null;
     approvedBy?: AttestationPerson | null;
+    dayLabels: Record<Day, string>;
   },
 ): boolean {
   if (schedules.length === 0) return false;
@@ -66,7 +67,7 @@ export function openSchedulePrint(
       .sort((a, b) => a.startTime.localeCompare(b.startTime)),
   })).filter((g) => g.slots.length > 0);
 
-  const dayBodies = dayGroups.map(({ day, slots }) => renderDayBody(day, slots)).join("");
+  const dayBodies = dayGroups.map(({ day, slots }) => renderDayBody(day, slots, context.dayLabels)).join("");
 
   const html = `<!doctype html>
 <html lang="en">

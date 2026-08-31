@@ -15,7 +15,7 @@ import { programService } from "~/services/program.service";
 import { scheduleService, type ScheduleRoomOption } from "~/services/schedule.service";
 import { setService } from "~/services/set.service";
 import type { MajorSchedule, MajorScheduleMeetingInput, MajorScheduleSubmission } from "~/types/authority-workflow";
-import { DAY_LABELS, generateTimeSlots } from "~/types/schedule";
+import { generateTimeSlots } from "~/types/schedule";
 import {
   DAYS,
   DAY_STYLES,
@@ -716,7 +716,7 @@ export function MajorAssignmentDrawer({
 }) {
   const { enums } = useEnums();
   const days = useMemo(
-    () => enums?.dayOfWeek?.map((d) => d.name) ?? Object.values(DAY_LABELS),
+    () => enums?.dayOfWeek?.map((d) => d.name) ?? [],
     [enums?.dayOfWeek],
   );
   const classModes = useMemo(

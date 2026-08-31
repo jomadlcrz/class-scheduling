@@ -1,4 +1,5 @@
 import { timeToMinutes } from "~/lib/time";
+import { SCHEDULE_DAY_NAMES } from "~/lib/schedule-days";
 import type {
   InstructorReviewDetail,
   InstructorReviewMeeting,
@@ -7,15 +8,14 @@ import type {
 import type { Room } from "~/types/room";
 import {
   DAYS,
-  DAY_LABELS,
   type ClassMode,
   type Day,
 } from "~/types/schedule";
 
 export const PROPOSAL_DAYS = DAYS;
-export const PROPOSAL_DAY_ROWS: { day: Day; label: string }[] = DAYS.map((d) => ({
+export const PROPOSAL_DAY_ROWS: { day: Day; label: string }[] = DAYS.map((d, i) => ({
   day: d,
-  label: DAY_LABELS[d],
+  label: SCHEDULE_DAY_NAMES[i] ?? d,
 }));
 
 export const SLOT_STARTS = [

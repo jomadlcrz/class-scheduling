@@ -1,11 +1,12 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { getDayMapping } from "~/lib/day-utils";
 import { appendTermScopeParams, termScopeQuery } from "~/lib/term-scope";
 import { semesterService } from "~/services/semester.service";
 import {
-  DAY_LABELS,
   parseTime12h,
   type Attestation,
   type Day,
+  type FinalizedMajorMeeting,
   type RegularScheduleDetail,
   type Schedule,
   type ScheduleMode,
@@ -16,10 +17,6 @@ export type { ClassModePolicy } from "~/types/schedule";
 import { type YearLevel } from "~/types/subject";
 
 /** Regular class schedules (registrar_admin schedules module). */
-
-const DAY_BY_LABEL = Object.fromEntries(
-  (Object.entries(DAY_LABELS) as [Day, string][]).map(([short, label]) => [label, short]),
-) as Record<string, Day>;
 
 function normalizeMode(mode: string): ScheduleMode {
   return mode as ScheduleMode;
@@ -68,8 +65,9 @@ async function view(): Promise<Schedule[]> {
     throw err;
   }
   const schedules = data.schedules ?? [];
-  const semesters = await semesterService.list();
+  const [semesters, dayMap] = await Promise.all([semesterService.list(), getDayMapping()]);
   const semByName = new Map(semesters.map((s) => [s.semester, s.semesterNumber]));
+  const nameToCode = dayMap?.nameToCode ?? {};
 
   return schedules.map((r) => {
     const [start, end] = r.class_time.split(" - ");
@@ -99,7 +97,7 @@ async function view(): Promise<Schedule[]> {
       // both keeps schedules visible during a staggered frontend/backend deploy.
       mode: normalizeMode(r.class_mode ?? r.mode ?? ""),
       sessionMode: r.session_mode,
-      day: DAY_BY_LABEL[r.day_of_week] ?? "M",
+      day: nameToCode[r.day_of_week] ?? "M",
       startTime: parseTime12h(start),
       endTime: parseTime12h(end ?? start),
       academicStatus: r.academic_status,
@@ -492,12 +490,15 @@ async function autoGenerate(input: {
       : {}),
   });
 
+  const [dayMap] = await Promise.all([getDayMapping()]);
+  const nameToCode = dayMap?.nameToCode ?? {};
+
   const slots = data.day_schedules.flatMap((day) =>
     day.subject_schedules.map((s) => ({
       subjectId: s.subject_id,
       subjectCode: s.subject_code,
       subjectTitle: s.subject_name,
-      day: DAY_BY_LABEL[day.day_of_week] ?? ("M" as Day),
+      day: nameToCode[day.day_of_week] ?? ("M" as Day),
       startTime: parseTime12h(s.start_time),
       endTime: parseTime12h(s.end_time),
       facultyId: s.instructor_id,
@@ -626,13 +627,16 @@ async function createRegular(input: {
     slots.push(slot);
   }
 
+  const [dayMap] = await Promise.all([getDayMapping()]);
+  const codeToName = dayMap?.codeToName ?? ({} as Record<Day, string>);
+
   return apiPost<{ message?: string; warnings?: string[]; rescheduled?: string[] }>("/regular_schedule/create-regular-class-schedules", {
     schoolYear: input.schoolYear,
     semesterNumber: input.semester,
     programId: input.programId,
     setId: input.setId,
     daySchedules: [...byDay.entries()].map(([day, slots]) => ({
-      dayOfWeek: DAY_LABELS[day],
+      dayOfWeek: codeToName[day] ?? "Monday",
       subjectSchedules: slots.map((s) => ({
         startTime: s.startTime,
         endTime: s.endTime,
@@ -1009,13 +1013,13 @@ async function listScheduleAuditLog(params: {
 async function getFinalizedMajorPreload(
   setId: number,
   params: { syId: number; semesterNumber: number; programId?: number },
-): Promise<unknown[]> {
+): Promise<FinalizedMajorMeeting[]> {
   const query = new URLSearchParams({
     syId: String(params.syId),
     semesterNumber: String(params.semesterNumber),
   });
   if (params.programId != null) query.set("programId", String(params.programId));
-  const data = await apiGet<{ finalized_majors: unknown[] }>(
+  const data = await apiGet<{ finalized_majors: FinalizedMajorMeeting[] }>(
     `/regular_schedule/set/${setId}/finalized-majors?${query}`,
   );
   return data.finalized_majors ?? [];

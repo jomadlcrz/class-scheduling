@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { enumService, type DayOfWeekOption } from "~/services/enum.service";
 import { useCachedData } from "~/hooks/use-cached-data";
-import { DAYS, DAY_LABELS as STATIC_DAY_LABELS, type Day } from "~/types/schedule";
+import { DAYS, type Day } from "~/lib/day-utils";
 
 type UseDaysResult = {
   days: DayOfWeekOption[];
-  /** Full day name per short code, e.g. dayLabels.M === "Monday". Falls back to the static label until the fetch resolves. */
+  /** Full day name per short code, e.g. dayLabels.M === "Monday". Falls back to undefined until the fetch resolves. */
   dayLabels: Record<Day, string>;
   loading: boolean;
 };
@@ -22,9 +22,9 @@ export function useDays(): UseDaysResult {
   const loading = data === null;
 
   const dayLabels = useMemo(() => {
-    if (days.length !== DAYS.length) return STATIC_DAY_LABELS;
+    if (days.length !== DAYS.length) return {} as Record<Day, string>;
     return Object.fromEntries(
-      DAYS.map((d, i) => [d, days[i]?.name ?? STATIC_DAY_LABELS[d]]),
+      DAYS.map((d, i) => [d, days[i]?.name ?? ""]),
     ) as Record<Day, string>;
   }, [days]);
 

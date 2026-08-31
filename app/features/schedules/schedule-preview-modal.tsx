@@ -10,6 +10,8 @@ import {
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
+import { useDays } from "~/hooks/use-days";
+import { getDayMapping } from "~/lib/day-utils";
 import { formatDateTime } from "~/lib/time";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { SchedulePreview } from "~/types/schedule-release";
@@ -28,6 +30,11 @@ export function SchedulePreviewModal({ open, releaseId, fetchPreview, onClose }:
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
+  const [dayMap, setDayMap] = useState<Awaited<ReturnType<typeof getDayMapping>>>(null);
+
+  useEffect(() => {
+    getDayMapping().then(setDayMap);
+  }, []);
 
   useEffect(() => {
     if (!open || releaseId == null) {
@@ -55,7 +62,7 @@ export function SchedulePreviewModal({ open, releaseId, fetchPreview, onClose }:
     };
   }, [open, releaseId, fetchPreview]);
 
-  const schedules = preview ? scheduleReleaseService.mapPreviewToSchedules(preview) : [];
+  const schedules = preview ? scheduleReleaseService.mapPreviewToSchedules(preview, dayMap) : [];
   const release = preview?.release;
 
   return (

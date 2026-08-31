@@ -45,8 +45,8 @@ import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
 
 import { formatDecimalHour, normalizeTime, timeToMinutes } from "~/lib/time";
 import type { Program } from "~/types/program";
+import type { FinalizedMajorMeeting } from "~/types/schedule";
 import {
-  DAY_LABELS,
   formatTime,
   type Day,
   type Schedule,
@@ -177,6 +177,7 @@ function SchedulesNewPage() {
   const [ledgerDriftCount, setLedgerDriftCount] = useState<number | null>(null);
   const [checkingLedgers, setCheckingLedgers] = useState(false);
   const [ledgerError, setLedgerError] = useState<string | null>(null);
+  const [finalizedMajors, setFinalizedMajors] = useState<FinalizedMajorMeeting[]>([]);
   const {
     isGenerating,
     hasGenerated,
@@ -263,6 +264,30 @@ function SchedulesNewPage() {
   const selectedSet = sets.find((s) => String(s.id) === selectedSetId);
   const schoolYearValid = /^\d{4}-\d{4}$/.test(schoolYear);
 
+  // Fetch finalized major meetings when a set is selected.
+  useEffect(() => {
+    if (!selectedSet || !matchedSy || !matchedSem) {
+      setFinalizedMajors([]);
+      return;
+    }
+    let stale = false;
+    scheduleService
+      .getFinalizedMajorPreload(selectedSet.id, {
+        syId: matchedSy.id,
+        semesterNumber: matchedSem.semesterNumber,
+        programId: selectedProgram?.id,
+      })
+      .then((majors) => {
+        if (!stale) setFinalizedMajors(majors);
+      })
+      .catch(() => {
+        if (!stale) setFinalizedMajors([]);
+      });
+    return () => {
+      stale = true;
+    };
+  }, [selectedSet?.id, matchedSy?.id, matchedSem?.semesterNumber, selectedProgram?.id]);
+
   type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
   const facultyLoadMap = useMemo(() => {
     const m = new Map<string, FacultyLoad>();
@@ -333,8 +358,8 @@ function SchedulesNewPage() {
   );
 
   const displaySchedules = useMemo<Schedule[]>(
-    () =>
-      slots.map((slot) => ({
+    () => {
+      const regular = slots.map((slot) => ({
         id: slot.tempId,
         schoolYear,
         semester,
@@ -354,8 +379,33 @@ function SchedulesNewPage() {
         day: slot.day,
         startTime: slot.startTime,
         endTime: slot.endTime,
-      })),
-    [slots, schoolYear, semester, selectedSet, selectedProgram, selectedYearLevel],
+      }));
+      const majors: Schedule[] = finalizedMajors.map((m) => ({
+        id: String(m.regular_schedule_id),
+        schoolYear,
+        semester,
+        subjectId: String(m.subject_id),
+        subjectCode: m.subject_code,
+        subjectTitle: m.subject_title,
+        setId: String(selectedSet?.id ?? ""),
+        setCode: selectedSet?.setCode ?? "",
+        program: selectedProgram?.abbrev ?? "",
+        departmentCode: selectedProgram?.departmentAbbrev ?? "",
+        yearLevel: (selectedYearLevel || 1) as YearLevel,
+        facultyId: String(m.instructor_id ?? ""),
+        facultyName: m.instructor_name,
+        roomId: String(m.room_id ?? ""),
+        roomName: m.room_name,
+        mode: m.class_mode,
+        sessionMode: m.session_mode,
+        day: DAY_LABEL_TO_KEY[m.day_of_week] ?? "M",
+        startTime: m.start_time,
+        endTime: m.end_time,
+        origin: "dean_major",
+      }));
+      return [...regular, ...majors];
+    },
+    [slots, finalizedMajors, schoolYear, semester, selectedSet, selectedProgram, selectedYearLevel],
   );
 
   function handleProgramChange(programId: string) {
@@ -687,7 +737,7 @@ function SchedulesNewPage() {
       const savedId = Number(conflictPrefill.savedScheduleId);
       try {
         const msg = await scheduleService.updateRegularSlot(savedId, {
-          dayOfWeek: DAY_LABELS[slot.day],
+          dayOfWeek: dayLabels[slot.day],
           startTime: slot.startTime,
           endTime: slot.endTime,
           roomId: slot.roomId,
@@ -1080,20 +1130,18 @@ function SchedulesNewPage() {
             </div>
             <div className="flex justify-end gap-2">
               {slots.length > 0 && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    block={false}
-                    disabled={!canGenerate}
-                    isLoading={isGenerating}
-                    loadingLabel="Regenerating…"
-                    onClick={handleAutoGenerate}
-                  >
-                    <RotateIcon />
-                    Regenerate
-                  </Button>
-                </>
+                <Button
+                  type="button"
+                  variant="outline"
+                  block={false}
+                  disabled={!canGenerate}
+                  isLoading={isGenerating}
+                  loadingLabel="Regenerating…"
+                  onClick={handleAutoGenerate}
+                >
+                  <RotateIcon />
+                  Regenerate
+                </Button>
               )}
             </div>
           </div>

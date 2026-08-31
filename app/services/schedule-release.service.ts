@@ -1,7 +1,6 @@
 import { apiGet, apiMessage, apiPost } from "~/lib/api";
 import { appendTermScopeParams } from "~/lib/term-scope";
 import {
-  DAY_LABELS,
   parseTime12h,
   type Day,
   type Schedule,
@@ -17,10 +16,6 @@ import type {
 } from "~/types/schedule-release";
 
 /** Schedule release / dean approval workflow (10 endpoints, no frontend usage before this file). */
-
-const DAY_BY_LABEL = Object.fromEntries(
-  (Object.entries(DAY_LABELS) as [Day, string][]).map(([short, label]) => [label, short]),
-) as Record<string, Day>;
 
 function normalizeMode(mode: string): ScheduleMode {
   return mode;
@@ -362,17 +357,20 @@ async function publishProgramSchedule(
   };
 }
 
+import type { DayMapping } from "~/lib/day-utils";
+
 /**
  * Converts a release preview's daySchedules into the Schedule[] shape so the existing
  * ScheduleGrid/ScheduleTable components can render it read-only — no new grid renderer needed.
  * Fields the preview doesn't carry (schoolYear label, departmentCode) are left blank; neither
  * component reads them for display.
  */
-function mapPreviewToSchedules(preview: SchedulePreview): Schedule[] {
+function mapPreviewToSchedules(preview: SchedulePreview, dayMap?: DayMapping | null): Schedule[] {
   const { release, daySchedules } = preview;
+  const nameToCode = dayMap?.nameToCode ?? {};
   const schedules: Schedule[] = [];
   for (const day of daySchedules) {
-    const dayCode = DAY_BY_LABEL[day.dayOfWeek] ?? "M";
+    const dayCode = nameToCode[day.dayOfWeek] ?? "M";
     day.subjectSchedules.forEach((session, index) => {
       schedules.push({
         id: `${release.id}-${dayCode}-${index}`,

@@ -3,29 +3,28 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Spinner } from "~/components/ui/spinner";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { ChevronDownIcon, RotateIcon } from "~/components/ui/icons";
+import { ChevronDownIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
+import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { PageHeader } from "~/layouts/page-header";
 import { DecisionMessage } from "~/features/schedules/decision-message";
-import { ModeBadge } from "~/features/schedules/mode-badge";
-import { SuggestionValidationSummary } from "~/features/schedules/suggestion-validation-summary";
 import {
   snapshotOriginalMeetings,
   type ProposalMeeting,
 } from "~/features/schedules/instructor-proposal-model";
+import { ModeBadge } from "~/features/schedules/mode-badge";
 import { formatSectionSetName } from "~/features/schedules/scheduling-routes";
+import { SuggestionValidationSummary } from "~/features/schedules/suggestion-validation-summary";
+import { useDays } from "~/hooks/use-days";
+import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { formatDateTime, formatTime12h, timeToMinutes } from "~/lib/time";
-import { termSchedulingService } from "~/services/term-scheduling.service";
 import { instructorReviewService } from "~/services/instructor-review.service";
 import { roomService } from "~/services/room.service";
-import type { TermSchedulingCalendar } from "~/types/term-scheduling";
-import { useDays } from "~/hooks/use-days";
+import { termSchedulingService } from "~/services/term-scheduling.service";
 import type {
   InstructorMeetingReviewState,
   InstructorReviewDetail,
@@ -34,7 +33,7 @@ import type {
   ProposedMeeting,
 } from "~/types/instructor-review";
 import type { Room } from "~/types/room";
-import { DAYS, DAY_LABELS } from "~/types/schedule";
+import type { TermSchedulingCalendar } from "~/types/term-scheduling";
 
 export function meta() {
   return [{ title: "Shift Requests — GWC Class Scheduling" }];
@@ -176,7 +175,7 @@ export default function ShiftRequestsRoute() {
     if (backendDays && backendDays.length > 0) {
       return backendDays.map((d) => d.name);
     }
-    return DAYS.map((d) => DAY_LABELS[d]);
+    return [];
   }, [backendDays]);
 
   const [calendar, setCalendar] = useState<TermSchedulingCalendar | null>(null);
@@ -434,7 +433,7 @@ export default function ShiftRequestsRoute() {
                   {distributedByDay.map(({ day, schedules }) => (
                     <div
                       key={day}
-                      className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-white/10 dark:bg-white/[0.02]"
+                      className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-white/10 dark:bg-white/2"
                     >
                       <div className="mb-2.5 flex items-center justify-between border-b border-slate-200 pb-2 dark:border-white/10">
                         <span className="font-display text-sm tracking-wide text-navy-800 dark:text-mist-100">
@@ -595,7 +594,7 @@ export default function ShiftRequestsRoute() {
                         </div>
 
                         {expanded && (
-                          <div className="mt-3 space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/[0.02]">
+                          <div className="mt-3 space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/2">
                             <div className="rounded-lg border border-slate-200 bg-white p-3 font-body text-xs text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
                               {status.description}
                             </div>

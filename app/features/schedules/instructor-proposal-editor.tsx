@@ -60,7 +60,7 @@ import { formatTime12h, timeToMinutes } from "~/lib/time";
 import { instructorReviewService } from "~/services/instructor-review.service";
 import type { InstructorReviewDetail } from "~/types/instructor-review";
 import type { Room } from "~/types/room";
-import { DAYS, DAY_LABELS, type ClassMode, type Day } from "~/types/schedule";
+import { DAYS, type ClassMode, type Day } from "~/types/schedule";
 import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 type EditorStep = "edit" | "review";
@@ -236,7 +236,7 @@ export function InstructorProposalEditor({
     }
     return DAYS.map((d) => ({
       day: d as Day,
-      label: DAY_LABELS[d as Day] ?? d,
+      label: d,
     }));
   }, [backendDays]);
 

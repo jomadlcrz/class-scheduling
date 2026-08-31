@@ -1,16 +1,7 @@
 import type { YearLevel } from "~/types/subject";
 
-export const DAYS = ["M", "T", "W", "Th", "F", "S"] as const;
-export type Day = (typeof DAYS)[number];
-
-export const DAY_LABELS: Record<Day, string> = {
-  M: "Monday",
-  T: "Tuesday",
-  W: "Wednesday",
-  Th: "Thursday",
-  F: "Friday",
-  S: "Saturday",
-};
+import { DAYS, type Day } from "~/lib/day-utils";
+export { DAYS, type Day };
 
 export type ScheduleSemester = number;
 
@@ -47,6 +38,29 @@ export type Schedule = {
   endTime: string;
   /** Only populated for a STUDENT viewer of scheduleService.view(). */
   academicStatus?: string;
+  /** Schedule origin — "dean_major" for Registrar-finalized protected major meetings. */
+  origin?: string;
+};
+
+/** Registrar-finalized, protected Dean-major meeting returned by GET /regular_schedule/set/:setId/finalized-majors. */
+export type FinalizedMajorMeeting = {
+  id: number;
+  regular_schedule_id: number;
+  subject_id: number;
+  subject_code: string;
+  subject_name: string;
+  subject_title: string;
+  subject_type: string;
+  session_mode: string;
+  class_mode: string;
+  instructor_id: number | null;
+  instructor_name: string;
+  room_id: number | null;
+  room_name: string;
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+  schedule_origin: string;
 };
 
 export type AttestationPerson = {
