@@ -1,4 +1,4 @@
-import { apiGet, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { apiGet, apiPost, apiPut } from "~/lib/api";
 import type {
   AdvancedAnalysisResult,
   DeanReviewProgress,
@@ -70,13 +70,14 @@ export const instructorReviewService = {
   },
 
   getDeanProgress(releaseId: number): Promise<DeanReviewProgress> {
-    return apiGet<DeanReviewProgress>(`/dean/schedule-reviews/${releaseId}/progress`);
+    return apiGet<DeanReviewProgress>(`/deans/schedule-approvals/${releaseId}/review-progress`);
   },
 
   deanAccept(responseId: number, remarks?: string): Promise<{ message: string }> {
-    return apiPost<{ message: string }>(`/dean/schedule-reviews/responses/${responseId}/accept`, {
-      remarks: remarks || undefined,
-    });
+    return apiPost<{ message: string }>(
+      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      { approve: true, note: remarks || undefined },
+    );
   },
 
   deanForward(
@@ -84,32 +85,33 @@ export const instructorReviewService = {
     remarks?: string,
   ): Promise<{ message: string; warnings?: string[] }> {
     return apiPost<{ message: string; warnings?: string[] }>(
-      `/dean/schedule-reviews/responses/${responseId}/forward`,
-      { remarks: remarks || undefined },
+      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      { approve: true, note: remarks || undefined },
     );
   },
 
   deanReject(responseId: number, remarks: string): Promise<{ message: string }> {
-    return apiPost<{ message: string }>(`/dean/schedule-reviews/responses/${responseId}/reject`, {
-      remarks,
-    });
+    return apiPost<{ message: string }>(
+      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      { approve: false, note: remarks },
+    );
   },
 
   analyzeDeanSuggestion(responseId: number): Promise<SuggestionAnalysisResult> {
-    return apiGet<SuggestionAnalysisResult>(
-      `/dean/schedule-reviews/responses/${responseId}/analyze`,
+    return apiPost<SuggestionAnalysisResult>(
+      `/registrar/instructor-schedule-responses/${responseId}/analyze`,
     );
   },
 
   getRegistrarWorkspace(releaseId: number): Promise<RegistrarRevisionWorkspace> {
     return apiGet<RegistrarRevisionWorkspace>(
-      `/registrar/schedule-reviews/${releaseId}/workspace`,
+      `/registrar/schedule-releases/${releaseId}/revision-workspace`,
     );
   },
 
   analyzeRegistrarSuggestion(responseId: number): Promise<SuggestionAnalysisResult> {
-    return apiGet<SuggestionAnalysisResult>(
-      `/registrar/schedule-reviews/suggestions/${responseId}/analyze`,
+    return apiPost<SuggestionAnalysisResult>(
+      `/registrar/instructor-schedule-responses/${responseId}/analyze`,
     );
   },
 
@@ -118,7 +120,7 @@ export const instructorReviewService = {
     payload?: { remarks?: string },
   ): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
-      `/registrar/schedule-reviews/suggestions/${responseId}/apply`,
+      `/registrar/instructor-schedule-responses/${responseId}/apply`,
       payload ?? {},
     );
   },
@@ -128,14 +130,14 @@ export const instructorReviewService = {
     remarks: string,
   ): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
-      `/registrar/schedule-reviews/suggestions/${responseId}/reject`,
-      { remarks },
+      `/registrar/instructor-schedule-responses/${responseId}/retain`,
+      { note: remarks },
     );
   },
 
   analyzeAdvancedSuggestion(responseId: number): Promise<AdvancedAnalysisResult> {
-    return apiGet<AdvancedAnalysisResult>(
-      `/registrar/schedule-reviews/suggestions/${responseId}/analyze-advanced`,
+    return apiPost<AdvancedAnalysisResult>(
+      `/registrar/instructor-schedule-responses/${responseId}/analyze-advanced`,
     );
   },
 
@@ -143,9 +145,9 @@ export const instructorReviewService = {
     responseId: number,
     reasonCategory: string,
   ): Promise<RetentionDecisionPreview> {
-    const q = new URLSearchParams({ reasonCategory });
-    return apiGet<RetentionDecisionPreview>(
-      `/registrar/schedule-reviews/suggestions/${responseId}/retention-preview?${q.toString()}`,
+    return apiPost<RetentionDecisionPreview>(
+      `/registrar/instructor-schedule-responses/${responseId}/retention-preview`,
+      { reasonCategory },
     );
   },
 
@@ -154,7 +156,7 @@ export const instructorReviewService = {
     payload: { analysisToken: string; remarks?: string; allowRelocations?: boolean },
   ): Promise<{ message: string; relocatedCount?: number }> {
     return apiPost<{ message: string; relocatedCount?: number }>(
-      `/registrar/schedule-reviews/suggestions/${responseId}/apply-advanced`,
+      `/registrar/instructor-schedule-responses/${responseId}/apply-with-adjustments`,
       payload,
     );
   },
@@ -163,9 +165,9 @@ export const instructorReviewService = {
     responseId: number,
     payload: { action: "accept" | "reject"; remarks: string; scheduleOverrides?: unknown },
   ): Promise<{ message: string }> {
-    return apiPatch<{ message: string }>(
-      `/dean/schedule-reviews/responses/${responseId}`,
-      payload,
+    return apiPost<{ message: string }>(
+      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      { approve: payload.action === "accept", note: payload.remarks },
     );
   },
 };

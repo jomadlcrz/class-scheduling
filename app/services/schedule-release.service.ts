@@ -60,9 +60,10 @@ async function listReleases(
   return data.map(mapRelease);
 }
 
-/** GET /schedule-releases/{id} — one release detail. */
+/** GET /schedule-releases/{id}/preview — one release detail (backend has no standalone release detail endpoint). */
 async function getRelease(id: number): Promise<ScheduleRelease> {
-  return mapRelease(await apiGet<ApiScheduleRelease>(`/schedule-releases/${id}`));
+  const preview = await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`);
+  return mapRelease(preview.release);
 }
 
 /** GET /schedule-releases/{id}/preview — read-only weekly grid for the registrar to review before submitting. */
@@ -70,7 +71,11 @@ async function getReleasePreview(id: number): Promise<SchedulePreview> {
   return mapPreview(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`));
 }
 
-/** POST /schedule-releases/{id}/submit — draft/rejected → pending_dean_review. */
+/**
+ * Submit a release — draft/rejected → pending_dean_review.
+ * NOTE: Backend does not yet have a release-level submit endpoint.
+ * The registrar workflow uses scheduling-term program send instead.
+ */
 async function submitRelease(id: number, note?: string): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/schedule-releases/${id}/submit`,
@@ -79,7 +84,11 @@ async function submitRelease(id: number, note?: string): Promise<{ message: stri
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
-/** POST /schedule-releases/{id}/withdraw — pending_dean_review → draft. */
+/**
+ * Withdraw a release — pending_dean_review → draft.
+ * NOTE: Backend does not yet have a release-level withdraw endpoint.
+ * The registrar workflow uses scheduling-term program withdraw instead.
+ */
 async function withdrawRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/schedule-releases/${id}/withdraw`,
@@ -87,7 +96,10 @@ async function withdrawRelease(id: number): Promise<{ message: string; release: 
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
-/** POST /schedule-releases/{id}/catch-up — send stray set to dean after term distribution. */
+/**
+ * Send stray set to dean after term distribution.
+ * NOTE: Backend does not yet have a release-level catch-up endpoint.
+ */
 async function catchUpRelease(id: number, note?: string): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/schedule-releases/${id}/catch-up`,
@@ -245,15 +257,22 @@ async function getApproval(id: number): Promise<ScheduleRelease> {
   return mapRelease(await apiGet<ApiScheduleRelease>(`/deans/schedule-approvals/${id}`));
 }
 
-/** Legacy initial-approval endpoint. The active workflow sends schedules to instructors before final approval. */
+/**
+ * Legacy initial-approval endpoint.
+ * NOTE: The active workflow uses sendToInstructors → forwardSuggestions → finalApprove instead.
+ * This is kept for backward compatibility but is no longer the primary approval path.
+ */
 async function approveRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/approve`,
+    `/deans/schedule-approvals/${id}/final-approve`,
   );
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
-/** POST /deans/schedule-approvals/{id}/reject {reason} — returns a schedule to the Registrar. Reason must be ≥10 chars. */
+/**
+ * Reject a release — returns it to the Registrar as a draft.
+ * Maps to the program-level reject endpoint since the backend has no release-level reject.
+ */
 async function rejectRelease(id: number, reason: string): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/deans/schedule-approvals/${id}/reject`,
@@ -262,7 +281,10 @@ async function rejectRelease(id: number, reason: string): Promise<{ message: str
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
-/** POST /deans/schedule-approvals/{id}/send-to-instructors — distributes review to instructors. */
+/**
+ * Send release to instructors for review.
+ * Maps to the program-level send-to-instructors endpoint since the backend has no release-level endpoint.
+ */
 async function sendToInstructors(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
     `/deans/schedule-approvals/${id}/send-to-instructors`,

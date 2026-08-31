@@ -1,4 +1,4 @@
-import { apiGet, apiPatch, apiPost } from "~/lib/api";
+import { apiGet, apiPost, apiPut } from "~/lib/api";
 import type {
   MajorEditRequestAttemptSummary,
   SchedulingWindowName,
@@ -36,9 +36,15 @@ export const termSchedulingService = {
       force?: boolean;
     },
   ): Promise<TermDeadlineUpdate> {
-    return apiPatch<TermDeadlineUpdate>(
-      `/scheduling-terms/${syId}/${semesterNumber}/deadlines`,
-      payload,
+    return apiPut<TermDeadlineUpdate>(
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/deadlines`,
+      {
+        majorsDueAt: payload.majors_due_at,
+        suggestionsDueAt: payload.suggestions_due_at,
+        suggestionAttemptLimit: payload.suggestion_attempt_limit,
+        majorEditRequestLimit: payload.major_edit_request_limit,
+        discardGenerated: payload.force,
+      },
     );
   },
 
@@ -49,7 +55,7 @@ export const termSchedulingService = {
     payload: { scheduledClosingAt?: string | null; force?: boolean } = {},
   ): Promise<{ message: string; window: SchedulingWindowState }> {
     return apiPost<{ message: string; window: SchedulingWindowState }>(
-      `/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/open`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/open`,
       payload,
     );
   },
@@ -60,7 +66,7 @@ export const termSchedulingService = {
     window: SchedulingWindowName,
   ): Promise<{ message: string; window: SchedulingWindowState }> {
     return apiPost<{ message: string; window: SchedulingWindowState }>(
-      `/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/close`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/close`,
       {},
     );
   },
@@ -70,7 +76,7 @@ export const termSchedulingService = {
     semesterNumber: number,
   ): Promise<TermDepartmentReadiness> {
     return apiGet<TermDepartmentReadiness>(
-      `/scheduling-terms/${syId}/${semesterNumber}/distribution-readiness`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/department-readiness`,
     );
   },
 
@@ -79,7 +85,7 @@ export const termSchedulingService = {
     semesterNumber: number,
   ): Promise<TermDistributionReadiness> {
     return apiGet<TermDistributionReadiness>(
-      `/scheduling-terms/${syId}/${semesterNumber}/distribution-readiness`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/readiness`,
     );
   },
 
@@ -88,7 +94,7 @@ export const termSchedulingService = {
     semesterNumber: number,
   ): Promise<TermResponseReadiness> {
     return apiGet<TermResponseReadiness>(
-      `/scheduling-terms/${syId}/${semesterNumber}/response-readiness`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/response-readiness`,
     );
   },
 
@@ -97,7 +103,7 @@ export const termSchedulingService = {
     semesterNumber: number,
   ): Promise<MajorEditRequestAttemptSummary> {
     return apiGet<MajorEditRequestAttemptSummary>(
-      `/scheduling-terms/${syId}/${semesterNumber}/major-edit-attempts`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-edit-request-attempts`,
     );
   },
 

@@ -2,7 +2,7 @@ import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/
 import { termScopeQuery } from "~/lib/term-scope";
 import { facultyService } from "~/services/faculty.service";
 import type { CreateFacultyAccountInput, Faculty } from "~/types/faculty";
-import type { DeanAnalyticsResponse } from "~/types/dean-analytics";
+import type { AttentionItem, DeanAnalyticsResponse, InstructorLoad } from "~/types/dean-analytics";
 import type { OfferingCoverage } from "~/types/offering-coverage";
 import type {
   DepartmentSubjectProgram,
@@ -26,6 +26,22 @@ type DepartmentInstructorsResponse = {
   mobile: string | null;
   roles: string[];
 }[];
+
+export type DeanAttentionPage = {
+  items: AttentionItem[];
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+};
+
+export type DeanInstructorLoadsPage = {
+  items: InstructorLoad[];
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+};
 
 export type DepartmentInstructor = {
   instructorProfileId: number;
@@ -408,6 +424,16 @@ async function getAnalytics(syId: number, semesterNumber: number): Promise<DeanA
   return apiGet<DeanAnalyticsResponse>(`/deans/analytics${termScopeQuery(syId, semesterNumber)}`);
 }
 
+/** GET /deans/analytics/attention — items requiring the dean's immediate attention. */
+async function getAttention(syId: number, semesterNumber: number): Promise<DeanAttentionPage> {
+  return apiGet<DeanAttentionPage>(`/deans/analytics/attention${termScopeQuery(syId, semesterNumber)}`);
+}
+
+/** GET /deans/analytics/instructor-loads — per-instructor load breakdown for the term. */
+async function getInstructorLoads(syId: number, semesterNumber: number): Promise<DeanInstructorLoadsPage> {
+  return apiGet<DeanInstructorLoadsPage>(`/deans/analytics/instructor-loads${termScopeQuery(syId, semesterNumber)}`);
+}
+
 /** GET /deans/offering-coverage — which offerable minor/GenEd subjects still
  *  have no instructor for the term, grouped department → program. The backend
  *  scopes it by role (registrar: college-wide; dean: own department). Raw
@@ -485,6 +511,8 @@ export const deanService = {
   deleteTeachingTerm,
   removeSubjectAssignment,
   getAnalytics,
+  getAttention,
+  getInstructorLoads,
   getOfferingCoverage,
   getSchedulingLoadPolicy,
   updateSchedulingLoadPolicy,
