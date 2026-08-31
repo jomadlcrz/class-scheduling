@@ -127,6 +127,9 @@ export function ScheduleClearDialog({
                 <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   {row.setCode}
                 </span>
+                <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                  {row.programAbbrev}{row.yearLevel ? ` · Year ${row.yearLevel}` : ""}
+                </span>
                 <StatusBadge tone={scheduleReleaseStatusTone(row.releaseStatus)}>
                   {scheduleReleaseStatusLabel(row.releaseStatus)}
                 </StatusBadge>

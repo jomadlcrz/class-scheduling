@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Drawer } from "~/components/ui/drawer";
@@ -755,22 +755,27 @@ function SchedulesNewPage() {
    * and every dropdown stays free — a registrar who wants to redo a set can
    * still pick it.
    */
-  function advanceToNextSet(justSaved: { id: number; yearLevel?: number | null }) {
+  function advanceToNextSet(justSaved: { id: number; yearLevel?: number | null; setCode?: string | null }, remaining: ClassSet[]) {
     const year = (justSaved.yearLevel ?? selectedYearLevel) as YearLevel;
-    const inYear = sets
-      .filter((row) => row.program === selectedProgram?.abbrev && row.yearLevel === year)
-      .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? ""));
+    const sameProgram = (row: ClassSet) =>
+      row.program === selectedProgram?.abbrev && row.yearLevel === year;
 
-    const at = inYear.findIndex((row) => row.id === justSaved.id);
-    const nextInYear = at >= 0 ? inYear[at + 1] : undefined;
+    // Find the first remaining set whose setCode sorts after the one we just saved.
+    const savedCode = (justSaved.setCode ?? "").toUpperCase();
+    const nextInYear = remaining
+      .filter(sameProgram)
+      .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? ""))
+      .find((row) => (row.setCode ?? "").toUpperCase() > savedCode);
+
     if (nextInYear) {
       setSelectedSetId(String(nextInYear.id));
       return;
     }
 
+    // Try later year levels.
     const laterYears = availableYearLevels.filter((level) => level > year);
     for (const level of laterYears) {
-      const firstOfYear = sets
+      const firstOfYear = remaining
         .filter((row) => row.program === selectedProgram?.abbrev && row.yearLevel === level)
         .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? ""))[0];
       if (firstOfYear) {
@@ -779,6 +784,8 @@ function SchedulesNewPage() {
         return;
       }
     }
+
+    setSelectedSetId("");
   }
 
   async function handleSave() {
@@ -824,9 +831,23 @@ function SchedulesNewPage() {
       setConflictLoading(false);
       setDeleteTarget(null);
       setPendingMove(null);
-      // The canvas belonged to the saved set. Clear it, then hand the picker
-      // to the next set so the registrar can work straight through the program.
-      advanceToNextSet(savedSet);
+      // Re-fetch unscheduled sets so the just-saved set is excluded, then
+      // hand the picker to the next set so the registrar can work straight through.
+      let remaining: ClassSet[] = [];
+      if (matchedSy && matchedSem && selectedProgramId) {
+        try {
+          remaining = await setService.listUnscheduled({
+            syId: matchedSy.id,
+            semesterNumber: matchedSem.semesterNumber,
+            programId: Number(selectedProgramId),
+          });
+          setSets(remaining);
+        } catch {
+          remaining = [];
+          setSets([]);
+        }
+      }
+      advanceToNextSet(savedSet, remaining);
       setIsSaving(false);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "");
@@ -944,6 +965,18 @@ function SchedulesNewPage() {
               <Alert key="save-error" variant="destructive">
                 <AlertIcon />
                 <AlertDescription>{saveError}</AlertDescription>
+                {saveError.includes("Major schedules are submitted") && (
+                  <AlertAction>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      block={false}
+                      onClick={() => navigate("/major-schedules")}
+                    >
+                      Open Major Schedules
+                    </Button>
+                  </AlertAction>
+                )}
               </Alert>
             )}
             {ledgerError && (
