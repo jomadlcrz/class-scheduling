@@ -83,12 +83,25 @@ function notificationText(notification: NotificationItem): { title: string; deta
         detail: [count > 0 ? `${count} section${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
       };
     }
+    case "schedule_approval_returned_for_revision_summary": {
+      const count = typeof p.set_count === "number" ? p.set_count : 0;
+      return {
+        title: p.program_abbrev ? `Returned for revision — ${p.program_abbrev}` : "Returned for revision",
+        detail: [p.reason, count > 0 ? `${count} section${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
+      };
+    }
     case "major_schedule_submitted":
       return { title: "Major schedules submitted", detail: [p.department_abbrev, period].filter(Boolean).join(" · ") };
     case "major_schedule_edit_requested":
       return { title: "Major schedule edit requested", detail: p.reason ?? p.department_abbrev ?? "" };
+    case "major_schedule_edit_approved":
+      return { title: "Major schedule edit approved", detail: [p.department_abbrev, p.decision_note, period].filter(Boolean).join(" · ") };
+    case "major_schedule_edit_rejected":
+      return { title: "Major schedule edit rejected", detail: [p.department_abbrev, p.decision_note ?? p.reason, period].filter(Boolean).join(" · ") };
     case "major_schedule_deleted":
       return { title: p.subject_code ? `${p.subject_code} removed from Major schedules` : "Major meeting removed", detail: p.reason ?? period };
+    case "major_schedule_finalized":
+      return { title: "Major schedule finalized", detail: [p.department_abbrev, period].filter(Boolean).join(" · ") };
     case "subject_assignment_changed": {
       const codes = Array.isArray(p.subject_codes) ? p.subject_codes : [];
       return {
@@ -100,6 +113,20 @@ function notificationText(notification: NotificationItem): { title: string; deta
       return { title: "You've been enrolled", detail: period };
     case "account_reactivated":
       return { title: "Account reactivated", detail: "Your account has been restored." };
+    case "major_scheduling_window_opened":
+      return {
+        title: "Major Scheduling window opened",
+        detail: [p.closing_at ? `Due ${new Date(p.closing_at).toLocaleDateString()}` : null, period].filter(Boolean).join(" · "),
+      };
+    case "major_scheduling_window_closed":
+      return { title: "Major Scheduling window closed", detail: period };
+    case "suggestion_window_opened":
+      return {
+        title: "Suggestion window opened",
+        detail: [p.closing_at ? `Due ${new Date(p.closing_at).toLocaleDateString()}` : null, period].filter(Boolean).join(" · "),
+      };
+    case "suggestion_window_closed":
+      return { title: "Suggestion window closed", detail: period };
     default:
       return { title: "Notification", detail: "" };
   }

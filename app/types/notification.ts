@@ -18,9 +18,13 @@ export type NotificationType =
   | "schedule_approval_rejected_summary"
   | "schedule_approval_approved"
   | "schedule_approval_approved_summary"
+  | "schedule_approval_returned_for_revision_summary"
   | "major_schedule_submitted"
   | "major_schedule_edit_requested"
+  | "major_schedule_edit_approved"
+  | "major_schedule_edit_rejected"
   | "major_schedule_reopened"
+  | "major_schedule_finalized"
   | "major_schedule_deleted"
   | "subject_assignment_changed"
   | "subject_offering_updated"
@@ -32,7 +36,11 @@ export type NotificationType =
   | "instructor_schedule_response"
   | "instructor_suggestion_rejected"
   | "suggestion_resolution_granted"
-  | "suggestion_resolution_summary";
+  | "suggestion_resolution_summary"
+  | "major_scheduling_window_opened"
+  | "major_scheduling_window_closed"
+  | "suggestion_window_opened"
+  | "suggestion_window_closed";
 
 type NotificationSession = {
   subject_code?: string | null;
@@ -54,6 +62,11 @@ export type NotificationPayload = Record<string, unknown> & {
   program_abbrev?: string | null;
   year_level?: number | null;
   set_code?: string | null;
+  set_count?: number;
+  sets?: Array<{ set_id?: number; set_code?: string | null; year_level?: number | null }>;
+  release_id?: number;
+  release_ids?: number[];
+  set_id?: number;
   semester?: string | null;
   semester_number?: number | null;
   school_year?: string | null;
@@ -62,17 +75,22 @@ export type NotificationPayload = Record<string, unknown> & {
   subject_code?: string | null;
   subject_codes?: string[];
   action?: "added" | "removed" | string;
-  release_id?: number;
-  set_id?: number;
   old?: NotificationTimeBlock;
   new?: NotificationTimeBlock;
   submission_note?: string | null;
+  submission_id?: number;
   rejection_reason?: string | null;
   reason?: string | null;
+  decision_note?: string | null;
+  edit_request_id?: number;
+  version?: number;
   department_abbrev?: string | null;
   department_name?: string | null;
   headline?: string | null;
   detail?: string | null;
+  phase?: string;
+  window?: "major" | "suggestion";
+  closing_at?: string | null;
   changes?: Array<{ key: string; label: string; previous: string | null; next: string | null }>;
   effects?: Array<{ type: string; phase?: string; [key: string]: unknown }>;
   warnings?: string[];

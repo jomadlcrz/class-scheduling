@@ -47,16 +47,25 @@ export function resolveNotificationTarget(
       return "/dean/department-schedules";
     case "major_schedule_submitted":
     case "major_schedule_edit_requested":
+    case "major_schedule_edit_approved":
+    case "major_schedule_edit_rejected":
     case "major_schedule_deleted":
     case "major_schedule_reopened":
+    case "major_schedule_finalized":
       return "/major-schedules";
     case "schedule_approval_approved":
     case "schedule_approval_approved_summary":
       return role === "dean" ? "/dean/department-schedules" : "/schedules";
+    case "schedule_approval_returned_for_revision_summary":
+      return role === "registrar" ? "/schedules/regular-class" : "/dean/department-schedules";
     case "schedule_review_distributed":
       return role === "faculty" ? "/schedule-responses" : "/dean/department-schedules";
     case "scheduling_deadline_updated":
     case "scheduling_phase_changed":
+    case "major_scheduling_window_opened":
+    case "major_scheduling_window_closed":
+    case "suggestion_window_opened":
+    case "suggestion_window_closed":
       return role === "registrar"
         ? "/schedules/term-calendar"
         : role === "dean"
