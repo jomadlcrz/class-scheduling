@@ -2,11 +2,11 @@ import { apiGet } from "~/lib/api";
 import type { Role } from "~/types/user";
 
 const DASHBOARD_ENDPOINTS: Record<Role, string> = {
-  admin: "/super-admin/protected-dashboard",
-  registrar: "/registrar-admin/protected-dashboard",
-  dean: "/deans/protected-dashboard",
-  faculty: "/instructor/protected-dashboard",
-  student: "/students/protected-dashboard",
+  admin: "/super-admin/dashboard",
+  registrar: "/registrar/dashboard",
+  dean: "/deans/dashboard",
+  faculty: "/instructors/dashboard",
+  student: "/students/dashboard",
 };
 
 type DashboardResponse = {
