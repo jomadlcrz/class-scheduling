@@ -149,16 +149,11 @@ function GridClassCard({
       className={`flex flex-col gap-1 rounded-lg border border-l-4 border-slate-300 p-2 dark:border-white/10 ${accent.borderL} ${accent.cardBg}`}
     >
       <div className="flex items-start justify-between gap-1.5">
-        <strong className="font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
+        <strong className="inline-flex items-center gap-1 font-body text-xs font-semibold text-navy-700 dark:text-mist-100">
           {entry.subjectCode}
+          {isMajor && <LockIcon size={10} className="text-violet-500 dark:text-violet-400" />}
         </strong>
         <div className="flex items-center gap-1">
-          {isMajor && (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 px-1.5 py-0.5 font-body text-[0.6rem] font-medium text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
-              <LockIcon size={10} />
-              Major
-            </span>
-          )}
           <ModeSessionBadges mode={entry.mode} sessionMode={entry.sessionMode} />
         </div>
       </div>

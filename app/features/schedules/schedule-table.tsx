@@ -128,11 +128,6 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                   </td>
                   <td className="px-3 py-2.5 text-slate-600 dark:text-slate-300">
                     {sched.subjectTitle}
-                    {isMajor && (
-                      <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-violet-100 px-1.5 py-0.5 font-body text-[0.6rem] font-medium text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
-                        Major
-                      </span>
-                    )}
                   </td>
                   <td className="px-3 py-2.5 text-center">
                     <ModeSessionBadges mode={sched.mode} sessionMode={sched.sessionMode} />
@@ -248,16 +243,11 @@ function MobileDayCard({
             className="flex flex-col gap-1.5 p-3"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="whitespace-nowrap font-body text-xs text-slate-600 dark:text-slate-300">
+              <span className="inline-flex items-center gap-1 whitespace-nowrap font-body text-xs text-slate-600 dark:text-slate-300">
                 {formatTime(sched.startTime)} – {formatTime(sched.endTime)}
+                {isMajor && <LockIcon size={10} className="text-violet-500 dark:text-violet-400" />}
               </span>
               <div className="flex items-center gap-1.5">
-                {isMajor && (
-                  <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 px-1.5 py-0.5 font-body text-[0.6rem] font-medium text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
-                    <LockIcon size={10} />
-                    Major
-                  </span>
-                )}
                 <ModeBadge mode={sched.mode} />
                 {sched.sessionMode && <ModeBadge mode={sched.sessionMode} />}
                 {!isMajor && onDuplicate && (
