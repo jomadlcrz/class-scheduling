@@ -29,6 +29,7 @@ export function InstructorProposalRulesDrawer({
         open={open}
         onClose={() => setOpen(false)}
         title="Shift Request Rules"
+        zIndex={70}
         footer={
           <Button
             type="button"

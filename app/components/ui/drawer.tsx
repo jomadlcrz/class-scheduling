@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "~/components/ui/icons";
+import { useOverlayDepth, getTopOverlayDepth } from "~/components/ui/modal";
 import { useScrollLock } from "~/hooks/use-scroll-lock";
 
 type DrawerProps = {
@@ -11,19 +12,21 @@ type DrawerProps = {
   description?: string;
   /** Wider panel for content that needs room (e.g. side-by-side layouts). */
   wide?: boolean;
+  /** Override z-index (default 50). Use higher values when opening from inside a Modal. */
+  zIndex?: number;
   /** Pinned action bar rendered in a distinct footer band below the body. */
   footer?: ReactNode;
   children: ReactNode;
 };
 
 /** Right-side off-canvas sheet. Mirrors the mobile-nav drawer animation/behavior. */
-export function Drawer({ open, onClose, title, description, wide, footer, children }: DrawerProps) {
+export function Drawer({ open, onClose, title, description, wide, zIndex, footer, children }: DrawerProps) {
   if (typeof document === "undefined") return null;
 
   return createPortal(
     <AnimatePresence>
       {open && (
-        <DrawerPanel key="drawer" onClose={onClose} title={title} description={description} wide={wide} footer={footer}>
+        <DrawerPanel key="drawer" onClose={onClose} title={title} description={description} wide={wide} zIndex={zIndex} footer={footer}>
           {children}
         </DrawerPanel>
       )}
@@ -37,6 +40,7 @@ function DrawerPanel({
   title,
   description,
   wide,
+  zIndex,
   footer,
   children,
 }: {
@@ -44,19 +48,27 @@ function DrawerPanel({
   title: string;
   description?: string;
   wide?: boolean;
+  zIndex?: number;
   footer?: ReactNode;
   children: ReactNode;
 }) {
   // Freeze body scroll while open; the panel scrolls internally.
   useScrollLock();
 
+  // Share depth tracking with Modals so only the top-most overlay closes on Escape.
+  const depth = useOverlayDepth();
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      // Escape closes only the top-most overlay, leaving the opener untouched.
+      if (e.key === "Escape" && depth >= getTopOverlayDepth()) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, depth]);
+
+  const backdropZ = zIndex ?? 50;
+  const panelZ = backdropZ;
 
   return (
     <>
@@ -67,7 +79,8 @@ function DrawerPanel({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         onClick={onClose}
-        className="fixed inset-0 z-40 h-dvh w-dvw bg-navy-950/40"
+        className="fixed inset-0 h-dvh w-dvw bg-navy-950/40"
+        style={{ zIndex: backdropZ }}
         aria-hidden="true"
       />
 
@@ -80,9 +93,10 @@ function DrawerPanel({
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "tween", duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-        className={`fixed right-0 top-0 z-50 flex h-dvh w-full flex-col overflow-x-hidden bg-white shadow-2xl dark:bg-surface-raised ${
+        className={`fixed right-0 top-0 flex h-dvh w-full flex-col overflow-x-hidden bg-white shadow-2xl dark:bg-surface-raised ${
           wide ? "max-w-3xl" : "max-w-md"
         }`}
+        style={{ zIndex: panelZ }}
       >
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-5 dark:border-white/10 dark:bg-white/5">
           <div>

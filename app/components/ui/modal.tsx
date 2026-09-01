@@ -10,18 +10,24 @@ import { useScrollLock } from "~/hooks/use-scroll-lock";
 
 /** Overlays currently mounted. Each dialog reserves a slot so a nested dialog's
  *  backdrop + panel stack above every dialog opened before it. */
-let openModalCount = 0;
+let openOverlayCount = 0;
 
-function useModalDepth(): number {
+/** Track depth for both Modals and Drawers so only the top-most closes on Escape. */
+export function useOverlayDepth(): number {
   const [depth, setDepth] = useState(0);
   useEffect(() => {
-    openModalCount += 1;
-    setDepth(openModalCount);
+    openOverlayCount += 1;
+    setDepth(openOverlayCount);
     return () => {
-      openModalCount -= 1;
+      openOverlayCount -= 1;
     };
   }, []);
   return depth;
+}
+
+/** Read the current top-most overlay depth (for components that don't mount their own). */
+export function getTopOverlayDepth(): number {
+  return openOverlayCount;
 }
 
 type ModalProps = {
@@ -231,7 +237,7 @@ function ModalContent({
   // Later-opened dialogs get a higher slot so their backdrop sits above the panel
   // of every earlier dialog — otherwise a nested confirm's backdrop (z-50) would
   // hide under the opener's panel (z-60) and never dim/blur it.
-  const depth = useModalDepth();
+  const depth = useOverlayDepth();
   const backdropZ = 50 + Math.max(0, depth - 1) * 20;
   const panelZ = backdropZ + 10;
 
@@ -239,7 +245,7 @@ function ModalContent({
     function onKey(e: KeyboardEvent) {
       if (disableClose) return;
       // Escape closes only the top-most dialog, leaving the opener untouched.
-      if (e.key === "Escape" && depth >= openModalCount) onClose();
+      if (e.key === "Escape" && depth >= openOverlayCount) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
