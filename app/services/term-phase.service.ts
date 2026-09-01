@@ -243,7 +243,7 @@ async function reopenSchedulingWindow(
   return { ...data, message: apiMessage(data) };
 }
 
-/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/deadline. */
+/** PUT /registrar/scheduling-terms/{syId}/{semesterNumber}/deadlines. */
 async function updateSchedulingWindowDeadline(
   syId: number,
   semesterNumber: number,
@@ -252,7 +252,7 @@ async function updateSchedulingWindowDeadline(
   options?: { confirmed?: boolean },
 ): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
   const data = await apiPut<{ message?: string; state: SchedulingWindowsSnapshot }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/deadline`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/deadlines`,
     {
       closingAt,
       confirmed: options?.confirmed ?? false,
@@ -303,7 +303,7 @@ async function saveSuggestionAttemptLimit(
   };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/phases/{phase}/start — start phase. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/phases/{phase}/openings — start/reopen phase. */
 async function startPhase(
   syId: number,
   semesterNumber: number,
@@ -312,7 +312,7 @@ async function startPhase(
   options?: { confirmed?: boolean },
 ): Promise<{ message: string; term: TermPhaseResponse; [key: string]: unknown }> {
   const data = await apiPost<{ message?: string; term: TermPhaseResponse; [key: string]: unknown }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phases/${encodeURIComponent(phase)}/start`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phases/${encodeURIComponent(phase)}/openings`,
     {
       closingAt,
       confirmed: options?.confirmed ?? false,

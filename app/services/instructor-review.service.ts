@@ -99,7 +99,7 @@ export const instructorReviewService = {
 
   analyzeDeanSuggestion(responseId: number): Promise<SuggestionAnalysisResult> {
     return apiPost<SuggestionAnalysisResult>(
-      `/registrar/instructor-schedule-responses/${responseId}/analyze`,
+      `/registrar/instructor-schedule-responses/${responseId}/analyses`,
     );
   },
 
@@ -111,7 +111,7 @@ export const instructorReviewService = {
 
   analyzeRegistrarSuggestion(responseId: number): Promise<SuggestionAnalysisResult> {
     return apiPost<SuggestionAnalysisResult>(
-      `/registrar/instructor-schedule-responses/${responseId}/analyze`,
+      `/registrar/instructor-schedule-responses/${responseId}/analyses`,
     );
   },
 
@@ -120,7 +120,7 @@ export const instructorReviewService = {
     payload?: { remarks?: string },
   ): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
-      `/registrar/instructor-schedule-responses/${responseId}/apply`,
+      `/registrar/instructor-schedule-responses/${responseId}/applications`,
       payload?.remarks ? { note: payload.remarks } : {},
     );
   },
@@ -130,24 +130,22 @@ export const instructorReviewService = {
     remarks: string,
   ): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
-      `/registrar/instructor-schedule-responses/${responseId}/retain`,
+      `/registrar/instructor-schedule-responses/${responseId}/retentions`,
       { note: remarks },
     );
   },
 
   analyzeAdvancedSuggestion(responseId: number): Promise<AdvancedAnalysisResult> {
     return apiPost<AdvancedAnalysisResult>(
-      `/registrar/instructor-schedule-responses/${responseId}/analyze-advanced`,
+      `/registrar/instructor-schedule-responses/${responseId}/advanced-analyses`,
     );
   },
 
   previewRetentionDecision(
     responseId: number,
-    reasonCategory: string,
   ): Promise<RetentionDecisionPreview> {
-    return apiPost<RetentionDecisionPreview>(
+    return apiGet<RetentionDecisionPreview>(
       `/registrar/instructor-schedule-responses/${responseId}/retention-preview`,
-      { reasonCategory },
     );
   },
 
@@ -156,7 +154,7 @@ export const instructorReviewService = {
     payload: { analysisToken: string; remarks?: string; allowRelocations?: boolean },
   ): Promise<{ message: string; relocatedCount?: number }> {
     return apiPost<{ message: string; relocatedCount?: number }>(
-      `/registrar/instructor-schedule-responses/${responseId}/apply-with-adjustments`,
+      `/registrar/instructor-schedule-responses/${responseId}/adjusted-applications`,
       { note: payload.remarks || undefined },
     );
   },

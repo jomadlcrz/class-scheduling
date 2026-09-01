@@ -313,20 +313,20 @@ async function setAcceptedSchedules(releaseId: number, scheduleIds: number[], ac
 
 async function acceptAllInstructorScheduleReviews(syId: number, semesterNumber: number) {
   return apiPost<{ message?: string; [key: string]: unknown }>(
-    "/instructors/schedule-reviews/accept-all",
+    "/instructors/schedule-reviews/bulk-acceptances",
     { syId, semesterNumber },
   );
 }
 
-/** POST /instructors/schedule-reviews/{id}/accept — instructor accepts assigned schedule. */
+/** POST /instructors/schedule-reviews/{id}/acceptances — instructor accepts assigned schedule. */
 async function acceptInstructorScheduleReview(releaseId: number): Promise<{ message: string; response?: unknown }> {
   const data = await apiPost<MessageResponse & { response?: unknown }>(
-    `/instructors/schedule-reviews/${releaseId}/accept`,
+    `/instructors/schedule-reviews/${releaseId}/acceptances`,
   );
   return { message: apiMessage(data), response: data.response };
 }
 
-/** POST /instructors/schedule-reviews/{id}/suggest — instructor submits proposed meeting schedule. */
+/** POST /instructors/schedule-reviews/{id}/suggestions — instructor submits proposed meeting schedule. */
 async function suggestInstructorScheduleChange(
   releaseId: number,
   payload: { reason?: string; proposedMeetings: ProposedScheduleMeeting[] },
@@ -337,54 +337,54 @@ async function suggestInstructorScheduleChange(
     endTime: normalizeTime(m.endTime),
   }));
   const data = await apiPost<MessageResponse & { response?: unknown }>(
-    `/instructors/schedule-reviews/${releaseId}/suggest`,
+    `/instructors/schedule-reviews/${releaseId}/suggestions`,
     { reason: payload.reason, meetings: normalizedMeetings },
   );
   return { message: apiMessage(data), response: data.response };
 }
 
-/** POST /registrar/instructor-schedule-responses/{id}/analyze — dry-run analyze suggestion placement. */
+/** POST /registrar/instructor-schedule-responses/{id}/analyses — dry-run analyze suggestion placement. */
 async function analyzeInstructorSuggestion(responseId: number): Promise<import("~/types/authority-workflow").SuggestionDryRunAnalysis> {
   return apiPost<import("~/types/authority-workflow").SuggestionDryRunAnalysis>(
-    `/registrar/instructor-schedule-responses/${responseId}/analyze`,
+    `/registrar/instructor-schedule-responses/${responseId}/analyses`,
   );
 }
 
-/** POST /registrar/instructor-schedule-responses/{id}/apply — registrar applies approved suggestion to timetable. */
+/** POST /registrar/instructor-schedule-responses/{id}/applications — registrar applies approved suggestion to timetable. */
 async function applyInstructorSuggestion(responseId: number, note?: string): Promise<{ message: string; applied?: boolean }> {
   const data = await apiPost<MessageResponse & { applied?: boolean }>(
-    `/registrar/instructor-schedule-responses/${responseId}/apply`,
+    `/registrar/instructor-schedule-responses/${responseId}/applications`,
     note ? { note } : undefined,
   );
   return { message: apiMessage(data), applied: data.applied };
 }
 
-/** POST /registrar/instructor-schedule-responses/{id}/retain — registrar rejects suggestion, retaining original schedule. */
+/** POST /registrar/instructor-schedule-responses/{id}/retentions — registrar rejects suggestion, retaining original schedule. */
 async function retainInitialSchedule(responseId: number, note?: string): Promise<{ message: string; retained?: boolean }> {
   const data = await apiPost<MessageResponse & { retained?: boolean }>(
-    `/registrar/instructor-schedule-responses/${responseId}/retain`,
+    `/registrar/instructor-schedule-responses/${responseId}/retentions`,
     note ? { note } : undefined,
   );
   return { message: apiMessage(data), retained: data.retained };
 }
 
 async function previewRetention(responseId: number) {
-  return apiPost<{ message?: string; [key: string]: unknown }>(
+  return apiGet<{ message?: string; [key: string]: unknown }>(
     `/registrar/instructor-schedule-responses/${responseId}/retention-preview`,
   );
 }
 
-/** POST /registrar/instructor-schedule-responses/{id}/analyze-advanced — progressive multi-level dry-run solver. */
+/** POST /registrar/instructor-schedule-responses/{id}/advanced-analyses — progressive multi-level dry-run solver. */
 async function analyzeAdvancedAdjustment(responseId: number): Promise<import("~/types/authority-workflow").AdvancedAnalysisResult> {
   return apiPost<import("~/types/authority-workflow").AdvancedAnalysisResult>(
-    `/registrar/instructor-schedule-responses/${responseId}/analyze-advanced`,
+    `/registrar/instructor-schedule-responses/${responseId}/advanced-analyses`,
   );
 }
 
-/** POST /registrar/instructor-schedule-responses/{id}/apply-with-adjustments — apply suggestion by adjusting blocking classes. */
+/** POST /registrar/instructor-schedule-responses/{id}/adjusted-applications — apply suggestion by adjusting blocking classes. */
 async function applySuggestionWithAdjustments(responseId: number, note?: string): Promise<{ message: string; applied?: boolean }> {
   const data = await apiPost<MessageResponse & { applied?: boolean }>(
-    `/registrar/instructor-schedule-responses/${responseId}/apply-with-adjustments`,
+    `/registrar/instructor-schedule-responses/${responseId}/adjusted-applications`,
     note ? { note } : undefined,
   );
   return { message: apiMessage(data), applied: data.applied };

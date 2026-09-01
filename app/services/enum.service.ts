@@ -1,8 +1,8 @@
 import { apiGet } from "~/lib/api";
 
 /**
- * Backend enum values (app/enums.py), fetched instead of duplicated in the
- * frontend — a pure pass-through of the options endpoint (GET /enums).
+ * Backend enum values (app/enums.py), fetched per-vocabulary from
+ * public /enums/<name> endpoints (02-bootstrap-enums-terms.md).
  */
 
 export type DayOfWeekOption = {
@@ -13,6 +13,17 @@ export type DayOfWeekOption = {
 export type YearLevelOption = {
   id: number;
   name: string;
+};
+
+export type DegreeTypeProgramLengthRecommendation = {
+  degree_type: string;
+  recommended_program_length: number;
+};
+
+export type DegreeTypeProgramLengthsResponse = {
+  minimum_program_length: number;
+  maximum_program_length: number;
+  recommendations: DegreeTypeProgramLengthRecommendation[];
 };
 
 export type EnumOptions = {
@@ -37,68 +48,100 @@ export type EnumOptions = {
   yearLevels: YearLevelOption[];
 };
 
-type EnumOptionsResponse = {
-  academic_status: string[];
-  civil_status: string[];
-  class_mode: string[];
-  classroom_status: string[];
-  day_of_week: DayOfWeekOption[];
-  degree_type: string[];
-  department_type: string[];
-  enrollment_state: string[];
-  gender: string[];
-  name_suffix: string[];
-  personnel_type: string[];
-  role_name: string[] | string;
-  room_type: string[];
-  session_mode: string[];
-  student_type: string[];
-  subject_type: string[];
-  term_status: string[];
-  year_level: string[];
-};
-
 // Static per deploy, so one fetch serves the whole session.
 let cached: Promise<EnumOptions> | null = null;
 
-function getOptions(): Promise<EnumOptions> {
-  cached ??= apiGet<EnumOptionsResponse>("/enums")
-    .then((data) => {
-      const roleName = Array.isArray(data.role_name)
-        ? data.role_name
-        : typeof data.role_name === "string"
-          ? (JSON.parse(data.role_name) as string[])
-          : [];
+async function fetchOptions(): Promise<EnumOptions> {
+  const [
+    academicStatus,
+    civilStatus,
+    classMode,
+    classroomStatus,
+    dayOfWeek,
+    degreeType,
+    departmentType,
+    enrollmentState,
+    gender,
+    nameSuffix,
+    personnelType,
+    roleName,
+    roomType,
+    sessionMode,
+    studentType,
+    subjectType,
+    termStatus,
+    yearLevel,
+  ] = await Promise.all([
+    apiGet<string[]>("/enums/academic-statuses").catch(() => []),
+    apiGet<string[]>("/enums/civil-statuses").catch(() => []),
+    apiGet<string[]>("/enums/class-modes").catch(() => []),
+    apiGet<string[]>("/enums/classroom-statuses").catch(() => []),
+    apiGet<DayOfWeekOption[]>("/enums/days-of-week").catch(() => []),
+    apiGet<string[]>("/enums/degree-types").catch(() => []),
+    apiGet<string[]>("/enums/department-types").catch(() => []),
+    apiGet<string[]>("/enums/enrollment-states").catch(() => []),
+    apiGet<string[]>("/enums/genders").catch(() => []),
+    apiGet<string[]>("/enums/name-suffixes").catch(() => []),
+    apiGet<string[]>("/enums/personnel-types").catch(() => []),
+    apiGet<string[]>("/enums/roles").catch(() => []),
+    apiGet<string[]>("/enums/room-types").catch(() => []),
+    apiGet<string[]>("/enums/session-modes").catch(() => []),
+    apiGet<string[]>("/enums/student-types").catch(() => []),
+    apiGet<string[]>("/enums/subject-types").catch(() => []),
+    apiGet<string[]>("/enums/term-statuses").catch(() => []),
+    apiGet<string[]>("/enums/year-levels").catch(() => []),
+  ]);
 
-      return {
-        academicStatus: data.academic_status ?? [],
-        civilStatus: data.civil_status ?? [],
-        classMode: data.class_mode ?? [],
-        classroomStatus: data.classroom_status ?? [],
-        dayOfWeek: data.day_of_week ?? [],
-        degreeType: data.degree_type ?? [],
-        departmentType: data.department_type ?? [],
-        enrollmentState: data.enrollment_state ?? [],
-        gender: data.gender ?? [],
-        nameSuffix: data.name_suffix ?? [],
-        personnelType: data.personnel_type ?? [],
-        roleName,
-        roomType: data.room_type ?? [],
-        sessionMode: data.session_mode ?? [],
-        studentType: data.student_type ?? [],
-        subjectType: data.subject_type ?? [],
-        termStatus: data.term_status ?? [],
-        yearLevel: data.year_level ?? [],
-        yearLevels: (data.year_level ?? []).map((name, i) => ({ id: i + 1, name })),
-      };
-    })
-    .catch((err) => {
-      cached = null; // allow a retry on the next call
-      throw err;
-    });
+  return {
+    academicStatus,
+    civilStatus,
+    classMode,
+    classroomStatus,
+    dayOfWeek,
+    degreeType,
+    departmentType,
+    enrollmentState,
+    gender,
+    nameSuffix,
+    personnelType,
+    roleName,
+    roomType,
+    sessionMode,
+    studentType,
+    subjectType,
+    termStatus,
+    yearLevel,
+    yearLevels: yearLevel.map((name, i) => ({ id: i + 1, name })),
+  };
+}
+
+function getOptions(): Promise<EnumOptions> {
+  cached ??= fetchOptions().catch((err) => {
+    cached = null; // allow retry on next call
+    throw err;
+  });
   return cached;
 }
 
 export const enumService = {
   getOptions,
+  getEnrollmentStates: () => apiGet<string[]>("/enums/enrollment-states"),
+  getTermStatuses: () => apiGet<string[]>("/enums/term-statuses"),
+  getYearLevels: () => apiGet<string[]>("/enums/year-levels"),
+  getClassModes: () => apiGet<string[]>("/enums/class-modes"),
+  getSessionModes: () => apiGet<string[]>("/enums/session-modes"),
+  getGenders: () => apiGet<string[]>("/enums/genders"),
+  getCivilStatuses: () => apiGet<string[]>("/enums/civil-statuses"),
+  getClassroomStatuses: () => apiGet<string[]>("/enums/classroom-statuses"),
+  getRoles: () => apiGet<string[]>("/enums/roles"),
+  getStudentTypes: () => apiGet<string[]>("/enums/student-types"),
+  getNameSuffixes: () => apiGet<string[]>("/enums/name-suffixes"),
+  getAcademicStatuses: () => apiGet<string[]>("/enums/academic-statuses"),
+  getPersonnelTypes: () => apiGet<string[]>("/enums/personnel-types"),
+  getRoomTypes: () => apiGet<string[]>("/enums/room-types"),
+  getSubjectTypes: () => apiGet<string[]>("/enums/subject-types"),
+  getDaysOfWeek: () => apiGet<DayOfWeekOption[]>("/enums/days-of-week"),
+  getDepartmentTypes: () => apiGet<string[]>("/enums/department-types"),
+  getDegreeTypes: () => apiGet<string[]>("/enums/degree-types"),
+  getDegreeTypeProgramLengths: () => apiGet<DegreeTypeProgramLengthsResponse>("/enums/degree-type-program-lengths"),
 };

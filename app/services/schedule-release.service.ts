@@ -242,14 +242,14 @@ async function finalApproveProgram(
   };
 }
 
-/** GET /deans/schedule-approvals/{id}/preview */
+/** GET /schedule-releases/{id}/preview */
 async function getApprovalPreview(id: number): Promise<SchedulePreview> {
-  return mapPreview(await apiGet<ApiSchedulePreview>(`/deans/schedule-approvals/${id}/preview`));
+  return mapPreview(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`));
 }
 
-/** GET /deans/schedule-approvals/{id} — dean-scoped release detail. */
+/** GET /schedule-releases/{id} — release detail. */
 async function getApproval(id: number): Promise<ScheduleRelease> {
-  return mapRelease(await apiGet<ApiScheduleRelease>(`/deans/schedule-approvals/${id}`));
+  return mapRelease(await apiGet<ApiScheduleRelease>(`/schedule-releases/${id}`));
 }
 
 /**

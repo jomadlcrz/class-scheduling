@@ -139,7 +139,7 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
 
   let data: StudentAccountResponse[];
   try {
-    data = await apiGet<StudentAccountResponse[]>("/super-admin/create-student-accounts");
+    data = await apiGet<StudentAccountResponse[]>("/super-admin/student-accounts");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;

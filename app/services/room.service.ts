@@ -96,7 +96,7 @@ async function list(): Promise<Room[]> {
         room_type?: string;
         room_status?: string;
       }[]
-    >("/schedule/rooms");
+    >("/scheduling/options/rooms");
 
     const dedupe = new Map<number, Room>();
     for (const r of data ?? []) {
