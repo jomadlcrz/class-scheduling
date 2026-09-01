@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -8,6 +8,7 @@ import {
     scheduleReleaseStatusTone,
     StatusBadge,
 } from "~/features/academic-terms/status-badges";
+import { useYearLevels } from "~/hooks/use-year-levels";
 import type { ScheduleRelease } from "~/types/schedule-release";
 
 type ScheduleClearDialogProps = {
@@ -27,7 +28,7 @@ type ScheduleClearDialogProps = {
   onConfirm: (setIds: number[]) => Promise<string[]>;
 };
 
-/** Clear one or more set schedules at once, with a "select all" toggle. */
+/** Clear one or more set schedules at once, grouped by year level. */
 export function ScheduleClearDialog({
   open,
   onClose,
@@ -39,6 +40,7 @@ export function ScheduleClearDialog({
   disabled = false,
   onConfirm,
 }: ScheduleClearDialogProps) {
+  const { yearLevelLabel } = useYearLevels();
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [clearing, setClearing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,10 +74,36 @@ export function ScheduleClearDialog({
     ? sets.filter((row) => row.setId === defaultSetId)
     : sets;
 
+  // Group by year level
+  const yearGroups = useMemo(() => {
+    const groups = new Map<number, ScheduleRelease[]>();
+    for (const row of displaySets) {
+      const yl = row.yearLevel ?? 0;
+      const list = groups.get(yl);
+      if (list) list.push(row);
+      else groups.set(yl, [row]);
+    }
+    return [...groups.entries()].sort((a, b) => a[0] - b[0]);
+  }, [displaySets]);
+
   const allSelected = displaySets.length > 0 && displaySets.every((row) => selectedIds.has(row.setId));
 
   function toggleAll() {
     setSelectedIds(allSelected ? new Set() : new Set(displaySets.map((row) => row.setId)));
+  }
+
+  function toggleYearLevel(yearLevel: number, yearSets: ScheduleRelease[]) {
+    const ids = yearSets.map((r) => r.setId);
+    const allYearSelected = ids.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allYearSelected) {
+        for (const id of ids) next.delete(id);
+      } else {
+        for (const id of ids) next.add(id);
+      }
+      return next;
+    });
   }
 
   function toggleSet(setId: number) {
@@ -103,6 +131,9 @@ export function ScheduleClearDialog({
     }
   }
 
+  const showCheckboxes = displaySets.length > 1;
+  const selectedCount = selectedIds.size;
+
   return (
     <Modal
       open={open}
@@ -118,7 +149,7 @@ export function ScheduleClearDialog({
           ledgers will be released, and any irregular students seated in these sets will be unseated.
         </p>
         <div className="overflow-hidden rounded-xl border border-slate-300 dark:border-white/10">
-          {displaySets.length > 1 && (
+          {showCheckboxes && (
             <div className="flex items-center gap-3 border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
               <Checkbox
                 id="rc-clear-select-all"
@@ -128,37 +159,65 @@ export function ScheduleClearDialog({
                 onChange={toggleAll}
               />
               <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                {selectedIds.size > 0 ? `${selectedIds.size} of ${displaySets.length} selected` : "Select all"}
+                {selectedCount > 0 ? `${selectedCount} of ${displaySets.length} selected` : "Select all"}
               </span>
             </div>
           )}
-          <ul className="scrollbar-thin max-h-64 divide-y divide-slate-200 overflow-y-auto dark:divide-white/10">
-            {displaySets.map((row) => (
-              <li key={row.setId} className="flex items-center gap-3 px-3 py-2">
-                {displaySets.length > 1 && (
-                  <Checkbox
-                    id={`rc-clear-${row.setId}`}
-                    ariaLabel={`Select ${row.setCode ?? "set"}`}
-                    hideLabel
-                    checked={selectedIds.has(row.setId)}
-                    onChange={() => toggleSet(row.setId)}
-                  />
-                )}
-                <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                  {row.setCode}
-                </span>
-                <span className="font-body text-xs text-slate-500 dark:text-slate-400">
-                  {row.programAbbrev}{row.yearLevel ? ` · Year ${row.yearLevel}` : ""}
-                </span>
-                <StatusBadge tone={scheduleReleaseStatusTone(row.releaseStatus)}>
-                  {scheduleReleaseStatusLabel(row.releaseStatus)}
-                </StatusBadge>
-                <span className="ml-auto font-body text-xs text-slate-500 dark:text-slate-400">
-                  {row.sessionCount} session{row.sessionCount === 1 ? "" : "s"}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <div className="scrollbar-thin max-h-72 overflow-y-auto">
+            {yearGroups.map(([yearLevel, yearSets]) => {
+              const yearSelected = yearSets.every((r) => selectedIds.has(r.setId));
+              return (
+                <div key={yearLevel}>
+                  {yearGroups.length > 1 && (
+                    <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50 px-3 py-2 dark:border-white/5 dark:bg-navy-800">
+                      {showCheckboxes && (
+                        <Checkbox
+                          id={`rc-clear-yl-${yearLevel}`}
+                          ariaLabel={`Select all ${yearLevelLabel(yearLevel)} sets`}
+                          hideLabel
+                          checked={yearSelected}
+                          onChange={() => toggleYearLevel(yearLevel, yearSets)}
+                        />
+                      )}
+                      <span className="font-body text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        {yearLevel === 0 ? "Unassigned" : yearLevelLabel(yearLevel)}
+                      </span>
+                      <span className="font-body text-xs text-slate-400 dark:text-slate-500">
+                        ({yearSets.length} set{yearSets.length === 1 ? "" : "s"})
+                      </span>
+                    </div>
+                  )}
+                  <ul className="divide-y divide-slate-200 dark:divide-white/10">
+                    {yearSets.map((row) => (
+                      <li key={row.setId} className="flex items-center gap-3 px-3 py-2">
+                        {showCheckboxes && (
+                          <Checkbox
+                            id={`rc-clear-${row.setId}`}
+                            ariaLabel={`Select ${row.setCode ?? "set"}`}
+                            hideLabel
+                            checked={selectedIds.has(row.setId)}
+                            onChange={() => toggleSet(row.setId)}
+                          />
+                        )}
+                        <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                          {row.setCode}
+                        </span>
+                        <span className="font-body text-xs text-slate-500 dark:text-slate-400">
+                          {row.programAbbrev}
+                        </span>
+                        <StatusBadge tone={scheduleReleaseStatusTone(row.releaseStatus)}>
+                          {scheduleReleaseStatusLabel(row.releaseStatus)}
+                        </StatusBadge>
+                        <span className="ml-auto font-body text-xs text-slate-500 dark:text-slate-400">
+                          {row.sessionCount} session{row.sessionCount === 1 ? "" : "s"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         </div>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" block={false} disabled={clearing} onClick={onClose}>
@@ -174,8 +233,8 @@ export function ScheduleClearDialog({
             onClick={handleConfirm}
           >
             Clear{" "}
-            {selectedIds.size > 0
-              ? `${selectedIds.size} set${selectedIds.size === 1 ? "" : "s"}`
+            {selectedCount > 0
+              ? `${selectedCount} set${selectedCount === 1 ? "" : "s"}`
               : "schedule"}
           </Button>
         </div>
