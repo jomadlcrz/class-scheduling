@@ -127,8 +127,36 @@ function notificationText(notification: NotificationItem): { title: string; deta
       };
     case "suggestion_window_closed":
       return { title: "Suggestion window closed", detail: period };
+    case "schedule_approval_approved": {
+      const count = typeof p.session_count === "number" ? p.session_count : 0;
+      return {
+        title: label ? `Schedule approved for ${label}` : "Schedule approved",
+        detail: [count > 0 ? `${count} session${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
+      };
+    }
+    case "major_schedule_reopened":
+      return { title: "Major schedule reopened", detail: [p.department_abbrev, period].filter(Boolean).join(" · ") };
+    case "subject_offering_updated":
+      return { title: "Subject offering updated", detail: [p.subject_code, period].filter(Boolean).join(" · ") };
+    case "schedule_review_distributed":
+      return {
+        title: label ? `Review distributed for ${label}` : "Schedule review distributed",
+        detail: period,
+      };
+    case "scheduling_deadline_updated":
+      return { title: "Scheduling deadline updated", detail: [p.phase, period].filter(Boolean).join(" · ") };
+    case "scheduling_phase_changed":
+      return { title: "Scheduling phase changed", detail: [p.phase, period].filter(Boolean).join(" · ") };
+    case "instructor_schedule_response":
+      return { title: "Schedule response received", detail: [p.subject_code, p.rejection_reason ?? period].filter(Boolean).join(" · ") };
+    case "instructor_suggestion_rejected":
+      return { title: "Suggestion not applied", detail: [p.subject_code, p.rejection_reason ?? period].filter(Boolean).join(" · ") };
+    case "suggestion_resolution_granted":
+      return { title: "Suggestion approved", detail: [p.subject_code, p.detail ?? period].filter(Boolean).join(" · ") };
+    case "suggestion_resolution_summary":
+      return { title: "Suggestion resolved", detail: [p.headline ?? p.detail, period].filter(Boolean).join(" · ") };
     default:
-      return { title: "Notification", detail: "" };
+      return { title: "Notification", detail: period || "Update available" };
   }
 }
 
