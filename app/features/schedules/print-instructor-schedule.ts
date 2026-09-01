@@ -18,7 +18,6 @@ function renderDayBody(day: Day, slots: Schedule[], dayLabels: Record<Day, strin
           <td>${safe(s.subjectCode)}</td>
           <td>${safe(s.subjectTitle)}</td>
           <td>${safe(s.setCode)}</td>
-          <td>${safe(s.program)}</td>
           <td>${safe(s.mode)}</td>
           <td>${safe(s.roomName)}</td>
         </tr>
@@ -28,7 +27,7 @@ function renderDayBody(day: Day, slots: Schedule[], dayLabels: Record<Day, strin
 
   return `
     <tbody class="sp-day">
-      <tr class="sp-day-head"><td colspan="7">${safe(dayLabels[day] ?? "").toUpperCase()}</td></tr>
+      <tr class="sp-day-head"><td colspan="6">${safe(dayLabels[day] ?? "").toUpperCase()}</td></tr>
       ${rows}
     </tbody>
   `;
@@ -137,7 +136,7 @@ export function openInstructorSchedulePrint(
   </header>
   <table class="sp-table">
     <thead>
-      <tr><th>TIME</th><th>SUBJECT CODE</th><th>DESCRIPTIVE TITLE</th><th>SET</th><th>PROGRAM</th><th>MODE</th><th>ROOM</th></tr>
+      <tr><th>TIME</th><th>SUBJECT CODE</th><th>DESCRIPTIVE TITLE</th><th>SET</th><th>MODE</th><th>ROOM</th></tr>
     </thead>
     ${dayBodies}
   </table>
