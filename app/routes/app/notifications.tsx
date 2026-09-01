@@ -97,7 +97,9 @@ function NotificationsPage() {
         actions={
           unreadCount > 0 ? (
             <Button
+              type="button"
               variant="outline"
+              block={false}
               onClick={handleMarkAllRead}
             >
               <CheckIcon size={14} />
@@ -186,7 +188,9 @@ function NotificationsPage() {
         <div className="mt-4 flex justify-center gap-2">
           {page > 1 && (
             <Button
+              type="button"
               variant="outline"
+              block={false}
               onClick={() => setPage((p) => p - 1)}
             >
               Previous
@@ -194,7 +198,9 @@ function NotificationsPage() {
           )}
           {hasMore && (
             <Button
+              type="button"
               variant="outline"
+              block={false}
               onClick={() => setPage((p) => p + 1)}
             >
               Next
