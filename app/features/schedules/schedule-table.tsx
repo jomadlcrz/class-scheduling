@@ -4,7 +4,7 @@ import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
-import { ModeBadge } from "~/features/schedules/mode-badge";
+import { ModeBadge, ModeSessionBadges } from "~/features/schedules/mode-badge";
 
 type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
 
@@ -135,7 +135,7 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                     )}
                   </td>
                   <td className="px-3 py-2.5 text-center">
-                    <div className="flex justify-center gap-1"><ModeBadge mode={sched.mode} />{sched.sessionMode && <ModeBadge mode={sched.sessionMode} />}</div>
+                    <ModeSessionBadges mode={sched.mode} sessionMode={sched.sessionMode} />
                   </td>
                   {!hideInstructor && (
                     <td className="whitespace-nowrap px-3 py-2.5 text-slate-700 dark:text-slate-300">

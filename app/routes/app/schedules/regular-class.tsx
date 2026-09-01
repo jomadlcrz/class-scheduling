@@ -14,9 +14,9 @@ import { TabButtons } from "~/components/ui/underline-tabs";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { MasterSchedulesTermBar } from "~/features/schedules/master-schedules-term-bar";
 import {
-  MasterSchedulesTree,
-  type ProgramTreeData,
-} from "~/features/schedules/master-schedules-tree";
+  MasterSchedulesFlatList,
+  type ProgramFlatData,
+} from "~/features/schedules/master-schedules-flat-list";
 import { ScheduleClearDialog } from "~/features/schedules/schedule-clear-dialog";
 import { ScheduleEditDialog } from "~/features/schedules/schedule-edit-dialog";
 import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
@@ -161,12 +161,6 @@ function MasterSchedulesPage() {
   // Global Schedule View Mode (Table vs Grid)
   const [globalViewMode, setGlobalViewMode] = useState<ScheduleViewMode>("table");
 
-  // Controlled open accordions
-  const [openPrograms, setOpenPrograms] = useState<Set<string>>(new Set());
-  const [openYearLevels, setOpenYearLevels] = useState<Set<string>>(new Set());
-  const [openSets, setOpenSets] = useState<Set<string>>(new Set());
-  const initialAccordionSeededRef = useRef(false);
-
   // Action / Mutation Dialogs
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionBlock, setActionBlock] = useState<{
@@ -284,21 +278,11 @@ function MasterSchedulesPage() {
       if (prog?.departmentAbbrev) {
         setSelectedDepartment(prog.departmentAbbrev);
       }
-      setOpenPrograms((prev) => new Set([...prev, programParam]));
-
-      if (ylParam) {
-        const yearKey = `${programParam}-${ylParam}`;
-        setOpenYearLevels((prev) => new Set([...prev, yearKey]));
-      }
-    }
-
-    if (setParam) {
-      setOpenSets((prev) => new Set([...prev, setParam]));
     }
   }, [schedules, searchParams, programMap]);
 
   // Build the hierarchical tree of programs -> year levels -> sets for the active term
-  const programTreeData = useMemo<ProgramTreeData[]>(() => {
+  const programTreeData = useMemo<ProgramFlatData[]>(() => {
     if (!schedules) return [];
 
     const termSchedules = schedulesForDisplay.filter(
@@ -324,7 +308,7 @@ function MasterSchedulesPage() {
     // Unique program abbreviations in the current term schedules
     const programAbbrevs = [...new Set(termSchedules.map((s) => s.program))].filter(Boolean).sort();
 
-    const tree: ProgramTreeData[] = [];
+    const tree: ProgramFlatData[] = [];
 
     for (const abbrev of programAbbrevs) {
       const progMeta = programMap.get(abbrev);
@@ -401,25 +385,6 @@ function MasterSchedulesPage() {
     yearLevelLabel,
   ]);
 
-  // Auto-expand first program, first year level, and first set on initial render
-  useEffect(() => {
-    if (initialAccordionSeededRef.current || programTreeData.length === 0) return;
-    initialAccordionSeededRef.current = true;
-
-    const firstProg = programTreeData[0];
-    if (firstProg) {
-      setOpenPrograms((prev) => new Set([...prev, firstProg.abbrev]));
-      const firstYear = firstProg.yearGroups[0];
-      if (firstYear) {
-        setOpenYearLevels((prev) => new Set([...prev, `${firstProg.abbrev}-${firstYear.yearLevel}`]));
-        const firstSet = firstYear.sets[0];
-        if (firstSet) {
-          setOpenSets((prev) => new Set([...prev, firstSet.setCode]));
-        }
-      }
-    }
-  }, [programTreeData]);
-
   // Aggregate metrics
   const totalSections = useMemo(
     () => programTreeData.reduce((acc, p) => acc + p.yearGroups.reduce((ya, y) => ya + y.sets.length, 0), 0),
@@ -445,74 +410,6 @@ function MasterSchedulesPage() {
         .sort((a, b) => (a.setCode ?? "").localeCompare(b.setCode ?? "")),
     [releases],
   );
-
-  // Expand / Collapse all toggles
-  const allExpanded = useMemo(() => {
-    if (programTreeData.length === 0) return false;
-    for (const p of programTreeData) {
-      if (!openPrograms.has(p.abbrev)) return false;
-      for (const y of p.yearGroups) {
-        if (!openYearLevels.has(`${p.abbrev}-${y.yearLevel}`)) return false;
-        for (const s of y.sets) {
-          if (!openSets.has(s.setCode)) return false;
-        }
-      }
-    }
-    return true;
-  }, [programTreeData, openPrograms, openYearLevels, openSets]);
-
-  function handleExpandAll() {
-    const newProgs = new Set<string>();
-    const newYears = new Set<string>();
-    const newSets = new Set<string>();
-
-    for (const p of programTreeData) {
-      newProgs.add(p.abbrev);
-      for (const y of p.yearGroups) {
-        newYears.add(`${p.abbrev}-${y.yearLevel}`);
-        for (const s of y.sets) {
-          newSets.add(s.setCode);
-        }
-      }
-    }
-
-    setOpenPrograms(newProgs);
-    setOpenYearLevels(newYears);
-    setOpenSets(newSets);
-  }
-
-  function handleCollapseAll() {
-    setOpenPrograms(new Set());
-    setOpenYearLevels(new Set());
-    setOpenSets(new Set());
-  }
-
-  function handleToggleProgram(abbrev: string, open: boolean) {
-    setOpenPrograms((prev) => {
-      const next = new Set(prev);
-      if (open) next.add(abbrev);
-      else next.delete(abbrev);
-      return next;
-    });
-  }
-
-  function handleToggleYearLevel(yearKey: string, open: boolean) {
-    setOpenYearLevels((prev) => {
-      const next = new Set(prev);
-      if (open) next.add(yearKey);
-      else next.delete(yearKey);
-      return next;
-    });
-  }
-
-  function handleToggleSet(setCode: string, open: boolean) {
-    setOpenSets((prev) => {
-      const next = new Set(prev);
-      if (open) next.add(setCode);
-      else next.delete(setCode);
-      return next;
-    });
-  }
 
   // Clear set schedules (single or bulk)
   async function clearSets(setIds: number[]): Promise<string[]> {
@@ -761,9 +658,6 @@ function MasterSchedulesPage() {
               semesterLabel={semesterLabel}
               globalViewMode={globalViewMode}
               onGlobalViewModeChange={setGlobalViewMode}
-              onExpandAll={handleExpandAll}
-              onCollapseAll={handleCollapseAll}
-              allExpanded={allExpanded}
               totalSections={totalSections}
               totalClasses={totalClasses}
             />
@@ -813,20 +707,12 @@ function MasterSchedulesPage() {
               )}
             </AnimatePresence>
 
-            <MasterSchedulesTree
+            <MasterSchedulesFlatList
               programs={programTreeData}
-              openPrograms={openPrograms}
-              onToggleProgram={handleToggleProgram}
-              openYearLevels={openYearLevels}
-              onToggleYearLevel={handleToggleYearLevel}
-              openSets={openSets}
-              onToggleSet={handleToggleSet}
-              globalViewMode={globalViewMode}
               schoolYear={schoolYear}
               semesterLabel={semesterLabel(semester)}
               termClosed={termClosed}
               departments={departments}
-              onCreateSchedule={() => navigate("/schedules/new")}
               onEdit={openEdit}
               onSubmitRelease={setSubmitTarget}
               onWithdrawRelease={setWithdrawTarget}

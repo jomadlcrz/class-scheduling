@@ -4,7 +4,7 @@ import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
-import { ModeBadge } from "~/features/schedules/mode-badge";
+import { ModeBadge, ModeSessionBadges } from "~/features/schedules/mode-badge";
 
 type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
 
@@ -159,7 +159,7 @@ function GridClassCard({
               Major
             </span>
           )}
-          <ModeBadge mode={entry.mode} />{entry.sessionMode && <ModeBadge mode={entry.sessionMode} />}
+          <ModeSessionBadges mode={entry.mode} sessionMode={entry.sessionMode} />
         </div>
       </div>
       <p className="font-body text-[0.7rem] leading-snug text-slate-600 dark:text-slate-300">

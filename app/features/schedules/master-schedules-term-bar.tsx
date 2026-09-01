@@ -1,4 +1,3 @@
-import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -20,9 +19,6 @@ type MasterSchedulesTermBarProps = {
   semesterLabel: (n: number) => string;
   globalViewMode: ScheduleViewMode;
   onGlobalViewModeChange: (mode: ScheduleViewMode) => void;
-  onExpandAll: () => void;
-  onCollapseAll: () => void;
-  allExpanded: boolean;
   totalSections: number;
   totalClasses: number;
 };
@@ -39,9 +35,6 @@ export function MasterSchedulesTermBar({
   semesterLabel,
   globalViewMode,
   onGlobalViewModeChange,
-  onExpandAll,
-  onCollapseAll,
-  allExpanded,
   totalSections,
   totalClasses,
 }: MasterSchedulesTermBarProps) {
@@ -128,15 +121,6 @@ export function MasterSchedulesTermBar({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            block={false}
-            onClick={allExpanded ? onCollapseAll : onExpandAll}
-          >
-            {allExpanded ? "Collapse All" : "Expand All"}
-          </Button>
-
           <ScheduleViewToggle value={globalViewMode} onChange={onGlobalViewModeChange} />
         </div>
       </div>

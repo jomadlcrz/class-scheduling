@@ -15,6 +15,14 @@ const iconButtonClassName =
 const itemClassName =
   "flex w-full cursor-pointer items-center justify-between gap-3 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100";
 
+const PHASE_LABELS: Record<string, string> = {
+  major_scheduling: "Major scheduling",
+  generation: "Generation",
+  suggestion_window: "Shift request",
+  resolution: "Resolution",
+  finalized: "Finalized",
+};
+
 /** Renders one notification's title/detail from its type + payload. */
 export function notificationText(notification: NotificationItem): { title: string; detail: string } {
   const p = notification.payload ?? {};
@@ -144,9 +152,9 @@ export function notificationText(notification: NotificationItem): { title: strin
         detail: period,
       };
     case "scheduling_deadline_updated":
-      return { title: "Scheduling deadline updated", detail: [p.phase, period].filter(Boolean).join(" · ") };
+      return { title: "Scheduling deadline updated", detail: [PHASE_LABELS[p.phase as string] ?? p.phase, period].filter(Boolean).join(" · ") };
     case "scheduling_phase_changed":
-      return { title: "Scheduling phase changed", detail: [p.phase, period].filter(Boolean).join(" · ") };
+      return { title: "Scheduling phase changed", detail: [PHASE_LABELS[p.phase as string] ?? p.phase, period].filter(Boolean).join(" · ") };
     case "instructor_schedule_response":
       return { title: "Schedule response received", detail: [p.subject_code, p.rejection_reason ?? period].filter(Boolean).join(" · ") };
     case "instructor_suggestion_rejected":
