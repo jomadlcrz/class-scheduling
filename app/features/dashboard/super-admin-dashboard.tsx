@@ -1,44 +1,21 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import { selfAnalyticsService } from "~/services/self-analytics.service";
-import type {
-  StudentProfileWithoutLogin,
-  SuperAdminAccount,
-  SuperAdminAnalytics,
-} from "~/types/super-admin-analytics";
 import {
   ChartCard,
   LoginStatusDonut,
   PermissionsDonut,
   RoleAccountsDonut,
   StatTile,
-  superAdminRoleLabel,
 } from "~/features/dashboard/dashboard-charts";
 import {
   LoadingSkeleton,
   fadeSlideUp,
-  popCard,
   staggerSections,
   staggerWidgets,
 } from "~/features/dashboard/dashboard-shared";
-
-const ROLE_BADGE_TONES: Record<string, BadgeTone> = {
-  SUPER_ADMIN: "gold",
-  REGISTRAR_ADMIN: "navy",
-  DEAN: "violet",
-  INSTRUCTOR: "sky",
-  STUDENT: "emerald",
-};
+import { selfAnalyticsService } from "~/services/self-analytics.service";
+import type { SuperAdminAnalytics } from "~/types/super-admin-analytics";
 
 type Tile = {
   title: string;
@@ -105,104 +82,6 @@ function buildTiles(data: SuperAdminAnalytics): Tile[] {
   ];
 }
 
-function PendingFirstLoginTable({ accounts = [] }: { accounts?: SuperAdminAccount[] }) {
-  const safeAccounts = accounts ?? [];
-  if (safeAccounts.length === 0) {
-    return (
-      <motion.div
-        variants={popCard}
-        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
-      >
-        Every account has signed in at least once.
-      </motion.div>
-    );
-  }
-  const shown = safeAccounts.slice(0, 12);
-  const overflow = safeAccounts.length - shown.length;
-  return (
-    <motion.div variants={popCard}>
-      <Table>
-        <TableHead>
-          <TableHeader>Email</TableHeader>
-          <TableHeader>Roles</TableHeader>
-        </TableHead>
-        <TableBody>
-          {shown.map((account) => (
-            <TableRow key={account.user_id}>
-              <TableCell>
-                <a href={`mailto:${account.email}`} className="font-medium text-slate-800 hover:underline dark:text-slate-200">
-                  {account.email}
-                </a>
-              </TableCell>
-              <TableCell>
-                <span className="flex flex-wrap gap-1">
-                  {account.roles.map((role) => (
-                    <Badge key={role} tone={ROLE_BADGE_TONES[role] ?? "slate"}>
-                      {superAdminRoleLabel(role)}
-                    </Badge>
-                  ))}
-                </span>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {overflow > 0 && (
-        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
-          +{overflow} more pending accounts.
-        </p>
-      )}
-    </motion.div>
-  );
-}
-
-function StudentsWithoutLoginTable({ students = [] }: { students?: StudentProfileWithoutLogin[] }) {
-  const safeStudents = students ?? [];
-  if (safeStudents.length === 0) {
-    return (
-      <motion.div
-        variants={popCard}
-        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
-      >
-        Every student profile has a login account.
-      </motion.div>
-    );
-  }
-  const shown = safeStudents.slice(0, 12);
-  const overflow = safeStudents.length - shown.length;
-  return (
-    <motion.div variants={popCard}>
-      <Table>
-        <TableHead>
-          <TableHeader>Student</TableHeader>
-          <TableHeader>Student ID</TableHeader>
-        </TableHead>
-        <TableBody>
-          {shown.map((student) => (
-            <TableRow key={student.student_profile_id}>
-              <TableCell>
-                <span className="font-medium text-slate-800 dark:text-slate-200">
-                  {student.full_name}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {student.student_id ?? "—"}
-                </span>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {overflow > 0 && (
-        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
-          +{overflow} more profiles without a login.
-        </p>
-      )}
-    </motion.div>
-  );
-}
-
 /** The Super Admin's system-wide overview — a snapshot of every account and the
  * RBAC state, not scoped to any school term. */
 export function SuperAdminDashboard() {
@@ -235,8 +114,6 @@ export function SuperAdminDashboard() {
   }, []);
 
   const tiles = analytics ? buildTiles(analytics) : [];
-  const pendingAccounts =
-    analytics?.accounts.active.filter((a) => a.pending_first_login) ?? [];
 
   return (
     <div className="space-y-6">
@@ -306,53 +183,25 @@ export function SuperAdminDashboard() {
                   <div className="lg:col-span-2">
                     <ChartCard
                       title="Accounts by role"
-                      subtitle="Active accounts per role across the whole system."
                     >
                       <RoleAccountsDonut roles={analytics.accounts_by_role} />
                     </ChartCard>
                   </div>
                   <ChartCard
                     title="Login status"
-                    subtitle="Who has signed in at least once versus still pending."
                   >
                     <LoginStatusDonut counts={analytics.accounts.counts} />
                   </ChartCard>
                 </motion.div>
               </motion.section>
 
-              {/* ─── Permissions + students without login ─── */}
+              {/* ─── Permissions ─── */}
               <motion.section variants={fadeSlideUp}>
-                <motion.div
-                  variants={staggerWidgets}
-                  initial="hidden"
-                  animate="visible"
-                  className="grid grid-cols-1 gap-4 lg:grid-cols-2"
+                <ChartCard
+                  title="RBAC permissions"
                 >
-                  <ChartCard
-                    title="RBAC permissions"
-                    subtitle={`${analytics.rbac.permissions_total} permission grants across ${analytics.rbac.roles} roles.`}
-                  >
-                    <PermissionsDonut rbac={analytics.rbac} />
-                  </ChartCard>
-                  <ChartCard
-                    title="Students without login"
-                    subtitle="Student profiles with no account yet — they can't sign in until one exists."
-                  >
-                    <StudentsWithoutLoginTable students={analytics.student_profiles_without_login} />
-                  </ChartCard>
-                </motion.div>
-              </motion.section>
-
-              {/* ─── Pending first login ─── */}
-              <motion.section variants={fadeSlideUp}>
-                <p className="mb-3 font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                  Pending first login
-                </p>
-                <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
-                  Accounts that have never signed in — resend the temp password to get them
-                  started.
-                </p>
-                <PendingFirstLoginTable accounts={pendingAccounts} />
+                  <PermissionsDonut rbac={analytics.rbac} />
+                </ChartCard>
               </motion.section>
             </motion.div>
           </motion.div>

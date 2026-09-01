@@ -169,7 +169,7 @@ export function ChartCard({
 
 function ChartEmpty({ message }: { message: string }) {
   return (
-    <div className="flex h-44 items-center justify-center text-center text-sm text-slate-400 dark:text-slate-500">
+    <div className="flex h-64 items-center justify-center text-center text-sm text-slate-400 dark:text-slate-500">
       {message}
     </div>
   );

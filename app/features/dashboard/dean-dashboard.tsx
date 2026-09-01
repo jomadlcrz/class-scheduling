@@ -8,8 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { deanService } from "~/services/dean.service";
-import type { AttentionItem, DeanAnalyticsResponse } from "~/types/dean-analytics";
 import {
   ChartCard,
   CoverageStackedChart,
@@ -32,6 +30,8 @@ import {
   staggerWidgets,
   useTermData,
 } from "~/features/dashboard/dashboard-shared";
+import { deanService } from "~/services/dean.service";
+import type { AttentionItem, DeanAnalyticsResponse } from "~/types/dean-analytics";
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: chartStatusColor("critical"),
@@ -117,12 +117,9 @@ function AttentionTable({ items = [] }: { items?: AttentionItem[] }) {
   const safeItems = items ?? [];
   if (safeItems.length === 0) {
     return (
-      <motion.div
-        variants={popCard}
-        className="flex h-64 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
-      >
+      <div className="flex h-64 items-center justify-center text-center text-sm text-slate-400 dark:text-slate-500">
         Nothing needs a decision right now.
-      </motion.div>
+      </div>
     );
   }
   const shown = safeItems.slice(0, 12);
@@ -270,7 +267,6 @@ export function DeanDashboard() {
                   <div className="lg:col-span-2">
                     <ChartCard
                       title="Load spread by band"
-                      subtitle="Instructors sorted into one band — the same ladder the meters and tile tones use."
                     >
                       <LoadBandChart bands={data.load_bands ?? []} />
                     </ChartCard>
@@ -289,13 +285,11 @@ export function DeanDashboard() {
                 >
                   <ChartCard
                     title="Booked hours by day"
-                    subtitle="Department-wide booked load, Mon–Sat. The peak day is highlighted in gold."
                   >
                     <DailyHoursChart days={data.daily_load_hours ?? []} />
                   </ChartCard>
                   <ChartCard
                     title="Curriculum coverage by program"
-                    subtitle="Subjects with at least one instructor assigned this term, split staffed vs unstaffed."
                   >
                     <CoverageStackedChart rows={data.curriculum_coverage?.by_program ?? []} />
                   </ChartCard>
@@ -312,16 +306,14 @@ export function DeanDashboard() {
                 >
                   <ChartCard
                     title="Instructor load"
-                    subtitle={`${data.instructor_loads?.length ?? 0} teaching term${(data.instructor_loads?.length ?? 0) === 1 ? "" : "s"} this term, heaviest first — booked hours against the cap.`}
                   >
                     <InstructorLoadMeters loads={data.instructor_loads ?? []} />
                   </ChartCard>
-                  <div>
-                    <p className="mb-3 font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                      Needs attention
-                    </p>
+                  <ChartCard
+                    title="Needs attention"
+                  >
                     <AttentionTable items={data.attention ?? []} />
-                  </div>
+                  </ChartCard>
                 </motion.div>
               </motion.section>
             </motion.div>

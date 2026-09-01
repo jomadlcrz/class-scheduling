@@ -8,8 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { registrarService } from "~/services/registrar.service";
-import type { RegistrarAnalyticsResponse } from "~/types/registrar-analytics";
 import {
   ChartCard,
   EnrollmentDonut,
@@ -31,6 +29,8 @@ import {
   staggerWidgets,
   useTermData,
 } from "~/features/dashboard/dashboard-shared";
+import { registrarService } from "~/services/registrar.service";
+import type { RegistrarAnalyticsResponse } from "~/types/registrar-analytics";
 
 type Tile = {
   title: string;
@@ -338,14 +338,12 @@ export function RegistrarDashboard() {
                   <div className="lg:col-span-2">
                     <ChartCard
                       title="Schedule completion by program"
-                      subtitle="Active sets per program with at least one saved session this term."
                     >
                       <ScheduleCompletionChart programs={data.schedule_completion.by_program} />
                     </ChartCard>
                   </div>
                   <ChartCard
                     title="Enrollment status"
-                    subtitle="Who's on the roster this term — regular, irregular, or not yet enrolled."
                   >
                     <EnrollmentDonut enrollment={data.enrollment} />
                   </ChartCard>
@@ -390,13 +388,11 @@ export function RegistrarDashboard() {
                 >
                   <ChartCard
                     title="Lab capacity"
-                    subtitle={`${data.lab_capacity?.laboratories?.length ?? 0} lab room${(data.lab_capacity?.laboratories?.length ?? 0) === 1 ? "" : "s"} this term, booked hours against the operating-day window.`}
                   >
                     <LabCapacityMeters laboratories={data.lab_capacity?.laboratories ?? []} />
                   </ChartCard>
                   <ChartCard
                     title="Teaching capacity by department"
-                    subtitle="Booked hours against the weekly caps each dean set, per department."
                   >
                     <StaffingByDepartmentChart departments={data.staffing.by_department} />
                   </ChartCard>
