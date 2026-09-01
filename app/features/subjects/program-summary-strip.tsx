@@ -19,7 +19,7 @@ export function ProgramSummaryStrip({ newProgram, totalUnits }: ProgramSummarySt
   ];
 
   return (
-    <Card className="border-l-4 border-l-blue-700 p-4 dark:border-l-blue-400 sm:p-5">
+    <Card className="p-4 sm:p-5">
       <dl className="flex flex-col divide-y divide-slate-200 sm:flex-row sm:flex-nowrap sm:divide-x sm:divide-y-0 dark:divide-white/10">
         {fields.map((field) => (
           <div
@@ -29,7 +29,7 @@ export function ProgramSummaryStrip({ newProgram, totalUnits }: ProgramSummarySt
             <dt className="font-body text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
               {field.label}
             </dt>
-            <dd className="mt-0.5 break-words font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+            <dd className="mt-0.5 wrap-break-word font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
               {field.value}
             </dd>
           </div>

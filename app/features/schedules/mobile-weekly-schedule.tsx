@@ -76,7 +76,7 @@ export function MobileWeeklySchedule({ schedules, hideInstructor, showSet = true
       {expanded && (
         <div className="mt-3 flex flex-col gap-3">
           {groups.map((group) => (
-            <Card key={group.subjectCode} className="overflow-hidden border-l-4 border-l-navy-400 p-4 dark:border-l-navy-300/50">
+            <Card key={group.subjectCode} className="overflow-hidden p-4">
               <p className="truncate font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 {group.subjectCode}
               </p>

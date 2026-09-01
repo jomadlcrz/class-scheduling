@@ -98,7 +98,7 @@ export function TodayClasses({ schedules, hideInstructor }: TodayClassesProps) {
             </p>
           </Card>
         ) : (
-          <Card className="mt-2 overflow-hidden border-l-4 border-l-blue-600 p-0 dark:border-l-sky-400">
+          <Card className="mt-2 overflow-hidden p-0">
             <ul className="divide-y divide-slate-100 dark:divide-white/8">
               {occurrences.map((o) => (
                 <li key={o.schedule.id} className="flex items-start gap-3 p-3">

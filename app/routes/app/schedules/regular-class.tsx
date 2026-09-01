@@ -21,7 +21,6 @@ import { MasterSchedulesTermBar } from "~/features/schedules/master-schedules-te
 import { ScheduleClearDialog } from "~/features/schedules/schedule-clear-dialog";
 import { ScheduleEditDialog } from "~/features/schedules/schedule-edit-dialog";
 import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
-import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -156,9 +155,6 @@ function MasterSchedulesPage() {
 
   // Selected Department Underline Tab ("ALL" or department abbrev e.g. "CCS")
   const [selectedDepartment, setSelectedDepartment] = useState("ALL");
-
-  // Global Schedule View Mode (Table vs Grid)
-  const [globalViewMode, setGlobalViewMode] = useState<ScheduleViewMode>("table");
 
   // Action / Mutation Dialogs
   const [actionError, setActionError] = useState<string | null>(null);
@@ -653,8 +649,6 @@ function MasterSchedulesPage() {
               semester={semester}
               onSemesterChange={setSemester}
               semesterLabel={semesterLabel}
-              globalViewMode={globalViewMode}
-              onGlobalViewModeChange={setGlobalViewMode}
               totalSections={totalSections}
               totalClasses={totalClasses}
             />

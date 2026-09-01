@@ -9,6 +9,7 @@ import {
 import type { Route } from "./+types/root";
 import "~/app.css";
 import { AuthProvider } from "~/auth/auth-provider";
+import { Button } from "~/components/ui/button";
 
 // Runs before paint to set the `.dark` class from the stored/system preference,
 // preventing a light flash on first load. Kept as a string so it ships inline.
@@ -79,12 +80,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         {is404 ? "Page not found" : "Something went wrong"}
       </h1>
       <p className="mt-3 font-body text-base text-slate-500 dark:text-slate-400">{details}</p>
-      <a
-        href="/"
-        className="mt-8 inline-flex w-72 items-center justify-center rounded-full bg-navy-800 py-3 font-body text-sm font-semibold text-mist-100 shadow-lg shadow-navy-800/20 transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-surface"
-      >
+      <Button type="button" block={false} pill onClick={() => (window.location.href = "/")} className="mt-8 w-72 py-3">
         Go to Homepage
-      </a>
+      </Button>
       {stack && (
         <pre className="mt-8 w-full max-w-2xl overflow-x-auto rounded-lg bg-slate-100 p-4 text-left font-body text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300">
           {stack}

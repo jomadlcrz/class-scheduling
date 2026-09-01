@@ -1,10 +1,6 @@
 import { Card } from "~/components/ui/card";
 import { FieldChrome } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import {
-  ScheduleViewToggle,
-  type ScheduleViewMode,
-} from "~/features/schedules/schedule-view-toggle";
 import type { Semester } from "~/types/semester";
 import type { ScheduleSemester } from "~/types/schedule";
 
@@ -17,8 +13,6 @@ type MasterSchedulesTermBarProps = {
   semester: ScheduleSemester;
   onSemesterChange: (sem: ScheduleSemester) => void;
   semesterLabel: (n: number) => string;
-  globalViewMode: ScheduleViewMode;
-  onGlobalViewModeChange: (mode: ScheduleViewMode) => void;
   totalSections: number;
   totalClasses: number;
 };
@@ -33,8 +27,6 @@ export function MasterSchedulesTermBar({
   semester,
   onSemesterChange,
   semesterLabel,
-  globalViewMode,
-  onGlobalViewModeChange,
   totalSections,
   totalClasses,
 }: MasterSchedulesTermBarProps) {
@@ -121,7 +113,6 @@ export function MasterSchedulesTermBar({
         </div>
 
         <div className="flex items-center gap-2">
-          <ScheduleViewToggle value={globalViewMode} onChange={onGlobalViewModeChange} />
         </div>
       </div>
     </Card>

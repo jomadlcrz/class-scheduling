@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { Button } from "~/components/ui/button";
 import { BrandLockup } from "~/landing/brand-lockup";
 import { MobileMenu } from "~/landing/mobile-menu";
 
@@ -65,15 +66,15 @@ export function SiteHeader() {
 
           {/* Desktop actions */}
           <div className="hidden items-center justify-end gap-2 md:flex">
-            <a
-              href="/login"
-              className={`flex items-center rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                scrolled
-                  ? "bg-white text-navy-800 hover:bg-slate-100 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100"
-                  : "bg-navy-800 text-mist-100 hover:bg-navy-700 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100"
-              }`}
-            >
-              Log In
+            <a href="/login">
+              <Button
+                type="button"
+                block={false}
+                variant={scrolled ? "outline" : "primary"}
+                className={scrolled ? "bg-white text-navy-800 hover:bg-slate-100 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100" : ""}
+              >
+                Log In
+              </Button>
             </a>
           </div>
 

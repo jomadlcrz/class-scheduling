@@ -607,7 +607,7 @@ export function TermCalendarPage() {
             <Card className="flex flex-wrap items-center justify-between gap-4 border-emerald-300 bg-emerald-50/70 p-5 dark:border-emerald-700/40 dark:bg-emerald-950/20">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-base font-semibold text-navy-800 dark:text-mist-100">
+                  <h3 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
                     Ready for Publication
                   </h3>
                   <Badge tone="emerald">All Deans Approved</Badge>
@@ -632,7 +632,7 @@ export function TermCalendarPage() {
             <Card className="flex flex-wrap items-center justify-between gap-4 border-emerald-300 bg-emerald-50/70 p-5 dark:border-emerald-700/40 dark:bg-emerald-950/20">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-base font-semibold text-navy-800 dark:text-mist-100">
+                  <h3 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
                     Term Finalized &amp; Published
                   </h3>
                   <Badge tone="emerald">Published</Badge>
@@ -648,7 +648,7 @@ export function TermCalendarPage() {
             <Card className="flex flex-wrap items-center justify-between gap-4 border-sky-300 bg-sky-50/70 p-5 dark:border-sky-700/40 dark:bg-sky-950/20">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-base font-semibold text-navy-800 dark:text-mist-100">
+                  <h3 className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
                     Final Dean Approval in Progress
                   </h3>
                   <Badge tone="sky">Dean Sign-off</Badge>
@@ -738,7 +738,7 @@ export function TermCalendarPage() {
 
             {/* Institution-Wide Limit Widget for Major Scheduling */}
             {activeTab === "major_scheduling" && (
-              <Card className="w-full max-w-2xl p-4 text-left">
+              <div className="w-full max-w-2xl rounded-xl bg-slate-50 p-4 text-left dark:bg-navy-800">
                 <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 pb-3 dark:border-white/5">
                   <div>
                     <div className="flex items-center gap-1.5">
@@ -789,12 +789,12 @@ export function TermCalendarPage() {
                     limitOnly
                   />
                 </div>
-              </Card>
+              </div>
             )}
 
             {/* Instructor Suggestion Limit Widget for Shift Request */}
             {activeTab === "suggestion_window" && (
-              <Card className="w-full max-w-2xl p-4 text-left">
+              <div className="w-full max-w-2xl rounded-xl bg-slate-50 p-4 text-left dark:bg-navy-800">
                 <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 pb-3 dark:border-white/5">
                   <div>
                     <div className="flex items-center gap-1.5">
@@ -846,7 +846,7 @@ export function TermCalendarPage() {
                     label="Suggestion attempt limit"
                   />
                 </div>
-              </Card>
+              </div>
             )}
 
             {/* Reusable Stepper Component (Read-only Phase Progress) */}
@@ -915,7 +915,7 @@ export function TermCalendarPage() {
                 </div>
 
                 {activeTab === "suggestion_window" && responseReadiness && (
-                  <Card className="p-3 text-left text-xs text-slate-600 dark:text-slate-300">
+                  <div className="rounded-xl bg-slate-50 p-3 text-left text-xs text-slate-600 dark:bg-navy-800 dark:text-slate-300">
                     <p className="font-semibold text-navy-800 dark:text-mist-100">
                       Instructor Responses: {responseReadiness.respondedCount ?? 0} of {responseReadiness.expected ?? 0}
                     </p>
@@ -929,7 +929,7 @@ export function TermCalendarPage() {
                         ✓ All responded — ready to close early and resolve.
                       </p>
                     )}
-                  </Card>
+                  </div>
                 )}
 
                 <div className="flex justify-center gap-2">

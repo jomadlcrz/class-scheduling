@@ -4,7 +4,6 @@ import { Button } from "~/components/ui/button";
 import { CheckIcon } from "~/components/ui/icons";
 import { PasswordInput } from "~/components/ui/input";
 import { ModalActions } from "~/components/ui/modal";
-import { Spinner } from "~/components/ui/spinner";
 import { ApiError } from "~/lib/api";
 import { makeChangePasswordSchema } from "~/schemas/auth.schema";
 
@@ -160,20 +159,9 @@ export function PasswordForm({
           </Button>
         </ModalActions>
       ) : (
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-800 px-8 py-2.5 text-sm font-semibold text-mist-100 shadow-lg shadow-navy-800/20 transition-colors duration-200 hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100 dark:focus-visible:ring-offset-surface"
-        >
-          {isLoading ? (
-            <>
-              <Spinner />
-              {loadingLabel}
-            </>
-          ) : (
-            submitLabel
-          )}
-        </button>
+        <Button type="submit" block={false} disabled={isLoading} isLoading={isLoading} loadingLabel={loadingLabel}>
+          {submitLabel}
+        </Button>
       )}
     </form>
   );
