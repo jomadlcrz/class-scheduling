@@ -1,14 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
-import { Badge } from "~/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import {
   ChartCard,
   DailyHoursChart,
@@ -22,7 +13,6 @@ import {
   TermSelectors,
   UpdateIndicator,
   fadeSlideUp,
-  popCard,
   staggerSections,
   staggerWidgets,
   useTermData,
@@ -31,7 +21,6 @@ import { selfAnalyticsService } from "~/services/self-analytics.service";
 import type { DailyLoadHour } from "~/types/dean-analytics";
 import type {
   InstructorAnalytics,
-  InstructorScheduleEntry,
   InstructorSubject,
   InstructorSummary,
 } from "~/types/instructor-analytics";
@@ -119,142 +108,6 @@ function buildDayHours(subjects: InstructorSubject[]): DailyLoadHour[] {
   }));
 }
 
-function SubjectsTable({ subjects = [] }: { subjects?: InstructorSubject[] }) {
-  const safeSubjects = subjects ?? [];
-  if (safeSubjects.length === 0) {
-    return (
-      <motion.div
-        variants={popCard}
-        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
-      >
-        No subjects assigned this term.
-      </motion.div>
-    );
-  }
-  const shown = safeSubjects.slice(0, 12);
-  const overflow = safeSubjects.length - shown.length;
-  return (
-    <motion.div variants={popCard}>
-      <Table>
-        <TableHead>
-          <TableHeader>Subject</TableHeader>
-          <TableHeader>Program</TableHeader>
-          <TableHeader className="hidden md:table-cell">Year</TableHeader>
-          <TableHeader className="hidden sm:table-cell">Units</TableHeader>
-          <TableHeader>Status</TableHeader>
-        </TableHead>
-        <TableBody>
-          {shown.map((subject) => (
-            <TableRow key={subject.subject_id}>
-              <TableCell>
-                <span className="block font-medium text-slate-800 dark:text-slate-200">
-                  {subject.subject_code}
-                </span>
-                <span className="block text-xs text-slate-500 dark:text-slate-400">
-                  {subject.descriptive_title}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {subject.program_abbrev}
-                </span>
-              </TableCell>
-              <TableCell className="hidden md:table-cell">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {subject.year_level}
-                </span>
-              </TableCell>
-              <TableCell className="hidden sm:table-cell">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {subject.units}
-                </span>
-              </TableCell>
-              <TableCell>
-                {subject.is_scheduled ? (
-                  <Badge tone="emerald">Scheduled</Badge>
-                ) : (
-                  <Badge tone="slate">Unscheduled</Badge>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {overflow > 0 && (
-        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
-          +{overflow} more subjects.
-        </p>
-      )}
-    </motion.div>
-  );
-}
-
-function ScheduleTable({ schedule = [] }: { schedule?: InstructorScheduleEntry[] }) {
-  const safeSchedule = schedule ?? [];
-  if (safeSchedule.length === 0) {
-    return (
-      <motion.div
-        variants={popCard}
-        className="flex h-44 items-center justify-center rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
-      >
-        No sessions are booked for this term yet.
-      </motion.div>
-    );
-  }
-  const shown = safeSchedule.slice(0, 12);
-  const overflow = safeSchedule.length - shown.length;
-  return (
-    <motion.div variants={popCard}>
-      <Table>
-        <TableHead>
-          <TableHeader>Day</TableHeader>
-          <TableHeader>Time</TableHeader>
-          <TableHeader>Subject</TableHeader>
-          <TableHeader className="hidden md:table-cell">Room</TableHeader>
-          <TableHeader className="hidden sm:table-cell">Program</TableHeader>
-          <TableHeader className="hidden lg:table-cell">Mode</TableHeader>
-        </TableHead>
-        <TableBody>
-          {shown.map((entry, i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <span className="font-medium text-slate-800 dark:text-slate-200">{entry.day}</span>
-              </TableCell>
-              <TableCell>
-                <span className="text-xs tabular-nums text-slate-600 dark:text-slate-300">
-                  {entry.start_time} – {entry.end_time}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="block font-medium text-slate-800 dark:text-slate-200">
-                  {entry.subject_code}
-                </span>
-                <span className="block text-xs text-slate-500 dark:text-slate-400">
-                  {entry.descriptive_title}
-                </span>
-              </TableCell>
-              <TableCell className="hidden md:table-cell">
-                <span className="text-xs text-slate-500 dark:text-slate-400">{entry.room}</span>
-              </TableCell>
-              <TableCell className="hidden sm:table-cell">
-                <span className="text-xs text-slate-500 dark:text-slate-400">{entry.program}</span>
-              </TableCell>
-              <TableCell className="hidden lg:table-cell">
-                <span className="text-xs text-slate-500 dark:text-slate-400">{entry.mode}</span>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {overflow > 0 && (
-        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
-          +{overflow} more sessions.
-        </p>
-      )}
-    </motion.div>
-  );
-}
-
 /** The instructor's term-scoped dashboard — weekly load, schedule coverage and
  * their own timetable for the selected school term. */
 export function FacultyDashboard() {
@@ -315,9 +168,6 @@ export function FacultyDashboard() {
                   <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
                     Overview
                   </h2>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    {[data.meta.instructor_name, data.meta.school_year, data.meta.semester_name].filter(Boolean).join(" · ")}
-                  </p>
                 </div>
                 <TermSelectors
                   years={years}
@@ -354,42 +204,18 @@ export function FacultyDashboard() {
                   <div className="lg:col-span-2">
                     <ChartCard
                       title="Booked hours by day"
-                      subtitle="Weekly booked load, Mon–Sat. The peak day is highlighted in gold."
                     >
                       <DailyHoursChart days={dayHours} />
                     </ChartCard>
                   </div>
                   <ChartCard
                     title="Schedule coverage"
-                    subtitle="Assigned subjects with at least one saved session this term."
                   >
                     <SubjectCoverageDonut subjects={data.subjects} />
                   </ChartCard>
                 </motion.div>
               </motion.section>
 
-              {/* ─── Subjects + schedule (stacked, full width) ─── */}
-              <motion.section variants={fadeSlideUp}>
-                <motion.div
-                  variants={staggerWidgets}
-                  initial="hidden"
-                  animate="visible"
-                  className="space-y-4"
-                >
-                  <ChartCard
-                    title="Assigned subjects"
-                    subtitle={`${data.subjects.length} subject${data.subjects.length === 1 ? "" : "s"} this term, with scheduled status.`}
-                  >
-                    <SubjectsTable subjects={data.subjects} />
-                  </ChartCard>
-                  <ChartCard
-                    title="My schedule"
-                    subtitle="Every saved session for this term."
-                  >
-                    <ScheduleTable schedule={data.schedule} />
-                  </ChartCard>
-                </motion.div>
-              </motion.section>
             </motion.div>
           </motion.div>
         ) : null}
