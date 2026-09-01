@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -7,7 +6,7 @@ import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { ChevronDownIcon } from "~/components/ui/icons";
-import { ConfirmDialog } from "~/components/ui/modal";
+import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { DecisionMessage } from "~/features/schedules/decision-message";
@@ -15,7 +14,9 @@ import {
   snapshotOriginalMeetings,
   type ProposalMeeting,
 } from "~/features/schedules/instructor-proposal-model";
-import { ModeBadge } from "~/features/schedules/mode-badge";
+import { InstructorProposalEditor } from "~/features/schedules/instructor-proposal-editor";
+import { ScheduleViewer } from "~/features/schedules/schedule-viewer";
+import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { formatSectionSetName } from "~/features/schedules/scheduling-routes";
 import { SuggestionValidationSummary } from "~/features/schedules/suggestion-validation-summary";
 import { useDays } from "~/hooks/use-days";
@@ -25,15 +26,17 @@ import { formatDateTime, formatTime12h, timeToMinutes } from "~/lib/time";
 import { instructorReviewService } from "~/services/instructor-review.service";
 import { roomService } from "~/services/room.service";
 import { termSchedulingService } from "~/services/term-scheduling.service";
+import { weeklyHourAllocationService } from "~/services/weekly-hour-allocation.service";
 import type {
-  InstructorMeetingReviewState,
   InstructorReviewDetail,
   InstructorReviewMeeting,
   InstructorReviewSummary,
   ProposedMeeting,
 } from "~/types/instructor-review";
 import type { Room } from "~/types/room";
+import type { Schedule } from "~/types/schedule";
 import type { TermSchedulingCalendar } from "~/types/term-scheduling";
+import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 export function meta() {
   return [{ title: "Shift Requests — GWC Class Scheduling" }];
@@ -46,18 +49,6 @@ type DistributedSchedule = InstructorReviewMeeting & {
 type HistoryChange = {
   original: ProposalMeeting | null;
   suggested: ProposalMeeting;
-};
-
-const DISTRIBUTED_STATUS_STYLES: Record<
-  InstructorMeetingReviewState,
-  { tone: BadgeTone }
-> = {
-  protected: { tone: "slate" },
-  accepted: { tone: "emerald" },
-  awaiting_decision: { tone: "gold" },
-  applied: { tone: "emerald" },
-  not_applied: { tone: "slate" },
-  unchanged: { tone: "slate" },
 };
 
 function requestSetLabel(
@@ -169,15 +160,17 @@ function suggestionChanges(
 }
 
 export default function ShiftRequestsRoute() {
-  const navigate = useNavigate();
-  const { days: backendDays } = useDays();
-  const weekDays = useMemo(() => {
-    if (backendDays && backendDays.length > 0) {
-      return backendDays.map((d) => d.name);
-    }
-    return [];
-  }, [backendDays]);
+  const { dayLabels } = useDays();
 
+  const dayNameToCode = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [code, name] of Object.entries(dayLabels)) {
+      map[name.toLowerCase()] = code;
+    }
+    return map;
+  }, [dayLabels]);
+
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
   const [calendar, setCalendar] = useState<TermSchedulingCalendar | null>(null);
   const [requests, setRequests] = useState<InstructorReviewDetail[]>([]);
   const [history, setHistory] = useState<InstructorReviewDetail[]>([]);
@@ -186,6 +179,13 @@ export default function ShiftRequestsRoute() {
   const [error, setError] = useState<string | null>(null);
   const [expandedRequestIds, setExpandedRequestIds] = useState<Set<number> | null>(null);
   const [acceptAllOpen, setAcceptAllOpen] = useState(false);
+
+  const [editingReleaseId, setEditingReleaseId] = useState<number | null>(null);
+  const [editingDetail, setEditingDetail] = useState<InstructorReviewDetail | null>(null);
+  const [editingDistributed, setEditingDistributed] = useState<InstructorReviewDetail[]>([]);
+  const [editingLoading, setEditingLoading] = useState(false);
+  const [editingError, setEditingError] = useState<string | null>(null);
+  const [allocations, setAllocations] = useState<WeeklyHourAllocation[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -246,21 +246,43 @@ export default function ShiftRequestsRoute() {
     return [...byScheduleId.values()];
   }, [requests]);
 
-  const distributedByDay = useMemo(
-    () =>
-      weekDays.map((day) => ({
-        day,
-        schedules: distributed
-          .filter((meeting) => meeting.dayOfWeek.trim().toLowerCase() === day.toLowerCase())
-          .sort(
-            (a, b) =>
-              timeToMinutes(a.startTime) - timeToMinutes(b.startTime) ||
-              timeToMinutes(a.endTime) - timeToMinutes(b.endTime) ||
-              (a.subjectCode ?? "").localeCompare(b.subjectCode ?? ""),
-          ),
-      })),
-    [distributed, weekDays],
-  );
+  const distributedSchedules = useMemo(() => {
+    const requestBySetCode = new Map<string, InstructorReviewDetail>();
+    for (const request of requests) {
+      const label = requestSetLabel(request);
+      if (!requestBySetCode.has(label)) requestBySetCode.set(label, request);
+    }
+
+    return distributed.map((meeting): Schedule => {
+      const setLabel = meeting.setLabel;
+      const request = requestBySetCode.get(setLabel) ?? requests[0];
+      const dayCode = dayNameToCode[meeting.dayOfWeek.trim().toLowerCase()] ?? "M";
+      return {
+        id: String(meeting.scheduleId),
+        schoolYear: request?.schoolYear ?? "",
+        semester: request?.semesterNumber ?? 1,
+        subjectId: String(meeting.subjectId),
+        subjectCode: meeting.subjectCode ?? "",
+        subjectTitle: meeting.subjectTitle ?? "",
+        subjectType: meeting.subjectType ?? undefined,
+        setId: request ? String(request.setId) : "",
+        setCode: request?.setCode ?? setLabel,
+        program: request?.programAbbrev ?? "",
+        departmentCode: "",
+        yearLevel: request?.yearLevel ?? 1,
+        facultyId: "",
+        facultyName: "",
+        roomId: String(meeting.roomId ?? ""),
+        roomName: meeting.roomName ?? "No room",
+        mode: meeting.classMode,
+        sessionMode: meeting.sessionMode ?? undefined,
+        day: dayCode as Schedule["day"],
+        startTime: meeting.startTime,
+        endTime: meeting.endTime,
+        origin: meeting.scheduleOrigin ?? undefined,
+      };
+    });
+  }, [distributed, dayNameToCode, requests]);
 
   const openRequests = useMemo(
     () =>
@@ -317,10 +339,47 @@ export default function ShiftRequestsRoute() {
     return { attemptLimit, attemptsUsed };
   }, [calendar, history, requests]);
 
-  function openShiftRequest() {
-    if (openRequests.length > 0) {
-      void navigate(`/shift-requests/${openRequests[0].releaseId}`);
+  const pendingReviewCount = useMemo(
+    () => requests.filter((r) => !r.responseStatus || r.responseStatus === "pending").length,
+    [requests],
+  );
+
+  async function openShiftRequest() {
+    if (openRequests.length === 0) return;
+    const target = openRequests[0];
+    setEditingReleaseId(target.releaseId);
+    setEditingLoading(true);
+    setEditingError(null);
+    try {
+      const [detail, roomList, allocList, summaries] = await Promise.all([
+        instructorReviewService.getInstructorReviewDetail(target.releaseId),
+        roomService.list().catch(() => []),
+        weeklyHourAllocationService.list().catch(() => []),
+        instructorReviewService.listInstructorReviews().catch(() => []),
+      ]);
+      setEditingDetail(detail);
+      setRooms(roomList);
+      setAllocations(allocList);
+      const allReleases = await Promise.allSettled(
+        summaries.map((s: InstructorReviewSummary) => instructorReviewService.getInstructorReviewDetail(s.releaseId)),
+      );
+      setEditingDistributed(
+        allReleases.flatMap((r: PromiseSettledResult<InstructorReviewDetail>) =>
+          r.status === "fulfilled" ? [r.value] : [],
+        ),
+      );
+    } catch (err: unknown) {
+      setEditingError(err instanceof ApiError ? err.message : "Failed to load schedule detail.");
+    } finally {
+      setEditingLoading(false);
     }
+  }
+
+  function closeEditor() {
+    setEditingReleaseId(null);
+    setEditingDetail(null);
+    setEditingDistributed([]);
+    setEditingError(null);
   }
 
   function toggleHistoryRequest(responseId: number) {
@@ -351,176 +410,113 @@ export default function ShiftRequestsRoute() {
 
   return (
     <RoleGuard allow={["faculty"]}>
-      <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8">
-        <PageHeader title="Shift Requests" />
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
+        <PageHeader
+          title="Shift Requests"
+          actions={
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                block={false}
+                disabled={openRequests.length === 0 || editingReleaseId != null}
+                onClick={openShiftRequest}
+              >
+                Request Shift
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                block={false}
+                disabled={
+                  acceptAllTerm == null ||
+                  acceptAllTermRequests.length === 0 ||
+                  everyScheduleAccepted ||
+                  !acceptAllCanSubmit
+                }
+                onClick={() => setAcceptAllOpen(true)}
+              >
+                Accept All
+              </Button>
+            </div>
+          }
+        />
+
+        {suggestionAttemptPolicy && (
+          <div className="mt-4 flex items-center justify-end gap-2 font-body text-xs text-slate-500 dark:text-slate-400">
+            <span>Shift Request Limit:</span>
+            <Badge
+              tone={
+                suggestionAttemptPolicy.attemptsUsed >= suggestionAttemptPolicy.attemptLimit
+                  ? "red"
+                  : "navy"
+              }
+            >
+              {suggestionAttemptPolicy.attemptsUsed} / {suggestionAttemptPolicy.attemptLimit}
+            </Badge>
+          </div>
+        )}
 
         {loading ? (
-          <div
-            role="status"
-            aria-label="Loading shift requests"
-            className="grid min-h-52 place-items-center rounded-xl border border-slate-300 bg-white text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-          >
+          <div className="mt-6 grid min-h-52 place-items-center rounded-xl border border-slate-300 bg-white text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
             <Spinner />
           </div>
         ) : error ? (
-          <Card className="p-5">
+          <Card className="mt-6 p-5">
             <EmptyState title="Couldn't load shift requests">{error}</EmptyState>
           </Card>
         ) : (
-          <div className="space-y-6">
-            {/* Distributed Schedules Section */}
+          <div className="mt-6 space-y-6">
             <Card className="p-5">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-white/10">
-                <div>
-                  <h2 className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">
-                    Distributed Schedules
-                  </h2>
-                  <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                    Actual distributed classes by weekday, ordered from earliest to latest.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  {suggestionAttemptPolicy && (
-                    <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-white/5">
-                      <span className="font-body text-xs font-medium text-slate-600 dark:text-slate-300">
-                        Shift Request Limit:
-                      </span>
-                      <Badge
-                        tone={
-                          suggestionAttemptPolicy.attemptsUsed >= suggestionAttemptPolicy.attemptLimit
-                            ? "red"
-                            : "navy"
-                        }
-                      >
-                        {suggestionAttemptPolicy.attemptsUsed} / {suggestionAttemptPolicy.attemptLimit}
-                      </Badge>
-                    </div>
-                  )}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    block={false}
-                    disabled={openRequests.length === 0}
-                    onClick={openShiftRequest}
-                  >
-                    Request Shift
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    block={false}
-                    disabled={
-                      acceptAllTerm == null ||
-                      acceptAllTermRequests.length === 0 ||
-                      everyScheduleAccepted ||
-                      !acceptAllCanSubmit
-                    }
-                    onClick={() => setAcceptAllOpen(true)}
-                  >
-                    Accept All
-                  </Button>
-                </div>
+              <div className="border-b border-slate-200 pb-4 dark:border-white/10">
+                <h2 className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">
+                  Distributed Schedules
+                </h2>
+                <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                  Your assigned classes by weekday, ordered from earliest to latest.
+                </p>
               </div>
 
-              {distributed.length === 0 ? (
-                <EmptyState title="No distributed schedules">
-                  Classes will appear here after your Dean distributes a schedule to you.
-                </EmptyState>
-              ) : (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                  {distributedByDay.map(({ day, schedules }) => (
-                    <div
-                      key={day}
-                      className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-white/10 dark:bg-white/2"
-                    >
-                      <div className="mb-2.5 flex items-center justify-between border-b border-slate-200 pb-2 dark:border-white/10">
-                        <span className="font-display text-sm tracking-wide text-navy-800 dark:text-mist-100">
-                          {day}
-                        </span>
-                        <span className="font-body text-[11px] text-slate-400 dark:text-slate-500">
-                          {schedules.length} {schedules.length === 1 ? "class" : "classes"}
-                        </span>
-                      </div>
-
-                      {schedules.length === 0 ? (
-                        <p className="py-4 text-center font-body text-xs text-slate-400 dark:text-slate-500">
-                          No classes
-                        </p>
-                      ) : (
-                        <div className="space-y-2">
-                          {schedules.map((meeting) => (
-                            <div
-                              key={meeting.scheduleId}
-                              className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-xs dark:border-white/10 dark:bg-white/5"
-                            >
-                              <div className="font-body text-xs font-semibold text-navy-800 dark:text-mist-100">
-                                {meeting.subjectCode || "Subject"}
-                              </div>
-                              {meeting.subjectTitle && (
-                                <div className="line-clamp-1 font-body text-[11px] text-slate-500 dark:text-slate-400">
-                                  {meeting.subjectTitle}
-                                </div>
-                              )}
-                              <div className="mt-1 font-body text-xs font-medium text-navy-600 dark:text-gold-300">
-                                {formatTime12h(meeting.startTime)} – {formatTime12h(meeting.endTime)}
-                              </div>
-                              <div className="font-body text-[11px] text-slate-500 dark:text-slate-400">
-                                {meeting.roomName ?? "No room"}
-                              </div>
-                              <div className="mt-2 flex flex-wrap items-center gap-1">
-                                <Badge tone="sky">{meeting.setLabel}</Badge>
-                                <ModeBadge mode={meeting.classMode} />
-                                {meeting.sessionMode && (
-                                  <Badge tone={meeting.sessionMode === "LAB" ? "navy" : "slate"}>
-                                    {meeting.sessionMode}
-                                  </Badge>
-                                )}
-                                {meeting.reviewState && (
-                                  <Badge tone={DISTRIBUTED_STATUS_STYLES[meeting.reviewState]?.tone ?? "slate"}>
-                                    {meeting.reviewStateLabel ?? meeting.reviewState}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <ScheduleViewer
+                schedules={distributedSchedules}
+                isLoading={false}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                emptyTitle="No distributed schedules"
+                emptyMessage="Your Dean has not distributed a schedule for this semester yet."
+                showSet
+                hideInstructor
+              />
             </Card>
 
-            <ConfirmDialog
-              open={acceptAllOpen}
-              onClose={() => setAcceptAllOpen(false)}
-              title="Accept all distributed schedules?"
-              confirmLabel="Accept All"
-              loadingLabel="Accepting all..."
-              confirmVariant="danger"
-              onConfirm={acceptAllSchedules}
+            <Modal
+              open={editingReleaseId != null}
+              onClose={closeEditor}
+              title="Request Schedule Change"
+              xl
             >
-              {acceptAllCanSubmit ? (
-                <div className="space-y-2 font-body text-sm text-slate-600 dark:text-slate-300">
-                  <p>
-                    You are accepting every distributed schedule for this semester exactly as shown.
-                  </p>
-                  <p className="font-semibold text-red-700 dark:text-red-300">
-                    This action is irreversible. These schedules will be your final teaching
-                    schedule until the end of the semester.
-                  </p>
+              {editingLoading ? (
+                <div className="grid min-h-40 place-items-center py-8">
+                  <Spinner />
                 </div>
-              ) : (
-                <p className="font-body text-sm text-slate-600 dark:text-slate-300">
-                  Accept All is unavailable while one or more of your schedule suggestions are
-                  still awaiting a decision.
-                </p>
-              )}
-            </ConfirmDialog>
+              ) : editingError ? (
+                <EmptyState title="Couldn't load schedule detail">{editingError}</EmptyState>
+              ) : editingDetail ? (
+                <InstructorProposalEditor
+                  detail={editingDetail}
+                  setLabel={requestSetLabel(editingDetail)}
+                  rooms={rooms}
+                  allocations={allocations}
+                  distributed={editingDistributed}
+                  onCancel={closeEditor}
+                  onSubmitted={() => {
+                    closeEditor();
+                    void load();
+                  }}
+                />
+              ) : null}
+            </Modal>
 
-            {/* Request History Section */}
             <Card className="p-5">
               <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-white/10">
                 <div>
@@ -708,6 +704,33 @@ export default function ShiftRequestsRoute() {
                 </div>
               )}
             </Card>
+
+            <ConfirmDialog
+              open={acceptAllOpen}
+              onClose={() => setAcceptAllOpen(false)}
+              title="Accept all distributed schedules?"
+              confirmLabel="Accept All"
+              loadingLabel="Accepting all..."
+              confirmVariant="danger"
+              onConfirm={acceptAllSchedules}
+            >
+              {acceptAllCanSubmit ? (
+                <div className="space-y-2 font-body text-sm text-slate-600 dark:text-slate-300">
+                  <p>
+                    You are accepting every distributed schedule for this semester exactly as shown.
+                  </p>
+                  <p className="font-semibold text-red-700 dark:text-red-300">
+                    This action is irreversible. These schedules will be your final teaching
+                    schedule until the end of the semester.
+                  </p>
+                </div>
+              ) : (
+                <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+                  Accept All is unavailable while one or more of your schedule suggestions are
+                  still awaiting a decision.
+                </p>
+              )}
+            </ConfirmDialog>
           </div>
         )}
       </div>

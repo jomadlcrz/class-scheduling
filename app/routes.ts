@@ -37,7 +37,6 @@ export default [
     route("major-schedules", "routes/app/major-schedules.tsx"),
     route("schedule-responses", "routes/app/schedule-responses.tsx"),
     route("shift-requests", "routes/app/shift-requests.tsx"),
-    route("shift-requests/:releaseId", "routes/app/shift-request-detail.tsx"),
     route("teaching-terms/:id", "routes/app/teaching-term.tsx"),
     route("dean/department-schedules", "routes/app/dean-department-schedules.tsx"),
     route("dean/department-schedules/:id", "routes/app/dean-department-schedule-detail.tsx"),
