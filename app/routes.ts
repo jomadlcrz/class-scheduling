@@ -16,6 +16,7 @@ export default [
   // Authenticated area — AppShell provides theme, auth guard, and chrome.
   layout("layouts/app-shell.tsx", [
     route("dashboard", "routes/app/dashboard.tsx"),
+    route("notifications", "routes/app/notifications.tsx"),
     route("administrators", "routes/app/administrators.tsx"),
     route("administrators/new", "routes/app/administrators-new.tsx"),
     route("permissions", "routes/app/permissions.tsx"),

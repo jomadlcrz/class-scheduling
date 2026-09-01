@@ -16,7 +16,7 @@ const itemClassName =
   "flex w-full cursor-pointer items-center justify-between gap-3 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100";
 
 /** Renders one notification's title/detail from its type + payload. */
-function notificationText(notification: NotificationItem): { title: string; detail: string } {
+export function notificationText(notification: NotificationItem): { title: string; detail: string } {
   const p = notification.payload ?? {};
   const label = programSetLabel(p.program_abbrev ?? null, p.year_level ?? null, p.set_code ?? null);
   const period = [p.semester, p.school_year].filter(Boolean).join(", ");
@@ -184,7 +184,7 @@ export function NotificationBell() {
 
   const refresh = useCallback(async () => {
     try {
-      const inbox = await notificationService.list();
+      const inbox = await notificationService.list({ per_page: 5 });
       setNotifications(inbox.notifications);
       setUnreadCount(inbox.unreadCount);
     } catch {
@@ -233,6 +233,7 @@ export function NotificationBell() {
       onOpenChange={(open) => {
         if (open) refresh();
       }}
+      scrollable={false}
       trigger={
         <span className="relative flex size-7 items-center justify-center">
           <BellIcon />
@@ -307,6 +308,17 @@ export function NotificationBell() {
                 </button>
               );
             })
+          )}
+          {notifications.length > 0 && (
+            <div className="border-t border-slate-100 px-2.5 py-2 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => { close(); navigate("/notifications"); }}
+                className="w-full cursor-pointer rounded-md px-2.5 py-1.5 text-center font-body text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-mist-100"
+              >
+                View all notifications
+              </button>
+            </div>
           )}
         </>
       )}
