@@ -314,7 +314,7 @@ function mapProgramAccess(p: ProgramAccessResponse): LabProgramAccessRow {
 }
 
 /**
- * GET /schedule/laboratory-analysis?sy_id=&semester_number=[&program_id=] — read-only
+ * GET /scheduling/laboratory-analysis?sy_id=&semester_number=[&program_id=] — read-only
  * capacity board for every laboratory room: the configured slot grid, who
  * holds each window, free windows, usage split by program, and the same
  * cut per program (`programAccess`) answering "can this program still get
@@ -324,7 +324,7 @@ async function analyze(params: { syId: number; semesterNumber: number; programId
   const query = termScopeQuery(params.syId, params.semesterNumber, {
     program_id: params.programId,
   });
-  const data = await apiGet<LabAnalysisResponse>(`/schedule/laboratory-analysis${query}`);
+  const data = await apiGet<LabAnalysisResponse>(`/scheduling/laboratory-analysis${query}`);
 
   return {
     term: {

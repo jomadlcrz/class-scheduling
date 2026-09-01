@@ -151,13 +151,13 @@ async function listProgramApprovals(
   );
 }
 
-/** POST /deans/program-approvals/{syId}/{semesterNumber}/send-to-instructors — dean passes all waiting programs to instructors in one act. */
+/** POST /deans/program-approvals/{syId}/{semesterNumber}/instructor-distributions — dean passes all waiting programs to instructors in one act. */
 async function sendAllToInstructors(
   syId: number,
   semesterNumber: number,
 ): Promise<import("~/types/schedule-release").DeanSendAllToInstructorsResult> {
   const data = await apiPost<import("~/types/schedule-release").DeanSendAllToInstructorsResult & { message?: string }>(
-    `/deans/program-approvals/${syId}/${semesterNumber}/send-to-instructors`,
+    `/deans/program-approvals/${syId}/${semesterNumber}/instructor-distributions`,
   );
   return {
     ...data,
@@ -168,14 +168,14 @@ async function sendAllToInstructors(
   };
 }
 
-/** POST /deans/program-approvals/{syId}/{semesterNumber}/{programId}/send-to-instructors — dean sends entire program to instructors. */
+/** POST /deans/program-approvals/{syId}/{semesterNumber}/{programId}/instructor-distributions — dean sends entire program to instructors. */
 async function sendProgramToInstructors(
   syId: number,
   semesterNumber: number,
   programId: number,
 ): Promise<import("~/types/schedule-release").DeanProgramApprovalResult> {
   const data = await apiPost<import("~/types/schedule-release").DeanProgramApprovalResult & { message?: string }>(
-    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/send-to-instructors`,
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/instructor-distributions`,
   );
   return {
     ...data,
@@ -186,7 +186,7 @@ async function sendProgramToInstructors(
   };
 }
 
-/** POST /deans/program-approvals/{syId}/{semesterNumber}/{programId}/reject — dean returns entire program with reason. */
+/** POST /deans/program-approvals/{syId}/{semesterNumber}/{programId}/rejections — dean returns entire program with reason. */
 async function rejectProgram(
   syId: number,
   semesterNumber: number,
@@ -194,7 +194,7 @@ async function rejectProgram(
   reason: string,
 ): Promise<import("~/types/schedule-release").DeanProgramRejectResult & { message: string }> {
   const data = await apiPost<import("~/types/schedule-release").DeanProgramRejectResult & { message?: string }>(
-    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/reject`,
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/rejections`,
     { reason },
   );
   return {
@@ -205,7 +205,7 @@ async function rejectProgram(
   };
 }
 
-/** POST .../return-for-revision — sends final-approval schedules back to Registrar revision. */
+/** POST .../revision-requests — sends final-approval schedules back to Registrar revision. */
 async function returnProgramForRevision(
   syId: number,
   semesterNumber: number,
@@ -213,7 +213,7 @@ async function returnProgramForRevision(
   reason: string,
 ): Promise<import("~/types/schedule-release").DeanProgramRejectResult & { message: string }> {
   const data = await apiPost<{ message?: string; programAbbrev?: string; returnedSetIds?: number[] }>(
-    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/return-for-revision`,
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/revision-requests`,
     { reason },
   );
   return {
@@ -231,7 +231,7 @@ async function finalApproveProgram(
   confirm: string,
 ): Promise<{ message: string; approvedSetIds: number[]; blocked: unknown[]; [key: string]: unknown }> {
   const data = await apiPost<{ message?: string; approvedSetIds?: number[]; blocked?: unknown[]; [key: string]: unknown }>(
-    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/final-approve`,
+    `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/final-approvals`,
     { confirm },
   );
   return {
@@ -259,7 +259,7 @@ async function getApproval(id: number): Promise<ScheduleRelease> {
  */
 async function approveRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/final-approve`,
+    `/deans/schedule-approvals/${id}/final-approvals`,
   );
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
@@ -270,7 +270,7 @@ async function approveRelease(id: number): Promise<{ message: string; release: S
  */
 async function rejectRelease(id: number, reason: string): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/reject`,
+    `/deans/schedule-approvals/${id}/rejections`,
     { reason },
   );
   return { message: apiMessage(data), release: mapRelease(data.release) };
@@ -282,7 +282,7 @@ async function rejectRelease(id: number, reason: string): Promise<{ message: str
  */
 async function sendToInstructors(id: number): Promise<{ message: string; release: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/send-to-instructors`,
+    `/deans/schedule-approvals/${id}/instructor-distributions`,
   );
   return { message: apiMessage(data), release: mapRelease(data.release) };
 }
@@ -294,26 +294,26 @@ async function getReviewProgress(id: number): Promise<import("~/types/schedule-r
   );
 }
 
-/** POST /deans/schedule-approvals/{id}/forward-suggestions — forwards instructor suggestions to registrar. */
+/** POST /deans/schedule-approvals/{id}/suggestion-forwards — forwards instructor suggestions to registrar. */
 async function forwardSuggestions(id: number): Promise<{ message: string; forwardedCount?: number }> {
   const data = await apiPost<{ message?: string; forwardedCount?: number }>(
-    `/deans/schedule-approvals/${id}/forward-suggestions`,
+    `/deans/schedule-approvals/${id}/suggestion-forwards`,
   );
   return { message: apiMessage(data), forwardedCount: data.forwardedCount };
 }
 
-/** POST /deans/schedule-approvals/{id}/progress-to-final-approval — moves to final approval when all accepted. */
+/** POST /deans/schedule-approvals/{id}/final-review-transitions — moves to final approval when all accepted. */
 async function progressToFinalApproval(id: number): Promise<{ message: string; release?: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release?: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/progress-to-final-approval`,
+    `/deans/schedule-approvals/${id}/final-review-transitions`,
   );
   return { message: apiMessage(data), release: data.release ? mapRelease(data.release) : undefined };
 }
 
-/** POST /deans/schedule-approvals/{id}/final-approve — final dean signoff. */
+/** POST /deans/schedule-approvals/{id}/final-approvals — final dean signoff. */
 async function finalApprove(id: number): Promise<{ message: string; release?: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release?: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/final-approve`,
+    `/deans/schedule-approvals/${id}/final-approvals`,
   );
   return { message: apiMessage(data), release: data.release ? mapRelease(data.release) : undefined };
 }
@@ -325,15 +325,15 @@ async function getRevisionWorkspace(id: number): Promise<import("~/types/schedul
   );
 }
 
-/** POST /registrar/schedule-releases/{id}/resubmit — registrar resubmits after resolving suggestions. */
+/** POST /registrar/schedule-releases/{id}/resubmissions — registrar resubmits after resolving suggestions. */
 async function resubmitRelease(id: number): Promise<{ message: string; release?: ScheduleRelease }> {
   const data = await apiPost<{ message?: string; release?: ApiScheduleRelease }>(
-    `/registrar/schedule-releases/${id}/resubmit`,
+    `/registrar/schedule-releases/${id}/resubmissions`,
   );
   return { message: apiMessage(data), release: data.release ? mapRelease(data.release) : undefined };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/publish — publish program's schedule independently. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/publications — publish program's schedule independently. */
 async function publishProgramSchedule(
   syId: number,
   semesterNumber: number,
@@ -346,7 +346,7 @@ async function publishProgramSchedule(
     alreadyPublished: number;
     setIds: number[];
     termFinalized: boolean;
-  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`);
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publications`);
   return {
     message: apiMessage(data),
     programAbbrev: data.programAbbrev,

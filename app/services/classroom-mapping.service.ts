@@ -47,7 +47,7 @@ async function list(filters?: MappingFilters): Promise<MappingResult> {
 
   const query = params.toString();
   const rooms = await apiGet<MappingRoom[]>(
-    `/room_mapping/get-room-mapped${query ? `?${query}` : ""}`,
+    `/room-mappings${query ? `?${query}` : ""}`,
   );
 
   const classrooms: Classroom[] = rooms.map((room) => {

@@ -1,4 +1,4 @@
-import { apiMessage, apiPatch, apiPost, clearApiCache } from "~/lib/api";
+import { apiDelete, apiMessage, apiPatch, apiPost, clearApiCache } from "~/lib/api";
 import {
   clearPending,
   clearSession,
@@ -40,7 +40,7 @@ export type LoginResult = AuthSession | { requiresPasswordChange: true };
 async function login(credentials: LoginCredentials): Promise<LoginResult> {
   const body: Record<string, unknown> = { email: credentials.email, password: credentials.password };
   if (credentials.remember) body.rememberMe = true;
-  const data = await apiPost<LoginResponse>("/login", body);
+  const data = await apiPost<LoginResponse>("/auth/sessions", body);
 
   // First login with a temp password: no token is issued — the user must
   // set a new password before a session exists (see changePassword).
@@ -70,7 +70,7 @@ function logout() {
   // when the request is built, so fire it before clearing.
   const session = loadSession();
   if (session) {
-    void apiPost("/user/logout", { refreshToken: session.refreshToken }).catch(() => {});
+    void apiDelete("/auth/sessions/current", { refreshToken: session.refreshToken }).catch(() => {});
   }
   clearSession();
   clearPending();
@@ -83,18 +83,18 @@ function getStoredSession(): AuthSession | null {
 }
 
 /**
- * POST /forgot-password — 200 with the same generic message (anti-enumeration),
+ * POST /password-reset-requests — 200 with the same generic message (anti-enumeration),
  * or 429 when the backend's per-email/per-IP rate limit is exceeded (message
  * surfaced verbatim like any other ApiError).
  */
 async function requestPasswordReset(email: string): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/forgot-password", { email });
+  const data = await apiPost<{ message?: string }>("/password-reset-requests", { email });
   return apiMessage(data);
 }
 
-/** POST /reset-password — consumes the one-time link; 401 for any token problem. */
+/** POST /password-resets — consumes the one-time link; 401 for any token problem. */
 async function resetPassword(token: string, newPassword: string): Promise<void> {
-  await apiPost("/reset-password", { token, newPassword });
+  await apiPost("/password-resets", { token, newPassword });
 }
 
 async function changePassword(newPassword: string, _currentPassword?: string): Promise<void> {
@@ -108,7 +108,7 @@ async function changePassword(newPassword: string, _currentPassword?: string): P
   // The backend validates the password policy and issues a fresh access+refresh pair;
   // it does not check the current password, so it is not sent.
   const data = await apiPatch<{ access_token: string; refresh_token: string }>(
-    `/user/password/${userId}`,
+    `/users/${userId}/password`,
     { newPassword },
   );
 

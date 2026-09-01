@@ -15,7 +15,7 @@ import { clearSession, loadSession, updateSessionTokens } from "~/lib/session";
  */
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-const REFRESH_ENDPOINT = "/refresh";
+const REFRESH_ENDPOINT = "/auth/sessions/refresh";
 
 // ── Client response cache ──────────────────────────────────────────────────
 // Mirrors the backend's Redis GET cache (app/utils/cache.py, 60s TTL): GET

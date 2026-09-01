@@ -45,7 +45,7 @@ export const instructorReviewService = {
 
   acceptInstructorReview(releaseId: number): Promise<InstructorReviewActionResult> {
     return apiPost<InstructorReviewActionResult>(
-      `/instructors/schedule-reviews/${releaseId}/accept`,
+      `/instructors/schedule-reviews/${releaseId}/acceptances`,
     );
   },
 
@@ -54,7 +54,7 @@ export const instructorReviewService = {
     semesterNumber: number,
   ): Promise<InstructorReviewActionResult> {
     return apiPost<InstructorReviewActionResult>(
-      "/instructors/schedule-reviews/accept-all",
+      "/instructors/schedule-reviews/bulk-acceptances",
       { syId, semesterNumber },
     );
   },
@@ -64,7 +64,7 @@ export const instructorReviewService = {
     payload: InstructorSuggestPayload,
   ): Promise<InstructorReviewActionResult> {
     return apiPost<InstructorReviewActionResult>(
-      `/instructors/schedule-reviews/${releaseId}/suggest`,
+      `/instructors/schedule-reviews/${releaseId}/suggestions`,
       payload,
     );
   },
@@ -75,7 +75,7 @@ export const instructorReviewService = {
 
   deanAccept(responseId: number, remarks?: string): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
-      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      `/deans/instructor-schedule-responses/${responseId}/decisions`,
       { approve: true, note: remarks || undefined },
     );
   },
@@ -85,14 +85,14 @@ export const instructorReviewService = {
     remarks?: string,
   ): Promise<{ message: string; warnings?: string[] }> {
     return apiPost<{ message: string; warnings?: string[] }>(
-      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      `/deans/instructor-schedule-responses/${responseId}/decisions`,
       { approve: true, note: remarks || undefined },
     );
   },
 
   deanReject(responseId: number, remarks: string): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
-      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      `/deans/instructor-schedule-responses/${responseId}/decisions`,
       { approve: false, note: remarks },
     );
   },
@@ -166,7 +166,7 @@ export const instructorReviewService = {
     payload: { action: "accept" | "reject"; remarks: string; scheduleOverrides?: unknown },
   ): Promise<{ message: string }> {
     return apiPost<{ message: string }>(
-      `/deans/instructor-schedule-responses/${responseId}/decision`,
+      `/deans/instructor-schedule-responses/${responseId}/decisions`,
       { approve: payload.action === "accept", note: payload.remarks },
     );
   },

@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "~/lib/api";
+import { apiGet, apiPatch } from "~/lib/api";
 import type { NotificationInbox, NotificationItem, NotificationPayload, NotificationType } from "~/types/notification";
 
 /** Notification inbox — one self-scoped read path for every role's portal. */
@@ -63,14 +63,14 @@ async function list(options?: ListNotificationsOptions): Promise<NotificationInb
   };
 }
 
-/** POST /notifications/:id/read — scoped to the caller. */
+/** PATCH /notifications/:id — scoped to the caller. */
 async function markRead(id: number): Promise<void> {
-  await apiPost<{ message?: string }>(`/notifications/${id}/read`);
+  await apiPatch<{ message?: string }>(`/notifications/${id}`);
 }
 
-/** POST /notifications/read-all — marks the caller's whole inbox read. */
+/** PATCH /notifications — marks the caller's whole inbox read. */
 async function markAllRead(): Promise<void> {
-  await apiPost<{ message?: string }>("/notifications/read-all");
+  await apiPatch<{ message?: string }>("/notifications");
 }
 
 export const notificationService = { list, markRead, markAllRead };

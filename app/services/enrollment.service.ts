@@ -377,7 +377,7 @@ async function checkPrerequisites(input: {
       descriptive_title: string | null;
       missing: { subject_id: number; subject_code: string | null; descriptive_title: string | null }[];
     }[];
-  }>("/enrollments/prerequisite-check", {
+  }>("/enrollments/prerequisite-evaluations", {
     studentProfileId: input.studentProfileId,
     syId: input.syId,
     semesterNumber: input.semesterNumber,

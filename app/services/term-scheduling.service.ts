@@ -53,7 +53,7 @@ export const termSchedulingService = {
     payload: { scheduledClosingAt?: string | null; confirmed?: boolean } = {},
   ): Promise<{ message: string; window: SchedulingWindowState }> {
     return apiPost<{ message: string; window: SchedulingWindowState }>(
-      `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/open`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/openings`,
       payload,
     );
   },
@@ -64,7 +64,7 @@ export const termSchedulingService = {
     window: SchedulingWindowName,
   ): Promise<{ message: string; window: SchedulingWindowState }> {
     return apiPost<{ message: string; window: SchedulingWindowState }>(
-      `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/close`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/closures`,
       {},
     );
   },
@@ -111,7 +111,7 @@ export const termSchedulingService = {
     departmentId: number,
   ): Promise<TermDepartmentSendResult> {
     return apiPost<TermDepartmentSendResult>(
-      `/registrar/scheduling-terms/${syId}/${semesterNumber}/departments/${departmentId}/send`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/departments/${departmentId}/distributions`,
       {},
     );
   },
@@ -122,7 +122,7 @@ export const termSchedulingService = {
     programId: number,
   ): Promise<TermProgramSendResult> {
     return apiPost<TermProgramSendResult>(
-      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/send`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/distributions`,
       {},
     );
   },
@@ -133,7 +133,7 @@ export const termSchedulingService = {
     programId: number,
   ): Promise<TermProgramPublishResult> {
     return apiPost<TermProgramPublishResult>(
-      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publications`,
       {},
     );
   },
@@ -144,7 +144,7 @@ export const termSchedulingService = {
     programId: number,
   ): Promise<TermProgramWithdrawResult> {
     return apiPost<TermProgramWithdrawResult>(
-      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/withdraw`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/withdrawals`,
       {},
     );
   },
@@ -156,7 +156,7 @@ export const termSchedulingService = {
     payload: Record<string, unknown> = {},
   ): Promise<TermAdvanceResult> {
     return apiPost<TermAdvanceResult>(
-      `/registrar/scheduling-terms/${syId}/${semesterNumber}/advance`,
+      `/registrar/scheduling-terms/${syId}/${semesterNumber}/advancements`,
       { action },
     );
   },

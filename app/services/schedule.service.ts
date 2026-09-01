@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { getDayMapping } from "~/lib/day-utils";
 import { appendTermScopeParams, termScopeQuery } from "~/lib/term-scope";
 import { semesterService } from "~/services/semester.service";
@@ -26,30 +26,27 @@ type ViewScheduleResponse = {
   sched_id: number;
   school_year: string;
   semester: string;
-  subject_type: string;
   subject_code: string;
   desc_title: string;
+  subject_type: string | null;
   units: number;
-  set_name: string;
-  program_name?: string | null;
-  day_of_week: string;
-  /** Current API field; `mode` is kept for older deployed backends. */
-  class_mode?: string;
-  mode?: string;
-  session_mode?: string;
-  class_time: string;
-  class_duration: string;
+  set_name: string | null;
+  program_name: string | null;
   dept_abbrev: string | null;
   instructor_id: number;
   instructor_name: string;
   room_id: number | null;
   room_name: string | null;
-  /** Only present when the viewer is a STUDENT (StudentAcademic.enrolled_status). */
-  academic_status?: string;
+  class_mode: string | null;
+  mode?: string | null;
+  session_mode?: "LEC" | "LAB";
+  day_of_week: string;
+  class_time: string;
+  academic_status?: "regular" | "irregular";
 };
 
 /**
- * GET /schedule/view — role-scoped list of saved schedules. The backend
+ * GET /schedules — role-scoped list of saved schedules. The backend
  * already filters rows by the caller's JWT: DEAN → their department,
  * INSTRUCTOR → schedules where they're the assigned faculty, STUDENT →
  * schedules for the set they're enrolled in, REGISTRAR_ADMIN → everything.
@@ -59,7 +56,7 @@ type ViewScheduleResponse = {
 async function view(): Promise<Schedule[]> {
   let data: { schedules: ViewScheduleResponse[] };
   try {
-    data = await apiGet<{ schedules: ViewScheduleResponse[] }>("/schedule/view");
+    data = await apiGet<{ schedules: ViewScheduleResponse[] }>("/schedules");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -81,7 +78,7 @@ async function view(): Promise<Schedule[]> {
       subjectId: "",
       subjectCode: r.subject_code,
       subjectTitle: r.desc_title,
-      subjectType: r.subject_type,
+      subjectType: r.subject_type ?? "",
       units: r.units,
       setId: r.set_name ?? "",
       setCode: r.set_name ?? "",
@@ -113,11 +110,11 @@ type AttestationResponse = {
   approvedBy: { name: string; position: string; departmentAbbrev?: string };
 };
 
-/** GET /schedule/view — returns only the attestations array (student/instructor roles). */
+/** GET /schedules — returns only the attestations array (student/instructor roles). */
 async function viewAttestations(): Promise<Attestation[]> {
   let data: { attestations?: AttestationResponse[] };
   try {
-    data = await apiGet<{ attestations?: AttestationResponse[] }>("/schedule/view");
+    data = await apiGet<{ attestations?: AttestationResponse[] }>("/schedules");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -196,7 +193,7 @@ async function listScheduleSubjects(params: {
   if (params.programId != null) query.set("program_id", String(params.programId));
   if (params.yearLevel != null) query.set("year_level", String(params.yearLevel));
   if (params.includeScheduledSets) query.set("include_scheduled_sets", "true");
-  const data = await apiGet<ScheduleSubjectsResponse | []>(`/schedule/subjects?${query}`);
+  const data = await apiGet<ScheduleSubjectsResponse | []>(`/scheduling/options/subjects?${query}`);
   if (Array.isArray(data)) return [];
   return data.subjects.map((s) => ({
     id: s.subject_id,
@@ -235,11 +232,11 @@ type ScheduleRoomsResponse = {
   room_capacity: number;
 }[];
 
-/** GET /schedule/rooms — schedulable rooms (office rooms excluded). 404 → empty. */
+/** GET /scheduling/options/rooms — schedulable rooms (office rooms excluded). 404 → empty. */
 async function listScheduleRooms(): Promise<ScheduleRoomOption[]> {
   let data: ScheduleRoomsResponse;
   try {
-    data = await apiGet<ScheduleRoomsResponse>("/schedule/rooms");
+    data = await apiGet<ScheduleRoomsResponse>("/scheduling/options/rooms");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -473,12 +470,12 @@ async function autoGenerate(input: {
 }): Promise<AutoGenerateResult> {
   const endpoint =
     input.strategy === "resolve"
-      ? "/regular_schedule/generate-schedule/resolve-conflicts"
+      ? "/schedule-generation-proposals/conflict-resolutions"
       : input.strategy === "greedy"
-        ? "/regular_schedule/generate-schedule/greedy"
+        ? "/schedule-generation-proposals/greedy"
         : input.withRebalance
-          ? "/regular_schedule/generate-schedule/with-rebalance"
-          : "/regular_schedule/generate-schedule";
+          ? "/schedule-generation-proposals/rebalanced"
+          : "/schedule-generation-proposals";
   const data = await apiPost<AutoGenerateResponse>(endpoint, {
     schoolYear: input.schoolYear,
     semesterNumber: input.semester,
@@ -630,7 +627,7 @@ async function createRegular(input: {
   const [dayMap] = await Promise.all([getDayMapping()]);
   const codeToName = dayMap?.codeToName ?? ({} as Record<Day, string>);
 
-  return apiPost<{ message?: string; warnings?: string[]; rescheduled?: string[] }>("/regular_schedule/create-regular-class-schedules", {
+  return apiPost<{ message?: string; warnings?: string[]; rescheduled?: string[] }>("/regular-schedules", {
     schoolYear: input.schoolYear,
     semesterNumber: input.semester,
     programId: input.programId,
@@ -660,30 +657,30 @@ type CreationContextResponse = {
 };
 
 /**
- * GET /regular_schedule/create-regular-class-schedules — year levels & semesters
+ * GET /regular-schedules/options — year levels & semesters
  * scoped to schedule creation. Only the year levels are safe to source from here:
  * the semesters this returns are just the 1st/2nd Semester label vocabulary, not
  * real Semester rows; term-scoped APIs use `semesterNumber`.
  */
 async function getCreationContext(): Promise<{ yearLevels: ScheduleYearLevelOption[] }> {
   const data = await apiGet<CreationContextResponse>(
-    "/regular_schedule/create-regular-class-schedules",
+    "/regular-schedules/options",
   );
   return {
     yearLevels: data.year_levels.map((y) => ({ id: y.year_level_int, name: y.year_level_name })),
   };
 }
 
-/** PUT /regular_schedule/<id>/reschedule — moves a saved session to a new day/time/room. 409 on conflict. */
+/** PATCH /regular-schedules/<id>/placement — moves a saved session to a new day/time/room. 409 on conflict. */
 async function updateRegularSlot(
   id: number,
   input: { dayOfWeek: string; startTime: string; endTime: string; roomId?: number | null },
 ): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}/reschedule`, input);
+  const data = await apiPatch<{ message?: string }>(`/regular-schedules/${id}/placement`, input);
   return apiMessage(data);
 }
 
-/** PUT /regular_schedule/<id> — reassign room/instructor/subject/mode at the same slot (or move if day/time given). */
+/** PUT /regular-schedules/<id> — reassign room/instructor/subject/mode at the same slot (or move if day/time given). */
 async function updateRegular(
   id: number,
   input: {
@@ -704,13 +701,13 @@ async function updateRegular(
   if (input.mode != null) payload.classMode = input.mode;
   if (input.instructorId != null) payload.instructorId = input.instructorId;
   if (input.roomId != null) payload.roomId = input.roomId;
-  const data = await apiPut<{ message?: string }>(`/regular_schedule/${id}`, payload);
+  const data = await apiPut<{ message?: string }>(`/regular-schedules/${id}`, payload);
   return apiMessage(data);
 }
 
-/** GET /regular_schedule/<id> — one regular session detail. */
+/** GET /regular-schedules/<id> — one regular session detail. */
 async function getRegularSchedule(id: number): Promise<unknown> {
-  return apiGet(`/regular_schedule/${id}`);
+  return apiGet(`/regular-schedules/${id}`);
 }
 
 export type SubjectHourOverride = {
@@ -755,7 +752,7 @@ async function listSubjectHourOverrides(params: {
 }): Promise<SubjectHourOverride[]> {
   const query = appendTermScopeParams(new URLSearchParams(), params.syId, params.semesterNumber);
   if (params.setId != null) query.set("setId", String(params.setId));
-  const data = await apiGet<SubjectHourOverrideResponse[]>(`/schedule/subject-hour-overrides?${query}`);
+  const data = await apiGet<SubjectHourOverrideResponse[]>(`/scheduling/subject-hour-overrides?${query}`);
   return data.map((r) => ({
     id: r.id,
     subjectId: r.subject_id,
@@ -774,7 +771,7 @@ async function listSubjectHourOverrides(params: {
   }));
 }
 
-/** POST /schedule/subject-hour-overrides — create or update a per-subject hour override. */
+/** POST /scheduling/subject-hour-overrides — create or update a per-subject hour override. */
 async function upsertSubjectHourOverride(input: {
   subjectId: number;
   syId: number;
@@ -785,7 +782,7 @@ async function upsertSubjectHourOverride(input: {
   meetings: number;
   note?: string;
 }): Promise<{ id: number; created: boolean }> {
-  const data = await apiPost<{ id: number; created: boolean }>("/schedule/subject-hour-overrides", {
+  const data = await apiPost<{ id: number; created: boolean }>("/scheduling/subject-hour-overrides", {
     subjectId: input.subjectId,
     syId: input.syId,
     semesterNumber: input.semesterNumber,
@@ -798,9 +795,9 @@ async function upsertSubjectHourOverride(input: {
   return data;
 }
 
-/** DELETE /schedule/subject-hour-overrides/<id> — remove an override (reverts to subject type default). */
+/** DELETE /scheduling/subject-hour-overrides/<id> — remove an override (reverts to subject type default). */
 async function deleteSubjectHourOverride(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/schedule/subject-hour-overrides/${id}`);
+  const data = await apiDelete<{ message?: string }>(`/scheduling/subject-hour-overrides/${id}`);
   return apiMessage(data);
 }
 
@@ -831,7 +828,7 @@ async function removeSetSchedules(
       student_id: string | null;
       name: string;
     }[];
-  }>(`/regular_schedule/set/${setId}?${query}`);
+  }>(`/sets/${setId}/regular-schedules?${query}`);
   return {
     message: apiMessage(data),
     irregularStudentsUnseated: (data.irregular_students_unseated ?? []).map((student) => ({
@@ -863,7 +860,7 @@ async function getSetWithSchedules(): Promise<ScheduledSetOption[]> {
       program: string;
       semester_number: number;
     }[];
-  }>("/schedule/get-set-with-schedules");
+  }>("/sets/schedule-status");
   return data.sets.map((row) => ({
     setId: row.set_id,
     setCode: row.set_code,
@@ -902,23 +899,23 @@ async function reconcileInstructorLedgers(
   };
   if (apply) {
     return apiPost<InstructorLedgerReconciliation>(
-      "/regular_schedule/instructor-ledgers/reconcile",
+      "/scheduling/instructor-ledger-reconciliations",
       payload,
     );
   }
   const query = appendTermScopeParams(new URLSearchParams(), params.syId, params.semesterNumber);
   return apiGet<InstructorLedgerReconciliation>(
-    `/regular_schedule/instructor-ledgers/reconcile?${query}`,
+    `/scheduling/instructor-ledger-reconciliations?${query}`,
   );
 }
 
-/** GET /schedule/subject-type-options — string array of subject types. */
+/** GET /scheduling/options/subject-types — string array of subject types. */
 async function getSubjectTypeOptions(): Promise<string[]> {
-  const data = await apiGet<{ subject_types: string }[]>("/schedule/subject-type-options");
+  const data = await apiGet<{ subject_types: string }[]>("/scheduling/options/subject-types");
   return data.map((d) => d.subject_types);
 }
 
-/** GET /schedule/class-mode-policies — list class mode policies for a term. */
+/** GET /scheduling/class-mode-policies — list class mode policies for a term. */
 async function listClassModePolicies(params: {
   syId: number;
   semesterNumber: number;
@@ -928,10 +925,10 @@ async function listClassModePolicies(params: {
     params.syId,
     params.semesterNumber,
   );
-  return apiGet<ClassModePolicy[]>(`/schedule/class-mode-policies?${query}`);
+  return apiGet<ClassModePolicy[]>(`/scheduling/class-mode-policies?${query}`);
 }
 
-/** POST /schedule/class-mode-policies — create or update class mode policy. */
+/** POST /scheduling/class-mode-policies — create or update class mode policy. */
 async function upsertClassModePolicy(input: {
   syId: number;
   semesterNumber: number;
@@ -943,7 +940,7 @@ async function upsertClassModePolicy(input: {
   note?: string | null;
 }): Promise<{ id: number; created: boolean; message: string }> {
   const data = await apiPost<{ id: number; created: boolean; message?: string }>(
-    "/schedule/class-mode-policies",
+    "/scheduling/class-mode-policies",
     {
       syId: input.syId,
       semesterNumber: input.semesterNumber,
@@ -958,32 +955,32 @@ async function upsertClassModePolicy(input: {
   return { id: data.id, created: data.created, message: apiMessage(data) };
 }
 
-/** DELETE /schedule/class-mode-policies/:id — delete class mode policy. */
+/** DELETE /scheduling/class-mode-policies/:id — delete class mode policy. */
 async function deleteClassModePolicy(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/schedule/class-mode-policies/${id}`);
+  const data = await apiDelete<{ message?: string }>(`/scheduling/class-mode-policies/${id}`);
   return apiMessage(data);
 }
 
-/** GET /schedule/subject-type-options — subject type dropdown for weekly hour allocation. */
+/** GET /scheduling/options/subject-types — subject type dropdown for weekly hour allocation. */
 async function listSubjectTypeOptions(): Promise<{ value: string; label: string }[]> {
-  const data = await apiGet<{ subject_types: string }[]>("/schedule/subject-type-options");
+  const data = await apiGet<{ subject_types: string }[]>("/scheduling/options/subject-types");
   return data.map((d) => ({ value: d.subject_types, label: d.subject_types }));
 }
 
-/** GET /schedule/programs — program dropdown for schedule generation. */
+/** GET /scheduling/options/programs — program dropdown for schedule generation. */
 async function listSchedulePrograms(params: { syId?: number; semesterNumber?: number } = {}): Promise<unknown> {
   const query = new URLSearchParams();
   if (params.syId != null) query.set("syId", String(params.syId));
   if (params.semesterNumber != null) query.set("semesterNumber", String(params.semesterNumber));
-  return apiGet(`/schedule/programs${query.size ? `?${query}` : ""}`);
+  return apiGet(`/scheduling/options/programs${query.size ? `?${query}` : ""}`);
 }
 
-/** GET /schedule/audit-log/filters */
+/** GET /schedule-audit-logs/filters */
 async function scheduleAuditLogFilters(): Promise<unknown> {
-  return apiGet("/schedule/audit-log/filters");
+  return apiGet("/schedule-audit-logs/filters");
 }
 
-/** GET /schedule/audit-log */
+/** GET /schedule-audit-logs */
 async function listScheduleAuditLog(params: {
   syId?: number;
   semesterNumber?: number;
@@ -1006,10 +1003,10 @@ async function listScheduleAuditLog(params: {
   if (params.page != null) query.set("page", String(params.page));
   if (params.perPage != null) query.set("per_page", String(params.perPage));
   const qs = query.toString();
-  return apiGet(`/schedule/audit-log${qs ? `?${qs}` : ""}`);
+  return apiGet(`/schedule-audit-logs${qs ? `?${qs}` : ""}`);
 }
 
-/** GET /regular_schedule/set/:setId/finalized-majors — preloads protected Registrar-finalized major meetings. */
+/** GET /sets/:setId/finalized-major-schedules — preloads protected Registrar-finalized major meetings. */
 async function getFinalizedMajorPreload(
   setId: number,
   params: { syId: number; semesterNumber: number; programId?: number },
@@ -1020,12 +1017,12 @@ async function getFinalizedMajorPreload(
   });
   if (params.programId != null) query.set("programId", String(params.programId));
   const data = await apiGet<{ finalized_majors: FinalizedMajorMeeting[] }>(
-    `/regular_schedule/set/${setId}/finalized-majors?${query}`,
+    `/sets/${setId}/finalized-major-schedules?${query}`,
   );
   return data.finalized_majors ?? [];
 }
 
-/** POST /deans/instructor-schedule-responses/:responseId/decision — dean decision on instructor suggestions. */
+/** POST /deans/instructor-schedule-responses/:responseId/decisions — dean decision on instructor suggestions. */
 async function decideInstructorResponse(
   responseId: number,
   approveOrDecision: boolean | "accepted" | "rejected" | "approve" | "reject",
@@ -1035,13 +1032,13 @@ async function decideInstructorResponse(
     typeof approveOrDecision === "boolean"
       ? approveOrDecision
       : approveOrDecision === "accepted" || approveOrDecision === "approve";
-  return apiPost(`/deans/instructor-schedule-responses/${responseId}/decision`, {
+  return apiPost(`/deans/instructor-schedule-responses/${responseId}/decisions`, {
     approve,
     ...(note ? { note } : {}),
   });
 }
 
-/** POST /registrar/instructor-schedule-responses/:responseId/decision — registrar decision on instructor suggestions. */
+/** POST /registrar/instructor-schedule-responses/:responseId/decisions — registrar decision on instructor suggestions. */
 async function decideRegistrarInstructorResponse(
   responseId: number,
   approveOrDecision: boolean | "accepted" | "rejected" | "approve" | "reject",
@@ -1051,7 +1048,7 @@ async function decideRegistrarInstructorResponse(
     typeof approveOrDecision === "boolean"
       ? approveOrDecision
       : approveOrDecision === "accepted" || approveOrDecision === "approve";
-  return apiPost(`/registrar/instructor-schedule-responses/${responseId}/decision`, {
+  return apiPost(`/registrar/instructor-schedule-responses/${responseId}/decisions`, {
     approve,
     ...(note ? { note } : {}),
   });
@@ -1080,21 +1077,21 @@ async function deleteRegistrarMajorSchedule(
   return apiDelete(`/registrar/major-schedules/${scheduleId}`, { reason });
 }
 
-/** POST /registrar/scheduling-terms/:syId/:semesterNumber/programs/:programId/publish — publish program schedule. */
+/** POST /registrar/scheduling-terms/:syId/:semesterNumber/programs/:programId/publications — publish program schedule. */
 async function publishProgramSchedule(
   syId: number,
   semesterNumber: number,
   programId: number,
 ): Promise<{ message?: string; programAbbrev?: string; published?: number; alreadyPublished?: number; setIds?: number[]; termFinalized?: boolean }> {
-  return apiPost(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`);
+  return apiPost(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publications`);
 }
 
-/** PUT /regular_schedule/:regularSchedId/reschedule — atomic reschedule regular class slot. */
+/** PATCH /regular-schedules/:regularSchedId/placement — atomic reschedule regular class slot. */
 async function rescheduleRegularSchedule(
   regularSchedId: number,
   payload: Record<string, unknown>,
 ): Promise<{ message?: string }> {
-  return apiPut(`/regular_schedule/${regularSchedId}/reschedule`, payload);
+  return apiPatch(`/regular-schedules/${regularSchedId}/placement`, payload);
 }
 
 export const scheduleService = {

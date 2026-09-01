@@ -12,9 +12,9 @@ import type {
 
 /** Administrator service (Super Admin / Registrar Admin accounts, super_admin module). */
 
-/** POST /super-admin/create-admin-accounts — emails temp password. Returns the backend message. */
+/** POST /super-admin/admin-accounts — emails temp password. Returns the backend message. */
 async function create(input: CreateAdministratorAccountInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/super-admin/create-admin-accounts", {
+  const data = await apiPost<{ message?: string }>("/super-admin/admin-accounts", {
     departmentId: input.departmentId,
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
@@ -28,7 +28,7 @@ async function create(input: CreateAdministratorAccountInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** GET /super-admin/create-admin-accounts — returns all Super Admin/Registrar Admin profiles. 404 → empty. */
+/** GET /super-admin/admin-accounts — returns all Super Admin/Registrar Admin profiles. 404 → empty. */
 async function list(): Promise<Administrator[]> {
   type AdminResponse = {
     profile_id: number;
@@ -48,7 +48,7 @@ async function list(): Promise<Administrator[]> {
 
   let data: AdminResponse[];
   try {
-    data = await apiGet<AdminResponse[]>("/super-admin/create-admin-accounts");
+    data = await apiGet<AdminResponse[]>("/super-admin/admin-accounts");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;

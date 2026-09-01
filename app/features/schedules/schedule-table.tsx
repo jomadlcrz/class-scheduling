@@ -151,39 +151,41 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                       {sched.setCode}
                     </td>
                   )}
-                  {showActions && !isMajor && (
+                  {showActions && (
                     <td className="px-3 py-2.5">
-                      <div className="flex justify-end gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
-                        {onDuplicate && (
-                          <DuplicateButton
-                            days={availableDays(sched)}
-                            dayLabels={dayLabels}
-                            onPick={(d) => onDuplicate(sched, d)}
-                          />
-                        )}
-                        {onEdit && (
-                          <button
-                            type="button"
-                            onClick={() => onEdit(sched)}
-                            aria-label={`Edit ${sched.subjectCode} ${sched.setCode}`}
-                            title="Edit"
-                            className={actionBtn}
-                          >
-                            <EditIcon />
-                          </button>
-                        )}
-                        {onDelete && (
-                          <button
-                            type="button"
-                            onClick={() => onDelete(sched)}
-                            aria-label={`Delete ${sched.subjectCode} ${sched.setCode}`}
-                            title="Delete"
-                            className={actionBtn}
-                          >
-                            <TrashIcon />
-                          </button>
-                        )}
-                      </div>
+                      {!isMajor && (
+                        <div className="flex justify-end gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
+                          {onDuplicate && (
+                            <DuplicateButton
+                              days={availableDays(sched)}
+                              dayLabels={dayLabels}
+                              onPick={(d) => onDuplicate(sched, d)}
+                            />
+                          )}
+                          {onEdit && (
+                            <button
+                              type="button"
+                              onClick={() => onEdit(sched)}
+                              aria-label={`Edit ${sched.subjectCode} ${sched.setCode}`}
+                              title="Edit"
+                              className={actionBtn}
+                            >
+                              <EditIcon />
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              type="button"
+                              onClick={() => onDelete(sched)}
+                              aria-label={`Delete ${sched.subjectCode} ${sched.setCode}`}
+                              title="Delete"
+                              className={actionBtn}
+                            >
+                              <TrashIcon />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   )}
                 </tr>

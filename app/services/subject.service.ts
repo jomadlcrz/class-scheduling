@@ -95,9 +95,9 @@ export type PaginatedSubjectsResult = {
   totalPages: number;
 };
 
-/** GET /pagination_subjects — flat server-paginated subject catalog. */
+/** GET /subject-directory — flat server-paginated subject catalog. */
 async function listPaginated(page = 1, perPage = 20): Promise<PaginatedSubjectsResult> {
-  const data = await apiGet<PaginationSubjectsResponse>(`/pagination_subjects?page=${page}&per_page=${perPage}`);
+  const data = await apiGet<PaginationSubjectsResponse>(`/subject-directory?page=${page}&per_page=${perPage}`);
   return {
     items: data.data.map((row) => ({
       id: row.id,

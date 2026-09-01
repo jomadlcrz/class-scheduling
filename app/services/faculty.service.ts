@@ -7,9 +7,9 @@ import type { CreateFacultyAccountInput, Faculty, FacultyDetail, UpdateFacultyIn
  * real API (super_admin + registrar modules).
  */
 
-/** POST /super-admin/create-faculty-accounts — emails temp password. Returns the backend message. */
+/** POST /super-admin/faculty-accounts — emails temp password. Returns the backend message. */
 async function create(input: CreateFacultyAccountInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/super-admin/create-faculty-accounts", {
+  const data = await apiPost<{ message?: string }>("/super-admin/faculty-accounts", {
     departmentId: input.departmentId,
     firstName: input.firstName,
     ...(input.midName && { midName: input.midName }),
@@ -23,7 +23,7 @@ async function create(input: CreateFacultyAccountInput): Promise<string> {
   return apiMessage(data);
 }
 
-/** GET /super-admin/create-faculty-accounts — returns all faculty profiles. 404 → empty. */
+/** GET /super-admin/faculty-accounts — returns all faculty profiles. 404 → empty. */
 async function list(): Promise<Faculty[]> {
   type FacultyResponse = {
     faculty_id: number;
@@ -43,7 +43,7 @@ async function list(): Promise<Faculty[]> {
 
   let data: FacultyResponse[];
   try {
-    data = await apiGet<FacultyResponse[]>("/super-admin/create-faculty-accounts");
+    data = await apiGet<FacultyResponse[]>("/super-admin/faculty-accounts");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;

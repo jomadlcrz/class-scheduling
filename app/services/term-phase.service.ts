@@ -122,7 +122,7 @@ async function sendProgram(
     programAbbrev: string;
     sentSetIds: number[];
     termDistributed: boolean;
-  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/send`, {
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/distributions`, {
     note: note || undefined,
   });
   return {
@@ -133,7 +133,7 @@ async function sendProgram(
   };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/withdraw — withdraws program from dean review. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/withdrawals — withdraws program from dean review. */
 async function withdrawProgram(
   syId: number,
   semesterNumber: number,
@@ -143,7 +143,7 @@ async function withdrawProgram(
     message?: string;
     programAbbrev: string;
     withdrawnSetIds: number[];
-  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/withdraw`);
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/withdrawals`);
   return {
     message: apiMessage(data),
     programAbbrev: data.programAbbrev,
@@ -151,7 +151,7 @@ async function withdrawProgram(
   };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/departments/{departmentId}/send — sends entire department to dean. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/departments/{departmentId}/distributions — sends entire department to dean. */
 async function sendDepartment(
   syId: number,
   semesterNumber: number,
@@ -162,7 +162,7 @@ async function sendDepartment(
     departmentAbbrev: string;
     sentSetIds: number[];
     termDistributed: boolean;
-  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/departments/${departmentId}/send`);
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/departments/${departmentId}/distributions`);
   return {
     message: apiMessage(data),
     departmentAbbrev: data.departmentAbbrev,
@@ -197,7 +197,7 @@ async function getSchedulingWindows(
   );
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/open. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/openings. */
 async function openSchedulingWindow(
   syId: number,
   semesterNumber: number,
@@ -206,20 +206,20 @@ async function openSchedulingWindow(
   confirmed = false,
 ): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
   const data = await apiPost<{ message?: string; state: SchedulingWindowsSnapshot }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/open`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/openings`,
     { scheduledClosingAt, confirmed },
   );
   return { ...data, message: apiMessage(data) };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/close. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/windows/{window}/closures. */
 async function closeSchedulingWindow(
   syId: number,
   semesterNumber: number,
   window: SchedulingWindowName,
 ): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
   const data = await apiPost<{ message?: string; state: SchedulingWindowsSnapshot }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/close`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/closures`,
   );
   return { ...data, message: apiMessage(data) };
 }
@@ -233,7 +233,7 @@ async function reopenSchedulingWindow(
   options?: { confirmed?: boolean; discardGenerated?: boolean },
 ): Promise<{ message: string; state: SchedulingWindowsSnapshot }> {
   const data = await apiPost<{ message?: string; state: SchedulingWindowsSnapshot }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/reopen`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/windows/${window}/openings`,
     {
       closingAt,
       confirmed: options?.confirmed ?? false,
@@ -321,14 +321,14 @@ async function startPhase(
   return { ...data, message: apiMessage(data) };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/advance — advance term phase. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/advancements — advance term phase. */
 async function advancePhase(
   syId: number,
   semesterNumber: number,
   action: TermAdvanceAction,
 ): Promise<{ message: string; term: TermPhaseResponse; [key: string]: unknown }> {
   const data = await apiPost<{ message?: string; term: TermPhaseResponse; [key: string]: unknown }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/advance`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/advancements`,
     { action },
   );
   return {
@@ -337,13 +337,13 @@ async function advancePhase(
   };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/rewind — step term back one phase. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/rewinds — step term back one phase. */
 async function rewindPhase(
   syId: number,
   semesterNumber: number,
 ): Promise<{ message: string; term: TermPhaseResponse; undone: string[] }> {
   const data = await apiPost<{ message?: string; term: TermPhaseResponse; undone?: string[] }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/rewind`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/rewinds`,
   );
   return {
     ...data,
@@ -353,14 +353,14 @@ async function rewindPhase(
   };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/phases/{phase}/open — reopen a specific phase. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/phases/{phase}/openings — reopen a specific phase. */
 async function openPhase(
   syId: number,
   semesterNumber: number,
   phase: string,
 ): Promise<{ message: string; term: TermPhaseResponse; undone: string[] }> {
   const data = await apiPost<{ message?: string; term: TermPhaseResponse; undone?: string[] }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phases/${encodeURIComponent(phase)}/open`,
+    `/registrar/scheduling-terms/${syId}/${semesterNumber}/phases/${encodeURIComponent(phase)}/openings`,
   );
   return {
     ...data,
@@ -394,7 +394,7 @@ async function previewResolution(
   };
 }
 
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/publish — publish program's schedule independently. */
+/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/publications — publish program's schedule independently. */
 async function publishProgramSchedule(
   syId: number,
   semesterNumber: number,
@@ -414,7 +414,7 @@ async function publishProgramSchedule(
     alreadyPublished: number;
     setIds: number[];
     termFinalized: boolean;
-  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publish`);
+  }>(`/registrar/scheduling-terms/${syId}/${semesterNumber}/programs/${programId}/publications`);
   return {
     message: apiMessage(data),
     programAbbrev: data.programAbbrev,

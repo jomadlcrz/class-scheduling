@@ -91,19 +91,19 @@ async function getProfilePhotoRaw(studentProfileId: number): Promise<Blob> {
   return apiGetBlob(`/students/${studentProfileId}/profile-photo/raw`);
 }
 
-/** POST /super-admin/create-student-accounts — emails temp password. Returns the backend message. */
+/** POST /super-admin/student-accounts — emails temp password. Returns the backend message. */
 async function createAccount(
   studentProfileId: number,
   input: CreateStudentAccountInput,
 ): Promise<string> {
   const data = await apiPost<{ message?: string }>(
-    `/super-admin/create-student-accounts?student_profile_id=${studentProfileId}`,
+    `/super-admin/student-accounts?student_profile_id=${studentProfileId}`,
     { email: input.email, roleName: input.roleName },
   );
   return apiMessage(data);
 }
 
-/** GET /super-admin/create-student-accounts — all student profiles. 404 → empty. */
+/** GET /super-admin/student-accounts — all student profiles. 404 → empty. */
 async function listAccounts(): Promise<StudentAccountRow[]> {
   type StudentAccountResponse = {
     student_profile_id: number;

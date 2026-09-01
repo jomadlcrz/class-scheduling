@@ -58,11 +58,11 @@ function mapBuilding(building: FacilitiesResponse["buildings"][number]): Facilit
   };
 }
 
-/** GET /get-facilities — nested buildings with rooms. 404 → empty. */
+/** GET /facilities — nested buildings with rooms. 404 → empty. */
 async function list(): Promise<FacilityBuildingDetail[]> {
   let data: FacilitiesResponse;
   try {
-    data = await apiGet<FacilitiesResponse>("/get-facilities");
+    data = await apiGet<FacilitiesResponse>("/facilities");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -70,18 +70,18 @@ async function list(): Promise<FacilityBuildingDetail[]> {
   return data.buildings.map(mapBuilding);
 }
 
-/** GET /get-facilities — one building by id. */
+/** GET /facilities — one building by id. */
 async function getById(buildingId: number): Promise<FacilityBuildingDetail | null> {
   const buildings = await list();
   return buildings.find((building) => building.id === buildingId) ?? null;
 }
 
-/** POST /create-facilities — atomically creates one building and all nested rooms. */
+/** POST /facilities — atomically creates one building and all nested rooms. */
 async function create(input: CreateFacilitiesInput): Promise<{ message: string; buildingId: number }> {
   const data = await apiPost<{
     message?: string;
     building?: { buildingId: number };
-  }>("/create-facilities", input);
+  }>("/facilities", input);
   return {
     message: apiMessage(data),
     buildingId: data.building?.buildingId ?? 0,

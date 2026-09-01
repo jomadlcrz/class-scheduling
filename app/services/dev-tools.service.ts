@@ -1,54 +1,54 @@
-import { apiMessage, apiPost } from "~/lib/api";
+import { apiDelete, apiMessage } from "~/lib/api";
 
 /** Dev Tools Reset & Database Maintenance endpoints (Requires { confirm: "RESET" }). */
 
 async function resetAll(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/all", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data", { confirm });
   return apiMessage(data);
 }
 
 async function resetAudits(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/audits", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/audits", { confirm });
   return apiMessage(data);
 }
 
 async function resetInstructorAssignments(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/instructor-assignments", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/instructor-assignments", { confirm });
   return apiMessage(data);
 }
 
 async function resetPrograms(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/programs", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/programs", { confirm });
   return apiMessage(data);
 }
 
 async function resetScheduleTallies(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/schedule-tallies", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/schedule-tallies", { confirm });
   return apiMessage(data);
 }
 
 async function resetSchedulingWorkflow(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/scheduling-workflow", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/scheduling-workflow", { confirm });
   return apiMessage(data);
 }
 
 async function resetSchedules(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/schedules", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/schedules", { confirm });
   return apiMessage(data);
 }
 
 async function resetSections(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/sections", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/sections", { confirm });
   return apiMessage(data);
 }
 
 async function resetStudents(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/students", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/students", { confirm });
   return apiMessage(data);
 }
 
 async function resetUsers(confirm: string = "RESET"): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/dev-tools/reset/users", { confirm });
+  const data = await apiDelete<{ message?: string }>("/dev-tools/data/users", { confirm });
   return apiMessage(data);
 }
 

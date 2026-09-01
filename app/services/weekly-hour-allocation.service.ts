@@ -16,11 +16,11 @@ type AllocationResponse = {
   meetings_note?: string | null;
 };
 
-/** GET /schedule/subject-weekly-hour-allocations — 404 → empty. */
+/** GET /scheduling/subject-weekly-hour-allocations — 404 → empty. */
 async function list(): Promise<WeeklyHourAllocation[]> {
   let data: AllocationResponse[];
   try {
-    data = await apiGet<AllocationResponse[]>("/schedule/subject-weekly-hour-allocations");
+    data = await apiGet<AllocationResponse[]>("/scheduling/subject-weekly-hour-allocations");
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return [];
     throw err;
@@ -40,9 +40,9 @@ async function list(): Promise<WeeklyHourAllocation[]> {
   }));
 }
 
-/** POST /schedule/subject-weekly-hour-allocations — upserts per subject type. Returns the backend message. */
+/** POST /scheduling/subject-weekly-hour-allocations — upserts per subject type. Returns the backend message. */
 async function create(input: CreateWeeklyHourAllocationInput): Promise<string> {
-  const data = await apiPost<{ message?: string }>("/schedule/subject-weekly-hour-allocations", {
+  const data = await apiPost<{ message?: string }>("/scheduling/subject-weekly-hour-allocations", {
     subjectType: input.subjectType,
     weeklyHours: input.lectureHours + input.labHours,
     lectureHours: input.lectureHours,

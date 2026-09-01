@@ -83,7 +83,7 @@ async function requestHoursAdjustment(teachingTermId: number, requestedHours: nu
 
 async function decideHoursAdjustment(requestId: number, decision: "approved" | "rejected", message?: string) {
   const data = await apiPost<MessageResponse & { request: HoursAdjustmentRequest }>(
-    `/deans/hours-adjustment-requests/${requestId}/decision`,
+    `/deans/hours-adjustment-requests/${requestId}/decisions`,
     { decision, message },
   );
   return { message: apiMessage(data), request: data.request };
@@ -132,7 +132,7 @@ async function listMajorLabTimeSlots() {
 }
 
 async function submitMajorSchedule(submissionId: number) {
-  const data = await apiPost<MessageResponse & { submission: { id: number; status: string; version: number } }>(`/deans/major-schedule-submissions/${submissionId}/submit`);
+  const data = await apiPost<MessageResponse & { submission: { id: number; status: string; version: number } }>(`/deans/major-schedule-submissions/${submissionId}/submissions`);
   return { message: apiMessage(data), submission: data.submission };
 }
 
@@ -142,7 +142,7 @@ async function requestMajorScheduleEdit(submissionId: number, reason: string) {
 }
 
 async function decideMajorScheduleEdit(requestId: number, approve: boolean, note?: string) {
-  const data = await apiPost<MessageResponse & { editRequest: { id: number; status: string } }>(`/registrar/major-schedule-edit-requests/${requestId}/decision`, { approve, note });
+  const data = await apiPost<MessageResponse & { editRequest: { id: number; status: string } }>(`/registrar/major-schedule-edit-requests/${requestId}/decisions`, { approve, note });
   return { message: apiMessage(data), editRequest: data.editRequest };
 }
 
@@ -182,7 +182,7 @@ async function listMajorScheduleAuditLogs(params: {
 
 async function finalizeMajorSchedule(submissionId: number, reason: string = "Approved and protected by Registrar.") {
   const data = await apiPost<MessageResponse & { submission: { id: number; status: string } }>(
-    `/registrar/major-schedule-submissions/${submissionId}/finalize`,
+    `/registrar/major-schedule-submissions/${submissionId}/finalizations`,
     { reason },
   );
   return { message: apiMessage(data), submission: data.submission };
@@ -190,7 +190,7 @@ async function finalizeMajorSchedule(submissionId: number, reason: string = "App
 
 async function reopenFinalizedMajorSchedule(submissionId: number, reason: string) {
   const data = await apiPost<MessageResponse & { submission: { id: number; status: string } }>(
-    `/registrar/major-schedule-submissions/${submissionId}/reopen`,
+    `/registrar/major-schedule-submissions/${submissionId}/reopenings`,
     { reason },
   );
   return { message: apiMessage(data), submission: data.submission };
@@ -210,7 +210,7 @@ async function respondToInstructorSchedule(scheduleId: number, input: {
     })),
   };
   const data = await apiPost<MessageResponse & { response: { id: number; status: string; responseType: string } }>(
-    `/instructors/schedules/${scheduleId}/response`,
+    `/instructors/schedules/${scheduleId}/responses`,
     normalizedPayload,
   );
   return { message: apiMessage(data), response: data.response };
@@ -223,12 +223,12 @@ async function listInstructorScheduleResponses(status?: string): Promise<Instruc
 }
 
 async function decideInstructorScheduleResponse(responseId: number, audience: "deans" | "registrar", approve: boolean, note?: string) {
-  const data = await apiPost<MessageResponse & { response?: InstructorScheduleResponse; applied?: boolean; conflicts?: unknown[] }>(`/${audience}/instructor-schedule-responses/${responseId}/decision`, { approve, note });
+  const data = await apiPost<MessageResponse & { response?: InstructorScheduleResponse; applied?: boolean; conflicts?: unknown[] }>(`/${audience}/instructor-schedule-responses/${responseId}/decisions`, { approve, note });
   return { message: apiMessage(data), response: data.response, applied: data.applied, conflicts: data.conflicts };
 }
 
 async function assignFloatingInstructor(scheduleId: number, instructorId: number) {
-  const data = await apiPatch<MessageResponse & { schedule: MajorSchedule }>(`/registrar/floating-schedules/${scheduleId}/assign-instructor`, { instructorId });
+  const data = await apiPatch<MessageResponse & { schedule: MajorSchedule }>(`/registrar/floating-schedules/${scheduleId}/instructor-assignment`, { instructorId });
   return { message: apiMessage(data), schedule: data.schedule };
 }
 

@@ -253,10 +253,10 @@ function mapOffering(o: { set: string | null; set_id: number; regular_sched_ids:
   };
 }
 
-/** GET /regular_schedule/irregular-students-pending-schedule — irregular students still missing a schedule for this term. */
+/** GET /irregular-schedules/candidates — irregular students still missing a schedule for this term. */
 async function listPendingSchedule(syId: number, semesterNumber: number): Promise<StudentPendingSchedule[]> {
   const data = await apiGet<PendingScheduleResponse>(
-    `/regular_schedule/irregular-students-pending-schedule${termScopeQuery(syId, semesterNumber)}`,
+    `/irregular-schedules/candidates${termScopeQuery(syId, semesterNumber)}`,
   );
   return data.irregular_students.map((s) => ({
     studentAcademicId: s.enrollment_id,
@@ -342,10 +342,10 @@ export type StudentAssignedSchedule = {
   assignedSubjects: AssignedSubject[];
 };
 
-/** GET /irregular_schedule — irregular students with assigned schedules, optionally filtered by term. */
+/** GET /irregular-schedules — irregular students with assigned schedules, optionally filtered by term. */
 async function listAssignedSchedule(syId: number, semesterNumber: number): Promise<StudentAssignedSchedule[]> {
   const data = await apiGet<AssignedScheduleResponse>(
-    `/irregular_schedule${termScopeQuery(syId, semesterNumber)}`,
+    `/irregular-schedules${termScopeQuery(syId, semesterNumber)}`,
   );
   return data.irregular_schedules.map((s) => {
     const subjectsMap = new Map<number, AssignedSubject>();
@@ -389,7 +389,7 @@ async function listAssignedSchedule(syId: number, semesterNumber: number): Promi
   });
 }
 
-/** POST /regular_schedule/create-irregular-schedule — assigns regular schedule slot(s) to an irregular student's term. */
+/** POST /irregular-schedules — assigns regular schedule slot(s) to an irregular student's term. */
 async function assign(input: {
   studentAcademicId: number;
   regularSchedIds: number[];
@@ -397,7 +397,7 @@ async function assign(input: {
   semesterNumber: number;
 }): Promise<string> {
   const data = await apiPost<{ message?: string }>(
-    `/regular_schedule/create-irregular-schedule${termScopeQuery(input.syId, input.semesterNumber)}`,
+    `/irregular-schedules${termScopeQuery(input.syId, input.semesterNumber)}`,
     {
       studentAcademicId: input.studentAcademicId,
       regularSchedIds: input.regularSchedIds,
@@ -406,17 +406,17 @@ async function assign(input: {
   return apiMessage(data);
 }
 
-/** PUT /irregular_schedule/:id — changes the offering an irregular student is seated in. */
+/** PUT /irregular-schedules/:id — changes the offering an irregular student is seated in. */
 async function updateSchedule(irregularSchedId: number, regularSchedId: number): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/irregular_schedule/${irregularSchedId}`, {
+  const data = await apiPut<{ message?: string }>(`/irregular-schedules/${irregularSchedId}`, {
     regularSchedId,
   });
   return apiMessage(data);
 }
 
-/** DELETE /irregular_schedule/:id — removes an irregular student's seat assignment. */
+/** DELETE /irregular-schedules/:id — removes an irregular student's seat assignment. */
 async function deleteSchedule(irregularSchedId: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/irregular_schedule/${irregularSchedId}`);
+  const data = await apiDelete<{ message?: string }>(`/irregular-schedules/${irregularSchedId}`);
   return apiMessage(data);
 }
 
