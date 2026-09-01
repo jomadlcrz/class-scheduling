@@ -378,7 +378,7 @@ function mapPreviewToSchedules(preview: SchedulePreview, dayMap?: DayMapping | n
         semester: release.semesterNumber,
         subjectId: String(session.subjectId),
         subjectCode: session.subjectCode ?? "",
-        subjectTitle: session.subjectCode ?? "",
+        subjectTitle: session.subjectTitle ?? "",
         setId: String(release.setId),
         setCode: release.setCode ?? "",
         program: release.programAbbrev ?? "",

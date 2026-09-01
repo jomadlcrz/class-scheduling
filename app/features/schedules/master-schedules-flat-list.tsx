@@ -46,6 +46,7 @@ type MasterSchedulesFlatListProps = {
   onSubmitRelease: (release: ScheduleRelease) => void;
   onWithdrawRelease: (release: ScheduleRelease) => void;
   onClearSet: (setId: number, setCode: string) => void;
+  onClearProgram?: (programAbbrev: string) => void;
   onSendProgram?: (programId: number, programAbbrev: string) => void;
   onWithdrawProgram?: (programId: number, programAbbrev: string) => void;
   onPublishProgram?: (programId: number, programAbbrev: string) => void;
@@ -201,6 +202,7 @@ function ProgramCard({
   onSubmitRelease,
   onWithdrawRelease,
   onClearSet,
+  onClearProgram,
   onSendProgram,
   onWithdrawProgram,
   onPublishProgram,
@@ -214,6 +216,7 @@ function ProgramCard({
   onSubmitRelease: (release: ScheduleRelease) => void;
   onWithdrawRelease: (release: ScheduleRelease) => void;
   onClearSet: (setId: number, setCode: string) => void;
+  onClearProgram?: (programAbbrev: string) => void;
   onSendProgram?: (programId: number, programAbbrev: string) => void;
   onWithdrawProgram?: (programId: number, programAbbrev: string) => void;
   onPublishProgram?: (programId: number, programAbbrev: string) => void;
@@ -233,8 +236,8 @@ function ProgramCard({
     return acc;
   }, {});
 
-  const hasDrafts = (statusCounts["draft"] ?? 0) + (statusCounts["rejected"] ?? 0) > 0 ||
-    allSets.some((s) => !s.release && s.schedules.length > 0);
+  const programId = group.programId ?? null;
+  const hasDrafts = (statusCounts["draft"] ?? 0) + (statusCounts["rejected"] ?? 0) > 0;
   const isPendingDean = (statusCounts["pending_dean_review"] ?? 0) > 0;
   const allApproved = totalSets > 0 && (statusCounts["approved"] ?? 0) === totalSets;
   const isPublished = allSets.every((s) => s.release?.publishedAt != null);
@@ -272,37 +275,49 @@ function ProgramCard({
         </button>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
-          {!termClosed && group.programId != null && onSendProgram && hasDrafts && (
+          {!termClosed && programId != null && onSendProgram && hasDrafts && (
             <Button
               type="button"
               block={false}
               className="text-xs"
-              onClick={() => onSendProgram(group.programId!, group.abbrev)}
+              onClick={() => onSendProgram(programId, group.abbrev)}
             >
               <SendIcon />
               Submit to Dean
             </Button>
           )}
-          {!termClosed && group.programId != null && onWithdrawProgram && isPendingDean && (
+          {!termClosed && programId != null && onWithdrawProgram && isPendingDean && (
             <Button
               type="button"
               variant="outline"
               block={false}
               className="text-xs"
-              onClick={() => onWithdrawProgram(group.programId!, group.abbrev)}
+              onClick={() => onWithdrawProgram(programId, group.abbrev)}
             >
               <RotateIcon />
               Withdraw
             </Button>
           )}
-          {!termClosed && group.programId != null && onPublishProgram && allApproved && !isPublished && (
+          {!termClosed && programId != null && onPublishProgram && allApproved && !isPublished && (
             <Button
               type="button"
               block={false}
               className="text-xs"
-              onClick={() => onPublishProgram(group.programId!, group.abbrev)}
+              onClick={() => onPublishProgram(programId, group.abbrev)}
             >
               Publish Schedule
+            </Button>
+          )}
+          {!termClosed && onClearProgram && totalSets > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              className="text-xs"
+              onClick={() => onClearProgram(group.abbrev)}
+            >
+              <TrashIcon />
+              Clear
             </Button>
           )}
         </div>
@@ -362,6 +377,7 @@ export function MasterSchedulesFlatList({
   onSubmitRelease,
   onWithdrawRelease,
   onClearSet,
+  onClearProgram,
   onSendProgram,
   onWithdrawProgram,
   onPublishProgram,
@@ -390,6 +406,7 @@ export function MasterSchedulesFlatList({
           onSubmitRelease={onSubmitRelease}
           onWithdrawRelease={onWithdrawRelease}
           onClearSet={onClearSet}
+          onClearProgram={onClearProgram}
           onSendProgram={onSendProgram}
           onWithdrawProgram={onWithdrawProgram}
           onPublishProgram={onPublishProgram}

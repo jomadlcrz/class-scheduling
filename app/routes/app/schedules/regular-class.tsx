@@ -7,16 +7,17 @@ import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
-import { AlertIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
+import { AlertIcon, PlusIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { ScheduleSkeleton } from "~/components/ui/skeleton";
 import { TabButtons } from "~/components/ui/underline-tabs";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
-import { MasterSchedulesTermBar } from "~/features/schedules/master-schedules-term-bar";
+import { DepartmentBlockAlert } from "~/features/schedules/department-block-alert";
 import {
   MasterSchedulesFlatList,
   type ProgramFlatData,
 } from "~/features/schedules/master-schedules-flat-list";
+import { MasterSchedulesTermBar } from "~/features/schedules/master-schedules-term-bar";
 import { ScheduleClearDialog } from "~/features/schedules/schedule-clear-dialog";
 import { ScheduleEditDialog } from "~/features/schedules/schedule-edit-dialog";
 import { ScheduleSubmitDialog } from "~/features/schedules/schedule-submit-dialog";
@@ -25,18 +26,16 @@ import { useCachedData } from "~/hooks/use-cached-data";
 import { useScheduleReleases } from "~/hooks/use-schedule-releases";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
+import { ApiError } from "~/lib/api";
 import { departmentService } from "~/services/department.service";
 import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
-import { scheduleReleaseService } from "~/services/schedule-release.service";
 import {
   scheduleService,
   type UnseatedIrregularStudent,
 } from "~/services/schedule.service";
 import { termPhaseService } from "~/services/term-phase.service";
-import { DepartmentBlockAlert } from "~/features/schedules/department-block-alert";
-import { ApiError } from "~/lib/api";
 import {
   DAYS,
   formatTime,
@@ -170,6 +169,7 @@ function MasterSchedulesPage() {
   const [unseatedStudents, setUnseatedStudents] = useState<UnseatedIrregularStudent[]>([]);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [clearTargetSetId, setClearTargetSetId] = useState<number | null>(null);
+  const [clearTargetSetIds, setClearTargetSetIds] = useState<number[]>([]);
   const [submitTarget, setSubmitTarget] = useState<ScheduleRelease | null>(null);
   const [withdrawTarget, setWithdrawTarget] = useState<ScheduleRelease | null>(null);
 
@@ -460,6 +460,18 @@ function MasterSchedulesPage() {
     setClearDialogOpen(true);
   }
 
+  function handleClearProgram(programAbbrev: string) {
+    const program = programTreeData.find((p) => p.abbrev === programAbbrev);
+    if (!program) return;
+    const setIds = program.yearGroups
+      .flatMap((yg) => yg.sets)
+      .map((s) => s.scheduledSetId)
+      .filter((id): id is number => id != null);
+    if (setIds.length === 0) return;
+    setClearTargetSetIds(setIds);
+    setClearDialogOpen(true);
+  }
+
   // Program & Release Workflow Handlers
   async function handleSendProgram(programId: number, programAbbrev: string) {
     if (termClosed || !selectedSchoolYearId) return;
@@ -616,21 +628,6 @@ function MasterSchedulesPage() {
         title="Master Schedules"
         actions={
           <div className="flex flex-wrap justify-end gap-2">
-            {clearableSets.length > 0 && (
-              <Button
-                type="button"
-                variant="outline"
-                block={false}
-                disabled={termClosed}
-                onClick={() => {
-                  setClearTargetSetId(null);
-                  setClearDialogOpen(true);
-                }}
-              >
-                <TrashIcon />
-                Clear Schedule
-              </Button>
-            )}
             <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
               <PlusIcon />
               Create Schedule
@@ -717,6 +714,7 @@ function MasterSchedulesPage() {
               onSubmitRelease={setSubmitTarget}
               onWithdrawRelease={setWithdrawTarget}
               onClearSet={handleClearSingleSet}
+              onClearProgram={handleClearProgram}
               onSendProgram={handleSendProgram}
               onWithdrawProgram={handleWithdrawProgram}
               onPublishProgram={handlePublishProgram}
@@ -748,9 +746,11 @@ function MasterSchedulesPage() {
         onClose={() => {
           setClearDialogOpen(false);
           setClearTargetSetId(null);
+          setClearTargetSetIds([]);
         }}
         sets={clearableSets}
         defaultSetId={clearTargetSetId}
+        defaultSetIds={clearTargetSetIds}
         schoolYear={schoolYear}
         semesterLabel={semesterLabel(semester)}
         disabled={termClosed}

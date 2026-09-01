@@ -17,6 +17,8 @@ type ScheduleClearDialogProps = {
   sets: ScheduleRelease[];
   /** Set pre-checked when the dialog opens (e.g. the currently-viewed set). */
   defaultSetId?: number | null;
+  /** Multiple sets pre-checked when the dialog opens (e.g. clearing a program). */
+  defaultSetIds?: number[];
   schoolYear: string;
   semesterLabel: string;
   /** Disable clearing (e.g. the term is closed). */
@@ -31,6 +33,7 @@ export function ScheduleClearDialog({
   onClose,
   sets,
   defaultSetId,
+  defaultSetIds,
   schoolYear,
   semesterLabel,
   disabled = false,
@@ -44,8 +47,14 @@ export function ScheduleClearDialog({
   useEffect(() => {
     if (!open) return;
     setError(null);
-    setSelectedIds(defaultSetId != null ? new Set([defaultSetId]) : new Set());
-  }, [open, defaultSetId]);
+    if (defaultSetIds && defaultSetIds.length > 0) {
+      setSelectedIds(new Set(defaultSetIds));
+    } else if (defaultSetId != null) {
+      setSelectedIds(new Set([defaultSetId]));
+    } else {
+      setSelectedIds(new Set());
+    }
+  }, [open, defaultSetId, defaultSetIds]);
 
   // Drop selections no longer present in the list (e.g. after a partial clear).
   useEffect(() => {
@@ -56,10 +65,17 @@ export function ScheduleClearDialog({
     });
   }, [sets]);
 
-  const allSelected = sets.length > 0 && sets.every((row) => selectedIds.has(row.setId));
+  // When specific sets are selected, only show those sets; otherwise show all.
+  const displaySets = defaultSetIds && defaultSetIds.length > 0
+    ? sets.filter((row) => defaultSetIds.includes(row.setId))
+    : defaultSetId != null
+    ? sets.filter((row) => row.setId === defaultSetId)
+    : sets;
+
+  const allSelected = displaySets.length > 0 && displaySets.every((row) => selectedIds.has(row.setId));
 
   function toggleAll() {
-    setSelectedIds(allSelected ? new Set() : new Set(sets.map((row) => row.setId)));
+    setSelectedIds(allSelected ? new Set() : new Set(displaySets.map((row) => row.setId)));
   }
 
   function toggleSet(setId: number) {
@@ -102,28 +118,32 @@ export function ScheduleClearDialog({
           ledgers will be released, and any irregular students seated in these sets will be unseated.
         </p>
         <div className="overflow-hidden rounded-xl border border-slate-300 dark:border-white/10">
-          <div className="flex items-center gap-3 border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
-            <Checkbox
-              id="rc-clear-select-all"
-              ariaLabel="Select all sets"
-              hideLabel
-              checked={allSelected}
-              onChange={toggleAll}
-            />
-            <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-              {selectedIds.size > 0 ? `${selectedIds.size} of ${sets.length} selected` : "Select all"}
-            </span>
-          </div>
+          {displaySets.length > 1 && (
+            <div className="flex items-center gap-3 border-b border-slate-200 px-3 py-2.5 dark:border-white/10">
+              <Checkbox
+                id="rc-clear-select-all"
+                ariaLabel="Select all sets"
+                hideLabel
+                checked={allSelected}
+                onChange={toggleAll}
+              />
+              <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
+                {selectedIds.size > 0 ? `${selectedIds.size} of ${displaySets.length} selected` : "Select all"}
+              </span>
+            </div>
+          )}
           <ul className="scrollbar-thin max-h-64 divide-y divide-slate-200 overflow-y-auto dark:divide-white/10">
-            {sets.map((row) => (
+            {displaySets.map((row) => (
               <li key={row.setId} className="flex items-center gap-3 px-3 py-2">
-                <Checkbox
-                  id={`rc-clear-${row.setId}`}
-                  ariaLabel={`Select ${row.setCode ?? "set"}`}
-                  hideLabel
-                  checked={selectedIds.has(row.setId)}
-                  onChange={() => toggleSet(row.setId)}
-                />
+                {displaySets.length > 1 && (
+                  <Checkbox
+                    id={`rc-clear-${row.setId}`}
+                    ariaLabel={`Select ${row.setCode ?? "set"}`}
+                    hideLabel
+                    checked={selectedIds.has(row.setId)}
+                    onChange={() => toggleSet(row.setId)}
+                  />
+                )}
                 <span className="font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   {row.setCode}
                 </span>

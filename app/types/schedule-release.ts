@@ -46,6 +46,7 @@ export type ScheduleRelease = {
 export type SchedulePreviewSession = {
   subjectId: number;
   subjectCode: string | null;
+  subjectTitle: string | null;
   instructorId: number | null;
   instructorName: string | null;
   roomId: number | null;
