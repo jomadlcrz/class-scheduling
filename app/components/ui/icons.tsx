@@ -628,9 +628,9 @@ export function CalendarClockIcon() {
   );
 }
 
-export function CalendarCheckIcon() {
+export function CalendarCheckIcon({ size = 18 }: { size?: number } = {}) {
   return (
-    <IconBase>
+    <IconBase size={size}>
       <rect x="3" y="4" width="18" height="17" rx="2" />
       <path d="M16 2v4M8 2v4M3 9h18" />
       <path d="m8 15 2 2 4-4" />
@@ -888,3 +888,14 @@ export function InfoCircleIcon({ size = 18 }: { size?: number }) {
     </IconBase>
   );
 }
+
+export function SparkleIcon({ size = 18 }: { size?: number }) {
+  return (
+    <IconBase size={size}>
+      <path d="M12 2v6M12 16v6M4.9 4.9l4.2 4.2M14.9 14.9l4.2 4.2M2 12h6M16 12h6M4.9 19.1l4.2-4.2M14.9 9.1l4.2-4.2" />
+    </IconBase>
+  );
+}
+
+
+

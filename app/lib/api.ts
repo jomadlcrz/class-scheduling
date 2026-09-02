@@ -331,6 +331,83 @@ export function apiPost<T>(
   return request<T>(endpoint, "POST", body, headers);
 }
 
+export type SseEvent = { event: string; data: unknown };
+
+/** Splits one raw "event: x\ndata: y" block (no trailing blank line) into an SseEvent. */
+function parseSseEvent(raw: string): SseEvent | null {
+  let eventName = "message";
+  const dataLines: string[] = [];
+  for (const line of raw.split("\n")) {
+    if (line.startsWith("event:")) eventName = line.slice(6).trim();
+    else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
+  }
+  if (dataLines.length === 0) return null;
+  try {
+    return { event: eventName, data: JSON.parse(dataLines.join("\n")) };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * POST expecting a text/event-stream response (Server-Sent Events) rather
+ * than one JSON body — used by the Marvis solve and full-program generation
+ * workflows. Calls `onEvent` for each event as it arrives; the returned
+ * promise resolves once the stream ends.
+ */
+export async function apiPostStream(
+  endpoint: string,
+  body: unknown,
+  onEvent: (event: SseEvent) => void,
+): Promise<void> {
+  const token = loadSession()?.token;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  let response: Response;
+  try {
+    response = await fetch(resolveApiUrl(endpoint), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError("Unable to reach the server. Check your connection and try again.", 0);
+  }
+
+  if (!response.ok || !response.body) {
+    const data = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+    if (response.status === 401 && token) clearSession();
+    const message =
+      firstMessage(data?.error) ??
+      firstMessage(data?.errors) ??
+      firstMessage(data?.message) ??
+      "Something went wrong. Please try again.";
+    throw new ApiError(message, response.status, data);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let separatorIndex = buffer.indexOf("\n\n");
+    while (separatorIndex !== -1) {
+      const rawEvent = buffer.slice(0, separatorIndex);
+      buffer = buffer.slice(separatorIndex + 2);
+      const parsed = parseSseEvent(rawEvent);
+      if (parsed) onEvent(parsed);
+      separatorIndex = buffer.indexOf("\n\n");
+    }
+  }
+}
+
 export function apiPatch<T>(endpoint: string, body?: unknown): Promise<T> {
   return request<T>(endpoint, "PATCH", body);
 }

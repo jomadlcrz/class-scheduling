@@ -40,6 +40,16 @@ import {
 } from "~/features/schedules/major-schedules-mapping-grid";
 import { MajorSchedulesImportModal } from "~/features/schedules/major-schedules-import-modal";
 import { EditRequestAttemptMeter } from "~/features/schedules/edit-request-attempt-meter";
+import {
+  MarvisGenerateProgramButton,
+  MarvisLauncherButton,
+} from "~/features/schedules/marvis-launcher-button";
+import { ScheduleAgentDrawer } from "~/features/schedules/schedule-agent-drawer";
+import { ScheduleAgentProgramPicker } from "~/features/schedules/schedule-agent-program-picker";
+import type {
+  ScheduleAgentProgramGenerationRequest,
+  ScheduleAgentTarget,
+} from "~/types/schedule-agent";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useEnums } from "~/hooks/use-enums";
@@ -109,6 +119,14 @@ function MajorSchedulesPage() {
   const [scheduleToEdit, setScheduleToEdit] = useState<MajorSchedule | null>(null);
   const [reopenTarget, setReopenTarget] = useState<MajorScheduleSubmission | null>(null);
   const [reopenReason, setReopenReason] = useState("");
+
+  const [scheduleAgentTarget, setScheduleAgentTarget] = useState<{
+    target: ScheduleAgentTarget;
+    departmentName?: string;
+  } | null>(null);
+  const [scheduleAgentProgramPickerOpen, setScheduleAgentProgramPickerOpen] = useState(false);
+  const [scheduleAgentProgramGeneration, setScheduleAgentProgramGeneration] =
+    useState<ScheduleAgentProgramGenerationRequest | null>(null);
 
   const [requirements, setRequirements] = useState<MajorScheduleRequirements | null>(null);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
@@ -400,6 +418,29 @@ function MajorSchedulesPage() {
                 <span>History</span>
               </button>
             </div>
+
+            <MarvisLauncherButton
+              onClick={() => {
+                setScheduleAgentProgramGeneration(null);
+                const anchor = submissions?.[0];
+                if (anchor) {
+                  setScheduleAgentTarget({
+                    target: { kind: "submission", submissionId: anchor.id },
+                    departmentName: anchor.departmentName,
+                  });
+                } else if (syId && semesterNumber && user?.role === "registrar") {
+                  setScheduleAgentTarget({
+                    target: { kind: "term", syId, semesterNumber },
+                  });
+                } else {
+                  toast.error("No active major schedule submission found.");
+                }
+              }}
+            />
+
+            <MarvisGenerateProgramButton
+              onClick={() => setScheduleAgentProgramPickerOpen(true)}
+            />
 
             {user?.role === "dean" && (
               <Button
@@ -1250,6 +1291,44 @@ function MajorSchedulesPage() {
           </ModalActions>
         </div>
       </Modal>
+
+      <ScheduleAgentProgramPicker
+        open={scheduleAgentProgramPickerOpen}
+        onClose={() => setScheduleAgentProgramPickerOpen(false)}
+        schoolYears={schoolYears}
+        semesterLabel={semesterLabel}
+        onGenerate={(submission, program) => {
+          setScheduleAgentProgramPickerOpen(false);
+          setScheduleAgentProgramGeneration({
+            key: `${Date.now()}-${submission.id}-${program.id}`,
+            programId: program.id,
+            programLabel: `${program.abbrev} · ${program.name}`,
+          });
+          setScheduleAgentTarget({
+            target: { kind: "submission", submissionId: submission.id },
+            departmentName: submission.departmentName,
+          });
+        }}
+      />
+
+      <ScheduleAgentDrawer
+        open={scheduleAgentTarget !== null}
+        onClose={() => setScheduleAgentTarget(null)}
+        target={scheduleAgentTarget?.target ?? { kind: "submission", submissionId: 0 }}
+        workspace={user?.role === "dean" ? "dean" : "registrar"}
+        departmentName={
+          scheduleAgentTarget?.departmentName ??
+          (() => {
+            const termTarget = scheduleAgentTarget?.target;
+            if (!termTarget || termTarget.kind !== "term") return undefined;
+            return [
+              schoolYears.find((sy) => sy.id === termTarget.syId)?.schoolYear,
+              semesterLabel(termTarget.semesterNumber),
+            ].filter(Boolean).join(" · ");
+          })()
+        }
+        programGeneration={scheduleAgentProgramGeneration}
+      />
 
       <MajorSchedulesImportModal
         open={importOpen}

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../node_modules/streamdown/dist/*.js";
 
 /* Manual (class-based) dark mode so the theme toggle controls it, not the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
