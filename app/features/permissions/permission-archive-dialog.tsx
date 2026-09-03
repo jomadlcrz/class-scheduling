@@ -16,7 +16,7 @@ import type { RolePermission } from "~/types/permission";
 type PermissionArchiveDialogProps = {
   permission: RolePermission | null;
   onClose: () => void;
-  onConfirm: (permission: RolePermission) => Promise<void>;
+  onConfirm: (permission: RolePermission, confirm: string) => Promise<void>;
 };
 
 /** Archive confirmation backed by the permission impact-preview endpoint. */
@@ -50,7 +50,7 @@ export function PermissionArchiveDialog({
     setError(null);
     setArchiving(true);
     try {
-      await onConfirm(permission);
+      await onConfirm(permission, confirmValue);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "");

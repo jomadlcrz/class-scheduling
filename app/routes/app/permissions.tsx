@@ -205,8 +205,8 @@ function PermissionsPage() {
       <PermissionArchiveDialog
         permission={archivePermissionTarget}
         onClose={() => setArchivePermissionTarget(null)}
-        onConfirm={async (permission) => {
-          const message = await permissionService.archive(permission.id, permission.slug);
+        onConfirm={async (permission, confirm) => {
+          const message = await permissionService.archive(permission.id, confirm);
           if (message) toast.success(message);
           refresh();
         }}
