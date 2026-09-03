@@ -261,25 +261,25 @@ function ScheduleResponsesPage() {
       {/* Summary Queue Counts */}
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="p-3 text-center">
-          <span className="font-display text-xl text-navy-800 dark:text-mist-100">
+          <span className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
             {waitingOnYouCount}
           </span>
           <p className="text-xs text-slate-500 dark:text-slate-400">Waiting on you</p>
         </Card>
         <Card className="p-3 text-center">
-          <span className="font-display text-xl text-navy-800 dark:text-mist-100">
+          <span className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
             {withDeanCount}
           </span>
           <p className="text-xs text-slate-500 dark:text-slate-400">With the Dean</p>
         </Card>
         <Card className="p-3 text-center">
-          <span className="font-display text-xl text-navy-800 dark:text-mist-100">
+          <span className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
             {withRegistrarCount}
           </span>
           <p className="text-xs text-slate-500 dark:text-slate-400">With the Registrar</p>
         </Card>
         <Card className="p-3 text-center">
-          <span className="font-display text-xl text-emerald-600 dark:text-emerald-400">
+          <span className="font-display text-xl tracking-wide text-emerald-600 dark:text-emerald-400">
             {decidedCount}
           </span>
           <p className="text-xs text-slate-500 dark:text-slate-400">Decided</p>

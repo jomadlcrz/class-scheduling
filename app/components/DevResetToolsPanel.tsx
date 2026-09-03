@@ -131,7 +131,7 @@ export function DevResetToolsPanel() {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-surface-raised">
       <div className="border-b border-slate-200 pb-4 dark:border-white/10">
-        <h2 className="font-heading text-lg font-bold text-navy-700 dark:text-mist-100">
+        <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
           Developer Fast-Reset & Maintenance Tools
         </h2>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -146,7 +146,7 @@ export function DevResetToolsPanel() {
             className="flex flex-col justify-between rounded-lg border border-slate-200/80 bg-slate-50/60 p-4 transition dark:border-white/5 dark:bg-white/5"
           >
             <div>
-              <h3 className="font-heading text-sm font-semibold text-navy-700 dark:text-mist-100">
+              <h3 className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
                 {act.title}
               </h3>
               <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">

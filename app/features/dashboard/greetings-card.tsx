@@ -20,7 +20,7 @@ export function GreetingsCard({ greeting }: GreetingsCardProps) {
   return (
     <motion.div variants={fadeUp} className="mb-6">
       <Card className="p-6">
-        <h2 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-display text-3xl tracking-wide text-navy-800 dark:text-mist-100">
+        <h2 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-display text-3xl tracking-wide text-navy-700 dark:text-mist-100">
           <motion.span
             animate={{ rotate: [0, 14, -8, 14, 0] }}
             transition={{

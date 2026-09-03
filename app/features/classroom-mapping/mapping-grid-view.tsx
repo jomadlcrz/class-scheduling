@@ -23,7 +23,7 @@ export function MappingGridView({ classrooms }: MappingGridViewProps) {
           defaultOpen={roomIdx === 0}
           title={
             <span className="flex items-center gap-3">
-              <span className="font-display text-lg tracking-tight text-slate-800 dark:text-mist-100">
+              <span className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
                 {room.name}
               </span>
             </span>

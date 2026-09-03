@@ -469,7 +469,7 @@ export default function ShiftRequestsRoute() {
           <div className="mt-6 space-y-6">
             <Card className="p-5">
               <div className="border-b border-slate-200 pb-4 dark:border-white/10">
-                <h2 className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">
+                <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
                   Distributed Schedules
                 </h2>
                 <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
@@ -520,7 +520,7 @@ export default function ShiftRequestsRoute() {
             <Card className="p-5">
               <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-white/10">
                 <div>
-                  <h2 className="font-display text-lg tracking-wide text-navy-800 dark:text-mist-100">
+                  <h2 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
                     Your Requests
                   </h2>
                   <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
@@ -568,7 +568,7 @@ export default function ShiftRequestsRoute() {
                             </span>
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-display text-sm tracking-wide text-navy-800 dark:text-mist-100">
+                                <span className="font-display text-sm tracking-wide text-navy-700 dark:text-mist-100">
                                   Shift Request
                                 </span>
                                 {includedSets.map((set) => (

@@ -46,7 +46,7 @@ export function SubjectCardGrid({ subjects, onEdit, onArchive }: SubjectCardGrid
           className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5"
         >
           <div className="min-w-0">
-            <p className="font-display text-base tracking-wide text-navy-800 dark:text-mist-100">
+            <p className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
               {subject.code}
             </p>
             <p className="mt-0.5 truncate font-body text-sm text-slate-600 dark:text-slate-300">
@@ -86,7 +86,7 @@ export function SubjectCardGrid({ subjects, onEdit, onArchive }: SubjectCardGrid
               </div>
             )}
             <div className="text-right">
-              <p className="font-display text-2xl tabular-nums text-navy-700 dark:text-mist-100">
+              <p className="font-display text-2xl tracking-wide tabular-nums text-navy-700 dark:text-mist-100">
                 {subject.units}
               </p>
               <p className="font-body text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">

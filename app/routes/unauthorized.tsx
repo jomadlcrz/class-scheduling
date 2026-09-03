@@ -21,7 +21,7 @@ export default function Unauthorized() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
         >
-          <h1 className="font-display text-3xl tracking-wide text-navy-800 dark:text-mist-100">
+          <h1 className="font-display text-3xl tracking-wide text-navy-700 dark:text-mist-100">
             Unauthorized
           </h1>
           <p className="mt-3 font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400">

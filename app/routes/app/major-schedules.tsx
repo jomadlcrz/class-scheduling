@@ -789,7 +789,7 @@ function MajorSchedulesPage() {
         {selectedSchedule && (
           <div className="space-y-4">
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-              <h4 className="font-display text-base text-navy-800 dark:text-mist-100">
+              <h4 className="font-display text-base tracking-wide text-navy-700 dark:text-mist-100">
                 {selectedSchedule.subjectCode} — {selectedSchedule.subjectTitle}
               </h4>
               <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">

@@ -192,7 +192,7 @@ export function SchoolYearsPage() {
               <p className="font-body text-xs font-semibold uppercase tracking-[0.16em] text-gwc-blue dark:text-blue-300">
                 Current School Year
               </p>
-              <p className="mt-1 font-display text-4xl tracking-wide text-navy-800 dark:text-white">
+              <p className="mt-1 font-display text-4xl tracking-wide text-navy-700 dark:text-mist-100">
                 {currentCheck.schoolYear}
               </p>
             </div>

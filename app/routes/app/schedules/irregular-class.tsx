@@ -463,7 +463,7 @@ function IrregularClassPage() {
               <span className="size-2.5 animate-loader-dot rounded-full bg-gold-400 [animation-delay:0.3s]" />
             </div>
 
-            <p className="mt-6 font-display text-2xl tracking-wide text-navy-800 dark:text-mist-100">
+            <p className="mt-6 font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               Assigning {isBulk ? "Students" : "Student"}…
             </p>
             <p className="mt-1 max-w-sm font-body text-xs leading-relaxed text-slate-500 dark:text-slate-400">
