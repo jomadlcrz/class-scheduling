@@ -708,6 +708,7 @@ export function ScheduleAgentDrawer({
   const bottomRef = useRef<HTMLDivElement>(null);
   const modelPickerRef = useRef<HTMLDivElement>(null);
   const handledProgramGenerationRef = useRef<string | null>(null);
+  const isMobile = useState(() => "ontouchstart" in window || navigator.maxTouchPoints > 0)[0];
 
   // On a fresh target (new submission/term, or the first open), pick up the
   // most recently active conversation automatically — "preserved by
@@ -1072,7 +1073,7 @@ export function ScheduleAgentDrawer({
                 disabled={busy}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey) {
+                  if (event.key === "Enter" && !event.shiftKey && !isMobile) {
                     event.preventDefault();
                     void handleSend(input);
                   }
@@ -1091,7 +1092,7 @@ export function ScheduleAgentDrawer({
               </button>
             </div>
             <p className="px-1 font-body text-[10.5px] text-slate-400 dark:text-slate-500">
-              Enter to send · Shift+Enter for a new line
+              {isMobile ? "Enter for a new line · Tap send icon to send" : "Enter to send · Shift+Enter for a new line"}
             </p>
           </div>
         ) : undefined}
