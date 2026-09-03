@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -19,8 +20,10 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   BookOpenIcon,
+  TrashIcon,
 } from "~/components/ui/icons";
 import { Badge } from "~/components/ui/badge";
+import { ConfirmDialog } from "~/components/ui/modal";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Button } from "~/components/ui/button";
@@ -325,6 +328,7 @@ function TeachingTermPage() {
   const navigate = useNavigate();
   const { semesterLabel } = useSemesters();
   const teachingTermId = Number(id);
+  const [removeOpen, setRemoveOpen] = useState(false);
 
   const { data: detail, error, reload } = useCachedData(
     `teaching-term:${teachingTermId || "none"}`,
@@ -332,6 +336,16 @@ function TeachingTermPage() {
     { enabled: !!teachingTermId },
   );
   const loading = !!teachingTermId && detail === null && !error;
+
+  async function handleConfirmRemove() {
+    try {
+      const message = await deanService.deleteTeachingTerm(teachingTermId, true);
+      toast.success(message);
+      navigate("/subject-offering");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete teaching term.");
+    }
+  }
 
   if (loading) {
     return <TermSkeleton />;
@@ -380,7 +394,7 @@ function TeachingTermPage() {
             src={instructor.profile_photo_url}
             className="size-14"
           />
-          <div>
+          <div className="flex-1">
             <h1 className="font-display text-2xl tracking-wide text-navy-700 dark:text-mist-100">
               {instructor.full_name ?? "Instructor"}
             </h1>
@@ -394,6 +408,14 @@ function TeachingTermPage() {
               )}
             </div>
           </div>
+          <Button
+            type="button"
+            variant="danger"
+            block={false}
+            onClick={() => setRemoveOpen(true)}
+          >
+            <TrashIcon /> Remove
+          </Button>
         </div>
       </motion.div>
 
@@ -535,6 +557,31 @@ function TeachingTermPage() {
           </Table>
         )}
       </motion.div>
+
+      <ConfirmDialog
+        open={removeOpen}
+        onClose={() => setRemoveOpen(false)}
+        title="Remove Instructor"
+        confirmLabel="Remove Instructor"
+        loadingLabel="Removing…"
+        confirmVariant="danger"
+        confirmationText="REMOVE"
+        onConfirm={handleConfirmRemove}
+      >
+        <div className="flex flex-col gap-3">
+          <p>
+            Are you sure you want to remove <strong>{instructor.full_name}</strong> from teaching loads?
+          </p>
+          <div className="rounded-lg border border-red-200/80 bg-red-50/70 px-3 py-2.5 dark:border-red-500/25 dark:bg-red-500/10">
+            <p className="font-medium text-red-800 dark:text-red-200">What this affects</p>
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-300">
+              <li>The instructor&apos;s teaching term and assigned subjects for this academic term will be removed.</li>
+              <li>Any scheduled subjects must be removed first; the backend will reject the deletion otherwise.</li>
+              <li>Your role permissions are checked again on the server before anything is deleted.</li>
+            </ul>
+          </div>
+        </div>
+      </ConfirmDialog>
     </div>
   );
 }
