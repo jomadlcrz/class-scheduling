@@ -280,9 +280,9 @@ async function listTeachingTerms(params?: {
   }));
 }
 
-/** DELETE /deans/teaching-terms/<id>[?cascade=true] — removes term and optionally its assignments. */
+/** DELETE /deans/teaching-terms/<id>[?cascade=true&confirmation=REMOVE] — removes term and optionally its assignments. */
 async function deleteTeachingTerm(id: number, cascade = false): Promise<string> {
-  const qs = cascade ? "?cascade=true" : "";
+  const qs = cascade ? "?cascade=true&confirmation=REMOVE" : "";
   const data = await apiDelete<{ message?: string }>(`/deans/teaching-terms/${id}${qs}`);
   return apiMessage(data);
 }
