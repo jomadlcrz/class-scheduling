@@ -29,6 +29,7 @@ import {
   staggerWidgets,
   useTermData,
 } from "~/features/dashboard/dashboard-shared";
+import { TermSetupBanner } from "~/features/term-scheduling/term-setup-banner";
 import { registrarService } from "~/services/registrar.service";
 import type { RegistrarAnalyticsResponse } from "~/types/registrar-analytics";
 
@@ -267,6 +268,8 @@ export function RegistrarDashboard() {
     <div className="space-y-6">
       <UpdateIndicator visible={refreshing} />
 
+      <TermSetupBanner />
+
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div
@@ -303,14 +306,16 @@ export function RegistrarDashboard() {
                     Overview
                   </h2>
                 </div>
-                <TermSelectors
-                  years={years}
-                  sems={sems}
-                  syId={syId}
-                  semesterNumber={semesterNumber}
-                  onSyId={setSyId}
-                  onSemesterNumber={setSemesterNumber}
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <TermSelectors
+                    years={years}
+                    sems={sems}
+                    syId={syId}
+                    semesterNumber={semesterNumber}
+                    onSyId={setSyId}
+                    onSemesterNumber={setSemesterNumber}
+                  />
+                </div>
               </motion.div>
 
               {/* ─── Headline numbers ─── */}
