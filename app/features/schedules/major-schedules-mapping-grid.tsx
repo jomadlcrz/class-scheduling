@@ -386,13 +386,11 @@ export function MajorSchedulesMappingGrid({
             label="Controls Guide"
             trigger={
               <>
-                <span className="inline-flex size-4 items-center justify-center">
-                  <HelpCircleIcon />
-                </span>
+                <HelpCircleIcon />
                 <span>Controls Guide</span>
               </>
             }
-            triggerClassName="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-2.5 font-body text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-surface-raised dark:text-slate-300"
+            triggerClassName="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-300 bg-white px-2.5 font-body text-xs text-slate-600 transition-colors hover:bg-slate-50 hover:text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-mist-100"
             className="w-72 p-3"
           >
             {() => (

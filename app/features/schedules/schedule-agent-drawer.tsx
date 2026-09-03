@@ -1060,7 +1060,7 @@ export function ScheduleAgentDrawer({
         }
         footer={viewMode === "chat" ? (
           <div className="flex w-full flex-col gap-1.5">
-            <div className="flex items-end gap-1.5 rounded-2xl border border-slate-300 bg-white p-1.5 shadow-sm transition-colors duration-150 focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-400 dark:border-white/15 dark:bg-white/5">
+            <div className="flex items-stretch gap-1.5 rounded-2xl border border-slate-300 bg-white p-1.5 shadow-sm transition-colors duration-150 focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-400 dark:border-white/15 dark:bg-white/5">
               <label htmlFor="schedule-agent-message" className="sr-only">
                 Message to the Marvis Agent
               </label>
@@ -1078,7 +1078,7 @@ export function ScheduleAgentDrawer({
                   }
                 }}
                 placeholder="Describe a conflict or ask a follow-up…"
-                className="max-h-30 min-h-6 size-none border-0 bg-transparent px-2 py-1.5 font-body text-sm text-gray-900 outline-none placeholder-slate-400 disabled:cursor-not-allowed disabled:text-slate-400 dark:text-mist-100 dark:placeholder-slate-500"
+                className="min-h-6 flex-1 resize-none border-0 bg-transparent px-2 py-1.5 font-body text-sm text-gray-900 outline-none placeholder-slate-400 disabled:cursor-not-allowed disabled:text-slate-400 dark:text-mist-100 dark:placeholder-slate-500"
               />
               <button
                 type="button"

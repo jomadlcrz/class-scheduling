@@ -156,7 +156,7 @@ export function ScheduleAgentProgramPicker({
           >
             <SelectTrigger
               id="marvis-program-submission"
-              disabled={Boolean(fixedSubmission) || loadingSubmissions}
+              disabled={Boolean(fixedSubmission) || loadingSubmissions || submissions.length === 0}
             >
               <SelectValue
                 placeholder={loadingSubmissions ? "Loading submissions…" : "Choose a department"}
