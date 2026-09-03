@@ -42,7 +42,7 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
   }, [department]);
 
   const confirmed =
-    preview !== null && confirmValue.trim().toUpperCase() ===     preview.department.departmentAbbrev;
+    preview !== null && confirmValue.trim() === preview.department.departmentAbbrev;
 
   async function handleArchive() {
     if (!department) return;
@@ -161,12 +161,11 @@ export function DepartmentArchiveDialog({ department, onClose, onConfirm }: Depa
           <input
             id="department-archive-confirm"
             type="text"
-            autoCapitalize="characters"
             autoComplete="off"
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            className={`${inputClassName} font-body uppercase tracking-wide`}
+            className={`${inputClassName} font-body`}
           />
         </div>
 

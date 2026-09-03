@@ -107,7 +107,7 @@ export function DevResetToolsPanel() {
     setError(null);
   }
 
-  const confirmed = confirmValue.trim().toUpperCase() === "RESET";
+  const confirmed = confirmValue.trim() === "RESET";
 
   async function handleExecuteReset() {
     if (!selectedAction || !confirmed) return;
@@ -190,13 +190,12 @@ export function DevResetToolsPanel() {
                 id="reset-confirm-input"
                 type="text"
                 autoFocus
-                autoCapitalize="characters"
                 autoComplete="off"
                 spellCheck={false}
                 placeholder="RESET"
                 value={confirmValue}
                 onChange={(e) => setConfirmValue(e.target.value)}
-                className={`${inputClassName} font-body uppercase tracking-wide`}
+                className={`${inputClassName} font-body`}
               />
             </div>
 

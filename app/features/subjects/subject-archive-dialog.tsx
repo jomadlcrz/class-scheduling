@@ -41,7 +41,7 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
   }, [subject]);
 
   const confirmed =
-    preview !== null && confirmValue.trim().toUpperCase() === preview.subject.subject_code;
+    preview !== null && confirmValue.trim() === preview.subject.subject_code;
 
   async function handleArchive() {
     if (!subject) return;
@@ -181,12 +181,11 @@ export function SubjectArchiveDialog({ subject, onClose, onConfirm }: SubjectArc
           <input
             id="subject-archive-confirm"
             type="text"
-            autoCapitalize="characters"
             autoComplete="off"
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            className={`${inputClassName} font-body uppercase tracking-wide`}
+            className={`${inputClassName} font-body`}
           />
         </div>
 

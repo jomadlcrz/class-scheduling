@@ -41,7 +41,7 @@ export function ProgramArchiveDialog({ program, onClose, onConfirm }: ProgramArc
   }, [program]);
 
   const confirmed =
-    program !== null && confirmValue.trim().toUpperCase() === program.abbrev;
+    program !== null && confirmValue.trim() === program.abbrev;
 
   async function handleArchive() {
     if (!program) return;
@@ -207,12 +207,11 @@ export function ProgramArchiveDialog({ program, onClose, onConfirm }: ProgramArc
           <input
             id="program-archive-confirm"
             type="text"
-            autoCapitalize="characters"
             autoComplete="off"
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            className={`${inputClassName} font-body uppercase tracking-wide`}
+            className={`${inputClassName} font-body`}
           />
         </div>
 

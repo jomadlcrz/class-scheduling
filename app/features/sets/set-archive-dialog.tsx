@@ -41,7 +41,7 @@ export function SetArchiveDialog({ set, onClose, onConfirm }: SetArchiveDialogPr
   }, [set]);
 
   const confirmed =
-    preview !== null && confirmValue.trim().toUpperCase() === preview.set.set_code;
+    preview !== null && confirmValue.trim() === preview.set.set_code;
 
   async function handleArchive() {
     if (!set) return;
@@ -125,12 +125,11 @@ export function SetArchiveDialog({ set, onClose, onConfirm }: SetArchiveDialogPr
           <input
             id="set-archive-confirm"
             type="text"
-            autoCapitalize="characters"
             autoComplete="off"
             spellCheck={false}
             value={confirmValue}
             onChange={(e) => setConfirmValue(e.target.value)}
-            className={`${inputClassName} font-body uppercase tracking-wide`}
+            className={`${inputClassName} font-body`}
           />
         </div>
 
