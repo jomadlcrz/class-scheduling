@@ -19,8 +19,8 @@ export function SemesterTable({ semesters, onEdit }: SemesterTableProps) {
   return (
     <Table>
       <TableHead>
-        <TableHeader>Semester Number</TableHeader>
-        <TableHeader>Display Name</TableHeader>
+        <TableHeader>Semester number</TableHeader>
+        <TableHeader>Display name</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>

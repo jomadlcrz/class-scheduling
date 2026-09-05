@@ -64,7 +64,7 @@ export function ProgramTablePanel({
 
           <Button type="button" variant="outline" block={false} onClick={onAssignSubject}>
             <PlusIcon />
-            <span className="hidden sm:inline">Assign Subject</span>
+            <span className="hidden sm:inline">Assign subject</span>
             <span className="sm:hidden">Add</span>
           </Button>
 
@@ -88,7 +88,7 @@ export function ProgramTablePanel({
             <thead className="border-b border-slate-100 bg-white font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
               <tr>
                 <th className="px-3 py-2 sm:px-4 sm:py-2.5">Code</th>
-                <th className="px-3 py-2 sm:px-4 sm:py-2.5">Descriptive Title</th>
+                <th className="px-3 py-2 sm:px-4 sm:py-2.5">Descriptive title</th>
                 <th className="px-3 py-2 text-left sm:px-4 sm:py-2.5">Type</th>
                 <th className="px-2 py-2 text-center sm:px-3 sm:py-2.5">Units</th>
                 <th className="px-2 py-2 text-center sm:px-3 sm:py-2.5">Lec</th>
@@ -101,7 +101,7 @@ export function ProgramTablePanel({
               {program.subjects.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-3 py-5 text-center text-xs text-slate-400 sm:px-4 sm:py-6">
-                    No subjects assigned to this program yet. Click &quot;Assign Subject&quot; above.
+                    No subjects assigned to this program yet. Click &quot;Assign subject&quot; above.
                   </td>
                 </tr>
               ) : (

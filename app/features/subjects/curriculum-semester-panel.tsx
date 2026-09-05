@@ -128,7 +128,7 @@ export function CurriculumSemesterPanel({
             />
             <Switch
               id={`curriculum-auto-sort-${semesterNumber}`}
-              label="Auto Sort"
+              label="Auto sort"
               checked={autoSort}
               onChange={onAutoSortChange}
               inline
@@ -164,10 +164,10 @@ export function CurriculumSemesterPanel({
                     />
                   </TableHeader>
                 )}
-                <TableHeader className="md:w-36">Subject Code</TableHeader>
-                <TableHeader className="max-w-56">Descriptive Title</TableHeader>
+                <TableHeader className="md:w-36">Subject code</TableHeader>
+                <TableHeader className="max-w-56">Descriptive title</TableHeader>
                 <TableHeader className="text-center">Units</TableHeader>
-                <TableHeader className="md:w-32">Subject Type</TableHeader>
+                <TableHeader className="md:w-32">Subject type</TableHeader>
                 <TableHeader className="md:w-56 whitespace-nowrap">Prerequisites</TableHeader>
                 {!isViewMode && <TableHeader className="px-2" />}
               </TableHead>

@@ -789,15 +789,15 @@ export function SubjectAssignmentView({
               disabled={!selectedSyId || !selectedSemesterNumber}
               onClick={() => setPolicyOpen(true)}
             >
-              Load Policy
+              Load policy
             </Button>
             <Link
               to="/subject-offering/audit-logs"
               className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 font-body text-sm font-medium text-navy-700 transition-all duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 active:scale-[0.97] active:brightness-95 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
-              aria-label="Subject Offering Audit Logs"
+              aria-label="Subject offering audit logs"
             >
               <AuditLogIcon />
-              <span className="hidden sm:inline">Audit Logs</span>
+              <span className="hidden sm:inline">Audit logs</span>
             </Link>
           </div>
         }

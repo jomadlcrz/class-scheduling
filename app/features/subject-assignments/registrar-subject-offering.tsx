@@ -123,7 +123,7 @@ export function RegistrarSubjectOffering() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader title="Subject Offering" />
       <Card className="mt-4 grid gap-3 p-3 sm:grid-cols-2 sm:gap-4 sm:p-4">
-        <FieldChrome id="registrar-subject-offering-sy" label="School Year">
+        <FieldChrome id="registrar-subject-offering-sy" label="School year">
           <Select
             items={schoolYears.map((year) => ({ value: String(year.id), label: year.schoolYear }))}
             value={pageTerm.syId != null ? String(pageTerm.syId) : ""}

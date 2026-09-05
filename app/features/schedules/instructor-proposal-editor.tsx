@@ -361,10 +361,10 @@ export function InstructorProposalEditor({
               <TableHead>
                 <TableHeader>Subject</TableHeader>
                 <TableHeader>Section</TableHeader>
-                <TableHeader>Original Schedule</TableHeader>
-                <TableHeader>Proposed Schedule</TableHeader>
+                <TableHeader>Original schedule</TableHeader>
+                <TableHeader>Proposed schedule</TableHeader>
                 <TableHeader>Classroom</TableHeader>
-                <TableHeader>Delivery Mode</TableHeader>
+                <TableHeader>Delivery mode</TableHeader>
               </TableHead>
               <TableBody>
                 {changes.map(({ original: orig, proposed: prop }, index) => (
@@ -554,7 +554,7 @@ export function InstructorProposalEditor({
                     </FieldChrome>
 
                     {/* Start Time */}
-                    <FieldChrome id={`start-${meeting.scheduleId}`} label="Start Time">
+                    <FieldChrome id={`start-${meeting.scheduleId}`} label="Start time">
                       <Select
                         value={meeting.startTime}
                         onValueChange={(val) => handleTimeChange(meeting.scheduleId, "startTime", val)}
@@ -579,7 +579,7 @@ export function InstructorProposalEditor({
                     </FieldChrome>
 
                     {/* End Time */}
-                    <FieldChrome id={`end-${meeting.scheduleId}`} label="End Time">
+                    <FieldChrome id={`end-${meeting.scheduleId}`} label="End time">
                       <Select
                         value={meeting.endTime}
                         onValueChange={(val) => handleTimeChange(meeting.scheduleId, "endTime", val)}
@@ -605,7 +605,7 @@ export function InstructorProposalEditor({
                     </FieldChrome>
 
                     {/* Delivery Mode */}
-                    <FieldChrome id={`mode-${meeting.scheduleId}`} label="Delivery Mode">
+                    <FieldChrome id={`mode-${meeting.scheduleId}`} label="Delivery mode">
                       <Select
                         value={meeting.classMode}
                         onValueChange={(val) => updateMeeting(meeting.scheduleId, { classMode: val as ClassMode })}

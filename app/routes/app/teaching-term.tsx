@@ -562,7 +562,7 @@ function TeachingTermPage() {
         open={removeOpen}
         onClose={() => setRemoveOpen(false)}
         title="Remove Instructor"
-        confirmLabel="Remove Instructor"
+        confirmLabel="Remove instructor"
         loadingLabel="Removing…"
         confirmVariant="danger"
         confirmationText="REMOVE"

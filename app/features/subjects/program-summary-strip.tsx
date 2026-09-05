@@ -11,11 +11,11 @@ type ProgramSummaryStripProps = {
 export function ProgramSummaryStrip({ newProgram, totalUnits }: ProgramSummaryStripProps) {
   const fields = [
     { label: "Department", value: newProgram.departmentName || "—" },
-    { label: "Program Abbreviation", value: newProgram.abbrev || "—" },
-    { label: "Program Name", value: newProgram.name || "—" },
-    { label: "Program Type", value: newProgram.type || "—" },
-    { label: "Program Length", value: `${newProgram.lengthYears} Years` },
-    ...(totalUnits !== undefined ? [{ label: "Total Units", value: `${totalUnits} Units` }] : []),
+    { label: "Program abbreviation", value: newProgram.abbrev || "—" },
+    { label: "Program name", value: newProgram.name || "—" },
+    { label: "Program type", value: newProgram.type || "—" },
+    { label: "Program length", value: `${newProgram.lengthYears} years` },
+    ...(totalUnits !== undefined ? [{ label: "Total units", value: `${totalUnits} units` }] : []),
   ];
 
   return (

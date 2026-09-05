@@ -22,12 +22,12 @@ export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: Te
   return (
     <Table>
       <TableHead>
-        <TableHeader>School Year</TableHeader>
+        <TableHeader>School year</TableHeader>
         <TableHeader>Semester</TableHeader>
         <TableHeader>Status</TableHeader>
-        <TableHeader className="hidden md:table-cell">Closed Reason</TableHeader>
-        <TableHeader className="hidden lg:table-cell">Closed At</TableHeader>
-        <TableHeader className="hidden lg:table-cell">Closed By</TableHeader>
+        <TableHeader className="hidden md:table-cell">Closed reason</TableHeader>
+        <TableHeader className="hidden lg:table-cell">Closed at</TableHeader>
+        <TableHeader className="hidden lg:table-cell">Closed by</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>

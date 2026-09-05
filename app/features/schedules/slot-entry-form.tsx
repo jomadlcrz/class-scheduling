@@ -296,7 +296,7 @@ export function SlotEntryForm({
       </FieldChrome>
 
       <div className="grid grid-cols-2 gap-3">
-        <FieldChrome id="slot-start" label="Start Time">
+        <FieldChrome id="slot-start" label="Start time">
           <Select
             items={TIME_SLOTS.slice(0, -1).map((t) => ({ value: t, label: formatTime(t) }))}
             value={startTime}
@@ -314,7 +314,7 @@ export function SlotEntryForm({
             </SelectContent>
           </Select>
         </FieldChrome>
-        <FieldChrome id="slot-end" label="End Time">
+        <FieldChrome id="slot-end" label="End time">
           <Select
             items={TIME_SLOTS.filter((t) => timeToMinutes(t) > timeToMinutes(startTime)).map((t) => ({
               value: t,

@@ -67,7 +67,7 @@ export function RegularClassFilters({
 }: RegularClassFiltersProps) {
   return (
     <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
-      <FieldChrome id="rc-school-year" label="School Year">
+      <FieldChrome id="rc-school-year" label="School year">
         <Select
           items={
             isLoading
@@ -80,7 +80,7 @@ export function RegularClassFilters({
           onValueChange={(v) => onSchoolYearChange(v as string)}
         >
           <SelectTrigger id="rc-school-year">
-            <SelectValue placeholder="School Year" />
+            <SelectValue placeholder="School year" />
           </SelectTrigger>
           <SelectContent>
             {isLoading ? (
@@ -162,7 +162,7 @@ export function RegularClassFilters({
           </SelectContent>
         </Select>
       </FieldChrome>
-      <FieldChrome id="rc-year-level" label="Year Level">
+      <FieldChrome id="rc-year-level" label="Year level">
         <Select
           items={[
             {
@@ -179,7 +179,7 @@ export function RegularClassFilters({
           onValueChange={(v) => onYearLevelChange(v === "" ? "" : (Number(v) as YearLevel))}
         >
           <SelectTrigger id="rc-year-level">
-            <SelectValue placeholder="Year Level" />
+            <SelectValue placeholder="Year level" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">

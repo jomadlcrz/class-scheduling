@@ -36,7 +36,7 @@ export function MasterSchedulesTermBar({
     <Card className="flex flex-col gap-4 p-4 lg:flex-row lg:items-end lg:justify-between">
       {/* Left: Term Pickers */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:w-96">
-        <FieldChrome id="ms-school-year" label="School Year">
+        <FieldChrome id="ms-school-year" label="School year">
           <Select
             items={
               schoolYears.length === 0

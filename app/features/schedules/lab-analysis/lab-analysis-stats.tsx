@@ -6,11 +6,11 @@ export function LabAnalysisStats({ totals }: { totals: LabAnalysisTotals }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       <StatCard label="Laboratories" value={totals.laboratories} />
-      <StatCard label="Slots Used" value={`${totals.slotsUsed}/${totals.slotCapacity}`} />
-      <StatCard label="Slot Utilization" value={`${totals.slotUtilizationPercent}%`} />
-      <StatCard label="Booked Hours" value={`${totals.bookedHours}h`} />
+      <StatCard label="Slots used" value={`${totals.slotsUsed}/${totals.slotCapacity}`} />
+      <StatCard label="Slot utilization" value={`${totals.slotUtilizationPercent}%`} />
+      <StatCard label="Booked hours" value={`${totals.bookedHours}h`} />
       <StatCard
-        label="Fully Booked"
+        label="Fully booked"
         value={`${totals.fullyBookedLaboratories}/${totals.laboratories}`}
       />
       <StatCard label="Conflicts" value={totals.conflicts} />

@@ -131,15 +131,15 @@ export function ProgramWizardReview({
                           {semesterLabel(semester.semester)}
                         </span>
                       }
-                      adornment={<Badge tone="slate">{semester.totalUnits} Units</Badge>}
+                      adornment={<Badge tone="slate">{semester.totalUnits} units</Badge>}
                     >
                       <div className="px-2 pb-3">
                         <Table>
                           <TableHead>
-                            <TableHeader className="w-28">Subject Code</TableHeader>
-                            <TableHeader className="max-w-56">Descriptive Title</TableHeader>
+                            <TableHeader className="w-28">Subject code</TableHeader>
+                            <TableHeader className="max-w-56">Descriptive title</TableHeader>
                             <TableHeader className="text-center">Units</TableHeader>
-                            <TableHeader className="w-36">Subject Type</TableHeader>
+                            <TableHeader className="w-36">Subject type</TableHeader>
                             <TableHeader className="max-w-48">Prerequisites</TableHeader>
                           </TableHead>
                           <TableBody>
@@ -201,7 +201,7 @@ export function ProgramWizardReview({
       <ProgramWizardFooter
         backLabel="Back to Curriculum Builder"
         onBack={onBack}
-        primaryLabel="Save Program"
+        primaryLabel="Save program"
         onPrimary={onSave}
         primaryDisabled={!canSave}
         isSaving={isSaving}

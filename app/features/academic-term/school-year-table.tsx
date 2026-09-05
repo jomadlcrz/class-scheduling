@@ -27,9 +27,9 @@ export function SchoolYearTable({ schoolYears, onEdit }: SchoolYearTableProps) {
   return (
     <Table>
       <TableHead>
-        <TableHeader>School Year</TableHeader>
-        <TableHeader>Calendar Status</TableHeader>
-        <TableHeader className="hidden md:table-cell">Created At</TableHeader>
+        <TableHeader>School year</TableHeader>
+        <TableHeader>Calendar status</TableHeader>
+        <TableHeader className="hidden md:table-cell">Created at</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>

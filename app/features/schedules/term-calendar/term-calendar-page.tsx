@@ -908,7 +908,7 @@ export function TermCalendarPage() {
                 <div className="text-left">
                   <DateTimePickerField
                     id={`deadline-${activeTab}`}
-                    label="Adjust Closing Date"
+                    label="Adjust closing date"
                     value={draftClosingDate}
                     onChange={setDraftClosingDate}
                   />
@@ -1010,7 +1010,7 @@ export function TermCalendarPage() {
           </p>
           <DateTimePickerField
             id="start-phase-date"
-            label="Closing Date & Time"
+            label="Closing date & time"
             value={draftClosingDate}
             onChange={setDraftClosingDate}
           />
@@ -1026,7 +1026,7 @@ export function TermCalendarPage() {
               loadingLabel="Starting…"
               onClick={() => handleStartPhase(draftClosingDate)}
             >
-              Start Phase
+              Start phase
             </Button>
           </ModalActions>
         </div>
@@ -1063,7 +1063,7 @@ export function TermCalendarPage() {
           </p>
           <DateTimePickerField
             id="reopen-phase-date"
-            label="New Closing Date"
+            label="New closing date"
             value={draftClosingDate}
             onChange={setDraftClosingDate}
           />
@@ -1089,7 +1089,7 @@ export function TermCalendarPage() {
               loadingLabel="Reopening…"
               onClick={() => handleReopenPhase(draftClosingDate)}
             >
-              Reopen Phase
+              Reopen phase
             </Button>
           </ModalActions>
         </div>

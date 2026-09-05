@@ -68,10 +68,10 @@ export function AdminAuditLogPage() {
           <div className="mt-4 hidden sm:block">
             <Table>
               <TableHead>
-                <TableHeader>Date &amp; Time</TableHeader>
+                <TableHeader>Date &amp; time</TableHeader>
                 <TableHeader>Action</TableHeader>
                 <TableHeader>Account</TableHeader>
-                <TableHeader>Performed By</TableHeader>
+                <TableHeader>Performed by</TableHeader>
                 <TableHeader>Reason</TableHeader>
               </TableHead>
               <TableBody>

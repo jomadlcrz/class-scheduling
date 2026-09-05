@@ -89,9 +89,9 @@ function StudentTable({
             />
           </TableHeader>
           <TableHeader dense>Student ID</TableHeader>
-          <TableHeader dense>Student Name</TableHeader>
+          <TableHeader dense>Student name</TableHeader>
           <TableHeader dense className="hidden sm:table-cell">Program</TableHeader>
-          <TableHeader dense className="hidden md:table-cell">Year Level</TableHeader>
+          <TableHeader dense className="hidden md:table-cell">Year level</TableHeader>
         </TableHead>
         <TableBody>
           {pagination.pageItems.map((student) => {
@@ -652,19 +652,19 @@ function IrregularClassPage() {
                         </div>
                         <div className="w-40 shrink-0">
                           <Select
-                            items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
+                            items={[{ value: "all", label: "All programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
                             value={programFilter}
                             onValueChange={(v) => setProgramFilter(v as string)}
                           >
-                            <SelectTrigger aria-label="Filter by program"><SelectValue placeholder="All Programs" /></SelectTrigger>
+                            <SelectTrigger aria-label="Filter by program"><SelectValue placeholder="All programs" /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All Programs</SelectItem>
+                              <SelectItem value="all">All programs</SelectItem>
                               {programs.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>
                         <button type="button" onClick={handleSelectAllStudents} className="shrink-0 rounded-lg px-3 py-1.5 font-body text-xs text-slate-600 transition-colors hover:text-slate-800 dark:text-slate-300 dark:hover:text-mist-100">
-                          {filteredStudents.length > 0 && filteredStudents.every((s) => selectedStudentIds.has(s.studentProfileId)) ? "Deselect All" : "Select All"}
+                          {filteredStudents.length > 0 && filteredStudents.every((s) => selectedStudentIds.has(s.studentProfileId)) ? "Deselect all" : "Select all"}
                         </button>
                       </div>
                       {/* Table */}
@@ -803,7 +803,7 @@ function AssignedScheduleView({
         <TableHead>
           <TableHeader>Student</TableHeader>
           <TableHeader className="hidden sm:table-cell">Student ID</TableHeader>
-          <TableHeader>Subjects Enrolled</TableHeader>
+          <TableHeader>Subjects enrolled</TableHeader>
         </TableHead>
         <TableBody>
           {students.map((student) => (

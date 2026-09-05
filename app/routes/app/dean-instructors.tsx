@@ -97,7 +97,7 @@ function DeanInstructorsPage() {
                 <TableHeader className="hidden sm:table-cell">Email</TableHeader>
                 <TableHeader className="hidden sm:table-cell">Mobile</TableHeader>
                 <TableHeader className="hidden md:table-cell">Gender</TableHeader>
-                <TableHeader className="hidden md:table-cell">Civil Status</TableHeader>
+                <TableHeader className="hidden md:table-cell">Civil status</TableHeader>
                 <TableHeader className="hidden lg:table-cell">Roles</TableHeader>
               </TableHead>
               <TableBody>

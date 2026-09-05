@@ -112,8 +112,8 @@ export function AcademicTermsAuditLogPage() {
       {!loadingFilters && (
         <div className="mt-6 flex flex-wrap items-center gap-2">
           <FilterDropdown
-            label="School Year"
-            allLabel="All School Years"
+            label="School year"
+            allLabel="All school years"
             options={schoolYearOptions}
             value={schoolYear}
             onChange={(value) => {
@@ -123,7 +123,7 @@ export function AcademicTermsAuditLogPage() {
           />
           <FilterDropdown
             label="Semester"
-            allLabel="All Semesters"
+            allLabel="All semesters"
             options={semesterOptions}
             value={semester}
             onChange={(value) => {
@@ -133,7 +133,7 @@ export function AcademicTermsAuditLogPage() {
           />
           <FilterDropdown
             label="Action"
-            allLabel="All Actions"
+            allLabel="All actions"
             options={actionOptions}
             value={action}
             onChange={(value) => {
@@ -142,8 +142,8 @@ export function AcademicTermsAuditLogPage() {
             }}
           />
           <FilterDropdown
-            label="Performed By"
-            allLabel="All Users"
+            label="Performed by"
+            allLabel="All users"
             options={performerOptions}
             value={performedBy}
             onChange={(value) => {
@@ -202,10 +202,10 @@ export function AcademicTermsAuditLogPage() {
           <div className="mt-4 hidden sm:block">
             <Table>
               <TableHead>
-                <TableHeader>Date &amp; Time</TableHeader>
+                <TableHeader>Date &amp; time</TableHeader>
                 <TableHeader>Action</TableHeader>
                 <TableHeader>Term</TableHeader>
-                <TableHeader>Performed By</TableHeader>
+                <TableHeader>Performed by</TableHeader>
                 <TableHeader>Details</TableHeader>
               </TableHead>
               <TableBody>

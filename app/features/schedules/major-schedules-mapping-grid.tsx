@@ -383,11 +383,11 @@ export function MajorSchedulesMappingGrid({
             {isFullscreen ? "Exit full screen" : "Full screen"}
           </Button>
           <Popover
-            label="Controls Guide"
+            label="Controls guide"
             trigger={
               <>
                 <HelpCircleIcon />
-                <span>Controls Guide</span>
+                <span>Controls guide</span>
               </>
             }
             triggerClassName="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-300 bg-white px-2.5 font-body text-xs text-slate-600 transition-colors hover:bg-slate-50 hover:text-navy-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-mist-100"
@@ -1046,7 +1046,7 @@ export function MajorAssignmentDrawer({
             </Select>
           </FieldChrome>
 
-          <FieldChrome id="map-subject" label="Major Subject" required hint={setId ? undefined : "Select a section to load curriculum subjects."}>
+          <FieldChrome id="map-subject" label="Major subject" required hint={setId ? undefined : "Select a section to load curriculum subjects."}>
             <Select
               items={majorSubjects.map((s) => ({
                 value: String(s.id),
@@ -1079,7 +1079,7 @@ export function MajorAssignmentDrawer({
           </legend>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <FieldChrome id="map-mode" label="Meeting Mode" required>
+            <FieldChrome id="map-mode" label="Meeting mode" required>
               <Select
                 items={classModes.map((m) => ({ value: m, label: m }))}
                 value={mode}
@@ -1100,7 +1100,7 @@ export function MajorAssignmentDrawer({
 
             <FieldChrome
               id="map-session-mode"
-              label="Session Type"
+              label="Session type"
               hint={
                 sessionMode === "LAB"
                   ? "Read-only: Automatically determined as Laboratory for lab room assignment."
@@ -1124,7 +1124,7 @@ export function MajorAssignmentDrawer({
             3. Instructor Assignment
           </legend>
 
-          <FieldChrome id="map-instructor-search" label="Search Instructor" hint="Leave as TBA / Floating if instructor is not yet designated.">
+          <FieldChrome id="map-instructor-search" label="Search instructor" hint="Leave as TBA / Floating if instructor is not yet designated.">
             <input
               id="map-instructor-search"
               type="search"

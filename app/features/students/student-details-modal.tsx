@@ -71,7 +71,7 @@ export function StudentDetailsModal({
             <Field label="Name" value={displayName} />
             <Field label="Email" value={profile?.email ?? student.email ?? "—"} />
             <Field label="Mobile" value={profile?.mobile ?? student.mobile ?? "—"} />
-            {profile && <Field label="Account Status" value={profile.accountStatus} />}
+            {profile && <Field label="Account status" value={profile.accountStatus} />}
           </dl>
         </Card>
       </section>
@@ -92,12 +92,12 @@ export function StudentDetailsModal({
                 >
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <Field label="Program" value={a.program} />
-                    <Field label="Year Level" value={yearLevelLabel(a.yearLevel)} />
+                    <Field label="Year level" value={yearLevelLabel(a.yearLevel)} />
                     <Field label="Set" value={a.set ?? "—"} />
-                    <Field label="Academic Status" value={a.enrolledStatus} />
-                    {a.enrollmentState && <Field label="Enrollment State" value={a.enrollmentState} />}
-                    <Field label="Student Type" value={a.studentType ?? "—"} />
-                    <Field label="School Year" value={a.schoolYear ?? "—"} />
+                    <Field label="Academic status" value={a.enrolledStatus} />
+                    {a.enrollmentState && <Field label="Enrollment state" value={a.enrollmentState} />}
+                    <Field label="Student type" value={a.studentType ?? "—"} />
+                    <Field label="School year" value={a.schoolYear ?? "—"} />
                     <Field label="Semester" value={a.semester ?? "—"} />
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export function StudentDetailsModal({
               <Table>
                 <TableHead>
                   <TableHeader>Code</TableHeader>
-                  <TableHeader>Descriptive Title</TableHeader>
+                  <TableHeader>Descriptive title</TableHeader>
                   <TableHeader className="text-center">Units</TableHeader>
                 </TableHead>
                 <TableBody>

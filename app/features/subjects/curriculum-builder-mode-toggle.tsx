@@ -8,8 +8,8 @@ type CurriculumBuilderModeToggleProps = {
 };
 
 const options = [
-  { mode: "edit", label: "Edit Mode", Icon: EditIcon },
-  { mode: "view", label: "View Mode", Icon: EyeIcon },
+  { mode: "edit", label: "Edit mode", Icon: EditIcon },
+  { mode: "view", label: "View mode", Icon: EyeIcon },
 ] as const;
 
 /** Switches the curriculum builder between inline editing and read-only preview. */

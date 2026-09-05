@@ -171,7 +171,7 @@ export function StudentEnrollForm({
           )}
         </FieldChrome>
 
-        <FieldChrome id="enroll-status" label="Enrolled Status" required>
+        <FieldChrome id="enroll-status" label="Enrolled status" required>
           <Select
             items={[
               { value: "", label: "Select a status" },
@@ -194,7 +194,7 @@ export function StudentEnrollForm({
           </Select>
         </FieldChrome>
 
-        <FieldChrome id="enroll-type" label="Student Type" required>
+        <FieldChrome id="enroll-type" label="Student type" required>
           <Select
             items={[
               { value: "", label: "Select a type" },
@@ -217,7 +217,7 @@ export function StudentEnrollForm({
           </Select>
         </FieldChrome>
 
-        <FieldChrome id="enroll-year" label="Year Level" required>
+        <FieldChrome id="enroll-year" label="Year level" required>
           <Select
             items={[
               { value: "", label: "Select a year" },
@@ -272,7 +272,7 @@ export function StudentEnrollForm({
           </FieldChrome>
         )}
 
-        <FieldChrome id="enroll-sy" label="School Year" required>
+        <FieldChrome id="enroll-sy" label="School year" required>
           <Select
             items={[
               { value: "", label: "Select a school year" },
@@ -321,11 +321,11 @@ export function StudentEnrollForm({
 
       <div>
         <div className="flex items-center justify-between">
-          <span className="font-body text-sm text-slate-600 dark:text-slate-300">Enrolled Subjects</span>
+          <span className="font-body text-sm text-slate-600 dark:text-slate-300">Enrolled subjects</span>
           {filteredSubjects.length > 0 && (
             <Checkbox
               id="enroll-subjects-select-all"
-              label="Select All"
+              label="Select all"
               checked={allSubjectsSelected}
               onChange={toggleSelectAll}
             />

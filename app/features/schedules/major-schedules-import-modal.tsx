@@ -896,7 +896,7 @@ export function MajorSchedulesImportModal({
           fileInputRef.current?.click();
         }}
         title="Change Spreadsheet File?"
-        confirmLabel="Change File"
+        confirmLabel="Change file"
         confirmVariant="danger"
         loadingLabel="Changing…"
       >

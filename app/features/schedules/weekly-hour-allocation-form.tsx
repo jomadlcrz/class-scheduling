@@ -113,7 +113,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       <FormError message={error} />
 
-      <FieldChrome id="wh-subject-type" label="Subject Type">
+      <FieldChrome id="wh-subject-type" label="Subject type">
         <Select
           items={[{ value: "", label: "— Select subject type —" }, ...types.map((t) => ({ value: t, label: t }))]}
           value={subjectType}
@@ -149,7 +149,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <Input
               id="wh-lec-hours"
-              label="Lecture Hours/Week"
+              label="Lecture hours/week"
               type="number"
               inputMode="decimal"
               min={0}
@@ -165,7 +165,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
             />
             <Input
               id="wh-lab-hours"
-              label="Lab Hours/Week"
+              label="Lab hours/week"
               type="number"
               inputMode="decimal"
               min={0}

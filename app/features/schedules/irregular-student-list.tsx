@@ -88,15 +88,15 @@ export function IrregularStudentList({
 
       <div className="shrink-0">
         <Select
-          items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
+          items={[{ value: "all", label: "All programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
           value={programFilter}
           onValueChange={(v) => setProgramFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by program">
-            <SelectValue placeholder="All Programs" />
+            <SelectValue placeholder="All programs" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Programs</SelectItem>
+            <SelectItem value="all">All programs</SelectItem>
             {programs.map((p) => (
               <SelectItem key={p} value={p}>
                 {p}

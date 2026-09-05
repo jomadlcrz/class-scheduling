@@ -70,7 +70,7 @@ export function SubjectAssignmentToolbar({
         </FieldChrome>
       )}
 
-      <FieldChrome id="subject-assignment-school-year" label="School Year">
+      <FieldChrome id="subject-assignment-school-year" label="School year">
         <Select
           items={schoolYears.map((year) => ({ value: String(year.id), label: year.schoolYear }))}
           value={selectedSchoolYearId}

@@ -756,7 +756,7 @@ function MajorSchedulesPage() {
                 <TableHead>
                   <TableHeader>Action</TableHeader>
                   <TableHeader>Department / Version</TableHeader>
-                  <TableHeader>Performed By</TableHeader>
+                  <TableHeader>Performed by</TableHeader>
                   <TableHeader>Details</TableHeader>
                 </TableHead>
                 <TableBody>
@@ -892,7 +892,7 @@ function MajorSchedulesPage() {
         open={submitTarget !== null}
         onClose={() => setSubmitTarget(null)}
         title="Submit Major Schedule"
-        confirmLabel="Submit Schedule"
+        confirmLabel="Submit schedule"
         loadingLabel="Submitting…"
         onConfirm={async () => {
           if (!submitTarget) return;

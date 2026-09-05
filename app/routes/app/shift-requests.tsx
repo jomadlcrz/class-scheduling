@@ -75,20 +75,20 @@ function historyStatus(request: InstructorReviewDetail): {
   }
   if (status === "rejected") {
     return {
-      label: "Not Applied",
+      label: "Not applied",
       tone: "red",
       description: "The request was turned down and the original distributed timetable was kept.",
     };
   }
   if (status === "forwarded") {
     return {
-      label: "With Registrar",
+      label: "With registrar",
       tone: "gold",
       description: "Dean forwarded your suggestion to the Registrar for conflict checks.",
     };
   }
   return {
-    label: "Awaiting Dean",
+    label: "Awaiting dean",
     tone: "gold",
     description: "Your suggestion is currently awaiting review by your Dean.",
   };
@@ -649,8 +649,8 @@ export default function ShiftRequestsRoute() {
                                   <TableHeader>
                                     <TableRow>
                                       <TableHead>Class</TableHead>
-                                      <TableHead>Original Schedule</TableHead>
-                                      <TableHead>Requested Change</TableHead>
+                                      <TableHead>Original schedule</TableHead>
+                                      <TableHead>Requested change</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -709,7 +709,7 @@ export default function ShiftRequestsRoute() {
               open={acceptAllOpen}
               onClose={() => setAcceptAllOpen(false)}
               title="Accept all distributed schedules?"
-              confirmLabel="Accept All"
+              confirmLabel="Accept all"
               loadingLabel="Accepting all..."
               confirmVariant="danger"
               onConfirm={acceptAllSchedules}

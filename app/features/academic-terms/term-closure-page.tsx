@@ -131,7 +131,7 @@ export function TermClosurePage() {
           </div>
           <div className="flex flex-wrap items-center gap-2" aria-label="Filter closure history">
             <FilterDropdown
-              label="School Year"
+              label="School year"
               allLabel="All years"
               options={schoolYearOptions}
               value={schoolYear}

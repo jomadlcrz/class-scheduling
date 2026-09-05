@@ -31,10 +31,10 @@ export function CurriculumSubjects({ group, onEdit, onArchive }: CurriculumSubje
   return (
     <Table>
       <TableHead>
-        <TableHeader>Subject Code</TableHeader>
-        <TableHeader>Descriptive Title</TableHeader>
+        <TableHeader>Subject code</TableHeader>
+        <TableHeader>Descriptive title</TableHeader>
         <TableHeader className="text-center">Units</TableHeader>
-        <TableHeader className="text-center">Pre-Requisite</TableHeader>
+        <TableHeader className="text-center">Prerequisite</TableHeader>
         {manageable && (
           <TableHeader>
             <span className="sr-only">Actions</span>

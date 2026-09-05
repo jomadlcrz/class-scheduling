@@ -67,15 +67,15 @@ export function scheduleReleaseStatusLabel(status: ScheduleReleaseStatusValue | 
     case "draft":
       return "Draft";
     case "pending_dean_review":
-      return "Pending Dean Review";
+      return "Pending dean review";
     case "instructor_review":
-      return "Instructor Review";
+      return "Instructor review";
     case "registrar_revision":
-      return "Registrar Revision";
+      return "Registrar revision";
     case "pending_final_approval":
-      return "Pending Final Approval";
+      return "Pending final approval";
     case "pending_publication":
-      return "Awaiting Term Publication";
+      return "Awaiting term publication";
     case "approved":
       return "Approved";
     case "rejected":

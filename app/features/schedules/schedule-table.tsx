@@ -84,8 +84,8 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
             <tr>
               <th className={`${th} text-center`}>Day</th>
               <th className={`${th} whitespace-nowrap`}>Time</th>
-              <th className={`${th} text-center`}>Subject Code</th>
-              <th className={th}>Descriptive Title</th>
+              <th className={`${th} text-center`}>Subject code</th>
+              <th className={th}>Descriptive title</th>
               <th className={`${th} text-center`}>Mode / Session</th>
               {!hideInstructor && <th className={th}>Instructor</th>}
               <th className={`${th} text-center`}>Room</th>

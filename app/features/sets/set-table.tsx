@@ -32,7 +32,7 @@ export function SetTable({ sets, programs, onEdit, onArchive }: SetTableProps) {
       <TableHead>
         <TableHeader>Set</TableHeader>
         <TableHeader>Program</TableHeader>
-        <TableHeader>Year Level</TableHeader>
+        <TableHeader>Year level</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
         </TableHeader>

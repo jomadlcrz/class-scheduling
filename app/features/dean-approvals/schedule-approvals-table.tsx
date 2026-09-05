@@ -54,7 +54,7 @@ export function SchedulePendingApprovalsTable({
       <TableHead>
         <TableHeader>Set</TableHeader>
         <TableHeader className="text-center">Sessions</TableHeader>
-        <TableHeader>Submitted By</TableHeader>
+        <TableHeader>Submitted by</TableHeader>
         <TableHeader className="hidden md:table-cell">Waiting</TableHeader>
         <TableHeader>
           <span className="sr-only">Actions</span>
@@ -97,7 +97,7 @@ export function SchedulePendingApprovalsTable({
                 {row.releaseStatus === "pending_final_approval" && onFinalApprove && (
                   <TableActionButton tone="amber" onClick={() => onFinalApprove(row)}>
                     <CheckIcon size={14} />
-                    Sign &amp; Final Approve
+                    Sign &amp; final approve
                   </TableActionButton>
                 )}
                 {row.releaseStatus === "pending_final_approval" && onReturnForRevision && (

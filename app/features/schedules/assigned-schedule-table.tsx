@@ -16,7 +16,7 @@ export function AssignedScheduleTable({ students }: AssignedScheduleTableProps) 
         <TableHead>
           <TableHeader>Student</TableHeader>
           <TableHeader className="hidden sm:table-cell">Student ID</TableHeader>
-          <TableHeader>Subjects Enrolled</TableHeader>
+          <TableHeader>Subjects enrolled</TableHeader>
         </TableHead>
         <TableBody>
           {students.map((student) => (

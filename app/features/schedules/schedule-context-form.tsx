@@ -63,7 +63,7 @@ export function ScheduleContextForm({
     <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
       <FieldChrome
         id="sn-school-year"
-        label="School Year"
+        label="School year"
         labelEnd={
           schoolYears.length === 0 ? (
             <Link
@@ -147,7 +147,7 @@ export function ScheduleContextForm({
           </SelectContent>
         </Select>
       </FieldChrome>
-      <FieldChrome id="sn-year-level" label="Year Level">
+      <FieldChrome id="sn-year-level" label="Year level">
         <Select
           items={[
             {

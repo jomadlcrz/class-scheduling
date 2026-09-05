@@ -246,8 +246,8 @@ export function AccountDetails() {
             cropShape="round"
             showGrid={false}
             title="Adjust Profile Photo"
-            saveLabel="Save Photo"
-            hint="Drag the image to position it, then click Save Photo."
+            saveLabel="Save photo"
+            hint="Drag the image to position it, then click Save photo."
             previewClassName="relative aspect-square w-80 overflow-hidden rounded-full"
             onClose={() => { setCropSrc(""); setProfilePictureModalOpen(false); }}
             onBack={() => setCropSrc("")}

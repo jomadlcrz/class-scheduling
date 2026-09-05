@@ -639,13 +639,13 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                 <h3 className="col-span-full font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
                   Student Information
                 </h3>
-                <Input id={`s${index}-studentNumber`} label="Student Number" value={row.studentNumber} disabled={isLoading} onChange={(e) => updateRow(index, (r) => ({ ...r, studentNumber: e.target.value }))} />
-                <Input id={`s${index}-firstName`} label="First Name" value={row.firstName} disabled={isLoading} required onChange={(e) => updateRow(index, (r) => ({ ...r, firstName: e.target.value }))} />
-                <Input id={`s${index}-middleName`} label="Middle Name" value={row.middleName} disabled={isLoading} onChange={(e) => updateRow(index, (r) => ({ ...r, middleName: e.target.value }))} />
-                <Input id={`s${index}-lastName`} label="Last Name" value={row.lastName} disabled={isLoading} required onChange={(e) => updateRow(index, (r) => ({ ...r, lastName: e.target.value }))} />
+                <Input id={`s${index}-studentNumber`} label="Student number" value={row.studentNumber} disabled={isLoading} onChange={(e) => updateRow(index, (r) => ({ ...r, studentNumber: e.target.value }))} />
+                <Input id={`s${index}-firstName`} label="First name" value={row.firstName} disabled={isLoading} required onChange={(e) => updateRow(index, (r) => ({ ...r, firstName: e.target.value }))} />
+                <Input id={`s${index}-middleName`} label="Middle name" value={row.middleName} disabled={isLoading} onChange={(e) => updateRow(index, (r) => ({ ...r, middleName: e.target.value }))} />
+                <Input id={`s${index}-lastName`} label="Last name" value={row.lastName} disabled={isLoading} required onChange={(e) => updateRow(index, (r) => ({ ...r, lastName: e.target.value }))} />
                 <PhoneInput
                   id={`s${index}-contactNumber`}
-                  label="Contact Number"
+                  label="Contact number"
                   required
                   value={row.contactNumber}
                   disabled={isLoading}
@@ -669,7 +669,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     </SelectContent>
                   </Select>
                 </FieldChrome>
-                <FieldChrome id={`s${index}-yearLevel`} label="Year Level" required>
+                <FieldChrome id={`s${index}-yearLevel`} label="Year level" required>
                   <Select
                     items={[{ value: "", label: "Select a year" }, ...(enumOpts?.yearLevels ?? []).map((y) => ({ value: String(y.id), label: y.name }))]}
                     value={row.yearLevel}
@@ -709,9 +709,9 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                   </Select>
                 </FieldChrome>
                 )}
-                <FieldChrome id={`s${index}-studentType`} label="Student Type" required>
+                <FieldChrome id={`s${index}-studentType`} label="Student type" required>
                   <Select
-                    items={[{ value: "", label: "Select a type" }, ...(enumOpts?.studentType ?? []).map((t) => ({ value: t, label: t }))]}
+                    items={[{ value: "", label: "Select a type" }, ...(enumOpts?.studentType ?? []).map((t) => ({ value: t, label: t })),]}
                     value={row.studentType}
                     onValueChange={(v) => updateRow(index, (r) => ({ ...r, studentType: v as string }))}
                   >
@@ -726,7 +726,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                     </SelectContent>
                   </Select>
                 </FieldChrome>
-                <FieldChrome id={`s${index}-schoolYear`} label="School Year" required>
+                <FieldChrome id={`s${index}-schoolYear`} label="School year" required>
                   <Select
                     items={[{ value: "", label: "Select a school year" }, ...schoolYears.map((sy) => ({ value: sy.schoolYear, label: sy.schoolYear }))]}
                     value={row.schoolYear}
@@ -761,7 +761,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
                   </Select>
                 </FieldChrome>
                 {isIrregular && (
-                <FieldChrome id={`s${index}-subjectCodes`} label="Subject Codes" required>
+                <FieldChrome id={`s${index}-subjectCodes`} label="Subject codes" required>
                   <input
                     id={`s${index}-subjectCodes`}
                     name={`s${index}-subjectCodes`}

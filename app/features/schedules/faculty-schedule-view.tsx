@@ -88,7 +88,7 @@ export function FacultyScheduleView({
                   onValueChange={(v) => onSchoolYearChange(v as string)}
                 >
                   <SelectTrigger className="border-0 px-2 py-1 font-body text-xs *:data-[slot=select-trigger-icon]:text-slate-500 dark:*:data-[slot=select-trigger-icon]:text-slate-400">
-                    <SelectValue placeholder="School Year" />
+                    <SelectValue placeholder="School year" />
                   </SelectTrigger>
                   <SelectContent>
                     {schoolYears.map((y) => (

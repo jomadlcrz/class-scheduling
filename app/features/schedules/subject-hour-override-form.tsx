@@ -271,7 +271,7 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
       <div className="grid grid-cols-2 gap-3">
         <Input
           id="sho-lecture-hours"
-          label="Lecture Hours"
+          label="Lecture hours"
           type="number"
           inputMode="decimal"
           min={0}
@@ -286,7 +286,7 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
         />
         <Input
           id="sho-lab-hours"
-          label="Lab Hours"
+          label="Lab hours"
           type="number"
           inputMode="decimal"
           min={0}
