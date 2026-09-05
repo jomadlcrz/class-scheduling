@@ -167,7 +167,7 @@ export function ReenrollStep3Review({
               disabled={students.length === 0 || (isIrregular ? selectedSubjectIds.size === 0 : filteredSubjects.length === 0)}
               onClick={checkPrerequisites}
             >
-              Check Prerequisites
+              Check prerequisites
             </Button>
           </div>
           {prereqResults.size > 0 && (

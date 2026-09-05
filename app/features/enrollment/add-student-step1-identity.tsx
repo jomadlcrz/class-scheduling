@@ -77,7 +77,7 @@ export function AddStudentStep1Identity({
             <div className="flex flex-col gap-4">
               <Input
                 id="new-student-id"
-                label="Student ID (Optional)"
+                label="Student ID (optional)"
                 type="text"
                 maxLength={50}
                 hint="School-assigned ID"
@@ -88,7 +88,7 @@ export function AddStudentStep1Identity({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   id="new-student-first-name"
-                  label="First Name"
+                  label="First name"
                   type="text"
                   required
                   value={identity.firstName}
@@ -96,7 +96,7 @@ export function AddStudentStep1Identity({
                 />
                 <Input
                   id="new-student-mid-name"
-                  label="Middle Name (Optional)"
+                  label="Middle name (optional)"
                   type="text"
                   value={identity.midName}
                   onChange={(e) => onIdentityChange({ midName: e.target.value })}
@@ -106,13 +106,13 @@ export function AddStudentStep1Identity({
               <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
                 <Input
                   id="new-student-last-name"
-                  label="Last Name"
+                  label="Last name"
                   type="text"
                   required
                   value={identity.lastName}
                   onChange={(e) => onIdentityChange({ lastName: e.target.value })}
                 />
-                <FieldChrome id="new-student-suffix" label="Suffix (Optional)">
+                <FieldChrome id="new-student-suffix" label="Suffix (optional)">
                   <Select
                     items={[{ value: "", label: "None" }, ...nameSuffixes.map((s) => ({ value: s, label: s }))]}
                     value={identity.suffix}
@@ -237,7 +237,7 @@ export function AddStudentStep1Identity({
                     />
                     <Input
                       id="new-student-address-zip"
-                      label="Zip Code"
+                      label="Zip code"
                       type="text"
                       inputMode="numeric"
                       maxLength={4}
@@ -257,7 +257,7 @@ export function AddStudentStep1Identity({
       <ProgramWizardFooter
         backLabel="Cancel"
         onBack={onCancel}
-        primaryLabel="Next: Academic Information"
+        primaryLabel="Next: academic information"
         onPrimary={onNext}
         primaryDisabled={!canAdvance}
       />

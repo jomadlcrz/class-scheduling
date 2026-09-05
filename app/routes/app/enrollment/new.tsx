@@ -107,7 +107,7 @@ function EnrollmentNewStudentPage() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" block={false} onClick={() => setCapacityOpen(true)}>
-              Class Size Cap
+              Class size cap
             </Button>
             {!noAcademicTerm && !isLoading ? (
               <EntryModeTabs

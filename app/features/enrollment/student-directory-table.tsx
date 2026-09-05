@@ -93,15 +93,15 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
 
       <div className="grid gap-2 sm:grid-cols-5">
         <Select
-          items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
+          items={[{ value: "all", label: "All programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
           value={programFilter}
           onValueChange={(v) => setProgramFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by program">
-            <SelectValue placeholder="All Programs" />
+            <SelectValue placeholder="All programs" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Programs</SelectItem>
+            <SelectItem value="all">All programs</SelectItem>
             {programs.map((p) => (
               <SelectItem key={p} value={p}>
                 {p}
@@ -111,15 +111,15 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
         </Select>
 
         <Select
-          items={[{ value: "all", label: "All Years" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
+          items={[{ value: "all", label: "All years" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
           value={yearLevelFilter}
           onValueChange={(v) => setYearLevelFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by year level">
-            <SelectValue placeholder="All Years" />
+            <SelectValue placeholder="All years" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Years</SelectItem>
+            <SelectItem value="all">All years</SelectItem>
             {yearLevelIds.map((y) => (
               <SelectItem key={y} value={String(y)}>
                 {yearLevelLabel(y)}
@@ -129,15 +129,15 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
         </Select>
 
         <Select
-          items={[{ value: "all", label: "All Sets" }, ...sets.map((s) => ({ value: s, label: s }))]}
+          items={[{ value: "all", label: "All sets" }, ...sets.map((s) => ({ value: s, label: s }))]}
           value={setFilter}
           onValueChange={(v) => setSetFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by set">
-            <SelectValue placeholder="All Sets" />
+            <SelectValue placeholder="All sets" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Sets</SelectItem>
+            <SelectItem value="all">All sets</SelectItem>
             {sets.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
@@ -147,15 +147,15 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
         </Select>
 
         <Select
-          items={[{ value: "all", label: "All Types" }, ...studentTypes.map((t) => ({ value: t, label: t }))]}
+          items={[{ value: "all", label: "All types" }, ...studentTypes.map((t) => ({ value: t, label: t }))]}
           value={studentTypeFilter}
           onValueChange={(v) => setStudentTypeFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by student type">
-            <SelectValue placeholder="All Types" />
+            <SelectValue placeholder="All types" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="all">All types</SelectItem>
             {studentTypes.map((t) => (
               <SelectItem key={t} value={t}>
                 {t}
@@ -165,15 +165,15 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
         </Select>
 
         <Select
-          items={[{ value: "all", label: "All States" }, ...enrollmentStates.map((s) => ({ value: s, label: s }))]}
+          items={[{ value: "all", label: "All states" }, ...enrollmentStates.map((s) => ({ value: s, label: s }))]}
           value={enrollmentStateFilter}
           onValueChange={(v) => setEnrollmentStateFilter(v as string)}
         >
           <SelectTrigger aria-label="Filter by enrollment state">
-            <SelectValue placeholder="All States" />
+            <SelectValue placeholder="All states" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All States</SelectItem>
+            <SelectItem value="all">All states</SelectItem>
             {enrollmentStates.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
@@ -193,10 +193,10 @@ export function StudentDirectoryTable({ rows, emptyMessage }: StudentDirectoryTa
             <TableHeader dense>Student</TableHeader>
             <TableHeader dense>Student ID</TableHeader>
             <TableHeader dense className="hidden sm:table-cell">Program</TableHeader>
-            <TableHeader dense className="hidden md:table-cell">Year Level</TableHeader>
+            <TableHeader dense className="hidden md:table-cell">Year level</TableHeader>
             <TableHeader dense className="hidden md:table-cell">Set</TableHeader>
-            <TableHeader dense className="hidden lg:table-cell">Student Type</TableHeader>
-            <TableHeader dense>Enrollment State</TableHeader>
+            <TableHeader dense className="hidden lg:table-cell">Student type</TableHeader>
+            <TableHeader dense>Enrollment state</TableHeader>
             <TableHeader dense className="hidden xl:table-cell">Contact</TableHeader>
             <TableHeader dense className="hidden lg:table-cell">Account</TableHeader>
           </TableHead>

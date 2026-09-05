@@ -51,7 +51,7 @@ export function StudentInfoSummaryCard({
             lastName={identity.lastName}
             photoUrl={photoUrl}
           />
-          <Badge tone="sky">For Enrollment</Badge>
+          <Badge tone="sky">For enrollment</Badge>
           <p className="font-body text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400">
             {identity.studentId.trim() || "ID pending"}
           </p>
@@ -123,7 +123,7 @@ export function StudentInfoSummaryCard({
               {[schoolYearLabel, semesterLabel].filter(Boolean).join(" · ") || "—"}
             </InfoField>
             <InfoField label="Enrollment status">
-              <Badge tone="sky">For Enrollment</Badge>
+              <Badge tone="sky">For enrollment</Badge>
             </InfoField>
           </dl>
         </div>

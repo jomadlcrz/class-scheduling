@@ -84,7 +84,7 @@ export function PhotoUploadField({
           className="text-xs"
         >
           <UploadIcon size={14} />
-          {photoFile ? "Change Photo" : "Upload Photo"}
+          {photoFile ? "Change photo" : "Upload photo"}
         </Button>
         {photoFile ? (
           <button

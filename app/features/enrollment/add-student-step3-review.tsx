@@ -113,10 +113,10 @@ export function AddStudentStep3Review({
                 .join(", ") || "—"}
             </InfoField>
             <InfoField label="Program">{programLabel || "—"}</InfoField>
-            <InfoField label="Year Level">
+            <InfoField label="Year level">
               {academic.yearLevel ? yearLevelLabel(Number(academic.yearLevel)) : "—"}
             </InfoField>
-            <InfoField label="Enrolled Status">
+            <InfoField label="Enrolled status">
               {academic.enrolledStatus ? (
                 <Badge tone={isIrregular ? "gold" : "emerald"}>{academic.enrolledStatus}</Badge>
               ) : (
@@ -124,7 +124,7 @@ export function AddStudentStep3Review({
               )}
             </InfoField>
             {!isIrregular ? (
-              <InfoField label="Class Set">{selectedSet?.setCode || "—"}</InfoField>
+              <InfoField label="Class set">{selectedSet?.setCode || "—"}</InfoField>
             ) : null}
             <InfoField label="Term">
               {[selectedSy?.schoolYear, selectedSem?.semester].filter(Boolean).join(" · ") || "—"}
@@ -164,7 +164,7 @@ export function AddStudentStep3Review({
       </div>
 
       <ProgramWizardFooter
-        backLabel="Back: Academic Information"
+        backLabel="Back: academic information"
         onBack={onBack}
         primaryLabel="Add records"
         onPrimary={onSave}

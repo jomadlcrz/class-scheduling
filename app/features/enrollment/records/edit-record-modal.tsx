@@ -147,20 +147,20 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
             <div className="grid gap-3 sm:grid-cols-2">
               <Input
                 id="edit-first-name"
-                label="First Name"
+                label="First name"
                 defaultValue={profile.firstName}
                 required
                 disabled={isSaving}
               />
               <Input
                 id="edit-mid-name"
-                label="Middle Name"
+                label="Middle name"
                 defaultValue={profile.midName ?? ""}
                 disabled={isSaving}
               />
               <Input
                 id="edit-last-name"
-                label="Last Name"
+                label="Last name"
                 defaultValue={profile.lastName}
                 required
                 disabled={isSaving}
@@ -274,7 +274,7 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
                 />
                 <Input
                   id="edit-address-zip"
-                  label="Zip Code"
+                  label="Zip code"
                   inputMode="numeric"
                   maxLength={4}
                   value={addressZip}
@@ -328,7 +328,7 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
                 onClick={checkPrerequisites}
                 className="shrink-0 whitespace-nowrap"
               >
-                Check Prerequisites
+                Check prerequisites
               </Button>
             </div>
             {prereqWarnings !== null && (

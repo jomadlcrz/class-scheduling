@@ -103,7 +103,7 @@ function EnrollmentReenrollPage() {
         actions={
           <div className="flex gap-2">
             <Button type="button" variant="outline" block={false} disabled>
-              Eligible Students
+              Eligible students
             </Button>
             <Button
               type="button"
@@ -111,7 +111,7 @@ function EnrollmentReenrollPage() {
               block={false}
               onClick={() => navigate("/enrollment/re-enroll/already-enrolled")}
             >
-              Already Enrolled
+              Already enrolled
             </Button>
           </div>
         }

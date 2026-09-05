@@ -154,7 +154,7 @@ export function ReenrollStep1SelectStudent({
       <ProgramWizardFooter
         backLabel="Cancel"
         onBack={onCancel}
-        primaryLabel="Next: Enrollment Information"
+        primaryLabel="Next: enrollment information"
         onPrimary={onNext}
         primaryDisabled={selectedIds.size === 0}
       />

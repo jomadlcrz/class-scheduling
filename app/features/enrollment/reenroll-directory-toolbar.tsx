@@ -43,49 +43,49 @@ export function ReenrollDirectoryToolbar({
 
         <div className="grid flex-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
           <Select
-            items={[{ value: "all", label: "All Programs" }, ...programs.map((program) => ({ value: program.abbrev, label: program.abbrev }))]}
+            items={[{ value: "all", label: "All programs" }, ...programs.map((program) => ({ value: program.abbrev, label: program.abbrev }))]}
             value={filters.program}
             onValueChange={(value) => onFiltersChange({ program: value as string })}
           >
-            <SelectTrigger aria-label="Filter by program"><SelectValue placeholder="All Programs" /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by program"><SelectValue placeholder="All programs" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Programs</SelectItem>
+              <SelectItem value="all">All programs</SelectItem>
               {programs.map((program) => <SelectItem key={program.id} value={program.abbrev}>{program.abbrev}</SelectItem>)}
             </SelectContent>
           </Select>
 
           <Select
-            items={[{ value: "all", label: "All Year Levels" }, ...yearLevelIds.map((year) => ({ value: String(year), label: yearLevelLabel(year) }))]}
+            items={[{ value: "all", label: "All year levels" }, ...yearLevelIds.map((year) => ({ value: String(year), label: yearLevelLabel(year) }))]}
             value={filters.yearLevel}
             onValueChange={(value) => onFiltersChange({ yearLevel: value as string })}
           >
-            <SelectTrigger aria-label="Filter by year level"><SelectValue placeholder="All Year Levels" /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by year level"><SelectValue placeholder="All year levels" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Year Levels</SelectItem>
+              <SelectItem value="all">All year levels</SelectItem>
               {yearLevelIds.map((year) => <SelectItem key={year} value={String(year)}>{yearLevelLabel(year)}</SelectItem>)}
             </SelectContent>
           </Select>
 
           <Select
-            items={[{ value: "all", label: "All Semesters" }, ...semesters.map((semester) => ({ value: String(semester.semesterNumber), label: semester.semester }))]}
+            items={[{ value: "all", label: "All semesters" }, ...semesters.map((semester) => ({ value: String(semester.semesterNumber), label: semester.semester }))]}
             value={filters.semester}
             onValueChange={(value) => onFiltersChange({ semester: value as string })}
           >
-            <SelectTrigger aria-label="Filter by semester"><SelectValue placeholder="All Semesters" /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by semester"><SelectValue placeholder="All semesters" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Semesters</SelectItem>
+              <SelectItem value="all">All semesters</SelectItem>
               {semesters.map((semester) => <SelectItem key={semester.semesterNumber} value={String(semester.semesterNumber)}>{semester.semester}</SelectItem>)}
             </SelectContent>
           </Select>
 
           <Select
-            items={[{ value: "all", label: "All Enrolled Status" }, ...academicStatuses.map((status) => ({ value: status, label: status }))]}
+            items={[{ value: "all", label: "All enrolled statuses" }, ...academicStatuses.map((status) => ({ value: status, label: status }))]}
             value={filters.enrolledStatus}
             onValueChange={(value) => onFiltersChange({ enrolledStatus: value as string })}
           >
-            <SelectTrigger aria-label="Filter by enrolled status"><SelectValue placeholder="All Enrolled Status" /></SelectTrigger>
+            <SelectTrigger aria-label="Filter by enrolled status"><SelectValue placeholder="All enrolled statuses" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Enrolled Status</SelectItem>
+              <SelectItem value="all">All enrolled statuses</SelectItem>
               {academicStatuses.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
             </SelectContent>
           </Select>

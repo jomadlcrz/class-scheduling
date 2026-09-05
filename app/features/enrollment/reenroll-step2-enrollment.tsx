@@ -236,9 +236,9 @@ export function ReenrollStep2Enrollment({
       </div>
 
       <ProgramWizardFooter
-        backLabel="Back: Select Student"
+        backLabel="Back: select student"
         onBack={onBack}
-        primaryLabel="Next: Review & Confirm"
+        primaryLabel="Next: review & confirm"
         onPrimary={onNext}
         primaryDisabled={!canAdvance}
       />

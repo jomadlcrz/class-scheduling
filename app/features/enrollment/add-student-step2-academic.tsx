@@ -107,7 +107,7 @@ export function AddStudentStep2Academic({
               )}
             </FieldChrome>
 
-            <FieldChrome id="new-student-year" label="Year Level" required>
+            <FieldChrome id="new-student-year" label="Year level" required>
               <Select
                 items={[
                   { value: "", label: "Select a year" },
@@ -152,7 +152,7 @@ export function AddStudentStep2Academic({
           />
 
           <div className={`grid gap-3 ${isIrregular ? "grid-cols-1" : "sm:grid-cols-2"}`}>
-            <FieldChrome id="new-student-type" label="Student Type" required>
+            <FieldChrome id="new-student-type" label="Student type" required>
               <Select
                 items={[
                   { value: "", label: "Select a type" },
@@ -178,7 +178,7 @@ export function AddStudentStep2Academic({
             {!isIrregular && (
               <FieldChrome
                 id="new-student-set"
-                label="Class Set"
+                label="Class set"
                 required
                 hint="Required for Regular students"
               >
@@ -223,7 +223,7 @@ export function AddStudentStep2Academic({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <FieldChrome id="new-student-sy" label="School Year" required>
+            <FieldChrome id="new-student-sy" label="School year" required>
               <Select
                 items={[
                   { value: "", label: "Select a school year" },
@@ -281,9 +281,9 @@ export function AddStudentStep2Academic({
       </EnrollmentSectionCard>
 
       <ProgramWizardFooter
-        backLabel="Back: Identity Information"
+        backLabel="Back: identity information"
         onBack={onBack}
-        primaryLabel="Next: Review"
+        primaryLabel="Next: review"
         onPrimary={onNext}
         primaryDisabled={!canAdvance}
       />

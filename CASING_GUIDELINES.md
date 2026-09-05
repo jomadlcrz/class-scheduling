@@ -167,6 +167,29 @@ Capitalize all letters for short technical acronyms and compact categorization t
 | `irregular-class.tsx` | Field Label | `School year` | Sentence case |
 | `lab-analysis.tsx` | Field Label | `School year`, `Program lens` | Sentence case |
 
+### 3.6 Enrollment
+| Component / Location | Element | Text | Case Rule |
+|---|---|---|---|
+| `enrollment/new.tsx` | Page Header | `Add New Student` | Title Case |
+| `enrollment/new.tsx` | Action Button | `Class size cap` | Sentence case |
+| `enrollment/re-enroll.tsx` | Page Header | `Re-enroll Existing Student` | Title Case |
+| `enrollment/re-enroll.tsx` | Action Buttons | `Eligible students`, `Already enrolled` | Sentence case |
+| `enrollment/students.tsx` | Page Header | `Enrollment Records` | Title Case |
+| `enrollment/students.tsx` | Primary Action | `Add records` | Sentence case |
+| `enrollment-records-view.tsx` | Filter Dropdowns | `All programs`, `All years`, `All sets` | Sentence case |
+| `student-directory-table.tsx` | Table Headers | `Student ID`, `Year level`, `Student type`, `Enrollment state` | Sentence case |
+| `add-student-step1-identity.tsx` | Field Labels | `Student ID (optional)`, `First name`, `Middle name (optional)`, `Last name`, `Zip code` | Sentence case |
+| `add-student-step1-identity.tsx` | Action Button | `Next: academic information` | Sentence case |
+| `add-student-step2-academic.tsx` | Field Labels | `Year level`, `Student type`, `Class set`, `School year` | Sentence case |
+| `add-student-step2-academic.tsx` | Action Button | `Next: review` | Sentence case |
+| `add-student-step3-review.tsx` | Info Labels | `Year level`, `Enrolled status`, `Class set` | Sentence case |
+| `reenroll-step1-select-student.tsx` | Action Button | `Next: enrollment information` | Sentence case |
+| `reenroll-step2-enrollment.tsx` | Action Button | `Next: review & confirm` | Sentence case |
+| `reenroll-step3-review.tsx` | Action Button | `Check prerequisites`, `Submit enrollment` | Sentence case |
+| `enrollment-batch-import.tsx` | Modal Title | `Batch Templates` | Title Case |
+| `enrollment-batch-import.tsx` | Action Menuitems | `Regular template`, `Irregular template` | Sentence case |
+| `enrollment-batch-import.tsx` | Field Labels | `Student type`, `Class set`, `Subject codes` | Sentence case |
+
 ---
 
 ## 4. Quick Checklist for Developers & PRs

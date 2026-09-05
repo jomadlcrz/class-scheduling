@@ -17,7 +17,7 @@ type EnrolledStatusPickerProps = {
 export function EnrolledStatusPicker({ value, options, onChange }: EnrolledStatusPickerProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label required>Enrolled Status</Label>
+      <Label required>Enrolled status</Label>
       <div className="grid gap-3 sm:grid-cols-2">
         {options.map((option) => {
           const meta = DESCRIPTIONS[option];

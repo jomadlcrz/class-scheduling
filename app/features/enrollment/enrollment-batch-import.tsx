@@ -669,7 +669,7 @@ export function EnrollmentBatchImport({
                     }}
                     className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100"
                   >
-                    Regular Template
+                    Regular template
                   </button>
                   <button
                     type="button"
@@ -680,7 +680,7 @@ export function EnrollmentBatchImport({
                     }}
                     className="flex w-full cursor-pointer items-center gap-2.5 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100"
                   >
-                    Irregular Template
+                    Irregular template
                   </button>
                 </>
               )}
@@ -775,12 +775,12 @@ export function EnrollmentBatchImport({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   id={`batch-${index}-id`}
-                  label="Student ID (Optional)"
+                  label="Student ID (optional)"
                   value={row.studentNumber}
                   disabled={isLoading}
                   onChange={(e) => updateRow(index, { studentNumber: e.target.value })}
                 />
-                <FieldChrome id={`batch-${index}-type`} label="Student Type" required>
+                <FieldChrome id={`batch-${index}-type`} label="Student type" required>
                   <Select
                     items={[
                       { value: "", label: "Select a type" },
@@ -806,7 +806,7 @@ export function EnrollmentBatchImport({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   id={`batch-${index}-first`}
-                  label="First Name"
+                  label="First name"
                   required
                   value={row.firstName}
                   disabled={isLoading}
@@ -814,7 +814,7 @@ export function EnrollmentBatchImport({
                 />
                 <Input
                   id={`batch-${index}-mid`}
-                  label="Middle Name (Optional)"
+                  label="Middle name (optional)"
                   value={row.middleName}
                   disabled={isLoading}
                   onChange={(e) => updateRow(index, { middleName: e.target.value })}
@@ -823,13 +823,13 @@ export function EnrollmentBatchImport({
               <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
                 <Input
                   id={`batch-${index}-last`}
-                  label="Last Name"
+                  label="Last name"
                   required
                   value={row.lastName}
                   disabled={isLoading}
                   onChange={(e) => updateRow(index, { lastName: e.target.value })}
                 />
-                <FieldChrome id={`batch-${index}-suffix`} label="Suffix (Optional)">
+                <FieldChrome id={`batch-${index}-suffix`} label="Suffix (optional)">
                   <Select
                     items={[
                       { value: "", label: "None" },
@@ -956,7 +956,7 @@ export function EnrollmentBatchImport({
                     />
                     <Input
                       id={`batch-${index}-address-zip`}
-                      label="Zip Code"
+                      label="Zip code"
                       inputMode="numeric"
                       maxLength={4}
                       value={row.addressZipCode}
@@ -1006,7 +1006,7 @@ export function EnrollmentBatchImport({
                   </Select>
                 </FieldChrome>
 
-                <FieldChrome id={`batch-${index}-year`} label="Year Level" required>
+                <FieldChrome id={`batch-${index}-year`} label="Year level" required>
                   <Select
                     items={[
                       { value: "", label: "Select a year" },
@@ -1043,7 +1043,7 @@ export function EnrollmentBatchImport({
 
               <div className={`grid gap-3 ${isIrregular ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
                 {!isIrregular ? (
-                  <FieldChrome id={`batch-${index}-set`} label="Class Set" required>
+                  <FieldChrome id={`batch-${index}-set`} label="Class set" required>
                     <Select
                       items={[
                         { value: "", label: "Select a set" },
@@ -1080,7 +1080,7 @@ export function EnrollmentBatchImport({
                     value={selectedSubjectCodes}
                     onChange={(codes) => updateRow(index, { subjectCodes: codes.join(", ") })}
                     ariaLabel={`Student ${index + 1} subject codes`}
-                    label="Subject Codes"
+                    label="Subject codes"
                     labelled
                     required
                     allowFreeText={false}
@@ -1088,7 +1088,7 @@ export function EnrollmentBatchImport({
                   />
                 )}
 
-                <FieldChrome id={`batch-${index}-sy`} label="School Year" required>
+                <FieldChrome id={`batch-${index}-sy`} label="School year" required>
                   <Select
                     items={[
                       { value: "", label: "Select a school year" },
@@ -1191,7 +1191,7 @@ export function EnrollmentBatchImport({
       <Modal
         open={templateHelpOpen}
         onClose={() => setTemplateHelpOpen(false)}
-        title="Batch templates"
+        title="Batch Templates"
         wide
       >
         <div className="space-y-4 font-body text-sm leading-relaxed">

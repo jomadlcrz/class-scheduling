@@ -168,15 +168,15 @@ export function EnrollmentRecordsView({
         </div>
         <div className="grid grid-cols-3 gap-2 sm:w-auto">
           <Select
-            items={[{ value: "all", label: "All Programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
+            items={[{ value: "all", label: "All programs" }, ...programs.map((p) => ({ value: p, label: p }))]}
             value={programFilter}
             onValueChange={(v) => onProgramFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by program">
-              <SelectValue placeholder="All Programs" />
+              <SelectValue placeholder="All programs" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Programs</SelectItem>
+              <SelectItem value="all">All programs</SelectItem>
               {programs.map((p) => (
                 <SelectItem key={p} value={p}>
                   {p}
@@ -185,15 +185,15 @@ export function EnrollmentRecordsView({
             </SelectContent>
           </Select>
           <Select
-            items={[{ value: "all", label: "All Years" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
+            items={[{ value: "all", label: "All years" }, ...yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
             value={yearFilter}
             onValueChange={(v) => onYearFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by year level">
-              <SelectValue placeholder="All Years" />
+              <SelectValue placeholder="All years" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Years</SelectItem>
+              <SelectItem value="all">All years</SelectItem>
               {yearLevelIds.map((y) => (
                 <SelectItem key={y} value={String(y)}>
                   {yearLevelLabel(y)}
@@ -202,15 +202,15 @@ export function EnrollmentRecordsView({
             </SelectContent>
           </Select>
           <Select
-            items={[{ value: "all", label: "All Sets" }, ...sets.map((s) => ({ value: s, label: s }))]}
+            items={[{ value: "all", label: "All sets" }, ...sets.map((s) => ({ value: s, label: s }))]}
             value={setFilter}
             onValueChange={(v) => onSetFilterChange(v as string)}
           >
             <SelectTrigger aria-label="Filter by set">
-              <SelectValue placeholder="All Sets" />
+              <SelectValue placeholder="All sets" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Sets</SelectItem>
+              <SelectItem value="all">All sets</SelectItem>
               {sets.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}

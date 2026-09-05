@@ -54,7 +54,7 @@ export function IrregularSubjectPicker({
   }, [subjects, query, yearLevelLabel]);
 
   return (
-    <EnrollmentSectionCard title="Subjects for this term">
+    <EnrollmentSectionCard title="Subjects for This Term">
       <SearchInput
         className="mb-3"
         value={query}
