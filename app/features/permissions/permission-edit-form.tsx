@@ -50,7 +50,7 @@ export function PermissionEditForm({ permission, onSaved, onCancel }: Permission
       />
       <Input
         id="edit-permission-slug"
-        label="Permission Slug"
+        label="Permission slug"
         required
         value={slug}
         onChange={(e) => setSlug(e.target.value)}
@@ -60,7 +60,7 @@ export function PermissionEditForm({ permission, onSaved, onCancel }: Permission
           Cancel
         </Button>
         <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Saving…">
-          Save Changes
+          Save changes
         </Button>
       </div>
     </form>

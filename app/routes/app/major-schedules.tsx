@@ -308,7 +308,7 @@ function MajorSchedulesPage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
             <div className="w-full sm:w-44">
-              <FieldChrome id="major-school-year" label="School Year">
+              <FieldChrome id="major-school-year" label="School year">
                 <Select
                   items={schoolYears.map((year) => ({ value: String(year.id), label: year.schoolYear }))}
                   value={syId ? String(syId) : ""}
@@ -662,7 +662,7 @@ function MajorSchedulesPage() {
                                           setFormError(null);
                                         }}
                                       >
-                                        Assign Faculty
+                                        Assign faculty
                                       </Button>
                                     )}
                                     <Button
@@ -841,7 +841,7 @@ function MajorSchedulesPage() {
                       setSelectedSchedule(null);
                     }}
                   >
-                    Edit Draft
+                    Edit draft
                   </Button>
                   <Button
                     type="button"
@@ -852,7 +852,7 @@ function MajorSchedulesPage() {
                       setSelectedSchedule(null);
                     }}
                   >
-                    Delete Meeting
+                    Delete meeting
                   </Button>
                 </>
               )}
@@ -867,7 +867,7 @@ function MajorSchedulesPage() {
                       setSelectedSchedule(null);
                     }}
                   >
-                    Edit Meeting
+                    Edit meeting
                   </Button>
                   <Button
                     type="button"
@@ -878,7 +878,7 @@ function MajorSchedulesPage() {
                       setSelectedSchedule(null);
                     }}
                   >
-                    Remove Meeting
+                    Remove meeting
                   </Button>
                 </>
               )}
@@ -1244,7 +1244,7 @@ function MajorSchedulesPage() {
               loadingLabel="Assigning…"
               disabled={!floatingInstructorId}
             >
-              Assign Instructor
+              Assign instructor
             </Button>
           </ModalActions>
         </form>
@@ -1634,7 +1634,7 @@ function RegistrarMajorDeleteDialog({
             loadingLabel="Removing…"
             disabled={reason.trim().length < 10}
           >
-            Remove Meeting
+            Remove meeting
           </Button>
         </ModalActions>
       </form>

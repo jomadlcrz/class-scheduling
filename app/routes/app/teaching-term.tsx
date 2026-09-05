@@ -421,7 +421,7 @@ function TeachingTermPage() {
 
       {/* ── Stats grid ── */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Weekly Hours" value={`${hours.max_weekly_hours}h`}>
+        <StatCard label="Weekly hours" value={`${hours.max_weekly_hours}h`}>
           <div className="flex items-center gap-2">
             {hours.is_overloaded && <Badge tone="red">Overloaded</Badge>}
             <span className="font-body text-[11px] text-slate-400 dark:text-slate-500">max</span>
@@ -445,7 +445,7 @@ function TeachingTermPage() {
           </div>
         </StatCard>
 
-        <StatCard label="Assigned Subjects" value={totals.assigned_subjects}>
+        <StatCard label="Assigned subjects" value={totals.assigned_subjects}>
           <div className="space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Total units</span>
@@ -458,7 +458,7 @@ function TeachingTermPage() {
           </div>
         </StatCard>
 
-        <StatCard label="Scheduled Subjects" value={`${totals.scheduled_subjects}/${totals.assigned_subjects}`}>
+        <StatCard label="Scheduled subjects" value={`${totals.scheduled_subjects}/${totals.assigned_subjects}`}>
           <div className="space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Booked sessions</span>
@@ -475,7 +475,7 @@ function TeachingTermPage() {
           </div>
         </StatCard>
 
-        <StatCard label="Daily Hours" value={`${hours.total_daily_hours}h total`}>
+        <StatCard label="Daily hours" value={`${hours.total_daily_hours}h total`}>
           <div className="space-y-1 font-body text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center justify-between">
               <span>Current weekly</span>

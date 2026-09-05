@@ -193,7 +193,7 @@ function SubjectHourOverridesPage() {
             onClick={() => setCreateOpen(true)}
           >
             <PlusIcon />
-            Add Override
+            Add override
           </Button>
         }
       />
@@ -201,7 +201,7 @@ function SubjectHourOverridesPage() {
       {/* Filters */}
       <div className="mt-4 flex flex-col gap-4">
         <Card className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-2">
-          <FieldChrome id="sho-school-year" label="School Year">
+          <FieldChrome id="sho-school-year" label="School year">
             <Select
               items={
                 syLoading

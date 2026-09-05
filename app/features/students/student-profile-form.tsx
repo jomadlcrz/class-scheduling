@@ -54,20 +54,20 @@ export function StudentProfileForm({ profile, nameSuffixes, onSubmit, onCancel }
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
           id="student-profile-first-name"
-          label="First Name"
+          label="First name"
           defaultValue={profile.firstName}
           required
           disabled={isSaving}
         />
         <Input
           id="student-profile-mid-name"
-          label="Middle Name"
+          label="Middle name"
           defaultValue={profile.midName ?? ""}
           disabled={isSaving}
         />
         <Input
           id="student-profile-last-name"
-          label="Last Name"
+          label="Last name"
           defaultValue={profile.lastName}
           required
           disabled={isSaving}
@@ -116,7 +116,7 @@ export function StudentProfileForm({ profile, nameSuffixes, onSubmit, onCancel }
           Cancel
         </Button>
         <Button block={false} isLoading={isSaving} loadingLabel="Saving…">
-          Save Changes
+          Save changes
         </Button>
       </div>
     </form>

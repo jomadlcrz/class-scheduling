@@ -1,4 +1,4 @@
-﻿import { useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -76,7 +76,7 @@ export function SecuritySettings() {
           description="Change the password you use to sign in."
           trailing={
             <span className="font-body text-sm font-medium text-blue-700 dark:text-blue-400">
-              Change Password
+              Change password
             </span>
           }
           onClick={() => setPasswordModalOpen(true)}
@@ -111,7 +111,7 @@ export function SecuritySettings() {
           <div className="[&>form]:mt-0">
             <PasswordForm
               requireCurrentPassword
-              submitLabel="Update Password"
+              submitLabel="Update password"
               loadingLabel="Updating…"
               onSubmit={handleSubmit}
               footerExtra={

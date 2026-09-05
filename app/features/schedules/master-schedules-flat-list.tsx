@@ -140,7 +140,7 @@ function SetRow({
             className="text-xs"
             onClick={() => onPreview(effectiveRelease)}
           >
-            View Timetable
+            View timetable
           </Button>
         )}
         {!termClosed && schedules.length > 0 && (

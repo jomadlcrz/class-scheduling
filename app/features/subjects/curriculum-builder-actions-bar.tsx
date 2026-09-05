@@ -116,7 +116,7 @@ export function CurriculumBuilderActionsBar({
             loadingLabel="Saving…"
             onClick={onSave}
           >
-            Save Curriculum{pendingCount > 0 ? ` (${pendingCount})` : ""}
+            Save curriculum{pendingCount > 0 ? ` (${pendingCount})` : ""}
           </Button>
         </div>
       )}

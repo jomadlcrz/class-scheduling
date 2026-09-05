@@ -621,7 +621,7 @@ export function MajorSchedulesImportModal({
                 disabled={parsing}
                 onClick={handleChangeFileClick}
               >
-                Change File
+                Change file
               </Button>
             </div>
           )}
@@ -877,7 +877,7 @@ export function MajorSchedulesImportModal({
 
           <ModalActions>
             <Button type="button" variant="outline" block={false} onClick={resetState}>
-              Import Another File
+              Import another file
             </Button>
             <Button type="button" block={false} onClick={handleModalClose}>
               Done

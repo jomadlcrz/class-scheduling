@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -51,7 +51,7 @@ export function LoginForm() {
 
       <Input
         id="email"
-        label="Email Address"
+        label="Email address"
         type="email"
         autoComplete="username"
       />
@@ -65,7 +65,7 @@ export function LoginForm() {
       <Checkbox id="remember" label="Remember me" />
 
       <Button type="submit" pill isLoading={isLoading} loadingLabel="Logging in…">
-        Log In
+        Log in
       </Button>
 
       {/* OR divider */}
@@ -79,12 +79,12 @@ export function LoginForm() {
 
       {/* Forgot Password link below OR divider */}
       <div className="text-center">
-        <a
-          href="/forgot-password"
+        <Link
+          to="/forgot-password"
           className="font-body text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline focus-visible:outline-none focus-visible:underline dark:text-blue-400 dark:hover:text-blue-300"
         >
           Forgot your password?
-        </a>
+        </Link>
       </div>
 
       {/* Border / separator line */}

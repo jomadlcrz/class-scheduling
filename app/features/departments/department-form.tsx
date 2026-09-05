@@ -139,14 +139,14 @@ export function DepartmentForm({
 
       <Input
         id="dept-abbrev"
-        label="Department Abbrev"
+        label="Department abbreviation"
         required
         defaultValue={department?.abbrev ?? ""}
         hint="Short abbreviation, e.g. CITE, CBA, COEd."
       />
       <Input
         id="dept-name"
-        label="Department Name"
+        label="Department name"
         required
         defaultValue={department?.name ?? ""}
       />
@@ -169,7 +169,7 @@ export function DepartmentForm({
           </SelectContent>
         </Select>
       </FieldChrome>
-      <FieldChrome id="dept-type" label="Department Type" hint="Administrative offices own no programs.">
+      <FieldChrome id="dept-type" label="Department type" hint="Administrative offices own no programs.">
         <Select
           items={departmentTypes.map((t) => ({ value: t, label: t }))}
           name="dept-type"
@@ -200,7 +200,7 @@ export function DepartmentForm({
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-          {isEdit ? "Save Changes" : "Add Department"}
+          {isEdit ? "Save changes" : "Add department"}
         </Button>
       </ModalActions>
       </form>

@@ -52,7 +52,7 @@ export function SchoolYearForm({ initialValue, mode, onSubmit, onCancel }: Schoo
       <FormError message={error} />
       <Input
         id="school-year-input"
-        label="School Year"
+        label="School year"
         required
         type="text"
         value={schoolYear}
@@ -64,7 +64,7 @@ export function SchoolYearForm({ initialValue, mode, onSubmit, onCancel }: Schoo
           Cancel
         </Button>
         <Button type="submit" block={false} isLoading={isSaving} loadingLabel={isEdit ? "Saving…" : "Adding…"}>
-          {isEdit ? "Save Changes" : "Add School Year"}
+          {isEdit ? "Save changes" : "Add school year"}
         </Button>
       </div>
     </form>

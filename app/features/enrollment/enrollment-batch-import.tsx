@@ -892,7 +892,7 @@ export function EnrollmentBatchImport({
               <div className="grid gap-3 sm:grid-cols-2">
                 <PhoneInput
                   id={`batch-${index}-mobile`}
-                  label="Mobile Number"
+                  label="Mobile number"
                   required
                   value={row.contactNumber}
                   disabled={isLoading}
@@ -900,7 +900,7 @@ export function EnrollmentBatchImport({
                 />
                 <Input
                   id={`batch-${index}-email`}
-                  label="Email Address"
+                  label="Email address"
                   type="email"
                   required
                   value={row.email}
@@ -911,7 +911,7 @@ export function EnrollmentBatchImport({
 
               <details className="group">
                 <summary className="w-fit cursor-pointer font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                  Address (Optional)
+                  Address (optional)
                 </summary>
                 <div className="mt-3 flex flex-col gap-3">
                   <div className="grid gap-3 sm:grid-cols-2">

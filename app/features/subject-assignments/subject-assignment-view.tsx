@@ -868,8 +868,8 @@ export function SubjectAssignmentView({
             onClick={() => setAddInstructorModalOpen(true)}
           >
             <PlusIcon />
-            <span className="hidden sm:inline">Add Existing Instructor</span>
-            <span className="sm:hidden">Add Instructor</span>
+            <span className="hidden sm:inline">Add existing instructor</span>
+            <span className="sm:hidden">Add instructor</span>
           </Button>
         </div>
 
@@ -1100,7 +1100,7 @@ export function SubjectAssignmentView({
               disabled={!requestReason.trim() || requestedHours == null || requestedHours <= 0}
               onClick={submitHoursRequest}
             >
-              Submit Request
+              Submit request
             </Button>
           </div>
         </div>

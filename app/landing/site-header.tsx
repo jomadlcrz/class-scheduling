@@ -73,7 +73,7 @@ export function SiteHeader() {
                 variant={scrolled ? "outline" : "primary"}
                 className={scrolled ? "bg-white text-navy-800 hover:bg-slate-100 dark:bg-white dark:text-navy-800 dark:hover:bg-slate-100" : ""}
               >
-                Log In
+                Log in
               </Button>
             </a>
           </div>

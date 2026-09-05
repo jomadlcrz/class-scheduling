@@ -115,7 +115,7 @@ export function AddProgramModal({ open, onClose, onAdd, programOptions }: AddPro
     <Modal open={open} onClose={onClose} title="Add Existing Program">
       <div className="space-y-4 font-body text-sm">
         <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-          Select Program
+          Select program
         </label>
         {programOptions.length > 0 ? (
           <Select
@@ -146,7 +146,7 @@ export function AddProgramModal({ open, onClose, onAdd, programOptions }: AddPro
             Cancel
           </Button>
           <Button type="button" block={false} disabled={!value || programOptions.length === 0} onClick={handleAdd}>
-            Add Program
+            Add program
           </Button>
         </div>
       </div>
@@ -282,7 +282,7 @@ export function AssignSubjectModal({
                 Code
               </th>
               <th className="sticky top-0 z-10 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 align-middle text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
-                Descriptive Title
+                Descriptive title
               </th>
               <th className="sticky top-0 z-10 w-16 border-b-2 border-slate-300 bg-slate-50 px-3 py-2 align-middle text-right text-xs font-bold uppercase leading-none tracking-wider text-slate-500 dark:border-white/10 dark:bg-surface-raised dark:text-slate-400">
                 Units
@@ -393,7 +393,7 @@ export function AssignSubjectModal({
           Cancel
         </Button>
         <Button type="button" block={false} disabled={selectedCodes.size === 0} onClick={handleAssign}>
-          Assign ({selectedCodes.size}) Subject{selectedCodes.size !== 1 ? "s" : ""}
+          Assign ({selectedCodes.size}) subject{selectedCodes.size !== 1 ? "s" : ""}
         </Button>
       </div>
     </Modal>

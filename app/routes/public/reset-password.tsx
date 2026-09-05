@@ -43,7 +43,7 @@ function InvalidLinkState() {
     <ResultState
       tone="error"
       title="Link expired"
-      action={{ href: "/forgot-password", label: "Request a New Link" }}
+      action={{ href: "/forgot-password", label: "Request a new link" }}
     >
       This password reset link is invalid or has expired. Request a new one to continue.
     </ResultState>
@@ -63,7 +63,7 @@ function ResetPasswordContent({ token }: { token: string }) {
       <ResultState
         tone="success"
         title="Password reset"
-        action={{ href: "/login", label: "Back to Log In" }}
+        action={{ href: "/login", label: "Back to log in" }}
       >
         Your password has been updated. Use it the next time you log in.
       </ResultState>
@@ -73,7 +73,7 @@ function ResetPasswordContent({ token }: { token: string }) {
   return (
     <>
       <AuthHeading title="Set a new password">Choose a new password for your account.</AuthHeading>
-      <PasswordForm submitLabel="Reset Password" loadingLabel="Resetting…" onSubmit={handleSubmit} />
+      <PasswordForm submitLabel="Reset password" loadingLabel="Resetting…" onSubmit={handleSubmit} />
     </>
   );
 }

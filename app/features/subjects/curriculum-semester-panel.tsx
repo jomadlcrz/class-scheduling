@@ -94,7 +94,7 @@ export function CurriculumSemesterPanel({
             <div className="flex flex-wrap items-center gap-1.5">
               <Button type="button" variant="outline" block={false} onClick={onAddRow}>
                 <PlusIcon />
-                Add Subject Row
+                Add subject row
               </Button>
               <Button
                 type="button"
@@ -104,7 +104,7 @@ export function CurriculumSemesterPanel({
                 onClick={onDuplicateSelected}
               >
                 <CopyIcon />
-                Duplicate Row
+                Duplicate row
               </Button>
               <Button
                 type="button"
@@ -114,7 +114,7 @@ export function CurriculumSemesterPanel({
                 onClick={onDeleteSelected}
               >
                 <TrashIcon />
-                Delete Selected
+                Delete selected
               </Button>
             </div>
           )}

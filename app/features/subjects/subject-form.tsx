@@ -73,7 +73,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
 
       <Input
         id="subject-code"
-        label="Subject Code"
+        label="Subject code"
         type="text"
         required
         defaultValue={subject.code}
@@ -81,7 +81,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
 
       <Input
         id="subject-title"
-        label="Descriptive Title"
+        label="Descriptive title"
         type="text"
         required
         defaultValue={subject.title}
@@ -103,7 +103,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
             }
           }}
         />
-        <FieldChrome id="subject-type" label="Subject Type">
+        <FieldChrome id="subject-type" label="Subject type">
           <Select
             items={subjectTypes.map((type) => ({ value: type, label: SUBJECT_TYPE_LABELS[type] ?? type }))}
             name="subject-type"
@@ -136,7 +136,7 @@ export function SubjectForm({ subject, allSubjects, subjectTypes, onSubmit, onCa
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-          Save Changes
+          Save changes
         </Button>
       </ModalActions>
     </form>

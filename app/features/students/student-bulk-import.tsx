@@ -504,7 +504,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
 
           <StickyFooter layoutClassName="flex justify-end gap-2">
             <Button type="button" variant="outline" block={false} onClick={() => { setResult(null); setSubmittedRows([]); setRows([{ ...EMPTY_ROW }]); }}>
-              Import Another
+              Import another
             </Button>
           </StickyFooter>
         </div>
@@ -577,11 +577,11 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
             )}
           </Popover>
           <Button type="button" variant="outline" block={false} onClick={() => setShowPaste((v) => !v)} disabled={isLoading}>
-            {showPaste ? "Hide Paste" : "Paste CSV"}
+            {showPaste ? "Hide paste" : "Paste CSV"}
           </Button>
           <Button type="button" variant="outline" block={false} onClick={() => setRows((prev) => [...prev, { ...EMPTY_ROW }])} disabled={isLoading}>
             <PlusIcon />
-            Add Student
+            Add student
           </Button>
           <button
             type="button"
@@ -795,7 +795,7 @@ export function StudentBulkImport({ enrolledStatus }: StudentBulkImportProps) {
             Cancel
           </Button>
           <Button type="submit" block={false} isLoading={isLoading} loadingLabel="Creating records…" disabled={validRows.length === 0}>
-            Create Records
+            Create records
           </Button>
         </StickyFooter>
       </form>

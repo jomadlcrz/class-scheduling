@@ -446,7 +446,7 @@ export function EditBuildingWorkspace({
           <div className={statCardClassName}>
             <Input
               id="edit-building-name"
-              label="Building Name"
+              label="Building name"
               required
               value={buildingName}
               onChange={(e) => setBuildingName(e.target.value)}
@@ -455,7 +455,7 @@ export function EditBuildingWorkspace({
           <div className={statCardClassName}>
             <Input
               id="edit-building-floors"
-              label="Total Floors"
+              label="Total floors"
               type="number"
               inputMode="numeric"
               required
@@ -532,7 +532,7 @@ export function EditBuildingWorkspace({
             </div>
             <Button type="button" variant="outline" block={false} onClick={() => addRoom(selectedFloor)}>
               <PlusIcon />
-              Add Room
+              Add room
             </Button>
           </div>
 
@@ -542,7 +542,7 @@ export function EditBuildingWorkspace({
               <EmptyState title={`No rooms on Floor ${selectedFloor}`}>
                 <Button type="button" variant="outline" block={false} onClick={() => addRoom(selectedFloor)}>
                   <PlusIcon />
-                  Add First Room
+                  Add first room
                 </Button>
               </EmptyState>
             </Card>
@@ -585,12 +585,12 @@ export function EditBuildingWorkspace({
                   <div className="grid gap-3 md:grid-cols-3">
                     <Input
                       id={`existing-room-name-${room.id}`}
-                      label="Room Name"
+                      label="Room name"
                       required
                       value={room.roomName}
                       onChange={(e) => updateExistingRoom(room.id, { roomName: e.target.value })}
                     />
-                    <FieldChrome id={`existing-room-type-${room.id}`} label="Room Type">
+                    <FieldChrome id={`existing-room-type-${room.id}`} label="Room type">
                       <Select
                         items={roomTypes.map((t) => ({ value: t, label: t }))}
                         value={room.roomType}
@@ -674,7 +674,7 @@ export function EditBuildingWorkspace({
                     <div className="mt-3">
                       <FieldChrome
                         id={`existing-room-programs-${room.id}`}
-                        label="Assigned Programs"
+                        label="Assigned programs"
                         hint="A laboratory must have at least one program."
                       >
                         <Menu.Root modal={false}>
@@ -761,12 +761,12 @@ export function EditBuildingWorkspace({
                   <div className="grid gap-3 md:grid-cols-3">
                     <Input
                       id={`new-room-name-${room.key}`}
-                      label="Room Name"
+                      label="Room name"
                       required
                       value={room.roomName}
                       onChange={(e) => updateNewRoom(selectedFloor, room.key, { roomName: e.target.value })}
                     />
-                    <FieldChrome id={`new-room-type-${room.key}`} label="Room Type" required>
+                    <FieldChrome id={`new-room-type-${room.key}`} label="Room type" required>
                       <Select
                         items={roomTypes.map((t) => ({ value: t, label: t }))}
                         value={room.roomType}
@@ -814,7 +814,7 @@ export function EditBuildingWorkspace({
                     <div className="mt-3">
                       <FieldChrome
                         id={`new-room-programs-${room.key}`}
-                        label="Assigned Programs"
+                        label="Assigned programs"
                         hint="A laboratory must have at least one program."
                       >
                         <Menu.Root modal={false}>
@@ -885,7 +885,7 @@ export function EditBuildingWorkspace({
           Back
         </Button>
         <Button type="button" block={false} onClick={handleSave} disabled={!hasChanges} isLoading={isSaving} loadingLabel="Saving…">
-          Save Changes
+          Save changes
         </Button>
       </StickyFooter>
     </div>

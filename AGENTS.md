@@ -79,6 +79,7 @@ app/
 - **Icons:** inline SVG components in `components/ui/icons.tsx` (stroke `currentColor`, `aria-hidden="true"`). Add new icons there — never re-declare an icon locally.
 - **Forms:** uncontrolled inputs read via `new FormData(e.currentTarget)`; `noValidate` on the form; validation via `app/lib/validators.ts`; error string in `useState` rendered through `FormError`.
 - **Accessibility is non-negotiable:** label every input, `role="alert"` on errors, `aria-label` on icon-only buttons, `focus-visible:ring-2 focus-visible:ring-gold-400` on every interactive element.
+- **Casing standards ([`CASING_GUIDELINES.md`](./CASING_GUIDELINES.md)):** Sentence-dominant Hybrid Casing. Action buttons, form labels, table headers, and badges must use **Sentence case** (`Save changes`, `Add department`, `Email address`). Structural landmarks, page titles, tabs, and modal headers use **Title Case** (`Academic Terms`, `Create Semester`). Technical acronyms stay **UPPERCASE** (`GWC`, `BSIT`, `COR`, `ID`). Backend errors and enum responses stay verbatim.
 
 ### Form, Select & Input Conventions
 

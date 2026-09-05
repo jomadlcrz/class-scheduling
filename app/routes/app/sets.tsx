@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Button } from "~/components/ui/button";
@@ -135,7 +135,7 @@ function SetsPage() {
           />
           <FilterDropdown
             id="set-year-filter"
-            label="Year Level"
+            label="Year level"
             allLabel="All year levels"
             options={yearLevelIds.map((year) => ({ value: String(year), label: yearLevelLabel(year) }))}
             value={yearLevel}

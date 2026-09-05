@@ -453,11 +453,11 @@ export function SlotEntryForm({
       <div className="flex flex-col gap-2">
         <Button>
           <PlusIcon />
-          {isEditing ? "Update Slot" : isConflictMove ? "Move Slot" : "Add to Schedule"}
+          {isEditing ? "Update slot" : isConflictMove ? "Move slot" : "Add to schedule"}
         </Button>
         {isEditing && onCancelEdit && (
           <Button type="button" variant="outline" onClick={onCancelEdit}>
-            Cancel Edit
+            Cancel edit
           </Button>
         )}
       </div>

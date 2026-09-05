@@ -56,7 +56,7 @@ export function TermClosureTable({ terms, onViewDetails, onClose, onReopen }: Te
                 <TableActionButton
                   onClick={() => onViewDetails(row)}
                 >
-                  View Details
+                  View details
                 </TableActionButton>
                 {row.actions.canClose && (
                   <TableActionButton

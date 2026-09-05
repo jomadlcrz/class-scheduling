@@ -105,8 +105,8 @@ function ClassroomMappingPage() {
                 value={schoolYear}
                 onValueChange={(v) => setSchoolYear(v as string)}
               >
-                <SelectTrigger id="cm-year" aria-label="School Year">
-                  <SelectValue placeholder="School Year" />
+                <SelectTrigger id="cm-year" aria-label="School year">
+                  <SelectValue placeholder="School year" />
                 </SelectTrigger>
                 <SelectContent>
                   {contextLoading ? (

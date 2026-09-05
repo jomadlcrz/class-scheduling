@@ -87,11 +87,11 @@ export function FacultyAccountForm({
         <div className="grid gap-6 sm:grid-cols-2">
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
-            <Input id="faculty-first-name" label="First Name" type="text" required />
-            <Input id="faculty-mid-name" label="Middle Name" type="text" />
+            <Input id="faculty-first-name" label="First name" type="text" required />
+            <Input id="faculty-mid-name" label="Middle name" type="text" />
           </div>
 
-          <Input id="faculty-last-name" label="Last Name" type="text" required />
+          <Input id="faculty-last-name" label="Last name" type="text" required />
 
           <Input
             id="faculty-email"
@@ -102,7 +102,7 @@ export function FacultyAccountForm({
 
           <PhoneInput
             id="faculty-mobile"
-            label="Mobile Number"
+            label="Mobile number"
             required
           />
 
@@ -164,7 +164,7 @@ export function FacultyAccountForm({
                 </SelectContent>
               </Select>
             </FieldChrome>
-            <FieldChrome id="faculty-civil-status" label="Civil Status" required>
+            <FieldChrome id="faculty-civil-status" label="Civil status" required>
               <Select
                 items={[
                   { value: "", label: "Select a status" },
@@ -226,7 +226,7 @@ export function FacultyAccountForm({
           Cancel
         </Button>
         <Button block={false} disabled={departments.length === 0 || isLoading} isLoading={isLoading} loadingLabel="Creating…">
-          Add Faculty
+          Add faculty
         </Button>
       </StickyFooter>
     </form>

@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -37,15 +37,15 @@ export function ForgotPasswordForm({ onSent }: { onSent: (message: string) => vo
     <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5" noValidate>
       <FormError message={error} />
 
-  <Input
-    id="email"
-    label="Email Address"
-    type="email"
-    autoComplete="email"
-  />
+      <Input
+        id="email"
+        label="Email address"
+        type="email"
+        autoComplete="email"
+      />
 
       <Button type="submit" pill isLoading={isLoading} loadingLabel="Sending…">
-        Send Reset Link
+        Send reset link
       </Button>
     </form>
   );

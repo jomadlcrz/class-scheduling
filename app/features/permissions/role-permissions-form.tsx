@@ -105,7 +105,7 @@ export function RolePermissionsForm({ role, catalog, onSaved, onCancel }: RolePe
           loadingLabel="Saving…"
           onClick={handleSubmit}
         >
-          Save Permissions
+          Save permissions
         </Button>
       </div>
     </div>

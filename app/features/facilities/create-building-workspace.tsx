@@ -248,14 +248,14 @@ export function CreateBuildingWorkspace({
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <Input
                 id="create-building-name"
-                label="Building Name"
+                label="Building name"
                 required
                 value={buildingName}
                 onChange={(e) => setBuildingName(e.target.value)}
               />
               <Input
                 id="create-building-floors"
-                label="Number of Floors"
+                label="Number of floors"
                 type="number"
                 inputMode="numeric"
                 required
@@ -313,7 +313,7 @@ export function CreateBuildingWorkspace({
                           onClick={() => addRoom(floor.floorLevel)}
                         >
                           <PlusIcon />
-                          Add Room
+                          Add room
                         </Button>
                       </span>
                     }
@@ -328,7 +328,7 @@ export function CreateBuildingWorkspace({
                             onClick={() => addRoom(floor.floorLevel)}
                           >
                             <PlusIcon />
-                            Add First Room
+                            Add first room
                           </Button>
                         </EmptyState>
                       </div>
@@ -366,14 +366,14 @@ export function CreateBuildingWorkspace({
                             <div className="grid gap-3 md:grid-cols-3">
                               <Input
                                 id={`room-name-${room.key}`}
-                                label="Room Name"
+                                label="Room name"
                                 required
                                 value={room.roomName}
                                 onChange={(e) =>
                                   updateRoom(floor.floorLevel, room.key, { roomName: e.target.value })
                                 }
                               />
-                              <FieldChrome id={`room-type-${room.key}`} label="Room Type" required>
+                              <FieldChrome id={`room-type-${room.key}`} label="Room type" required>
                                 <Select
                                   items={roomTypes.map((t) => ({ value: t, label: t }))}
                                   value={room.roomType}
@@ -398,7 +398,7 @@ export function CreateBuildingWorkspace({
                               </FieldChrome>
                               <Input
                                 id={`room-capacity-${room.key}`}
-                                label="Room Capacity"
+                                label="Room capacity"
                                 type="number"
                                 inputMode="numeric"
                                 required
@@ -423,7 +423,7 @@ export function CreateBuildingWorkspace({
                               <div className="mt-3">
                                 <FieldChrome
                                   id={`room-programs-${room.key}`}
-                                  label="Assigned Programs"
+                                  label="Assigned programs"
                                   hint="A laboratory must have at least one program."
                                 >
                                   <Menu.Root modal={false}>
@@ -491,7 +491,7 @@ export function CreateBuildingWorkspace({
                           onClick={() => addRoom(floor.floorLevel)}
                         >
                           <PlusIcon />
-                          Add Another Room
+                          Add another room
                         </Button>
                       </div>
                     )}
@@ -512,7 +512,7 @@ export function CreateBuildingWorkspace({
         </p>
         <div className="flex gap-2">
           <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-            Save Facility
+            Save facility
           </Button>
         </div>
       </StickyFooter>

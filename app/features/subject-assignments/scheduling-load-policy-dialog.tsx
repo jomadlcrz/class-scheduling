@@ -125,7 +125,7 @@ export function SchedulingLoadPolicyDialog({ open, syId, semesterNumber, onClose
           ) : (
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" block={false} onClick={onClose}>Cancel</Button>
-              <Button type="submit" block={false} isLoading={saving} loadingLabel="Saving…">Save Policy</Button>
+              <Button type="submit" block={false} isLoading={saving} loadingLabel="Saving…">Save policy</Button>
             </div>
           )}
         </form>

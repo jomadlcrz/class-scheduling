@@ -70,7 +70,7 @@ export function AddPermissionForm({ onCreated, onCancel }: AddPermissionFormProp
       >
         <Input
           id="add-permission-slug"
-          label="Permission Slug"
+          label="Permission slug"
           name="permission-slug"
         />
         <Input
@@ -80,7 +80,7 @@ export function AddPermissionForm({ onCreated, onCancel }: AddPermissionFormProp
         />
         <Button type="submit" variant="outline" block={false}>
           <PlusIcon />
-          Add Permission
+          Add permission
         </Button>
       </form>
 
@@ -124,7 +124,7 @@ export function AddPermissionForm({ onCreated, onCancel }: AddPermissionFormProp
           disabled={rows.length === 0}
           onClick={handleSubmit}
         >
-          Create Permissions
+          Create permissions
         </Button>
       </div>
     </div>

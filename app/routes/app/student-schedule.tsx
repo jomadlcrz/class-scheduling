@@ -201,9 +201,9 @@ function StudentSchedulePage() {
           ) : (
             <>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Total Units" value={totalUnits} />
+                <StatCard label="Total units" value={totalUnits} />
                 <StatCard
-                  label="Weekly Classes"
+                  label="Weekly classes"
                   value={visibleSchedules.length}
                 />
                 <StatCard

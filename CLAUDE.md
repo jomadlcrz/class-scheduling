@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **Read `AGENTS.md` first.** It's the detailed, actively-maintained contributor guide for this repo (project slices, API contracts, full reuse-component table, design tokens, definition-of-done). This file gives a condensed architecture map and the commands you need day-to-day — it does not duplicate `AGENTS.md`, so keep both in sync if conventions change.
+> **Read `AGENTS.md` and `CASING_GUIDELINES.md` first.** `AGENTS.md` is the detailed contributor guide (project slices, API contracts, full reuse-component table, design tokens, definition-of-done) and `CASING_GUIDELINES.md` specifies the mandatory Sentence-dominant Hybrid Casing rules. This file gives a condensed architecture map and the commands you need day-to-day — it does not duplicate `AGENTS.md`, so keep both in sync if conventions change.
 
 ## Project overview
 

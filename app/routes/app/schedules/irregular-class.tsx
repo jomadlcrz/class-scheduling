@@ -545,7 +545,7 @@ function IrregularClassPage() {
           value={schoolYear}
           onValueChange={(v) => setSchoolYear(v as string)}
         >
-          <SelectTrigger id="ic-school-year" aria-label="School Year"><SelectValue placeholder="School Year" /></SelectTrigger>
+          <SelectTrigger id="ic-school-year" aria-label="School year"><SelectValue placeholder="School year" /></SelectTrigger>
           <SelectContent>
             {schoolYears.map((sy) => <SelectItem key={sy.id} value={sy.schoolYear}>{sy.schoolYear}</SelectItem>)}
           </SelectContent>

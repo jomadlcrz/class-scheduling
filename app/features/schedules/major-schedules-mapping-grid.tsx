@@ -951,7 +951,7 @@ export function MajorAssignmentDrawer({
               if (form) form.requestSubmit();
             }}
           >
-            {scheduleToEdit ? "Save Changes" : "Create Meeting"}
+            {scheduleToEdit ? "Save changes" : "Create meeting"}
           </Button>
         </>
       }

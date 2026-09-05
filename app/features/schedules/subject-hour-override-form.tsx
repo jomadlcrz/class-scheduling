@@ -304,7 +304,7 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
       <div>
         <Input
           id="sho-meetings"
-          label={hasLab ? "Meetings / Week (locked to 2 for lab)" : "Meetings / Week"}
+          label={hasLab ? "Meetings / week (locked to 2 for lab)" : "Meetings / week"}
           type="number"
           inputMode="numeric"
           min={1}
@@ -356,7 +356,7 @@ export function SubjectHourOverrideForm({ subjects, sets, allocations, initial, 
           </Button>
         )}
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…" disabled={!selectedSubjectId}>
-          {initial ? "Save Changes" : "Add Override"}
+          {initial ? "Save changes" : "Add override"}
         </Button>
       </div>
     </form>

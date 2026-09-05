@@ -74,10 +74,10 @@ export function StudentInfoSummaryCard({
             ) : null}
           </div>
           <dl className="grid gap-3">
-            <InfoField label="Full Name">{displayName(identity)}</InfoField>
+            <InfoField label="Full name">{displayName(identity)}</InfoField>
             <InfoField label="Gender">{identity.gender || "—"}</InfoField>
             <InfoField label="Birthdate">{identity.birthdate || "—"}</InfoField>
-            <InfoField label="Contact Number">
+            <InfoField label="Contact number">
               {identity.mobile.trim() ? <a href={`tel:${identity.mobile.trim()}`} className="hover:underline">{identity.mobile.trim()}</a> : "—"}
             </InfoField>
             <InfoField label="Email">
@@ -107,9 +107,9 @@ export function StudentInfoSummaryCard({
           </div>
           <dl className="grid gap-3">
             <InfoField label="Program">{programLabel || "—"}</InfoField>
-            <InfoField label="Year Level">{yearLevelLabel || "—"}</InfoField>
-            <InfoField label="Student Type">{academic.studentType.trim() || "—"}</InfoField>
-            <InfoField label="Enrolled Status">
+            <InfoField label="Year level">{yearLevelLabel || "—"}</InfoField>
+            <InfoField label="Student type">{academic.studentType.trim() || "—"}</InfoField>
+            <InfoField label="Enrolled status">
               {academic.enrolledStatus ? (
                 <Badge tone={statusTone}>{academic.enrolledStatus}</Badge>
               ) : (
@@ -117,12 +117,12 @@ export function StudentInfoSummaryCard({
               )}
             </InfoField>
             {academic.enrolledStatus === "Regular" ? (
-              <InfoField label="Class Set">{setLabel || "—"}</InfoField>
+              <InfoField label="Class set">{setLabel || "—"}</InfoField>
             ) : null}
             <InfoField label="Term">
               {[schoolYearLabel, semesterLabel].filter(Boolean).join(" · ") || "—"}
             </InfoField>
-            <InfoField label="Enrollment Status">
+            <InfoField label="Enrollment status">
               <Badge tone="sky">For Enrollment</Badge>
             </InfoField>
           </dl>

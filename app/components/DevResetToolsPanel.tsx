@@ -158,7 +158,7 @@ export function DevResetToolsPanel() {
               onClick={() => openResetModal(act)}
               className={`mt-5 w-full rounded-lg px-3 py-2 text-xs font-semibold text-white shadow-sm transition ${act.color}`}
             >
-              Execute Reset
+              Execute reset
             </button>
           </div>
         ))}
@@ -218,7 +218,7 @@ export function DevResetToolsPanel() {
                 loadingLabel="Resetting…"
                 onClick={handleExecuteReset}
               >
-                Execute Reset
+                Execute reset
               </Button>
             </ModalActions>
           </div>

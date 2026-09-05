@@ -984,7 +984,7 @@ function SchedulesNewPage() {
                 loadingLabel="Saving…"
                 onClick={handleSave}
               >
-                Save Schedule{slots.length > 0 ? ` (${slots.length})` : ""}
+                Save schedule{slots.length > 0 ? ` (${slots.length})` : ""}
               </Button>
             </>
           )

@@ -166,7 +166,7 @@ export function AddStudentStep3Review({
       <ProgramWizardFooter
         backLabel="Back: Academic Information"
         onBack={onBack}
-        primaryLabel="Add Records"
+        primaryLabel="Add records"
         onPrimary={onSave}
         primaryDisabled={!canSave}
         isSaving={isSaving}

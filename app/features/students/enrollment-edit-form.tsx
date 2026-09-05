@@ -79,7 +79,7 @@ export function EnrollmentEditForm({
 
       <FieldChrome
         id="enrollment-state"
-        label="Enrollment State"
+        label="Enrollment state"
         hint="Use this to mark the enrollment as enrolled, dropped, withdrawn, or voided without deleting its history."
       >
         <Select
@@ -109,7 +109,7 @@ export function EnrollmentEditForm({
           Cancel
         </Button>
         <Button type="button" block={false} isLoading={isSaving} loadingLabel="Saving…" onClick={handleSubmit}>
-          Save Changes
+          Save changes
         </Button>
       </div>
     </div>

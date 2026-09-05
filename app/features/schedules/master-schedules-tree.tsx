@@ -80,7 +80,7 @@ export function MasterSchedulesTree({
         action={
           <Button type="button" block={false} onClick={onCreateSchedule}>
             <PlusIcon />
-            Create Schedule
+            Create schedule
           </Button>
         }
       >

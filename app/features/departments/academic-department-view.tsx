@@ -116,7 +116,7 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
                   to={`/program-curricula?program=${program.abbrev}`}
                   className="mt-auto inline-flex items-center gap-1 font-body text-xs font-medium text-blue-700 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
                 >
-                  View Curriculum
+                  View curriculum
                   <ChevronRightIcon />
                 </Link>
               </Card>

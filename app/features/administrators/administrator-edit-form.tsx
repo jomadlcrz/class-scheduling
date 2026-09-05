@@ -53,21 +53,21 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
       <div className="grid grid-cols-2 gap-3">
         <Input
           id="edit-admin-first-name"
-          label="First Name"
+          label="First name"
           type="text"
           required
           defaultValue={administrator.firstName}
         />
         <Input
           id="edit-admin-mid-name"
-          label="Middle Name"
+          label="Middle name"
           type="text"
           defaultValue={administrator.midName ?? ""}
         />
       </div>
-      <Input id="edit-admin-last-name" label="Last Name" type="text" required defaultValue={administrator.lastName} />
+      <Input id="edit-admin-last-name" label="Last name" type="text" required defaultValue={administrator.lastName} />
       <div className="flex flex-col gap-1.5">
-        <label className="font-body text-sm font-semibold text-slate-600 dark:text-slate-400">Email Address</label>
+        <label className="font-body text-sm font-semibold text-slate-600 dark:text-slate-400">Email address</label>
         <div className="flex items-center gap-3">
           <p className="min-w-0 truncate font-body text-sm text-navy-700 dark:text-mist-100">
             {email}
@@ -79,7 +79,7 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
       </div>
       <PhoneInput
         id="edit-admin-mobile"
-        label="Mobile Number"
+        label="Mobile number"
         required
         defaultValue={administrator.mobile ?? ""}
       />
@@ -88,7 +88,7 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
           Cancel
         </Button>
         <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Saving…">
-          Save Changes
+          Save changes
         </Button>
       </div>
 
@@ -96,7 +96,7 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
         <div className="flex flex-col gap-4">
           <Input
             id="edit-admin-change-email"
-            label="New Email Address"
+            label="New email address"
             type="email"
             autoComplete="email"
             hint="The user may need to reconfirm their account with the new email."
@@ -111,7 +111,7 @@ export function AdministratorEditForm({ administrator, onSubmit, onCancel }: Adm
               if (value) setEmail(value);
               setEmailModalOpen(false);
             }}>
-              Change Email
+              Change email
             </Button>
           </div>
         </div>

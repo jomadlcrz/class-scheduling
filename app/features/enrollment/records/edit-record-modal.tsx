@@ -365,7 +365,7 @@ export function EditRecordModal({ open, studentProfileId, enrollment, genders, n
               Cancel
             </Button>
             <Button type="submit" block={false} isLoading={isSaving} loadingLabel="Saving…">
-              Save Changes
+              Save changes
             </Button>
           </ModalActions>
         </form>

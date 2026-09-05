@@ -626,7 +626,7 @@ function MasterSchedulesPage() {
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" block={false} onClick={() => navigate("/schedules/new")}>
               <PlusIcon />
-              Create Schedule
+              Create schedule
             </Button>
           </div>
         }

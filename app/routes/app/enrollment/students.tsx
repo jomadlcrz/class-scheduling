@@ -117,7 +117,7 @@ function EnrollmentStudentsPage() {
         actions={!isDean ? (
           <Button type="button" block={false} onClick={() => navigate("/enrollment/new")}>
             <PlusIcon />
-            Add Records
+            Add records
           </Button>
         ) : undefined}
       />

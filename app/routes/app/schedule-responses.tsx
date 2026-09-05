@@ -754,7 +754,7 @@ function ScheduleResponsesPage() {
                 block={false}
                 onClick={() => setMeetings((current) => [...current, emptyMeeting(responseTarget?.mode ?? "", dayOptions[0] ?? "")])}
               >
-                Add Meeting
+                Add meeting
               </Button>
               <Textarea id="reason" name="reason" label="Reason for the proposed change" required />
             </div>
@@ -770,7 +770,7 @@ function ScheduleResponsesPage() {
               loadingLabel="Submitting…"
               disabled={responseType === "suggest_change" && Boolean(roomsError)}
             >
-              Submit Response
+              Submit response
             </Button>
           </ModalActions>
         </form>

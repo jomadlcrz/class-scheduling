@@ -43,14 +43,14 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
       <FormError message={error} />
       <Input
         id="building-name"
-        label="Building Name"
+        label="Building name"
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
       <Input
         id="building-floors"
-        label="Number of Floors"
+        label="Number of floors"
         type="number"
         inputMode="numeric"
         required
@@ -77,7 +77,7 @@ export function BuildingForm({ building, onSubmit, onCancel }: BuildingFormProps
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-          {isEdit ? "Save Changes" : "Create Building"}
+          {isEdit ? "Save changes" : "Create building"}
         </Button>
       </ModalActions>
     </form>

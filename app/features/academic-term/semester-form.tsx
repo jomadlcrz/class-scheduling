@@ -109,7 +109,7 @@ export function SemesterForm({ initialValue, defaultNumber, mode, onSubmit, onCa
           Cancel
         </Button>
         <Button type="submit" block={false} isLoading={isSaving} loadingLabel={isEdit ? "Saving…" : "Adding…"}>
-          {isEdit ? "Save Changes" : "Add Semester"}
+          {isEdit ? "Save changes" : "Add semester"}
         </Button>
       </div>
     </form>

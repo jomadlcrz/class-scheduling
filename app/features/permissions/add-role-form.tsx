@@ -71,13 +71,13 @@ export function AddRoleForm({ onCreated, onCancel }: AddRoleFormProps) {
       >
         <Input
           id="add-role-name"
-          label="Role Name"
+          label="Role name"
           name="role-name"
           autoComplete="off"
         />
         <Button type="submit" variant="outline" block={false}>
           <PlusIcon />
-          Add Role
+          Add role
         </Button>
       </form>
 
@@ -116,7 +116,7 @@ export function AddRoleForm({ onCreated, onCancel }: AddRoleFormProps) {
           disabled={rows.length === 0}
           onClick={handleSubmit}
         >
-          Create Roles
+          Create roles
         </Button>
       </div>
     </div>

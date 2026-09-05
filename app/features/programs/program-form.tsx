@@ -101,7 +101,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
       <div className="grid grid-cols-2 gap-3">
         <Input
           id="prog-abbrev"
-          label="Program Abbrev"
+          label="Program abbreviation"
           required
           autoCapitalize="characters"
           spellCheck={false}
@@ -133,14 +133,14 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
 
       <Input
         id="prog-name"
-        label="Program Name"
+        label="Program name"
         required
         defaultValue={program?.name ?? ""}
       />
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="prog-years" className="font-body text-xs font-semibold text-navy-800 dark:text-mist-100">
-          Program Length (Years)
+          Program length (years)
         </label>
         <input
           id="prog-years"
@@ -173,7 +173,7 @@ export function ProgramForm({ program, departments, onSubmit, onCancel }: Progra
           isLoading={isLoading}
           loadingLabel="Saving…"
         >
-          {isEdit ? "Save Changes" : "Create Program"}
+          {isEdit ? "Save changes" : "Create program"}
         </Button>
       </ModalActions>
     </form>

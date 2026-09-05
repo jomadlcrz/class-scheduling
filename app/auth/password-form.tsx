@@ -104,14 +104,14 @@ export function PasswordForm({
       {requireCurrentPassword && (
         <PasswordInput
           id="current-password"
-          label="Current Password"
+          label="Current password"
           autoComplete="current-password"
         />
       )}
 
       <PasswordInput
         id="new-password"
-        label="New Password"
+        label="New password"
         autoComplete="new-password"
         value={newPassword}
         onChange={(e) => setNewPassword(e.currentTarget.value)}
@@ -119,7 +119,7 @@ export function PasswordForm({
 
       <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
         <p className="font-body text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Password Requirements
+          Password requirements
         </p>
         <ul className="mt-2.5 flex flex-col gap-2 font-body text-xs">
           <RequirementItem
@@ -147,7 +147,7 @@ export function PasswordForm({
 
       <PasswordInput
         id="confirm-password"
-        label="Confirm New Password"
+        label="Confirm new password"
         autoComplete="new-password"
       />
 

@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -79,11 +79,11 @@ function PermissionsPage() {
           <div className="flex gap-2">
             <Button type="button" block={false} onClick={() => setAddRoleOpen(true)}>
               <PlusIcon />
-              Add Role
+              Add role
             </Button>
             <Button type="button" variant="outline" block={false} onClick={() => setAddPermissionOpen(true)}>
               <PlusIcon />
-              Add Permission
+              Add permission
             </Button>
           </div>
         }

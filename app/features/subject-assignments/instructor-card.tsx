@@ -252,7 +252,7 @@ export function InstructorCard({
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <Button type="button" variant="outline" block={false} onClick={onAddProgram}>
             <PlusIcon />
-            Add Existing Program
+            Add existing program
           </Button>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -265,10 +265,10 @@ export function InstructorCard({
                 onClick={onRequestHoursAdjustment}
               >
                 {hoursAdjustmentRequest?.status === "pending"
-                  ? "Adjustment Pending"
+                  ? "Adjustment pending"
                   : hoursAdjustmentRequest?.status === "rejected"
-                    ? "Request Again (Rejected)"
-                    : "Request Hours Adjustment"}
+                    ? "Request again (rejected)"
+                    : "Request hours adjustment"}
               </Button>
             )}
             {hoursRole === "dean" && hoursAdjustmentRequest?.status === "pending" && onReviewHoursAdjustment && (
@@ -278,13 +278,13 @@ export function InstructorCard({
                 block={false}
                 onClick={onReviewHoursAdjustment}
               >
-                Review Hours Request
+                Review hours request
               </Button>
             )}
             {onViewTeachingTerm && (
               <Button type="button" variant="outline" block={false} onClick={onViewTeachingTerm}>
                 <EyeIcon />
-                View Term
+                View term
               </Button>
             )}
             <Button type="button" variant="outline" block={false} disabled={!hasChanges} onClick={onUpdateAssignment}>
@@ -293,7 +293,7 @@ export function InstructorCard({
             </Button>
             <Button type="button" variant="danger" block={false} onClick={onRemoveInstructor}>
               <TrashIcon />
-              Remove Instructor
+              Remove instructor
             </Button>
           </div>
         </div>

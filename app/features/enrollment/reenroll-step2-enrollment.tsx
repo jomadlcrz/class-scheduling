@@ -87,7 +87,7 @@ export function ReenrollStep2Enrollment({
           )}
         </FieldChrome>
 
-        <FieldChrome id="reenroll-year" label="Year Level" required>
+        <FieldChrome id="reenroll-year" label="Year level" required>
           <Select
             items={[{ value: "", label: "Select a year" }, ...yearOptions.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))]}
             value={academic.yearLevel}
@@ -129,7 +129,7 @@ export function ReenrollStep2Enrollment({
       />
 
       <div className={`grid gap-3 ${isIrregular ? "grid-cols-1" : "sm:grid-cols-2"}`}>
-        <FieldChrome id="reenroll-type" label="Student Type" required>
+        <FieldChrome id="reenroll-type" label="Student type" required>
           <Select
             items={[{ value: "", label: "Select a type" }, ...studentTypes.map((t) => ({ value: t, label: t }))]}
             value={academic.studentType}
@@ -150,7 +150,7 @@ export function ReenrollStep2Enrollment({
         </FieldChrome>
 
         {!isIrregular && (
-          <FieldChrome id="reenroll-set" label="Class Set" required hint="Required for Regular students">
+          <FieldChrome id="reenroll-set" label="Class set" required hint="Required for Regular students">
             {selectedProgram && academic.yearLevel && filteredSets.length === 0 ? (
               <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
                 <p className="font-medium text-navy-800 dark:text-mist-100">No class sets found</p>
@@ -189,7 +189,7 @@ export function ReenrollStep2Enrollment({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <FieldChrome id="reenroll-sy" label="School Year" required>
+        <FieldChrome id="reenroll-sy" label="School year" required>
           <Select
             items={[{ value: "", label: "Select a school year" }, ...schoolYears.map((sy) => ({ value: String(sy.id), label: sy.schoolYear }))]}
             value={academic.syId}

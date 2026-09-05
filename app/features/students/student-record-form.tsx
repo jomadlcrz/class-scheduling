@@ -171,12 +171,12 @@ export function StudentRecordForm({
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <Input id="student-first-name" label="First Name" type="text" required />
-            <Input id="student-mid-name" label="Middle Name" type="text" />
+            <Input id="student-first-name" label="First name" type="text" required />
+            <Input id="student-mid-name" label="Middle name" type="text" />
           </div>
 
           <div className="grid grid-cols-[1fr_auto] gap-3">
-            <Input id="student-last-name" label="Last Name" type="text" required />
+            <Input id="student-last-name" label="Last name" type="text" required />
             <FieldChrome id="student-suffix" label="Suffix">
               <Select
                 items={[{ value: "", label: "None" }, ...nameSuffixes.map((s) => ({ value: s, label: s }))]}
@@ -207,12 +207,12 @@ export function StudentRecordForm({
 
           <PhoneInput
             id="student-mobile"
-            label="Mobile Number"
+            label="Mobile number"
             required
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <FieldChrome id="student-type" label="Student Type" required>
+            <FieldChrome id="student-type" label="Student type" required>
               <Select
                 items={[{ value: "", label: "Select a type" }, ...studentTypes.map((t) => ({ value: t, label: t }))]}
                 name="student-type"
@@ -231,7 +231,7 @@ export function StudentRecordForm({
                 </SelectContent>
               </Select>
             </FieldChrome>
-            <FieldChrome id="student-status" label="Enrolled Status" required>
+            <FieldChrome id="student-status" label="Enrolled status" required>
               <Select
                 items={[
                   { value: "", label: "Select a status" },
@@ -290,7 +290,7 @@ export function StudentRecordForm({
           </FieldChrome>
 
           <div className={`grid gap-3 ${isIrregular ? "grid-cols-1" : "grid-cols-2"}`}>
-            <FieldChrome id="student-year" label="Year Level" required>
+            <FieldChrome id="student-year" label="Year level" required>
               <Select
                 items={[
                   { value: "", label: "Select a year" },
@@ -348,7 +348,7 @@ export function StudentRecordForm({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <FieldChrome id="student-sy" label="School Year" required>
+            <FieldChrome id="student-sy" label="School year" required>
               <Select
                 items={[
                   { value: "", label: "Select a school year" },
@@ -398,12 +398,12 @@ export function StudentRecordForm({
           <div>
             <div className="flex items-center justify-between">
               <span className="font-body text-sm text-slate-600 dark:text-slate-300">
-                Enrolled Subjects
+                Enrolled subjects
               </span>
               {filteredSubjects.length > 0 && (
                 <Checkbox
                   id="student-subjects-select-all"
-                  label="Select All"
+                  label="Select all"
                   checked={allSubjectsSelected}
                   onChange={toggleSelectAll}
                 />
@@ -439,7 +439,7 @@ export function StudentRecordForm({
           Cancel
         </Button>
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…">
-          Add Student
+          Add student
         </Button>
       </div>
     </form>

@@ -69,7 +69,7 @@ function ChangePasswordContent() {
       </AuthHeading>
       {/* The fresh temp-password login already proved the current password. */}
       <PasswordForm
-        submitLabel="Update Password"
+        submitLabel="Update password"
         loadingLabel="Updating…"
         onSubmit={handleSubmit}
       />

@@ -78,7 +78,7 @@ function SetRow({
         className="text-xs"
         onClick={() => onPreview(release)}
       >
-        View Timetable
+        View timetable
       </Button>
     </div>
   );

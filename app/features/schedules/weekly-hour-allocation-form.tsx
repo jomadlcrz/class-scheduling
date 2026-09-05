@@ -256,7 +256,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
                 ))}
                 <Button type="button" variant="outline" block={false} onClick={addLabSlot}>
                   <PlusIcon />
-                  Add Slot
+                  Add slot
                 </Button>
               </div>
             </div>
@@ -266,7 +266,7 @@ export function WeeklyHourAllocationForm({ types, onSubmit }: Props) {
 
       <div className="flex justify-end">
         <Button block={false} isLoading={isLoading} loadingLabel="Saving…" disabled={!subjectType}>
-          Save Allocation
+          Save allocation
         </Button>
       </div>
     </form>

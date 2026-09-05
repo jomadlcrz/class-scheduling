@@ -82,7 +82,7 @@ export function AccountDetails() {
       <SettingsPageHeader title="Account Details" />
 
       <div className="mt-6 flex flex-col divide-y divide-slate-200 dark:divide-white/10">
-        <SettingsRow label="Profile Picture">
+        <SettingsRow label="Profile picture">
           {photoLoading ? (
             <div className="flex flex-col gap-2">
               <Skeleton className="size-20 rounded-full" />
@@ -111,7 +111,7 @@ export function AccountDetails() {
           )}
         </SettingsRow>
 
-        <SettingsRow label="First Name">
+        <SettingsRow label="First name">
           {photoLoading ? (
             <ReadOnlySkeleton />
           ) : (
@@ -119,7 +119,7 @@ export function AccountDetails() {
           )}
         </SettingsRow>
 
-        <SettingsRow label="Middle Name">
+        <SettingsRow label="Middle name">
           {photoLoading ? (
             <ReadOnlySkeleton />
           ) : (
@@ -127,7 +127,7 @@ export function AccountDetails() {
           )}
         </SettingsRow>
 
-        <SettingsRow label="Last Name">
+        <SettingsRow label="Last name">
           {photoLoading ? (
             <ReadOnlySkeleton />
           ) : (
@@ -147,7 +147,7 @@ export function AccountDetails() {
           </SettingsRow>
         )}
 
-        <SettingsRow label="Email Address">
+        <SettingsRow label="Email address">
           {photoLoading ? (
             <div className="flex items-center gap-3">
               <ReadOnlySkeleton />
@@ -261,22 +261,22 @@ export function AccountDetails() {
           <Modal open={emailModalOpen} onClose={() => setEmailModalOpen(false)} title="Change Email">
             <div className="flex flex-col gap-4">
               <Input
-                id="change-email-address"
-                label="New Email Address"
+                id="change-email-input"
+                label="New email address"
                 type="email"
                 autoComplete="email"
                 hint="If you change your email, you may need to reconfirm your account."
               />
               <PasswordInput
                 id="change-email-password"
-                label="Current Password"
+                label="Current password"
                 autoComplete="current-password"
               />
               <ModalActions>
                 <Button type="button" variant="outline" block={false} onClick={() => setEmailModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="button" block={false}>Change Email</Button>
+                <Button type="button" block={false}>Change email</Button>
               </ModalActions>
             </div>
           </Modal>

@@ -591,7 +591,7 @@ export function StudentsPage() {
           isAdmin && selectedForAccount.size > 0 ? (
             <Button type="button" block={false} onClick={() => setBulkCreateOpen(true)}>
               <UserCheckIcon />
-              Create Accounts ({selectedForAccount.size})
+              Create accounts ({selectedForAccount.size})
             </Button>
           ) : undefined
         }

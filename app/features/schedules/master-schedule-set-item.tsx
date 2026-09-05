@@ -224,7 +224,7 @@ export function MasterScheduleSetItem({
                 onClick={() => onClearSet(targetSetId, setCode)}
               >
                 <TrashIcon />
-                Clear Set
+                Clear set
               </Button>
             )}
           </div>

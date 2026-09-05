@@ -120,7 +120,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         )}
       </FieldChrome>
 
-      {isEdit && <FieldChrome id="set-year-level" label="Year Level">
+      {isEdit && <FieldChrome id="set-year-level" label="Year level">
         <Select
           items={yearLevelIds.map((year) => ({ value: year, label: yearLevelLabel(year) }))}
           name="set-year-level"
@@ -143,7 +143,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
       {isEdit && <Textarea
         id={`set-code-${editYearLevel}`}
         name={`set-code-${editYearLevel}`}
-        label={isEdit ? "Set Code" : "Set Code(s)"}
+        label={isEdit ? "Set code" : "Set code(s)"}
         rows={isEdit ? 2 : 4}
         required
         defaultValue={set?.setCode ?? ""}
@@ -153,7 +153,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
       {!isEdit && selectedProgram && <div className="space-y-4">
         <p className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 font-body text-xs text-blue-800 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-200">Add the needed sections for every year level. Each year can have different set codes.</p>
         <TabList ariaLabel="Year level" tabs={availableYearLevels.map((level) => ({ value: level, label: yearLevelLabel(level) }))} value={activeYearLevel} onChange={setActiveYearLevel} />
-        {availableYearLevels.includes(activeYearLevel) && <Textarea id={`set-code-${activeYearLevel}`} label={`${yearLevelLabel(activeYearLevel)} Set Code(s)`} rows={4} value={codesByYearLevel[activeYearLevel] ?? ""} onChange={(event) => setCodesByYearLevel((current) => ({ ...current, [activeYearLevel]: event.target.value }))} hint="Optional. One code per line." />}
+        {availableYearLevels.includes(activeYearLevel) && <Textarea id={`set-code-${activeYearLevel}`} label={`${yearLevelLabel(activeYearLevel)} set code(s)`} rows={4} value={codesByYearLevel[activeYearLevel] ?? ""} onChange={(event) => setCodesByYearLevel((current) => ({ ...current, [activeYearLevel]: event.target.value }))} hint="Optional. One code per line." />}
       </div>}
 
       <ModalActions>
@@ -166,7 +166,7 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
           isLoading={isLoading}
           loadingLabel="Saving…"
         >
-          {isEdit ? "Save Changes" : "Add Sets"}
+          {isEdit ? "Save changes" : "Add sets"}
         </Button>
       </ModalActions>
     </form>

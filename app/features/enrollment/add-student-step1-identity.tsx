@@ -170,14 +170,14 @@ export function AddStudentStep1Identity({
               <div className="grid gap-3 sm:grid-cols-2">
                 <PhoneInput
                   id="new-student-mobile"
-                  label="Mobile Number"
+                  label="Mobile number"
                   required
                   value={identity.mobile}
                   onChange={(e) => onIdentityChange({ mobile: e.target.value })}
                 />
                 <Input
                   id="new-student-email"
-                  label="Email Address"
+                  label="Email address"
                   type="email"
                   required
                   value={identity.email}
@@ -192,7 +192,7 @@ export function AddStudentStep1Identity({
 
               <details className="group">
                 <summary className="w-fit cursor-pointer font-body text-sm font-semibold text-navy-800 dark:text-mist-100">
-                  Address (Optional)
+                  Address (optional)
                 </summary>
                 <div className="mt-3 flex flex-col gap-3">
                   <div className="grid gap-3 sm:grid-cols-2">

@@ -81,7 +81,7 @@ export function SchoolYearsPage() {
             </Button>
             <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
               <PlusIcon />
-              Create School Year
+              Create school year
             </Button>
           </>
         }

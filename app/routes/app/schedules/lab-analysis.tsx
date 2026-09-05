@@ -104,7 +104,7 @@ function LabAnalysisPage() {
       <div className="mt-4 flex flex-col gap-4">
         <Card className="relative grid grid-cols-1 gap-4 overflow-hidden border-slate-200 p-4 sm:grid-cols-3 sm:p-5 dark:border-white/10">
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-blue-300 to-transparent dark:via-blue-400/40" />
-          <FieldChrome id="la-school-year" label="School Year">
+          <FieldChrome id="la-school-year" label="School year">
             <Select
               items={
                 syLoading
@@ -170,7 +170,7 @@ function LabAnalysisPage() {
             </Select>
           </FieldChrome>
 
-          <FieldChrome id="la-program" label="Program Lens">
+          <FieldChrome id="la-program" label="Program lens">
             <Select
               items={[
                 { value: "all", label: "All programs" },

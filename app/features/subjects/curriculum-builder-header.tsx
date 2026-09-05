@@ -47,7 +47,7 @@ export function CurriculumBuilderHeader({
 
         <Input
           id="new-prog-name"
-          label="Program Name"
+          label="Program name"
           required
           value={newProgram.name}
           onChange={(e) => onNewProgramChange({ name: e.target.value })}
@@ -56,14 +56,14 @@ export function CurriculumBuilderHeader({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Input
             id="new-prog-abbrev"
-            label="Program Abbreviation"
+            label="Program abbreviation"
             required
             autoCapitalize="characters"
             spellCheck={false}
             value={newProgram.abbrev}
             onChange={(e) => onNewProgramChange({ abbrev: e.target.value.toUpperCase() })}
           />
-          <FieldChrome id="new-prog-type" label="Program Type" required>
+          <FieldChrome id="new-prog-type" label="Program type" required>
             <Select
               items={degreeTypes.map((t) => ({ value: t, label: t }))}
               value={newProgram.type || null}
@@ -83,7 +83,7 @@ export function CurriculumBuilderHeader({
           </FieldChrome>
           <Input
             id="new-prog-years"
-            label="Program Length"
+            label="Program length"
             required
             type="number"
             inputMode="numeric"
@@ -123,7 +123,7 @@ export function CurriculumBuilderHeader({
 
         <Textarea
           id="new-prog-description"
-          label="Program Description"
+          label="Program description"
           hint="Optional."
           value={newProgram.description ?? ""}
           onChange={(e) => onNewProgramChange({ description: e.target.value })}

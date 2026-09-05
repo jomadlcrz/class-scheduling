@@ -108,10 +108,10 @@ export function ReenrollStep3Review({
               {students.map((s) => s.name).join(", ") || "—"}
             </InfoField>
             <InfoField label="Program">{programLabel || "—"}</InfoField>
-            <InfoField label="Year Level">
+            <InfoField label="Year level">
               {academic.yearLevel ? yearLevelLabel(Number(academic.yearLevel)) : "—"}
             </InfoField>
-            <InfoField label="Enrolled Status">
+            <InfoField label="Enrolled status">
               {academic.enrolledStatus ? (
                 <Badge tone={isIrregular ? "gold" : "emerald"}>{academic.enrolledStatus}</Badge>
               ) : (
@@ -207,9 +207,9 @@ export function ReenrollStep3Review({
       </EnrollmentSectionCard>
 
       <ProgramWizardFooter
-        backLabel="Back: Enrollment Information"
+        backLabel="Back: Enrollment information"
         onBack={onBack}
-        primaryLabel="Submit Enrollment"
+        primaryLabel="Submit enrollment"
         onPrimary={onSave}
         primaryDisabled={!canSave}
         isSaving={isSaving}

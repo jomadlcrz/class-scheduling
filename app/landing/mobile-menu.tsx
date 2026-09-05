@@ -50,7 +50,7 @@ export function MobileMenu({ links, onClose }: MobileMenuProps) {
           <div className="px-5">
             {/* Log In — primary full-width */}
             <ButtonLink href="/login" onClick={onClose} className="mt-6">
-              Log In
+              Log in
             </ButtonLink>
 
             {/* Nav links — large Vercel-style */}

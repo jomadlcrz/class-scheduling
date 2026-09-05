@@ -313,7 +313,7 @@ export function InstructorProposalEditor({
             loadingLabel="Submitting..."
             onClick={() => void submit()}
           >
-            Submit Shift Request
+            Submit shift request
           </Button>
         </div>
 

@@ -151,7 +151,7 @@ function ClassModePoliciesPage() {
 
       <Card className="mt-4 p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <FieldChrome id="cmp-school-year" label="School Year">
+          <FieldChrome id="cmp-school-year" label="School year">
             <Select
               items={schoolYears.map((y) => ({ value: y.schoolYear, label: y.schoolYear }))}
               name="cmp-school-year"

@@ -223,7 +223,7 @@ export function EnrollmentDetailDrawer({ student, enrollment, genders, nameSuffi
                   {!readOnly && (
                     <Button type="button" variant="outline" block={false} onClick={() => setEditRecordOpen(true)}>
                       <EditIcon />
-                      Edit Record
+                      Edit record
                     </Button>
                   )}
                 </div>
