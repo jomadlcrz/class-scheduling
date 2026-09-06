@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Skeleton } from "~/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
+import { TabButtons } from "~/components/ui/underline-tabs";
 import { PhaseBanner } from "~/features/academic-terms/phase-banner";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
@@ -365,63 +366,19 @@ function ScheduleResponsesPage() {
       )}
 
       {/* Tabs Navigation */}
-      <div className="mt-8 flex border-b border-slate-200 dark:border-white/10">
-        <button
-          type="button"
-          onClick={() => setActiveTab("needs_you")}
-          className={`border-b-2 px-4 py-2 text-xs font-semibold tracking-wide transition-colors ${
-            activeTab === "needs_you"
-              ? "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-mist-200"
-          }`}
-        >
-          Needs you ({user?.role === "faculty" ? availableSchedules.length : waitingOnYouCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("in_flight")}
-          className={`border-b-2 px-4 py-2 text-xs font-semibold tracking-wide transition-colors ${
-            activeTab === "in_flight"
-              ? "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-mist-200"
-          }`}
-        >
-          With other office ({withDeanCount + withRegistrarCount - waitingOnYouCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("decided")}
-          className={`border-b-2 px-4 py-2 text-xs font-semibold tracking-wide transition-colors ${
-            activeTab === "decided"
-              ? "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-mist-200"
-          }`}
-        >
-          Decided ({decidedCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("accepted")}
-          className={`border-b-2 px-4 py-2 text-xs font-semibold tracking-wide transition-colors ${
-            activeTab === "accepted"
-              ? "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-mist-200"
-          }`}
-        >
-          Accepted ({acceptedResponses.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("awaiting")}
-          className={`border-b-2 px-4 py-2 text-xs font-semibold tracking-wide transition-colors ${
-            activeTab === "awaiting"
-              ? "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-mist-200"
-          }`}
-        >
-          Awaiting response ({awaitingResponses.length})
-        </button>
-      </div>
+      <TabButtons
+        ariaLabel="Schedule response queues"
+        className="mt-8"
+        value={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { value: "needs_you", label: `Needs you (${user?.role === "faculty" ? availableSchedules.length : waitingOnYouCount})` },
+          { value: "in_flight", label: `With other office (${withDeanCount + withRegistrarCount - waitingOnYouCount})` },
+          { value: "decided", label: `Decided (${decidedCount})` },
+          { value: "accepted", label: `Accepted (${acceptedResponses.length})` },
+          { value: "awaiting", label: `Awaiting response (${awaitingResponses.length})` },
+        ]}
+      />
 
       {/* Responses Table */}
       <section className="mt-4">
