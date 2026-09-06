@@ -91,7 +91,7 @@ export function FacilitiesViewWorkspace({
   );
   const summary = useMemo(() => (building ? computeBuildingSummary(building) : null), [building]);
   const totalCapacity = useMemo(
-    () => building?.rooms.reduce((total, room) => total + room.capacity, 0) ?? 0,
+    () => building?.rooms.reduce((total, room) => total + (room.capacity ?? 0), 0) ?? 0,
     [building],
   );
 

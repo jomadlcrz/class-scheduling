@@ -7,7 +7,6 @@ import type {
   TermAdvanceAction,
   TermDistributionReadiness,
   TermPhaseResponse,
-  TermResolutionRun,
   SchedulingWindowName,
   SchedulingWindowsSnapshot,
 } from "~/types/term-phase";
@@ -370,30 +369,6 @@ async function openPhase(
   };
 }
 
-/** GET /registrar/scheduling-terms/{syId}/{semesterNumber}/resolution — latest resolution run or null. */
-async function getResolution(
-  syId: number,
-  semesterNumber: number,
-): Promise<TermResolutionRun | null> {
-  return apiGet<TermResolutionRun | null>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/resolution`,
-  );
-}
-
-/** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/resolution/preview — solve without committing. */
-async function previewResolution(
-  syId: number,
-  semesterNumber: number,
-): Promise<{ message: string; resolution: TermResolutionRun }> {
-  const data = await apiPost<{ message?: string; resolution: TermResolutionRun }>(
-    `/registrar/scheduling-terms/${syId}/${semesterNumber}/resolution/preview`,
-  );
-  return {
-    message: apiMessage(data),
-    resolution: data.resolution,
-  };
-}
-
 /** POST /registrar/scheduling-terms/{syId}/{semesterNumber}/programs/{programId}/publications — publish program's schedule independently. */
 async function publishProgramSchedule(
   syId: number,
@@ -451,7 +426,5 @@ export const termPhaseService = {
   advancePhase,
   rewindPhase,
   openPhase,
-  getResolution,
-  previewResolution,
 };
 

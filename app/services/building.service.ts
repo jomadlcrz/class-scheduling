@@ -58,7 +58,7 @@ async function update(id: number, input: UpdateBuildingInput): Promise<string> {
 }
 
 /** POST /buildings/:id/rooms — batch adds rooms into a building. */
-async function addRooms(id: number, rooms: { roomName: string; roomType: string; roomCapacity: number }[]): Promise<string> {
+async function addRooms(id: number, rooms: { roomName: string; roomType: string; roomCapacity: number | null }[]): Promise<string> {
   const data = await apiPost<{ message?: string }>(`/buildings/${id}/rooms`, { rooms });
   return apiMessage(data);
 }

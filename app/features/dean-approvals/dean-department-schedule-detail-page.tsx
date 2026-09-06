@@ -4,10 +4,8 @@ import { useNavigate, useParams } from "react-router";
 import { Button } from "~/components/ui/button";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { ArrowLeftIcon, CheckIcon, CloseIcon } from "~/components/ui/icons";
+import { ArrowLeftIcon, CheckIcon } from "~/components/ui/icons";
 import { Spinner } from "~/components/ui/spinner";
-import { ScheduleApproveDialog } from "~/features/dean-approvals/schedule-approve-dialog";
-import { ScheduleRejectDialog } from "~/features/dean-approvals/schedule-reject-dialog";
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleLifecycleRail } from "~/features/schedules/schedule-lifecycle-rail";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
@@ -27,8 +25,6 @@ export function DeanDepartmentScheduleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
-  const [approveOpen, setApproveOpen] = useState(false);
-  const [rejectOpen, setRejectOpen] = useState(false);
   const [dayMap, setDayMap] = useState<Awaited<ReturnType<typeof getDayMapping>>>(null);
   const [finalApproveLoading, setFinalApproveLoading] = useState(false);
 
@@ -37,12 +33,10 @@ export function DeanDepartmentScheduleDetailPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    Promise.all([
-      scheduleReleaseService.getApproval(releaseId),
-      scheduleReleaseService.getApprovalPreview(releaseId),
-    ])
-      .then(([release, data]) => {
-        if (!cancelled) setPreview({ ...data, release });
+    scheduleReleaseService
+      .getReleasePreview(releaseId)
+      .then((data) => {
+        if (!cancelled) setPreview(data);
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "Unable to load this schedule.");
@@ -59,17 +53,6 @@ export function DeanDepartmentScheduleDetailPage() {
     getDayMapping().then(setDayMap);
   }, []);
 
-  async function handleSendToInstructors() {
-    try {
-      const { message } = await scheduleReleaseService.sendToInstructors(releaseId);
-      if (message) toast.success(message);
-      navigate("/dean/department-schedules");
-    } catch (err) {
-      await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
-      throw err instanceof Error ? err : new Error("Unable to send the schedule to instructors.");
-    }
-  }
-
   async function handleFinalApprove() {
     setFinalApproveLoading(true);
     try {
@@ -81,17 +64,6 @@ export function DeanDepartmentScheduleDetailPage() {
       toast.error(err instanceof Error ? err.message : "Unable to give final approval.");
     } finally {
       setFinalApproveLoading(false);
-    }
-  }
-
-  async function handleReject(reason: string) {
-    try {
-      const { message } = await scheduleReleaseService.rejectRelease(releaseId, reason);
-      if (message) toast.success(message);
-      navigate("/dean/department-schedules");
-    } catch (err) {
-      await scheduleReleaseService.getApprovalPreview(releaseId).then(setPreview).catch(() => {});
-      throw err instanceof Error ? err : new Error("Unable to reject the schedule.");
     }
   }
 
@@ -129,7 +101,6 @@ export function DeanDepartmentScheduleDetailPage() {
 
   const { release, daySchedules } = preview;
   const schedules = scheduleReleaseService.mapPreviewToSchedules(preview, dayMap);
-  const canReview = release.releaseStatus === "pending_dean_review";
   const canFinalApprove = release.releaseStatus === "pending_final_approval";
 
   return (
@@ -141,18 +112,6 @@ export function DeanDepartmentScheduleDetailPage() {
             <Button type="button" variant="outline" block={false} onClick={() => navigate("/dean/department-schedules")}>
               <ArrowLeftIcon /> Back
             </Button>
-            {canReview && (
-              <>
-                <Button type="button" variant="outline" block={false} onClick={() => setRejectOpen(true)}>
-                  <CloseIcon size={14} />
-                  Reject
-                </Button>
-                <Button type="button" block={false} onClick={() => setApproveOpen(true)}>
-                  <CheckIcon size={14} />
-                  Send to instructors
-                </Button>
-              </>
-            )}
             {canFinalApprove && (
               <Button
                 type="button"
@@ -202,19 +161,6 @@ export function DeanDepartmentScheduleDetailPage() {
           <ScheduleTable schedules={schedules} />
         )}
       </div>
-
-      <ScheduleApproveDialog
-        open={approveOpen}
-        release={release}
-        onClose={() => setApproveOpen(false)}
-        onConfirm={handleSendToInstructors}
-      />
-      <ScheduleRejectDialog
-        open={rejectOpen}
-        release={release}
-        onClose={() => setRejectOpen(false)}
-        onConfirm={handleReject}
-      />
     </div>
   );
 }

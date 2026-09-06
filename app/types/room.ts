@@ -26,7 +26,7 @@ export type Room = {
   buildingName: string;
   floor: number;
   name: string;
-  capacity: number;
+  capacity: number | null;
   /** Backend RoomType value, e.g. "Lecture Room". */
   type: string;
   /** Backend ClassroomStatus value, e.g. "Vacant" — managed by the scheduler. */
@@ -43,7 +43,7 @@ export type RoomDetail = {
   floor: number;
   name: string;
   type: string;
-  capacity: number;
+  capacity: number | null;
   status: string;
   programIds: number[];
   programs: RoomProgram[];
@@ -53,7 +53,7 @@ export type RoomDetail = {
 export type UpdateRoomInput = {
   roomName?: string;
   roomType?: string;
-  roomCapacity?: number;
+  roomCapacity?: number | null;
   floorLevel?: number;
   programIds?: number[];
   roomStatus?: "Vacant" | "Maintenance";

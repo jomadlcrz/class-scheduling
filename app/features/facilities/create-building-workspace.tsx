@@ -37,7 +37,7 @@ function newRoomDraft(): FacilityRoomDraft {
     key: newDraftKey(),
     roomName: "",
     roomType: "",
-    roomCapacity: 45,
+    roomCapacity: null,
     programIds: [],
   };
 }
@@ -206,8 +206,8 @@ export function CreateBuildingWorkspace({
         setError("Select a type for every room.");
         return;
       }
-      if (!Number.isInteger(room.roomCapacity) || room.roomCapacity < 1) {
-        setError("Enter a valid capacity for every room.");
+      if (room.roomType !== "Non-Academic" && (!Number.isInteger(room.roomCapacity) || (room.roomCapacity ?? 0) < 1)) {
+        setError("Enter a valid capacity for every academic room.");
         return;
       }
       if (room.roomType === "Laboratory" && room.programIds.length === 0) {
@@ -401,9 +401,9 @@ export function CreateBuildingWorkspace({
                                 label="Room capacity"
                                 type="number"
                                 inputMode="numeric"
-                                required
+                                required={room.roomType !== "Non-Academic"}
                                 min={1}
-                                value={room.roomCapacity === 0 ? "" : room.roomCapacity}
+                                value={room.roomCapacity == null ? "" : room.roomCapacity}
                                 onKeyDown={(e) => {
                                   if (["e", "E", "+", "-", "."].includes(e.key)) {
                                     e.preventDefault();
@@ -411,9 +411,9 @@ export function CreateBuildingWorkspace({
                                 }}
                                 onChange={(e) => {
                                   const clean = e.target.value.replace(/[^0-9]/g, "");
-                                  const num = clean === "" ? 0 : parseInt(clean, 10);
+                                  const num = clean === "" ? null : parseInt(clean, 10);
                                   updateRoom(floor.floorLevel, room.key, {
-                                    roomCapacity: Number.isNaN(num) ? 0 : num,
+                                    roomCapacity: Number.isNaN(num) ? null : num,
                                   });
                                 }}
                               />

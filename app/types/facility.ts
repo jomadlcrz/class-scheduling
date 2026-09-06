@@ -4,7 +4,7 @@ import type { RoomProgram } from "~/types/room";
 type CreateFacilityRoomInput = {
   roomName: string;
   roomType: string;
-  roomCapacity: number;
+  roomCapacity: number | null;
   programIds?: number[];
 };
 
@@ -29,7 +29,7 @@ export type FacilityRoomDraft = {
   key: string;
   roomName: string;
   roomType: string;
-  roomCapacity: number;
+  roomCapacity: number | null;
   programIds: number[];
 };
 
@@ -52,7 +52,7 @@ export type FacilityRoomDetail = {
   floor: number;
   name: string;
   type: string;
-  capacity: number;
+  capacity: number | null;
   status: string;
   timeRemaining: string;
   programIds: number[];

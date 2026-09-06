@@ -15,11 +15,7 @@ import type {
   SchedulePreviewDay,
 } from "~/types/schedule-release";
 
-/** Schedule release / dean approval workflow (10 endpoints, no frontend usage before this file). */
-
-function normalizeMode(mode: string): ScheduleMode {
-  return mode;
-}
+/** Schedule release / dean approval workflow. */
 
 // The backend already serializes releases in camelCase (ScheduleReleaseService._serialize_release),
 // unlike most other modules in this codebase — so these Api* types mirror the response 1:1.
@@ -64,43 +60,6 @@ async function getRelease(id: number): Promise<ScheduleRelease> {
 /** GET /schedule-releases/{id}/preview — read-only weekly grid for the registrar to review before submitting. */
 async function getReleasePreview(id: number): Promise<SchedulePreview> {
   return mapPreview(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`));
-}
-
-/**
- * Submit a release — draft/rejected → pending_dean_review.
- * NOTE: Backend does not yet have a release-level submit endpoint.
- * The registrar workflow uses scheduling-term program send instead.
- */
-async function submitRelease(id: number, note?: string): Promise<{ message: string; release: ScheduleRelease }> {
-  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/schedule-releases/${id}/submit`,
-    note ? { note } : undefined,
-  );
-  return { message: apiMessage(data), release: mapRelease(data.release) };
-}
-
-/**
- * Withdraw a release — pending_dean_review → draft.
- * NOTE: Backend does not yet have a release-level withdraw endpoint.
- * The registrar workflow uses scheduling-term program withdraw instead.
- */
-async function withdrawRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
-  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/schedule-releases/${id}/withdraw`,
-  );
-  return { message: apiMessage(data), release: mapRelease(data.release) };
-}
-
-/**
- * Send stray set to dean after term distribution.
- * NOTE: Backend does not yet have a release-level catch-up endpoint.
- */
-async function catchUpRelease(id: number, note?: string): Promise<{ message: string; release: ScheduleRelease }> {
-  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/schedule-releases/${id}/catch-up`,
-    note ? { note } : undefined,
-  );
-  return { message: apiMessage(data), release: mapRelease(data.release) };
 }
 
 export type ListApprovalsOptions = {
@@ -242,52 +201,12 @@ async function finalApproveProgram(
   };
 }
 
-/** GET /schedule-releases/{id}/preview */
-async function getApprovalPreview(id: number): Promise<SchedulePreview> {
-  return mapPreview(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`));
-}
-
-/** GET /schedule-releases/{id} — release detail. */
+/** GET /schedule-releases/{id}/preview — dean's view of a single release. */
 async function getApproval(id: number): Promise<ScheduleRelease> {
-  return mapRelease(await apiGet<ApiScheduleRelease>(`/schedule-releases/${id}`));
+  return mapRelease(await apiGet<ApiSchedulePreview>(`/schedule-releases/${id}/preview`).then((p) => p.release));
 }
 
-/**
- * Legacy initial-approval endpoint.
- * NOTE: The active workflow uses sendToInstructors → forwardSuggestions → finalApprove instead.
- * This is kept for backward compatibility but is no longer the primary approval path.
- */
-async function approveRelease(id: number): Promise<{ message: string; release: ScheduleRelease }> {
-  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/final-approvals`,
-  );
-  return { message: apiMessage(data), release: mapRelease(data.release) };
-}
-
-/**
- * Reject a release — returns it to the Registrar as a draft.
- * Maps to the program-level reject endpoint since the backend has no release-level reject.
- */
-async function rejectRelease(id: number, reason: string): Promise<{ message: string; release: ScheduleRelease }> {
-  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/rejections`,
-    { reason },
-  );
-  return { message: apiMessage(data), release: mapRelease(data.release) };
-}
-
-/**
- * Send release to instructors for review.
- * Maps to the program-level send-to-instructors endpoint since the backend has no release-level endpoint.
- */
-async function sendToInstructors(id: number): Promise<{ message: string; release: ScheduleRelease }> {
-  const data = await apiPost<{ message?: string; release: ApiScheduleRelease }>(
-    `/deans/schedule-approvals/${id}/instructor-distributions`,
-  );
-  return { message: apiMessage(data), release: mapRelease(data.release) };
-}
-
-/** GET /deans/schedule-approvals/{id}/review-progress — tracks instructor review progress. */
+/** POST /deans/schedule-approvals/{id}/suggestion-forwards — forwards instructor suggestions to registrar. */
 async function getReviewProgress(id: number): Promise<import("~/types/schedule-release").DeanReviewProgress> {
   return apiGet<import("~/types/schedule-release").DeanReviewProgress>(
     `/deans/schedule-approvals/${id}/review-progress`,
@@ -388,7 +307,7 @@ function mapPreviewToSchedules(preview: SchedulePreview, dayMap?: DayMapping | n
         facultyName: session.instructorName ?? "Unassigned",
         roomId: session.roomId != null ? String(session.roomId) : "",
         roomName: session.roomName ?? "TBD",
-        mode: normalizeMode(session.classMode ?? ""),
+        mode: (session.classMode ?? "") as ScheduleMode,
         sessionMode: session.sessionMode ?? undefined,
         day: dayCode,
         startTime: parseTime12h(session.startTime),
@@ -403,17 +322,10 @@ export const scheduleReleaseService = {
   listReleases,
   getRelease,
   getReleasePreview,
-  submitRelease,
-  withdrawRelease,
-  catchUpRelease,
   listApprovals,
   listProgramApprovals,
   sendAllToInstructors,
-  getApprovalPreview,
   getApproval,
-  approveRelease,
-  rejectRelease,
-  sendToInstructors,
   sendProgramToInstructors,
   rejectProgram,
   returnProgramForRevision,
