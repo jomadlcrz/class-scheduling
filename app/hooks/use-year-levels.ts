@@ -9,6 +9,13 @@ type UseYearLevelsResult = {
   loading: boolean;
 };
 
+function formatOrdinalYear(n: number): string {
+  if (n === 1) return "1st Year";
+  if (n === 2) return "2nd Year";
+  if (n === 3) return "3rd Year";
+  return `${n}th Year`;
+}
+
 export function useYearLevels(): UseYearLevelsResult {
   // Derived from the shared enums cache so revisits/reloads skip the loading state.
   const { data } = useCachedData("enums", () => enumService.getOptions());
@@ -22,7 +29,7 @@ export function useYearLevels(): UseYearLevelsResult {
   }, [yearLevels]);
 
   const yearLevelLabel = useCallback(
-    (n: number) => labelMap.get(n) ?? `${n}th Year`,
+    (n: number) => labelMap.get(n) ?? formatOrdinalYear(n),
     [labelMap],
   );
 

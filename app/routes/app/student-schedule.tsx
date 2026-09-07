@@ -77,6 +77,9 @@ function StudentSchedulePage() {
     return [];
   }, [enrolledTerms, termContext]);
 
+  const selectedTerm = termContext?.selection;
+  const selectedTermReady = selectedTerm?.syId != null && selectedTerm.semesterNumber != null;
+
   // The backend already scopes rows to this student via the JWT (StudentProfile.user_id).
   const {
     isLoading,
@@ -86,11 +89,12 @@ function StudentSchedulePage() {
     visibleSchedules,
     attestations,
     attestationsLoading,
-  } = useMySchedule();
+  } = useMySchedule({
+    schoolYear: selectedTerm?.schoolYear,
+    semester: selectedTerm?.semesterNumber,
+  });
 
-  const selectedTerm = termContext?.selection;
-  const selectedTermReady = selectedTerm?.syId != null && selectedTerm.semesterNumber != null;
-  const studentContextKey = `student-schedule-empty-state:${selectedTerm?.syId ?? "none"}:${selectedTerm?.semesterNumber ?? "none"}`;
+  const studentContextKey = `student-analytics:${selectedTerm?.syId ?? "none"}:${selectedTerm?.semesterNumber ?? "none"}`;
   const { data: studentAnalytics, error: studentAnalyticsError } = useCachedData(
     studentContextKey,
     () => selfAnalyticsService.getStudent(selectedTerm!.syId!, selectedTerm!.semesterNumber!),

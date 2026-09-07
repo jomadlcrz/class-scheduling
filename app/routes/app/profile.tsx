@@ -17,14 +17,71 @@ import { ProfileAvatar } from "~/components/ui/profile-avatar";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
-import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
 import { ScreenHeader } from "~/components/ui/screen-header";
 import { SectionHeader } from "~/components/ui/section-header";
 import { profilePhotoService, type ProfilePhotoData } from "~/services/profile-photo.service";
 import { studentService } from "~/services/student.service";
+
+function AcademicCapIcon({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+    </svg>
+  );
+}
+
+function MapPinIcon({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+function MoonIcon({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+    </svg>
+  );
+}
 import type { RegistrationData } from "~/types/registration";
-import type { AddressData } from "~/types/student";
 
 export function meta() {
   return [
@@ -44,7 +101,6 @@ export default function ProfileRoute() {
 function StudentProfilePage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { yearLevelLabel } = useYearLevels();
   const { context: termContext } = useTermContext();
   const selectedTerm = termContext?.selection;
 
@@ -54,7 +110,6 @@ function StudentProfilePage() {
   const [photoRemoveOpen, setPhotoRemoveOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [address, setAddress] = useState<AddressData | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const libraryInputRef = useRef<HTMLInputElement>(null);
@@ -74,10 +129,6 @@ function StudentProfilePage() {
       }),
     { enabled: !!user },
   );
-
-  useEffect(() => {
-    profilePhotoService.getAddress("student").then(setAddress).catch(() => setAddress(null));
-  }, []);
 
   if (!user) return null;
 
@@ -142,36 +193,7 @@ function StudentProfilePage() {
     meta?.student_name ||
     registration?.student_name ||
     "Student";
-  const rawStudentNo = (meta?.student_id || registration?.student_id)?.trim();
-  const studentNo =
-    rawStudentNo && rawStudentNo !== "-" && rawStudentNo !== "—"
-      ? rawStudentNo
-      : "No ID";
-  const program =
-    meta?.program_name ||
-    registration?.program_name ||
-    meta?.program_abbrev ||
-    "—";
-  const rawYear = meta?.year_level ?? registration?.year_level;
-  const rawYearName = meta?.year_level_name;
-  const resolvedYearLevel = (() => {
-    if (rawYearName && rawYearName.trim() && rawYearName !== "-" && rawYearName !== "—") {
-      return rawYearName.trim();
-    }
-    if (typeof rawYear === "number" && rawYear > 0) {
-      return yearLevelLabel(rawYear);
-    }
-    return "—";
-  })();
-
-  const section = meta?.set_name || registration?.section || "";
   const status = meta?.enrolled_status || registration?.academic_status || "Enrolled";
-
-  const yearAndSection = section && section !== "—" && section !== "-"
-    ? section
-    : resolvedYearLevel !== "—"
-    ? resolvedYearLevel
-    : "-";
 
   return (
     <div className="flex w-full flex-col">
@@ -181,7 +203,7 @@ function StudentProfilePage() {
           <PageHeader title="Profile & Account" />
         </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Profile Hero Card */}
         <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 text-center shadow-xs dark:border-white/10 dark:bg-surface">
           <div className="flex flex-col items-center">
@@ -222,101 +244,66 @@ function StudentProfilePage() {
           </div>
         </div>
 
-        {/* Academic Details Section */}
+        {/* Academic Section */}
         <div>
-          <SectionHeader title="Academic Details" />
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs dark:border-white/10 dark:bg-surface">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between py-1">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                  Student number
+          <SectionHeader title="Academic" />
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+            <Link
+              to="/profile/academic"
+              className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 dark:text-slate-300">
+                  <AcademicCapIcon size={20} />
                 </span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  {studentNo}
-                </span>
+                <p className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                  Academic Information
+                </p>
               </div>
-
-              <div className="h-px bg-slate-100 dark:bg-white/5" />
-
-              <div className="flex items-center justify-between py-1">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                  Program
-                </span>
-                <span className="max-w-[65%] text-right text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                  {program}
-                </span>
-              </div>
-
-              <div className="h-px bg-slate-100 dark:bg-white/5" />
-
-              <div className="flex items-center justify-between py-1">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                  Year & section
-                </span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  {yearAndSection}
-                </span>
-              </div>
-            </div>
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+            </Link>
           </div>
         </div>
 
-        {/* Registered Address Section */}
+        {/* Address Section */}
         <div>
-          <SectionHeader title="Registered Address" />
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs dark:border-white/10 dark:bg-surface">
-            {address ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between py-1">
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                    Street address
-                  </span>
-                  <span className="max-w-[65%] text-right text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                    {address.street || "N/A"}
-                  </span>
-                </div>
-
-                <div className="h-px bg-slate-100 dark:bg-white/5" />
-
-                <div className="flex items-center justify-between py-1">
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                    Barangay & city
-                  </span>
-                  <span className="max-w-[65%] text-right text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                    {[address.barangay, address.cityMunicipality].filter(Boolean).join(", ") || "N/A"}
-                  </span>
-                </div>
-
-                <div className="h-px bg-slate-100 dark:bg-white/5" />
-
-                <div className="flex items-center justify-between py-1">
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                    Province & postal
-                  </span>
-                  <span className="max-w-[65%] text-right text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                    {[address.province, address.zipCode].filter(Boolean).join(", ") || "N/A"}
-                  </span>
-                </div>
-
-                {address.region && (
-                  <>
-                    <div className="h-px bg-slate-100 dark:bg-white/5" />
-                    <div className="flex items-center justify-between py-1">
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                        Region
-                      </span>
-                      <span className="max-w-[65%] text-right text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                        {address.region}
-                      </span>
-                    </div>
-                  </>
-                )}
+          <SectionHeader title="Address" />
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+            <Link
+              to="/profile/address"
+              className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 dark:text-slate-300">
+                  <MapPinIcon size={20} />
+                </span>
+                <p className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                  Registered Address
+                </p>
               </div>
-            ) : (
-              <p className="py-2 text-center text-xs text-slate-400 dark:text-slate-500">
-                No home address on record. Contact the Registrar to update your records.
-              </p>
-            )}
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Preferences Section */}
+        <div>
+          <SectionHeader title="Preferences" />
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+            <Link
+              to="/profile/appearance"
+              className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 dark:text-slate-300">
+                  <MoonIcon size={20} />
+                </span>
+                <p className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                  Appearance
+                </p>
+              </div>
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+            </Link>
           </div>
         </div>
 
@@ -324,47 +311,37 @@ function StudentProfilePage() {
         <div>
           <SectionHeader title="Account & Security" />
           <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white divide-y divide-slate-100 shadow-xs dark:border-white/10 dark:bg-surface dark:divide-white/5">
-          <Link
-            to="/settings/change-password"
-            className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex size-8 items-center justify-center rounded-xl bg-blue-50 text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
-                <LockIcon size={14} />
-              </span>
-              <div>
+            <Link
+              to="/settings/change-password"
+              className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 dark:text-slate-300">
+                  <LockIcon size={20} />
+                </span>
                 <p className="text-sm font-bold text-navy-700 dark:text-mist-100">
                   Change Password
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Update your student portal account password
-                </p>
               </div>
-            </div>
-            <ChevronRightIcon />
-          </Link>
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+            </Link>
 
-          <button
-            type="button"
-            onClick={() => setLogoutConfirmOpen(true)}
-            className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-rose-50/50 dark:hover:bg-rose-950/20"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex size-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
-                <LogoutIcon />
-              </span>
-              <div>
+            <button
+              type="button"
+              onClick={() => setLogoutConfirmOpen(true)}
+              className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-rose-50/50 dark:hover:bg-rose-950/20"
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-rose-600 dark:text-rose-400">
+                  <LogoutIcon size={20} />
+                </span>
                 <p className="text-sm font-bold text-rose-600 dark:text-rose-400">
-                  Log Out
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Sign out of your student session on this device
+                  Log out
                 </p>
               </div>
-            </div>
-            <ChevronRightIcon />
-          </button>
-        </div>
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+            </button>
+          </div>
         </div>
       </div>
 

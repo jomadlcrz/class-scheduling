@@ -1063,18 +1063,8 @@ function RegistrationPage() {
         onClose={() => setShareModalOpen(false)}
         title="Share Registration"
         subtitle={`A.Y. ${schoolYear} · ${semester}`}
-        footer={
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full py-2.5 text-xs font-bold"
-            onClick={() => setShareModalOpen(false)}
-          >
-            Close
-          </Button>
-        }
       >
-        <div className="space-y-4 py-1">
+        <div className="space-y-4 pt-1 pb-6">
           {/* Summary Preview Card */}
           <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
             <div className="flex items-center justify-between">
@@ -1096,107 +1086,82 @@ function RegistrationPage() {
               <button
                 type="button"
                 onClick={handleSystemShare}
-                className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-blue-50 text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
-                    <ShareIcon size={18} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      System share
-                    </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Open device share menu
-                    </p>
-                  </div>
+                <div className="flex items-center gap-3.5">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                    <ShareIcon size={20} />
+                  </span>
+                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                    System share
+                  </span>
                 </div>
-                <ChevronRightIcon size={16} className="text-slate-400" />
+                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
               </button>
             )}
 
             <button
               type="button"
               onClick={handleCopySummary}
-              className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex size-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
-                  <CopyIcon size={18} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Copy summary
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Copy formatted text to clipboard
-                  </p>
-                </div>
+              <div className="flex items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <CopyIcon size={20} />
+                </span>
+                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                  Copy summary
+                </span>
               </div>
-              <ChevronRightIcon size={16} className="text-slate-400" />
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </button>
 
             <button
               type="button"
               onClick={handleWhatsAppShare}
-              className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-                  <WhatsAppIcon size={18} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Share via WhatsApp
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Send to contact or chat
-                  </p>
-                </div>
+              <div className="flex items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <WhatsAppIcon size={20} />
+                </span>
+                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                  Share via WhatsApp
+                </span>
               </div>
-              <ChevronRightIcon size={16} className="text-slate-400" />
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </button>
 
             <button
               type="button"
               onClick={handleEmailShare}
-              className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
-                  <MailIcon size={18} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Share via email
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Open in default mail client
-                  </p>
-                </div>
+              <div className="flex items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <MailIcon size={20} />
+                </span>
+                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                  Share via email
+                </span>
               </div>
-              <ChevronRightIcon size={16} className="text-slate-400" />
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </button>
 
             <button
               type="button"
               onClick={handleDownloadText}
-              className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex size-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300">
-                  <DownloadIcon size={18} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Download text file
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Save .txt summary of COR
-                  </p>
-                </div>
+              <div className="flex items-center gap-3.5">
+                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <DownloadIcon size={20} />
+                </span>
+                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                  Download text file
+                </span>
               </div>
-              <ChevronRightIcon size={16} className="text-slate-400" />
+              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </button>
           </div>
         </div>

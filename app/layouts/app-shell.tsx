@@ -159,13 +159,13 @@ function Shell() {
         ) : (
           <Topbar onToggleSidebar={toggleSidebar} />
         )}
-        <main className={`min-w-0 flex-1 ${isStudent && location.pathname !== "/settings/change-password" ? "pb-20 lg:pb-0" : ""}`}>
+        <main className={`min-w-0 flex-1 ${isStudent && location.pathname !== "/settings/change-password" && !location.pathname.startsWith("/profile/") ? "pb-20 lg:pb-0" : ""}`}>
           <Outlet />
         </main>
       </motion.div>
 
       {/* Fixed bottom navigation for students on mobile */}
-      {isStudent && location.pathname !== "/settings/change-password" && <StudentBottomNav />}
+      {isStudent && location.pathname !== "/settings/change-password" && !location.pathname.startsWith("/profile/") && <StudentBottomNav />}
     </div>
   );
 }
