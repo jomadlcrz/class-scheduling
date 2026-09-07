@@ -149,6 +149,14 @@ Depth and emphasis come from **typography and spacing first**, not from stacking
 - **Restraint on color.** Hue is reserved for meaning — status (approved/rejected/pending) and day accents only. No decorative or per-item coloring, no rainbow rows, no accent stripes. In particular, **don't add a 2px colored left border to cards** to categorize them; use a `Badge` or heading label instead. (See the timetable grid: accent-only.)
 - **Tables never cause horizontal page scroll.** Wrap a wide table in an `overflow-x-auto` container so scrolling stays *inside* the table, and hide low-priority columns responsively (`hidden sm:table-cell` / `hidden lg:table-cell`) — same pattern as `StudentAccountTable`. Don't force `min-w-*` that pushes the page body past the viewport; the page must never scroll sideways.
 
+## Student Portal Mobile Parity (`class-scheduling-mobile`)
+
+When working on student-facing views, pages, or layouts on mobile viewports:
+- Follow **[STUDENT_PORTAL_MOBILE_GUIDE.md](./STUDENT_PORTAL_MOBILE_GUIDE.md)** for full architecture, responsive rules, route mappings, and UI specifications.
+- Follow the Antigravity skill at **[`.agents/skills/student-portal-mobile/SKILL.md`](./.agents/skills/student-portal-mobile/SKILL.md)** for component blueprints, bottom tab navigation, and review checklist.
+- For student users on mobile viewports (`user.role === 'student'` and `<= 768px` / `< 1024px`), render the dedicated mobile shell with 5-tab fixed bottom navigation (Dashboard, Schedule, Registration, Notifications, Profile) instead of the desktop sidebar rail.
+- Maintain 1:1 visual parity with `class-scheduling-mobile` (Canonical GWC Blue `#0b3b9e`, School Navy `#1e3a6e` / `#050b1a`, School Gold `#ffba00`, Cream `#f7f7f2`, Surface `#131a2c`, compact widgets, two-tier badge dismissal on `/notifications`, and strict schedule approval gates).
+
 ## Adding a page (checklist)
 
 1. Create the route module in `app/routes/public/` (or `app/routes/app/` once that area is live) — default export + `meta()` returning a `"… — GWC Class Scheduling"` title.

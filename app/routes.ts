@@ -62,6 +62,8 @@ export default [
     route("faculty-loading", "routes/app/faculty-loading.tsx"),
     route("faculty-schedule", "routes/app/faculty-schedule.tsx"),
     route("student-schedule", "routes/app/student-schedule.tsx"),
+    route("registration", "routes/app/registration.tsx"),
+    route("profile", "routes/app/profile.tsx"),
     route("students", "routes/app/students.tsx"),
     route("students-regular", "routes/app/students-regular.tsx"),
     route("students-irregular", "routes/app/students-irregular.tsx"),
@@ -75,6 +77,7 @@ export default [
     route("enrollment/re-enroll/already-enrolled", "routes/app/enrollment/re-enroll-already-enrolled.tsx"),
     route("classroom-mapping", "routes/app/classroom-mapping.tsx"),
     route("audit", "routes/app/audit.tsx"),
+    route("settings/change-password", "routes/app/settings/change-password.tsx"),
 
     layout("layouts/settings-layout.tsx", [
       route("settings", "routes/app/settings/index.tsx"),

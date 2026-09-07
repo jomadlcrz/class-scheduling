@@ -12,6 +12,7 @@ import {
   ChevronRightIcon,
   ClockIcon,
   DashboardIcon,
+  FileTextIcon,
   FlaskConicalIcon,
   FolderOpenIcon,
   GraduationCapIcon,
@@ -185,6 +186,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Faculty Loading", to: "/faculty-loading", icon: <CalendarIcon />, roles: ["faculty"] },
       { label: "Shift Requests", to: "/shift-requests", icon: <CalendarClockIcon />, roles: ["faculty"], matchPrefix: true },
       { label: "My Schedule", to: "/student-schedule", icon: <CalendarIcon />, roles: ["student"] },
+      { label: "Registration (COR)", to: "/registration", icon: <FileTextIcon />, roles: ["student"] },
     ],
   },
   {

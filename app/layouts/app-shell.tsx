@@ -6,6 +6,7 @@ import { ThemeProvider } from "~/components/theme/theme-provider";
 import { LayoutSidebarIcon } from "~/components/ui/icons";
 import { Toaster } from "~/components/ui/sonner";
 import { TermContextProvider } from "~/features/academic-terms/term-context-provider";
+import { useAuth } from "~/hooks/use-auth";
 import { DashboardIntroOverlay, useJustLoggedIn } from "~/layouts/dashboard-intro";
 import {
   Sidebar,
@@ -13,6 +14,7 @@ import {
   saveSidebarMode,
   type SidebarMode,
 } from "~/layouts/sidebar";
+import { StudentBottomNav } from "~/layouts/student-bottom-nav";
 import { Topbar } from "~/layouts/topbar";
 
 const MOBILE_QUERY = "(max-width: 1023px)";
@@ -32,6 +34,8 @@ export default function AppShell() {
 }
 
 function Shell() {
+  const { user } = useAuth();
+  const isStudent = user?.role === "student";
   const justLoggedIn = useJustLoggedIn();
   const location = useLocation();
   const isSettingsRoute = location.pathname.startsWith("/settings");
@@ -104,53 +108,64 @@ function Shell() {
           </motion.div>
         ))}
 
-      {/* Mobile drawer — still reachable from the topbar hamburger on every route, including settings */}
-      <>
-        <button
-          type="button"
-          aria-label="Close menu"
-          onClick={() => setMobileOpen(false)}
-          className={`fixed inset-0 z-40 bg-slate-900/50 transition-opacity duration-200 lg:hidden ${
-            mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-          }`}
-        />
-        <div
-          className={`fixed inset-y-0 left-0 z-40 transition-transform duration-200 ease-in-out lg:hidden ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <div className="relative">
-            <button
-              type="button"
-              aria-label="Close sidebar"
-              onClick={() => setMobileOpen(false)}
-              className="absolute right-3 top-3 z-50 flex cursor-pointer items-center rounded-lg px-1 py-1 text-mist-100/80 transition-colors duration-150 hover:bg-white/10 hover:text-mist-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-            >
-              <span className="flex size-7 items-center justify-center">
-                <LayoutSidebarIcon size={16} />
-              </span>
-            </button>
-            <Sidebar
-              mode={mode}
-              forceExpanded
-              onModeChange={setModePersisted}
-              onExpand={() => undefined}
-              onNavigate={() => setMobileOpen(false)}
-            />
+      {/* Mobile drawer — for non-student roles */}
+      {!isStudent && (
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+            className={`fixed inset-0 z-40 bg-slate-900/50 transition-opacity duration-200 lg:hidden ${
+              mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          />
+          <div
+            className={`fixed inset-y-0 left-0 z-40 transition-transform duration-200 ease-in-out lg:hidden ${
+              mobileOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="Close sidebar"
+                onClick={() => setMobileOpen(false)}
+                className="absolute right-3 top-3 z-50 flex cursor-pointer items-center rounded-lg px-1 py-1 text-mist-100/80 transition-colors duration-150 hover:bg-white/10 hover:text-mist-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              >
+                <span className="flex size-7 items-center justify-center">
+                  <LayoutSidebarIcon size={16} />
+                </span>
+              </button>
+              <Sidebar
+                mode={mode}
+                forceExpanded
+                onModeChange={setModePersisted}
+                onExpand={() => undefined}
+                onNavigate={() => setMobileOpen(false)}
+              />
+            </div>
           </div>
-        </div>
-      </>
+        </>
+      )}
 
       <motion.div
         className="flex min-w-0 flex-1 flex-col"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.05, ease: EASE_OUT } }}
       >
-        <Topbar onToggleSidebar={toggleSidebar} />
-        <main className="min-w-0 flex-1">
+        {isStudent ? (
+          <div className="hidden lg:block">
+            <Topbar onToggleSidebar={toggleSidebar} />
+          </div>
+        ) : (
+          <Topbar onToggleSidebar={toggleSidebar} />
+        )}
+        <main className={`min-w-0 flex-1 ${isStudent && location.pathname !== "/settings/change-password" ? "pb-20 lg:pb-0" : ""}`}>
           <Outlet />
         </main>
       </motion.div>
+
+      {/* Fixed bottom navigation for students on mobile */}
+      {isStudent && location.pathname !== "/settings/change-password" && <StudentBottomNav />}
     </div>
   );
 }

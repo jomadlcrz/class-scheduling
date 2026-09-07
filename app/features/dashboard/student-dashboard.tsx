@@ -1,5 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useMemo, useState } from "react";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
+import { EmptyState } from "~/components/feedback/empty-state";
+import { Skeleton } from "~/components/ui/skeleton";
+import { TermSelector, type EnrolledTermItem } from "~/components/ui/term-selector";
 import {
   scheduleReleaseStatusLabel,
 } from "~/features/academic-terms/status-badges";
@@ -19,7 +23,10 @@ import {
   staggerWidgets,
   useTermData,
 } from "~/features/dashboard/dashboard-shared";
+import { LoadSummaryCard } from "~/features/dashboard/load-summary-card";
+import { StudentTodayClasses } from "~/features/dashboard/student-today-classes";
 import { selfAnalyticsService } from "~/services/self-analytics.service";
+import { studentService } from "~/services/student.service";
 import type { DailyLoadHour } from "~/types/dean-analytics";
 import type {
   StudentAnalytics,
@@ -131,6 +138,35 @@ export function StudentDashboard() {
     selfAnalyticsService.getStudent(sy, sem),
   );
 
+  const [enrolledTermsList, setEnrolledTermsList] = useState<EnrolledTermItem[]>([]);
+
+  useEffect(() => {
+    studentService
+      .getEnrollmentTerms()
+      .then((terms) => {
+        if (terms && terms.length > 0) {
+          setEnrolledTermsList(terms);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const availableTerms = useMemo<EnrolledTermItem[]>(() => {
+    if (enrolledTermsList.length > 0) return enrolledTermsList;
+    const list: EnrolledTermItem[] = [];
+    for (const y of years) {
+      for (const s of sems) {
+        list.push({
+          sy_id: y.id,
+          semester_number: s.semesterNumber,
+          school_year: y.schoolYear,
+          semester_name: s.semester,
+        });
+      }
+    }
+    return list;
+  }, [enrolledTermsList, years, sems]);
+
   const tiles = data ? buildTiles(data) : [];
   const dayHours = data ? buildDayHours(data.schedule) : [];
 
@@ -138,19 +174,41 @@ export function StudentDashboard() {
     <div className="space-y-6">
       <UpdateIndicator visible={refreshing} />
 
+      {/* ─── Mobile Term Selector (< lg screens) ─── */}
+      <div className="lg:hidden">
+        <TermSelector
+          terms={availableTerms}
+          selectedSyId={syId}
+          selectedSemester={semesterNumber}
+          onSelectTerm={(nextSy, nextSem) => {
+            setSyId(nextSy);
+            setSemesterNumber(nextSem);
+          }}
+        />
+      </div>
+
       <AnimatePresence mode="wait">
-        {loading ? (
+        {loading && !data ? (
           <motion.div
             key="loading"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.15 } }}
           >
-            <LoadingSkeleton />
+            {/* Desktop Loading Skeleton */}
+            <div className="hidden lg:block">
+              <LoadingSkeleton />
+            </div>
+
+            {/* Mobile Loading Skeleton (State 1) */}
+            <div className="space-y-4 lg:hidden">
+              <Skeleton className="h-36 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
+            </div>
           </motion.div>
         ) : error ? (
           <DataLoadAlert title="Dashboard unavailable" message={error} permission={error.toLowerCase().includes("permission")} />
-        ) : data ? (
+        ) : (
           <motion.div
             key="data"
             initial={{ opacity: 0 }}
@@ -164,10 +222,10 @@ export function StudentDashboard() {
               animate="visible"
               className="space-y-6"
             >
-              {/* ─── Header + term selects ─── */}
+              {/* ─── Desktop Header + term selects (>= lg) ─── */}
               <motion.div
                 variants={fadeSlideUp}
-                className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+                className="hidden lg:flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
               >
                 <div>
                   <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
@@ -184,46 +242,65 @@ export function StudentDashboard() {
                 />
               </motion.div>
 
-              {/* ─── Headline numbers ─── */}
-              <motion.section variants={fadeSlideUp}>
-                <motion.div
-                  variants={staggerWidgets}
-                  initial="hidden"
-                  animate="visible"
-                  className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-                >
-                  {tiles.map((tile) => (
-                    <StatTile key={tile.title} {...tile} />
-                  ))}
-                </motion.div>
+              {/* ─── Mobile View (< lg screens): Matches class-scheduling-mobile 3 States ─── */}
+              <motion.section variants={fadeSlideUp} className="space-y-4 lg:hidden">
+                {!data ? (
+                  /* State 3: Empty State */
+                  <EmptyState title="No Enrollment Data">
+                    Check back once the Registrar encodes your enrollment.
+                  </EmptyState>
+                ) : (
+                  /* State 2: Content State */
+                  <>
+                    <LoadSummaryCard data={data} />
+                    <StudentTodayClasses
+                      schedule={data.schedule}
+                      releaseStatus={data.meta.scheduleReleaseStatus}
+                      enrolledStatus={data.meta.enrolled_status}
+                    />
+                  </>
+                )}
               </motion.section>
 
-              {/* ─── Booked hours + schedule coverage ─── */}
-              <motion.section variants={fadeSlideUp}>
-                <motion.div
-                  variants={staggerWidgets}
-                  initial="hidden"
-                  animate="visible"
-                  className="grid grid-cols-1 gap-4 lg:grid-cols-3"
-                >
-                  <div className="lg:col-span-2">
-                    <ChartCard
-                      title="Class hours by day"
-                    >
-                      <DailyHoursChart days={dayHours} />
-                    </ChartCard>
-                  </div>
-                  <ChartCard
-                    title="Schedule coverage"
+              {/* ─── Desktop View (>= lg screens): Headline numbers + Charts ─── */}
+              {data && (
+                <div className="hidden space-y-6 lg:block">
+                <motion.section variants={fadeSlideUp}>
+                  <motion.div
+                    variants={staggerWidgets}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
                   >
-                    <SubjectCoverageDonut subjects={data.subjects} />
-                  </ChartCard>
-                </motion.div>
-              </motion.section>
+                    {tiles.map((tile) => (
+                      <StatTile key={tile.title} {...tile} />
+                    ))}
+                  </motion.div>
+                </motion.section>
+
+                <motion.section variants={fadeSlideUp}>
+                  <motion.div
+                    variants={staggerWidgets}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 gap-4 lg:grid-cols-3"
+                  >
+                    <div className="lg:col-span-2">
+                      <ChartCard title="Class hours by day">
+                        <DailyHoursChart days={dayHours} />
+                      </ChartCard>
+                    </div>
+                    <ChartCard title="Schedule coverage">
+                      <SubjectCoverageDonut subjects={data.subjects} />
+                    </ChartCard>
+                  </motion.div>
+                </motion.section>
+              </div>
+              )}
 
             </motion.div>
           </motion.div>
-        ) : null}
+        )}
       </AnimatePresence>
     </div>
   );

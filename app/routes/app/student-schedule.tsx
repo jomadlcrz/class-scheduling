@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { PrinterIcon } from "~/components/ui/icons";
 import { MobileScheduleSkeleton } from "~/components/ui/skeleton";
 import { StatCard } from "~/components/ui/stat-card";
+import { TermSelector, type EnrolledTermItem } from "~/components/ui/term-selector";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { MobileWeeklySchedule } from "~/features/schedules/mobile-weekly-schedule";
@@ -18,7 +19,9 @@ import { useDays } from "~/hooks/use-days";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import { PageHeader } from "~/layouts/page-header";
+import { ScreenHeader } from "~/components/ui/screen-header";
 import { selfAnalyticsService } from "~/services/self-analytics.service";
+import { studentService } from "~/services/student.service";
 
 export function meta() {
   return [
@@ -40,8 +43,39 @@ function StudentSchedulePage() {
   const { semesterLabel } = useSemesters();
   const { yearLevelLabel } = useYearLevels();
   const { dayLabels } = useDays();
-  const { context: termContext, loading: termContextLoading } = useTermContext();
+  const { context: termContext, loading: termContextLoading, selectTerm } = useTermContext();
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("table");
+  const [enrolledTerms, setEnrolledTerms] = useState<EnrolledTermItem[]>([]);
+
+  useEffect(() => {
+    studentService
+      .getEnrollmentTerms()
+      .then((terms) => {
+        if (terms && terms.length > 0) {
+          setEnrolledTerms(terms);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const availableTerms = useMemo<EnrolledTermItem[]>(() => {
+    if (enrolledTerms.length > 0) return enrolledTerms;
+    if (termContext?.schoolYears && termContext.semesters) {
+      const list: EnrolledTermItem[] = [];
+      for (const sy of termContext.schoolYears) {
+        for (const sem of termContext.semesters) {
+          list.push({
+            sy_id: sy.id,
+            semester_number: sem.semesterNumber,
+            school_year: sy.schoolYear,
+            semester_name: sem.label,
+          });
+        }
+      }
+      return list;
+    }
+    return [];
+  }, [enrolledTerms, termContext]);
 
   // The backend already scopes rows to this student via the JWT (StudentProfile.user_id).
   const {
@@ -154,80 +188,98 @@ function StudentSchedulePage() {
   const currentAttestation = attestations.find((a) => a.setCode === studentSetCode);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      <PageHeader
-        title="My Class Schedule"
-        actions={
-          <Tooltip label="Print schedule">
-            <button
-              type="button"
-              aria-label="Print schedule"
-              disabled={visibleSchedules.length === 0 || attestationsLoading}
-              onClick={() =>
-                openStudentSchedulePrint(visibleSchedules, {
-                  schoolYear,
-                  semesterLabel: semesterLabel(semester),
-                  studentName: user?.name ?? "",
-                  academicStatus,
-                  programName,
-                  yearLevel: studentYearLevel,
-                  semesterNumber: semester,
-                  attestations,
-                  dayLabels,
-                })
-              }
-              className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
-            >
-              <PrinterIcon />
-            </button>
-          </Tooltip>
-        }
-      />
+    <>
+      {/* Mobile Screen Header */}
+      <ScreenHeader title="Schedule" className="lg:hidden" />
 
-      {loadError && isLoading ? (
-        <EmptyState title="Couldn't load your schedule">{loadError}</EmptyState>
-      ) : (
-        <>
-          {isLoading || emptyContextLoading ? (
-            <div className="mt-8 sm:hidden">
-              <MobileScheduleSkeleton rows={4} />
-            </div>
-          ) : visibleSchedules.length === 0 ? (
-            <div className="mt-6 sm:hidden">
-              <EmptyState title={emptyScheduleState.title}>
-                {emptyScheduleState.message}
-              </EmptyState>
-            </div>
-          ) : (
-            <>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Total units" value={totalUnits} />
-                <StatCard
-                  label="Weekly classes"
-                  value={visibleSchedules.length}
-                />
-                <StatCard
-                  label="Status"
-                  value={academicStatus || "Irregular"}
-                />
-                {isRegular ? (
-                  <StatCard label="Set" value={studentSetCode} />
-                ) : (
-                  <StatCard label="Sets" value={totalSets} />
-                )}
-              </div>
+      {/* Mobile View (< lg) */}
+      <div className="mx-auto w-full px-4 py-4 lg:hidden">
+        {/* Term Selector (Mobile only) */}
+        <div className="mb-4">
+          <TermSelector
+            terms={availableTerms}
+            selectedSyId={selectedTerm?.syId ?? null}
+            selectedSemester={selectedTerm?.semesterNumber ?? null}
+            onSelectTerm={(nextSy, nextSem) => selectTerm(nextSy, nextSem)}
+          />
+        </div>
 
-              <div className="mt-4">
-                <TodayClasses schedules={visibleSchedules} />
-              </div>
+        {/* 3 States on Mobile: Loading, Not Published / Unavailable, Published Schedule */}
+        {isLoading || emptyContextLoading ? (
+          <div className="mt-2">
+            <MobileScheduleSkeleton rows={4} />
+          </div>
+        ) : visibleSchedules.length === 0 ? (
+          <div className="mt-4">
+            <EmptyState title={emptyScheduleState.title}>
+              {emptyScheduleState.message}
+            </EmptyState>
+          </div>
+        ) : (
+          <MobileWeeklySchedule schedules={visibleSchedules} showSet={!isRegular} />
+        )}
+      </div>
 
-              <div className="mt-4 sm:hidden">
-                <MobileWeeklySchedule schedules={visibleSchedules} showSet={!isRegular} />
-              </div>
-            </>
-          )}
+      {/* Desktop View (>= lg screens) — 100% untouched original layout */}
+      <div className="mx-auto hidden w-full max-w-7xl px-4 py-8 lg:block">
+        <PageHeader
+          title="My Class Schedule"
+          actions={
+            <Tooltip label="Print schedule">
+              <button
+                type="button"
+                aria-label="Print schedule"
+                disabled={visibleSchedules.length === 0 || attestationsLoading}
+                onClick={() =>
+                  openStudentSchedulePrint(visibleSchedules, {
+                    schoolYear,
+                    semesterLabel: semesterLabel(semester),
+                    studentName: user?.name ?? "",
+                    academicStatus,
+                    programName,
+                    yearLevel: studentYearLevel,
+                    semesterNumber: semester,
+                    attestations,
+                    dayLabels,
+                  })
+                }
+                className="grid size-9 cursor-pointer place-items-center rounded-lg border border-slate-300 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-mist-100"
+              >
+                <PrinterIcon />
+              </button>
+            </Tooltip>
+          }
+        />
 
-          <div className="hidden sm:block">
+        {loadError && isLoading ? (
+          <EmptyState title="Couldn't load your schedule">{loadError}</EmptyState>
+        ) : (
+          <>
+            {visibleSchedules.length > 0 && (
+              <>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <StatCard label="Total units" value={totalUnits} />
+                  <StatCard
+                    label="Weekly classes"
+                    value={visibleSchedules.length}
+                  />
+                  <StatCard
+                    label="Status"
+                    value={academicStatus || "Irregular"}
+                  />
+                  {isRegular ? (
+                    <StatCard label="Set" value={studentSetCode} />
+                  ) : (
+                    <StatCard label="Sets" value={totalSets} />
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <TodayClasses schedules={visibleSchedules} />
+                </div>
+              </>
+            )}
+
             <ScheduleViewer
               schedules={visibleSchedules}
               isLoading={isLoading || emptyContextLoading}
@@ -237,38 +289,38 @@ function StudentSchedulePage() {
               emptyMessage={emptyScheduleState.message}
               showSet={!isRegular}
             />
-          </div>
 
-          {visibleSchedules.length > 0 && currentAttestation && (
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
-              <div>
-                <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                  Prepared by:
-                </p>
-                <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
-                  {currentAttestation.preparedBy.name}
-                </p>
-                <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                  {currentAttestation.preparedBy.position}
-                </p>
+            {visibleSchedules.length > 0 && currentAttestation && (
+              <div className="mt-8 grid gap-6 sm:grid-cols-2">
+                <div>
+                  <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                    Prepared by:
+                  </p>
+                  <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
+                    {currentAttestation.preparedBy.name}
+                  </p>
+                  <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                    {currentAttestation.preparedBy.position}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
+                    Approved by:
+                  </p>
+                  <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
+                    {currentAttestation.approvedBy.name}
+                  </p>
+                  <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                    {currentAttestation.approvedBy.departmentAbbrev
+                      ? `${currentAttestation.approvedBy.position}, ${currentAttestation.approvedBy.departmentAbbrev} Department`
+                      : currentAttestation.approvedBy.position}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-body text-sm font-semibold text-navy-700 dark:text-mist-100">
-                  Approved by:
-                </p>
-                <p className="mt-1 font-body text-sm text-navy-700 dark:text-mist-100">
-                  {currentAttestation.approvedBy.name}
-                </p>
-                <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
-                  {currentAttestation.approvedBy.departmentAbbrev
-                    ? `${currentAttestation.approvedBy.position}, ${currentAttestation.approvedBy.departmentAbbrev} Department`
-                    : currentAttestation.approvedBy.position}
-                </p>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }

@@ -11,6 +11,7 @@ import type {
   UpdateStudentProfileInput,
   UpdateEnrollmentInput,
 } from "~/types/student";
+import type { RegistrationData } from "~/types/registration";
 import { semesterService } from "~/services/semester.service";
 
 /**
@@ -441,12 +442,12 @@ async function getEnrollmentTerms(): Promise<
 }
 
 /** GET /students/me/registration — Certificate of Registration for the authenticated student. */
-async function getMyRegistration(params?: { syId?: number; semesterNumber?: number }): Promise<unknown> {
+async function getMyRegistration(params?: { syId?: number; semesterNumber?: number }): Promise<RegistrationData> {
   const query = new URLSearchParams();
   if (params?.syId != null) query.set("sy_id", String(params.syId));
   if (params?.semesterNumber != null) query.set("semester_number", String(params.semesterNumber));
   const qs = query.toString();
-  return apiGet(`/students/me/registration${qs ? `?${qs}` : ""}`);
+  return apiGet<RegistrationData>(`/students/me/registration${qs ? `?${qs}` : ""}`);
 }
 
 export const studentService = {

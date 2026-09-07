@@ -47,7 +47,7 @@ export function Button({
   className,
   children,
 }: ButtonProps) {
-  const size = block ? "mt-1 w-full py-2.5 text-sm" : "px-3 py-1.5 text-sm";
+  const size = block ? "mt-1 w-full px-4 py-2.5 text-sm" : "px-3 py-1.5 text-sm";
 
   return (
     <button

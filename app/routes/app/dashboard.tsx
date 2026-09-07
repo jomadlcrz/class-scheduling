@@ -1,4 +1,4 @@
-﻿import { motion } from "motion/react";
+import { motion } from "motion/react";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { staggerContainer } from "~/landing/motion";
@@ -9,6 +9,8 @@ import { GreetingsCard } from "~/features/dashboard/greetings-card";
 import { RegistrarDashboard } from "~/features/dashboard/registrar-dashboard";
 import { StudentDashboard } from "~/features/dashboard/student-dashboard";
 import { SuperAdminDashboard } from "~/features/dashboard/super-admin-dashboard";
+
+import { ScreenHeader } from "~/components/ui/screen-header";
 
 export function meta() {
   return [
@@ -24,22 +26,36 @@ export default function Dashboard() {
     { enabled: !!user },
   );
 
-  return (
-    <motion.div
-      className="mx-auto w-full max-w-7xl px-4 py-8"
-      variants={staggerContainer}
-      initial="hidden"
-      animate="visible"
-    >
-      {greeting && user && (
-        <GreetingsCard greeting={greeting} />
-      )}
+  const isStudent = user?.role === "student";
 
-      {user?.role === "dean" && <DeanDashboard />}
-      {user?.role === "registrar" && <RegistrarDashboard />}
-      {user?.role === "admin" && <SuperAdminDashboard />}
-      {user?.role === "faculty" && <FacultyDashboard />}
-      {user?.role === "student" && <StudentDashboard />}
-    </motion.div>
+  return (
+    <div className="flex w-full flex-col">
+      {isStudent && (
+        <ScreenHeader title="GWC Class Scheduling" className="lg:hidden" />
+      )}
+      <motion.div
+        className={`mx-auto w-full max-w-7xl ${
+          isStudent ? "px-4 py-4 sm:py-6 lg:py-8" : "px-4 py-8"
+        }`}
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        {greeting && user && !isStudent && (
+          <GreetingsCard greeting={greeting} />
+        )}
+        {greeting && user && isStudent && (
+          <div className="hidden lg:block">
+            <GreetingsCard greeting={greeting} />
+          </div>
+        )}
+
+        {user?.role === "dean" && <DeanDashboard />}
+        {user?.role === "registrar" && <RegistrarDashboard />}
+        {user?.role === "admin" && <SuperAdminDashboard />}
+        {user?.role === "faculty" && <FacultyDashboard />}
+        {user?.role === "student" && <StudentDashboard />}
+      </motion.div>
+    </div>
   );
 }

@@ -465,11 +465,21 @@ export function TrashIcon({ size = 16, className }: { size?: number; className?:
   );
 }
 
-export function CameraIcon({ size = 18 }: { size?: number }) {
+export function CameraIcon({ size = 18, className }: { size?: number; className?: string } = {}) {
   return (
-    <IconBase size={size}>
+    <IconBase size={size} className={className}>
       <path d="M14.5 5 13 3h-2L9.5 5H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4.5Z" />
       <circle cx="12" cy="12.5" r="4" />
+    </IconBase>
+  );
+}
+
+export function ImageIcon({ size = 18, className }: { size?: number; className?: string } = {}) {
+  return (
+    <IconBase size={size} className={className}>
+      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
     </IconBase>
   );
 }
@@ -896,6 +906,19 @@ export function SparkleIcon({ size = 18 }: { size?: number }) {
     </IconBase>
   );
 }
+
+export function FileTextIcon({ size = 18, className }: { size?: number; className?: string } = {}) {
+  return (
+    <IconBase size={size} className={className}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </IconBase>
+  );
+}
+
 
 
 
