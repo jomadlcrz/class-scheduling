@@ -25,7 +25,7 @@ export function SectionHeader({
       {(badge || action) && (
         <div className="flex items-center gap-2">
           {badge && (
-            <span className="font-heading text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
+            <span className="font-heading text-xs font-bold text-slate-500 dark:text-slate-400">
               {badge}
             </span>
           )}

@@ -732,18 +732,18 @@ export function ListIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-export function MapPinIcon({ size = 14 }: { size?: number }) {
+export function MapPinIcon({ size = 14, className }: { size?: number; className?: string } = {}) {
   return (
-    <IconBase size={size}>
+    <IconBase size={size} className={className}>
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
     </IconBase>
   );
 }
 
-export function UserSmallIcon({ size = 14 }: { size?: number }) {
+export function UserSmallIcon({ size = 14, className }: { size?: number; className?: string } = {}) {
   return (
-    <IconBase size={size}>
+    <IconBase size={size} className={className}>
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </IconBase>
@@ -764,9 +764,9 @@ export function AuditLogIcon() {
   );
 }
 
-export function ClockIcon({ size = 14 }: { size?: number }) {
+export function ClockIcon({ size = 14, className }: { size?: number; className?: string } = {}) {
   return (
-    <IconBase size={size}>
+    <IconBase size={size} className={className}>
       <circle cx="12" cy="12" r="9" />
       <polyline points="12 7 12 12 15.5 14" />
     </IconBase>

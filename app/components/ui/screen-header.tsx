@@ -33,7 +33,7 @@ export function ScreenHeader({
 
   return (
     <header
-      className={`sticky top-0 z-30 flex h-14 w-full shrink-0 items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 backdrop-blur-md dark:border-white/10 dark:bg-surface/95 ${className}`}
+      className={`sticky top-0 z-30 flex h-14 w-full shrink-0 items-center justify-between border-b border-slate-200 bg-white/95 px-4 sm:px-6 backdrop-blur-md dark:border-surface-overlay dark:bg-surface/95 ${className}`}
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {shouldShowBack && (

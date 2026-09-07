@@ -111,7 +111,7 @@ export function MobileWeeklySchedule({
       <div className="flex flex-col gap-3">
         {activeClasses.length === 0 ? (
           <Card className="flex flex-col items-center justify-center p-8 text-center">
-            <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+            <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-surface-raised dark:text-slate-400">
               <CalendarIcon />
             </div>
             <p className="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
@@ -130,12 +130,12 @@ export function MobileWeeklySchedule({
             return (
               <div
                 key={item.id}
-                className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-shadow hover:shadow-sm dark:border-white/10 dark:bg-surface"
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-shadow hover:shadow-sm dark:border-surface-overlay dark:bg-surface"
               >
                 {/* Time & Badges */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
-                    <ClockIcon size={13} />
+                    <ClockIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
                     <span>{timeStr}</span>
                   </div>
 
@@ -172,9 +172,7 @@ export function MobileWeeklySchedule({
                 {/* Metadata Row */}
                 <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-white/5 dark:text-slate-400">
                   <div className="flex items-center gap-1">
-                    <span className="text-gwc-blue dark:text-gwc-blue-bright">
-                      <MapPinIcon size={13} />
-                    </span>
+                    <MapPinIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
                     <span className="font-medium text-slate-700 dark:text-slate-300">
                       {room}
                     </span>
@@ -182,7 +180,7 @@ export function MobileWeeklySchedule({
 
                   {!hideInstructor && (
                     <div className="flex items-center gap-1">
-                      <UserSmallIcon />
+                      <UserSmallIcon className="text-slate-400 dark:text-slate-500 shrink-0" />
                       <span className="font-medium text-slate-700 dark:text-slate-300">
                         {instructor}
                       </span>

@@ -481,17 +481,12 @@ function RegistrationPage() {
         ) : (
           <div className="space-y-4">
             {/* Institutional Document Header Card */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-white/10 dark:bg-surface">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
               <div className="flex items-center gap-3.5">
                 <img
                   src="/images/logos/gwc-logo.avif"
                   alt="GWC Seal"
-                  className="size-12 object-contain dark:hidden shrink-0"
-                />
-                <img
-                  src="/images/logos/gwc-logo-white.avif"
-                  alt="GWC Seal"
-                  className="hidden size-12 object-contain dark:block shrink-0"
+                  className="size-12 object-contain shrink-0"
                 />
                 <div className="min-w-0 flex-1">
                   <span className="font-heading text-xs font-bold tracking-wider text-gwc-blue dark:text-gwc-blue-bright">
@@ -511,7 +506,7 @@ function RegistrationPage() {
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200/90 bg-slate-50/70 py-2 px-3.5 text-xs font-bold text-gwc-blue transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:text-gwc-blue-bright dark:hover:bg-white/10 sm:flex-initial"
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50/70 py-2 px-3.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 sm:flex-initial"
                 >
                   <ShareIcon />
                   <span>Share</span>
@@ -519,7 +514,7 @@ function RegistrationPage() {
                 <button
                   type="button"
                   onClick={() => setOfficialCopyModalOpen(true)}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200/90 bg-slate-50/70 py-2 px-3.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 sm:flex-initial"
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50/70 py-2 px-3.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 sm:flex-initial"
                 >
                   <PrinterIcon size={14} />
                   <span>Official copy</span>
@@ -528,7 +523,7 @@ function RegistrationPage() {
             </div>
 
             {/* Student Profile Card */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-white/10 dark:bg-surface">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
               <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3.5 dark:border-white/5">
                 <div>
                   <h3 className="font-heading text-base font-bold text-navy-700 dark:text-mist-100">
@@ -571,7 +566,7 @@ function RegistrationPage() {
                 badge={`${totalUnits} total units`}
               />
 
-              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white divide-y divide-slate-100 shadow-xs dark:border-white/10 dark:bg-surface dark:divide-white/5">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 shadow-xs dark:border-surface-overlay dark:bg-surface dark:divide-white/5">
                 {subjects.map((sub, idx) => {
                   const title = sub.descriptive_title || sub.subject_title || "—";
                   const lec = sub.lec_hours ?? null;
@@ -596,7 +591,7 @@ function RegistrationPage() {
                               {lab !== null ? `Lab: ${lab}h` : ""}
                             </span>
                           )}
-                          <span className="font-heading text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
+                          <span className="font-heading text-xs font-bold text-slate-600 dark:text-slate-300">
                             {sub.units} {sub.units === 1 ? "unit" : "units"}
                           </span>
                         </div>
@@ -626,7 +621,7 @@ function RegistrationPage() {
                   badge={`${schedule.length} weekly ${schedule.length === 1 ? "session" : "sessions"}`}
                 />
 
-                <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white divide-y divide-slate-100 shadow-xs dark:border-white/10 dark:bg-surface dark:divide-white/5">
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 shadow-xs dark:border-surface-overlay dark:bg-surface dark:divide-white/5">
                   {schedule.map((entry, idx) => (
                     <div key={`${entry.subject_code}-${entry.day}-${idx}`} className="p-4">
                       <div className="flex items-center justify-between">
@@ -656,56 +651,57 @@ function RegistrationPage() {
             )}
 
             {/* Enrolled Subjects: Tablet Table (< lg, >= sm) */}
-            <div className="hidden sm:block overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-white/10 dark:bg-surface">
+            <div className="hidden sm:block overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
               <h3 className="mb-3 font-heading text-sm font-bold text-navy-700 dark:text-mist-100">
-                Enrolled Curriculum ({subjects.length} {subjects.length === 1 ? "subject" : "subjects"})
+                Enrolled Subjects ({subjects.length})
               </h3>
-              <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-white/10">
+
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-surface-overlay">
                 <table className="w-full text-left text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                  <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-400">
                     <tr>
                       <th className="px-4 py-3">Subject code</th>
                       <th className="px-4 py-3">Descriptive title</th>
                       <th className="px-4 py-3 text-center">Units</th>
-                      <th className="px-4 py-3 text-center">Schedule</th>
-                      <th className="px-4 py-3 text-center">Room</th>
+                      <th className="px-4 py-3">Schedule</th>
+                      <th className="px-4 py-3">Room</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {subjects.map((sub, idx) => {
+                      const title = sub.descriptive_title || sub.subject_title || "—";
                       const matchSched = schedule.find((s) => s.subject_code === sub.subject_code);
-                      const schedText = matchSched
-                        ? `${matchSched.day.slice(0, 3)} ${matchSched.start_time}–${matchSched.end_time}`
-                        : "TBA";
-                      const roomText = matchSched?.room || "TBA";
+                      const schedStr = matchSched
+                        ? `${matchSched.day} ${matchSched.start_time}–${matchSched.end_time}`
+                        : "—";
 
                       return (
-                        <tr key={`${sub.subject_code}-${idx}`} className="hover:bg-slate-50/50 dark:hover:bg-white/3">
+                        <tr key={`${sub.subject_code}-${idx}`} className="hover:bg-slate-50/50 dark:hover:bg-white/2">
                           <td className="px-4 py-3 font-bold text-navy-700 dark:text-mist-100">
                             {sub.subject_code}
                           </td>
-                          <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">
-                            {sub.descriptive_title || sub.subject_title || "—"}
+                          <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                            {title}
                           </td>
-                          <td className="px-4 py-3 text-center font-semibold text-slate-700 dark:text-slate-300">
+                          <td className="px-4 py-3 text-center font-bold text-slate-700 dark:text-slate-300">
                             {sub.units}
                           </td>
-                          <td className="px-4 py-3 text-center text-xs text-slate-600 dark:text-slate-400">
-                            {schedText}
+                          <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                            {schedStr}
                           </td>
-                          <td className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400">
-                            {roomText}
+                          <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                            {matchSched?.room || "TBA"}
                           </td>
                         </tr>
                       );
                     })}
                   </tbody>
-                  <tfoot className="border-t border-slate-200 bg-slate-50 font-bold dark:border-white/10 dark:bg-white/5">
+                  <tfoot className="border-t border-slate-200 bg-slate-50 font-bold dark:border-surface-overlay dark:bg-white/5">
                     <tr>
                       <td colSpan={2} className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300">
                         Total enrolled units:
                       </td>
-                      <td className="px-4 py-3 text-center text-sm font-extrabold text-gwc-blue dark:text-gwc-blue-bright">
+                      <td className="px-4 py-3 text-center text-sm font-extrabold text-navy-700 dark:text-mist-100">
                         {totalUnits}
                       </td>
                       <td colSpan={2} />
@@ -828,20 +824,15 @@ function RegistrationPage() {
             </div>
 
             {/* Main Institutional Document Card */}
-            <div className="overflow-hidden rounded-2xl border border-slate-300/80 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-surface-overlay dark:bg-surface">
               {/* Institutional Header Banner */}
-              <div className="border-b border-slate-200 bg-slate-50/50 p-6 dark:border-white/10 dark:bg-white/3">
+              <div className="border-b border-slate-200 bg-slate-50/50 p-6 dark:border-surface-overlay dark:bg-white/3">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <img
                       src="/images/logos/gwc-logo.avif"
                       alt="GWC Seal"
-                      className="size-16 object-contain dark:hidden"
-                    />
-                    <img
-                      src="/images/logos/gwc-logo-white.avif"
-                      alt="GWC Seal"
-                      className="hidden size-16 object-contain dark:block"
+                      className="size-16 object-contain"
                     />
                     <div>
                       <p className="font-heading text-xs font-extrabold tracking-widest text-gwc-blue dark:text-gwc-blue-bright">
@@ -869,7 +860,7 @@ function RegistrationPage() {
               </div>
 
               {/* Student Metadata Info Grid */}
-              <div className="grid grid-cols-2 gap-6 border-b border-slate-200 p-6 sm:grid-cols-4 dark:border-white/10">
+              <div className="grid grid-cols-2 gap-6 border-b border-slate-200 p-6 sm:grid-cols-4 dark:border-surface-overlay">
                 <div>
                   <span className="font-body text-xs font-semibold text-slate-400 dark:text-slate-500">
                     Student number
@@ -910,14 +901,14 @@ function RegistrationPage() {
                   <h3 className="font-heading text-sm font-bold text-navy-700 dark:text-mist-100">
                     Enrolled Subjects ({subjects.length})
                   </h3>
-                  <span className="text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
                     {totalUnits} total units
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-white/10">
+                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-surface-overlay">
                   <table className="w-full text-left text-sm">
-                    <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                    <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-400">
                       <tr>
                         <th className="px-4 py-3">Subject code</th>
                         <th className="px-4 py-3">Descriptive title</th>
@@ -958,7 +949,7 @@ function RegistrationPage() {
                             <td className="px-4 py-3 text-center font-bold text-navy-700 dark:text-mist-100">
                               {sub.units}
                             </td>
-                            <td className="px-4 py-3 text-xs font-semibold text-gwc-blue dark:text-gwc-blue-bright">
+                            <td className="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-300">
                               {schedText}
                             </td>
                             <td className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -971,12 +962,12 @@ function RegistrationPage() {
                         );
                       })}
                     </tbody>
-                    <tfoot className="border-t border-slate-200 bg-slate-50/80 font-bold dark:border-white/10 dark:bg-white/5">
+                    <tfoot className="border-t border-slate-200 bg-slate-50/80 font-bold dark:border-surface-overlay dark:bg-white/5">
                       <tr>
                         <td colSpan={4} className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300">
                           Total enrolled units:
                         </td>
-                        <td className="px-4 py-3 text-center text-sm font-extrabold text-gwc-blue dark:text-gwc-blue-bright">
+                        <td className="px-4 py-3 text-center text-sm font-extrabold text-navy-700 dark:text-mist-100">
                           {totalUnits}
                         </td>
                         <td colSpan={3} />
@@ -988,14 +979,14 @@ function RegistrationPage() {
 
               {/* Class Schedule Timetable (Grouped by Day) if available */}
               {schedule.length > 0 && (
-                <div className="border-t border-slate-200 p-6 dark:border-white/10">
+                <div className="border-t border-slate-200 p-6 dark:border-surface-overlay">
                   <h3 className="mb-3 font-heading text-sm font-bold text-navy-700 dark:text-mist-100">
                     Class Meeting Timetable ({schedule.length} {schedule.length === 1 ? "session" : "sessions"})
                   </h3>
 
-                  <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-white/10">
+                  <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-surface-overlay">
                     <table className="w-full text-left text-sm">
-                      <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                      <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-400">
                         <tr>
                           <th className="px-4 py-3">Day</th>
                           <th className="px-4 py-3">Time</th>
@@ -1038,7 +1029,7 @@ function RegistrationPage() {
               )}
 
               {/* Official Signatory & Certification Footer */}
-              <div className="border-t border-slate-200 bg-slate-50/70 p-6 dark:border-white/10 dark:bg-white/3">
+              <div className="border-t border-slate-200 bg-slate-50/70 p-6 dark:border-surface-overlay dark:bg-white/3">
                 <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
                   <div>
                     <div className="flex items-center gap-2">
@@ -1097,12 +1088,12 @@ function RegistrationPage() {
         const shareContent = (
           <div className="space-y-4">
             {/* Summary Preview Card */}
-            <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-surface-overlay dark:bg-white/5">
               <div className="flex items-center justify-between">
                 <span className="font-heading text-xs font-bold text-navy-700 dark:text-mist-100">
                   {studentName}
                 </span>
-                <span className="text-[11px] font-semibold text-gwc-blue dark:text-gwc-blue-bright">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                   {totalUnits} {totalUnits === 1 ? "unit" : "units"} · {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
                 </span>
               </div>

@@ -35,7 +35,7 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
     : "Pending approval";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-white/10 dark:bg-surface">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
       {/* Top row: Section & Program with Enrollment Badge */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -99,7 +99,7 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
         </div>
 
         <div className="px-1">
-          <span className="font-heading text-base font-bold text-gwc-blue dark:text-gwc-blue-bright">
+          <span className="font-heading text-base font-bold text-navy-700 dark:text-mist-100">
             {totalUnits}
           </span>
           <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">

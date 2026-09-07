@@ -79,7 +79,7 @@ export function StudentTodayClasses({
 
       {!isApproved ? (
         <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-5 text-center dark:border-amber-800/40 dark:bg-amber-950/20">
-          <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+          <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-surface-raised dark:text-slate-400">
             <AlertCircleIcon />
           </div>
           <p className="mt-2 text-sm font-bold text-slate-800 dark:text-slate-200">
@@ -92,8 +92,8 @@ export function StudentTodayClasses({
           </p>
         </div>
       ) : todayClasses.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 text-center shadow-xs dark:border-white/10 dark:bg-surface">
-          <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-blue-50 text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs dark:border-surface-overlay dark:bg-surface">
+          <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-surface-raised dark:text-slate-400">
             <CalendarIcon />
           </div>
           <p className="mt-2 text-sm font-bold text-navy-700 dark:text-mist-100">
@@ -117,12 +117,12 @@ export function StudentTodayClasses({
             return (
               <div
                 key={`${entry.subject_code}-${entry.start_time}-${idx}`}
-                className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-shadow hover:shadow-sm dark:border-white/10 dark:bg-surface"
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-shadow hover:shadow-sm dark:border-surface-overlay dark:bg-surface"
               >
                 {/* Time & Session Mode */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
-                    <ClockIcon size={13} />
+                    <ClockIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
                     <span>
                       {formatTime(entry.start_time)} – {formatTime(entry.end_time)}
                     </span>
@@ -156,9 +156,7 @@ export function StudentTodayClasses({
                 {/* Details Row */}
                 <div className="mt-3 flex items-center gap-4 border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-white/5 dark:text-slate-400">
                   <div className="flex items-center gap-1">
-                    <span className="text-gwc-blue dark:text-gwc-blue-bright">
-                      <MapPinIcon size={13} />
-                    </span>
+                    <MapPinIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
                     <span className="font-semibold text-slate-700 dark:text-slate-300">
                       {entry.room || "TBA"}
                     </span>
@@ -166,7 +164,7 @@ export function StudentTodayClasses({
 
                   {entry.instructor && (
                     <div className="flex items-center gap-1">
-                      <UserSmallIcon size={13} />
+                      <UserSmallIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
                       <span className="truncate font-medium text-slate-600 dark:text-slate-400">
                         {entry.instructor}
                       </span>
