@@ -75,9 +75,9 @@ export function StudentBottomNav() {
           <NavLink
             key={tab.to}
             to={tab.to}
-            className={`relative flex flex-1 flex-col items-center justify-center py-1 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+            className={`relative flex flex-1 flex-col items-center justify-center py-1 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gwc-blue ${
               isActive
-                ? "font-bold text-gwc-blue dark:text-gold-400"
+                ? "font-bold text-gwc-blue"
                 : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-mist-100"
             }`}
           >

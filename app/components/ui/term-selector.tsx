@@ -123,7 +123,7 @@ export function TermSelector({
         aria-label={`Academic Term: ${displayLabel}. Tap to change.`}
       >
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <span className="text-gwc-blue dark:text-gwc-blue-bright shrink-0">
+          <span className="text-slate-500 dark:text-slate-400 shrink-0">
             <CalendarIcon />
           </span>
           <span className="truncate text-xs sm:text-sm font-bold text-slate-800 dark:text-mist-100">

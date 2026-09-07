@@ -181,6 +181,18 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
   return false;
 }
 
+function useIsDesktop(minWidth = 1024) {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${minWidth}px)`);
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [minWidth]);
+  return isDesktop;
+}
+
 export default function RegistrationRoute() {
   return (
     <RoleGuard allow={["student"]}>
@@ -193,6 +205,7 @@ function RegistrationPage() {
   const { user } = useAuth();
   const { yearLevelLabel } = useYearLevels();
   const { context: termContext, selectTerm } = useTermContext();
+  const isDesktop = useIsDesktop();
   const [registration, setRegistration] = useState<RegistrationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -307,6 +320,28 @@ function RegistrationPage() {
     summary?.total_units ??
     registration?.total_units ??
     subjects.reduce((acc, s) => acc + (s.units || 0), 0);
+  const isIrregular =
+    (meta?.enrolled_status || registration?.academic_status || enrolledStatus)?.toLowerCase() === "irregular";
+
+  const shareSubtitle = useMemo(() => {
+    const idLabel = studentNo === "No ID" ? "No ID" : `Student no. ${studentNo}`;
+    const prog = programCode || (programName !== "—" ? programName : "");
+
+    if (isIrregular) {
+      const parts = [idLabel, prog];
+      if (yearAndSection && yearAndSection !== "—" && yearAndSection !== "-") {
+        parts.push(yearAndSection);
+      }
+      return parts.filter(Boolean).join(" · ");
+    }
+
+    if (yearAndSection && yearAndSection !== "—" && yearAndSection !== "-") {
+      return `${idLabel} · ${yearAndSection}`;
+    }
+
+    return prog ? `${idLabel} · ${prog}` : idLabel;
+  }, [studentNo, isIrregular, programCode, programName, yearAndSection]);
+
   const registrarName = meta?.registrar_name || "Office of the College Registrar";
 
   const summaryMessage = useMemo(() => {
@@ -1057,115 +1092,133 @@ function RegistrationPage() {
         </p>
       </Modal>
 
-      {/* Share Bottom Sheet / Drawer */}
-      <BottomSheet
-        open={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        title="Share Registration"
-        subtitle={`A.Y. ${schoolYear} · ${semester}`}
-      >
-        <div className="space-y-4 pt-1 pb-6">
-          {/* Summary Preview Card */}
-          <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
-            <div className="flex items-center justify-between">
-              <span className="font-heading text-xs font-bold text-navy-700 dark:text-mist-100">
-                {studentName}
-              </span>
-              <span className="text-[11px] font-semibold text-gwc-blue dark:text-gwc-blue-bright">
-                {totalUnits} {totalUnits === 1 ? "unit" : "units"} · {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
-              </span>
+      {/* Share Dialog: Modal on Desktop (>= lg), BottomSheet on Mobile (< lg) */}
+      {(() => {
+        const shareContent = (
+          <div className="space-y-4">
+            {/* Summary Preview Card */}
+            <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
+              <div className="flex items-center justify-between">
+                <span className="font-heading text-xs font-bold text-navy-700 dark:text-mist-100">
+                  {studentName}
+                </span>
+                <span className="text-[11px] font-semibold text-gwc-blue dark:text-gwc-blue-bright">
+                  {totalUnits} {totalUnits === 1 ? "unit" : "units"} · {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                {shareSubtitle}
+              </p>
             </div>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              {studentNo === "No ID" ? "No ID" : `Student no. ${studentNo}`} · {programCode || programName} · {yearAndSection}
-            </p>
-          </div>
 
-          {/* Share Action Channels */}
-          <div className="space-y-2">
-            {canSystemShare && (
+            {/* Share Action Channels */}
+            <div className="space-y-2">
+              {canSystemShare && (
+                <button
+                  type="button"
+                  onClick={handleSystemShare}
+                  className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                      <ShareIcon size={20} />
+                    </span>
+                    <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                      System share
+                    </span>
+                  </div>
+                  <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+                </button>
+              )}
+
               <button
                 type="button"
-                onClick={handleSystemShare}
+                onClick={handleCopySummary}
                 className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
               >
                 <div className="flex items-center gap-3.5">
                   <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
-                    <ShareIcon size={20} />
+                    <CopyIcon size={20} />
                   </span>
                   <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                    System share
+                    Copy summary
                   </span>
                 </div>
                 <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
               </button>
-            )}
 
-            <button
-              type="button"
-              onClick={handleCopySummary}
-              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-            >
-              <div className="flex items-center gap-3.5">
-                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
-                  <CopyIcon size={20} />
-                </span>
-                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                  Copy summary
-                </span>
-              </div>
-              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-            </button>
+              <button
+                type="button"
+                onClick={handleWhatsAppShare}
+                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+              >
+                <div className="flex items-center gap-3.5">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                    <WhatsAppIcon size={20} />
+                  </span>
+                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                    Share via WhatsApp
+                  </span>
+                </div>
+                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+              </button>
 
-            <button
-              type="button"
-              onClick={handleWhatsAppShare}
-              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-            >
-              <div className="flex items-center gap-3.5">
-                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
-                  <WhatsAppIcon size={20} />
-                </span>
-                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                  Share via WhatsApp
-                </span>
-              </div>
-              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-            </button>
+              <button
+                type="button"
+                onClick={handleEmailShare}
+                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+              >
+                <div className="flex items-center gap-3.5">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                    <MailIcon size={20} />
+                  </span>
+                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                    Share via email
+                  </span>
+                </div>
+                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+              </button>
 
-            <button
-              type="button"
-              onClick={handleEmailShare}
-              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-            >
-              <div className="flex items-center gap-3.5">
-                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
-                  <MailIcon size={20} />
-                </span>
-                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                  Share via email
-                </span>
-              </div>
-              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleDownloadText}
-              className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-            >
-              <div className="flex items-center gap-3.5">
-                <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
-                  <DownloadIcon size={20} />
-                </span>
-                <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                  Download text file
-                </span>
-              </div>
-              <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-            </button>
+              <button
+                type="button"
+                onClick={handleDownloadText}
+                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+              >
+                <div className="flex items-center gap-3.5">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                    <DownloadIcon size={20} />
+                  </span>
+                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
+                    Download text file
+                  </span>
+                </div>
+                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
+              </button>
+            </div>
           </div>
-        </div>
-      </BottomSheet>
+        );
+
+        return isDesktop ? (
+          <Modal
+            open={shareModalOpen}
+            onClose={() => setShareModalOpen(false)}
+            title="Share Registration"
+          >
+            {shareContent}
+          </Modal>
+        ) : (
+          <BottomSheet
+            open={shareModalOpen}
+            onClose={() => setShareModalOpen(false)}
+            title="Share Registration"
+            subtitle={`A.Y. ${schoolYear} · ${semester}`}
+          >
+            <div className="pt-1 pb-6">
+              {shareContent}
+            </div>
+          </BottomSheet>
+        );
+      })()}
     </>
   );
 }

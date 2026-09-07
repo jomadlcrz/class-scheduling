@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useDragControls } from "motion/react";
 import { useEffect, type ReactNode } from "react";
 
 export interface BottomSheetProps {
@@ -12,6 +12,11 @@ export interface BottomSheetProps {
   className?: string;
 }
 
+const SHEET_TRANSITION = {
+  duration: 0.25,
+  ease: [0.32, 0.72, 0, 1] as const,
+};
+
 export function BottomSheet({
   open,
   onClose,
@@ -21,6 +26,8 @@ export function BottomSheet({
   footer,
   className = "",
 }: BottomSheetProps) {
+  const dragControls = useDragControls();
+
   // Lock body scroll when bottom sheet is open
   useEffect(() => {
     if (!open) return;
@@ -47,35 +54,55 @@ export function BottomSheet({
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50 flex justify-center">
-          {/* Backdrop Overlay */}
+          {/* Backdrop Overlay - Pure alpha for zero-lag hardware compositing */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-navy-950/45 backdrop-blur-xs"
+            className="fixed inset-0 bg-navy-950/50 will-change-opacity"
             aria-hidden="true"
           />
 
-          {/* Bottom Sheet Modal Drawer */}
+          {/* Bottom Sheet Modal Drawer - Hardware accelerated */}
           <motion.div
+            drag="y"
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0.05, bottom: 0.75 }}
+            dragSnapToOrigin
+            onDragEnd={(_e, info) => {
+              if (info.offset.y > 80 || info.velocity.y > 300) {
+                onClose();
+              }
+            }}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className={`fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border-t border-slate-200/80 bg-white shadow-2xl dark:border-white/10 dark:bg-surface ${className}`}
+            transition={SHEET_TRANSITION}
+            className={`fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border-t border-slate-200/80 bg-white shadow-2xl will-change-transform dark:border-white/10 dark:bg-surface ${className}`}
             role="dialog"
             aria-modal="true"
           >
-            {/* Pull / Drag Indicator */}
-            <div className="flex w-full items-center justify-center pt-3 pb-1">
-              <div className="h-1.5 w-12 rounded-full bg-slate-300 dark:bg-white/20" />
+            {/* Pull / Drag Indicator Handle Bar */}
+            <div
+              onPointerDown={(e) => dragControls.start(e, { snapToCursor: false })}
+              className="flex w-full cursor-grab active:cursor-grabbing items-center justify-center pt-3 pb-2 touch-none select-none"
+              role="button"
+              tabIndex={0}
+              aria-label="Drag down to close sheet"
+            >
+              <div className="h-1.5 w-12 rounded-full bg-slate-300 transition-colors hover:bg-slate-400 dark:bg-white/20 dark:hover:bg-white/40" />
             </div>
 
-            {/* Sheet Header */}
+            {/* Sheet Header — Also draggable for effortless reachability */}
             {(title || subtitle) && (
-              <div className="px-5 pt-2 pb-3">
+              <div
+                onPointerDown={(e) => dragControls.start(e, { snapToCursor: false })}
+                className="cursor-grab active:cursor-grabbing px-5 pt-1 pb-3 touch-none select-none"
+              >
                 {title && (
                   <h3 className="font-heading text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
                     {title}
@@ -89,8 +116,8 @@ export function BottomSheet({
               </div>
             )}
 
-            {/* Scrollable Content Body */}
-            <div className="flex-1 overflow-y-auto px-5 py-2 no-scrollbar">
+            {/* Scrollable Content Body — Normal scroll with zero gesture conflicts */}
+            <div className="flex-1 overflow-y-auto px-5 py-2 overscroll-contain no-scrollbar">
               {children}
             </div>
 
