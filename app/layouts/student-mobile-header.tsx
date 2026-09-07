@@ -28,7 +28,7 @@ export function StudentMobileHeader() {
         />
         <div className="flex flex-col">
           <span className="font-heading text-sm font-bold tracking-tight text-navy-700 dark:text-mist-100">
-            GWC <span className="text-gwc-blue dark:text-gwc-blue-bright">Student</span>
+            GWC <span className="text-slate-600 dark:text-slate-300">Student</span>
           </span>
           <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
             Portal
@@ -38,7 +38,7 @@ export function StudentMobileHeader() {
 
       {/* Right: Active Term Chip & Theme Toggle */}
       <div className="flex items-center gap-2">
-        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+        <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300">
           {activeTermLabel}
         </span>
 

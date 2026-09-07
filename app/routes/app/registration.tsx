@@ -489,7 +489,7 @@ function RegistrationPage() {
                   className="size-12 object-contain shrink-0"
                 />
                 <div className="min-w-0 flex-1">
-                  <span className="font-heading text-xs font-bold tracking-wider text-gwc-blue dark:text-gwc-blue-bright">
+                  <span className="font-heading text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400">
                     GOLDEN WEST COLLEGES
                   </span>
                   <h2 className="font-heading text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
@@ -533,7 +533,7 @@ function RegistrationPage() {
                     {studentNo === "No ID" ? "No ID" : `Student no. ${studentNo}`}
                   </p>
                 </div>
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-gwc-blue dark:border-blue-900/40 dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+                <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300">
                   {enrolledStatus}
                 </span>
               </div>
@@ -628,7 +628,7 @@ function RegistrationPage() {
                         <span className="font-heading text-sm font-extrabold text-navy-700 dark:text-mist-100">
                           {entry.day}
                         </span>
-                        <span className="font-mono text-xs font-semibold text-gwc-blue dark:text-gwc-blue-bright">
+                        <span className="font-mono text-xs font-bold text-navy-700 dark:text-mist-100">
                           {entry.start_time} – {entry.end_time}
                         </span>
                       </div>
@@ -712,12 +712,12 @@ function RegistrationPage() {
             </div>
 
             {/* Official Signatory Footer Card */}
-            <div className="rounded-2xl border border-blue-200/90 bg-blue-50/60 p-5 text-center dark:border-white/10 dark:bg-surface-raised">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 text-center dark:border-surface-overlay dark:bg-surface-raised">
               <div className="flex items-center justify-center gap-2">
                 <span className="rounded bg-gwc-blue px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-white">
                   OFFICIAL
                 </span>
-                <span className="text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   Office of the College Registrar
                 </span>
               </div>
@@ -835,7 +835,7 @@ function RegistrationPage() {
                       className="size-16 object-contain"
                     />
                     <div>
-                      <p className="font-heading text-xs font-extrabold tracking-widest text-gwc-blue dark:text-gwc-blue-bright">
+                      <p className="font-heading text-xs font-extrabold tracking-widest text-slate-500 dark:text-slate-400">
                         GOLDEN WEST COLLEGES, INC.
                       </p>
                       <h2 className="font-heading text-xl font-bold tracking-tight text-navy-700 dark:text-mist-100">
@@ -848,8 +848,8 @@ function RegistrationPage() {
                   </div>
 
                   <div className="text-right">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-gwc-blue dark:border-blue-900/40 dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
-                      <span className="size-1.5 rounded-full bg-gwc-blue dark:bg-gwc-blue-bright" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300">
+                      <span className="size-1.5 rounded-full bg-slate-500 dark:bg-slate-400" />
                       {enrolledStatus}
                     </span>
                     <p className="mt-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
@@ -1005,7 +1005,7 @@ function RegistrationPage() {
                             <td className="px-4 py-3 font-bold text-navy-700 dark:text-mist-100">
                               {entry.day}
                             </td>
-                            <td className="px-4 py-3 font-mono text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
+                            <td className="px-4 py-3 font-mono text-xs font-bold text-navy-700 dark:text-mist-100">
                               {entry.start_time} – {entry.end_time}
                             </td>
                             <td className="px-4 py-3 font-bold text-navy-700 dark:text-mist-100">
@@ -1036,7 +1036,7 @@ function RegistrationPage() {
                       <span className="rounded bg-gwc-blue px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-white">
                         OFFICIAL
                       </span>
-                      <span className="text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                         Office of the College Registrar
                       </span>
                     </div>
@@ -1111,7 +1111,7 @@ function RegistrationPage() {
                   className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
                 >
                   <div className="flex items-center gap-3.5">
-                    <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                    <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
                       <ShareIcon size={20} />
                     </span>
                     <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
@@ -1128,7 +1128,7 @@ function RegistrationPage() {
                 className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
               >
                 <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
                     <CopyIcon size={20} />
                   </span>
                   <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
@@ -1144,7 +1144,7 @@ function RegistrationPage() {
                 className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
               >
                 <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
                     <WhatsAppIcon size={20} />
                   </span>
                   <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
@@ -1160,7 +1160,7 @@ function RegistrationPage() {
                 className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
               >
                 <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
                     <MailIcon size={20} />
                   </span>
                   <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
@@ -1176,7 +1176,7 @@ function RegistrationPage() {
                 className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
               >
                 <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-gwc-blue dark:text-slate-300 dark:group-hover:text-gwc-blue-bright">
+                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
                     <DownloadIcon size={20} />
                   </span>
                   <span className="text-sm font-bold text-navy-700 dark:text-mist-100">

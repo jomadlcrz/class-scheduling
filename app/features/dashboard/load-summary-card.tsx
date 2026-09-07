@@ -47,7 +47,7 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
           </p>
         </div>
         {m.enrolled_status && (
-          <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+          <span className="shrink-0 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300">
             {m.enrolled_status}
           </span>
         )}

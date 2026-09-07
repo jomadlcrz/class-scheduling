@@ -83,7 +83,7 @@ export function MobileWeeklySchedule({
                 onClick={() => setSelectedDay(day)}
                 className={`relative flex flex-1 min-w-13 cursor-pointer flex-col items-center justify-center rounded-xl py-2 px-1 text-center transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   isSelected
-                    ? "bg-gwc-blue text-white shadow-xs dark:bg-gwc-blue-bright"
+                    ? "bg-navy-700 text-mist-100 shadow-xs dark:bg-white/15 dark:text-mist-100"
                     : "border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 dark:border-white/10 dark:bg-surface dark:text-slate-300 dark:hover:border-white/20"
                 }`}
               >
@@ -93,9 +93,9 @@ export function MobileWeeklySchedule({
                 <span
                   className={`mt-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold ${
                     isSelected
-                      ? "bg-white/20 text-white"
+                      ? "bg-white/20 text-white dark:bg-white/20 dark:text-mist-100"
                       : count > 0
-                        ? "bg-blue-50 text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft"
+                        ? "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300"
                         : "text-slate-400 dark:text-slate-500"
                   }`}
                 >
@@ -134,7 +134,7 @@ export function MobileWeeklySchedule({
               >
                 {/* Time & Badges */}
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-gwc-blue dark:text-gwc-blue-bright">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
                     <ClockIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
                     <span>{timeStr}</span>
                   </div>
@@ -145,7 +145,7 @@ export function MobileWeeklySchedule({
                         className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase ${
                           item.sessionMode === "LAB"
                             ? "border border-amber-200 bg-amber-50 text-gold-600 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-gold-300"
-                            : "border border-blue-200 bg-blue-50 text-gwc-blue dark:border-blue-900/40 dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft"
+                            : "border border-slate-200 bg-slate-100 text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300"
                         }`}
                       >
                         {item.sessionMode}

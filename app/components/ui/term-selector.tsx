@@ -119,7 +119,7 @@ export function TermSelector({
       <button
         type="button"
         onClick={handleOpen}
-        className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-300/80 bg-white py-2.5 px-3.5 text-left transition-colors hover:border-gwc-blue hover:bg-slate-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
+        className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-white py-2.5 px-3.5 text-left transition-colors hover:border-slate-300 hover:bg-slate-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-surface-overlay dark:bg-surface dark:hover:bg-white/5"
         aria-label={`Academic Term: ${displayLabel}. Tap to change.`}
       >
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -135,7 +135,7 @@ export function TermSelector({
         </span>
       </button>
 
-      {/* Term Selector Bottom Sheet */}
+      {/* Term Selection BottomSheet */}
       <BottomSheet
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -146,7 +146,7 @@ export function TermSelector({
             type="button"
             onClick={handleDone}
             disabled={!stagedSelection}
-            className="w-full rounded-xl bg-gwc-blue py-3 px-6 font-heading text-sm font-bold text-white transition-colors hover:bg-gwc-blue-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-gwc-blue-bright dark:text-navy-950"
+            className="w-full rounded-xl bg-navy-700 py-3 px-6 font-heading text-sm font-bold text-mist-100 transition-colors hover:bg-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/10 dark:text-mist-100 dark:hover:bg-white/15"
           >
             Done
           </button>
@@ -164,7 +164,7 @@ export function TermSelector({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search academic term or year..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-100/80 py-2 pl-9 pr-8 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:border-gwc-blue focus:bg-white focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-mist-100"
+              className="w-full rounded-xl border border-slate-200 bg-slate-100/80 py-2 pl-9 pr-8 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:bg-white focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-mist-100"
             />
             {searchQuery && (
               <button
@@ -207,7 +207,7 @@ export function TermSelector({
                     }
                     className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all ${
                       isSelected
-                        ? "border-gwc-blue bg-blue-50/60 dark:border-gwc-blue-bright dark:bg-gwc-blue-deep/30"
+                        ? "border-slate-400 bg-slate-100/70 dark:border-white/20 dark:bg-white/10"
                         : "border-slate-200/80 bg-slate-50/50 hover:bg-slate-100/60 dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/5"
                     }`}
                     role="radio"
@@ -218,14 +218,14 @@ export function TermSelector({
                         <span
                           className={`text-sm font-bold ${
                             isSelected
-                              ? "text-gwc-blue dark:text-gwc-blue-bright"
+                              ? "text-navy-700 dark:text-mist-100"
                               : "text-navy-700 dark:text-mist-100"
                           }`}
                         >
                           A.Y. {t.school_year}
                         </span>
                         {isCurrentTerm && (
-                          <span className="rounded-full bg-gwc-blue px-2 py-0.5 text-[10px] font-bold text-white dark:bg-gwc-blue-bright dark:text-navy-950">
+                          <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-white/15 dark:text-mist-100">
                             Current
                           </span>
                         )}
@@ -240,12 +240,12 @@ export function TermSelector({
                     <div
                       className={`ml-3 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                         isSelected
-                          ? "border-gwc-blue bg-white dark:border-gwc-blue-bright dark:bg-surface"
+                          ? "border-slate-700 bg-white dark:border-white/30 dark:bg-surface"
                           : "border-slate-300 bg-white dark:border-white/20 dark:bg-surface"
                       }`}
                     >
                       {isSelected && (
-                        <div className="size-2.5 rounded-full bg-gwc-blue dark:bg-gwc-blue-bright" />
+                        <div className="size-2.5 rounded-full bg-slate-700 dark:bg-mist-100" />
                       )}
                     </div>
                   </div>
