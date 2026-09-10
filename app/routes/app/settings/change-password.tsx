@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { AuthGuard } from "~/auth/auth-guard";
 import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { EyeIcon, EyeOffIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { ScreenHeader } from "~/components/ui/screen-header";
@@ -406,11 +407,11 @@ function ChangePasswordPage() {
           <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             We will send a password reset link to your registered email address:
           </p>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-            <span className="font-mono text-xs font-bold text-navy-700 dark:text-mist-100">
+          <Card className="p-3 bg-slate-50 dark:bg-white/5">
+            <span className="text-xs font-bold text-navy-700 dark:text-mist-100">
               {user?.email || "No email on record"}
             </span>
-          </div>
+          </Card>
         </div>
       </Modal>
     </div>

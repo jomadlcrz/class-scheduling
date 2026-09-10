@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
+import { Badge } from "~/components/ui/badge";
 import { BottomSheet } from "~/components/ui/bottom-sheet";
+import { Card } from "~/components/ui/card";
 import { CropDialog } from "~/components/ui/crop-dialog";
 import {
   CameraIcon,
@@ -205,7 +207,7 @@ function StudentProfilePage() {
 
       <div className="space-y-6">
         {/* Profile Hero Card */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 text-center shadow-xs dark:border-white/10 dark:bg-surface">
+        <Card className="p-6 text-center">
           <div className="flex flex-col items-center">
             <div className="relative">
               <button
@@ -226,28 +228,28 @@ function StudentProfilePage() {
             </div>
 
             <div className="mt-3">
-              <h2 className="font-heading text-xl font-bold tracking-tight text-navy-700 dark:text-mist-100">
+              <h2 className="text-xl font-bold tracking-tight text-navy-700 dark:text-mist-100">
                 {studentName}
               </h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {user.email || "student@gwc.edu.ph"}
               </p>
               <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
-                <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-gold-600 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-gold-300">
+                <Badge tone="gold">
                   Verified student
-                </span>
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-gwc-blue dark:border-blue-900/40 dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+                </Badge>
+                <Badge tone={status.toLowerCase() === "irregular" ? "gold" : "navy"}>
                   {status}
-                </span>
+                </Badge>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Academic Section */}
         <div>
           <SectionHeader title="Academic" />
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+          <Card className="overflow-hidden">
             <Link
               to="/profile/academic"
               className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
@@ -262,13 +264,13 @@ function StudentProfilePage() {
               </div>
               <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </Link>
-          </div>
+          </Card>
         </div>
 
         {/* Address Section */}
         <div>
           <SectionHeader title="Address" />
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+          <Card className="overflow-hidden">
             <Link
               to="/profile/address"
               className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
@@ -283,13 +285,13 @@ function StudentProfilePage() {
               </div>
               <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </Link>
-          </div>
+          </Card>
         </div>
 
         {/* Preferences Section */}
         <div>
           <SectionHeader title="Preferences" />
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+          <Card className="overflow-hidden">
             <Link
               to="/profile/appearance"
               className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
@@ -304,13 +306,13 @@ function StudentProfilePage() {
               </div>
               <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </Link>
-          </div>
+          </Card>
         </div>
 
         {/* Account & Security Section */}
         <div>
           <SectionHeader title="Account & Security" />
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white divide-y divide-slate-100 shadow-xs dark:border-white/10 dark:bg-surface dark:divide-white/5">
+          <Card className="overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
             <Link
               to="/settings/change-password"
               className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
@@ -341,7 +343,7 @@ function StudentProfilePage() {
               </div>
               <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
             </button>
-          </div>
+          </Card>
         </div>
       </div>
 

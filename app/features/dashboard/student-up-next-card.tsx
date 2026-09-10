@@ -1,5 +1,6 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "~/components/ui/badge";
+import { Card } from "~/components/ui/card";
 import { ClockIcon, MapPinIcon, UserSmallIcon } from "~/components/ui/icons";
 import {
   compareScheduleStartTime,
@@ -84,7 +85,7 @@ export function StudentUpNextCard({
   const isLab = entry.mode?.toUpperCase() === "LAB";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-shadow hover:shadow-sm dark:border-surface-overlay dark:bg-surface">
+    <Card className="p-5 transition-shadow hover:shadow-sm">
       {/* Top row: Status indicator + Badge */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -109,7 +110,7 @@ export function StudentUpNextCard({
       {/* Subject Information */}
       <div className="mt-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-heading text-lg font-extrabold tracking-tight text-navy-700 dark:text-mist-100">
+          <h3 className="text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
             {entry.subject_code}
           </h3>
           {title && (
@@ -120,41 +121,33 @@ export function StudentUpNextCard({
         </div>
 
         {entry.mode && (
-          <span
-            className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase ${
-              isLab
-                ? "border border-amber-200 bg-amber-50 text-gold-600 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-gold-300"
-                : "border border-slate-200 bg-slate-100 text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300"
-            }`}
-          >
+          <Badge tone={isLab ? "gold" : "slate"}>
             {entry.mode}
-          </span>
+          </Badge>
         )}
       </div>
 
       {/* Metadata Row: Time, Room, Instructor */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-white/5 dark:text-slate-400">
-        <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-xs dark:border-white/5">
+        <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
           <ClockIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
-          <span>
+          <span className="tabular-nums">
             {formatTime12h(entry.start_time)} – {formatTime12h(entry.end_time)}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
           <MapPinIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
-          <span className="font-medium text-slate-700 dark:text-slate-300">{room}</span>
+          <span>{room}</span>
         </div>
 
         {instructor && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
             <UserSmallIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
-            <span className="truncate font-medium text-slate-600 dark:text-slate-400">
-              {instructor}
-            </span>
+            <span className="truncate">{instructor}</span>
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

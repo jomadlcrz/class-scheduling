@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { PrinterIcon } from "~/components/ui/icons";
@@ -332,7 +333,7 @@ function RegistrationPage() {
         ) : (
           <div className="space-y-4">
             {/* Institutional Document Header Card */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
+            <Card className="p-5">
               <div className="flex items-center gap-3.5">
                 <img
                   src="/images/logos/gwc-logo.avif"
@@ -340,10 +341,10 @@ function RegistrationPage() {
                   className="size-12 object-contain shrink-0"
                 />
                 <div className="min-w-0 flex-1">
-                  <span className="font-heading text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="font-display text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400">
                     GOLDEN WEST COLLEGES, INC.
-                  </span>
-                  <h2 className="font-heading text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
+                  </p>
+                  <h2 className="font-display text-xl tracking-wide text-navy-700 dark:text-mist-100">
                     Certificate of Registration
                   </h2>
                   <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -353,40 +354,44 @@ function RegistrationPage() {
               </div>
 
               {/* Quick Document Actions */}
-              <div className="mt-4 flex items-center gap-2.5 border-t border-slate-100 pt-3 dark:border-white/5">
-                <button
+              <div className="mt-4 flex items-center gap-2.5 border-t border-slate-100 pt-3 dark:border-white/10">
+                <Button
                   type="button"
+                  variant="outline"
+                  block={false}
                   onClick={handleShare}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50/70 py-2 px-3.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 sm:flex-initial"
+                  className="flex-1 h-9 px-3 text-xs sm:flex-initial"
                 >
-                  <ShareIcon />
+                  <ShareIcon size={14} />
                   <span>Share</span>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  block={false}
                   onClick={() => setOfficialCopyModalOpen(true)}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50/70 py-2 px-3.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 sm:flex-initial"
+                  className="flex-1 h-9 px-3 text-xs sm:flex-initial"
                 >
                   <PrinterIcon size={14} />
                   <span>Official copy</span>
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
 
             {/* Student Profile Card */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
-              <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3.5 dark:border-white/5">
+            <Card className="p-5">
+              <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3.5 dark:border-white/10">
                 <div>
-                  <h3 className="font-heading text-base font-bold text-navy-700 dark:text-mist-100">
+                  <h3 className="text-base font-bold text-navy-700 dark:text-mist-100">
                     {studentName}
                   </h3>
-                  <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <p className="mt-0.5 text-xs font-semibold tabular-nums text-slate-500 dark:text-slate-400">
                     {studentNo === "No ID" ? "No ID" : `Student no. ${studentNo}`}
                   </p>
                 </div>
-                <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300">
+                <Badge tone={isIrregular ? "gold" : "navy"}>
                   {enrolledStatus}
-                </span>
+                </Badge>
               </div>
 
               <div className="mt-3.5 grid grid-cols-2 gap-4">
@@ -408,16 +413,16 @@ function RegistrationPage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Enrolled Subjects: Mobile Card List (< sm) */}
-            <div className="sm:hidden">
+            <div className="sm:hidden space-y-3">
               <SectionHeader
                 title={`Enrolled Subjects (${subjects.length})`}
                 badge={`${totalUnits} total units`}
               />
 
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 shadow-xs dark:border-surface-overlay dark:bg-surface dark:divide-white/5">
+              <Card className="divide-y divide-slate-100 dark:divide-white/10 overflow-hidden">
                 {subjects.map((sub, idx) => {
                   const title = sub.descriptive_title || sub.subject_title || "—";
                   const lec = sub.lec_hours ?? null;
@@ -431,18 +436,18 @@ function RegistrationPage() {
                   return (
                     <div key={`${sub.subject_code}-${idx}`} className="p-4">
                       <div className="flex items-center justify-between">
-                        <span className="font-heading text-sm font-extrabold text-navy-700 dark:text-mist-100">
+                        <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
                           {sub.subject_code}
                         </span>
                         <div className="flex items-center gap-2">
                           {(lec !== null || lab !== null) && (
-                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                            <span className="text-[11px] font-semibold tabular-nums text-slate-400 dark:text-slate-500">
                               {lec !== null ? `Lec: ${lec}h` : ""}
                               {lec !== null && lab !== null ? " · " : ""}
                               {lab !== null ? `Lab: ${lab}h` : ""}
                             </span>
                           )}
-                          <span className="font-heading text-xs font-bold text-slate-600 dark:text-slate-300">
+                          <span className="text-xs font-semibold tabular-nums text-slate-600 dark:text-slate-300">
                             {sub.units} {sub.units === 1 ? "unit" : "units"}
                           </span>
                         </div>
@@ -453,7 +458,7 @@ function RegistrationPage() {
                       </p>
 
                       {(sessionRoom || sessionTime) && (
-                        <div className="mt-2 flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        <div className="mt-2 flex items-center justify-between text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
                           <span>{sessionRoom ? `Room: ${sessionRoom}` : ""}</span>
                           <span>{sessionTime || ""}</span>
                         </div>
@@ -461,109 +466,113 @@ function RegistrationPage() {
                     </div>
                   );
                 })}
-              </div>
+              </Card>
             </div>
 
             {/* Class Schedule: Mobile Card List (< sm) */}
             {schedule.length > 0 && (
-              <div className="sm:hidden">
+              <div className="sm:hidden space-y-3">
                 <SectionHeader
                   title="Class Schedule"
                   badge={`${schedule.length} weekly ${schedule.length === 1 ? "session" : "sessions"}`}
                 />
 
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 shadow-xs dark:border-surface-overlay dark:bg-surface dark:divide-white/5">
+                <Card className="divide-y divide-slate-100 dark:divide-white/10 overflow-hidden">
                   {schedule.map((entry, idx) => (
                     <div key={`${entry.subject_code}-${entry.day}-${idx}`} className="p-4">
                       <div className="flex items-center justify-between">
-                        <span className="font-heading text-sm font-extrabold text-navy-700 dark:text-mist-100">
+                        <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
                           {entry.day}
                         </span>
-                        <span className="font-mono text-xs font-bold text-navy-700 dark:text-mist-100">
+                        <span className="text-xs font-bold tabular-nums text-navy-700 dark:text-mist-100">
                           {entry.start_time} – {entry.end_time}
                         </span>
                       </div>
 
-                      <p className="mt-1 text-xs font-bold text-navy-700 dark:text-mist-100">
-                        <span className="font-extrabold">{entry.subject_code}</span>
+                      <p className="mt-1 text-xs text-slate-800 dark:text-slate-300">
+                        <span className="font-bold text-navy-700 dark:text-mist-100">{entry.subject_code}</span>
                         {entry.descriptive_title ? ` · ${entry.descriptive_title}` : ""}
                       </p>
 
                       {(entry.room || entry.instructor) && (
-                        <div className="mt-2 flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                           <span>Room: {entry.room || "TBA"}</span>
                           <span>{entry.instructor || ""}</span>
                         </div>
                       )}
                     </div>
                   ))}
-                </div>
+                </Card>
               </div>
             )}
 
             {/* Enrolled Subjects: Tablet Table (< lg, >= sm) */}
-            <div className="hidden sm:block overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
-              <h3 className="mb-3 font-heading text-sm font-bold text-navy-700 dark:text-mist-100">
-                Enrolled Subjects ({subjects.length})
-              </h3>
-
-              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-surface-overlay">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-400">
-                    <tr>
-                      <th className="px-4 py-3">Subject code</th>
-                      <th className="px-4 py-3">Descriptive title</th>
-                      <th className="px-4 py-3 text-center">Units</th>
-                      <th className="px-4 py-3">Schedule</th>
-                      <th className="px-4 py-3">Room</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                    {subjects.map((sub, idx) => {
-                      const title = sub.descriptive_title || sub.subject_title || "—";
-                      const matchSched = schedule.find((s) => s.subject_code === sub.subject_code);
-                      const schedStr = matchSched
-                        ? `${matchSched.day} ${matchSched.start_time}–${matchSched.end_time}`
-                        : "—";
-
-                      return (
-                        <tr key={`${sub.subject_code}-${idx}`} className="hover:bg-slate-50/50 dark:hover:bg-white/2">
-                          <td className="px-4 py-3 font-bold text-navy-700 dark:text-mist-100">
-                            {sub.subject_code}
-                          </td>
-                          <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                            {title}
-                          </td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-700 dark:text-slate-300">
-                            {sub.units}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
-                            {schedStr}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
-                            {matchSched?.room || "TBA"}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                  <tfoot className="border-t border-slate-200 bg-slate-50 font-bold dark:border-surface-overlay dark:bg-white/5">
-                    <tr>
-                      <td colSpan={2} className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300">
-                        Total enrolled units:
-                      </td>
-                      <td className="px-4 py-3 text-center text-sm font-extrabold text-navy-700 dark:text-mist-100">
-                        {totalUnits}
-                      </td>
-                      <td colSpan={2} />
-                    </tr>
-                  </tfoot>
-                </table>
+            <div className="hidden sm:block space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
+                    Enrolled Subjects ({subjects.length})
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Official list of registered courses for this semester
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-navy-700 dark:text-mist-100">
+                  {totalUnits} Total Units
+                </span>
               </div>
+
+              <Table>
+                <TableHead>
+                  <TableHeader>Subject code</TableHeader>
+                  <TableHeader>Descriptive title</TableHeader>
+                  <TableHeader className="text-center">Units</TableHeader>
+                  <TableHeader>Schedule</TableHeader>
+                  <TableHeader className="text-center">Room</TableHeader>
+                </TableHead>
+                <TableBody>
+                  {subjects.map((sub, idx) => {
+                    const title = sub.descriptive_title || sub.subject_title || "—";
+                    const matchSched = schedule.find((s) => s.subject_code === sub.subject_code);
+                    const schedStr = matchSched
+                      ? `${matchSched.day} ${matchSched.start_time}–${matchSched.end_time}`
+                      : "—";
+
+                    return (
+                      <TableRow key={`${sub.subject_code}-${idx}`}>
+                        <TableCell className="font-bold text-navy-700 dark:text-mist-100">
+                          {sub.subject_code}
+                        </TableCell>
+                        <TableCell className="text-slate-600 dark:text-slate-300">
+                          {title}
+                        </TableCell>
+                        <TableCell className="text-center font-bold text-slate-700 dark:text-slate-300">
+                          {sub.units}
+                        </TableCell>
+                        <TableCell className="text-xs text-slate-500 dark:text-slate-400">
+                          {schedStr}
+                        </TableCell>
+                        <TableCell className="text-center text-xs text-slate-500 dark:text-slate-400">
+                          {matchSched?.room || "TBA"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  <TableRow className="bg-slate-50/80 font-bold dark:bg-white/5">
+                    <TableCell colSpan={2} className="text-right text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      Total enrolled units:
+                    </TableCell>
+                    <TableCell className="text-center text-sm font-bold text-navy-700 dark:text-mist-100">
+                      {totalUnits}
+                    </TableCell>
+                    <TableCell colSpan={2} />
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Official Signatory Footer Card */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 text-center dark:border-surface-overlay dark:bg-surface-raised">
+            <Card className="p-5 text-center bg-slate-50/70 dark:bg-surface-raised">
               <div className="flex items-center justify-center gap-2">
                 <span className="rounded bg-gwc-blue px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-white">
                   OFFICIAL
@@ -572,13 +581,13 @@ function RegistrationPage() {
                   Office of the College Registrar
                 </span>
               </div>
-              <p className="mt-1 font-heading text-sm font-extrabold text-navy-700 dark:text-mist-100">
+              <p className="mt-1 text-sm font-bold text-navy-700 dark:text-mist-100">
                 {registrarName}
               </p>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 This is an official digital record verified by the GWC Online Enrollment & Scheduling Portal.
               </p>
-            </div>
+            </Card>
           </div>
         )}
       </div>

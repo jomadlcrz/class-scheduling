@@ -48,7 +48,7 @@ export function ScreenHeader({
         )}
 
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-heading text-lg font-bold text-navy-950 dark:text-mist-100 sm:text-xl">
+          <h1 className="truncate text-lg font-bold text-navy-950 dark:text-mist-100 sm:text-xl">
             {title}
           </h1>
           {subtitle && (

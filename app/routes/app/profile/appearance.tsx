@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { useTheme, type ThemePreference } from "~/components/theme/theme-provider";
+import { Card } from "~/components/ui/card";
 import { ScreenHeader } from "~/components/ui/screen-header";
 
 export function meta() {
@@ -156,7 +157,7 @@ export default function AppearanceRoute() {
 
           <div className="space-y-4">
             {/* Theme Options Group */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white divide-y divide-slate-100 shadow-xs dark:border-white/10 dark:bg-surface dark:divide-white/5">
+            <Card className="overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
               {options.map((opt) => {
                 const IconComponent = opt.icon;
                 const isSelected = preference === opt.id;
@@ -203,15 +204,15 @@ export default function AppearanceRoute() {
                   </button>
                 );
               })}
-            </div>
+            </Card>
 
             {/* Informative Guidance Box */}
-            <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 text-xs text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+            <Card className="flex items-start gap-3 bg-slate-100/70 p-4 text-xs text-slate-500 dark:bg-white/5 dark:text-slate-400">
               <InfoIcon size={16} className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500" />
               <p className="leading-relaxed">
                 Your theme selection is saved to this browser and will apply across all portal pages automatically.
               </p>
-            </div>
+            </Card>
           </div>
         </div>
       </div>

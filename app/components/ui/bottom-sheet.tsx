@@ -104,7 +104,7 @@ export function BottomSheet({
                 className="cursor-grab active:cursor-grabbing px-5 pt-1 pb-3 touch-none select-none"
               >
                 {title && (
-                  <h3 className="font-heading text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
+                  <h3 className="text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
                     {title}
                   </h3>
                 )}

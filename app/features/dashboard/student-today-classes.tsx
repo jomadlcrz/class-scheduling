@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import {
   CalendarIcon,
   ClockIcon,
@@ -78,7 +81,7 @@ export function StudentTodayClasses({
       <SectionHeader title="Today's Classes" badge={todayName} />
 
       {!isApproved ? (
-        <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-5 text-center dark:border-amber-800/40 dark:bg-amber-950/20">
+        <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-5 text-center dark:border-amber-800/40 dark:bg-amber-950/20">
           <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-surface-raised dark:text-slate-400">
             <AlertCircleIcon />
           </div>
@@ -92,7 +95,7 @@ export function StudentTodayClasses({
           </p>
         </div>
       ) : todayClasses.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs dark:border-surface-overlay dark:bg-surface">
+        <Card className="p-6 text-center">
           <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-surface-raised dark:text-slate-400">
             <CalendarIcon />
           </div>
@@ -102,48 +105,45 @@ export function StudentTodayClasses({
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             You have no scheduled classes for {todayName}. Enjoy your day!
           </p>
-          <button
-            type="button"
-            onClick={handleViewSchedule}
-            className="mt-3.5 inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-          >
-            View full timetable
-          </button>
-        </div>
+          <div className="mt-4 flex justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              block={false}
+              onClick={handleViewSchedule}
+            >
+              View full timetable
+            </Button>
+          </div>
+        </Card>
       ) : (
         <div className="space-y-2.5">
           {todayClasses.map((entry, idx) => {
             const isLab = entry.mode?.toUpperCase() === "LAB";
             return (
-              <div
+              <Card
                 key={`${entry.subject_code}-${entry.start_time}-${idx}`}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-shadow hover:shadow-sm dark:border-surface-overlay dark:bg-surface"
+                className="p-4 transition-shadow hover:shadow-sm"
               >
                 {/* Time & Session Mode */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <ClockIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                    <span>
+                    <ClockIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span className="tabular-nums">
                       {formatTime(entry.start_time)} – {formatTime(entry.end_time)}
                     </span>
                   </div>
 
                   {entry.mode && (
-                    <span
-                      className={`rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase ${
-                        isLab
-                          ? "border border-amber-200 bg-amber-50 text-gold-600 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-gold-300"
-                          : "border border-slate-200 bg-slate-100 text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300"
-                      }`}
-                    >
+                    <Badge tone={isLab ? "gold" : "slate"}>
                       {entry.mode}
-                    </span>
+                    </Badge>
                   )}
                 </div>
 
                 {/* Subject Info */}
                 <div className="mt-2">
-                  <p className="font-heading text-base font-extrabold tracking-tight text-navy-700 dark:text-mist-100">
+                  <p className="text-base font-bold tracking-tight text-navy-700 dark:text-mist-100">
                     {entry.subject_code}
                   </p>
                   {entry.descriptive_title && (
@@ -154,24 +154,24 @@ export function StudentTodayClasses({
                 </div>
 
                 {/* Details Row */}
-                <div className="mt-3 flex items-center gap-4 border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-white/5 dark:text-slate-400">
-                  <div className="flex items-center gap-1">
-                    <MapPinIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-xs dark:border-white/5">
+                  <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                    <MapPinIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span>
                       {entry.room || "TBA"}
                     </span>
                   </div>
 
                   {entry.instructor && (
-                    <div className="flex items-center gap-1">
-                      <UserSmallIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                      <span className="truncate font-medium text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                      <UserSmallIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
+                      <span className="truncate">
                         {entry.instructor}
                       </span>
                     </div>
                   )}
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

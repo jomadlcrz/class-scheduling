@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import {
   CalendarIcon,
@@ -83,20 +84,24 @@ export function MobileWeeklySchedule({
                 onClick={() => setSelectedDay(day)}
                 className={`relative flex flex-1 min-w-13 cursor-pointer flex-col items-center justify-center rounded-xl py-2 px-1 text-center transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   isSelected
-                    ? "bg-navy-700 text-mist-100 shadow-xs dark:bg-white/15 dark:text-mist-100"
-                    : "border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 dark:border-white/10 dark:bg-surface dark:text-slate-300 dark:hover:border-white/20"
+                    ? "bg-gwc-blue text-white shadow-xs dark:bg-gwc-blue dark:text-white"
+                    : "border border-slate-300 bg-white hover:border-slate-400 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                 }`}
               >
-                <span className={`text-[11px] font-bold ${isSelected ? "text-white" : "text-slate-800 dark:text-slate-200"}`}>
+                <span
+                  className={`text-[11px] font-bold ${
+                    isSelected ? "text-white dark:text-white" : "text-navy-700 dark:text-mist-100"
+                  }`}
+                >
                   {short}
                 </span>
                 <span
                   className={`mt-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold ${
                     isSelected
-                      ? "bg-white/20 text-white dark:bg-white/20 dark:text-mist-100"
+                      ? "bg-white/20 text-white dark:bg-white/20 dark:text-white"
                       : count > 0
-                        ? "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                        : "text-slate-400 dark:text-slate-500"
+                        ? "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-mist-100"
+                        : "text-slate-400 dark:text-slate-400"
                   }`}
                 >
                   {count}
@@ -128,31 +133,25 @@ export function MobileWeeklySchedule({
             const timeStr = `${formatTime(item.startTime)} – ${formatTime(item.endTime)}`;
 
             return (
-              <div
+              <Card
                 key={item.id}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-shadow hover:shadow-sm dark:border-surface-overlay dark:bg-surface"
+                className="p-4 transition-shadow hover:shadow-sm"
               >
                 {/* Time & Badges */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <ClockIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                    <span>{timeStr}</span>
+                    <ClockIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span className="tabular-nums">{timeStr}</span>
                   </div>
 
                   <div className="flex items-center gap-1">
                     {item.sessionMode && (
-                      <span
-                        className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase ${
-                          item.sessionMode === "LAB"
-                            ? "border border-amber-200 bg-amber-50 text-gold-600 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-gold-300"
-                            : "border border-slate-200 bg-slate-100 text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300"
-                        }`}
-                      >
+                      <Badge tone={item.sessionMode === "LAB" ? "gold" : "slate"}>
                         {item.sessionMode}
-                      </span>
+                      </Badge>
                     )}
                     {typeof item.units === "number" && item.units > 0 && (
-                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-400">
+                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
                         {item.units} {item.units === 1 ? "unit" : "units"}
                       </span>
                     )}
@@ -161,7 +160,7 @@ export function MobileWeeklySchedule({
 
                 {/* Subject Info */}
                 <div className="mt-2.5">
-                  <p className="font-heading text-base font-extrabold tracking-tight text-navy-700 dark:text-mist-100">
+                  <p className="text-base font-bold tracking-tight text-navy-700 dark:text-mist-100">
                     {item.subjectCode}
                   </p>
                   <p className="line-clamp-2 text-xs font-medium text-slate-600 dark:text-slate-400">
@@ -170,30 +169,30 @@ export function MobileWeeklySchedule({
                 </div>
 
                 {/* Metadata Row */}
-                <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-white/5 dark:text-slate-400">
-                  <div className="flex items-center gap-1">
-                    <MapPinIcon size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-xs dark:border-white/5">
+                  <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                    <MapPinIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span>
                       {room}
                     </span>
                   </div>
 
                   {!hideInstructor && (
-                    <div className="flex items-center gap-1">
-                      <UserSmallIcon className="text-slate-400 dark:text-slate-500 shrink-0" />
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                      <UserSmallIcon size={13} className="shrink-0 text-slate-400 dark:text-slate-500" />
+                      <span className="truncate">
                         {instructor}
                       </span>
                     </div>
                   )}
 
                   {showSet && item.setCode && (
-                    <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                    <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
                       Set {item.setCode}
                     </span>
                   )}
                 </div>
-              </div>
+              </Card>
             );
           })
         )}

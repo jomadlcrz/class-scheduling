@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { Badge } from "~/components/ui/badge";
 import { MoonIcon, SunIcon } from "~/components/ui/icons";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { useTheme } from "~/hooks/use-theme";
@@ -27,7 +28,7 @@ export function StudentMobileHeader() {
           className="hidden h-7 w-auto object-contain dark:block"
         />
         <div className="flex flex-col">
-          <span className="font-heading text-sm font-bold tracking-tight text-navy-700 dark:text-mist-100">
+          <span className="text-sm font-bold tracking-tight text-navy-700 dark:text-mist-100">
             GWC <span className="text-slate-600 dark:text-slate-300">Student</span>
           </span>
           <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
@@ -38,9 +39,9 @@ export function StudentMobileHeader() {
 
       {/* Right: Active Term Chip & Theme Toggle */}
       <div className="flex items-center gap-2">
-        <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300">
+        <Badge tone="slate">
           {activeTermLabel}
-        </span>
+        </Badge>
 
         <button
           type="button"

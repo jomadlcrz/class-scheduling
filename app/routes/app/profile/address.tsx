@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
+import { Card } from "~/components/ui/card";
 import { ScreenHeader } from "~/components/ui/screen-header";
 import { Skeleton } from "~/components/ui/skeleton";
 import { profilePhotoService } from "~/services/profile-photo.service";
@@ -71,17 +72,17 @@ function RegisteredAddressPage() {
           </p>
 
           {loading ? (
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-white/10 dark:bg-surface">
+            <Card className="p-5">
               <div className="space-y-4">
                 <Skeleton className="h-6 w-3/4 rounded-lg" />
                 <Skeleton className="h-6 w-1/2 rounded-lg" />
                 <Skeleton className="h-6 w-2/3 rounded-lg" />
               </div>
-            </div>
+            </Card>
           ) : address ? (
             <div className="space-y-4">
               {/* Grouped Content Card */}
-              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+              <Card className="overflow-hidden">
                 <div className="divide-y divide-slate-100 p-5 dark:divide-white/5">
                   <div className="flex items-center justify-between pb-3.5">
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
@@ -128,33 +129,33 @@ function RegisteredAddressPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Informative Guidance Box */}
-              <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 text-xs text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              <Card className="flex items-start gap-3 bg-slate-100/70 p-4 text-xs text-slate-500 dark:bg-white/5 dark:text-slate-400">
                 <InfoIcon size={16} className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500" />
                 <p className="leading-relaxed">
                   To update your registered address, please present valid proof of residence (such as a Barangay Certificate or Utility Bill) to the Registrar&apos;s Office.
                 </p>
-              </div>
+              </Card>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200/90 bg-white p-8 text-center shadow-xs dark:border-white/10 dark:bg-surface">
+              <Card className="p-8 text-center">
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   No home address on record
                 </p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Please contact the Registrar&apos;s Office to submit your residential address.
                 </p>
-              </div>
+              </Card>
 
-              <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 text-xs text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              <Card className="flex items-start gap-3 bg-slate-100/70 p-4 text-xs text-slate-500 dark:bg-white/5 dark:text-slate-400">
                 <InfoIcon size={16} className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500" />
                 <p className="leading-relaxed">
                   Official student records require an active residential address on file.
                 </p>
-              </div>
+              </Card>
             </div>
           )}
         </div>

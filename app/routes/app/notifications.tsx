@@ -171,8 +171,8 @@ function NotificationsPage() {
                     onClick={() => handleOpen(notification)}
                     className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border p-3.5 text-left transition-colors ${
                       notification.isRead
-                        ? "border-slate-200/80 bg-white dark:border-white/10 dark:bg-surface"
-                        : "border-blue-200/90 bg-blue-50/50 dark:border-gwc-blue-deep/70 dark:bg-surface-raised"
+                        ? "border-slate-300 bg-white hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+                        : "border-blue-200 bg-blue-50/60 hover:bg-blue-50/80 dark:border-navy-300/30 dark:bg-surface-raised dark:hover:bg-surface-overlay"
                     }`}
                   >
                     <div className="relative mt-0.5 shrink-0">

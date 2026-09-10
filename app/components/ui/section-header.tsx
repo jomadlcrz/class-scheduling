@@ -19,13 +19,13 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <div className={`flex items-center justify-between px-1 mb-2.5 ${className}`}>
-      <h3 className="font-heading text-sm font-bold tracking-tight text-navy-700 dark:text-mist-100">
+      <h3 className="text-sm font-bold tracking-tight text-navy-700 dark:text-mist-100">
         {title}
       </h3>
       {(badge || action) && (
         <div className="flex items-center gap-2">
           {badge && (
-            <span className="font-heading text-xs font-bold text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
               {badge}
             </span>
           )}

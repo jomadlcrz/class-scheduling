@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { Badge } from "~/components/ui/badge";
 import { BottomSheet } from "~/components/ui/bottom-sheet";
+import { Button } from "~/components/ui/button";
 import { CalendarIcon, ChevronRightIcon } from "~/components/ui/icons";
 
 export interface EnrolledTermItem {
@@ -119,7 +121,7 @@ export function TermSelector({
       <button
         type="button"
         onClick={handleOpen}
-        className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-white py-2.5 px-3.5 text-left transition-colors hover:border-slate-300 hover:bg-slate-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-surface-overlay dark:bg-surface dark:hover:bg-white/5"
+        className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-300 bg-white py-2.5 px-3.5 text-left transition-colors hover:border-slate-400 hover:bg-slate-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
         aria-label={`Academic Term: ${displayLabel}. Tap to change.`}
       >
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -142,47 +144,49 @@ export function TermSelector({
         title="Select Academic Term"
         subtitle="Choose an academic term to view your classes"
         footer={
-          <button
+          <Button
             type="button"
             onClick={handleDone}
             disabled={!stagedSelection}
-            className="w-full rounded-xl bg-navy-700 py-3 px-6 font-heading text-sm font-bold text-mist-100 transition-colors hover:bg-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/10 dark:text-mist-100 dark:hover:bg-white/15"
+            className="w-full py-3 text-sm font-bold"
           >
             Done
-          </button>
+          </Button>
         }
       >
         <div className="space-y-3 pb-2">
 
           {/* Search Bar */}
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-              <SearchIcon className="size-4" />
-            </span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search academic term or year..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-100/80 py-2 pl-9 pr-8 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:bg-white focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-mist-100"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex size-4.5 cursor-pointer items-center justify-center rounded-full bg-slate-200 text-[10px] text-slate-600 dark:bg-white/10 dark:text-slate-300"
-                aria-label="Clear search text"
-              >
-                ✕
-              </button>
-            )}
+          <div className="sticky top-0 z-10 -mt-2 bg-white pt-2 pb-1 dark:bg-surface">
+            <div className="relative w-full">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400">
+                <SearchIcon className="size-4" />
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search academic term or year..."
+                className="w-full rounded-xl border border-slate-300 bg-slate-50/80 py-2 pl-9 pr-8 text-xs font-medium text-slate-900 placeholder:text-slate-400 transition-colors focus:border-gold-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400 dark:border-white/15 dark:bg-surface-overlay dark:text-mist-100 dark:placeholder:text-slate-400 dark:focus:border-gold-400 dark:focus:bg-surface-overlay dark:focus:ring-gold-400"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 flex size-5 cursor-pointer items-center justify-center rounded-full bg-slate-200 text-xs text-slate-600 transition-colors hover:bg-slate-300 dark:bg-white/15 dark:text-mist-100 dark:hover:bg-white/25"
+                  aria-label="Clear search text"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Radio Options List */}
-          <div className="max-h-72 space-y-2 overflow-y-auto pr-1 no-scrollbar">
+          <div className="space-y-2">
             {filteredTerms.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                <p className="text-sm font-bold text-slate-800 dark:text-mist-100">
                   No matching terms
                 </p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -190,6 +194,15 @@ export function TermSelector({
                     ? `No academic terms match "${searchQuery}".`
                     : "No enrolled academic terms found."}
                 </p>
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-slate-300 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-gwc-blue transition-colors hover:bg-slate-200 dark:border-white/15 dark:bg-white/10 dark:text-gwc-blue-soft dark:hover:bg-white/15"
+                  >
+                    Clear search
+                  </button>
+                )}
               </div>
             ) : (
               filteredTerms.map((t) => {
@@ -207,27 +220,21 @@ export function TermSelector({
                     }
                     className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all ${
                       isSelected
-                        ? "border-slate-400 bg-slate-100/70 dark:border-white/20 dark:bg-white/10"
-                        : "border-slate-200/80 bg-slate-50/50 hover:bg-slate-100/60 dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/5"
+                        ? "border-blue-300 bg-blue-50/50 dark:border-navy-300/40 dark:bg-white/10"
+                        : "border-slate-300 bg-white hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                     }`}
                     role="radio"
                     aria-checked={isSelected}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`text-sm font-bold ${
-                            isSelected
-                              ? "text-navy-700 dark:text-mist-100"
-                              : "text-navy-700 dark:text-mist-100"
-                          }`}
-                        >
+                        <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
                           A.Y. {t.school_year}
                         </span>
                         {isCurrentTerm && (
-                          <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-white/15 dark:text-mist-100">
+                          <Badge tone="navy">
                             Current
-                          </span>
+                          </Badge>
                         )}
                       </div>
                       <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
@@ -240,12 +247,12 @@ export function TermSelector({
                     <div
                       className={`ml-3 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                         isSelected
-                          ? "border-slate-700 bg-white dark:border-white/30 dark:bg-surface"
+                          ? "border-gwc-blue bg-white dark:border-gwc-blue-soft dark:bg-surface"
                           : "border-slate-300 bg-white dark:border-white/20 dark:bg-surface"
                       }`}
                     >
                       {isSelected && (
-                        <div className="size-2.5 rounded-full bg-slate-700 dark:bg-mist-100" />
+                        <div className="size-2.5 rounded-full bg-gwc-blue dark:bg-gwc-blue-soft" />
                       )}
                     </div>
                   </div>

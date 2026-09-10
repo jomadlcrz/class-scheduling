@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
+import { Badge } from "~/components/ui/badge";
+import { Card } from "~/components/ui/card";
 import { ScreenHeader } from "~/components/ui/screen-header";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
@@ -105,18 +107,18 @@ function AcademicInformationPage() {
           </p>
 
           {loading && !registration ? (
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-white/10 dark:bg-surface">
+            <Card className="p-5">
               <div className="space-y-4">
                 <Skeleton className="h-6 w-3/4 rounded-lg" />
                 <Skeleton className="h-6 w-1/2 rounded-lg" />
                 <Skeleton className="h-6 w-2/3 rounded-lg" />
                 <Skeleton className="h-6 w-1/3 rounded-lg" />
               </div>
-            </div>
+            </Card>
           ) : (
             <div className="space-y-4">
               {/* Grouped Content Card */}
-              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-surface">
+              <Card className="overflow-hidden">
                 <div className="divide-y divide-slate-100 p-5 dark:divide-white/5">
                   <div className="flex items-center justify-between pb-3.5">
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
@@ -167,20 +169,20 @@ function AcademicInformationPage() {
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
                       Status
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-gwc-blue dark:border-blue-900/40 dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+                    <Badge tone={enrolledStatus?.toLowerCase() === "irregular" ? "gold" : "navy"}>
                       {enrolledStatus}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Informative Guidance Box */}
-              <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 text-xs text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+              <Card className="flex items-start gap-3 bg-slate-100/70 p-4 text-xs text-slate-500 dark:bg-white/5 dark:text-slate-400">
                 <InfoIcon size={16} className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500" />
                 <p className="leading-relaxed">
                   To request a change in your program, year level, or section assignment, please consult your department chair or visit the Registrar&apos;s Office.
                 </p>
-              </div>
+              </Card>
             </div>
           )}
         </div>

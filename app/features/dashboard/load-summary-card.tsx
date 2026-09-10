@@ -1,3 +1,5 @@
+import { Badge } from "~/components/ui/badge";
+import { Card } from "~/components/ui/card";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { StudentAnalytics } from "~/types/student-analytics";
 
@@ -35,11 +37,11 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
     : "Pending approval";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-surface-overlay dark:bg-surface">
+    <Card className="p-5">
       {/* Top row: Section & Program with Enrollment Badge */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="font-heading text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
+          <h3 className="text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
             {sectionOrYear}
           </h3>
           <p className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -47,9 +49,9 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
           </p>
         </div>
         {m.enrolled_status && (
-          <span className="shrink-0 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:border-surface-overlay dark:bg-white/5 dark:text-slate-300">
+          <Badge tone={isIrregular ? "gold" : "navy"}>
             {m.enrolled_status}
-          </span>
+          </Badge>
         )}
       </div>
 
@@ -58,21 +60,15 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
         <span className="font-medium text-slate-500 dark:text-slate-400">
           Schedule status:
         </span>
-        <span
-          className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
-            isApproved
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/40 dark:text-emerald-300"
-              : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-amber-300"
-          }`}
-        >
+        <Badge tone={isApproved ? "emerald" : "gold"}>
           {scheduleBadgeLabel}
-        </span>
+        </Badge>
       </div>
 
       {/* 4-Metric Grid */}
       <div className="mt-4 grid grid-cols-4 divide-x divide-slate-100 rounded-xl border border-slate-100 bg-slate-50/40 py-2.5 text-center dark:divide-white/5 dark:border-white/5 dark:bg-white/3">
         <div className="px-1">
-          <span className="font-heading text-base font-bold text-navy-700 dark:text-mist-100">
+          <span className="text-base font-bold tabular-nums text-navy-700 dark:text-mist-100">
             {s.subjects_scheduled}/{s.total_subjects}
           </span>
           <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
@@ -81,7 +77,7 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
         </div>
 
         <div className="px-1">
-          <span className="font-heading text-base font-bold text-navy-700 dark:text-mist-100">
+          <span className="text-base font-bold tabular-nums text-navy-700 dark:text-mist-100">
             {s.total_weekly_hours}h
           </span>
           <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
@@ -90,7 +86,7 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
         </div>
 
         <div className="px-1">
-          <span className="font-heading text-base font-bold text-navy-700 dark:text-mist-100">
+          <span className="text-base font-bold tabular-nums text-navy-700 dark:text-mist-100">
             {s.sessions}
           </span>
           <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
@@ -99,7 +95,7 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
         </div>
 
         <div className="px-1">
-          <span className="font-heading text-base font-bold text-navy-700 dark:text-mist-100">
+          <span className="text-base font-bold tabular-nums text-navy-700 dark:text-mist-100">
             {totalUnits}
           </span>
           <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
@@ -107,6 +103,6 @@ export function LoadSummaryCard({ data }: LoadSummaryCardProps) {
           </p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
