@@ -25,6 +25,7 @@ import {
 } from "~/features/dashboard/dashboard-shared";
 import { LoadSummaryCard } from "~/features/dashboard/load-summary-card";
 import { StudentTodayClasses } from "~/features/dashboard/student-today-classes";
+import { StudentUpNextCard } from "~/features/dashboard/student-up-next-card";
 import { selfAnalyticsService } from "~/services/self-analytics.service";
 import { studentService } from "~/services/student.service";
 import type { DailyLoadHour } from "~/types/dean-analytics";
@@ -253,6 +254,14 @@ export function StudentDashboard() {
                   /* State 2: Content State */
                   <>
                     <LoadSummaryCard data={data} />
+                    <StudentUpNextCard
+                      schedule={data.schedule}
+                      isApproved={
+                        data.meta.scheduleReleaseStatus === "approved" ||
+                        (data.meta.enrolled_status?.toLowerCase() === "irregular" &&
+                          Boolean(data.schedule && data.schedule.length > 0))
+                      }
+                    />
                     <StudentTodayClasses
                       schedule={data.schedule}
                       releaseStatus={data.meta.scheduleReleaseStatus}

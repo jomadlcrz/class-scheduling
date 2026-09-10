@@ -219,7 +219,7 @@ function StudentProfilePage() {
                   alt={studentName}
                   className="size-20"
                 />
-                <span className="absolute bottom-0 right-0 flex size-7 items-center justify-center rounded-full border-2 border-white bg-gwc-blue text-white shadow-xs transition-transform group-hover:scale-105 dark:border-surface dark:bg-gwc-blue-bright">
+                <span className="absolute bottom-0 right-0 flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 shadow-xs transition-transform group-hover:scale-105 dark:border-white/20 dark:bg-surface dark:text-mist-100">
                   <CameraIcon size={13} />
                 </span>
               </button>
@@ -375,7 +375,7 @@ function StudentProfilePage() {
             onClick={() => cameraInputRef.current?.click()}
             className="flex w-full cursor-pointer items-center gap-3.5 rounded-2xl p-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10"
           >
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300">
               <CameraIcon size={20} />
             </span>
             <div className="flex-1">
@@ -394,7 +394,7 @@ function StudentProfilePage() {
             onClick={() => libraryInputRef.current?.click()}
             className="flex w-full cursor-pointer items-center gap-3.5 rounded-2xl p-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10"
           >
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-gwc-blue dark:bg-gwc-blue-deep/60 dark:text-gwc-blue-soft">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300">
               <ImageIcon size={20} />
             </span>
             <div className="flex-1">

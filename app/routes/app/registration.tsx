@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { BottomSheet } from "~/components/ui/bottom-sheet";
 import { Button } from "~/components/ui/button";
 import { PrinterIcon } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
@@ -49,105 +48,6 @@ function ShareIcon({ size = 14, className }: { size?: number; className?: string
   );
 }
 
-function CopyIcon({ size = 16, className }: { size?: number; className?: string } = {}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function WhatsAppIcon({ size = 16, className }: { size?: number; className?: string } = {}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-    </svg>
-  );
-}
-
-function MailIcon({ size = 16, className }: { size?: number; className?: string } = {}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  );
-}
-
-function DownloadIcon({ size = 16, className }: { size?: number; className?: string } = {}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon({ size = 16, className }: { size?: number; className?: string } = {}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
-}
-
 async function copyTextToClipboard(text: string): Promise<boolean> {
   if (typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
     try {
@@ -181,18 +81,6 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
   return false;
 }
 
-function useIsDesktop(minWidth = 1024) {
-  const [isDesktop, setIsDesktop] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia(`(min-width: ${minWidth}px)`);
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, [minWidth]);
-  return isDesktop;
-}
-
 export default function RegistrationRoute() {
   return (
     <RoleGuard allow={["student"]}>
@@ -205,12 +93,10 @@ function RegistrationPage() {
   const { user } = useAuth();
   const { yearLevelLabel } = useYearLevels();
   const { context: termContext, selectTerm } = useTermContext();
-  const isDesktop = useIsDesktop();
   const [registration, setRegistration] = useState<RegistrationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [officialCopyModalOpen, setOfficialCopyModalOpen] = useState(false);
-  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [enrolledTerms, setEnrolledTerms] = useState<EnrolledTermItem[]>([]);
 
   useEffect(() => {
@@ -323,25 +209,6 @@ function RegistrationPage() {
   const isIrregular =
     (meta?.enrolled_status || registration?.academic_status || enrolledStatus)?.toLowerCase() === "irregular";
 
-  const shareSubtitle = useMemo(() => {
-    const idLabel = studentNo === "No ID" ? "No ID" : `Student no. ${studentNo}`;
-    const prog = programCode || (programName !== "—" ? programName : "");
-
-    if (isIrregular) {
-      const parts = [idLabel, prog];
-      if (yearAndSection && yearAndSection !== "—" && yearAndSection !== "-") {
-        parts.push(yearAndSection);
-      }
-      return parts.filter(Boolean).join(" · ");
-    }
-
-    if (yearAndSection && yearAndSection !== "—" && yearAndSection !== "-") {
-      return `${idLabel} · ${yearAndSection}`;
-    }
-
-    return prog ? `${idLabel} · ${prog}` : idLabel;
-  }, [studentNo, isIrregular, programCode, programName, yearAndSection]);
-
   const registrarName = meta?.registrar_name || "Office of the College Registrar";
 
   const summaryMessage = useMemo(() => {
@@ -380,69 +247,26 @@ function RegistrationPage() {
     registrarName,
   ]);
 
-  const canSystemShare =
-    typeof navigator !== "undefined" && typeof navigator.share === "function";
-
-  const handleShare = () => {
-    setShareModalOpen(true);
-  };
-
-  const handleSystemShare = async () => {
+  const handleShare = async () => {
     if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
       try {
         await navigator.share({
           title: `COR - ${studentName}`,
           text: summaryMessage,
         });
-        setShareModalOpen(false);
       } catch (err: unknown) {
         if (err instanceof Error && err.name === "AbortError") {
           return;
         }
         toast.error("System share could not be completed");
       }
-    }
-  };
-
-  const handleCopySummary = async () => {
-    const copied = await copyTextToClipboard(summaryMessage);
-    if (copied) {
-      toast.success("COR summary copied to clipboard");
-      setShareModalOpen(false);
     } else {
-      toast.error("Failed to copy registration details");
-    }
-  };
-
-  const handleWhatsAppShare = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(summaryMessage)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-    setShareModalOpen(false);
-  };
-
-  const handleEmailShare = () => {
-    const subject = encodeURIComponent(`COR - ${studentName} (${schoolYear} · ${semester})`);
-    const body = encodeURIComponent(summaryMessage);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    setShareModalOpen(false);
-  };
-
-  const handleDownloadText = () => {
-    try {
-      const blob = new Blob([summaryMessage], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const safeName = studentName.replace(/[^a-zA-Z0-9_-]/g, "_");
-      link.href = url;
-      link.download = `COR_${safeName}.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success("COR summary downloaded");
-      setShareModalOpen(false);
-    } catch {
-      toast.error("Failed to download text file");
+      const copied = await copyTextToClipboard(summaryMessage);
+      if (copied) {
+        toast.success("COR summary copied to clipboard");
+      } else {
+        toast.error("Share is not supported on this browser");
+      }
     }
   };
 
@@ -490,7 +314,7 @@ function RegistrationPage() {
                 />
                 <div className="min-w-0 flex-1">
                   <span className="font-heading text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                    GOLDEN WEST COLLEGES
+                    GOLDEN WEST COLLEGES, INC.
                   </span>
                   <h2 className="font-heading text-lg font-bold tracking-tight text-navy-700 dark:text-mist-100">
                     Certificate of Registration
@@ -1082,134 +906,6 @@ function RegistrationPage() {
           To obtain an officially signed and dry-sealed physical or PDF copy of your Certificate of Registration, please visit the Registrar&apos;s Office.
         </p>
       </Modal>
-
-      {/* Share Dialog: Modal on Desktop (>= lg), BottomSheet on Mobile (< lg) */}
-      {(() => {
-        const shareContent = (
-          <div className="space-y-4">
-            {/* Summary Preview Card */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-surface-overlay dark:bg-white/5">
-              <div className="flex items-center justify-between">
-                <span className="font-heading text-xs font-bold text-navy-700 dark:text-mist-100">
-                  {studentName}
-                </span>
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  {totalUnits} {totalUnits === 1 ? "unit" : "units"} · {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
-                </span>
-              </div>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                {shareSubtitle}
-              </p>
-            </div>
-
-            {/* Share Action Channels */}
-            <div className="space-y-2">
-              {canSystemShare && (
-                <button
-                  type="button"
-                  onClick={handleSystemShare}
-                  className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
-                      <ShareIcon size={20} />
-                    </span>
-                    <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                      System share
-                    </span>
-                  </div>
-                  <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={handleCopySummary}
-                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-              >
-                <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
-                    <CopyIcon size={20} />
-                  </span>
-                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                    Copy summary
-                  </span>
-                </div>
-                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleWhatsAppShare}
-                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-              >
-                <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
-                    <WhatsAppIcon size={20} />
-                  </span>
-                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                    Share via WhatsApp
-                  </span>
-                </div>
-                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleEmailShare}
-                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-              >
-                <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
-                    <MailIcon size={20} />
-                  </span>
-                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                    Share via email
-                  </span>
-                </div>
-                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDownloadText}
-                className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 text-left transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-surface dark:hover:bg-white/5"
-              >
-                <div className="flex items-center gap-3.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center text-slate-600 transition-colors group-hover:text-navy-700 dark:text-slate-300 dark:group-hover:text-mist-100">
-                    <DownloadIcon size={20} />
-                  </span>
-                  <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                    Download text file
-                  </span>
-                </div>
-                <ChevronRightIcon size={18} className="shrink-0 text-slate-400" />
-              </button>
-            </div>
-          </div>
-        );
-
-        return isDesktop ? (
-          <Modal
-            open={shareModalOpen}
-            onClose={() => setShareModalOpen(false)}
-            title="Share Registration"
-          >
-            {shareContent}
-          </Modal>
-        ) : (
-          <BottomSheet
-            open={shareModalOpen}
-            onClose={() => setShareModalOpen(false)}
-            title="Share Registration"
-            subtitle={`A.Y. ${schoolYear} · ${semester}`}
-          >
-            <div className="pt-1 pb-6">
-              {shareContent}
-            </div>
-          </BottomSheet>
-        );
-      })()}
     </>
   );
 }

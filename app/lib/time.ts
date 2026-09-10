@@ -103,3 +103,103 @@ export function timeToMinutes(time: string): number {
   if (!Number.isFinite(hour)) return 0;
   return hour * 60 + (Number.isFinite(minute) ? minute : 0);
 }
+
+/**
+ * Parses time strings like "1:00 PM", "7:30 AM", "13:00", etc. into total minutes from midnight.
+ * Returns -1 if invalid or empty.
+ */
+export function parseTimeToMinutes(timeStr?: string | null): number {
+  if (!timeStr) return -1;
+  const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return -1;
+
+  let hours = Number.parseInt(match[1], 10);
+  const minutes = Number.parseInt(match[2], 10);
+  const period = match[3]?.toUpperCase();
+
+  if (period === "PM" && hours < 12) {
+    hours += 12;
+  } else if (period === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  return hours * 60 + minutes;
+}
+
+/**
+ * Sort comparator for objects with `start_time` string (e.g. StudentScheduleEntry).
+ * Ensures morning classes (e.g. 7:00 AM) are listed before afternoon classes (e.g. 1:00 PM).
+ */
+export function compareScheduleStartTime<T extends { start_time?: string }>(a: T, b: T): number {
+  const minA = parseTimeToMinutes(a.start_time);
+  const minB = parseTimeToMinutes(b.start_time);
+
+  if (minA === -1 && minB === -1) return 0;
+  if (minA === -1) return 1;
+  if (minB === -1) return -1;
+
+  return minA - minB;
+}
+
+export interface ClassStatusResult {
+  status: "upcoming" | "ongoing" | "completed" | "unknown";
+  minutesUntilStart: number;
+  minutesUntilEnd: number;
+  label: string;
+}
+
+/**
+ * Calculates whether a class meeting is currently ongoing, upcoming, or completed for today.
+ */
+export function getClassStatus(
+  startTime?: string | null,
+  endTime?: string | null,
+  referenceDate: Date = new Date()
+): ClassStatusResult {
+  const startMin = parseTimeToMinutes(startTime);
+  const endMin = parseTimeToMinutes(endTime);
+
+  if (startMin === -1 || endMin === -1) {
+    return {
+      status: "unknown",
+      minutesUntilStart: 0,
+      minutesUntilEnd: 0,
+      label: startTime && endTime ? `${startTime} – ${endTime}` : "Scheduled today",
+    };
+  }
+
+  const currentMin = referenceDate.getHours() * 60 + referenceDate.getMinutes();
+
+  if (currentMin < startMin) {
+    const diff = startMin - currentMin;
+    const timeLabel =
+      diff < 60
+        ? `Starts in ${diff}m`
+        : `Starts in ${Math.floor(diff / 60)}h ${diff % 60 > 0 ? `${diff % 60}m` : ""}`.trim();
+
+    return {
+      status: "upcoming",
+      minutesUntilStart: diff,
+      minutesUntilEnd: endMin - currentMin,
+      label: timeLabel,
+    };
+  }
+
+  if (currentMin >= startMin && currentMin <= endMin) {
+    const remaining = endMin - currentMin;
+    return {
+      status: "ongoing",
+      minutesUntilStart: 0,
+      minutesUntilEnd: remaining,
+      label: remaining > 0 ? `Ongoing · Ends in ${remaining}m` : "Ongoing · Ending now",
+    };
+  }
+
+  return {
+    status: "completed",
+    minutesUntilStart: 0,
+    minutesUntilEnd: 0,
+    label: "Class completed",
+  };
+}
+

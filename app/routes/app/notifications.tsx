@@ -180,7 +180,7 @@ function NotificationsPage() {
                         className={`flex size-8 items-center justify-center rounded-full ${
                           notification.isRead
                             ? "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"
-                            : "bg-blue-100 text-gwc-blue dark:bg-gwc-blue-deep dark:text-gwc-blue-soft"
+                            : "bg-slate-200 text-slate-700 dark:bg-white/15 dark:text-mist-100"
                         }`}
                       >
                         <BellIcon />
