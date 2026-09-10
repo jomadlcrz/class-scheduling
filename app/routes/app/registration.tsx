@@ -8,7 +8,6 @@ import { Modal } from "~/components/ui/modal";
 import { ScreenHeader } from "~/components/ui/screen-header";
 import { SectionHeader } from "~/components/ui/section-header";
 import { Skeleton } from "~/components/ui/skeleton";
-import { StatCard } from "~/components/ui/stat-card";
 import { TermSelector, type EnrolledTermItem } from "~/components/ui/term-selector";
 import { Tooltip } from "~/components/ui/tooltip";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
@@ -618,14 +617,8 @@ function RegistrationPage() {
         />
 
         {loading && !registration ? (
-          <div className="mt-6 space-y-6">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Skeleton className="h-24 rounded-xl" />
-              <Skeleton className="h-24 rounded-xl" />
-              <Skeleton className="h-24 rounded-xl" />
-              <Skeleton className="h-24 rounded-xl" />
-            </div>
-            <Skeleton className="h-96 rounded-2xl" />
+          <div className="mt-6">
+            <Skeleton className="h-130 w-full rounded-2xl" />
           </div>
         ) : error ? (
           <div className="mt-6">
@@ -638,15 +631,7 @@ function RegistrationPage() {
             </EmptyState>
           </div>
         ) : (
-          <div className="mt-6 space-y-6">
-            {/* Stat Cards Row */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label="Total units" value={totalUnits} />
-              <StatCard label="Enrolled subjects" value={subjects.length} />
-              <StatCard label="Status" value={enrolledStatus} />
-              <StatCard label="Year & section" value={yearAndSection} />
-            </div>
-
+          <div className="mt-6">
             {/* Main Institutional Document Card */}
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-surface-overlay dark:bg-surface">
               {/* Institutional Header Banner */}
