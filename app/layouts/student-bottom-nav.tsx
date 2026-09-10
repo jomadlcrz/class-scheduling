@@ -61,7 +61,7 @@ export function StudentBottomNav() {
   return (
     <nav
       aria-label="Student Portal Navigation"
-      className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-slate-200/90 bg-white/95 px-2 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md dark:border-white/10 dark:bg-surface/95 lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-slate-200/90 bg-white/95 px-2 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md dark:border-white/10 dark:bg-surface-raised/95 lg:hidden"
     >
       {TABS.map((tab) => {
         const IconComponent = tab.icon;
@@ -75,9 +75,9 @@ export function StudentBottomNav() {
           <NavLink
             key={tab.to}
             to={tab.to}
-            className={`relative flex flex-1 flex-col items-center justify-center py-1 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gwc-blue ${
+            className={`relative flex flex-1 flex-col items-center justify-center py-1 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gwc-blue dark:focus-visible:ring-gwc-blue-bright ${
               isActive
-                ? "font-bold text-gwc-blue"
+                ? "font-bold text-gwc-blue dark:text-gwc-blue-bright"
                 : "text-slate-500 hover:text-navy-700 dark:text-slate-400 dark:hover:text-mist-100"
             }`}
           >

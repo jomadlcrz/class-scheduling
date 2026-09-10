@@ -14,7 +14,7 @@ export function StudentMobileHeader() {
     : "Student Portal";
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 backdrop-blur-md dark:border-white/10 dark:bg-surface/95 lg:hidden">
+    <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 backdrop-blur-md dark:border-white/10 dark:bg-surface-raised/95 lg:hidden">
       {/* Left: Branding */}
       <Link to="/dashboard" className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 rounded-lg">
         <img

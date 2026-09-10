@@ -75,7 +75,7 @@ export function TableCell({
   return (
     <td
       colSpan={colSpan}
-      className={`${dense ? "px-3 py-1.5" : "px-4 py-2.5"} text-gray-700 dark:text-slate-300 ${className ?? ""}`}
+      className={`${dense ? "px-3 py-1.5" : "px-4 py-2.5"} text-slate-700 dark:text-slate-300 ${className ?? ""}`}
     >
       {children}
     </td>

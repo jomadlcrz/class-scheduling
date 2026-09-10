@@ -185,7 +185,6 @@ function ChangePasswordPage() {
         title="Change Password"
         showBack
         onBack={() => navigate(-1)}
-        className="border-b border-slate-200/90 bg-white dark:border-white/10 dark:bg-surface"
       />
 
       <div className="flex-1 px-4 py-6 sm:px-6">

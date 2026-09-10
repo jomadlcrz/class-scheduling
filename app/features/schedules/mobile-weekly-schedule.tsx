@@ -84,7 +84,7 @@ export function MobileWeeklySchedule({
                 onClick={() => setSelectedDay(day)}
                 className={`relative flex flex-1 min-w-13 cursor-pointer flex-col items-center justify-center rounded-xl py-2 px-1 text-center transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                   isSelected
-                    ? "bg-gwc-blue text-white shadow-xs dark:bg-gwc-blue dark:text-white"
+                    ? "bg-gwc-blue text-white shadow-xs dark:bg-gwc-blue-bright dark:text-white"
                     : "border border-slate-300 bg-white hover:border-slate-400 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                 }`}
               >
@@ -119,7 +119,7 @@ export function MobileWeeklySchedule({
             <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-surface-raised dark:text-slate-400">
               <CalendarIcon />
             </div>
-            <p className="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
+            <p className="mt-3 text-sm font-semibold text-slate-800 dark:text-mist-100">
               No classes scheduled
             </p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
