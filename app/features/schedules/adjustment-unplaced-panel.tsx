@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
+import { EmptyState } from "~/components/feedback/empty-state";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
-import { ChevronDownIcon, ChevronRightIcon, LockIcon, SearchIcon } from "~/components/ui/icons";
-import { inputClassName } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { ChevronDownIcon, ChevronRightIcon, LockIcon } from "~/components/ui/icons";
+import { SearchInput } from "~/components/ui/search-input";
 import type {
   AdjustmentSet,
   AdjustmentSetStatus,
@@ -24,14 +26,14 @@ const STATUS_STYLES: Record<
 > = {
   ready: {
     label: "Complete",
-    tone: "green",
+    tone: "emerald",
   },
   incomplete: {
     label: "Incomplete",
     tone: "gold",
   },
   unscheduled: {
-    label: "Not generated",
+    label: "Not scheduled",
     tone: "slate",
   },
 };
@@ -41,7 +43,7 @@ type QueueFilter = "all" | "incomplete" | "unscheduled" | "ready";
 const QUEUE_FILTERS: { value: QueueFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "incomplete", label: "Incomplete" },
-  { value: "unscheduled", label: "Not generated" },
+  { value: "unscheduled", label: "Unscheduled" },
   { value: "ready", label: "Ready to save" },
 ];
 
@@ -166,194 +168,260 @@ export function AdjustmentUnplacedPanel({
 
   if (needingWork.length === 0) {
     return (
-      <div className="p-6">
-        <h3 className="font-display text-lg font-semibold tracking-wide text-navy-800 dark:text-white">
-          Nothing unplaced
-        </h3>
-        <p className="mt-2 font-body text-sm text-slate-600 dark:text-slate-300">
-          Every section in view has its whole curriculum on the timetable. Moving a class
-          here still works — this list only fills up when generation comes back short.
-        </p>
-      </div>
+      <EmptyState title="All classes scheduled">
+        Every section currently in view has its full curriculum scheduled on the timetable.
+      </EmptyState>
     );
   }
 
   return (
-    <div className="min-h-full">
-      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-navy-950">
-        <label htmlFor={searchId} className="sr-only">
-          Search placement queue
-        </label>
-        <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
-            <SearchIcon />
-          </span>
-          <input
-            id={searchId}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search section or subject"
-            className={`${inputClassName} py-1.5 pl-9 text-xs`}
-          />
-        </div>
+    <div className="flex flex-col gap-4">
+      {/* Search and filter controls */}
+      <div className="flex flex-col gap-3">
+        <SearchInput
+          id={searchId}
+          value={query}
+          onChange={setQuery}
+          ariaLabel="Search placement queue"
+          placeholder="Search section, program, or subject..."
+        />
 
-        <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Filter placement queue">
+        <div
+          role="tablist"
+          aria-label="Filter placement queue"
+          className="flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50/80 p-1.5 dark:border-white/10 dark:bg-white/5"
+        >
           {QUEUE_FILTERS.map((option) => {
             const active = filter === option.value;
+            const count = counts[option.value];
             return (
               <button
                 key={option.value}
                 type="button"
-                aria-pressed={active}
-                disabled={counts[option.value] === 0}
+                role="tab"
+                aria-selected={active}
+                disabled={count === 0}
                 onClick={() => setFilter(option.value)}
-                className={[
-                  "cursor-pointer rounded-md border px-2 py-1 font-body text-[0.6875rem] font-semibold transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40",
+                className={`inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 font-body text-xs font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:cursor-not-allowed disabled:opacity-40 ${
                   active
-                    ? "border-navy-800 bg-navy-800 text-white dark:border-white dark:bg-white dark:text-navy-900"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10",
-                ].join(" ")}
+                    ? "bg-navy-800 text-mist-100 shadow-xs dark:bg-white/15 dark:text-mist-100"
+                    : "bg-white text-slate-600 hover:bg-slate-100 hover:text-navy-800 dark:bg-transparent dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200"
+                }`}
               >
-                {option.label} <span className="tabular-nums">{counts[option.value]}</span>
+                <span>{option.label}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] tabular-nums font-bold leading-none ${
+                    active
+                      ? "bg-white/20 text-white dark:bg-white/20 dark:text-mist-100"
+                      : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"
+                  }`}
+                >
+                  {count}
+                </span>
               </button>
             );
           })}
         </div>
       </div>
 
+      {/* Content list */}
       {groupedRows.length === 0 ? (
-        <div className="p-6 text-center">
-          <p className="font-body text-sm font-semibold text-navy-800 dark:text-white">No matching sections</p>
-          <p className="mt-1 font-body text-xs text-slate-500 dark:text-slate-400">
-            Try another search or queue filter.
-          </p>
-        </div>
+        <EmptyState title="No matching sections">
+          No sections match your search or filter criteria. Try adjusting your search.
+        </EmptyState>
       ) : (
-        <div>
+        <div className="flex flex-col gap-5">
           {groupedRows.map(([group, rows]) => (
-            <section key={group} aria-label={group}>
-              <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
-                <p className="font-body text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <section key={group} aria-label={group} className="flex flex-col gap-2.5">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 dark:border-white/10">
+                <h4 className="font-display text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {group}
-                </p>
-                <span className="font-body text-[0.6875rem] tabular-nums text-slate-500 dark:text-slate-400">
-                  {rows.length}
-                </span>
+                </h4>
+                <Badge tone="slate" compact>
+                  {rows.length} {rows.length === 1 ? "section" : "sections"}
+                </Badge>
               </div>
 
-              {rows.map(({ set, setDrafts, complete, remaining, placed }) => {
-                const expanded = expandedSetId === set.setId;
-                const status = complete
-                  ? { label: "Ready to save", tone: "green" as BadgeTone }
-                  : STATUS_STYLES[set.status];
-                const progress = set.sessionCount > 0 ? Math.round((placed / set.sessionCount) * 100) : 0;
-                return (
-                  <div key={set.setId} className="border-b border-slate-200 last:border-b-0 dark:border-white/10">
-                    <button
-                      type="button"
-                      aria-expanded={expanded}
-                      onClick={() => setExpandedSetId(expanded ? null : set.setId)}
-                      className="w-full cursor-pointer px-3 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 dark:hover:bg-white/5"
+              <div className="flex flex-col gap-2">
+                {rows.map(({ set, setDrafts, complete, remaining, placed }) => {
+                  const expanded = expandedSetId === set.setId;
+                  const status = complete
+                    ? { label: "Ready to save", tone: "emerald" as BadgeTone }
+                    : STATUS_STYLES[set.status];
+                  const progress = set.sessionCount > 0 ? Math.round((placed / set.sessionCount) * 100) : 0;
+
+                  return (
+                    <div
+                      key={set.setId}
+                      className={`overflow-hidden rounded-xl border transition-all duration-150 ${
+                        complete
+                          ? "border-emerald-300 bg-emerald-50/20 dark:border-emerald-400/20 dark:bg-emerald-400/5"
+                          : expanded
+                            ? "border-slate-300 bg-white shadow-xs dark:border-white/20 dark:bg-white/5"
+                            : "border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-white/2 dark:hover:border-white/20"
+                      }`}
                     >
-                      <span className="flex items-start gap-2">
-                        <span className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">
-                          {expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-start justify-between gap-2">
-                            <span className="truncate font-body text-xs font-semibold text-navy-800 dark:text-white">
-                              {set.setName ?? set.setCode}
-                            </span>
-                            <Badge tone={status.tone} compact>{status.label}</Badge>
-                          </span>
-                          <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-                            <span className="block h-full rounded-full bg-sky-500 transition-[width]" style={{ width: `${progress}%` }} />
-                          </span>
-                          <span className="mt-1 flex items-center justify-between font-body text-[0.6875rem] text-slate-500 dark:text-slate-400">
-                            <span>{placed} of {set.sessionCount} meetings placed</span>
-                            <span>{remaining} left</span>
-                          </span>
-                        </span>
-                      </span>
-                    </button>
-
-                    {expanded ? (
-                      <div className="border-t border-slate-100 bg-slate-50/60 px-3 pb-3 pt-2.5 dark:border-white/5 dark:bg-white/[0.025]">
-                        {!set.editable ? (
-                          <p className="mb-2 flex items-start gap-1.5 font-body text-xs leading-snug text-amber-800 dark:text-amber-100/90">
-                            <span className="mt-0.5 shrink-0" aria-hidden="true"><LockIcon size={12} /></span>
-                            <span>This section is at <span className="font-semibold">{set.releaseStatus}</span> and cannot be edited here.</span>
-                          </p>
-                        ) : null}
-
-                        <ul className="flex flex-col gap-1.5">
-                          {set.unplaced.map((subject) => {
-                            const subjectRemaining = remainingAfterDrafts(set, subject, setDrafts);
-                            const done = subjectRemaining === 0;
-                            return (
-                              <li key={subject.subjectId}>
-                                <div
-                                  className={[
-                                    "flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-left transition-colors",
-                                    done
-                                      ? "border-emerald-300 bg-emerald-50 dark:border-emerald-400/30 dark:bg-emerald-400/10"
-                                      : "border-slate-200 bg-white dark:border-white/10 dark:bg-transparent",
-                                  ].join(" ")}
-                                >
-                                  <span className="min-w-0">
-                                    <span className="block truncate font-body text-xs font-semibold text-navy-800 dark:text-white">{subject.subjectCode}</span>
-                                    <span className="block truncate font-body text-[0.6875rem] text-slate-500 dark:text-slate-400">{subject.subjectTitle}</span>
-                                  </span>
-                                  {done ? (
-                                    <Badge tone="green">Placed</Badge>
-                                  ) : (
-                                    <Badge tone="slate">
-                                      {subject.placed + (subject.remaining - subjectRemaining)} of {subject.needed}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </li>
-                            );
-                          })}
-                        </ul>
-
-                        {setDrafts.length > 0 ? (
-                          <div className="mt-2.5 rounded-lg border border-sky-200 bg-sky-50/70 p-2.5 dark:border-sky-400/25 dark:bg-sky-400/5">
-                            <p className="font-body text-xs font-semibold text-sky-800 dark:text-sky-300">
-                              {setDrafts.length} placement{setDrafts.length === 1 ? "" : "s"} staged
-                            </p>
-                            <p className="mt-1 font-body text-[0.6875rem] leading-snug text-sky-700 dark:text-sky-200/80">
-                              {complete
-                                ? "This section is complete and ready to save."
-                                : "Nothing is saved yet. Place every remaining meeting before saving."}
-                            </p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <button
-                                type="button"
-                                disabled={!complete || savingSetId != null}
-                                onClick={() => onSaveSet(set)}
-                                className="cursor-pointer rounded-md bg-navy-800 px-2.5 py-1 font-body text-xs font-semibold text-white transition-colors hover:bg-navy-700 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:bg-white dark:text-navy-900 dark:hover:bg-slate-200"
-                              >
-                                {savingSetId === set.setId ? "Saving…" : `Save ${set.setName ?? set.setCode}`}
-                              </button>
-                              <button
-                                type="button"
-                                disabled={savingSetId != null}
-                                onClick={() => onDiscardSetDrafts(set.setId)}
-                                className="cursor-pointer rounded-md border border-slate-300 px-2.5 py-1 font-body text-xs font-semibold text-navy-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10"
-                              >
-                                Discard
-                              </button>
+                      <button
+                        type="button"
+                        aria-expanded={expanded}
+                        onClick={() => setExpandedSetId(expanded ? null : set.setId)}
+                        className="w-full cursor-pointer p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-display text-sm tracking-wide text-navy-800 dark:text-mist-100">
+                                {set.setName ?? set.setCode}
+                              </h3>
+                              {set.setCode && set.setName && set.setCode !== set.setName ? (
+                                <span className="font-body text-xs text-slate-400 dark:text-slate-500">
+                                  ({set.setCode})
+                                </span>
+                              ) : null}
                             </div>
+
+                            <p className="mt-0.5 font-body text-xs text-slate-500 dark:text-slate-400">
+                              {placed} of {set.sessionCount} meetings placed ·{" "}
+                              <span className={remaining > 0 ? "font-medium text-amber-600 dark:text-gold-400" : "font-medium text-emerald-600 dark:text-emerald-400"}>
+                                {remaining} left
+                              </span>
+                            </p>
                           </div>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
+
+                          <div className="flex shrink-0 items-center gap-2">
+                            <Badge tone={status.tone} compact>{status.label}</Badge>
+                            <span className="text-slate-400" aria-hidden="true">
+                              {expanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress track */}
+                        <div className="mt-3">
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                complete
+                                  ? "bg-emerald-500 dark:bg-emerald-400"
+                                  : "bg-navy-700 dark:bg-gold-400"
+                              }`}
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </button>
+
+                      {expanded ? (
+                        <div className="border-t border-slate-100 bg-slate-50/50 px-3.5 pb-3.5 pt-3 dark:border-white/10 dark:bg-white/2">
+                          {!set.editable ? (
+                            <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200">
+                              <span className="mt-0.5 shrink-0" aria-hidden="true">
+                                <LockIcon size={14} />
+                              </span>
+                              <span>
+                                This section is at <strong className="font-semibold">{set.releaseStatus}</strong> and cannot be edited.
+                              </span>
+                            </div>
+                          ) : null}
+
+                          <h5 className="font-body text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            Required subjects ({set.unplaced.length})
+                          </h5>
+
+                          <ul className="mt-2 flex flex-col gap-2">
+                            {set.unplaced.map((subject) => {
+                              const subjectRemaining = remainingAfterDrafts(set, subject, setDrafts);
+                              const done = subjectRemaining === 0;
+                              const stagedCount = subject.remaining - subjectRemaining;
+
+                              return (
+                                <li
+                                  key={subject.subjectId}
+                                  className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs transition-colors ${
+                                    done
+                                      ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-400/20 dark:bg-emerald-400/10"
+                                      : "border-slate-200 bg-white dark:border-white/10 dark:bg-surface-raised"
+                                  }`}
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-body font-semibold text-navy-800 dark:text-mist-100">
+                                        {subject.subjectCode}
+                                      </span>
+                                      {stagedCount > 0 ? (
+                                        <span className="text-[11px] font-medium text-sky-600 dark:text-sky-400">
+                                          (+{stagedCount} staged)
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                    <p className="truncate font-body text-slate-500 dark:text-slate-400">
+                                      {subject.subjectTitle}
+                                    </p>
+                                  </div>
+
+                                  <div className="flex shrink-0 items-center gap-1.5">
+                                    {done ? (
+                                      <Badge tone="emerald" compact>Placed</Badge>
+                                    ) : (
+                                      <Badge tone="gold" compact>
+                                        {subjectRemaining} left
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </li>
+                              );
+                            })}
+                          </ul>
+
+                          {setDrafts.length > 0 ? (
+                            <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50/70 p-3 dark:border-sky-400/20 dark:bg-sky-400/10">
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="font-body text-xs font-semibold text-sky-900 dark:text-sky-200">
+                                  {setDrafts.length} placement{setDrafts.length === 1 ? "" : "s"} staged
+                                </p>
+                                {complete ? (
+                                  <Badge tone="emerald" compact>Ready to save</Badge>
+                                ) : (
+                                  <Badge tone="gold" compact>{remaining} left</Badge>
+                                )}
+                              </div>
+                              <p className="mt-1 font-body text-xs text-slate-600 dark:text-slate-300">
+                                {complete
+                                  ? "All meetings for this section have been drafted. You can now save these adjustments."
+                                  : "Nothing is saved yet. Place every remaining meeting on the timetable before saving."}
+                              </p>
+                              <div className="mt-3 flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="primary"
+                                  block={false}
+                                  disabled={!complete || savingSetId != null}
+                                  isLoading={savingSetId === set.setId}
+                                  loadingLabel="Saving..."
+                                  onClick={() => onSaveSet(set)}
+                                  className="text-xs"
+                                >
+                                  Save {set.setName ?? set.setCode}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  block={false}
+                                  disabled={savingSetId != null}
+                                  onClick={() => onDiscardSetDrafts(set.setId)}
+                                  className="text-xs"
+                                >
+                                  Discard drafts
+                                </Button>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
             </section>
           ))}
         </div>
