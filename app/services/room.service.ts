@@ -35,8 +35,9 @@ type RoomDetailResponse = {
   floor_level: number;
   room_name: string;
   room_type: string;
-  room_capacity: number;
+  room_capacity: number | null;
   room_status: string;
+  is_college_room?: boolean;
   program_ids: number[];
   programs: { program_id: number; program_abbrev: string; program_name: string }[];
 };
@@ -48,8 +49,9 @@ function mapRoomDetail(raw: RoomDetailResponse): RoomDetail {
     floor: raw.floor_level,
     name: raw.room_name,
     type: raw.room_type,
-    capacity: raw.room_capacity,
+    capacity: raw.room_capacity ?? 0,
     status: raw.room_status,
+    isCollegeRoom: raw.is_college_room ?? true,
     programIds: raw.program_ids,
     programs: mapPrograms(raw.programs),
   };
@@ -62,8 +64,9 @@ type RoomListResponse = {
   floor_level: number;
   room_name: string;
   room_type: string;
-  room_capacity: number;
+  room_capacity: number | null;
   room_status: string;
+  is_college_room?: boolean;
   time_remaining?: string;
   programs?: { program_id: number; program_abbrev: string; program_name: string }[];
 };
@@ -76,8 +79,9 @@ function mapRoomListItem(raw: RoomListResponse): Room {
     floor: raw.floor_level,
     name: raw.room_name,
     type: raw.room_type,
-    capacity: raw.room_capacity,
+    capacity: raw.room_capacity ?? 0,
     status: raw.room_status,
+    isCollegeRoom: raw.is_college_room ?? true,
     timeRemaining: raw.time_remaining ?? "",
     programs: mapPrograms(raw.programs ?? []),
   };
@@ -109,6 +113,7 @@ async function list(): Promise<Room[]> {
           name: r.room_name,
           type: r.room_type ?? "Lecture",
           capacity: r.room_capacity ?? 0,
+          isCollegeRoom: true,
           status: r.room_status ?? "Available",
           timeRemaining: "",
           programs: [],

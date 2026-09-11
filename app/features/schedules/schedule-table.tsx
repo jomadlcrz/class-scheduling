@@ -5,6 +5,7 @@ import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
 import { ModeBadge, ModeSessionBadges } from "~/features/schedules/mode-badge";
+import { RoomOccupancy } from "~/features/schedules/room-occupancy";
 
 type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
 
@@ -144,7 +145,14 @@ export function ScheduleTable({ schedules, onEdit, onDelete, onDuplicate, showSe
                     </td>
                   )}
                   <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
-                    {sched.roomName}
+                    <span className="inline-flex items-baseline gap-1.5">
+                      <span>{sched.roomName}</span>
+                      <RoomOccupancy
+                        studentCount={sched.studentCount}
+                        roomCapacity={sched.roomCapacity}
+                        compact
+                      />
+                    </span>
                   </td>
                   {showSet && (
                     <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-600 dark:text-slate-300">
@@ -306,7 +314,12 @@ function MobileDayCard({
               )}
               <span className="flex items-center gap-1.5">
                 <MapPinIcon />
-                {sched.roomName}
+                <span>{sched.roomName}</span>
+                <RoomOccupancy
+                  studentCount={sched.studentCount}
+                  roomCapacity={sched.roomCapacity}
+                  compact
+                />
               </span>
             </div>
           </li>

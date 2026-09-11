@@ -8,6 +8,7 @@ export type ClassSet = {
   yearLevel: YearLevel;
   /** Short identifier, e.g. "A", "B". Unique per program + year level. */
   setCode: string;
+  studentCount?: number;
 };
 
 export type CreateSetInput = Omit<ClassSet, "id">;

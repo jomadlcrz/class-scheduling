@@ -1,6 +1,7 @@
 import type { Semester, YearLevel } from "~/types/subject";
 
 export type InstructorLoadClassification = "underload" | "regular" | "overload";
+export type LoadClassification = InstructorLoadClassification;
 
 /** One subject to assign within a program (matched by id on the backend). */
 type SubjectLoadInput = {
@@ -107,8 +108,10 @@ export type TeachingTerm = {
   instructorName: string;
   employeeId: string | null;
   department?: string;
+  departmentAbbrev?: string | null;
   syId: number;
   semesterNumber: number;
+  normalLoadHours?: number;
   maxWeeklyHours: number;
   currentWeeklyHours: number;
   loadClassification: InstructorLoadClassification | null;

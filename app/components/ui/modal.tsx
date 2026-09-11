@@ -38,6 +38,12 @@ type ModalProps = {
   wide?: boolean;
   /** Full-width panel for data tables (e.g. audit logs). */
   xl?: boolean;
+  /** Widest panel — for a full weekly timetable or full spreadsheet view. */
+  full?: boolean;
+  /** Stack above other fixed overlays. */
+  elevated?: boolean;
+  /** Prevent scroll chaining. */
+  preventOverscroll?: boolean;
   /** Pinned action bar rendered in a distinct footer band below the body. */
   footer?: ReactNode;
   /** When true, omits the top-right X button. */
@@ -53,6 +59,9 @@ export function Modal({
   title,
   wide,
   xl,
+  full,
+  elevated,
+  preventOverscroll,
   footer,
   hideCloseButton,
   disableClose,
@@ -69,6 +78,9 @@ export function Modal({
           title={title}
           wide={wide}
           xl={xl}
+          full={full}
+          elevated={elevated}
+          preventOverscroll={preventOverscroll}
           footer={footer}
           hideCloseButton={hideCloseButton}
           disableClose={disableClose}
@@ -217,6 +229,9 @@ function ModalContent({
   title,
   wide,
   xl,
+  full,
+  elevated,
+  preventOverscroll,
   footer,
   hideCloseButton,
   disableClose,
@@ -226,6 +241,9 @@ function ModalContent({
   title: string;
   wide?: boolean;
   xl?: boolean;
+  full?: boolean;
+  elevated?: boolean;
+  preventOverscroll?: boolean;
   footer?: ReactNode;
   hideCloseButton?: boolean;
   disableClose?: boolean;
@@ -238,7 +256,8 @@ function ModalContent({
   // of every earlier dialog — otherwise a nested confirm's backdrop (z-50) would
   // hide under the opener's panel (z-60) and never dim/blur it.
   const depth = useOverlayDepth();
-  const backdropZ = 50 + Math.max(0, depth - 1) * 20;
+  const baseDepth = elevated ? 80 : 50;
+  const backdropZ = baseDepth + Math.max(0, depth - 1) * 20;
   const panelZ = backdropZ + 10;
 
   useEffect(() => {
@@ -266,7 +285,10 @@ function ModalContent({
 
       {/* Full-viewport scroll container — the overlay scrolls as one, so the
           scrollbar shows at the viewport's right edge like the page's own. */}
-      <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: panelZ }}>
+      <div
+        className={`fixed inset-0 overflow-y-auto ${preventOverscroll ? "overscroll-none" : ""}`}
+        style={{ zIndex: panelZ }}
+      >
         <div className="flex min-h-full items-center justify-center px-2 pb-6 pt-6 sm:px-4 sm:pb-4 sm:pt-4">
           <motion.div
             role="dialog"
@@ -277,7 +299,7 @@ function ModalContent({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className={`flex w-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl dark:border-white/10 dark:bg-surface-raised ${
-              xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
+              full ? "max-w-[92rem]" : xl ? "max-w-5xl" : wide ? "max-w-3xl" : "max-w-md"
             }`}
           >
             {/* Header band */}

@@ -30,6 +30,8 @@ export type Schedule = {
   facultyName: string;
   roomId: string;
   roomName: string;
+  studentCount?: number | null;
+  roomCapacity?: number | null;
   mode: ScheduleMode;
   /** Backend SessionMode value (for example, LEC or LAB). */
   sessionMode?: string;

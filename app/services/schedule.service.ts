@@ -37,6 +37,8 @@ type ViewScheduleResponse = {
   instructor_name: string;
   room_id: number | null;
   room_name: string | null;
+  room_capacity?: number | null;
+  student_count?: number | null;
   class_mode: string | null;
   mode?: string | null;
   session_mode?: "LEC" | "LAB";
@@ -90,6 +92,8 @@ async function view(): Promise<Schedule[]> {
       facultyName: r.instructor_name,
       roomId: r.room_id != null ? String(r.room_id) : "",
       roomName: r.room_name ?? "",
+      studentCount: r.student_count ?? null,
+      roomCapacity: r.room_capacity ?? null,
       // The scheduling API renamed this from `mode` to `class_mode`.  Reading
       // both keeps schedules visible during a staggered frontend/backend deploy.
       mode: normalizeMode(r.class_mode ?? r.mode ?? ""),
@@ -385,12 +389,49 @@ export type ScheduleSuggestion = {
   buttonLabel?: string;
 };
 
+/** One already-saved session a skipped plan would have taken the slot from. */
+export type DisplacedSession = {
+  scheduleId: number;
+  subjectCode: string | null;
+  setLabel: string | null;
+  day: string | null;
+  start: string | null;
+  end: string | null;
+};
+
+/**
+ * A placement the resolver found and deliberately did not take.
+ *
+ * Resolve applies only plans that give nothing up. When the only way to fit a
+ * subject costs an already-saved session its slot, the plan is skipped — that
+ * policy is the backend's and does not change here. These entries exist so the
+ * refusal is not silent: there IS a solution, this is what it would cost, and
+ * the Registrar is the one who may decide to take it.
+ *
+ * There is deliberately no endpoint that executes one, so this must never be
+ * rendered with an Apply button — see the Adjustment Board instead.
+ */
+export type ResolutionManualReview = {
+  type: string;
+  strategy: string | null;
+  subjectCode: string | null;
+  setName: string | null;
+  instructorName: string | null;
+  moves: unknown[];
+  displaces: DisplacedSession[];
+  reason: string | null;
+};
+
 export type AutoGenerateResolution = {
   passes: number;
   sessionsMoved: number;
   moves: unknown[];
   movesRefused: unknown[];
   unresolved: string[];
+  /** Populated only when `unresolved` is non-empty. */
+  manualReview: ResolutionManualReview[];
+  /** One sentence for the banner — backend copy, rendered verbatim. */
+  manualReviewHint: string | null;
 };
 
 type AutoGenerateResponse = {
@@ -430,9 +471,27 @@ type AutoGenerateResponse = {
   resolution?: {
     passes: number;
     sessions_moved: number;
-    moves: unknown[];
-    moves_refused: unknown[];
-    unresolved: string[];
+    moves?: unknown[];
+    moves_refused?: unknown[];
+    unresolved?: string[];
+    manual_review?: {
+      type: string;
+      strategy?: string | null;
+      subject_code?: string | null;
+      set_name?: string | null;
+      instructor_name?: string | null;
+      moves?: unknown[];
+      displaces?: {
+        schedule_id: number;
+        subject_code?: string | null;
+        set_label?: string | null;
+        day?: string | null;
+        start?: string | null;
+        end?: string | null;
+      }[];
+      reason?: string | null;
+    }[];
+    manual_review_hint?: string | null;
   };
 };
 
@@ -526,6 +585,24 @@ async function autoGenerate(input: {
           moves: data.resolution.moves ?? [],
           movesRefused: data.resolution.moves_refused ?? [],
           unresolved: data.resolution.unresolved ?? [],
+          manualReview: (data.resolution.manual_review ?? []).map((item) => ({
+            type: item.type,
+            strategy: item.strategy ?? null,
+            subjectCode: item.subject_code ?? null,
+            setName: item.set_name ?? null,
+            instructorName: item.instructor_name ?? null,
+            moves: item.moves ?? [],
+            displaces: (item.displaces ?? []).map((row) => ({
+              scheduleId: row.schedule_id,
+              subjectCode: row.subject_code ?? null,
+              setLabel: row.set_label ?? null,
+              day: row.day ?? null,
+              start: row.start ?? null,
+              end: row.end ?? null,
+            })),
+            reason: item.reason ?? null,
+          })),
+          manualReviewHint: data.resolution.manual_review_hint ?? null,
         }
       : null,
     suggestions: (data.suggestions ?? []).map((s) => {
@@ -710,96 +787,7 @@ async function getRegularSchedule(id: number): Promise<unknown> {
   return apiGet(`/regular-schedules/${id}`);
 }
 
-export type SubjectHourOverride = {
-  id: number;
-  subjectId: number;
-  subjectCode: string | null;
-  descriptiveTitle: string | null;
-  setId: number | null;
-  setName: string | null;
-  scope: "set" | "all_sets";
-  syId: number;
-  semesterNumber: number;
-  lectureHours: number;
-  labHours: number;
-  meetings: number;
-  totalWeeklyHours: number;
-  note: string | null;
-};
 
-type SubjectHourOverrideResponse = {
-  id: number;
-  subject_id: number;
-  subject_code: string | null;
-  descriptive_title: string | null;
-  set_id: number | null;
-  set_name: string | null;
-  scope: string;
-  sy_id: number;
-  semester_number: number;
-  lecture_hours: number;
-  lab_hours: number;
-  meetings: number;
-  total_weekly_hours: number;
-  note: string | null;
-};
-
-/** GET /schedule/subject-hour-overrides?sy_id=&semester_number=[&setId=] — per-subject hour overrides for a term. */
-async function listSubjectHourOverrides(params: {
-  syId: number;
-  semesterNumber: number;
-  setId?: number;
-}): Promise<SubjectHourOverride[]> {
-  const query = appendTermScopeParams(new URLSearchParams(), params.syId, params.semesterNumber);
-  if (params.setId != null) query.set("setId", String(params.setId));
-  const data = await apiGet<SubjectHourOverrideResponse[]>(`/scheduling/subject-hour-overrides?${query}`);
-  return data.map((r) => ({
-    id: r.id,
-    subjectId: r.subject_id,
-    subjectCode: r.subject_code,
-    descriptiveTitle: r.descriptive_title,
-    setId: r.set_id,
-    setName: r.set_name,
-    scope: r.scope as "set" | "all_sets",
-    syId: r.sy_id,
-    semesterNumber: r.semester_number,
-    lectureHours: Number(r.lecture_hours),
-    labHours: Number(r.lab_hours),
-    meetings: r.meetings,
-    totalWeeklyHours: Number(r.total_weekly_hours),
-    note: r.note,
-  }));
-}
-
-/** POST /scheduling/subject-hour-overrides — create or update a per-subject hour override. */
-async function upsertSubjectHourOverride(input: {
-  subjectId: number;
-  syId: number;
-  semesterNumber: number;
-  setId?: number | null;
-  lectureHours: number;
-  labHours: number;
-  meetings: number;
-  note?: string;
-}): Promise<{ id: number; created: boolean }> {
-  const data = await apiPost<{ id: number; created: boolean }>("/scheduling/subject-hour-overrides", {
-    subjectId: input.subjectId,
-    syId: input.syId,
-    semesterNumber: input.semesterNumber,
-    setId: input.setId,
-    lectureHours: input.lectureHours,
-    labHours: input.labHours,
-    meetings: input.meetings,
-    note: input.note,
-  });
-  return data;
-}
-
-/** DELETE /scheduling/subject-hour-overrides/<id> — remove an override (reverts to subject type default). */
-async function deleteSubjectHourOverride(id: number): Promise<string> {
-  const data = await apiDelete<{ message?: string }>(`/scheduling/subject-hour-overrides/${id}`);
-  return apiMessage(data);
-}
 
 export type UnseatedIrregularStudent = {
   studentProfileId: number;
@@ -1105,9 +1093,6 @@ export const scheduleService = {
   getRegularSchedule,
   updateRegular,
   updateRegularSlot,
-  listSubjectHourOverrides,
-  upsertSubjectHourOverride,
-  deleteSubjectHourOverride,
   removeSetSchedules,
   getSetWithSchedules,
   reconcileInstructorLedgers,

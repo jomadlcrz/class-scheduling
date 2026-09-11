@@ -17,8 +17,9 @@ type FacilitiesResponse = {
       floor_level: number;
       room_name: string;
       room_type: string;
-      room_capacity: number;
+      room_capacity: number | null;
       room_status: string;
+      is_college_room?: boolean;
       time_remaining: string;
       programs: { program_id: number; program_abbrev: string; program_name: string }[];
     }[];
@@ -43,6 +44,7 @@ function mapRoom(room: FacilitiesResponse["buildings"][number]["rooms"][number])
     type: room.room_type,
     capacity: room.room_capacity,
     status: room.room_status,
+    isCollegeRoom: room.is_college_room ?? true,
     timeRemaining: room.time_remaining,
     programIds: room.programs.map((p) => p.program_id),
     programs: mapPrograms(room.programs),

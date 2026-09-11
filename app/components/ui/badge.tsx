@@ -21,10 +21,20 @@ const tones = {
 
 export type BadgeTone = keyof typeof tones;
 
-export function Badge({ tone = "slate", children }: { tone?: BadgeTone; children: ReactNode }) {
+export function Badge({
+  tone = "slate",
+  compact = false,
+  children,
+}: {
+  tone?: BadgeTone;
+  compact?: boolean;
+  children: ReactNode;
+}) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-body text-xs font-medium ${tones[tone]}`}
+      className={`inline-flex items-center rounded-full border ${
+        compact ? "px-1.5 py-0.5 text-[0.6875rem]" : "px-2 py-0.5 text-xs"
+      } font-body font-medium ${tones[tone]}`}
     >
       {children}
     </span>

@@ -208,9 +208,9 @@ const PAGE_HELP: PageHelp[] = [
     description: "Review term offerings and instructor coverage, then manage teaching assignments and workload indicators in one place.",
   },
   {
-    matches: (pathname) => pathname.startsWith("/schedules/subject-hour-overrides"),
-    title: "Subject hour overrides",
-    description: "Use an override only when a subject must differ from its subject-type defaults. Scope it to one set when the exception is not institution-wide.",
+    matches: (pathname) => pathname.startsWith("/schedules/adjustment-board"),
+    title: "Adjustment board",
+    description: "Move, unplace, or place sessions across rooms and sections to resolve term-level schedule conflicts.",
   },
   {
     matches: (pathname) => pathname.startsWith("/schedules"),

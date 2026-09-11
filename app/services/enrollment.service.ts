@@ -441,11 +441,12 @@ async function getRegistration(enrollmentId: number): Promise<EnrollmentRegistra
 }
 
 export type AvailableSetPreview = {
-  setId: number;
+  setId: number | null;
   setCode: string;
   setName: string;
   studentCount: number;
   capacity: number;
+  willOpen: boolean;
 };
 
 /** GET /enrollments/available-set — current automatic-placement preview for a Regular student. */
@@ -465,11 +466,12 @@ async function getAvailableSet(params: {
   if (params.offset != null) query.set("offset", String(params.offset));
   const data = await apiGet<{
     set: {
-      set_id: number;
+      set_id: number | null;
       set_code: string;
       set_name: string;
       student_count: number;
       capacity: number;
+      will_open?: boolean;
     } | null;
   }>(`/enrollments/available-set?${query}`);
   if (!data?.set) return null;
@@ -479,7 +481,34 @@ async function getAvailableSet(params: {
     setName: data.set.set_name,
     studentCount: data.set.student_count,
     capacity: data.set.capacity,
+    willOpen: Boolean(data.set.will_open),
   };
+}
+
+/** GET /departments/{id}/set-names — the department's section-name roster. */
+async function getDepartmentSetNames(departmentId: number): Promise<string[]> {
+  const data = await apiGet<{ setNames: string[] }>(
+    `/departments/${departmentId}/set-names`,
+  );
+  return data.setNames ?? [];
+}
+
+/**
+ * PUT /departments/{id}/set-names — replace the whole roster.
+ *
+ * Wholesale, not a merge: the roster is edited as one list, and a merge
+ * would leave no way to remove a name. The backend refuses to drop a name a
+ * live section already carries.
+ */
+async function replaceDepartmentSetNames(
+  departmentId: number,
+  setCodes: string[],
+): Promise<{ message: string; setNames: string[] }> {
+  const data = await apiPut<{ message?: string; setNames: string[] }>(
+    `/departments/${departmentId}/set-names`,
+    { setCodes },
+  );
+  return { message: apiMessage(data), setNames: data.setNames ?? [] };
 }
 
 export const enrollmentService = {
@@ -488,6 +517,8 @@ export const enrollmentService = {
   getSetCapacity,
   updateSetCapacity,
   getAvailableSet,
+  getDepartmentSetNames,
+  replaceDepartmentSetNames,
   bulkCreate,
   getReenrollDirectory,
   getAlreadyEnrolledDirectory,

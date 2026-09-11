@@ -17,6 +17,8 @@ type DrawerProps = {
   full?: boolean;
   /** Override z-index (default 50). Use higher values when opening from inside a Modal. */
   zIndex?: number;
+  /** Stack above a Modal, for a drawer opened from inside one. */
+  elevated?: boolean;
   /** Pinned action bar rendered in a distinct footer band below the body. */
   footer?: ReactNode;
   /** Rendered inline with the title, to the left of the close button (e.g. icon buttons). */
@@ -34,6 +36,7 @@ export function Drawer({
   wide,
   full,
   zIndex,
+  elevated,
   footer,
   headerActions,
   children,
@@ -52,6 +55,7 @@ export function Drawer({
           wide={wide}
           full={full}
           zIndex={zIndex}
+          elevated={elevated}
           footer={footer}
           headerActions={headerActions}
         >
@@ -71,6 +75,7 @@ function DrawerPanel({
   wide,
   full,
   zIndex,
+  elevated,
   footer,
   headerActions,
   children,
@@ -82,6 +87,7 @@ function DrawerPanel({
   wide?: boolean;
   full?: boolean;
   zIndex?: number;
+  elevated?: boolean;
   footer?: ReactNode;
   headerActions?: ReactNode;
   children: ReactNode;
@@ -101,7 +107,7 @@ function DrawerPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, depth]);
 
-  const backdropZ = zIndex ?? 50;
+  const backdropZ = zIndex ?? (elevated ? 100 : 50);
   const panelZ = backdropZ;
 
   return (

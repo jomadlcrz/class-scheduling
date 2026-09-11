@@ -5,6 +5,7 @@ import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
 import { ModeBadge, ModeSessionBadges } from "~/features/schedules/mode-badge";
+import { RoomOccupancy } from "~/features/schedules/room-occupancy";
 
 type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };
 
@@ -179,7 +180,15 @@ function GridClassCard({
       )}
       <small className="flex items-center gap-1 font-body text-[0.68rem] text-slate-500 dark:text-slate-400">
         <MapPinIcon />
-        {entry.roomName}
+        <span className="truncate">{entry.roomName}</span>
+        {entry.studentCount != null ? (
+          <RoomOccupancy
+            studentCount={entry.studentCount}
+            roomCapacity={entry.roomCapacity}
+            compact
+            sizeClassName="text-[0.68rem]"
+          />
+        ) : null}
       </small>
       {showActions && !isMajor && (
         <div className="mt-0.5 flex items-center justify-end gap-0.5 border-t border-slate-200 pt-1 dark:border-white/8">

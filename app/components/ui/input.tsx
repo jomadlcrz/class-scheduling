@@ -40,7 +40,7 @@ export function FieldChrome({ id, label, labelEnd, hint, required, children }: F
   );
 }
 
-type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "className" | "placeholder"> & {
+type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "className"> & {
   id: string;
   label: string;
   labelEnd?: ReactNode;

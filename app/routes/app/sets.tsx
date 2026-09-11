@@ -45,7 +45,6 @@ function SetsPage() {
   const [program, setProgram] = useState("all");
   const [yearLevel, setYearLevel] = useState("all");
 
-  const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ClassSet | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<ClassSet | null>(null);
 
@@ -74,16 +73,13 @@ function SetsPage() {
   // Mutations return only a message, so the list is refetched afterwards.
   const refresh = reload;
 
-  async function handleCreate(inputs: CreateSetInput[]) {
-    const message = await setService.create(inputs);
-    if (message) toast.success(message);
-    await refresh();
-    setCreateOpen(false);
-  }
-
   async function handleEdit(inputs: CreateSetInput[]) {
     if (!editTarget || inputs.length === 0) return;
-    const message = await setService.update(editTarget.id, inputs[0]);
+    const message = await setService.update(
+      editTarget.id,
+      inputs[0].setCode,
+      inputs[0].yearLevel,
+    );
     if (message) toast.success(message);
     await refresh();
     setEditTarget(null);
@@ -99,13 +95,6 @@ function SetsPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
       <PageHeader
         title="Sets"
-
-        actions={
-          <Button type="button" block={false} onClick={() => setCreateOpen(true)}>
-            <PlusIcon />
-            New Set
-          </Button>
-        }
       />
 
       <AcademicStructureTabs className="mt-4" />
@@ -169,9 +158,6 @@ function SetsPage() {
         )}
       </div>
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New Set">
-        <SetForm programs={programs ?? []} onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
-      </Modal>
 
       <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit Set">
         {editTarget && (

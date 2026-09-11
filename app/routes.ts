@@ -47,7 +47,7 @@ export default [
     route("schedules", "routes/app/schedules/index.tsx"),
     route("schedules/term-calendar", "routes/app/schedules/term-calendar.tsx"),
     route("schedules/weekly-hour-allocations", "routes/app/schedules/weekly-hour-allocations.tsx"),
-    route("schedules/subject-hour-overrides", "routes/app/schedules/subject-hour-overrides.tsx"),
+    route("schedules/adjustment-board", "routes/app/schedules/adjustment-board.tsx"),
     route("schedules/class-mode-policies", "routes/app/schedules/class-mode-policies.tsx"),
     route("schedules/lab-analysis", "routes/app/schedules/lab-analysis.tsx"),
     route("schedules/regular-class", "routes/app/schedules/regular-class.tsx"),

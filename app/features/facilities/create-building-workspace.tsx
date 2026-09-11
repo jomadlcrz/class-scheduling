@@ -10,6 +10,7 @@ import {
   BuildingSummaryPanel,
   type BuildingSummaryData,
 } from "~/features/facilities/building-summary-panel";
+import { RoomProgramAccessField } from "~/features/facilities/room-program-access-field";
 import { CheckIcon, ChevronDownIcon, CopyIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -39,6 +40,7 @@ function newRoomDraft(): FacilityRoomDraft {
     roomType: "",
     roomCapacity: null,
     programIds: [],
+    isCollegeRoom: true,
   };
 }
 
@@ -73,7 +75,10 @@ function toPayload(
           roomName: room.roomName.trim(),
           roomType: room.roomType,
           roomCapacity: room.roomCapacity,
-          ...(room.roomType === "Laboratory" ? { programIds: [...room.programIds] } : {}),
+          isCollegeRoom: room.isCollegeRoom,
+          ...(room.roomType === "Laboratory" || (room.roomType === "Lecture Room" && room.programIds.length > 0)
+            ? { programIds: [...room.programIds] }
+            : {}),
         })),
       })),
   };
@@ -91,7 +96,7 @@ function computeSummary(
   for (const room of allRooms) {
     if (!room.roomType) continue;
     roomTypeCounts[room.roomType] = (roomTypeCounts[room.roomType] ?? 0) + 1;
-    if (room.roomType === "Laboratory") {
+    if (room.isCollegeRoom && room.roomType === "Laboratory") {
       room.programIds.forEach((id) => labProgramIds.add(id));
     }
   }
@@ -210,7 +215,7 @@ export function CreateBuildingWorkspace({
         setError("Enter a valid capacity for every academic room.");
         return;
       }
-      if (room.roomType === "Laboratory" && room.programIds.length === 0) {
+      if (room.isCollegeRoom && room.roomType === "Laboratory" && room.programIds.length === 0) {
         setError("Each laboratory must be assigned to at least one program.");
         return;
       }
@@ -419,69 +424,19 @@ export function CreateBuildingWorkspace({
                               />
                             </div>
 
-                            {room.roomType === "Laboratory" && (
-                              <div className="mt-3">
-                                <FieldChrome
-                                  id={`room-programs-${room.key}`}
-                                  label="Assigned programs"
-                                  hint="A laboratory must have at least one program."
-                                >
-                                  <Menu.Root modal={false}>
-                                    <Menu.Trigger
-                                      id={`room-programs-${room.key}`}
-                                      className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400"
-                                    >
-                                      <span className="min-w-0 truncate">
-                                        {room.programIds.length === 0
-                                          ? "Select programs"
-                                          : programs
-                                              .filter((p) => room.programIds.includes(p.id))
-                                              .map((p) => p.abbrev)
-                                              .join(", ")}
-                                      </span>
-                                      <span className="shrink-0 text-slate-400 dark:text-slate-500">
-                                        <ChevronDownIcon />
-                                      </span>
-                                    </Menu.Trigger>
-                                    <Menu.Portal>
-                                      <Menu.Positioner
-                                        sideOffset={6}
-                                        align="start"
-                                        collisionPadding={8}
-                                        className="z-50 outline-none"
-                                      >
-                                        <Menu.Popup className="max-h-64 min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised">
-                                          {programs.length === 0 ? (
-                                            <p className="px-3 py-2 font-body text-sm text-slate-400">
-                                              No programs available.
-                                            </p>
-                                          ) : (
-                                            programs.map((p) => (
-                                              <Menu.CheckboxItem
-                                                key={p.id}
-                                                checked={room.programIds.includes(p.id)}
-                                                onCheckedChange={() =>
-                                                  toggleProgram(floor.floorLevel, room.key, p.id)
-                                                }
-                                                closeOnClick={false}
-                                                className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-navy-800 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
-                                              >
-                                                <span className="min-w-0 truncate">
-                                                  {p.abbrev} — {p.name}
-                                                </span>
-                                                <Menu.CheckboxItemIndicator className="shrink-0 text-blue-700 dark:text-blue-400">
-                                                  <CheckIcon />
-                                                </Menu.CheckboxItemIndicator>
-                                              </Menu.CheckboxItem>
-                                            ))
-                                          )}
-                                        </Menu.Popup>
-                                      </Menu.Positioner>
-                                    </Menu.Portal>
-                                  </Menu.Root>
-                                </FieldChrome>
-                              </div>
-                            )}
+                            <RoomProgramAccessField
+                              id={`room-programs-${room.key}`}
+                              roomType={room.roomType}
+                              programIds={room.programIds}
+                              programs={programs}
+                              onChange={(programIds) =>
+                                updateRoom(floor.floorLevel, room.key, { programIds })
+                              }
+                              isCollegeRoom={room.isCollegeRoom}
+                              onCollegeRoomChange={(isCollegeRoom) =>
+                                updateRoom(floor.floorLevel, room.key, { isCollegeRoom })
+                              }
+                            />
                           </div>
                         ))}
                         <Button

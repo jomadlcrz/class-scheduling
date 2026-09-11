@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { usePagination } from "~/hooks/use-pagination";
+import { DepartmentSetNames } from "~/features/departments/department-set-names";
 import type { AcademicDepartmentDetail } from "~/types/department";
 
 const ENROLLED_STATUS_TONES: Record<string, BadgeTone> = {
@@ -124,6 +125,11 @@ export function AcademicDepartmentView({ detail }: { detail: AcademicDepartmentD
           </div>
         )}
       </section>
+
+      <DepartmentSetNames
+        departmentId={detail.departmentId}
+        departmentAbbrev={detail.departmentAbbrev}
+      />
 
       <section aria-labelledby="students-heading">
         <div className="flex items-baseline justify-between gap-3">

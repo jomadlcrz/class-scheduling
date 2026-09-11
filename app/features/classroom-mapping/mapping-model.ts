@@ -24,12 +24,23 @@ export interface ClassEntry {
   descriptiveTitle: string;
   instructor: string;
   section: string;
+  studentCount?: number | null;
+  roomCapacity?: number | null;
+  sessionMode?: "LEC" | "LAB";
+  classMode?: string;
   type: SubjectType;
+  scheduleId?: number;
+  isDraft?: boolean;
+  isEditable?: boolean;
+  isConflict?: boolean;
+  department?: string;
 }
 
 export interface Classroom {
   id: string;
   name: string;
+  roomType?: string;
+  note?: string;
   entries: ClassEntry[];
 }
 
@@ -105,6 +116,21 @@ export const TYPE_STYLES: Record<SubjectType, { card: string; border: string; co
   "National Service Training Program": { card: "bg-red-100 dark:bg-red-950/60",    border: "border-l-red-500",      code: "text-red-800 dark:text-red-300",          tableCode: "text-red-600 dark:text-red-400",          dot: "bg-red-500"       },
   "Research/Thesis":              { card: "bg-blue-100 dark:bg-navy-300/10",       border: "border-l-blue-800 dark:border-l-navy-300", code: "text-blue-800 dark:text-navy-300",        tableCode: "text-blue-700 dark:text-navy-300",        dot: "bg-blue-800 dark:bg-navy-400" },
 };
+
+export const MAJOR_WITH_LAB_LECTURE_STYLE = {
+  card: "bg-fuchsia-100 dark:bg-fuchsia-950/60",
+  border: "border-l-fuchsia-500",
+  code: "text-fuchsia-800 dark:text-fuchsia-300",
+  tableCode: "text-fuchsia-600 dark:text-fuchsia-400",
+  dot: "bg-fuchsia-500",
+};
+
+export function entryTypeStyle(entry: Pick<ClassEntry, "type" | "sessionMode">) {
+  if (entry.type === "Major with Lab" && entry.sessionMode === "LEC") {
+    return MAJOR_WITH_LAB_LECTURE_STYLE;
+  }
+  return TYPE_STYLES[entry.type];
+}
 
 export const TYPE_LABELS: Record<SubjectType, string> = {
   "GenEd Core": "GenEd Core",

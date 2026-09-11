@@ -6,6 +6,7 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { RoomProgramAccessField } from "~/features/facilities/room-program-access-field";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -48,11 +49,13 @@ type ExistingRoomDraft = {
     floorLevel: number;
     programIds: number[];
     roomStatus: string;
+    isCollegeRoom: boolean;
   };
   roomName: string;
   roomType: string;
   roomCapacity: number | null;
   programIds: number[];
+  isCollegeRoom: boolean;
   roomStatusOverride: string | null;
 };
 
@@ -62,6 +65,7 @@ type NewRoomDraft = {
   roomType: string;
   roomCapacity: number | null;
   programIds: number[];
+  isCollegeRoom: boolean;
 };
 
 let draftKeyCounter = 0;
@@ -78,6 +82,7 @@ function newRoomDraft(): NewRoomDraft {
     roomType: "",
     roomCapacity: null,
     programIds: [],
+    isCollegeRoom: true,
   };
 }
 
@@ -90,8 +95,18 @@ function roomToExistingDraft(room: FacilityRoomDetail): ExistingRoomDraft {
     floorLevel: room.floor,
     programIds,
     roomStatus: room.status,
+    isCollegeRoom: room.isCollegeRoom,
   };
-  return { id: room.id, snapshot, roomName: room.name, roomType: room.type, roomCapacity: room.capacity, programIds, roomStatusOverride: null };
+  return {
+    id: room.id,
+    snapshot,
+    roomName: room.name,
+    roomType: room.type,
+    roomCapacity: room.capacity,
+    programIds,
+    isCollegeRoom: room.isCollegeRoom,
+    roomStatusOverride: null,
+  };
 }
 
 function sortedProgramKey(ids: number[]): string {
@@ -107,6 +122,9 @@ function buildRoomUpdatePayload(draft: ExistingRoomDraft): UpdateRoomInput | nul
   if (draft.roomCapacity !== snapshot.roomCapacity) payload.roomCapacity = draft.roomCapacity;
   if (sortedProgramKey(draft.programIds) !== sortedProgramKey(snapshot.programIds)) {
     payload.programIds = [...draft.programIds];
+  }
+  if (draft.isCollegeRoom !== snapshot.isCollegeRoom) {
+    payload.isCollegeRoom = draft.isCollegeRoom;
   }
   if (
     draft.roomStatusOverride !== null &&
@@ -162,7 +180,10 @@ function toAddRoomsPayload(floors: ReturnType<typeof buildFloors>): AddBuildingR
           roomName: room.roomName.trim(),
           roomType: room.roomType,
           roomCapacity: room.roomCapacity,
-          ...(room.roomType === "Laboratory" ? { programIds: [...room.programIds] } : {}),
+          isCollegeRoom: room.isCollegeRoom,
+          ...(room.roomType === "Laboratory" || (room.roomType === "Lecture Room" && room.programIds.length > 0)
+            ? { programIds: [...room.programIds] }
+            : {}),
         })),
       })),
   };
@@ -181,7 +202,7 @@ function computeSummary(
 
   for (const room of existingRooms) {
     roomTypeCounts[room.roomType] = (roomTypeCounts[room.roomType] ?? 0) + 1;
-    if (room.roomType === "Laboratory") {
+    if (room.isCollegeRoom && room.roomType === "Laboratory") {
       room.programIds.forEach((id) => labProgramIds.add(id));
     }
     if (buildRoomUpdatePayload(room) !== null) modified += 1;
@@ -190,7 +211,7 @@ function computeSummary(
   for (const room of newRooms) {
     if (!room.roomType) continue;
     roomTypeCounts[room.roomType] = (roomTypeCounts[room.roomType] ?? 0) + 1;
-    if (room.roomType === "Laboratory") {
+    if (room.isCollegeRoom && room.roomType === "Laboratory") {
       room.programIds.forEach((id) => labProgramIds.add(id));
     }
   }
@@ -225,6 +246,7 @@ function roomToArchiveTarget(draft: ExistingRoomDraft, building: FacilityBuildin
     floor: draft.snapshot.floorLevel,
     name: draft.roomName.trim() || draft.snapshot.roomName,
     capacity: draft.roomCapacity,
+    isCollegeRoom: source?.isCollegeRoom ?? true,
     type: draft.roomType,
     status: draft.snapshot.roomStatus,
     timeRemaining: source?.timeRemaining ?? "",
@@ -394,7 +416,7 @@ export function EditBuildingWorkspace({
         setError("Enter a valid capacity for every academic room.");
         return;
       }
-      if (room.roomType === "Laboratory" && room.programIds.length === 0) {
+      if (room.isCollegeRoom && room.roomType === "Laboratory" && room.programIds.length === 0) {
         setError("Each laboratory must be assigned to at least one program.");
         return;
       }
@@ -413,7 +435,7 @@ export function EditBuildingWorkspace({
         setError("Enter a valid capacity for every new academic room.");
         return;
       }
-      if (room.roomType === "Laboratory" && room.programIds.length === 0) {
+      if (room.isCollegeRoom && room.roomType === "Laboratory" && room.programIds.length === 0) {
         setError("Each laboratory must be assigned to at least one program.");
         return;
       }
@@ -670,61 +692,19 @@ export function EditBuildingWorkspace({
                     </div>
                   ) : null}
 
-                  {room.roomType === "Laboratory" && (
-                    <div className="mt-3">
-                      <FieldChrome
-                        id={`existing-room-programs-${room.id}`}
-                        label="Assigned programs"
-                        hint="A laboratory must have at least one program."
-                      >
-                        <Menu.Root modal={false}>
-                          <Menu.Trigger
-                            id={`existing-room-programs-${room.id}`}
-                            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400"
-                          >
-                            <span className="min-w-0 truncate">
-                              {room.programIds.length === 0
-                                ? "Select programs"
-                                : programs
-                                    .filter((p) => room.programIds.includes(p.id))
-                                    .map((p) => p.abbrev)
-                                    .join(", ")}
-                            </span>
-                            <span className="shrink-0 text-slate-400 dark:text-slate-500">
-                              <ChevronDownIcon />
-                            </span>
-                          </Menu.Trigger>
-                          <Menu.Portal>
-                            <Menu.Positioner
-                              sideOffset={6}
-                              align="start"
-                              collisionPadding={8}
-                              className="z-50 outline-none"
-                            >
-                              <Menu.Popup className="max-h-64 min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised">
-                                {programs.map((p) => (
-                                  <Menu.CheckboxItem
-                                    key={p.id}
-                                    checked={room.programIds.includes(p.id)}
-                                    onCheckedChange={() => toggleExistingProgram(room.id, p.id)}
-                                    closeOnClick={false}
-                                    className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-navy-800 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
-                                  >
-                                    <span className="min-w-0 truncate">
-                                      {p.abbrev} — {p.name}
-                                    </span>
-                                    <Menu.CheckboxItemIndicator className="shrink-0 text-blue-700 dark:text-blue-400">
-                                      <CheckIcon />
-                                    </Menu.CheckboxItemIndicator>
-                                  </Menu.CheckboxItem>
-                                ))}
-                              </Menu.Popup>
-                            </Menu.Positioner>
-                          </Menu.Portal>
-                        </Menu.Root>
-                      </FieldChrome>
-                    </div>
-                  )}
+                  <RoomProgramAccessField
+                    id={`existing-room-programs-${room.id}`}
+                    roomType={room.roomType}
+                    programIds={room.programIds}
+                    programs={programs}
+                    onChange={(programIds) =>
+                      updateExistingRoom(room.id, { programIds })
+                    }
+                    isCollegeRoom={room.isCollegeRoom}
+                    onCollegeRoomChange={(isCollegeRoom) =>
+                      updateExistingRoom(room.id, { isCollegeRoom })
+                    }
+                  />
                 </Card>
               );
               })}
@@ -810,61 +790,19 @@ export function EditBuildingWorkspace({
                     />
                   </div>
 
-                  {room.roomType === "Laboratory" && (
-                    <div className="mt-3">
-                      <FieldChrome
-                        id={`new-room-programs-${room.key}`}
-                        label="Assigned programs"
-                        hint="A laboratory must have at least one program."
-                      >
-                        <Menu.Root modal={false}>
-                          <Menu.Trigger
-                            id={`new-room-programs-${room.key}`}
-                            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left font-body text-sm text-navy-800 outline-none transition-colors duration-150 focus-visible:border-gold-400 focus-visible:ring-2 focus-visible:ring-gold-400 data-popup-open:border-gold-400 data-popup-open:ring-2 data-popup-open:ring-gold-400 dark:border-white/15 dark:bg-white/5 dark:text-mist-100 dark:focus-visible:border-gold-400 dark:data-popup-open:border-gold-400"
-                          >
-                            <span className="min-w-0 truncate">
-                              {room.programIds.length === 0
-                                ? "Select programs"
-                                : programs
-                                    .filter((p) => room.programIds.includes(p.id))
-                                    .map((p) => p.abbrev)
-                                    .join(", ")}
-                            </span>
-                            <span className="shrink-0 text-slate-400 dark:text-slate-500">
-                              <ChevronDownIcon />
-                            </span>
-                          </Menu.Trigger>
-                          <Menu.Portal>
-                            <Menu.Positioner
-                              sideOffset={6}
-                              align="start"
-                              collisionPadding={8}
-                              className="z-50 outline-none"
-                            >
-                              <Menu.Popup className="max-h-64 min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg outline-none dark:border-white/10 dark:bg-surface-raised">
-                                {programs.map((p) => (
-                                  <Menu.CheckboxItem
-                                    key={p.id}
-                                    checked={room.programIds.includes(p.id)}
-                                    onCheckedChange={() => toggleProgram(selectedFloor, room.key, p.id)}
-                                    closeOnClick={false}
-                                    className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 font-body text-sm text-navy-800 outline-none data-highlighted:bg-slate-100 dark:text-mist-100 dark:data-highlighted:bg-white/10"
-                                  >
-                                    <span className="min-w-0 truncate">
-                                      {p.abbrev} — {p.name}
-                                    </span>
-                                    <Menu.CheckboxItemIndicator className="shrink-0 text-blue-700 dark:text-blue-400">
-                                      <CheckIcon />
-                                    </Menu.CheckboxItemIndicator>
-                                  </Menu.CheckboxItem>
-                                ))}
-                              </Menu.Popup>
-                            </Menu.Positioner>
-                          </Menu.Portal>
-                        </Menu.Root>
-                      </FieldChrome>
-                    </div>
-                  )}
+                  <RoomProgramAccessField
+                    id={`new-room-programs-${room.key}`}
+                    roomType={room.roomType}
+                    programIds={room.programIds}
+                    programs={programs}
+                    onChange={(programIds) =>
+                      updateNewRoom(selectedFloor, room.key, { programIds })
+                    }
+                    isCollegeRoom={room.isCollegeRoom}
+                    onCollegeRoomChange={(isCollegeRoom) =>
+                      updateNewRoom(selectedFloor, room.key, { isCollegeRoom })
+                    }
+                  />
                 </div>
               ))}
             </div>

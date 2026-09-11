@@ -34,6 +34,8 @@ export type Room = {
   /** Backend-composed countdown string, e.g. "Time Remaining Before: Occupied is 2:30:00". */
   timeRemaining: string;
   programs: RoomProgram[];
+  /** False when marked "None — not a college room". Schedulers exclude these spaces. */
+  isCollegeRoom: boolean;
 };
 
 /** Full room row from GET /rooms/:id — used to populate edit forms. */
@@ -45,6 +47,7 @@ export type RoomDetail = {
   type: string;
   capacity: number | null;
   status: string;
+  isCollegeRoom: boolean;
   programIds: number[];
   programs: RoomProgram[];
 };
@@ -57,6 +60,7 @@ export type UpdateRoomInput = {
   floorLevel?: number;
   programIds?: number[];
   roomStatus?: "Vacant" | "Maintenance";
+  isCollegeRoom?: boolean;
 };
 
 export const MANUAL_ROOM_STATUSES = ["Vacant", "Maintenance"] as const;

@@ -1,5 +1,11 @@
 import { apiDelete, apiGet, apiGetFresh, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { appendTermScopeParams } from "~/lib/term-scope";
 import { normalizeTime } from "~/lib/time";
+import type {
+  DeanDraftResetOptions,
+  DeanDraftResetResult,
+  FloatingInstructorAssignment,
+} from "~/types/schedule-authority";
 import type {
   AssignmentAuditLog,
   HoursAdjustmentRequest,
@@ -227,9 +233,44 @@ async function decideInstructorScheduleResponse(responseId: number, audience: "d
   return { message: apiMessage(data), response: data.response, applied: data.applied, conflicts: data.conflicts };
 }
 
-async function assignFloatingInstructor(scheduleId: number, instructorId: number) {
-  const data = await apiPatch<MessageResponse & { schedule: MajorSchedule }>(`/registrar/floating-schedules/${scheduleId}/instructor-assignment`, { instructorId });
-  return { message: apiMessage(data), schedule: data.schedule };
+async function assignFloatingInstructor(
+  scheduleId: number,
+  instructorId: number,
+): Promise<FloatingInstructorAssignment> {
+  return apiPatch<FloatingInstructorAssignment>(
+    `/registrar/floating-schedules/${scheduleId}/instructor-assignment`,
+    { instructorId },
+  );
+}
+
+async function getDraftResetOptions(
+  syId: number,
+  semesterNumber: number,
+): Promise<DeanDraftResetOptions> {
+  const query = appendTermScopeParams(new URLSearchParams(), syId, semesterNumber);
+  return apiGet<DeanDraftResetOptions>(`/deans/major-schedules/draft-reset?${query}`);
+}
+
+async function resetDraftMajors(
+  programIds: number[],
+  syId: number,
+  semesterNumber: number,
+): Promise<DeanDraftResetResult> {
+  const query = appendTermScopeParams(new URLSearchParams(), syId, semesterNumber);
+  const data = await apiPost<{ message?: string; deleted: number }>(
+    `/deans/major-schedules/draft-reset?${query}`,
+    { programIds },
+  );
+  return { message: apiMessage(data), deleted: data.deleted ?? 0 };
+}
+
+async function openMajorSubmission(
+  syId: number,
+  semesterNumber: number,
+): Promise<MajorScheduleSubmission> {
+  return apiPost<MajorScheduleSubmission>(
+    `/deans/major-schedule-submissions/${syId}/${semesterNumber}`,
+  );
 }
 
 /** GET /instructors/schedule-reviews — list schedule releases open for instructor review. */
@@ -456,6 +497,9 @@ export const authorityWorkflowService = {
   listInstructorScheduleResponses,
   decideInstructorScheduleResponse,
   assignFloatingInstructor,
+  getDraftResetOptions,
+  resetDraftMajors,
+  openMajorSubmission,
   listInstructorScheduleReviews,
   getInstructorScheduleReview,
   listInstructorScheduleReviewHistory,
@@ -475,4 +519,6 @@ export const authorityWorkflowService = {
   previewRetention,
   analyzeAdvancedAdjustment,
 };
+
+export const scheduleAuthorityService = authorityWorkflowService;
 

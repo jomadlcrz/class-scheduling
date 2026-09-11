@@ -6,6 +6,7 @@ type CreateFacilityRoomInput = {
   roomType: string;
   roomCapacity: number | null;
   programIds?: number[];
+  isCollegeRoom?: boolean;
 };
 
 type CreateFacilityFloorInput = {
@@ -31,6 +32,7 @@ export type FacilityRoomDraft = {
   roomType: string;
   roomCapacity: number | null;
   programIds: number[];
+  isCollegeRoom?: boolean;
 };
 
 /** Floor bucket used by the create-building workspace. */
@@ -54,6 +56,7 @@ export type FacilityRoomDetail = {
   type: string;
   capacity: number | null;
   status: string;
+  isCollegeRoom: boolean;
   timeRemaining: string;
   programIds: number[];
   programs: RoomProgram[];

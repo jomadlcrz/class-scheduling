@@ -489,43 +489,8 @@ function SchedulesNewPage() {
     );
   }
 
-  async function handleApplySuggestion(suggestion: ScheduleSuggestion) {
-    if (!suggestion.apply || !selectedSet || !selectedProgram || !selectedYearLevel) return;
-    const body = suggestion.apply.body as Record<string, unknown>;
-    setSaveError(null);
-    try {
-      const result = await scheduleService.upsertSubjectHourOverride({
-        subjectId: body.subjectId as number,
-        syId: body.syId as number,
-        semesterNumber: body.semesterNumber as number,
-        setId: body.setId != null ? (body.setId as number) : null,
-        lectureHours: body.lectureHours as number,
-        labHours: body.labHours as number,
-        meetings: body.meetings as number,
-        note: typeof body.note === "string" ? body.note : undefined,
-      });
-      toast.success(result.created ? "Override created." : "Override updated.");
-      // Re-generate after applying the suggestion so the schedule reflects the change.
-      const generated = await generate({
-        schoolYear,
-        semester,
-        semesterLabel: semesterLabel(semester),
-        yearLevel: selectedYearLevel,
-        yearLevelLabel: yearLevelLabel(selectedYearLevel),
-        programId: selectedProgram.id,
-        setId: selectedSet.id,
-        confirmedDailyHourIncreases,
-      });
-      tempIdCounter.current = 0;
-      setSlots(
-        generated.map((slot) => {
-          tempIdCounter.current += 1;
-          return { ...slot, tempId: `tmp-${tempIdCounter.current}` };
-        }),
-      );
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Unable to apply suggestion.");
-    }
+  async function handleApplySuggestion(_suggestion: ScheduleSuggestion) {
+    toast.error("Subject hour overrides have been retired. Contact hours are strictly derived from lecture/lab units.");
   }
 
   /**

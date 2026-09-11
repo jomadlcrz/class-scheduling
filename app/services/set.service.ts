@@ -85,33 +85,15 @@ async function listUnscheduled(filters: {
 }
 
 /**
- * POST /sets — bulk per program + year level. The form guarantees all inputs
- * share one program and year, so they collapse into a single request.
- * Returns the backend message.
+ * PUT /sets/:id — the code and the year level it sits in. The program is not
+ * changeable: the backend takes neither, and a set's schedules, enrolments and
+ * student records all point at that program.
+ *
+ * A move to another year level is refused while the set still holds schedules
+ * or enrolled students, since both were built from the year it is in.
  */
-async function create(inputs: CreateSetInput[]): Promise<string> {
-  if (inputs.length === 0) return "";
-  const grouped = new Map<number, CreateSetInput[]>();
-  for (const input of inputs) {
-    const yearInputs = grouped.get(input.yearLevel) ?? [];
-    yearInputs.push(input);
-    grouped.set(input.yearLevel, yearInputs);
-  }
-  const messages: string[] = [];
-  for (const [yearLevel, yearInputs] of grouped) {
-    const data = await apiPost<{ message?: string }>("/sets", {
-      programAbbrev: inputs[0].program,
-      yearLevel,
-      sets: yearInputs.map((input) => ({ setCode: input.setCode })),
-    });
-    messages.push(apiMessage(data));
-  }
-  return messages.find(Boolean) ?? "";
-}
-
-/** PUT /sets/:id — only the set code is updatable. Returns the backend message. */
-async function update(id: number, input: Pick<CreateSetInput, "setCode" | "yearLevel">): Promise<string> {
-  const data = await apiPut<{ message?: string }>(`/sets/${id}`, { setCode: input.setCode, yearLevel: input.yearLevel });
+async function update(id: number, setCode: string, yearLevel: YearLevel): Promise<string> {
+  const data = await apiPut<{ message?: string }>(`/sets/${id}`, { setCode, yearLevel });
   return apiMessage(data);
 }
 
@@ -144,7 +126,6 @@ async function getStudents(setId: number, syId: number, semesterNumber: number):
 export const setService = {
   list,
   listUnscheduled,
-  create,
   update,
   remove,
   getDeletePreview,

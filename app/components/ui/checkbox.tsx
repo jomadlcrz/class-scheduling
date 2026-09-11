@@ -13,11 +13,12 @@ type CheckboxProps = {
   defaultChecked?: boolean;
   /** Controlled checked state; pairs with onChange. Omit for uncontrolled (defaultChecked) usage. */
   checked?: boolean;
+  disabled?: boolean;
   onChange?: (checked: boolean) => void;
 };
 
 const inputClassName =
-  "size-4 cursor-pointer accent-navy-800 dark:accent-gold-400";
+  "size-4 cursor-pointer accent-navy-800 dark:accent-gold-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Gold focus ring for the standalone checkbox; the inset variant rings via its wrapper instead. */
 const focusRingClassName =
@@ -34,6 +35,7 @@ export function Checkbox({
   value,
   defaultChecked,
   checked,
+  disabled,
   onChange,
 }: CheckboxProps) {
   const isControlled = checked !== undefined;
@@ -42,6 +44,7 @@ export function Checkbox({
     name: name ?? id,
     type: "checkbox" as const,
     value,
+    disabled,
     "aria-label": ariaLabel ?? (typeof label === "string" ? label : undefined),
     className: inset ? inputClassName : `${inputClassName} ${focusRingClassName}`,
     ...(isControlled

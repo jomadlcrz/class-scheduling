@@ -15,6 +15,7 @@ import {
   type SidebarMode,
 } from "~/layouts/sidebar";
 import { StudentBottomNav } from "~/layouts/student-bottom-nav";
+import { NotificationToaster } from "~/features/notifications/notification-toaster";
 import { Topbar } from "~/layouts/topbar";
 
 const MOBILE_QUERY = "(max-width: 1023px)";
@@ -25,6 +26,7 @@ export default function AppShell() {
     <ThemeProvider>
       <AuthGuard>
         <TermContextProvider>
+          <NotificationToaster />
           <Shell />
         </TermContextProvider>
       </AuthGuard>
