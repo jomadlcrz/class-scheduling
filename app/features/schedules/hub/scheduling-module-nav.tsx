@@ -7,6 +7,7 @@ import {
   CalendarShuffleIcon,
   ChevronRightIcon,
   SendIcon,
+  UsersIcon,
 } from "~/components/ui/icons";
 import type { StatusCounts } from "~/features/schedules/hub/scheduling-stages";
 
@@ -58,6 +59,20 @@ export function SchedulingModuleNav({
       badgeTone: unscheduled > 0 ? ("gold" as const) : ("emerald" as const),
     },
     {
+      key: "adjust",
+      title: "Adjustment Board",
+      subtitle: "Module A2 · Registrar",
+      to: "/schedules/adjustment-board",
+      icon: <CalendarShuffleIcon />,
+      line:
+        built === 0
+          ? "Generate a timetable before adjusting it."
+          : "Move any generated class by hand, and place the subjects generation could not fit.",
+      actionLabel: "Open board",
+      badge: !hasTerm ? undefined : built === 0 ? "Locked" : undefined,
+      badgeTone: "slate" as const,
+    },
+    {
       key: "regular-class",
       title: "Master Schedules",
       subtitle: "Module B · Registrar → Dean",
@@ -94,7 +109,7 @@ export function SchedulingModuleNav({
       title: "Irregular Schedules",
       subtitle: "Module C · Registrar",
       to: "/schedules/irregular-class",
-      icon: <CalendarShuffleIcon />,
+      icon: <UsersIcon />,
       line: "Seat irregular students into published regular class schedules.",
       actionLabel: "Open builder",
       badge: undefined,
@@ -103,7 +118,7 @@ export function SchedulingModuleNav({
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {modules.map((module) => (
         <Card
           key={module.key}

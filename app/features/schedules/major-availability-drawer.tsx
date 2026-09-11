@@ -1,4 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { EmptyState } from "~/components/feedback/empty-state";
+import { FormError } from "~/components/forms/form-error";
+import { Badge } from "~/components/ui/badge";
+import { Drawer } from "~/components/ui/drawer";
+import { ChevronDownIcon, ChevronRightIcon } from "~/components/ui/icons";
 import {
   Select,
   SelectContent,
@@ -6,12 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Badge } from "~/components/ui/badge";
-import { Drawer } from "~/components/ui/drawer";
-import { EmptyState } from "~/components/feedback/empty-state";
-import { FormError } from "~/components/forms/form-error";
-import { ChevronDownIcon, ChevronRightIcon } from "~/components/ui/icons";
-import { formatTime12h, timeToMinutes } from "~/lib/time";
 import {
   dayHoursLabel,
   dayHoursTitle,
@@ -22,6 +21,7 @@ import {
   sortInstructors,
   sortRooms,
 } from "~/features/schedules/major-availability-logic";
+import { formatTime12h, timeToMinutes } from "~/lib/time";
 import { majorSchedulingAvailabilityService } from "~/services/major-scheduling-availability.service";
 import type {
   AvailabilityBusy,
@@ -280,7 +280,7 @@ function ExpandableRow({
             </span>
           </span>
           {subtitle ? (
-            <span className="mt-0.5 block pl-[18px] font-body text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="mt-0.5 block pl-4.5 font-body text-[11px] text-slate-500 dark:text-slate-400">
               {subtitle}
             </span>
           ) : null}
@@ -289,8 +289,8 @@ function ExpandableRow({
           {badges}
         </span>
       </button>
-      {children ? <div className="mt-1.5 pl-[18px]">{children}</div> : null}
-      {open ? <div className="mt-2 pl-[18px]">{detail}</div> : null}
+      {children ? <div className="mt-1.5 pl-4.5">{children}</div> : null}
+      {open ? <div className="mt-2 pl-4.5">{detail}</div> : null}
     </section>
   );
 }

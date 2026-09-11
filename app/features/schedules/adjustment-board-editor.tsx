@@ -149,10 +149,8 @@ function MoveEditor({
         </Hint>
       ) : tooShort ? (
         <Hint>
-          {destinationMinutes} minutes is not a class — every meeting runs at least an
-          hour, and shrinking one would take those hours off the subject's weekly total.
-          Hold Shift and click or drag another free cell in this same room and day to
-          extend the block.
+          {destinationMinutes} minutes is below the required 1-hour minimum.
+          Please select a time block of at least 60 minutes in this room and day to maintain the subject's weekly hours.
         </Hint>
       ) : destination ? (
         <Hint>
@@ -162,8 +160,7 @@ function MoveEditor({
         </Hint>
       ) : (
         <Hint>
-          Pick the destination on the map. Hold Shift and click or drag another free cell in
-          the same room and day to make the block longer.
+          Pick the destination on the map. Every class meeting requires at least 1 hour.
         </Hint>
       )}
 

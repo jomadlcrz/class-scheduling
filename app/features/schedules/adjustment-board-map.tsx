@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
-import { MappingTableView } from "~/features/classroom-mapping/mapping-table-view";
 import {
   SUBJECT_TYPES,
   type Classroom,
   type SubjectType,
 } from "~/features/classroom-mapping/mapping-model";
+import { MappingTableView } from "~/features/classroom-mapping/mapping-table-view";
 import type { MajorTimetableSlot } from "~/features/schedules/major-scheduling-timetable-selection";
 import {
   MINIMUM_SELECTION_MINUTES,
@@ -70,9 +70,6 @@ export function AdjustmentBoardMap({
   legendControls,
   helperText,
 }: Props) {
-  const stickyHeaderSentinelRef = useRef<HTMLDivElement>(null);
-  const [headerStuck, setHeaderStuck] = useState(false);
-
   const meetingById = useMemo(
     () => new Map(meetings.map((meeting) => [meeting.id, meeting])),
     [meetings],
@@ -181,25 +178,8 @@ export function AdjustmentBoardMap({
         MINIMUM_SELECTION_MINUTES,
   );
 
-  useEffect(() => {
-    const sentinel = stickyHeaderSentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setHeaderStuck(!entry.isIntersecting && entry.boundingClientRect.top < 47);
-      },
-      { rootMargin: "-47px 0px 0px 0px", threshold: 0 },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <>
-      <div ref={stickyHeaderSentinelRef} aria-hidden="true" className="h-px -mb-px" />
-      <Card
-        className={`sticky top-[calc(3rem-1px)] z-20 overflow-hidden ${headerStuck ? "!rounded-t-none" : ""}`}
-      >
+    <Card className="overflow-hidden">
         <div className="border-b border-slate-200 bg-white px-3 py-3 dark:border-white/10 dark:bg-surface-raised sm:px-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(25rem,auto)] lg:items-center">
             <div className="min-w-0">
@@ -211,17 +191,16 @@ export function AdjustmentBoardMap({
               </div>
               {selectionUnderMinimum ? (
                 <p className="mt-1 text-xs font-semibold leading-relaxed text-amber-700 dark:text-amber-300">
-                  30 minutes is not a meeting — every class runs at least an hour. Hold Shift
-                  and click or drag another free cell in this same room and day to extend it.
+                  Classes require a minimum duration of 1 hour (60 mins). Please select a time block that meets the 1-hour minimum.
                 </p>
               ) : (
                 <p className="mt-1 text-xs leading-relaxed text-slate-500">
                   {helperText ??
-                    "Click a class to pick it up, then click a free cell to move it there. Hold Shift to combine free slots."}
+                    "Select an available time block on the map to schedule. Click an existing class to move it."}
                 </p>
               )}
             </div>
-            {headerControls ? <div className="w-full lg:min-w-[25rem]">{headerControls}</div> : null}
+            {headerControls ? <div className="w-full lg:min-w-100">{headerControls}</div> : null}
           </div>
         </div>
         {editor ? (
@@ -302,6 +281,5 @@ export function AdjustmentBoardMap({
           />
         )}
       </Card>
-    </>
   );
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
+import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Card } from "~/components/ui/card";
 import { Drawer } from "~/components/ui/drawer";
 import { ListIcon, LockIcon } from "~/components/ui/icons";
@@ -16,14 +17,13 @@ import { Spinner } from "~/components/ui/spinner";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { AdjustmentBoardEditor } from "~/features/schedules/adjustment-board-editor";
 import { AdjustmentBoardMap } from "~/features/schedules/adjustment-board-map";
-import { AutoGenerateIcon } from "~/features/schedules/schedule-generator";
 import {
   AdjustmentUnplacedPanel,
   setIsComplete,
   type PlacementDraft,
 } from "~/features/schedules/adjustment-unplaced-panel";
-import { SchedulingHubNav } from "~/features/schedules/scheduling-hub-nav";
 import type { MajorTimetableSlot } from "~/features/schedules/major-scheduling-timetable-selection";
+import { AutoGenerateIcon } from "~/features/schedules/schedule-generator";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
@@ -476,7 +476,7 @@ export function AdjustmentBoardPage() {
   const isBootstrapping = syLoading || semLoading;
   if (isBootstrapping) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center p-8">
+      <div className="flex min-h-100 items-center justify-center p-8">
         <Spinner />
       </div>
     );
@@ -559,7 +559,14 @@ export function AdjustmentBoardPage() {
   );
 
   return (
-    <div className="flex min-h-full flex-col gap-6 p-6">
+    <div className="mx-auto flex w-full max-w-400 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
+      <Breadcrumb
+        items={[
+          { label: "Scheduling Hub", href: "/schedules" },
+          { label: "Adjustment Board" },
+        ]}
+      />
+
       <PageHeader
         title="Schedule Adjustment Board"
         actions={
@@ -612,10 +619,8 @@ export function AdjustmentBoardPage() {
         }
       />
 
-      <SchedulingHubNav />
-
       {termClosed ? (
-        <p className="mt-1 flex items-start gap-1.5 font-body text-xs leading-snug text-amber-800 dark:text-amber-100/90">
+        <p className="-mt-2 flex items-start gap-1.5 font-body text-xs leading-snug text-amber-800 dark:text-amber-100/90">
           <span className="mt-0.5 shrink-0 text-amber-700 dark:text-amber-200" aria-hidden="true">
             <LockIcon size={12} />
           </span>
@@ -736,7 +741,7 @@ export function AdjustmentBoardPage() {
       </Card>
 
       {boardLoading && !board ? (
-        <div className="flex min-h-[300px] items-center justify-center p-8">
+        <div className="flex min-h-75 items-center justify-center p-8">
           <Spinner />
         </div>
       ) : (
@@ -757,8 +762,8 @@ export function AdjustmentBoardPage() {
             headerControls={boardSummary}
             helperText={
               pickedUp
-                ? `Moving ${pickedUp.subjectCode}. Click a free cell for its new slot; hold Shift to make the block longer.`
-                : "Select a free cell, then hold Shift and click or drag to extend it. Release Shift to choose the program, section, subject, and instructor."
+                ? `Moving ${pickedUp.subjectCode}. Select an available time block for its new slot.`
+                : "Select an available time block on the map to schedule. Every meeting requires at least 1 hour."
             }
           />
         </div>
