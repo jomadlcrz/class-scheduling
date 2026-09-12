@@ -258,23 +258,6 @@ function RegistrationPage() {
     [subjects]
   );
 
-  const sortedSchedule = useMemo(() => {
-    const dayOrder: Record<string, number> = {
-      Monday: 1,
-      Tuesday: 2,
-      Wednesday: 3,
-      Thursday: 4,
-      Friday: 5,
-      Saturday: 6,
-      Sunday: 7,
-    };
-    return [...schedule].sort((a, b) => {
-      const dayDiff = (dayOrder[a.day] ?? 99) - (dayOrder[b.day] ?? 99);
-      if (dayDiff !== 0) return dayDiff;
-      return (a.start_time || "").localeCompare(b.start_time || "");
-    });
-  }, [schedule]);
-
   const handleShare = async () => {
     if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
       try {
@@ -468,43 +451,6 @@ function RegistrationPage() {
                 })}
               </Card>
             </div>
-
-            {/* Class Schedule: Mobile Card List (< sm) */}
-            {schedule.length > 0 && (
-              <div className="sm:hidden space-y-3">
-                <SectionHeader
-                  title="Class Schedule"
-                  badge={`${schedule.length} weekly ${schedule.length === 1 ? "session" : "sessions"}`}
-                />
-
-                <Card className="divide-y divide-slate-100 dark:divide-white/10 overflow-hidden">
-                  {schedule.map((entry, idx) => (
-                    <div key={`${entry.subject_code}-${entry.day}-${idx}`} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-navy-700 dark:text-mist-100">
-                          {entry.day}
-                        </span>
-                        <span className="text-xs font-bold tabular-nums text-navy-700 dark:text-mist-100">
-                          {entry.start_time} – {entry.end_time}
-                        </span>
-                      </div>
-
-                      <p className="mt-1 text-xs text-slate-800 dark:text-slate-300">
-                        <span className="font-bold text-navy-700 dark:text-mist-100">{entry.subject_code}</span>
-                        {entry.descriptive_title ? ` · ${entry.descriptive_title}` : ""}
-                      </p>
-
-                      {(entry.room || entry.instructor) && (
-                        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                          <span>Room: {entry.room || "TBA"}</span>
-                          <span>{entry.instructor || ""}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </Card>
-              </div>
-            )}
 
             {/* Enrolled Subjects: Tablet Table (< lg, >= sm) */}
             <div className="hidden sm:block space-y-3">
@@ -835,57 +781,6 @@ function RegistrationPage() {
                 </TableBody>
               </Table>
             </div>
-
-            {/* Class Schedule Timetable */}
-            {sortedSchedule.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-display text-lg tracking-wide text-navy-700 dark:text-mist-100">
-                      Class Meeting Timetable ({sortedSchedule.length} {sortedSchedule.length === 1 ? "session" : "sessions"})
-                    </h3>
-                    <p className="font-body text-xs text-slate-500 dark:text-slate-400">
-                      Weekly meeting schedule and room assignments
-                    </p>
-                  </div>
-                </div>
-
-                <Table>
-                  <TableHead>
-                    <TableHeader>Day</TableHeader>
-                    <TableHeader>Time</TableHeader>
-                    <TableHeader>Subject code</TableHeader>
-                    <TableHeader>Descriptive title</TableHeader>
-                    <TableHeader className="text-center">Room</TableHeader>
-                    <TableHeader>Instructor</TableHeader>
-                  </TableHead>
-                  <TableBody>
-                    {sortedSchedule.map((entry, idx) => (
-                      <TableRow key={`${entry.subject_code}-${entry.day}-${idx}`}>
-                        <TableCell className="font-bold text-navy-700 dark:text-mist-100">
-                          {entry.day}
-                        </TableCell>
-                        <TableCell className="font-body text-xs font-bold tabular-nums text-navy-700 dark:text-mist-100">
-                          {entry.start_time} – {entry.end_time}
-                        </TableCell>
-                        <TableCell className="font-bold text-navy-700 dark:text-mist-100">
-                          {entry.subject_code}
-                        </TableCell>
-                        <TableCell className="font-medium text-slate-600 dark:text-slate-300">
-                          {entry.descriptive_title || "—"}
-                        </TableCell>
-                        <TableCell className="text-center text-xs font-semibold text-slate-600 dark:text-slate-300">
-                          {entry.room || "TBA"}
-                        </TableCell>
-                        <TableCell className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                          {entry.instructor || "—"}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
 
             {/* Official Signatory & Certification Card */}
             <Card className="p-6">
