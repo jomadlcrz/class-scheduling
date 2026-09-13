@@ -8,10 +8,70 @@ import {
   scheduleReleaseStatusTone,
   StatusBadge,
 } from "~/features/academic-terms/status-badges";
+import { ScheduleLifecycleRail } from "~/features/schedules/schedule-lifecycle-rail";
 import type { Schedule } from "~/types/schedule";
 import type { ScheduleRelease, ScheduleReleaseStatus } from "~/types/schedule-release";
 import type { Department } from "~/types/department";
 import type { ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
+
+const RELEASE_PROGRESS: Record<ScheduleReleaseStatus, number> = {
+  draft: 0,
+  rejected: 0,
+  pending_dean_review: 1,
+  instructor_review: 2,
+  registrar_revision: 3,
+  pending_final_approval: 4,
+  approved: 5,
+};
+
+function representativeRelease(
+  sets: { release: ScheduleRelease | null; schedules: Schedule[] }[],
+  programAbbrev: string,
+  totalClasses: number,
+): ScheduleRelease {
+  let best: ScheduleRelease | null = null;
+  let bestRank = Number.POSITIVE_INFINITY;
+  for (const s of sets) {
+    if (!s.release) continue;
+    const rank = RELEASE_PROGRESS[s.release.releaseStatus] ?? 0;
+    if (rank < bestRank) {
+      best = s.release;
+      bestRank = rank;
+    }
+  }
+  if (best) {
+    return {
+      ...best,
+      sessionCount: totalClasses,
+    };
+  }
+  return {
+    id: 0,
+    referenceCode: null,
+    syId: 0,
+    semesterNumber: 1,
+    setId: 0,
+    setCode: null,
+    yearLevel: null,
+    programId: 0,
+    programAbbrev,
+    releaseStatus: "draft",
+    allowedTransitions: ["pending_dean_review"],
+    sessionCount: totalClasses,
+    subjectCount: 0,
+    generatedMeetingCount: 0,
+    majorMeetingCount: 0,
+    tbaCount: 0,
+    submissionNote: null,
+    submittedAt: null,
+    submittedBy: null,
+    reviewedAt: null,
+    rejectionReason: null,
+    approvedAt: null,
+    termFinalized: false,
+    publishedAt: null,
+  };
+}
 
 type YearGroupData = {
   yearLevel: number;
@@ -103,6 +163,8 @@ export function MasterScheduleProgramItem({
     "draft",
   ];
 
+  const stepperRelease = representativeRelease(allSets, abbrev, totalClasses);
+
   return (
     <AccordionItem
       variant="boxed"
@@ -183,6 +245,9 @@ export function MasterScheduleProgramItem({
       }
     >
       <div className="flex flex-col gap-3 p-3 sm:p-5">
+        <div className="mb-2">
+          <ScheduleLifecycleRail release={stepperRelease} audience="registrar" />
+        </div>
         {yearGroups.length === 0 ? (
           <p className="py-4 text-center font-body text-xs text-slate-500 dark:text-slate-400">
             No sections or schedules found for {abbrev}.

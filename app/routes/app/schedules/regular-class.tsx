@@ -43,6 +43,7 @@ import {
   type Schedule,
   type ScheduleSemester,
 } from "~/types/schedule";
+import type { DepartmentReadinessItem } from "~/types/term-phase";
 import type { ScheduleRelease } from "~/types/schedule-release";
 import type { TermDepartmentEntry } from "~/types/term-scheduling";
 
@@ -246,6 +247,25 @@ function MasterSchedulesPage() {
   }, [selectedSchoolYearId, semester, selectTerm, termContext]);
 
   const { releases, refresh: refreshReleases } = useScheduleReleases(selectedSchoolYearId, semester);
+
+  const { data: readinessData, reload: refreshReadiness } = useCachedData(
+    `department-readiness-${selectedSchoolYearId ?? "none"}-${semester}`,
+    () =>
+      selectedSchoolYearId
+        ? termPhaseService.getDepartmentReadiness(selectedSchoolYearId, semester).catch(() => null)
+        : Promise.resolve(null),
+  );
+
+  const departmentReadinessMap = useMemo(() => {
+    const map = new Map<string, DepartmentReadinessItem>();
+    for (const d of readinessData?.departments ?? []) {
+      if (d.departmentAbbrev) {
+        map.set(d.departmentAbbrev.toUpperCase(), d);
+      }
+      map.set(String(d.departmentId), d);
+    }
+    return map;
+  }, [readinessData]);
 
   // Closed term checks
   const termClosed = termContext?.term?.status === "Closed";
@@ -476,12 +496,20 @@ function MasterSchedulesPage() {
     try {
       const res = await termPhaseService.sendProgram(selectedSchoolYearId, semester, programId);
       toast.success(res.message || `${programAbbrev} schedules submitted to Dean.`);
-      await refreshReleases();
+      await Promise.all([refreshReleases(), refreshReadiness()]);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unable to submit program schedules.";
+      const block = departmentBlockFromError(err);
+      let msg = err instanceof Error ? err.message : "Unable to submit program schedules.";
+      if (block?.reason === "majors_still_open") {
+        msg = `Cannot submit ${programAbbrev}: Major Scheduling phase is still open in the Scheduling Calendar.`;
+      } else if (block?.reason === "no_finalized_majors") {
+        msg = `Cannot submit ${programAbbrev}: No finalized major schedules found for this department.`;
+      } else if (block?.reason === "schedules_incomplete") {
+        msg = `Cannot submit ${programAbbrev}: Section schedules in this department are incomplete.`;
+      }
       toast.error(msg);
       setActionError(msg);
-      setActionBlock(departmentBlockFromError(err));
+      setActionBlock(block);
     }
   }
 
@@ -492,7 +520,7 @@ function MasterSchedulesPage() {
     try {
       const res = await termPhaseService.withdrawProgram(selectedSchoolYearId, semester, programId);
       toast.success(res.message || `${programAbbrev} schedules withdrawn from Dean review.`);
-      await refreshReleases();
+      await Promise.all([refreshReleases(), refreshReadiness()]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unable to withdraw program schedules.";
       toast.error(msg);
@@ -508,7 +536,7 @@ function MasterSchedulesPage() {
     try {
       const res = await termPhaseService.publishProgramSchedule(selectedSchoolYearId, semester, programId);
       toast.success(res.message || `${programAbbrev} official schedule published.`);
-      await refreshReleases();
+      await Promise.all([refreshReleases(), refreshReadiness()]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unable to publish program schedule.";
       toast.error(msg);
@@ -526,9 +554,18 @@ function MasterSchedulesPage() {
     try {
       const res = await termPhaseService.sendProgram(selectedSchoolYearId, semester, progId, note);
       toast.success(res.message || `${res.programAbbrev || "Program"} schedules submitted to Dean.`);
-      await refreshReleases();
+      await Promise.all([refreshReleases(), refreshReadiness()]);
       setSubmitTarget(null);
     } catch (err) {
+      const block = departmentBlockFromError(err);
+      if (block) {
+        setActionBlock(block);
+        let msg = err instanceof Error ? err.message : "Unable to submit schedule.";
+        if (block.reason === "majors_still_open") {
+          msg = "Cannot submit: Major Scheduling phase is still open in the Scheduling Calendar.";
+        }
+        setActionError(msg);
+      }
       throw err instanceof Error ? err : new Error("Unable to submit the schedule.");
     }
   }
@@ -542,7 +579,7 @@ function MasterSchedulesPage() {
     try {
       const res = await termPhaseService.withdrawProgram(selectedSchoolYearId, semester, progId);
       toast.success(res.message || `${res.programAbbrev || "Program"} withdrawn from Dean review.`);
-      await refreshReleases();
+      await Promise.all([refreshReleases(), refreshReadiness()]);
       setWithdrawTarget(null);
     } catch (err) {
       throw err instanceof Error ? err : new Error("Unable to withdraw the submission.");
@@ -704,6 +741,7 @@ function MasterSchedulesPage() {
               semesterLabel={semesterLabel(semester)}
               termClosed={termClosed}
               departments={departments}
+              departmentReadinessMap={departmentReadinessMap}
               onEdit={openEdit}
               onSubmitRelease={setSubmitTarget}
               onWithdrawRelease={setWithdrawTarget}

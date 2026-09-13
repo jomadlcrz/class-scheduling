@@ -12,7 +12,6 @@ import { ScheduleTable } from "~/features/schedules/schedule-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
 import { useDays } from "~/hooks/use-days";
 import { getDayMapping } from "~/lib/day-utils";
-import { formatDateTime } from "~/lib/time";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { SchedulePreview } from "~/types/schedule-release";
 
@@ -94,17 +93,12 @@ export function SchedulePreviewModal({ open, releaseId, fetchPreview, onClose }:
               <ScheduleViewToggle value={viewMode} onChange={setViewMode} />
             </div>
 
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-slate-50 p-3 font-body text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300 sm:grid-cols-4">
-              <div><dt className="text-slate-400">Reference</dt><dd>{release.referenceCode ?? `Release #${release.id}`}</dd></div>
-              <div><dt className="text-slate-400">Subjects</dt><dd>{release.subjectCount}</dd></div>
-              <div><dt className="text-slate-400">Meetings</dt><dd>{release.generatedMeetingCount} generated · {release.majorMeetingCount} major · {release.tbaCount} TBA</dd></div>
-              <div><dt className="text-slate-400">Submitted by</dt><dd>{release.submittedBy?.name ?? "—"}</dd></div>
-              <div><dt className="text-slate-400">Submitted</dt><dd>{formatDateTime(release.submittedAt) || "—"}</dd></div>
-              <div><dt className="text-slate-400">Reviewed</dt><dd>{formatDateTime(release.reviewedAt) || "—"}</dd></div>
-              <div><dt className="text-slate-400">Approved</dt><dd>{formatDateTime(release.approvedAt) || "—"}</dd></div>
-              {release.submissionNote && <div><dt className="text-slate-400">Submission note</dt><dd>{release.submissionNote}</dd></div>}
-              {release.rejectionReason && <div className="col-span-2 sm:col-span-4"><dt className="text-red-500">Rejection reason</dt><dd className="text-red-600 dark:text-red-300">{release.rejectionReason}</dd></div>}
-            </dl>
+            {release.rejectionReason && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-2.5 font-body text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+                <span className="font-semibold">Rejection reason: </span>
+                {release.rejectionReason}
+              </div>
+            )}
 
             {schedules.length === 0 ? (
               <p className="py-8 text-center font-body text-sm text-slate-500 dark:text-slate-400">

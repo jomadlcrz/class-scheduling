@@ -2,97 +2,69 @@ import type { ReactNode } from "react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Card } from "~/components/ui/card";
 import { AlertTriangleIcon, CheckIcon, ClockIcon, EditIcon } from "~/components/ui/icons";
+import { Spinner } from "~/components/ui/spinner";
+import { Stepper, type StepDefinition } from "~/components/ui/stepper";
 import {
   scheduleReleaseStatusLabel,
   scheduleReleaseStatusTone,
   StatusBadge,
 } from "~/features/academic-terms/status-badges";
 import { formatRelativeTime } from "~/lib/time";
-import { formatDateTime } from "~/lib/time";
-import type { ScheduleRelease, ScheduleReleaseStatus } from "~/types/schedule-release";
+import type { ScheduleRelease } from "~/types/schedule-release";
 
 type Audience = "registrar" | "dean";
-type AlertVariant = "info" | "warning" | "success" | "destructive" | "default";
 
 type ScheduleLifecycleRailProps = {
   release: ScheduleRelease;
-  /** Whose vantage point the guidance is written from. */
   audience: Audience;
-  /** Contextual next-step control(s), rendered beside the guidance (e.g. Submit / Withdraw). */
   action?: ReactNode;
 };
 
-type NodeState = "done" | "current" | "rejected" | "upcoming";
-type StopView = { label: string; state: NodeState; sub: string };
-
 /**
- * The schedule's honest three-stop pipeline: Draft → Dean Review → Approved.
- * A rejection isn't a fourth stop — it sends the release back to Draft carrying a
- * note, so it renders as the Draft stop flagged "changes requested".
+ * The 6 stages of the academic schedule release lifecycle:
+ * 1. Draft (saved sessions building up before submission)
+ * 2. Initial Dean Review (dean reviews before forwarding to instructors)
+ * 3. Instructor Review (instructors review proposed schedules)
+ * 4. Registrar Resolution (registrar reviews suggestions if revision needed)
+ * 5. Final Dean Approval (dean gives final sign-off)
+ * 6. Term Publication (registrar publishes whole term)
  */
-function stopsFor(release: ScheduleRelease): StopView[] {
+export const SCHEDULE_LIFECYCLE_STEPS: StepDefinition[] = [
+  { key: "draft", label: "Draft" },
+  { key: "dean_review", label: "Initial Dean Review" },
+  { key: "instructor_review", label: "Instructor Review" },
+  { key: "registrar_resolution", label: "Registrar Resolution" },
+  { key: "final_approval", label: "Final Dean Approval" },
+  { key: "term_publication", label: "Term Publication" },
+];
+
+/** Maps backend release status to the zero-based step index in the 6-stage lifecycle pipeline. */
+export function scheduleLifecycleStepIndex(release: ScheduleRelease): number {
+  if (release.releaseStatus === "approved" && release.termFinalized) {
+    return 6; // All completed
+  }
   switch (release.releaseStatus) {
-    case "approved":
-      return [
-        { label: "Draft", state: "done", sub: "Submitted" },
-        { label: "Dean Review", state: "done", sub: "Distributed" },
-        { label: "Instructor Review", state: "done", sub: "Complete" },
-        { label: "Final Approval", state: "done", sub: "Dean signed" },
-        release.termFinalized
-          ? { label: "Term Publication", state: "done", sub: "Published" }
-          : { label: "Term Publication", state: "current", sub: "Awaiting Registrar" },
-      ];
-    case "pending_dean_review":
-      return [
-        { label: "Draft", state: "done", sub: "Submitted" },
-        { label: "Dean Review", state: "current", sub: "In review" },
-        { label: "Instructor Review", state: "upcoming", sub: "Waiting" },
-        { label: "Final Approval", state: "upcoming", sub: "Waiting" },
-        { label: "Term Publication", state: "upcoming", sub: "Waiting" },
-      ];
-    case "instructor_review":
-      return [
-        { label: "Draft", state: "done", sub: "Submitted" },
-        { label: "Dean Review", state: "done", sub: "Distributed" },
-        { label: "Instructor Review", state: "current", sub: "Awaiting responses" },
-        { label: "Final Approval", state: "upcoming", sub: "Waiting" },
-        { label: "Term Publication", state: "upcoming", sub: "Waiting" },
-      ];
-    case "registrar_revision":
-      return [
-        { label: "Draft", state: "done", sub: "Submitted" },
-        { label: "Dean Review", state: "done", sub: "Distributed" },
-        { label: "Instructor Review", state: "done", sub: "Changes received" },
-        { label: "Registrar Revision", state: "current", sub: "Resolve changes" },
-        { label: "Final Approval", state: "upcoming", sub: "Waiting" },
-      ];
-    case "pending_final_approval":
-      return [
-        { label: "Draft", state: "done", sub: "Submitted" },
-        { label: "Dean Review", state: "done", sub: "Distributed" },
-        { label: "Instructor Review", state: "done", sub: "Complete" },
-        { label: "Registrar Revision", state: "done", sub: "Complete" },
-        { label: "Final Approval", state: "current", sub: "Awaiting dean" },
-      ];
-    case "rejected":
-      return [
-        { label: "Draft", state: "rejected", sub: "Changes requested" },
-        { label: "Dean Review", state: "upcoming", sub: "Resubmit to continue" },
-        { label: "Approved", state: "upcoming", sub: "—" },
-      ];
     case "draft":
+      return 0;
+    case "pending_dean_review":
+    case "rejected":
+      return 1;
+    case "instructor_review":
+      return 2;
+    case "registrar_revision":
+      return 3;
+    case "pending_final_approval":
+      return 4;
+    case "approved":
+      return 5;
     default:
-      return [
-        { label: "Draft", state: "current", sub: "Building" },
-        { label: "Dean Review", state: "upcoming", sub: "—" },
-        { label: "Approved", state: "upcoming", sub: "—" },
-      ];
+      return 0;
   }
 }
 
+type AlertVariant = "info" | "warning" | "success" | "destructive" | "default";
 type Guidance = { variant: AlertVariant; icon: ReactNode; eyebrow: string; description: string };
 
-/** Audience-aware "what's the state, and what happens next" copy. Status vocabulary stays backend-owned. */
 function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
   const submittedAgo = formatRelativeTime(release.submittedAt);
   const reviewedAgo = formatRelativeTime(release.reviewedAt);
@@ -105,234 +77,144 @@ function guidanceFor(release: ScheduleRelease, audience: Audience): Guidance {
         return {
           variant: "info",
           icon: <ClockIcon />,
-          eyebrow: "Needs your review",
-          description: `Submitted${submittedAgo ? ` ${submittedAgo}` : ""}${
-            submitter ? ` by ${submitter}` : ""
-          }. Review the weekly schedule, then send it to the assigned instructors or reject it with a note.`,
+          eyebrow: "Initial Dean Review",
+          description:
+            "Review the generated schedule before releasing it to instructors for their response." +
+            (submittedAgo
+              ? ` Submitted ${submittedAgo}${submitter ? ` by ${submitter}` : ""}.`
+              : ""),
         };
       case "instructor_review":
         return {
           variant: "info",
           icon: <ClockIcon />,
-          eyebrow: "With instructors",
-          description: "Assigned instructors are reviewing this timetable. Suggestions return to the Registrar for resolution.",
+          eyebrow: "Instructor Review",
+          description: "With instructors — the proposed schedule is in instructor review and is not official.",
         };
       case "registrar_revision":
         return {
-          variant: "info",
-          icon: <ClockIcon />,
-          eyebrow: "Registrar is revising",
-          description: "Instructor suggestions are being resolved before this timetable returns for final approval.",
+          variant: "warning",
+          icon: <EditIcon />,
+          eyebrow: "With Registrar for Resolution",
+          description: "The schedule is with the Registrar for resolution — nothing for you to do until it comes back.",
         };
       case "pending_final_approval":
         return {
           variant: "info",
           icon: <ClockIcon />,
-          eyebrow: "Needs final approval",
-          description: "Instructor review is complete. Give the final Dean approval when the timetable is ready for term publication.",
+          eyebrow: "Final Dean Approval",
+          description: "The Registrar has completed resolution. Review the final schedule before giving final approval.",
         };
       case "approved":
         return {
           variant: "success",
           icon: <CheckIcon />,
-          eyebrow: release.termFinalized ? "Published" : "Approved",
-          description: `${release.termFinalized ? "The Registrar published this term" : "You approved this"}${
-            approvedAgo || reviewedAgo ? ` ${approvedAgo || reviewedAgo}` : ""
-          }. ${release.termFinalized ? "It is now visible in the official schedule." : "It is ready for the Registrar to publish with the rest of the term."}`,
+          eyebrow: release.termFinalized ? "Published" : "Final Approval Complete",
+          description: release.termFinalized
+            ? "Published to students and instructors."
+            : `You gave final approval${approvedAgo ? ` ${approvedAgo}` : ""}. Waiting for the Registrar to finalize and publish the term.`,
         };
       case "rejected":
         return {
           variant: "destructive",
           icon: <AlertTriangleIcon />,
-          eyebrow: "Returned to registrar",
-          description: `You sent this back${
-            reviewedAgo ? ` ${reviewedAgo}` : ""
-          } for changes. It's back in the registrar's drafts.`,
+          eyebrow: "Returned to Registrar",
+          description: `Sent back${reviewedAgo ? ` ${reviewedAgo}` : ""} for changes. Returned during Initial Dean Review.`,
         };
       default:
         return {
           variant: "default",
           icon: <EditIcon />,
-          eyebrow: "Not yet submitted",
+          eyebrow: "Not Yet Submitted",
           description: "The registrar hasn't submitted this timetable for approval.",
         };
     }
   }
 
+  // Registrar audience
   switch (release.releaseStatus) {
     case "pending_dean_review":
       return {
         variant: "info",
         icon: <ClockIcon />,
-        eyebrow: "Awaiting the dean",
-        description: `Submitted${
-          submittedAgo ? ` ${submittedAgo}` : ""
-        } and waiting in the dean's review queue. You can withdraw it while it's still pending.`,
+        eyebrow: "Initial Dean Review",
+        description: `Awaiting the dean.${submittedAgo ? ` Submitted ${submittedAgo}.` : ""} You can withdraw while it's pending.`,
       };
     case "instructor_review":
       return {
         variant: "info",
         icon: <ClockIcon />,
-        eyebrow: "Awaiting instructors",
-        description: "The Dean distributed this timetable to assigned instructors. Monitor Schedule Responses for their decisions.",
+        eyebrow: "Instructor Review",
+        description: "Assigned instructors are reviewing the proposed schedule.",
       };
     case "registrar_revision":
       return {
         variant: "warning",
         icon: <EditIcon />,
-        eyebrow: "Resolve instructor suggestions",
-        description: "Review each forwarded suggestion in Schedule Responses. After every suggestion is resolved, resubmit for final Dean approval.",
+        eyebrow: "Registrar Resolution",
+        description: "Revision required — review or revise the schedule before final resubmission.",
       };
     case "pending_final_approval":
       return {
         variant: "info",
         icon: <ClockIcon />,
-        eyebrow: "Awaiting final Dean approval",
-        description: "The Registrar completed the revision stage. The Dean's final sign-off is required before term publication.",
+        eyebrow: "Final Dean Approval",
+        description: "Awaiting final approval. The resolved schedule has been resubmitted for the Dean's final decision.",
       };
     case "approved":
       return {
         variant: "success",
         icon: <CheckIcon />,
-        eyebrow: release.termFinalized ? "Published" : "Approved — awaiting term publication",
-        description: `${release.termFinalized ? "Published" : "Approved"}${
-          approvedAgo ? ` ${approvedAgo}` : ""
-        }. ${release.termFinalized ? "The official schedule is now visible to instructors and students." : "The Registrar publishes it by finalizing the entire term in Scheduling Calendar."}`,
+        eyebrow: release.termFinalized ? "Published" : "Ready for Publication",
+        description: release.termFinalized
+          ? "Published — visible to students and instructors."
+          : `Approved${approvedAgo ? ` ${approvedAgo}` : ""}. Waiting for the Registrar's Finalize & Publish for the whole term in Scheduling Calendar.`,
       };
     case "rejected":
       return {
         variant: "destructive",
         icon: <AlertTriangleIcon />,
-        eyebrow: "Changes requested",
-        description:
-          "The dean returned this to draft with a note. Revise the sessions, then submit it for Dean review.",
+        eyebrow: "Changes Requested",
+        description: "The dean returned this schedule. Revise the sessions, then resubmit for approval.",
       };
     case "draft":
     default:
       return {
         variant: "warning",
         icon: <EditIcon />,
-        eyebrow: "Ready for Dean review",
+        eyebrow: "Ready to Submit",
         description: `${release.sessionCount} session${
           release.sessionCount === 1 ? "" : "s"
-        } saved. Submit it to the department dean for review, or distribute the complete term from Scheduling Calendar when the term workflow is governed.`,
+        } saved. Submit when the timetable is complete.`,
       };
   }
 }
 
-function connectorTone(state: NodeState): string {
-  if (state === "done") return "bg-emerald-400 dark:bg-emerald-500/70";
-  if (state === "current") {
-    return "bg-linear-to-r from-amber-400 to-slate-200 dark:from-gold-400/70 dark:to-white/10";
-  }
-  if (state === "rejected") {
-    return "bg-linear-to-r from-red-400 to-slate-200 dark:from-red-400/60 dark:to-white/10";
-  }
-  return "bg-slate-200 dark:bg-white/10";
-}
-
-function StopNode({ stop, index }: { stop: StopView; index: number }) {
-  if (stop.state === "done") {
-    return (
-      <span
-        className="relative z-10 grid size-9 place-items-center rounded-full bg-emerald-500 text-mist-100 shadow-sm ring-4 ring-white dark:ring-surface-raised"
-        aria-hidden="true"
-      >
-        <CheckIcon size={16} strokeWidth={3} />
-      </span>
-    );
-  }
-
-  if (stop.state === "rejected") {
-    return (
-      <span
-        className="relative z-10 grid size-10 place-items-center rounded-full bg-red-500 text-mist-100 shadow-md ring-4 ring-red-100 dark:bg-red-500 dark:ring-red-400/20"
-        aria-hidden="true"
-      >
-        <AlertTriangleIcon />
-      </span>
-    );
-  }
-
-  if (stop.state === "current") {
-    return (
-      <span
-        className="relative z-10 grid size-10 place-items-center rounded-full bg-amber-500 text-mist-100 shadow-md ring-4 ring-amber-100 dark:bg-gold-500 dark:ring-gold-400/20"
-        aria-hidden="true"
-      >
-        <span className="absolute inset-0 animate-ping rounded-full bg-amber-400/30 dark:bg-gold-400/25" />
-        <span className="relative">{index === 1 ? <ClockIcon size={16} /> : <EditIcon />}</span>
-      </span>
-    );
-  }
-
-  return (
-    <span
-      className="relative z-10 grid size-9 place-items-center rounded-full border-2 border-slate-200 bg-white font-body text-xs font-semibold text-slate-400 dark:border-white/15 dark:bg-surface-raised dark:text-slate-500"
-      aria-hidden="true"
-    >
-      {index + 1}
-    </span>
-  );
-}
-
-function subTone(state: NodeState): string {
-  if (state === "current") return "text-amber-700 dark:text-gold-300";
-  if (state === "rejected") return "text-red-600 dark:text-red-300";
-  if (state === "done") return "text-emerald-700 dark:text-emerald-300";
-  return "text-slate-400 dark:text-slate-500";
-}
-
 /**
- * Shared status header for a schedule release — a branded three-stop rail plus an
- * audience-aware next-step callout. Used by the registrar builder and the dean's
- * inbox detail so the lifecycle reads the same everywhere.
+ * Reusable schedule release lifecycle status rail.
+ * Uses the design system's Card, Stepper, and Alert components.
  */
-export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLifecycleRailProps) {
-  const stops = stopsFor(release);
+export function ScheduleLifecycleRail({
+  release,
+  audience,
+  action,
+}: ScheduleLifecycleRailProps) {
+  const currentIndex = scheduleLifecycleStepIndex(release);
   const guidance = guidanceFor(release, audience);
   const showNote = release.releaseStatus === "rejected" && Boolean(release.rejectionReason);
 
   return (
     <Card className="p-4 sm:p-5">
-      {/* Desktop: horizontal three-stop rail */}
-      <ol className="hidden grid-cols-5 sm:grid" aria-label="Release progress">
-        {stops.map((stop, index) => {
-          const isLast = index === stops.length - 1;
-          return (
-            <li key={stop.label} className="relative flex min-w-0 flex-col items-center px-2 text-center">
-              {!isLast && (
-                <span
-                  aria-hidden="true"
-                  className={`absolute left-[calc(50%+1.25rem)] top-4.5 h-0.5 w-[calc(100%-2.5rem)] ${connectorTone(stop.state)}`}
-                />
-              )}
-              <StopNode stop={stop} index={index} />
-              <div className="mt-3 w-full min-w-0">
-                <p className="truncate font-body text-sm font-medium text-navy-700 dark:text-mist-100">
-                  {stop.label}
-                </p>
-                <p className={`mt-0.5 truncate font-body text-xs ${subTone(stop.state)}`}>{stop.sub}</p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+      {/* Reusable Stepper Component in Snake (Multi-row Zigzag) layout */}
+      <Stepper
+        variant="snake"
+        columns={3}
+        steps={SCHEDULE_LIFECYCLE_STEPS}
+        currentIndex={currentIndex}
+        readOnly
+      />
 
-      {/* Mobile: compact node bar — the callout below carries the words. */}
-      <div className="flex items-center gap-2 sm:hidden" aria-hidden="true">
-        {stops.map((stop, index) => {
-          const isLast = index === stops.length - 1;
-          return (
-            <div key={stop.label} className={`flex items-center gap-2 ${isLast ? "" : "flex-1"}`}>
-              <StopNode stop={stop} index={index} />
-              {!isLast && <span className={`h-0.5 flex-1 ${connectorTone(stop.state)}`} />}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Next-step callout */}
+      {/* Reusable Alert Component showing phase guidance and next actions */}
       <Alert variant={guidance.variant} className="mt-5">
         {guidance.icon}
         <AlertTitle>
@@ -353,49 +235,24 @@ export function ScheduleLifecycleRail({ release, audience, action }: ScheduleLif
         </AlertDescription>
         {action && <AlertAction>{action}</AlertAction>}
       </Alert>
+    </Card>
+  );
+}
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-lg border border-slate-100 bg-slate-50 p-3 font-body text-xs text-slate-600 dark:border-white/8 dark:bg-white/4 dark:text-slate-300 sm:grid-cols-4">
-        <div>
-          <dt className="text-slate-400 dark:text-slate-500">Reference</dt>
-          <dd className="mt-0.5 font-medium text-navy-700 dark:text-mist-100">{release.referenceCode ?? `Release #${release.id}`}</dd>
-        </div>
-        <div>
-          <dt className="text-slate-400 dark:text-slate-500">Subjects / sessions</dt>
-          <dd className="mt-0.5">{release.subjectCount} / {release.sessionCount}</dd>
-        </div>
-        <div>
-          <dt className="text-slate-400 dark:text-slate-500">Meetings</dt>
-          <dd className="mt-0.5">{release.generatedMeetingCount} generated · {release.majorMeetingCount} major · {release.tbaCount} TBA</dd>
-        </div>
-        <div>
-          <dt className="text-slate-400 dark:text-slate-500">Submitted by</dt>
-          <dd className="mt-0.5">{release.submittedBy?.name ?? "—"}</dd>
-        </div>
-        <div>
-          <dt className="text-slate-400 dark:text-slate-500">Submitted</dt>
-          <dd className="mt-0.5">{formatDateTime(release.submittedAt) || "—"}</dd>
-        </div>
-        <div>
-          <dt className="text-slate-400 dark:text-slate-500">Reviewed</dt>
-          <dd className="mt-0.5">{formatDateTime(release.reviewedAt) || "—"}</dd>
-        </div>
-        <div>
-          <dt className="text-slate-400 dark:text-slate-500">Approved</dt>
-          <dd className="mt-0.5">{formatDateTime(release.approvedAt) || "—"}</dd>
-        </div>
-        {release.termFinalized && (
-          <div>
-            <dt className="text-slate-400 dark:text-slate-500">Published</dt>
-            <dd className="mt-0.5">{formatDateTime(release.publishedAt ?? null) || "—"}</dd>
-          </div>
-        )}
-        {release.submissionNote && (
-          <div className="col-span-2 sm:col-span-4">
-            <dt className="text-slate-400 dark:text-slate-500">Submission note</dt>
-            <dd className="mt-0.5">{release.submissionNote}</dd>
-          </div>
-        )}
-      </dl>
+/** Loading placeholder for ScheduleLifecycleRail. */
+export function ScheduleLifecycleRailLoading() {
+  return (
+    <Card className="p-4 sm:p-5">
+      <div
+        role="status"
+        aria-label="Loading schedule status"
+        className="flex flex-col items-center justify-center gap-3 py-8 sm:py-10"
+      >
+        <Spinner />
+        <p className="max-w-sm text-center font-body text-sm text-slate-600 dark:text-slate-300">
+          Loading schedule status…
+        </p>
+      </div>
     </Card>
   );
 }
