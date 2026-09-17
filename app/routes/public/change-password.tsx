@@ -4,17 +4,17 @@ import { AuthHeading, AuthSplitLayout } from "~/auth/auth-layout";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { LoadingState } from "~/components/feedback/loading-state";
 import { ResultState } from "~/components/feedback/result-state";
+import { createSeoMeta } from "~/lib/seo";
 import { getPending } from "~/lib/session";
 import { authService } from "~/services/auth.service";
 
 export function meta() {
-  return [
-    { title: "Change Password — GWC Class Scheduling" },
-    {
-      name: "description",
-      content: "Change your GWC Class Scheduling account password.",
-    },
-  ];
+  return createSeoMeta({
+    title: "Change Password",
+    path: "/change-password",
+    description: "Change your GWC Class Scheduling account password.",
+    noIndex: true,
+  });
 }
 
 /**

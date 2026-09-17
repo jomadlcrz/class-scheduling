@@ -1,15 +1,15 @@
 import { motion } from "motion/react";
 import { AuthLayout } from "~/auth/auth-layout";
 import { ButtonLink } from "~/components/ui/button";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "Unauthorized — GWC Class Scheduling" },
-    {
-      name: "description",
-      content: "You don't have permission to access this page.",
-    },
-  ];
+  return createSeoMeta({
+    title: "Unauthorized",
+    path: "/unauthorized",
+    description: "You don't have permission to access this page.",
+    noIndex: true,
+  });
 }
 
 export default function Unauthorized() {

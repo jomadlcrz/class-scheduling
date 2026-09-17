@@ -1,15 +1,15 @@
 import { AuthSplitLayout } from "~/auth/auth-layout";
 import { GuestGuard } from "~/auth/guest-guard";
 import { LoginForm } from "~/auth/login-form";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "Log In — GWC Class Scheduling" },
-    {
-      name: "description",
-      content: "Sign in to GWC Class Scheduling to manage your class timetables.",
-    },
-  ];
+  return createSeoMeta({
+    title: "Log In",
+    path: "/login",
+    description:
+      "Log in to GWC Class Scheduling to access and manage student schedules, faculty loading, and academic timetables.",
+  });
 }
 
 export default function Login() {

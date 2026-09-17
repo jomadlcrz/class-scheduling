@@ -1,0 +1,23 @@
+{
+  "name": "GWC Class Scheduling",
+  "short_name": "GWC Schedule",
+  "description": "Build conflict-free academic timetables in minutes. GWC Class Scheduling turns rooms, faculty, and sections into a clean, published weekly plan.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B1528",
+  "theme_color": "#0B1528",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48 32x32 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/images/logos/gwc-logo.avif",
+      "sizes": "192x192 512x512",
+      "type": "image/avif",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -10,6 +10,16 @@ import type { Route } from "./+types/root";
 import "~/app.css";
 import { AuthProvider } from "~/auth/auth-provider";
 import { Button } from "~/components/ui/button";
+import { createSeoMeta, getCompleteStructuredDataGraph } from "~/lib/seo";
+
+export function meta() {
+  return createSeoMeta({
+    title: "GWC Class Scheduling",
+    brandSuffix: false,
+    path: "/",
+    structuredData: getCompleteStructuredDataGraph(),
+  });
+}
 
 // Runs before paint to set the `.dark` class from the stored/system preference,
 // preventing a light flash on first load. Kept as a string so it ships inline.
@@ -31,6 +41,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/avif" href="/images/logos/gwc-logo.avif" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/images/logos/gwc-logo.avif" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#0B1528" />
+        <meta name="application-name" content="GWC Class Scheduling" />
+        <meta name="apple-mobile-web-app-title" content="GWC Schedule" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="preload" href="/fonts/BebasNeue.woff" as="font" type="font/woff" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/CenturyGothic.woff" as="font" type="font/woff" crossOrigin="anonymous" />
         <Meta />

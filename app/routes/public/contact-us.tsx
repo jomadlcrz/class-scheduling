@@ -3,12 +3,15 @@ import { ThemeProvider } from "~/components/theme/theme-provider";
 import { ClockIcon, FacebookIcon, MailIcon, MapPinIcon, PhoneIcon } from "~/components/ui/icons";
 import { SiteFooter } from "~/landing/site-footer";
 import { SiteHeader } from "~/landing/site-header";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "Contact Us — GWC Class Scheduling" },
-    { name: "description", content: "How to reach Golden West Colleges, Inc. about GWC Class Scheduling." },
-  ];
+  return createSeoMeta({
+    title: "Contact Us",
+    path: "/contact-us",
+    description:
+      "Contact Golden West Colleges, Inc. regarding class scheduling, registrar inquiries, technical support, and timetable management.",
+  });
 }
 
 const SECTIONS = [

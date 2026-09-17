@@ -3,17 +3,17 @@ import { useSearchParams } from "react-router";
 import { AuthHeading, AuthSplitLayout } from "~/auth/auth-layout";
 import { PasswordForm, type PasswordFormValues } from "~/auth/password-form";
 import { ResultState } from "~/components/feedback/result-state";
+import { createSeoMeta } from "~/lib/seo";
 import { isJwtExpired } from "~/lib/session";
 import { authService } from "~/services/auth.service";
 
 export function meta() {
-  return [
-    { title: "Reset Password — GWC Class Scheduling" },
-    {
-      name: "description",
-      content: "Set a new password for your GWC Class Scheduling account.",
-    },
-  ];
+  return createSeoMeta({
+    title: "Reset Password",
+    path: "/reset-password",
+    description: "Set a new password for your GWC Class Scheduling account.",
+    noIndex: true,
+  });
 }
 
 /**

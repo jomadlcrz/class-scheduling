@@ -1,12 +1,15 @@
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "Privacy Policy — GWC Class Scheduling" },
-    { name: "description", content: "Privacy Policy for GWC Class Scheduling." },
-  ];
+  return createSeoMeta({
+    title: "Privacy Policy",
+    path: "/privacy-policy",
+    description:
+      "Privacy Policy for GWC Class Scheduling. Learn how Golden West Colleges collects, protects, and manages institutional scheduling data.",
+  });
 }
 
 const SECTIONS = [

@@ -1,12 +1,15 @@
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "Terms of Use — GWC Class Scheduling" },
-    { name: "description", content: "Terms of Use for GWC Class Scheduling." },
-  ];
+  return createSeoMeta({
+    title: "Terms of Use",
+    path: "/terms-of-use",
+    description:
+      "Terms of Use for GWC Class Scheduling. Guidelines, account responsibilities, and acceptable use policies for Golden West Colleges, Inc.",
+  });
 }
 
 const SECTIONS = [

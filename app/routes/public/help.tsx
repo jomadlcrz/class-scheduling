@@ -2,12 +2,15 @@ import { ThemeProvider } from "~/components/theme/theme-provider";
 import { ChevronRightIcon, HelpCircleIcon, MailIcon } from "~/components/ui/icons";
 import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "Help — GWC Class Scheduling" },
-    { name: "description", content: "Help center for GWC Class Scheduling." },
-  ];
+  return createSeoMeta({
+    title: "Help Center",
+    path: "/help",
+    description:
+      "Get help and resources for GWC Class Scheduling, including user guides, FAQ articles, and administrator assistance.",
+  });
 }
 
 const LINKS = [

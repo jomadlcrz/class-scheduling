@@ -3,15 +3,15 @@ import { AuthHeading, AuthSplitLayout } from "~/auth/auth-layout";
 import { ForgotPasswordForm } from "~/auth/forgot-password-form";
 import { GuestGuard } from "~/auth/guest-guard";
 import { ResultState } from "~/components/feedback/result-state";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "Forgot Password — GWC Class Scheduling" },
-    {
-      name: "description",
-      content: "Reset your GWC Class Scheduling account password.",
-    },
-  ];
+  return createSeoMeta({
+    title: "Forgot Password",
+    path: "/forgot-password",
+    description: "Request a password reset for your GWC Class Scheduling account.",
+    noIndex: true,
+  });
 }
 
 export default function ForgotPassword() {

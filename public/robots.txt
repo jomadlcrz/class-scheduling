@@ -1,0 +1,66 @@
+# robots.txt for GWC Class Scheduling
+# https://www.gwc-class-scheduling.app
+
+User-agent: *
+
+# Allow public landing and informational pages only
+Allow: /$
+Allow: /login
+Allow: /faqs
+Allow: /help
+Allow: /contact-us
+Allow: /privacy-policy
+Allow: /terms-of-use
+
+# Disallow all authenticated / private routes
+Disallow: /student-schedule
+Disallow: /faculty-schedule
+Disallow: /faculty-loading
+Disallow: /faculty-loads
+Disallow: /dashboard
+Disallow: /schedules
+Disallow: /schedules/
+Disallow: /settings
+Disallow: /settings/
+Disallow: /audit
+Disallow: /permissions
+Disallow: /administrators
+Disallow: /administrators/
+Disallow: /facilities
+Disallow: /facilities/
+Disallow: /buildings
+Disallow: /buildings/
+Disallow: /rooms
+Disallow: /departments
+Disallow: /departments/
+Disallow: /program-curricula
+Disallow: /program-curricula/
+Disallow: /sets
+Disallow: /dean/
+Disallow: /faculty
+Disallow: /faculty/
+Disallow: /subject-offering
+Disallow: /major-schedules
+Disallow: /schedule-responses
+Disallow: /shift-requests
+Disallow: /teaching-terms/
+Disallow: /academic-term
+Disallow: /academic-terms
+Disallow: /academic-terms/
+Disallow: /registration
+Disallow: /profile
+Disallow: /profile/
+Disallow: /students
+Disallow: /students-regular
+Disallow: /students-irregular
+Disallow: /enrollment
+Disallow: /enrollment/
+Disallow: /classroom-mapping
+Disallow: /unauthorized
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /change-password
+Disallow: /api/
+
+# Sitemap location on custom domain
+Sitemap: https://www.gwc-class-scheduling.app/sitemap.xml

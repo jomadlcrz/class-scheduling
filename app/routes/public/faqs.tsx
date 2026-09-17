@@ -1,12 +1,29 @@
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { SiteHeader } from "~/landing/site-header";
 import { SiteFooter } from "~/landing/site-footer";
+import { createSeoMeta } from "~/lib/seo";
 
 export function meta() {
-  return [
-    { title: "FAQs — GWC Class Scheduling" },
-    { name: "description", content: "Frequently asked questions about GWC Class Scheduling." },
-  ];
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQS.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return createSeoMeta({
+    title: "Frequently Asked Questions",
+    path: "/faqs",
+    description:
+      "Frequently asked questions about GWC Class Scheduling, institutional accounts, timetable planning, and role access.",
+    structuredData: faqSchema,
+  });
 }
 
 const FAQS = [
