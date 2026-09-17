@@ -57,35 +57,7 @@ function mapRoomDetail(raw: RoomDetailResponse): RoomDetail {
   };
 }
 
-type RoomListResponse = {
-  room_id: number;
-  building_id: number;
-  building_name?: string;
-  floor_level: number;
-  room_name: string;
-  room_type: string;
-  room_capacity: number | null;
-  room_status: string;
-  is_college_room?: boolean;
-  time_remaining?: string;
-  programs?: { program_id: number; program_abbrev: string; program_name: string }[];
-};
 
-function mapRoomListItem(raw: RoomListResponse): Room {
-  return {
-    id: raw.room_id,
-    buildingId: raw.building_id,
-    buildingName: raw.building_name ?? "",
-    floor: raw.floor_level,
-    name: raw.room_name,
-    type: raw.room_type,
-    capacity: raw.room_capacity ?? 0,
-    status: raw.room_status,
-    isCollegeRoom: raw.is_college_room ?? true,
-    timeRemaining: raw.time_remaining ?? "",
-    programs: mapPrograms(raw.programs ?? []),
-  };
-}
 
 /** GET /schedule/rooms — schedulable rooms list (404 → empty). */
 async function list(): Promise<Room[]> {

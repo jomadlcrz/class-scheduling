@@ -7,16 +7,8 @@ import { Card } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { DatePicker } from "~/components/ui/date-picker";
 import { Drawer } from "~/components/ui/drawer";
-import {
-  AlertTriangleIcon,
-  CalendarIcon,
-  CheckIcon,
-  ClockIcon,
-  InfoCircleIcon,
-  LockIcon,
-  ShieldIcon,
-} from "~/components/ui/icons";
-import { FieldChrome, Input } from "~/components/ui/input";
+import { InfoCircleIcon, LockIcon } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
 import { ConfirmDialog, Modal, ModalActions } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { Stepper, type StepDefinition } from "~/components/ui/stepper";
@@ -28,9 +20,6 @@ import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
 import { termPhaseService } from "~/services/term-phase.service";
 import type {
-  MajorEditRequestAttemptSummary,
-  SchedulingWindowsSnapshot,
-  TermDistributionReadiness,
   TermPhaseItem,
   TermPhaseResponse,
   TermResponseReadiness,
@@ -255,17 +244,14 @@ export function TermCalendarPage() {
   const initialSyId = searchParams.get("syId") ?? "";
   const initialSemesterNumber = searchParams.get("semesterNumber") ?? "";
 
-  const { schoolYears, defaultSchoolYear, loading: termsLoading } = useSchoolYears();
-  const { semesters, semesterLabel, loading: semestersLoading } = useSemesters();
+  const { schoolYears, defaultSchoolYear } = useSchoolYears();
+  const { semesters } = useSemesters();
 
   const [selectedSchoolYearId, setSelectedSchoolYearId] = useState(initialSyId);
   const [selectedSemesterNumber, setSelectedSemesterNumber] = useState(initialSemesterNumber);
 
   const [phaseData, setPhaseData] = useState<TermPhaseResponse | null>(null);
-  const [readiness, setReadiness] = useState<TermDistributionReadiness | null>(null);
   const [responseReadiness, setResponseReadiness] = useState<TermResponseReadiness | null>(null);
-  const [majorEditAttempts, setMajorEditAttempts] = useState<MajorEditRequestAttemptSummary | null>(null);
-  const [schedulingWindows, setSchedulingWindows] = useState<SchedulingWindowsSnapshot | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -346,17 +332,11 @@ export function TermCalendarPage() {
     setLoading(true);
     setError(null);
     try {
-      const [phaseRes, readyRes, windowsRes, editAttemptsRes, respReadinessRes] = await Promise.all([
+      const [phaseRes, respReadinessRes] = await Promise.all([
         termPhaseService.getTermPhase(syId, semesterNumber),
-        termPhaseService.getDistributionReadiness(syId, semesterNumber).catch(() => null),
-        termPhaseService.getSchedulingWindows(syId, semesterNumber).catch(() => null),
-        termPhaseService.getMajorEditRequestAttempts(syId, semesterNumber).catch(() => null),
         termPhaseService.getResponseReadiness(syId, semesterNumber).catch(() => null),
       ]);
       setPhaseData(phaseRes);
-      setReadiness(readyRes);
-      setSchedulingWindows(windowsRes ?? phaseRes.schedulingWindows ?? null);
-      setMajorEditAttempts(editAttemptsRes);
       setResponseReadiness(respReadinessRes);
 
       if (phaseRes.majorEditRequestLimit != null) {
@@ -398,7 +378,6 @@ export function TermCalendarPage() {
 
   // Stepper calculations
   const currentStepIndex = closedAndGone ? 2 : isRunning ? 1 : 0;
-  const maxUnlockedIndex = currentStepIndex;
 
   const majorReopenLocked = activeTab === "major_scheduling" && !phaseData?.gates.majorReopenAllowed;
   const canStartShiftRequest =

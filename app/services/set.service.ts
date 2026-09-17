@@ -1,6 +1,6 @@
-import { ApiError, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
+import { ApiError, apiGet, apiMessage, apiPatch, apiPut } from "~/lib/api";
 import { appendTermScopeParams } from "~/lib/term-scope";
-import type { ClassSet, CreateSetInput, SetDeletePreview } from "~/types/set";
+import type { ClassSet, SetDeletePreview } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
 
 /** Class sets CRUD against the curriculums module (registrar_admin). */

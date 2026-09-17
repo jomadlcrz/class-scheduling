@@ -22,7 +22,7 @@ import { SuggestionValidationSummary } from "~/features/schedules/suggestion-val
 import { useDays } from "~/hooks/use-days";
 import { PageHeader } from "~/layouts/page-header";
 import { ApiError } from "~/lib/api";
-import { formatDateTime, formatTime12h, timeToMinutes } from "~/lib/time";
+import { formatDateTime, formatTime12h } from "~/lib/time";
 import { instructorReviewService } from "~/services/instructor-review.service";
 import { roomService } from "~/services/room.service";
 import { termSchedulingService } from "~/services/term-scheduling.service";
@@ -339,10 +339,7 @@ export default function ShiftRequestsRoute() {
     return { attemptLimit, attemptsUsed };
   }, [calendar, history, requests]);
 
-  const pendingReviewCount = useMemo(
-    () => requests.filter((r) => !r.responseStatus || r.responseStatus === "pending").length,
-    [requests],
-  );
+
 
   async function openShiftRequest() {
     if (openRequests.length === 0) return;

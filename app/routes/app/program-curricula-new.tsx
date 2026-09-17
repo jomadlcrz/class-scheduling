@@ -13,10 +13,8 @@ import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { departmentService } from "~/services/department.service";
 import { enumService } from "~/services/enum.service";
-import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
+import { schoolYearService } from "~/services/school-year.service";
 import { subjectService } from "~/services/subject.service";
-import type { Department } from "~/types/department";
-import type { Subject } from "~/types/subject";
 
 export function meta() {
   return [

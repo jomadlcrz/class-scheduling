@@ -1,22 +1,10 @@
 import { timeToMinutes } from "~/lib/time";
-import { SCHEDULE_DAY_NAMES } from "~/lib/schedule-days";
 import type {
   InstructorReviewDetail,
   InstructorReviewMeeting,
   ProposedMeeting,
 } from "~/types/instructor-review";
 import type { Room } from "~/types/room";
-import {
-  DAYS,
-  type ClassMode,
-  type Day,
-} from "~/types/schedule";
-
-export const PROPOSAL_DAYS = DAYS;
-export const PROPOSAL_DAY_ROWS: { day: Day; label: string }[] = DAYS.map((d, i) => ({
-  day: d,
-  label: SCHEDULE_DAY_NAMES[i] ?? d,
-}));
 
 export const SLOT_STARTS = [
   "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
@@ -25,13 +13,6 @@ export const SLOT_STARTS = [
   "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
   "19:00", "19:30", "20:00", "20:30",
 ];
-
-export const TIMETABLE_END_TIME = "21:00";
-
-export type ProposalSlot = {
-  start: string;
-  end: string;
-};
 
 export type ProposalMeeting = {
   scheduleId: number;
@@ -113,13 +94,6 @@ export function roomAccessLabel(room: Room, programAbbrev: string | null): strin
   return match ? "Designated for your program" : null;
 }
 
-export function filterRoomsForProgram(rooms: Room[], programAbbrev: string | null): Room[] {
-  if (!programAbbrev) return rooms;
-  return rooms.filter((r) => {
-    if (!r.programs || r.programs.length === 0) return true;
-    return r.programs.some((p) => p.programAbbrev.toLowerCase() === programAbbrev.toLowerCase());
-  });
-}
 
 export function snapshotOriginalMeetings(
   liveMeetings: ProposalMeeting[],
@@ -173,29 +147,4 @@ export function distributedProposal(
   }));
 }
 
-export function unplaceMeeting(
-  meetings: ProposalMeeting[],
-  scheduleId: number,
-): ProposalMeeting[] {
-  return meetings.map((m) =>
-    m.scheduleId === scheduleId ? { ...m, placed: false } : m,
-  );
-}
 
-export function addedSession(
-  meetings: ProposalMeeting[],
-  template: ProposalMeeting,
-  slot: { dayOfWeek: string; startTime: string; endTime: string; roomId: number | null },
-): ProposalMeeting[] {
-  const newMeeting: ProposalMeeting = {
-    ...template,
-    scheduleId: -(Date.now() % 1000000),
-    dayOfWeek: slot.dayOfWeek,
-    startTime: slot.startTime,
-    endTime: slot.endTime,
-    roomId: slot.roomId,
-    placed: true,
-    movable: true,
-  };
-  return [...meetings, newMeeting];
-}

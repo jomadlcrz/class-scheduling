@@ -281,7 +281,6 @@ function MasterSchedulesPage() {
     const programParam = searchParams.get("program");
     const syParam = searchParams.get("sy");
     const semParam = searchParams.get("sem");
-    const ylParam = searchParams.get("yl");
 
     if (!setParam && !programParam && !syParam) return;
     prefillAppliedRef.current = true;

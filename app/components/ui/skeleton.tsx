@@ -563,52 +563,6 @@ export function AllocationListSkeleton({ rows = 5 }: AllocationListSkeletonProps
   );
 }
 
-/** Irregular students page loading placeholder — term filter card above the
- * three-pane layout (student list, student detail, assign panel). */
-export function IrregularStudentsSkeleton() {
-  return (
-    <div role="status" aria-label="Loading">
-      <div aria-hidden="true" className="mt-6 flex flex-col gap-6">
-        <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:max-w-md dark:border-white/10 dark:bg-white/5">
-          <Skeleton className="h-9 w-full rounded-lg" />
-          <Skeleton className="h-9 w-full rounded-lg" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_320px_minmax(0,1fr)]">
-          <div className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <Skeleton className="size-9 rounded-full" />
-                <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-3.5 w-1/2" />
-                  <Skeleton className="h-3 w-1/3" />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <Skeleton className="h-4 w-24" />
-            <div className="mt-3 space-y-2.5">
-              <Skeleton className="h-3 w-2/3" />
-              <Skeleton className="h-3 w-1/2" />
-              <Skeleton className="h-3 w-3/4" />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <Skeleton className="h-4 w-40" />
-            <div className="mt-3 space-y-2">
-              <Skeleton className="h-8 w-full rounded-lg" />
-              <Skeleton className="h-8 w-full rounded-lg" />
-              <Skeleton className="h-8 w-full rounded-lg" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /** Lab analysis loading placeholder — verdict banner, summary stat row, per-room
  * slot plates, and the consuming-subjects table. */

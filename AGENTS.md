@@ -98,6 +98,36 @@ app/
     - Block non-numeric characters on keypress: `onKeyDown={(e) => { if (["e", "E", "+", "-", "."].includes(e.key)) e.preventDefault(); }}`.
     - Sanitize pasted/typed input on change: `onChange={(e) => { const clean = e.target.value.replace(/[^0-9]/g, ""); ... }}`.
 
+### Authentication Terminology ("Log In" vs "Sign In")
+
+- **Always use "Log In" / "Portal Log In":**
+  - Use **"Portal Log In"** for headings, page landmarks, and title cards.
+  - Use **"Log In"** for submit buttons and calls to action (or sentence case **"Log in"** in inline body text and form labels).
+  - **Never** use "Sign In", "Sign-in", "Portal Sign In", or "Sign up".
+
+### SEO, Indexing & Metadata Architecture
+
+- **Custom Domain & Canonical Base:**
+  - The canonical custom domain is `https://www.gwc-class-scheduling.app` (configured in [`app/lib/seo.ts`](./app/lib/seo.ts) under `SITE_CONFIG.canonicalUrl`).
+  - Use `createPageMeta(...)` for route meta exports so canonical URLs, Open Graph tags, and Twitter cards inherit consistent production URLs.
+- **Page Title Standard:**
+  - Every page title must strictly follow the format: `"{Page Title} — GWC Class Scheduling"` (e.g. `"Portal Log In — GWC Class Scheduling"`, `"Scheduling Hub — GWC Class Scheduling"`).
+- **Strict Private Route Exclusion (No Indexing):**
+  - **All** authenticated app routes (`/dashboard`, `/schedules/*`, `/student-schedule`, `/faculty-schedule`, `/profile/*`, `/settings/*`, `/notifications`, `/facilities/*`, etc.) and sensitive auth recovery routes (`/reset-password`, `/unauthorized`, `/change-password`) **MUST** specify `noIndex: true`.
+  - Authenticated and sensitive routes must **never** be added to [`public/sitemap.xml`](./public/sitemap.xml) and must be blocked via `Disallow:` in [`public/robots.txt`](./public/robots.txt).
+- **Public SEO & Structured Data:**
+  - Only public information/landing pages (`/`, `/login`, `/faqs`, `/help`, `/contact-us`, `/privacy-policy`, `/terms-of-use`, `/forgot-password`) are included in `public/sitemap.xml`.
+  - The public home route embeds Schema.org JSON-LD structured data (`@graph` containing `WebSite`, `EducationalOrganization`, and `SiteNavigationElement` sitelinks) to power Google rich snippets and site branding.
+
+### Code Cleanliness & Dead Code Prevention
+
+- **Zero Unused Declarations (Strict TS6133 / TS6196 Compliance):**
+  - No unused imports, unused local variables, unused helper functions, unexported dead components, or unread state variables are allowed (`npx tsc --noEmit --noUnusedLocals` must pass with 0 errors).
+  - When removing unused state, verify component contract requirements (e.g., `ConfirmDialog` manages its own internal loading state via `onConfirm: () => Promise<void>` — do not leave orphaned `setRemoving` or `setLoading` state calls).
+- **Safe Knip Usage:**
+  - When running Knip (`npx knip`) or pruning dead code, **NEVER** strip `export` keywords from [`app/types/`](./app/types/) or [`app/schemas/`](./app/schemas/). Types and schemas are shared across the system and frequently consumed via namespace imports (`import type * as ...`).
+  - Prune unreferenced UI component primitives cleanly without leaving empty lines inside `export { ... }` blocks.
+
 ## Reuse before writing (live shared code)
 
 | Need | Use |
@@ -168,8 +198,11 @@ When working on student-facing views, pages, or layouts on mobile viewports:
 
 ## Definition of done
 
-1. `npm run typecheck` passes.
-2. `npm run build` passes.
-3. Touched routes render without errors (`npm run dev`, then request the route — SSR surfaces render errors as 500s).
-4. Both themes checked (toggle or `.dark` class) and keyboard focus states visible.
-5. No new duplication: icons/spinners/inputs/buttons come from `components/ui`; no copy-pasted page chrome.
+1. `npm run typecheck` passes without errors (`react-router typegen && tsc`).
+2. `npx tsc --noEmit --noUnusedLocals` passes with 0 unused declarations (TS6133/TS6196).
+3. `npm run build` passes (client and SSR production bundles generate cleanly).
+4. Touched routes render without errors (`npm run dev`, then request the route — SSR surfaces render errors as 500s).
+5. Both themes checked (toggle or `.dark` class) and keyboard focus states visible.
+6. No new duplication: icons/spinners/inputs/buttons come from `components/ui`; no copy-pasted page chrome.
+7. Strict "Portal Log In" / "Log In" terminology maintained (never "Sign In").
+8. No private or authenticated routes exposed in `public/sitemap.xml` or allowed in `public/robots.txt`.

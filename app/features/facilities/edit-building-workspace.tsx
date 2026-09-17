@@ -1,4 +1,3 @@
-import { Menu } from "@base-ui/react/menu";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FormError } from "~/components/forms/form-error";
@@ -8,8 +7,6 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { RoomProgramAccessField } from "~/features/facilities/room-program-access-field";
 import {
-  CheckIcon,
-  ChevronDownIcon,
   CopyIcon,
   PlusIcon,
   TrashIcon,
@@ -317,16 +314,6 @@ export function EditBuildingWorkspace({
     updateExistingDrafts((rooms) => rooms.map((room) => (room.id === roomId ? { ...room, ...patch } : room)));
   }
 
-  function toggleExistingProgram(roomId: number, programId: number) {
-    updateExistingDrafts((rooms) =>
-      rooms.map((room) => {
-        if (room.id !== roomId) return room;
-        const next = new Set(room.programIds);
-        next.has(programId) ? next.delete(programId) : next.add(programId);
-        return { ...room, programIds: [...next] };
-      }),
-    );
-  }
 
   function updateNewRooms(floorLevel: number, updater: (rooms: NewRoomDraft[]) => NewRoomDraft[]) {
     setFloors((current) => {
@@ -372,16 +359,6 @@ export function EditBuildingWorkspace({
     );
   }
 
-  function toggleProgram(floorLevel: number, roomKey: string, programId: number) {
-    updateNewRooms(floorLevel, (rooms) =>
-      rooms.map((room) => {
-        if (room.key !== roomKey) return room;
-        const next = new Set(room.programIds);
-        next.has(programId) ? next.delete(programId) : next.add(programId);
-        return { ...room, programIds: [...next] };
-      }),
-    );
-  }
 
   async function handleSave() {
     const newRooms = floors.flatMap((floor) => floor.newRooms);

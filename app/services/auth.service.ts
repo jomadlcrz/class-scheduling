@@ -27,14 +27,6 @@ type LoginResponse = {
   role_labels?: string[];
 };
 
-type RefreshResponse = {
-  access_token: string;
-  refresh_token: string;
-  remember_me: boolean;
-  roles: string[];
-  role_labels: string[];
-};
-
 export type LoginResult = AuthSession | { requiresPasswordChange: true };
 
 async function login(credentials: LoginCredentials): Promise<LoginResult> {

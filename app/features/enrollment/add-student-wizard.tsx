@@ -289,7 +289,7 @@ export function AddStudentWizard({
           selectedSubjectIds={selectedSubjectIds}
           onToggleSubject={toggleSubject}
           isSaving={isSaving}
-          canSave={step1Valid && step2Valid && (!isIrregular || selectedSubjectIds.size > 0)}
+          canSave={step1Valid && step2Valid && step3Valid}
           onBack={() => goToStep(1)}
           onSave={handleSave}
           onEditIdentity={() => goToStep(0)}

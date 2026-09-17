@@ -14,7 +14,6 @@ import { TermWorkflowTimeline } from "~/features/academic-terms/term-workflow-ti
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { termClosureService } from "~/services/term-closure.service";
-import type { TermWorkflow } from "~/types/term-closure";
 
 type TermWorkflowCardProps = {
   onChanged?: () => Promise<void>;

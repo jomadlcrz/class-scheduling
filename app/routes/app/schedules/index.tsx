@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "~/auth/role-guard";
-import { Card } from "~/components/ui/card";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { SchedulingHubSkeleton } from "~/components/ui/skeleton";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { HubActionQueue } from "~/features/schedules/hub/hub-action-queue";
@@ -12,6 +10,7 @@ import { SchedulingModuleNav } from "~/features/schedules/hub/scheduling-module-
 import { useSchedulingHubData } from "~/features/schedules/hub/use-scheduling-hub-data";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 
 export function meta() {
   return [

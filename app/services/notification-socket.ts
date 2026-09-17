@@ -418,7 +418,4 @@ export function subscribeToNotificationStream(listener: Listener): () => void {
   };
 }
 
-/** Current connection state, for a UI that wants to show it. */
-export function notificationStreamStatus(): NotificationStreamStatus {
-  return status;
-}
+

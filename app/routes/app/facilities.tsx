@@ -18,8 +18,6 @@ import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
 import type { Building } from "~/types/building";
-import type { FacilityBuildingDetail } from "~/types/facility";
-import type { Program } from "~/types/program";
 
 export function meta() {
   return [

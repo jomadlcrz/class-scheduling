@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
+import { useEffect, useMemo, useState, useDeferredValue } from "react";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { DataLoadAlert } from "~/components/feedback/data-load-alert";
@@ -6,23 +6,16 @@ import { EmptyState } from "~/components/feedback/empty-state";
 import { FormError } from "~/components/forms/form-error";
 import { Badge, type BadgeTone } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import {
   AlertTriangleIcon,
-  CalendarIcon,
   CheckIcon,
   ClockIcon,
   EditIcon,
-  EyeIcon,
   FileSearchIcon,
   FlaskConicalIcon,
   GridIcon,
-  HelpCircleIcon,
   ListIcon,
-  LockIcon,
-  PlusIcon,
   SearchIcon,
-  TrashIcon,
   UploadIcon,
   RefreshCwIcon,
 } from "~/components/ui/icons";
@@ -52,7 +45,6 @@ import type {
 } from "~/types/schedule-agent";
 import { useAuth } from "~/hooks/use-auth";
 import { useCachedData } from "~/hooks/use-cached-data";
-import { useEnums } from "~/hooks/use-enums";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { PageHeader } from "~/layouts/page-header";
@@ -61,10 +53,7 @@ import { authorityWorkflowService } from "~/services/authority-workflow.service"
 import { buildingService } from "~/services/building.service";
 import { classroomMappingService } from "~/services/classroom-mapping.service";
 import { deanService } from "~/services/dean.service";
-import { programService } from "~/services/program.service";
 import { scheduleService } from "~/services/schedule.service";
-import { setService } from "~/services/set.service";
-import { subjectService } from "~/services/subject.service";
 import type {
   MajorSchedule,
   MajorScheduleAuditLogResult,

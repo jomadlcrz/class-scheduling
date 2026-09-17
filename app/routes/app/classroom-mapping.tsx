@@ -16,9 +16,7 @@ import { buildingService } from "~/services/building.service";
 import { classroomMappingService } from "~/services/classroom-mapping.service";
 import { schoolYearService } from "~/services/school-year.service";
 import { semesterService } from "~/services/semester.service";
-import type { Building } from "~/types/building";
-import type { Classroom } from "~/features/classroom-mapping/mapping-model";
-import type { Semester } from "~/types/semester";
+
 
 export function meta() {
   return [

@@ -1,13 +1,12 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import { getDayMapping } from "~/lib/day-utils";
-import { appendTermScopeParams, termScopeQuery } from "~/lib/term-scope";
+import { appendTermScopeParams } from "~/lib/term-scope";
 import { semesterService } from "~/services/semester.service";
 import {
   parseTime12h,
   type Attestation,
   type Day,
   type FinalizedMajorMeeting,
-  type RegularScheduleDetail,
   type Schedule,
   type ScheduleMode,
   type ScheduleSemester,

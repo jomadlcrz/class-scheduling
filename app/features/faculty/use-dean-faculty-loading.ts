@@ -3,7 +3,6 @@ import { useCachedData } from "~/hooks/use-cached-data";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { deanService } from "~/services/dean.service";
-import type { FacultyLoadingEntry } from "~/types/faculty-load";
 
 /**
  * Loads all faculty loading entries for the dean's department via

@@ -14,15 +14,20 @@ GWC Class Scheduling frontend — builds conflict-free academic timetables. This
 npm run dev          # dev server (Vite, port 5173)
 npm run build         # production build — must pass before finishing work
 npm run typecheck     # react-router typegen && tsc — must pass before finishing work
+npx tsc --noEmit --noUnusedLocals  # verifies zero unused variables, imports, or dead functions
 npm run start         # serve the production build
 npm run test:perf     # Playwright perf suite — runs against the PRODUCTION build (npm run start), not unit tests
 ```
 
-There is no unit/component test suite and no ESLint/Prettier configured — `tsc` (strict mode) is the only automated check. Auth flows need the backend running at `VITE_API_URL`, and this frontend's origin must be listed in the backend's `CORS_ORIGIN`.
+There is no unit/component test suite and no ESLint/Prettier configured — `tsc` (strict mode, 0 unused locals) and `npm run build` are the required automated checks. Auth flows need the backend running at `VITE_API_URL`, and this frontend's origin must be listed in the backend's `CORS_ORIGIN`.
 
 ## Architecture
 
 **Data-flow boundary:** components never fetch directly. The chain is always `component → app/services/*.service.ts → app/lib/api.ts (Bearer token, error normalization) → Flask backend`. `app/lib/api.ts` normalizes the backend's inconsistent error shapes (`{error}` / `{errors}` / `{message}`) into a single `ApiError`.
+
+**SEO & Metadata:** canonical base `https://www.gwc-class-scheduling.app` (`app/lib/seo.ts`). All authenticated routes (`/dashboard`, `/schedules/*`, `/student-schedule`, etc.) and sensitive auth routes (`/reset-password`, `/unauthorized`) MUST specify `noIndex: true` and must be disallowed in `public/robots.txt` and omitted from `public/sitemap.xml`. Public pages use Schema.org JSON-LD structured data and title format `"{Page Title} — GWC Class Scheduling"`.
+
+**Terminology:** always use **"Portal Log In"** / **"Log In"** (never "Sign In").
 
 **Backend-truth convention:** error messages, success messages, and enum/vocabulary values (gender, roles, subject type, room type, etc.) are all surfaced **verbatim** from backend responses — never hardcoded or reworded on the frontend. Errors render inline via `FormError`; success messages go through `toast.success(message)` (sonner) only when the backend actually returns one — no message means no toast, not invented copy. Enum options come from `enumService.getOptions()`, never re-declared as frontend constants.
 

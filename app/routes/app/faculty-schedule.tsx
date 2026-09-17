@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { RoleGuard } from "~/auth/role-guard";
 import { EmptyState } from "~/components/feedback/empty-state";
-import { Button } from "~/components/ui/button";
 import { MobileScheduleSkeleton } from "~/components/ui/skeleton";
 import { PrinterIcon } from "~/components/ui/icons";
 import { StatCard } from "~/components/ui/stat-card";

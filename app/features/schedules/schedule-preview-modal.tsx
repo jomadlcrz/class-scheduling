@@ -10,7 +10,6 @@ import {
 import { ScheduleGrid } from "~/features/schedules/schedule-grid";
 import { ScheduleTable } from "~/features/schedules/schedule-table";
 import { ScheduleViewToggle, type ScheduleViewMode } from "~/features/schedules/schedule-view-toggle";
-import { useDays } from "~/hooks/use-days";
 import { getDayMapping } from "~/lib/day-utils";
 import { scheduleReleaseService } from "~/services/schedule-release.service";
 import type { SchedulePreview } from "~/types/schedule-release";

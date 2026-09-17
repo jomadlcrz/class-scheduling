@@ -28,8 +28,6 @@ import { departmentService } from "~/services/department.service";
 import { enumService } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
 import { subjectService } from "~/services/subject.service";
-import type { ProgramCurriculum } from "~/types/curriculum";
-import type { Department } from "~/types/department";
 import type { CreateProgramInput, Program } from "~/types/program";
 import type { Subject, UpdateSubjectInput } from "~/types/subject";
 

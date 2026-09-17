@@ -4,8 +4,6 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { schoolYearSchema } from "~/schemas/school-year.schema";
 
-const CURRENT_YEAR = new Date().getFullYear();
-const EXAMPLE_SCHOOL_YEAR = `${CURRENT_YEAR}-${CURRENT_YEAR + 1}`;
 
 type SchoolYearFormProps = {
   initialValue?: string;

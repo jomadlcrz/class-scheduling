@@ -14,16 +14,12 @@ import { useDebounce } from "~/hooks/use-debounce";
 import { useUnsavedChangesGuard } from "~/hooks/use-unsaved-changes-guard";
 import { PageHeader } from "~/layouts/page-header";
 import { enrollmentService } from "~/services/enrollment.service";
-import { enumService, type EnumOptions } from "~/services/enum.service";
+import { enumService } from "~/services/enum.service";
 import { programService } from "~/services/program.service";
-import { schoolYearService, type SchoolYearOption } from "~/services/school-year.service";
+import { schoolYearService } from "~/services/school-year.service";
 import { semesterService } from "~/services/semester.service";
 import { setService } from "~/services/set.service";
 import { subjectService } from "~/services/subject.service";
-import type { Program } from "~/types/program";
-import type { Semester } from "~/types/semester";
-import type { ClassSet } from "~/types/set";
-import type { Subject } from "~/types/subject";
 
 export function meta() {
   return [

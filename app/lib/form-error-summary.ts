@@ -75,13 +75,7 @@ export function zodIssueMessages(error: ZodError): string[] {
   return error.issues.map((issue) => issue.message);
 }
 
-/** `reportFormIssues` for a failed Zod `safeParse`. */
-export function reportZodIssues(
-  error: ZodError,
-  setError?: (message: string | null) => void,
-): boolean {
-  return reportFormIssues(zodIssueMessages(error), setError);
-}
+
 
 /**
  * Report a failed request (or any thrown value) the same way: inline banner plus

@@ -1,4 +1,3 @@
-import { Menu } from "@base-ui/react/menu";
 import { useEffect, useMemo, useState } from "react";
 import { FormError } from "~/components/forms/form-error";
 import { EmptyState } from "~/components/feedback/empty-state";
@@ -11,7 +10,7 @@ import {
   type BuildingSummaryData,
 } from "~/features/facilities/building-summary-panel";
 import { RoomProgramAccessField } from "~/features/facilities/room-program-access-field";
-import { CheckIcon, ChevronDownIcon, CopyIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
+import { CopyIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { FieldChrome, Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { buildingSchema } from "~/schemas/building.schema";
@@ -176,16 +175,6 @@ export function CreateBuildingWorkspace({
     );
   }
 
-  function toggleProgram(floorLevel: number, roomKey: string, programId: number) {
-    updateFloorRooms(floorLevel, (rooms) =>
-      rooms.map((room) => {
-        if (room.key !== roomKey) return room;
-        const next = new Set(room.programIds);
-        next.has(programId) ? next.delete(programId) : next.add(programId);
-        return { ...room, programIds: [...next] };
-      }),
-    );
-  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

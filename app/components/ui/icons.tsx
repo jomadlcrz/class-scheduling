@@ -26,14 +26,6 @@ function IconBase({ size = 18, strokeWidth = 2, className, children }: IconBaseP
   );
 }
 
-export function XIcon({ size = 16, className }: { size?: number; className?: string } = {}) {
-  return (
-    <IconBase size={size} className={className}>
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </IconBase>
-  );
-}
 
 export function EyeIcon() {
   return (
@@ -293,15 +285,6 @@ export function Building2Icon() {
   );
 }
 
-export function ChartIcon() {
-  return (
-    <IconBase>
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </IconBase>
-  );
-}
 
 export function ChevronDownIcon({ size = 16, className }: { size?: number; className?: string } = {}) {
   return (
@@ -434,15 +417,6 @@ export function UserCheckIcon() {
   );
 }
 
-export function MoreVerticalIcon() {
-  return (
-    <IconBase size={16}>
-      <circle cx="12" cy="5" r="1" />
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="12" cy="19" r="1" />
-    </IconBase>
-  );
-}
 
 export function ArchiveIcon() {
   return (
@@ -501,15 +475,6 @@ export function MinusIcon({ size = 16, className }: { size?: number; className?:
   );
 }
 
-export function SaveIcon({ size = 16 }: { size?: number }) {
-  return (
-    <IconBase size={size}>
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
-    </IconBase>
-  );
-}
 
 export function ShieldIcon() {
   return (
@@ -540,33 +505,6 @@ export function BookOpenIcon({ size = 18, className }: { size?: number; classNam
   );
 }
 
-export function BookmarkIcon() {
-  return (
-    <IconBase>
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-    </IconBase>
-  );
-}
-
-export function LayoutGridIcon() {
-  return (
-    <IconBase>
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="14" y="14" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
-    </IconBase>
-  );
-}
-
-export function ClockIconLarge() {
-  return (
-    <IconBase>
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </IconBase>
-  );
-}
 
 export function MapIcon() {
   return (
@@ -588,16 +526,6 @@ export function UsersRoundIcon() {
   );
 }
 
-export function GraduationHatIcon() {
-  return (
-    <IconBase>
-      <path d="M21.42 10.922l-1.718-.002-8.7-5.074a1.5 1.5 0 0 0-1.434 0L2 10.922" />
-      <path d="M3.42 10.922L12 6l8.58 4.922" />
-      <path d="M12 22V12" />
-      <path d="M19 21.5V12.5L12 8.5 5 12.5V21.5" />
-    </IconBase>
-  );
-}
 
 export function FolderOpenIcon() {
   return (

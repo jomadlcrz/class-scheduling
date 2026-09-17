@@ -2,7 +2,6 @@ import { apiGet, apiMessage, apiPost } from "~/lib/api";
 import { appendTermScopeParams } from "~/lib/term-scope";
 import {
   parseTime12h,
-  type Day,
   type Schedule,
   type ScheduleMode,
 } from "~/types/schedule";

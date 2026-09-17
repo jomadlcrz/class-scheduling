@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
 import { MappingLegend } from "~/features/classroom-mapping/mapping-legend";
@@ -134,7 +134,6 @@ export function AdjustmentBoardMap({
   const {
     visibleSelection,
     highlightedScheduleId,
-    setHighlightedScheduleId,
     chooseSlot,
     selectLabSlot,
     startShiftDrag,

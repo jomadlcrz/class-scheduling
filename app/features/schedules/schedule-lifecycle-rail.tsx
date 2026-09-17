@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Card } from "~/components/ui/card";
 import { AlertTriangleIcon, CheckIcon, ClockIcon, EditIcon } from "~/components/ui/icons";
-import { Spinner } from "~/components/ui/spinner";
 import { Stepper, type StepDefinition } from "~/components/ui/stepper";
 import {
   scheduleReleaseStatusLabel,
@@ -239,20 +238,3 @@ export function ScheduleLifecycleRail({
   );
 }
 
-/** Loading placeholder for ScheduleLifecycleRail. */
-export function ScheduleLifecycleRailLoading() {
-  return (
-    <Card className="p-4 sm:p-5">
-      <div
-        role="status"
-        aria-label="Loading schedule status"
-        className="flex flex-col items-center justify-center gap-3 py-8 sm:py-10"
-      >
-        <Spinner />
-        <p className="max-w-sm text-center font-body text-sm text-slate-600 dark:text-slate-300">
-          Loading schedule status…
-        </p>
-      </div>
-    </Card>
-  );
-}

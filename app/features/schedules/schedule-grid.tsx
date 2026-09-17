@@ -4,7 +4,7 @@ import { Tooltip } from "~/components/ui/tooltip";
 import { useDays } from "~/hooks/use-days";
 import { DAYS, formatTime, type Day, type Schedule } from "~/types/schedule";
 import { DAY_ACCENT } from "~/features/schedules/day-accent";
-import { ModeBadge, ModeSessionBadges } from "~/features/schedules/mode-badge";
+import { ModeSessionBadges } from "~/features/schedules/mode-badge";
 import { RoomOccupancy } from "~/features/schedules/room-occupancy";
 
 type FacultyLoad = { maxWeeklyHours: number; currentWeeklyHours: number };

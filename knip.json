@@ -12,8 +12,8 @@
   ],
   "rules": {
     "files": "warn",
-    "types": "off",
-    "exports": "off",
+    "types": "warn",
+    "exports": "warn",
     "duplicates": "error"
   }
 }

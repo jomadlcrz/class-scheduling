@@ -168,10 +168,7 @@ function StudentSchedulePage() {
     return sum;
   }, [visibleSchedules]);
 
-  const totalSubjects = useMemo(
-    () => new Set(visibleSchedules.map((s) => s.subjectCode)).size,
-    [visibleSchedules],
-  );
+
 
   const totalSets = useMemo(
     () => new Set(visibleSchedules.map((s) => s.setCode)).size,

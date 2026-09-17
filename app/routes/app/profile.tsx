@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -108,7 +108,6 @@ function StudentProfilePage() {
 
   const [editPhotoSheetOpen, setEditPhotoSheetOpen] = useState(false);
   const [cropSrc, setCropSrc] = useState("");
-  const [removing, setRemoving] = useState(false);
   const [photoRemoveOpen, setPhotoRemoveOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -161,7 +160,6 @@ function StudentProfilePage() {
   }
 
   async function handleRemovePhoto() {
-    setRemoving(true);
     try {
       const msg = await profilePhotoService.removePhoto("student");
       await reloadPhoto();
@@ -172,8 +170,6 @@ function StudentProfilePage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to delete photo.";
       toast.error(msg);
-    } finally {
-      setRemoving(false);
     }
   }
 

@@ -4,7 +4,7 @@ import { Button } from "~/components/ui/button";
 import { Drawer } from "~/components/ui/drawer";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { FieldChrome, inputClassName } from "~/components/ui/input";
-import { HelpCircleIcon, PlusIcon, SearchIcon, UserIcon } from "~/components/ui/icons";
+import { HelpCircleIcon, SearchIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { useCachedData } from "~/hooks/use-cached-data";
@@ -15,7 +15,6 @@ import { programService } from "~/services/program.service";
 import { scheduleService, type ScheduleRoomOption } from "~/services/schedule.service";
 import { setService } from "~/services/set.service";
 import type { MajorSchedule, MajorScheduleMeetingInput, MajorScheduleSubmission } from "~/types/authority-workflow";
-import { generateTimeSlots } from "~/types/schedule";
 import {
   DAYS,
   DAY_STYLES,
@@ -51,8 +50,6 @@ type Props = {
   scheduleToEdit?: MajorSchedule | null;
   onCloseEdit?: () => void;
 };
-
-const TIME_OPTIONS = generateTimeSlots().map(formatTime12h);
 
 function slotsFrom(minutes: number) {
   const hh = String(Math.floor(minutes / 60)).padStart(2, "0");
@@ -723,10 +720,6 @@ export function MajorAssignmentDrawer({
   const classModes = useMemo(
     () => enums?.classMode ?? ["F2F", "Synchronous", "Asynchronous", "Blended"],
     [enums?.classMode],
-  );
-  const sessionModes = useMemo(
-    () => enums?.sessionMode ?? ["LEC", "LAB"],
-    [enums?.sessionMode],
   );
 
   const [programId, setProgramId] = useState(0);

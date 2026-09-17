@@ -1,5 +1,5 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPost, apiPut } from "~/lib/api";
-import { appendTermScopeParams, termScopeQuery } from "~/lib/term-scope";
+import { termScopeQuery } from "~/lib/term-scope";
 
 /** Irregular students and their enrolled subjects (registrar_admin schedules module). */
 

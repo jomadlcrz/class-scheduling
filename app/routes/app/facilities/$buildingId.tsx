@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { EditBuildingSkeleton } from "~/components/ui/skeleton";
 import { EditBuildingWorkspace } from "~/features/facilities/edit-building-workspace";
@@ -16,8 +15,7 @@ import { enumService } from "~/services/enum.service";
 import { facilityService } from "~/services/facility.service";
 import { programService } from "~/services/program.service";
 import { roomService } from "~/services/room.service";
-import type { AddBuildingRoomsInput, FacilityBuildingDetail } from "~/types/facility";
-import type { Program } from "~/types/program";
+import type { AddBuildingRoomsInput } from "~/types/facility";
 import type { Room, UpdateRoomInput } from "~/types/room";
 import type { UpdateBuildingInput } from "~/types/building";
 

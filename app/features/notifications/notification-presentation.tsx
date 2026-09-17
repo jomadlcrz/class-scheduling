@@ -22,7 +22,7 @@ import {
 } from "~/components/ui/icons";
 import { formatDeadline } from "~/features/term-scheduling/term-scheduling-display";
 import { programSetLabel } from "~/lib/section-label";
-import type { NotificationItem, NotificationPayload, NotificationType } from "~/types/notification";
+import type { NotificationItem, NotificationPayload } from "~/types/notification";
 
 /**
  * Whether this notification is a job or a fact.
@@ -31,21 +31,6 @@ export type NotificationIntent = "action" | "update";
 
 export type NotificationTone = "sky" | "rose" | "emerald" | "amber" | "violet" | "slate";
 
-export const NOTIFICATION_ACTION_TYPES: NotificationType[] = [
-  "instructor_availability_declared",
-  "instructor_availability_widen_requested",
-  "schedule_approval_requested",
-  "schedule_approval_requested_summary",
-  "schedule_approval_rejected",
-  "schedule_approval_rejected_summary",
-  "schedule_approval_returned_for_revision_summary",
-  "major_schedule_edit_requested",
-  "major_schedule_edit_approved",
-  "major_schedule_reopened",
-  "major_schedule_submitted",
-  "subject_offering_updated",
-  "schedule_review_distributed",
-];
 
 export type NotificationPresentation = {
   intent: NotificationIntent;
@@ -92,9 +77,6 @@ export const NOTIFICATION_TONE_STYLES: Record<
     surface: "bg-slate-50 dark:bg-white/5",
   },
 };
-
-export const NOTIFICATION_MESSAGE_PREVIEW_CLASS =
-  "mt-1.5 block min-w-0 max-w-full max-h-[3rem] overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] border-l-2 border-slate-300 pl-2.5 font-body text-xs leading-relaxed text-slate-600 line-clamp-2 dark:border-white/20 dark:text-slate-300";
 
 function text(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;

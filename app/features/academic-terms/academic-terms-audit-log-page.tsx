@@ -21,7 +21,7 @@ import { Tooltip } from "~/components/ui/tooltip";
 import { useCachedData } from "~/hooks/use-cached-data";
 import { PageHeader } from "~/layouts/page-header";
 import { termClosureService } from "~/services/term-closure.service";
-import type { TermAuditLogEntry, TermAuditLogFilters } from "~/types/term-closure";
+import type { TermAuditLogEntry } from "~/types/term-closure";
 
 const PAGE_SIZE = 10;
 

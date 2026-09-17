@@ -8,7 +8,7 @@ import { Alert, AlertAction, AlertDescription, AlertTitle } from "~/components/u
 import { Button } from "~/components/ui/button";
 import { Breadcrumb } from "~/components/ui/breadcrumb";
 import { Drawer } from "~/components/ui/drawer";
-import { AlertIcon, PlusIcon, RefreshCwIcon, RotateIcon } from "~/components/ui/icons";
+import { AlertIcon, RefreshCwIcon, RotateIcon } from "~/components/ui/icons";
 import { ConfirmDialog } from "~/components/ui/modal";
 import { Spinner } from "~/components/ui/spinner";
 import { ScheduleBuilderSkeleton } from "~/components/ui/skeleton";
@@ -36,15 +36,12 @@ import { programService } from "~/services/program.service";
 import type { ScheduleSuggestion } from "~/services/schedule.service";
 import {
   scheduleService,
-  type ScheduleRoomOption,
   type ScheduleSubjectOption,
-  type ScheduleYearLevelOption,
 } from "~/services/schedule.service";
 import { setService } from "~/services/set.service";
 import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
 
 import { formatDecimalHour, normalizeTime, timeToMinutes } from "~/lib/time";
-import type { Program } from "~/types/program";
 import type { FinalizedMajorMeeting } from "~/types/schedule";
 import {
   formatTime,
@@ -55,7 +52,6 @@ import {
 } from "~/types/schedule";
 import type { ClassSet } from "~/types/set";
 import type { YearLevel } from "~/types/subject";
-import type { WeeklyHourAllocation } from "~/types/weekly-hour-allocation";
 
 
 export function meta() {

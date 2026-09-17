@@ -15,7 +15,6 @@ import type {
   MajorScheduleConflict,
   MajorScheduleAuditLogResult,
   MajorScheduleRequirements,
-  MajorScheduleEditHistory,
   MajorScheduleEditRequest,
   MajorScheduleEditRequestResult,
   MajorScheduleMeetingInput,

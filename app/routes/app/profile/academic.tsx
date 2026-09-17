@@ -87,7 +87,6 @@ function AcademicInformationPage() {
   const section = meta?.set_name || registration?.section || "";
   const schoolYear = meta?.school_year || registration?.school_year || selectedTerm?.schoolYear || "—";
   const semester = meta?.semester_name || registration?.semester || "—";
-  const studentNo = meta?.student_id || registration?.student_id || "No ID";
   const enrolledStatus = meta?.enrolled_status || registration?.academic_status || "Enrolled";
 
   return (

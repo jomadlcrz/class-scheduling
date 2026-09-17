@@ -110,24 +110,9 @@ function ComboboxItem({ className = "", children, ...props }: ComboboxPrimitive.
   );
 }
 
-function ComboboxGroup(props: ComboboxPrimitive.Group.Props) {
-  return <ComboboxPrimitive.Group data-slot="combobox-group" {...props} />;
-}
-
-function ComboboxLabel({ className = "", ...props }: ComboboxPrimitive.GroupLabel.Props) {
-  return <ComboboxPrimitive.GroupLabel data-slot="combobox-label" className={`px-3 py-1.5 font-body text-xs font-semibold text-slate-500 dark:text-slate-400 ${className}`.trim()} {...props} />;
-}
-
-function ComboboxCollection(props: ComboboxPrimitive.Collection.Props) {
-  return <ComboboxPrimitive.Collection data-slot="combobox-collection" {...props} />;
-}
 
 function ComboboxEmpty({ className = "", ...props }: ComboboxPrimitive.Empty.Props) {
   return <ComboboxPrimitive.Empty data-slot="combobox-empty" className={`hidden px-3 py-6 text-center font-body text-sm text-slate-400 group-data-empty/combobox-content:block dark:text-slate-500 ${className}`.trim()} {...props} />;
-}
-
-function ComboboxSeparator({ className = "", ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="combobox-separator" role="separator" className={`mx-1 my-1 h-px bg-slate-200 dark:bg-white/10 ${className}`.trim()} {...props} />;
 }
 
 function ComboboxChips({ className = "", ...props }: ComboboxPrimitive.Chips.Props) {
@@ -165,15 +150,11 @@ export {
   ComboboxChip,
   ComboboxChips,
   ComboboxChipsInput,
-  ComboboxCollection,
   ComboboxContent,
   ComboboxEmpty,
-  ComboboxGroup,
   ComboboxInput,
   ComboboxItem,
-  ComboboxLabel,
   ComboboxList,
-  ComboboxSeparator,
   ComboboxTrigger,
   ComboboxValue,
   useComboboxAnchor,

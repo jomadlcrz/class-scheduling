@@ -80,16 +80,8 @@ function CommandGroup({ className = "", ...props }: ComponentProps<typeof Comman
   return <CommandPrimitive.Group data-slot="command-group" className={`overflow-hidden p-1 font-body text-navy-800 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-slate-500 dark:text-mist-100 dark:**:[[cmdk-group-heading]]:text-slate-400 ${className}`.trim()} {...props} />;
 }
 
-function CommandSeparator({ className = "", ...props }: ComponentProps<typeof CommandPrimitive.Separator>) {
-  return <CommandPrimitive.Separator data-slot="command-separator" className={`mx-1 h-px bg-slate-200 dark:bg-white/10 ${className}`.trim()} {...props} />;
-}
-
 function CommandItem({ className = "", ...props }: ComponentProps<typeof CommandPrimitive.Item>) {
   return <CommandPrimitive.Item data-slot="command-item" className={`relative flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 font-body text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-slate-100 data-[selected=true]:text-navy-800 dark:data-[selected=true]:bg-white/10 dark:data-[selected=true]:text-mist-100 ${className}`.trim()} {...props} />;
-}
-
-function CommandShortcut({ className = "", ...props }: ComponentProps<"span">) {
-  return <span data-slot="command-shortcut" className={`ml-auto text-xs tracking-widest text-slate-400 dark:text-slate-500 ${className}`.trim()} {...props} />;
 }
 
 export {
@@ -100,7 +92,5 @@ export {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
-  CommandShortcut
 };
 
