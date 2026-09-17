@@ -33,7 +33,18 @@ async function list(): Promise<Building[]> {
 
 /** GET /buildings/:id — one building detail. */
 async function get(id: number): Promise<Building & { rooms?: unknown[] }> {
-  return apiGet(`/buildings/${id}`);
+  const b = await apiGet<{
+    building_id: number;
+    building_name: string;
+    floor_count: number;
+    rooms?: unknown[];
+  }>(`/buildings/${id}`);
+  return {
+    id: b.building_id,
+    name: b.building_name,
+    floorCount: b.floor_count,
+    rooms: b.rooms,
+  };
 }
 
 /** PATCH /buildings/:id/archive — soft-deletes the building and its active rooms after
