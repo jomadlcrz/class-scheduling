@@ -1081,6 +1081,100 @@ async function rescheduleRegularSchedule(
   return apiPatch(`/regular-schedules/${regularSchedId}/placement`, payload);
 }
 
+export type InstructorScheduleHoldingMeeting = {
+  id: number;
+  syId: number;
+  semesterNumber: number;
+  subjectId: number;
+  subjectCode: string;
+  subjectName?: string;
+  setId: number;
+  setName: string;
+  programId?: number;
+  programAbbrev?: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  classMode: string;
+  roomId?: number | null;
+  roomName?: string | null;
+  isFloating?: boolean;
+};
+
+export type InstructorScheduleHoldingsResult = {
+  instructorProfileId: number;
+  instructorName: string;
+  isActive: boolean;
+  meetingCount: number;
+  sectionCount: number;
+  subjectCount: number;
+  weeklyHours: number;
+  meetings: InstructorScheduleHoldingMeeting[];
+};
+
+export type VacateInstructorSchedulesInput = {
+  syId: number;
+  semesterNumber: number;
+  reason: string;
+};
+
+export type ChangeRegularScheduleInstructorInput = {
+  instructorId: number | null;
+  reason: string;
+};
+
+export type ChangeRegularScheduleClassModeInput = {
+  classMode: string;
+  reason: string;
+  roomId?: number | null;
+};
+
+/** GET /instructors/:instructorProfileId/schedule-holdings — Everything an instructor is still on timetable for. */
+async function getInstructorScheduleHoldings(
+  instructorProfileId: number,
+  params?: { syId?: number; semesterNumber?: number },
+): Promise<InstructorScheduleHoldingsResult> {
+  const query = new URLSearchParams();
+  if (params?.syId != null) query.set("sy_id", String(params.syId));
+  if (params?.semesterNumber != null) query.set("semester_number", String(params.semesterNumber));
+  return apiGet<InstructorScheduleHoldingsResult>(
+    `/instructors/${instructorProfileId}/schedule-holdings${query.size ? `?${query}` : ""}`,
+  );
+}
+
+/** POST /registrar/instructors/:instructorProfileId/schedule-vacancies — Take an instructor off every meeting in a term. */
+async function vacateInstructorSchedules(
+  instructorProfileId: number,
+  payload: VacateInstructorSchedulesInput,
+): Promise<{ message?: string; vacatedCount?: number; [key: string]: unknown }> {
+  return apiPost(
+    `/registrar/instructors/${instructorProfileId}/schedule-vacancies`,
+    payload,
+  );
+}
+
+/** PATCH /registrar/regular-schedules/:regularSchedId/instructor — Change instructor of a published meeting or set TBA. */
+async function changeRegularScheduleInstructor(
+  regularSchedId: number,
+  payload: ChangeRegularScheduleInstructorInput,
+): Promise<{ message?: string; schedule?: unknown; updatedSchedules?: unknown[]; updatedCount?: number }> {
+  return apiPatch(
+    `/registrar/regular-schedules/${regularSchedId}/instructor`,
+    payload,
+  );
+}
+
+/** PATCH /registrar/regular-schedules/:regularSchedId/class-mode — Switch published meeting class mode. */
+async function changeRegularScheduleClassMode(
+  regularSchedId: number,
+  payload: ChangeRegularScheduleClassModeInput,
+): Promise<{ message?: string; schedule?: unknown }> {
+  return apiPatch(
+    `/registrar/regular-schedules/${regularSchedId}/class-mode`,
+    payload,
+  );
+}
+
 export const scheduleService = {
   view,
   viewAttestations,
@@ -1111,5 +1205,9 @@ export const scheduleService = {
   deleteRegistrarMajorSchedule,
   publishProgramSchedule,
   rescheduleRegularSchedule,
+  getInstructorScheduleHoldings,
+  vacateInstructorSchedules,
+  changeRegularScheduleInstructor,
+  changeRegularScheduleClassMode,
 };
 

@@ -511,12 +511,63 @@ async function replaceDepartmentSetNames(
   return { message: apiMessage(data), setNames: data.setNames ?? [] };
 }
 
+export type PlacementPlanSection = {
+  setId: number;
+  setCode: string;
+  enrolled: number;
+  seatsRemaining: number;
+};
+
+export type PlacementPlan = {
+  capacity: number;
+  programAbbrev: string | null;
+  yearLevel: number;
+  sections: PlacementPlanSection[];
+  rosterNames: string[];
+};
+
+/** GET /enrollments/placement-plan — entire placement plan for a program-year. */
+async function getPlacementPlan(params: {
+  programId: number;
+  yearLevel: number;
+  syId: number;
+  semesterNumber: number;
+}): Promise<PlacementPlan> {
+  const query = new URLSearchParams({
+    program_id: String(params.programId),
+    year_level: String(params.yearLevel),
+    sy_id: String(params.syId),
+    semester_number: String(params.semesterNumber),
+  });
+  const data = await apiGet<{
+    capacity: number;
+    program_abbrev: string | null;
+    year_level: number;
+    sections: { set_id: number; set_code: string; enrolled: number; seats_remaining: number }[];
+    roster_names: string[];
+  }>(`/enrollments/placement-plan?${query}`);
+
+  return {
+    capacity: data.capacity,
+    programAbbrev: data.program_abbrev,
+    yearLevel: data.year_level,
+    sections: (data.sections ?? []).map((s) => ({
+      setId: s.set_id,
+      setCode: s.set_code,
+      enrolled: s.enrolled,
+      seatsRemaining: s.seats_remaining,
+    })),
+    rosterNames: data.roster_names ?? [],
+  };
+}
+
 export const enrollmentService = {
   listTermEnrollments,
   getFacets,
   getSetCapacity,
   updateSetCapacity,
   getAvailableSet,
+  getPlacementPlan,
   getDepartmentSetNames,
   replaceDepartmentSetNames,
   bulkCreate,

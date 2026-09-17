@@ -11,13 +11,27 @@ import type {
   ScheduleAgentWorkspace,
 } from "~/types/schedule-agent";
 
-/** The .../submissions/<id> or .../term/<syId>/<semesterNumber> path
- * prefix a Marvis conversation's requests share, depending on what it's
- * anchored to. */
-function targetPath(target: ScheduleAgentTarget): string {
+/** The /schedule-agent/submissions/<id>/proposals or /schedule-agent/term/<syId>/<semesterNumber>/proposals path. */
+function getTargetProposalsPath(target: ScheduleAgentTarget, workspace: ScheduleAgentWorkspace): string {
+  const query = `?workspace=${encodeURIComponent(workspace)}`;
   return target.kind === "submission"
-    ? `/schedule-agent/submissions/${target.submissionId}`
-    : `/schedule-agent/term/${target.syId}/${target.semesterNumber}`;
+    ? `/schedule-agent/submissions/${target.submissionId}/proposals${query}`
+    : `/schedule-agent/term/${target.syId}/${target.semesterNumber}/proposals${query}`;
+}
+
+/** The /schedule-agent/submissions/<id>/conversations or /schedule-agent/term/<syId>/<semesterNumber>/conversations path. */
+function getTargetConversationsPath(target: ScheduleAgentTarget, workspace: ScheduleAgentWorkspace): string {
+  const query = `?workspace=${encodeURIComponent(workspace)}`;
+  return target.kind === "submission"
+    ? `/schedule-agent/submissions/${target.submissionId}/conversations${query}`
+    : `/schedule-agent/term/${target.syId}/${target.semesterNumber}/conversations${query}`;
+}
+
+/** The /schedule-agent/submissions/<id>/solve or /schedule-agent/term/<syId>/<semesterNumber>/solve path. */
+function getTargetSolvePath(target: ScheduleAgentTarget): string {
+  return target.kind === "submission"
+    ? `/schedule-agent/submissions/${target.submissionId}/solve`
+    : `/schedule-agent/term/${target.syId}/${target.semesterNumber}/solve`;
 }
 
 type SolveStreamHandlers = {
@@ -70,7 +84,7 @@ async function solveStream(
   handlers: SolveStreamHandlers,
 ): Promise<void> {
   await apiPostStream(
-    `${targetPath(target)}/solve`,
+    getTargetSolvePath(target),
     { workspace, message, conversationId, ...modelSelection },
     (event) => handleAgentStreamEvent(event, handlers),
   );
@@ -111,15 +125,25 @@ async function applyProposal(proposalId: number): Promise<ScheduleAgentApplyResu
   );
 }
 
-/** Resumable threads for one submission's workspace, most recently active
+/** Past Schedule Agent proposals for one submission or term. */
+async function getProposals(
+  target: ScheduleAgentTarget,
+  workspace: ScheduleAgentWorkspace,
+): Promise<ScheduleAgentHistoryItem[]> {
+  const result = await apiGet<{ proposals: ScheduleAgentHistoryItem[] }>(
+    getTargetProposalsPath(target, workspace),
+  );
+  return result.proposals;
+}
+
+/** Resumable threads for one submission's or term's workspace, most recently active
  * first — the "pick a past conversation" history list. */
 async function getConversations(
   target: ScheduleAgentTarget,
   workspace: ScheduleAgentWorkspace,
 ): Promise<ScheduleAgentConversationSummary[]> {
-  const query = target.kind === "submission" ? `?workspace=${workspace}` : "";
   const result = await apiGet<{ conversations: ScheduleAgentConversationSummary[] }>(
-    `${targetPath(target)}/conversations${query}`,
+    getTargetConversationsPath(target, workspace),
   );
   return result.conversations;
 }
@@ -138,6 +162,7 @@ export const scheduleAgentService = {
   getModels,
   getSubmissions,
   applyProposal,
+  getProposals,
   getConversations,
   getConversationMessages,
 };

@@ -476,6 +476,176 @@ async function deleteRegistrarMajorSchedule(id: number, reason: string) {
   return deleteMajorSchedule(id, "registrar", reason);
 }
 
+export type MajorSchedulingAvailabilityParams = {
+  syId: number;
+  semesterNumber: number;
+  departmentId?: number;
+  programId?: number;
+  subjectId?: number;
+  curriculumDetailId?: number;
+  dayOfWeek?: string;
+  startTime?: string;
+  endTime?: string;
+  excludeScheduleId?: number;
+  majorOnly?: boolean;
+};
+
+export type MajorSchedulingAvailabilityResult = {
+  syId: number;
+  semesterNumber: number;
+  departmentId?: number | null;
+  workspace: "dean" | "registrar";
+  programId?: number | null;
+  programs: Array<{
+    programId: number;
+    programAbbrev: string;
+    programName: string;
+  }>;
+  days: string[];
+  dayWindow: {
+    startTime: string;
+    endTime: string;
+    lunch: {
+      startTime: string;
+      endTime: string;
+    };
+  };
+  slot?: {
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    durationMinutes: number;
+    hours: number;
+  } | null;
+  rooms: Array<{
+    roomId: number;
+    roomCode: string;
+    roomName: string;
+    capacity: number;
+    freeWindows?: Record<string, Array<{ startTime: string; endTime: string }>>;
+    freeForSlot?: boolean | null;
+    blockedBy?: string | null;
+  }>;
+  instructors: Array<{
+    instructorProfileId: number;
+    instructorName: string;
+    assignedToSubject?: boolean | null;
+    weekly: {
+      committed: number;
+      draft: number;
+      assigned: number;
+      cap: number;
+      remaining: number;
+    };
+    byDay?: Record<string, unknown>;
+    freeForSlot?: boolean | null;
+    blockedBy?: string | null;
+    fitsCapsForSlot?: boolean | null;
+    capWarnings?: string[];
+  }>;
+};
+
+export type MajorGenerationPlacedRow = {
+  programId: number;
+  setId: number;
+  subjectId: number;
+  sessionMode: "LEC" | "LAB";
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  roomId: number;
+  instructorId?: number | null;
+  setName?: string;
+  subjectCode?: string;
+  curriculumDetailId?: number;
+};
+
+export type MajorGenerationProposalResult = {
+  placed: MajorGenerationPlacedRow[];
+  unplaced: Array<{
+    programId: number;
+    setId: number;
+    subjectId: number;
+    reason?: string;
+    [key: string]: unknown;
+  }>;
+  solverStatus: string;
+};
+
+export type MajorGenerationCommitResult = {
+  created: Array<Record<string, unknown>>;
+  createdCount: number;
+  message?: string;
+};
+
+/** GET /deans/major-scheduling/availability or /registrar/major-scheduling/availability — query room and instructor availability. */
+async function getMajorSchedulingAvailability(
+  workspace: "dean" | "registrar",
+  params: MajorSchedulingAvailabilityParams,
+): Promise<MajorSchedulingAvailabilityResult> {
+  const query = new URLSearchParams();
+  query.set("sy_id", String(params.syId));
+  query.set("semester_number", String(params.semesterNumber));
+  if (params.departmentId != null) query.set("department_id", String(params.departmentId));
+  if (params.programId != null) query.set("program_id", String(params.programId));
+  if (params.subjectId != null) query.set("subject_id", String(params.subjectId));
+  if (params.curriculumDetailId != null) query.set("curriculum_detail_id", String(params.curriculumDetailId));
+  if (params.dayOfWeek) query.set("day_of_week", params.dayOfWeek);
+  if (params.startTime) query.set("start_time", params.startTime);
+  if (params.endTime) query.set("end_time", params.endTime);
+  if (params.excludeScheduleId != null) query.set("exclude_schedule_id", String(params.excludeScheduleId));
+  if (params.majorOnly != null) query.set("major_only", String(params.majorOnly));
+  const path = workspace === "dean"
+    ? `/deans/major-scheduling/availability?${query}`
+    : `/registrar/major-scheduling/availability?${query}`;
+  return apiGet<MajorSchedulingAvailabilityResult>(path);
+}
+
+/** POST /deans/major-schedule-generation/:syId/:semesterNumber/proposals — CP-SAT auto-generate draft for one program. */
+async function generateDeanMajorProposal(
+  syId: number,
+  semesterNumber: number,
+  programId: number,
+): Promise<MajorGenerationProposalResult> {
+  return apiPost<MajorGenerationProposalResult>(
+    `/deans/major-schedule-generation/${syId}/${semesterNumber}/proposals`,
+    { programId },
+  );
+}
+
+/** POST /deans/major-schedule-generation/:syId/:semesterNumber/commits — Bulk save Dean major proposal generation. */
+async function commitDeanMajorGeneration(
+  syId: number,
+  semesterNumber: number,
+  placedRows: MajorGenerationPlacedRow[],
+): Promise<MajorGenerationCommitResult> {
+  return apiPost<MajorGenerationCommitResult>(
+    `/deans/major-schedule-generation/${syId}/${semesterNumber}/commits`,
+    { placedRows },
+  );
+}
+
+/** POST /registrar/major-schedule-submissions/:submissionId/generation-proposals — CP-SAT auto-generate restoration proposal. */
+async function generateRegistrarMajorProposal(
+  submissionId: number,
+): Promise<MajorGenerationProposalResult> {
+  return apiPost<MajorGenerationProposalResult>(
+    `/registrar/major-schedule-submissions/${submissionId}/generation-proposals`,
+    {},
+  );
+}
+
+/** POST /registrar/major-schedule-submissions/:submissionId/generation-commits — Bulk save Registrar major restoration generation. */
+async function commitRegistrarMajorGeneration(
+  submissionId: number,
+  placedRows: MajorGenerationPlacedRow[],
+): Promise<MajorGenerationCommitResult> {
+  return apiPost<MajorGenerationCommitResult>(
+    `/registrar/major-schedule-submissions/${submissionId}/generation-commits`,
+    { placedRows },
+  );
+}
+
 export const authorityWorkflowService = {
   listAssignmentAuditLogs,
   listHoursAdjustmentRequests,
@@ -524,5 +694,10 @@ export const authorityWorkflowService = {
   retainInitialSchedule,
   previewRetention,
   analyzeAdvancedAdjustment,
+  getMajorSchedulingAvailability,
+  generateDeanMajorProposal,
+  commitDeanMajorGeneration,
+  generateRegistrarMajorProposal,
+  commitRegistrarMajorGeneration,
 };
 
