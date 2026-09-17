@@ -93,7 +93,11 @@ type NavSubmenu = {
   to?: undefined;
 };
 type NavEntry = NavItem | NavSubmenu;
-type NavGroup = { label: string; items: NavEntry[] };
+type NavGroup = {
+  label: string;
+  roleLabels?: Partial<Record<Role, string>>;
+  items: NavEntry[];
+};
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -193,6 +197,9 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "My Department",
+    roleLabels: {
+      registrar: "All Departments",
+    },
     items: [
       { label: "Department Schedules", to: "/dean/department-schedules", icon: <FolderOpenIcon />, roles: ["dean"], matchPrefix: true },
       { label: "Faculty Loads", to: "/faculty-loads", icon: <UsersIcon />, roles: ["dean"] },
@@ -340,17 +347,21 @@ export function Sidebar({ mode, onModeChange, onExpand, onNavigate, forceExpande
 
   const hasRole = (roles: Role[]) => roles.includes(user.role);
 
-  const groups = NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items
-      .filter((item) => hasRole(item.roles))
-      .map((item) =>
-        item.subItems
-          ? { ...item, subItems: item.subItems.filter((sub) => hasRole(sub.roles)) }
-          : item,
-      )
-      .filter((item) => !item.subItems || item.subItems.length > 0),
-  })).filter((group) => group.items.length > 0);
+  const groups = NAV_GROUPS.map((group) => {
+    const label = group.roleLabels?.[user.role] ?? group.label;
+    return {
+      ...group,
+      label,
+      items: group.items
+        .filter((item) => hasRole(item.roles))
+        .map((item) =>
+          item.subItems
+            ? { ...item, subItems: item.subItems.filter((sub) => hasRole(sub.roles)) }
+            : item,
+        )
+        .filter((item) => !item.subItems || item.subItems.length > 0),
+    };
+  }).filter((group) => group.items.length > 0);
 
   function toggleSubmenu(label: string) {
     if (collapsed && !floating) onExpand();

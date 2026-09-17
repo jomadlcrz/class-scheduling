@@ -13,7 +13,7 @@ type SemesterResponse = {
 
 let cachedSemesters: Semester[] | null = null;
 let cachePromise: Promise<Semester[]> | null = null;
-/** GET /semesters list omits id — resolved via GET /semesters/:id probes. */
+/** Cache database ids indexed by semester number. */
 const semesterRowIdByNumber = new Map<number, number>();
 
 function invalidateCache() {
@@ -24,7 +24,10 @@ function invalidateCache() {
 
 function mapSemester(s: SemesterResponse): Semester {
   const semesterName = s.semester_name ?? s.semester ?? s.display_name ?? `Semester ${s.semester_number}`;
-  const id = s.id ?? semesterRowIdByNumber.get(s.semester_number) ?? 0;
+  const id = s.id ?? semesterRowIdByNumber.get(s.semester_number) ?? s.semester_number;
+  if (id > 0) {
+    semesterRowIdByNumber.set(s.semester_number, id);
+  }
   return {
     id,
     semester: semesterName,
@@ -35,42 +38,11 @@ function mapSemester(s: SemesterResponse): Semester {
   };
 }
 
-/**
- * The list endpoint returns semester_number + semester_name only. Resolve database
- * ids by probing GET /semesters/:id until each semester_number is matched.
- */
-async function resolveSemesterRowIds(numbers: number[]): Promise<void> {
-  const needed = new Set(numbers.filter((n) => !semesterRowIdByNumber.has(n)));
-  if (needed.size === 0) return;
-
-  for (let id = 1; id <= 20; id++) {
-    try {
-      const row = await apiGet<{ semester_number: number }>(`/semesters/${id}`);
-      semesterRowIdByNumber.set(row.semester_number, id);
-      needed.delete(row.semester_number);
-      if (needed.size === 0) return;
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 404) continue;
-      throw err;
-    }
-  }
-
-  if (needed.size > 0) {
-    throw new Error(
-      `Could not resolve semester id for semester number${needed.size > 1 ? "s" : ""} ${[...needed].join(", ")}.`,
-    );
-  }
-}
-
 async function resolveSemesterRowId(semesterNumber: number): Promise<number> {
   const cached = semesterRowIdByNumber.get(semesterNumber);
   if (cached != null) return cached;
-  await resolveSemesterRowIds([semesterNumber]);
-  const id = semesterRowIdByNumber.get(semesterNumber);
-  if (id == null) {
-    throw new Error(`Could not resolve semester id for semester number ${semesterNumber}.`);
-  }
-  return id;
+  await list();
+  return semesterRowIdByNumber.get(semesterNumber) ?? semesterNumber;
 }
 
 /** Build POST/PUT body exactly as backend SemesterSchema expects. */
@@ -97,9 +69,6 @@ async function list(): Promise<Semester[]> {
       }
       cachePromise = null;
       throw err;
-    }
-    if (data.length > 0) {
-      await resolveSemesterRowIds(data.map((row) => row.semester_number));
     }
     cachedSemesters = data.map(mapSemester);
     return cachedSemesters;
