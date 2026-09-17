@@ -177,7 +177,7 @@ export function MajorSchedulesMappingGrid({
   const [selection, setSelection] = useState<Selection | null>(null);
   const [dragging, setDragging] = useState<Selection | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [panning, setPanning] = useState<{ x: number; y: number; left: number; top: number } | null>(null);
+  const [panning, setPanning] = useState<{ x: number; left: number } | null>(null);
   const [pointerPosition, setPointerPosition] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fullscreenRoomQuery, setFullscreenRoomQuery] = useState("");
@@ -434,13 +434,11 @@ export function MajorSchedulesMappingGrid({
         ref={scrollRef}
         onContextMenu={(event) => event.preventDefault()}
         onPointerDown={(event) => {
-          if (event.button === 2 && scrollRef.current) {
+          if ((event.button === 1 || event.button === 2) && scrollRef.current) {
             event.preventDefault();
             setPanning({
               x: event.clientX,
-              y: event.clientY,
               left: scrollRef.current.scrollLeft,
-              top: scrollRef.current.scrollTop,
             });
             return;
           }
@@ -451,17 +449,22 @@ export function MajorSchedulesMappingGrid({
           const room = enrichedClassrooms.find((item) => item.id === target?.dataset.room);
           const day = target?.dataset.day as DayOfWeek;
           const minute = Number(target?.dataset.minute);
-          if (target && room && day && Number.isFinite(minute)) {
+          if (target && room && day && Number.isFinite(minute) && !deanCreationLocked && !occupied(room, day, minute)) {
             event.preventDefault();
             start(event, room, day, minute);
             if (!autoScrollFrameRef.current)
               autoScrollFrameRef.current = requestAnimationFrame(runAutoScroll);
+          } else if (scrollRef.current && !(event.target as HTMLElement).closest("button, input, select, a, td.cursor-pointer")) {
+            event.preventDefault();
+            setPanning({
+              x: event.clientX,
+              left: scrollRef.current.scrollLeft,
+            });
           }
         }}
         onPointerMove={(event) => {
           if (panning && scrollRef.current) {
             scrollRef.current.scrollLeft = panning.left - (event.clientX - panning.x);
-            scrollRef.current.scrollTop = panning.top - (event.clientY - panning.y);
             return;
           }
           move(event);
@@ -483,7 +486,7 @@ export function MajorSchedulesMappingGrid({
           isFullscreen ? "flex-1" : "max-h-[70vh]"
         }`}
         style={{
-          cursor: deanCreationLocked ? "not-allowed" : panning ? "grabbing" : dragging ? "crosshair" : "grab",
+          cursor: panning ? "grabbing" : dragging ? "crosshair" : "grab",
           scrollbarWidth: "none",
         }}
       >

@@ -214,6 +214,7 @@ export function MappingTableView({
         className={`relative z-0 overflow-auto overscroll-none bg-white dark:bg-white/5 ${embedded ? "rounded-none border-0" : "rounded-xl border border-slate-300 dark:border-white/10"}`}
         style={{
           maxHeight: "70vh",
+          cursor: "grab",
           scrollbarWidth: "none",
           overflowAnchor: "none",
           overscrollBehavior: "none",
@@ -590,7 +591,7 @@ function RoomDayRow({
                 data-schedule-id={cell.entry.scheduleId}
                 disabled={!onEntrySelect}
                 aria-pressed={isSelectedEntry}
-                className={`h-full min-h-20 w-full p-2 text-left transition-colors ${showEntryActions ? "pr-16" : ""}`}
+                className={`h-full min-h-20 w-full p-2 text-left transition-colors disabled:pointer-events-none ${showEntryActions ? "pr-16" : ""}`}
                 onClick={(event) => onEntrySelect?.(cell.entry, event)}
               >
                 <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
@@ -644,7 +645,7 @@ function RoomDayRow({
                 )}
               </button>
               {showEntryActions ? (
-                <span className="absolute right-1.5 top-1.5 z-[2] flex gap-1">
+                <span data-drag-scroll-ignore className="absolute right-1.5 top-1.5 z-[2] flex gap-1">
                   <button
                     type="button"
                     disabled={entryLocked || !onEntryClick}
@@ -720,13 +721,14 @@ function RoomDayRow({
                   disabled={!onLabSlotSelect}
                   aria-label="Select laboratory timetable"
                   aria-pressed={isSelected}
-                  className="absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 disabled:opacity-50"
+                  className="absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400 disabled:pointer-events-none disabled:opacity-50"
                   onClick={(event) =>
                     onLabSlotSelect?.(room, day, cell.slot, event)
                   }
                 />
                 <button
                   type="button"
+                  data-drag-scroll-ignore
                   disabled={!onFreeSlotClick}
                   aria-label="Assign schedule"
                   aria-pressed={isSelected}
@@ -747,7 +749,7 @@ function RoomDayRow({
                 type="button"
                 disabled={!onFreeSlotClick}
                 aria-pressed={isSelected}
-                className={`h-full min-h-20 w-full transition-colors focus:outline-none ${isSelected ? "not-italic text-amber-800 dark:text-gold-300" : ""}`}
+                className={`h-full min-h-20 w-full transition-colors focus:outline-none disabled:pointer-events-none ${isSelected ? "not-italic text-amber-800 dark:text-gold-300" : ""}`}
                 onMouseDown={(event) =>
                   onFreeSlotMouseDown?.(room, day, cell.slot, event)
                 }

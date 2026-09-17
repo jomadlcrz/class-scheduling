@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Accordion, AccordionItem } from "~/components/ui/accordion";
 import { UserSmallIcon } from "~/components/ui/icons";
 import { useDragScroll } from "~/hooks/use-drag-scroll";
@@ -73,6 +73,7 @@ function TimetableGrid({ room, slots }: { room: Classroom; slots: TimeSlot[] }) 
               {cells.map((cell, idx) => (
                 <div
                   key={`${day}-cell-${idx}`}
+                  data-drag-scroll-surface
                   style={{ gridColumn: `span ${cell.kind === "class" ? cell.colspan : 1}` }}
                   className="border-b border-r border-l border-slate-200 p-2 last:border-r-0 dark:border-white/8"
                 >
