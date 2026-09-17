@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { BellIcon } from "~/components/ui/icons";
-import { resolveNotificationTargetForRole } from "~/features/notifications/notification-navigation";
+import { resolveNotificationTarget } from "~/features/notifications/notification-navigation";
 import {
   NOTIFICATION_TONE_STYLES,
   presentNotification,
@@ -58,7 +58,7 @@ export function NotificationToaster() {
       if (location.pathname.startsWith("/notifications")) return;
 
       const view = presentNotification(notification);
-      const target = resolveNotificationTargetForRole(notification, user.role);
+      const target = resolveNotificationTarget(notification, user.role);
       const tone = NOTIFICATION_TONE_STYLES[view.tone];
 
       const burst = burstRef.current;

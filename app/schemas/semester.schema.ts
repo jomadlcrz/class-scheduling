@@ -32,6 +32,3 @@ export const semesterWriteSchema = z
       });
     }
   });
-
-/** @deprecated use semesterWriteSchema */
-export const semesterSchema = semesterWriteSchema;

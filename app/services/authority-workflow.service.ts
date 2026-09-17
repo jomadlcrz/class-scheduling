@@ -520,5 +520,3 @@ export const authorityWorkflowService = {
   analyzeAdvancedAdjustment,
 };
 
-export const scheduleAuthorityService = authorityWorkflowService;
-

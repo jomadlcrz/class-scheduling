@@ -54,4 +54,3 @@ async function create(input: CreateWeeklyHourAllocationInput): Promise<string> {
 }
 
 export const weeklyHourService = { list, create };
-export const weeklyHourAllocationService = weeklyHourService;

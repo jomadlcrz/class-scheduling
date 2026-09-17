@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { clearDataCache } from "~/lib/data-cache";
+import { clearInFlightFetchers } from "~/hooks/use-cached-data";
 import { clearPending, clearSession } from "~/lib/session";
 import { useCrossTabAuthSync } from "~/hooks/use-cross-tab-auth-sync";
 import { authService, type LoginResult } from "~/services/auth.service";
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearSession();
     clearPending();
     clearDataCache();
+    clearInFlightFetchers();
     setUser(null);
   }, []);
 
@@ -81,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     authService.logout();
     clearDataCache();
+    clearInFlightFetchers();
     setUser(null);
     announceLogout();
   }, [announceLogout]);

@@ -24,6 +24,13 @@ import { peekCache, writeCache } from "~/lib/data-cache";
  *   otherwise                 → render data (stale data stays visible while
  *                               a background revalidation runs)
  */
+const inFlightFetchers = new Map<string, Promise<unknown>>();
+
+/** Clears active in-flight fetcher promises (e.g. on logout or global reset). */
+export function clearInFlightFetchers(): void {
+  inFlightFetchers.clear();
+}
+
 export function useCachedData<T>(
   key: string,
   fetcher: () => Promise<T>,
@@ -47,11 +54,21 @@ export function useCachedData<T>(
   const keyRef = useRef(key);
   keyRef.current = key;
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (opts?: { force?: boolean }) => {
     const callKey = key;
     setIsValidating(true);
     try {
-      const fresh = await fetcherRef.current();
+      if (opts?.force) {
+        inFlightFetchers.delete(callKey);
+      }
+      let fetchPromise = inFlightFetchers.get(callKey) as Promise<T> | undefined;
+      if (!fetchPromise) {
+        fetchPromise = fetcherRef.current().finally(() => {
+          inFlightFetchers.delete(callKey);
+        });
+        inFlightFetchers.set(callKey, fetchPromise);
+      }
+      const fresh = await fetchPromise;
       if (cache) writeCache(callKey, fresh);
       if (keyRef.current !== callKey) return;
       setData(fresh);

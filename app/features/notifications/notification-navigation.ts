@@ -103,5 +103,3 @@ export function resolveNotificationTarget(
       return null;
   }
 }
-
-export const resolveNotificationTargetForRole = resolveNotificationTarget;

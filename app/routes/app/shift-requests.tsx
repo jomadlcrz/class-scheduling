@@ -26,7 +26,7 @@ import { formatDateTime, formatTime12h, timeToMinutes } from "~/lib/time";
 import { instructorReviewService } from "~/services/instructor-review.service";
 import { roomService } from "~/services/room.service";
 import { termSchedulingService } from "~/services/term-scheduling.service";
-import { weeklyHourAllocationService } from "~/services/weekly-hour-allocation.service";
+import { weeklyHourService } from "~/services/weekly-hour-allocation.service";
 import type {
   InstructorReviewDetail,
   InstructorReviewMeeting,
@@ -354,7 +354,7 @@ export default function ShiftRequestsRoute() {
       const [detail, roomList, allocList, summaries] = await Promise.all([
         instructorReviewService.getInstructorReviewDetail(target.releaseId),
         roomService.list().catch(() => []),
-        weeklyHourAllocationService.list().catch(() => []),
+        weeklyHourService.list().catch(() => []),
         instructorReviewService.listInstructorReviews().catch(() => []),
       ]);
       setEditingDetail(detail);

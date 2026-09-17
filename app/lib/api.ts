@@ -26,6 +26,9 @@ const REFRESH_ENDPOINT = "/auth/sessions/refresh";
 
 const GET_CACHE_TTL_MS = 60_000;
 const getCache = new Map<string, { data: unknown; expiresAt: number }>();
+const inFlightGet = new Map<string, Promise<unknown>>();
+const inFlightFresh = new Map<string, Promise<unknown>>();
+const inFlightBlob = new Map<string, Promise<Blob>>();
 
 function cacheKey(endpoint: string): string {
   const userId = loadSession()?.user?.id;
@@ -49,9 +52,12 @@ function cacheWrite(endpoint: string, data: unknown): void {
   getCache.set(cacheKey(endpoint), { data, expiresAt: Date.now() + GET_CACHE_TTL_MS });
 }
 
-/** Clears every cached GET — called after any successful mutation and on logout. */
+/** Clears every cached GET and in-flight request tracker — called after any successful mutation and on logout. */
 export function clearApiCache(): void {
   getCache.clear();
+  inFlightGet.clear();
+  inFlightFresh.clear();
+  inFlightBlob.clear();
 }
 
 export class ApiError extends Error {
@@ -287,17 +293,58 @@ export function apiMessage(data: { message?: unknown } | null | undefined): stri
 export async function apiGet<T>(endpoint: string): Promise<T> {
   const cached = cacheRead<T>(endpoint);
   if (cached !== null) return cached;
-  const data = await request<T>(endpoint, "GET");
-  cacheWrite(endpoint, data);
-  return data;
+
+  if (typeof window === "undefined") {
+    const data = await request<T>(endpoint, "GET");
+    cacheWrite(endpoint, data);
+    return data;
+  }
+
+  const key = cacheKey(endpoint);
+  const inFlight = inFlightGet.get(key);
+  if (inFlight) {
+    return inFlight as Promise<T>;
+  }
+
+  const promise = (async () => {
+    try {
+      const data = await request<T>(endpoint, "GET");
+      cacheWrite(endpoint, data);
+      return data;
+    } finally {
+      inFlightGet.delete(key);
+    }
+  })();
+
+  inFlightGet.set(key, promise);
+  return promise;
 }
 
-/** GET without the short-lived response cache, for highly dynamic filtered directories. */
+/** GET without the short-lived response cache, for highly dynamic filtered directories. Concurrent identical requests share the active fetch. */
 export async function apiGetFresh<T>(endpoint: string): Promise<T> {
-  return request<T>(endpoint, "GET");
+  if (typeof window === "undefined") {
+    return request<T>(endpoint, "GET");
+  }
+
+  const key = cacheKey(endpoint);
+  const inFlight = inFlightFresh.get(key);
+  if (inFlight) {
+    return inFlight as Promise<T>;
+  }
+
+  const promise = (async () => {
+    try {
+      return await request<T>(endpoint, "GET");
+    } finally {
+      inFlightFresh.delete(key);
+    }
+  })();
+
+  inFlightFresh.set(key, promise);
+  return promise;
 }
 
-/** GET a protected binary response (same-origin image proxies, exports). */
+/** GET a protected binary response (same-origin image proxies, exports). Concurrent identical requests share the active fetch. */
 export async function apiGetBlob(endpoint: string): Promise<Blob> {
   async function run(canRefresh: boolean): Promise<Blob> {
     const token = loadSession()?.token;
@@ -320,7 +367,27 @@ export async function apiGetBlob(endpoint: string): Promise<Blob> {
     }
     return response.blob();
   }
-  return run(true);
+
+  if (typeof window === "undefined") {
+    return run(true);
+  }
+
+  const key = cacheKey(endpoint);
+  const inFlight = inFlightBlob.get(key);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const promise = (async () => {
+    try {
+      return await run(true);
+    } finally {
+      inFlightBlob.delete(key);
+    }
+  })();
+
+  inFlightBlob.set(key, promise);
+  return promise;
 }
 
 export function apiPost<T>(

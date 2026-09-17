@@ -91,6 +91,10 @@ export function TermContextProvider({ children }: { children: ReactNode }) {
 
   const selectTerm = useCallback(
     async (syId: number, semesterNumber: number) => {
+      const current = contextRef.current?.selection;
+      if (current?.syId === syId && current?.semesterNumber === semesterNumber) {
+        return;
+      }
       await load({ syId, semesterNumber });
     },
     [load],

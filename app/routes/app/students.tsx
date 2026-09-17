@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 import { RoleGuard } from "~/auth/role-guard";
@@ -501,9 +501,14 @@ export function StudentsPage() {
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: true }));
   }
 
+  const regularFetchingRef = useRef(false);
+  const irregularFetchingRef = useRef(false);
+
   // Cohort membership is term-specific. Clear cached rows whenever the global
   // academic-term selector changes so the effects below fetch the new scope.
   useEffect(() => {
+    regularFetchingRef.current = false;
+    irregularFetchingRef.current = false;
     setRegularStudents(null);
     setIrregularStudents(null);
     setRegularLoadError(null);
@@ -512,8 +517,9 @@ export function StudentsPage() {
 
   // Lazy-loaded: only fetched once the Regular Students view is opened.
   useEffect(() => {
-    if (!isAdmin || activeView !== "regular" || regularStudents !== null || syId == null || semesterNumber == null) return;
+    if (!isAdmin || activeView !== "regular" || regularStudents !== null || regularFetchingRef.current || syId == null || semesterNumber == null) return;
     let cancelled = false;
+    regularFetchingRef.current = true;
     regularClassService
       .listStudents(syId, semesterNumber)
       .then((students) => {
@@ -523,6 +529,9 @@ export function StudentsPage() {
         if (cancelled) return;
         setRegularLoadError(err instanceof Error ? err.message : "Unable to load regular students.");
         setRegularStudents([]);
+      })
+      .finally(() => {
+        regularFetchingRef.current = false;
       });
     return () => {
       cancelled = true;
@@ -531,8 +540,9 @@ export function StudentsPage() {
 
   // Lazy-loaded: only fetched once the Irregular Students view is opened.
   useEffect(() => {
-    if (!isAdmin || activeView !== "irregular" || irregularStudents !== null || syId == null || semesterNumber == null) return;
+    if (!isAdmin || activeView !== "irregular" || irregularStudents !== null || irregularFetchingRef.current || syId == null || semesterNumber == null) return;
     let cancelled = false;
+    irregularFetchingRef.current = true;
     irregularClassService
       .listStudents(syId, semesterNumber)
       .then((students) => {
@@ -542,6 +552,9 @@ export function StudentsPage() {
         if (cancelled) return;
         setIrregularLoadError(err instanceof Error ? err.message : "Unable to load irregular students.");
         setIrregularStudents([]);
+      })
+      .finally(() => {
+        irregularFetchingRef.current = false;
       });
     return () => {
       cancelled = true;
@@ -552,30 +565,42 @@ export function StudentsPage() {
   useEffect(() => {
     if (isAdmin || syId == null || semesterNumber == null) return;
     let cancelled = false;
-    regularClassService
-      .listStudents(syId, semesterNumber)
-      .then((students) => {
-        if (!cancelled) setRegularStudents(students);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setRegularLoadError(err instanceof Error ? err.message : "Unable to load regular students.");
-        setRegularStudents([]);
-      });
-    irregularClassService
-      .listStudents(syId, semesterNumber)
-      .then((students) => {
-        if (!cancelled) setIrregularStudents(students);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setIrregularLoadError(err instanceof Error ? err.message : "Unable to load irregular students.");
-        setIrregularStudents([]);
-      });
+    if (regularStudents === null && !regularFetchingRef.current) {
+      regularFetchingRef.current = true;
+      regularClassService
+        .listStudents(syId, semesterNumber)
+        .then((students) => {
+          if (!cancelled) setRegularStudents(students);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setRegularLoadError(err instanceof Error ? err.message : "Unable to load regular students.");
+          setRegularStudents([]);
+        })
+        .finally(() => {
+          regularFetchingRef.current = false;
+        });
+    }
+    if (irregularStudents === null && !irregularFetchingRef.current) {
+      irregularFetchingRef.current = true;
+      irregularClassService
+        .listStudents(syId, semesterNumber)
+        .then((students) => {
+          if (!cancelled) setIrregularStudents(students);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setIrregularLoadError(err instanceof Error ? err.message : "Unable to load irregular students.");
+          setIrregularStudents([]);
+        })
+        .finally(() => {
+          irregularFetchingRef.current = false;
+        });
+    }
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, semesterNumber, syId]);
+  }, [isAdmin, irregularStudents, regularStudents, semesterNumber, syId]);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
