@@ -81,9 +81,20 @@ export function resolveNotificationTarget(
       return "/subject-offering";
     case "schedule_published":
     case "schedule_rescheduled":
+    case "schedule_instructor_changed":
+    case "schedule_delivery_changed":
       return role === "student" ? "/student-schedule" : "/faculty-schedule";
+    case "schedule_instructor_changed_summary":
+    case "schedule_delivery_changed_summary":
+      return "/dean/department-schedules";
+    case "instructor_availability_declared":
+    case "instructor_availability_widen_requested":
+    case "instructor_availability_widen_decided":
+      return "/dean/instructor-availability";
+    case "instructor_availability_configured":
+      return "/faculty/my-availability";
     case "subject_assignment_changed":
-      return "/faculty-schedule";
+      return role === "faculty" ? "/faculty/my-subjects" : "/faculty-schedule";
     case "student_enrolled":
       return "/student-schedule";
     case "account_reactivated":

@@ -18,6 +18,7 @@ export const SUBJECT_TYPE_TONES: Record<string, BadgeTone> = {
   "Physical Education": "pink",
   "National Service Training Program": "red",
   "Research/Thesis": "navy",
+  "OJT/Practicum": "slate",
 };
 
 /** Display labels matching classroom-mapping TYPE_LABELS. */
@@ -30,6 +31,7 @@ export const SUBJECT_TYPE_LABELS: Record<string, string> = {
   "Physical Education": "PE",
   "National Service Training Program": "NSTP",
   "Research/Thesis": "Research/Thesis",
+  "OJT/Practicum": "OJT/Practicum",
 };
 
 /** A curriculum entry: a subject offered by one program at a year/semester slot. */

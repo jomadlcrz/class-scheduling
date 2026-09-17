@@ -9,6 +9,7 @@ import type {
   CreateAdministratorAccountInput,
   UpdateAdministratorInput,
 } from "~/types/administrator";
+import type { StudentAddress } from "~/types/student";
 
 /** Administrator service (Super Admin / Registrar Admin accounts, super_admin module). */
 
@@ -22,6 +23,10 @@ async function create(input: CreateAdministratorAccountInput): Promise<string> {
     // Omitted enum fields default to "N/A" (NOT_SPECIFIED) on the backend.
     ...(input.gender && { gender: input.gender }),
     ...(input.civilStatus && { civilStatus: input.civilStatus }),
+    ...(input.prefixHonorific && { prefixHonorific: input.prefixHonorific }),
+    ...(input.employmentStatus && { employmentStatus: input.employmentStatus }),
+    ...(input.academicRank && { academicRank: input.academicRank }),
+    ...(input.address && { address: input.address }),
     contact: { mobile: input.mobile, email: input.email },
     roleName: input.roleName,
   });
@@ -38,6 +43,9 @@ async function list(): Promise<Administrator[]> {
     last_name: string;
     gender: string;
     civil_status: string;
+    prefix_honorific?: string;
+    employment_status?: string;
+    academic_rank?: string | null;
     department: string | null;
     mobile: string | null;
     email: string | null;
@@ -71,6 +79,9 @@ async function list(): Promise<Administrator[]> {
       lastName: a.last_name,
       gender: a.gender,
       civilStatus: a.civil_status,
+      prefixHonorific: a.prefix_honorific ?? "N/A",
+      employmentStatus: a.employment_status ?? "N/A",
+      academicRank: a.academic_rank ?? null,
       department,
       departmentCode: deptParts[0] ?? department,
       mobile: a.mobile,
@@ -89,9 +100,14 @@ type AdminDetailResponse = {
   last_name: string;
   gender: string;
   civil_status: string;
+  prefix_honorific?: string;
+  employment_status?: string;
+  academic_rank?: string | null;
+  department_id?: number;
   mobile: string | null;
   email: string | null;
   account_active: boolean | null;
+  address?: StudentAddress | null;
 };
 
 /** GET /super-admin/admin-accounts/<id> */
@@ -104,9 +120,14 @@ async function get(id: number): Promise<AdministratorDetail> {
     lastName: d.last_name,
     gender: d.gender,
     civilStatus: d.civil_status,
+    prefixHonorific: d.prefix_honorific ?? "N/A",
+    employmentStatus: d.employment_status ?? "N/A",
+    academicRank: d.academic_rank ?? null,
+    departmentId: d.department_id ?? 0,
     mobile: d.mobile,
     email: d.email,
     accountActive: d.account_active,
+    address: d.address ?? null,
   };
 }
 

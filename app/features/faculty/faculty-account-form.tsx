@@ -17,6 +17,8 @@ type FacultyAccountFormProps = {
   /** Backend enum values (enumService); empty selection = not specified. */
   genders: string[];
   civilStatuses: string[];
+  employmentStatuses?: string[];
+  honorificPrefixes?: string[];
   /** Roles with their permissions; empty when the viewer can't load them. */
   rolePermissions: PermissionSummary[];
   onSubmit: (input: CreateFacultyAccountInput) => Promise<void>;
@@ -29,6 +31,8 @@ export function FacultyAccountForm({
   departments,
   genders,
   civilStatuses,
+  employmentStatuses = [],
+  honorificPrefixes = [],
   rolePermissions,
   onSubmit,
   onCancel,
@@ -56,6 +60,9 @@ export function FacultyAccountForm({
       roleName: String(data.get("faculty-role") ?? ""),
       gender: String(data.get("faculty-gender") ?? ""),
       civilStatus: String(data.get("faculty-civil-status") ?? ""),
+      employmentStatus: String(data.get("faculty-employment-status") ?? "") || undefined,
+      prefixHonorific: String(data.get("faculty-honorific") ?? "") || undefined,
+      academicRank: String(data.get("faculty-academic-rank") ?? "").trim() || null,
     });
     if (!result.success) {
       setError(result.error.issues[0].message);
@@ -188,6 +195,64 @@ export function FacultyAccountForm({
               </Select>
             </FieldChrome>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FieldChrome id="faculty-honorific" label="Prefix">
+              <Select
+                items={[
+                  { value: "", label: "Select a prefix" },
+                  ...honorificPrefixes.map((h) => ({ value: h, label: h })),
+                ]}
+                name="faculty-honorific"
+                defaultValue=""
+                onValueChange={() => onDirtyChange?.(true)}
+              >
+                <SelectTrigger id="faculty-honorific">
+                  <SelectValue placeholder="Select a prefix" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a prefix</SelectItem>
+                  {honorificPrefixes.map((h) => (
+                    <SelectItem key={h} value={h}>
+                      {h}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+            <FieldChrome id="faculty-employment-status" label="Employment status">
+              <Select
+                items={[
+                  { value: "", label: "Select a status" },
+                  ...employmentStatuses.map((s) => ({ value: s, label: s })),
+                ]}
+                name="faculty-employment-status"
+                defaultValue=""
+                onValueChange={() => onDirtyChange?.(true)}
+              >
+                <SelectTrigger id="faculty-employment-status">
+                  <SelectValue placeholder="Select a status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select a status</SelectItem>
+                  {employmentStatuses.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldChrome>
+          </div>
+
+          <Input
+            id="faculty-academic-rank"
+            label="Academic rank"
+            type="text"
+            placeholder="e.g. Instructor I, Assistant Professor III"
+            maxLength={100}
+            onChange={() => onDirtyChange?.(true)}
+          />
 
           <FieldChrome id="faculty-role" label="Role" required>
             <Select

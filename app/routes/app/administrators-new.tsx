@@ -111,6 +111,8 @@ function AdministratorsNewPage() {
             departments={departments}
             genders={enumOptions?.gender ?? []}
             civilStatuses={enumOptions?.civilStatus ?? []}
+            employmentStatuses={enumOptions?.employmentStatus ?? []}
+            honorificPrefixes={enumOptions?.honorificPrefix ?? []}
             rolePermissions={rolePermissions}
             onSubmit={handleCreate}
             onCancel={() => navigate("/administrators")}

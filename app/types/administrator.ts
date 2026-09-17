@@ -1,3 +1,5 @@
+import type { StudentAddress } from "~/types/student";
+
 export const ADMINISTRATOR_ROLES = ["Super Admin", "Registrar Admin"] as const;
 export type AdministratorRole = (typeof ADMINISTRATOR_ROLES)[number];
 
@@ -10,6 +12,9 @@ export type Administrator = {
   profilePhotoUrl: string | null;
   gender: string;
   civilStatus: string;
+  prefixHonorific: string;
+  employmentStatus: string;
+  academicRank: string | null;
   /** Raw department string from backend, e.g. "CS - Computer Science". */
   department: string;
   /** Department code extracted from `department` (part before " - "). */
@@ -33,6 +38,10 @@ export type CreateAdministratorAccountInput = {
   /** Enum values fetched via enumService; omitted = "N/A" on the server. */
   gender?: string;
   civilStatus?: string;
+  prefixHonorific?: string;
+  employmentStatus?: string;
+  academicRank?: string | null;
+  address?: StudentAddress | null;
 };
 
 /** GET /super-admin/admin-accounts/<id> response, camelCased. */
@@ -43,16 +52,28 @@ export type AdministratorDetail = {
   lastName: string;
   gender: string;
   civilStatus: string;
+  prefixHonorific: string;
+  employmentStatus: string;
+  academicRank: string | null;
+  departmentId: number;
   mobile: string | null;
   email: string | null;
   accountActive: boolean | null;
+  address?: StudentAddress | null;
 };
 
-/** PUT /super-admin/admin-accounts/<id> body — only name/contact fields are editable. */
+/** PUT /super-admin/admin-accounts/<id> body */
 export type UpdateAdministratorInput = {
   firstName?: string;
   midName?: string | null;
   lastName?: string;
   mobile?: string;
   email?: string;
+  gender?: string;
+  civilStatus?: string;
+  prefixHonorific?: string;
+  employmentStatus?: string;
+  academicRank?: string | null;
+  departmentId?: number;
+  address?: StudentAddress | null;
 };

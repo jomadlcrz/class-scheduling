@@ -9,7 +9,15 @@ import type { Faculty } from "~/types/faculty";
 
 type FacultyEditFormProps = {
   member: Faculty;
-  onSubmit: (input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) => Promise<void>;
+  onSubmit: (input: {
+    firstName: string;
+    midName?: string | null;
+    lastName: string;
+    mobile: string;
+    email: string;
+    prefixHonorific?: string;
+    academicRank?: string | null;
+  }) => Promise<void>;
   onCancel: () => void;
 };
 
@@ -19,6 +27,8 @@ export function FacultyEditForm({ member, onSubmit, onCancel }: FacultyEditFormP
   const [isSaving, setIsSaving] = useState(false);
   const [email, setEmail] = useState(member.email ?? "");
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [prefixHonorific, setPrefixHonorific] = useState(member.prefixHonorific ?? "");
+  const [academicRank, setAcademicRank] = useState(member.academicRank ?? "");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,7 +50,15 @@ export function FacultyEditForm({ member, onSubmit, onCancel }: FacultyEditFormP
     setError(null);
     setIsSaving(true);
     try {
-      await onSubmit({ firstName, midName: midName || null, lastName, mobile, email });
+      await onSubmit({
+        firstName,
+        midName: midName || null,
+        lastName,
+        mobile,
+        email,
+        prefixHonorific: prefixHonorific.trim() || undefined,
+        academicRank: academicRank.trim() === "" ? null : academicRank.trim(),
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "");
       setIsSaving(false);
@@ -55,6 +73,24 @@ export function FacultyEditForm({ member, onSubmit, onCancel }: FacultyEditFormP
         <Input id="edit-faculty-mid-name" label="Middle name" type="text" defaultValue={member.midName ?? ""} />
       </div>
       <Input id="edit-faculty-last-name" label="Last name" type="text" required defaultValue={member.lastName} />
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          id="edit-faculty-prefix"
+          label="Prefix"
+          type="text"
+          placeholder="e.g. Dr., Prof."
+          value={prefixHonorific}
+          onChange={(e) => setPrefixHonorific(e.target.value)}
+        />
+        <Input
+          id="edit-faculty-academic-rank"
+          label="Academic rank"
+          type="text"
+          placeholder="e.g. Instructor I"
+          value={academicRank}
+          onChange={(e) => setAcademicRank(e.target.value)}
+        />
+      </div>
       <div className="flex flex-col gap-1.5">
         <label className="font-body text-sm font-semibold text-slate-600 dark:text-slate-400">Email address</label>
         <div className="flex items-center gap-3">

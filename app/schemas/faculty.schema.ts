@@ -13,4 +13,7 @@ export const facultySchema = z.object({
   roleName: z.enum(FACULTY_ROLES, { message: "Select a role." }),
   gender: z.string().min(1, "Select a gender."),
   civilStatus: z.string().min(1, "Select a civil status."),
+  employmentStatus: z.string().optional(),
+  prefixHonorific: z.string().optional(),
+  academicRank: z.string().nullable().optional(),
 });

@@ -1,6 +1,7 @@
 import { ApiError, apiDelete, apiGet, apiMessage, apiPatch, apiPost, apiPut } from "~/lib/api";
 import type { DepartmentOption } from "~/types/department";
 import type { CreateFacultyAccountInput, Faculty, FacultyDetail, UpdateFacultyInput } from "~/types/faculty";
+import type { StudentAddress } from "~/types/student";
 
 /**
  * Faculty service. `create`, `list`, and `listDepartmentOptions` talk to the
@@ -17,6 +18,10 @@ async function create(input: CreateFacultyAccountInput): Promise<string> {
     // Omitted enum fields default to "N/A" (NOT_SPECIFIED) on the backend.
     ...(input.gender && { gender: input.gender }),
     ...(input.civilStatus && { civilStatus: input.civilStatus }),
+    ...(input.employmentStatus && { employmentStatus: input.employmentStatus }),
+    ...(input.prefixHonorific && { prefixHonorific: input.prefixHonorific }),
+    ...(input.academicRank && { academicRank: input.academicRank }),
+    ...(input.address && { address: input.address }),
     contact: { mobile: input.mobile, email: input.email },
     roleName: input.roleName,
   });
@@ -32,6 +37,9 @@ async function list(): Promise<Faculty[]> {
     last_name: string;
     gender: string;
     civil_status: string;
+    employment_status?: string;
+    prefix_honorific?: string;
+    academic_rank?: string | null;
     department: string;
     mobile: string | null;
     email: string | null;
@@ -64,6 +72,9 @@ async function list(): Promise<Faculty[]> {
       lastName: f.last_name,
       gender: f.gender,
       civilStatus: f.civil_status,
+      employmentStatus: f.employment_status ?? "N/A",
+      prefixHonorific: f.prefix_honorific ?? "N/A",
+      academicRank: f.academic_rank ?? null,
       department: f.department,
       departmentCode: deptParts[0] ?? f.department,
       mobile: f.mobile,
@@ -108,9 +119,15 @@ type FacultyDetailResponse = {
   last_name: string;
   gender: string;
   civil_status: string;
+  employment_status?: string;
+  prefix_honorific?: string;
+  academic_rank?: string | null;
+  department_id?: number;
+  employee_id?: string | null;
   mobile: string | null;
   email: string | null;
   account_active: boolean | null;
+  address?: StudentAddress | null;
 };
 
 /** GET /super-admin/faculty-accounts/<id> */
@@ -123,13 +140,19 @@ async function get(id: number): Promise<FacultyDetail> {
     lastName: d.last_name,
     gender: d.gender,
     civilStatus: d.civil_status,
+    employmentStatus: d.employment_status ?? "N/A",
+    prefixHonorific: d.prefix_honorific ?? "N/A",
+    academicRank: d.academic_rank ?? null,
+    departmentId: d.department_id,
+    employeeId: d.employee_id,
     mobile: d.mobile,
     email: d.email,
     accountActive: d.account_active,
+    address: d.address ?? null,
   };
 }
 
-/** PUT /super-admin/faculty-accounts/<id> — edits name/contact fields only. */
+/** PUT /super-admin/faculty-accounts/<id> */
 async function update(id: number, input: UpdateFacultyInput): Promise<string> {
   const data = await apiPut<{ message?: string }>(`/super-admin/faculty-accounts/${id}`, input);
   return apiMessage(data);

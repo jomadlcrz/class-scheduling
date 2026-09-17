@@ -98,6 +98,8 @@ export type AddressData = {
   zipCode: string | null;
 };
 
+export type StudentAddress = AddressData;
+
 export type AddressInput = {
   street?: string;
   barangay?: string;

@@ -14,4 +14,7 @@ export const administratorSchema = z.object({
   departmentId: z.coerce.number().int().positive("Select a department."),
   gender: z.string().min(1, "Select a gender."),
   civilStatus: z.string().min(1, "Select a civil status."),
+  employmentStatus: z.string().optional(),
+  prefixHonorific: z.string().optional(),
+  academicRank: z.string().nullable().optional(),
 });

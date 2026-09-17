@@ -56,6 +56,11 @@ const HEARTBEAT_MS = 25_000;
 const RECONNECT_BASE_MS = 1_000;
 const RECONNECT_MAX_MS = 30_000;
 
+/** Grace period between the last subscriber leaving and the socket closing.
+ *  Long enough to cover a StrictMode remount or a route change, short enough
+ *  that a genuinely abandoned stream does not linger. */
+const IDLE_TEARDOWN_MS = 250;
+
 const listeners = new Set<Listener>();
 
 let socket: WebSocket | null = null;
@@ -67,6 +72,11 @@ let reconnectAttempts = 0;
  *  to treat its own shutdown as a dropped connection and reconnect. */
 let closingDeliberately = false;
 let browserListenersAttached = false;
+/** Pending "no subscribers left" teardown — see the unsubscribe below. */
+let idleTeardownTimer: ReturnType<typeof setTimeout> | null = null;
+/** The token the live socket authenticated with, so an auth-state broadcast
+ *  that did not actually change it can be ignored. See handleAuthChange. */
+let authedToken: string | null = null;
 
 function resolveSocketUrl(): string | null {
   if (typeof window === "undefined") return null;
@@ -163,6 +173,7 @@ function teardownSocket() {
     // Already closing or closed — nothing to do.
   }
   socket = null;
+  authedToken = null;
   closingDeliberately = false;
 }
 
@@ -268,6 +279,7 @@ function connect() {
     return;
   }
   socket = next;
+  authedToken = session.token;
 
   next.onopen = () => {
     // Nothing is "connected" until the server accepts the token, so the status
@@ -286,11 +298,20 @@ function connect() {
 
   next.onclose = () => {
     stopHeartbeat();
-    if (socket === next) socket = null;
+    if (socket === next) {
+      socket = null;
+      authedToken = null;
+    }
     if (closingDeliberately || listeners.size === 0) return;
     if (status === "unauthorized") return;
     scheduleReconnect();
   };
+}
+
+function clearIdleTeardown() {
+  if (idleTeardownTimer === null) return;
+  clearTimeout(idleTeardownTimer);
+  idleTeardownTimer = null;
 }
 
 /** Reconnect immediately when the tab wakes or the network returns, instead of
@@ -304,9 +325,21 @@ function handleWake() {
   connect();
 }
 
-/** Logging in or out replaces the token the open socket authenticated with, so
- *  the connection has to be rebuilt around the new one (or dropped entirely). */
+/**
+ * Logging in or out replaces the token the open socket authenticated with, so
+ * the connection has to be rebuilt around the new one (or dropped entirely).
+ *
+ * But the event this answers is broadcast by api.ts after EVERY request, not
+ * only when the session changed — it means "the stored session may have
+ * changed", and the auth provider re-reads it each time. Rebuilding on every
+ * broadcast tore the socket down mid-handshake on each API call, so it never
+ * stayed open long enough to connect. Compare the token and do nothing when
+ * it is the same one the live socket already used.
+ */
 function handleAuthChange() {
+  const token = loadSession()?.token ?? null;
+  if (token === authedToken && socket) return;
+
   teardownSocket();
   reconnectAttempts = 0;
   // A previous rejection must not outlive the session that caused it.
@@ -331,18 +364,26 @@ function attachBrowserListeners() {
 export function subscribeToNotificationStream(listener: Listener): () => void {
   if (typeof window === "undefined") return () => {};
 
+  // This subscriber arrived inside the grace window, so the socket the last
+  // unsubscribe queued for closing is the one it wants. Keep it.
+  clearIdleTeardown();
+
   listeners.add(listener);
   attachBrowserListeners();
 
-  if (listeners.size === 1) {
+  if (socket?.readyState === WebSocket.OPEN) {
+    // Already streaming — a latecomer joining a live socket, or the first
+    // subscriber back before the grace period elapsed. Either way it has no
+    // state of its own yet and must be told to fetch.
+    //
+    // Checked before the size test on purpose: with the deferred teardown,
+    // being subscriber number one no longer implies there is no socket.
+    listener({ kind: "status", status });
+    listener({ kind: "reconnected" });
+  } else if (listeners.size === 1) {
     reconnectAttempts = 0;
     if (status === "unauthorized") status = "idle";
     connect();
-  } else if (socket?.readyState === WebSocket.OPEN) {
-    // A latecomer joining an already-open stream still needs to be told to
-    // fetch, since it has no state of its own yet.
-    listener({ kind: "status", status });
-    listener({ kind: "reconnected" });
   } else if (socket === null && reconnectTimer === null && status !== "unauthorized") {
     // There are subscribers but nothing connected and nothing scheduled — the
     // first one to arrive tried before the session was readable and gave up,
@@ -357,11 +398,23 @@ export function subscribeToNotificationStream(listener: Listener): () => void {
 
   return () => {
     listeners.delete(listener);
-    if (listeners.size === 0) {
+    if (listeners.size > 0) return;
+
+    // Deferred, not immediate. React StrictMode mounts an effect, unmounts it
+    // and mounts it again, and navigating between two pages that both
+    // subscribe also passes through zero listeners for a tick. Closing on the
+    // spot tears down a socket that is still CONNECTING — which the browser
+    // reports as "WebSocket is closed before the connection is established" —
+    // and then builds another one a moment later.
+    clearIdleTeardown();
+    idleTeardownTimer = setTimeout(() => {
+      idleTeardownTimer = null;
+      // Someone may have subscribed and unsubscribed again while this waited.
+      if (listeners.size > 0) return;
       clearReconnect();
       teardownSocket();
       setStatus("idle");
-    }
+    }, IDLE_TEARDOWN_MS);
   };
 }
 

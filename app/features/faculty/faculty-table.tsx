@@ -18,7 +18,8 @@ import type { Faculty } from "~/types/faculty";
 
 function displayName(member: Faculty) {
   const parts = [member.firstName, member.midName].filter(Boolean).join(" ");
-  return parts ? `${member.lastName}, ${parts}` : member.lastName;
+  const base = parts ? `${member.lastName}, ${parts}` : member.lastName;
+  return member.prefixHonorific ? `${member.prefixHonorific} ${base}` : base;
 }
 
 type FacultyTableProps = {
@@ -66,11 +67,15 @@ export function FacultyTable({ faculty, accountActiveById, onEdit, onDeactivate,
                   <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
                     {displayName(member)}
                   </span>
-                  {member.email && (
-                    <a href={`mailto:${member.email}`} className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
-                      {member.email}
-                    </a>
-                  )}
+                  <div className="flex items-center gap-1.5 truncate text-xs text-slate-400 dark:text-slate-500">
+                    {member.academicRank && <span>{member.academicRank}</span>}
+                    {member.academicRank && member.email && <span>·</span>}
+                    {member.email && (
+                      <a href={`mailto:${member.email}`} className="truncate hover:text-slate-600 dark:hover:text-slate-300">
+                        {member.email}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </TableCell>

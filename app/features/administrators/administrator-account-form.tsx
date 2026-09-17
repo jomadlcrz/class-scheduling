@@ -18,6 +18,8 @@ type AdministratorAccountFormProps = {
   /** Backend enum values (enumService); empty selection = not specified. */
   genders: string[];
   civilStatuses: string[];
+  employmentStatuses?: string[];
+  honorificPrefixes?: string[];
   rolePermissions: PermissionSummary[];
   onSubmit: (input: CreateAdministratorAccountInput) => Promise<void>;
   onCancel: () => void;
@@ -29,6 +31,8 @@ export function AdministratorAccountForm({
   departments,
   genders,
   civilStatuses,
+  employmentStatuses = [],
+  honorificPrefixes = [],
   rolePermissions,
   onSubmit,
   onCancel,
@@ -55,6 +59,9 @@ export function AdministratorAccountForm({
       departmentId: String(data.get("admin-department") ?? ""),
       gender: String(data.get("admin-gender") ?? ""),
       civilStatus: String(data.get("admin-civil-status") ?? ""),
+      employmentStatus: String(data.get("admin-employment-status") ?? "") || undefined,
+      prefixHonorific: String(data.get("admin-honorific") ?? "") || undefined,
+      academicRank: String(data.get("admin-academic-rank") ?? "").trim() || null,
     });
     if (!result.success) {
       setError(result.error.issues[0].message);
@@ -207,6 +214,64 @@ export function AdministratorAccountForm({
           </Select>
         </FieldChrome>
       </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <FieldChrome id="admin-honorific" label="Prefix">
+          <Select
+            items={[
+              { value: "", label: "Select a prefix" },
+              ...honorificPrefixes.map((h) => ({ value: h, label: h })),
+            ]}
+            name="admin-honorific"
+            defaultValue=""
+            onValueChange={() => onDirtyChange?.(true)}
+          >
+            <SelectTrigger id="admin-honorific">
+              <SelectValue placeholder="Select a prefix" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Select a prefix</SelectItem>
+              {honorificPrefixes.map((h) => (
+                <SelectItem key={h} value={h}>
+                  {h}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+        <FieldChrome id="admin-employment-status" label="Employment status">
+          <Select
+            items={[
+              { value: "", label: "Select a status" },
+              ...employmentStatuses.map((s) => ({ value: s, label: s })),
+            ]}
+            name="admin-employment-status"
+            defaultValue=""
+            onValueChange={() => onDirtyChange?.(true)}
+          >
+            <SelectTrigger id="admin-employment-status">
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Select a status</SelectItem>
+              {employmentStatuses.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FieldChrome>
+      </div>
+
+      <Input
+        id="admin-academic-rank"
+        label="Academic rank"
+        type="text"
+        placeholder="e.g. Instructor I, Assistant Professor III"
+        maxLength={100}
+        onChange={() => onDirtyChange?.(true)}
+      />
 
             <p className="font-body text-xs leading-relaxed text-slate-400 dark:text-slate-500">
               New administrators start with a temporary password and must set their own at first login.

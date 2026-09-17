@@ -113,7 +113,15 @@ function FacultyPage() {
     };
   }, [pageAccountIds]);
 
-  async function handleEdit(input: { firstName: string; midName?: string | null; lastName: string; mobile: string; email: string }) {
+  async function handleEdit(input: {
+    firstName: string;
+    midName?: string | null;
+    lastName: string;
+    mobile: string;
+    email: string;
+    prefixHonorific?: string;
+    academicRank?: string | null;
+  }) {
     if (!editTarget) return;
     const message = await facultyService.update(editTarget.id, input);
     if (message) toast.success(message);

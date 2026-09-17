@@ -22,6 +22,9 @@ type DepartmentInstructorsResponse = {
   last_name: string;
   gender: string;
   civil_status: string;
+  employment_status?: string;
+  prefix_honorific?: string;
+  academic_rank?: string | null;
   email: string | null;
   mobile: string | null;
   roles: string[];
@@ -53,6 +56,9 @@ export type DepartmentInstructor = {
   lastName: string;
   gender: string;
   civilStatus: string;
+  employmentStatus: string;
+  prefixHonorific: string;
+  academicRank: string | null;
   email: string | null;
   mobile: string | null;
   roles: string[];
@@ -116,6 +122,9 @@ async function listDepartmentInstructors(params?: {
     lastName: i.last_name,
     gender: i.gender,
     civilStatus: i.civil_status,
+    employmentStatus: i.employment_status ?? "N/A",
+    prefixHonorific: i.prefix_honorific ?? "N/A",
+    academicRank: i.academic_rank ?? null,
     email: i.email,
     mobile: i.mobile,
     roles: i.roles,

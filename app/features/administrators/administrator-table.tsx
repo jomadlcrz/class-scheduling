@@ -17,7 +17,8 @@ import type { Administrator } from "~/types/administrator";
 
 function displayName(admin: Administrator) {
   const parts = [admin.firstName, admin.midName].filter(Boolean).join(" ");
-  return parts ? `${admin.lastName}, ${parts}` : admin.lastName;
+  const base = parts ? `${admin.lastName}, ${parts}` : admin.lastName;
+  return admin.prefixHonorific ? `${admin.prefixHonorific} ${base}` : base;
 }
 
 type AdministratorTableProps = {
@@ -73,14 +74,18 @@ export function AdministratorTable({
                       <span className="block truncate font-medium text-navy-700 dark:text-mist-100">
                         {displayName(admin)}
                       </span>
-                      {admin.email && (
-                        <a
-                          href={`mailto:${admin.email}`}
-                          className="block truncate text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
-                        >
-                          {admin.email}
-                        </a>
-                      )}
+                      <div className="flex items-center gap-1.5 truncate text-xs text-slate-400 dark:text-slate-500">
+                        {admin.academicRank && <span>{admin.academicRank}</span>}
+                        {admin.academicRank && admin.email && <span>·</span>}
+                        {admin.email && (
+                          <a
+                            href={`mailto:${admin.email}`}
+                            className="truncate hover:text-slate-600 dark:hover:text-slate-300"
+                          >
+                            {admin.email}
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </TableCell>

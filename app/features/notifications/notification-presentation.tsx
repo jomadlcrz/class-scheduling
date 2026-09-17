@@ -3,6 +3,7 @@ import {
   AlertTriangleIcon,
   BookIcon,
   BriefcaseIcon,
+  CalendarCheckIcon,
   CalendarClockIcon,
   CalendarShuffleIcon,
   CheckIcon,
@@ -12,6 +13,7 @@ import {
   GraduationCapIcon,
   LayersIcon,
   ListIcon,
+  MonitorIcon,
   RefreshCwIcon,
   RotateIcon,
   SendIcon,
@@ -30,14 +32,19 @@ export type NotificationIntent = "action" | "update";
 export type NotificationTone = "sky" | "rose" | "emerald" | "amber" | "violet" | "slate";
 
 export const NOTIFICATION_ACTION_TYPES: NotificationType[] = [
+  "instructor_availability_declared",
+  "instructor_availability_widen_requested",
   "schedule_approval_requested",
+  "schedule_approval_requested_summary",
   "schedule_approval_rejected",
+  "schedule_approval_rejected_summary",
   "schedule_approval_returned_for_revision_summary",
   "major_schedule_edit_requested",
   "major_schedule_edit_approved",
   "major_schedule_reopened",
   "major_schedule_submitted",
   "subject_offering_updated",
+  "schedule_review_distributed",
 ];
 
 export type NotificationPresentation = {
@@ -317,6 +324,180 @@ export function presentNotification(notification: NotificationItem): Notificatio
           sessionCount > 0 ? `${sessionCount} session${sessionCount === 1 ? "" : "s"}` : null,
           period,
         ]),
+      };
+    }
+    case "schedule_instructor_changed":
+    case "schedule_instructor_changed_summary": {
+      if (typeof p.vacated_count === "number") {
+        return {
+          intent: "update",
+          tone: "rose",
+          icon: <UserCheckIcon />,
+          title:
+            p.vacated_count === 1
+              ? "You were taken off 1 class this term"
+              : `You were taken off ${p.vacated_count} classes this term`,
+          body: text(p.reason) ?? undefined,
+          meta: period,
+        };
+      }
+
+      const subject = text(p.subject_code);
+      const incoming = text(p.new_instructor);
+      const outgoing = text(p.previous_instructor);
+      const meetings =
+        typeof p.meeting_count === "number" && p.meeting_count > 1
+          ? `${p.meeting_count} meetings`
+          : null;
+
+      return {
+        intent: "update",
+        tone: incoming ? "violet" : "amber",
+        icon: <UserCheckIcon />,
+        title: incoming
+          ? `${subject ?? "A class"} is now with ${incoming}`
+          : `${subject ?? "A class"} has no instructor`,
+        body: text(p.reason) ?? undefined,
+        meta: join([
+          outgoing ? `was ${outgoing}` : null,
+          meetings,
+          text(p.set_name) ?? label,
+        ]),
+      };
+    }
+
+    case "schedule_delivery_changed":
+    case "schedule_delivery_changed_summary": {
+      const subject = text(p.subject_code);
+      const mode = text(p.class_mode);
+      const previous = text(p.previous_class_mode);
+
+      return {
+        intent: "update",
+        tone: "sky",
+        icon: <MonitorIcon />,
+        title: mode
+          ? `${subject ?? "A class"} is now ${mode}`
+          : `${subject ?? "A class"} changed delivery mode`,
+        body: text(p.reason) ?? undefined,
+        meta: join([
+          previous ? `was ${previous}` : null,
+          p.released_room ? "Room released" : text(p.room),
+          text(p.set_name) ?? label,
+        ]),
+      };
+    }
+
+    case "schedule_review_distributed":
+      return {
+        intent: "action",
+        tone: "amber",
+        icon: <CalendarCheckIcon />,
+        title: "A schedule needs your review",
+        meta: join([label, period]),
+        cta: "Review it",
+      };
+
+    case "instructor_availability_declared": {
+      type WinRow = { day?: string; start_time?: string; end_time?: string };
+      const windows = Array.isArray(p.windows) ? (p.windows as WinRow[]) : [];
+      const count = typeof p.window_count === "number" ? p.window_count : windows.length;
+      const who = text(p.instructor_name) ?? "An instructor";
+      return {
+        intent: "action",
+        tone: "amber",
+        icon: <CalendarClockIcon />,
+        cta: "Set their hours",
+        title:
+          count === 0
+            ? `${who} withdrew their availability`
+            : p.is_update === true
+              ? `${who} changed their availability`
+              : `${who} sent you their availability`,
+        meta: join([
+          text(p.employment_status),
+          count > 0 ? `${count} time${count === 1 ? "" : "s"}` : null,
+          period,
+        ]),
+        body:
+          text(p.note) ??
+          (windows.length > 0
+            ? windows
+                .slice(0, 3)
+                .map((w) => `${w.day ?? ""} ${w.start_time ?? ""}–${w.end_time ?? ""}`.trim())
+                .join(" · ")
+            : null),
+      };
+    }
+
+    case "instructor_availability_configured": {
+      type WinRow = { day?: string; start_time?: string; end_time?: string };
+      const windows = Array.isArray(p.windows) ? (p.windows as WinRow[]) : [];
+      return {
+        intent: "update",
+        tone: p.cleared === true ? "slate" : "emerald",
+        icon: <CalendarCheckIcon />,
+        title:
+          p.cleared === true
+            ? "Your availability restriction was lifted"
+            : p.matches_declaration === true
+              ? "Your dean accepted your availability as you sent it"
+              : "Your dean set the hours your schedule will be built within",
+        meta: join([
+          p.cleared === true ? "You can be scheduled at any teaching hour" : null,
+          period,
+        ]),
+        body:
+          text(p.note) ??
+          (p.cleared !== true && windows.length > 0
+            ? windows.map((w) => `${w.day ?? ""} ${w.start_time ?? ""}–${w.end_time ?? ""}`.trim()).join(" · ")
+            : null),
+      };
+    }
+
+    case "instructor_availability_widen_requested": {
+      type WinRow = { day?: string; start_time?: string; end_time?: string };
+      const windows = Array.isArray(p.windows) ? (p.windows as WinRow[]) : [];
+      const who = text(p.instructor_name) ?? "an instructor";
+      return {
+        intent: "action",
+        tone: "amber",
+        icon: <CalendarClockIcon />,
+        title: text(p.subject_code)
+          ? `The Registrar needs ${who} available for ${text(p.subject_code)}`
+          : `The Registrar is asking you to widen ${who}'s hours`,
+        cta: "Review the request",
+        meta: join([
+          windows.map((w) => `${w.day ?? ""} ${w.start_time ?? ""}–${w.end_time ?? ""}`.trim()).join(" · ") || null,
+          text(p.requested_by),
+          period,
+        ]),
+        body: text(p.reason),
+      };
+    }
+
+    case "instructor_availability_widen_decided": {
+      type WinRow = { day?: string; start_time?: string; end_time?: string };
+      const approved = p.status === "approved";
+      const windows = Array.isArray(p.windows) ? (p.windows as WinRow[]) : [];
+      const who = text(p.instructor_name) ?? "an instructor";
+      return {
+        intent: "update",
+        tone: approved ? "emerald" : "slate",
+        icon: approved ? <CalendarCheckIcon /> : <CloseIcon />,
+        title: approved
+          ? `${who}'s availability was widened`
+          : `Your request to widen ${who}'s availability was declined`,
+        meta: join([
+          text(p.subject_code),
+          text(p.decided_by) ? `Decided by ${text(p.decided_by)}` : null,
+          period,
+        ]),
+        body:
+          text(p.decision_message) ??
+          (approved && windows.length > 0
+            ? `Now available ${windows.map((w) => `${w.day ?? ""} ${w.start_time ?? ""}–${w.end_time ?? ""}`.trim()).join(" · ")}`
+            : null),
       };
     }
     case "schedule_rescheduled":

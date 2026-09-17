@@ -12,6 +12,10 @@ export type NotificationType =
   | "schedule_published_summary"
   | "schedule_rescheduled"
   | "schedule_rescheduled_summary"
+  | "schedule_instructor_changed"
+  | "schedule_instructor_changed_summary"
+  | "schedule_delivery_changed"
+  | "schedule_delivery_changed_summary"
   | "schedule_approval_requested"
   | "schedule_approval_requested_summary"
   | "schedule_approval_rejected"
@@ -37,6 +41,10 @@ export type NotificationType =
   | "instructor_suggestion_rejected"
   | "suggestion_resolution_granted"
   | "suggestion_resolution_summary"
+  | "instructor_availability_declared"
+  | "instructor_availability_configured"
+  | "instructor_availability_widen_requested"
+  | "instructor_availability_widen_decided"
   | "major_scheduling_window_opened"
   | "major_scheduling_window_closed"
   | "suggestion_window_opened"
@@ -82,7 +90,20 @@ export type NotificationPayload = Record<string, unknown> & {
   rejection_reason?: string | null;
   reason?: string | null;
   decision_note?: string | null;
+  decision_message?: string | null;
   edit_request_id?: number;
+  request_id?: number;
+  instructor_name?: string | null;
+  instructor_profile_id?: number;
+  status?: string;
+  meetings?: NotificationTimeBlock[];
+  meeting_count?: number;
+  previous_instructor?: string | null;
+  new_instructor?: string | null;
+  vacated_count?: number;
+  previous_class_mode?: string | null;
+  class_mode?: string | null;
+  released_room?: boolean;
   version?: number;
   department_abbrev?: string | null;
   department_name?: string | null;
