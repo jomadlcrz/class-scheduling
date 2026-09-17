@@ -16,11 +16,6 @@ export type Building = {
   floorCount: number;
 };
 
-export type CreateBuildingInput = {
-  name: string;
-  floorCount: number;
-};
-
 export type UpdateBuildingInput = {
   name?: string;
   floorCount?: number;
@@ -45,13 +40,3 @@ export type BuildingArchivePreview = {
   };
 };
 
-export type DeletedBuilding = {
-  id: number;
-  name: string;
-  deactivatedAt: string | null;
-  cascadeArchived?: {
-    rooms: number;
-    departments: number;
-    programs: number;
-  };
-};

@@ -55,17 +55,6 @@ export type DepartmentOption = {
   name: string;
 };
 
-/** GET /departments/:id response — a leaner shape than the nested-list `Department` (no buildingName join/programs). */
-export type DepartmentDetail = {
-  id: number;
-  abbrev: string;
-  name: string;
-  buildingId: number | null;
-  departmentType: string;
-  description: string | null;
-  logoUrl: string | null;
-  coverImageUrl: string | null;
-};
 
 /** GET /departments/:id/overview — detail-page header + nested programs (both department types). */
 export type DepartmentOverview = {

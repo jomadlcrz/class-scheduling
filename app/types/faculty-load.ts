@@ -1,18 +1,6 @@
 import type { Semester, YearLevel } from "~/types/subject";
 
 export type InstructorLoadClassification = "underload" | "regular" | "overload";
-export type LoadClassification = InstructorLoadClassification;
-
-/** One subject to assign within a program (matched by id on the backend). */
-type SubjectLoadInput = {
-  subjectId: number;
-};
-
-/** Subjects to assign for a single program (matched by id on the backend). */
-export type ProgramLoadInput = {
-  programId: number;
-  subjects: SubjectLoadInput[];
-};
 
 type DepartmentSubjectEntry = {
   curriculumDetailId: number;

@@ -8,22 +8,6 @@ export type TermSchedulingPhase =
   | "resolution"
   | "finalized";
 
-export const TERM_SCHEDULING_PHASE_LABELS: Record<TermSchedulingPhase, string> = {
-  major_scheduling: "Major Scheduling",
-  generation: "Generation",
-  suggestion_window: "Shift Request",
-  resolution: "Resolution",
-  finalized: "Finalized",
-};
-
-export const TERM_SCHEDULING_PHASE_ORDER: TermSchedulingPhase[] = [
-  "major_scheduling",
-  "generation",
-  "suggestion_window",
-  "resolution",
-  "finalized",
-];
-
 export type TermPhaseGates = {
   majorsOpen: boolean;
   suggestionsOpen: boolean;
@@ -182,41 +166,6 @@ export type MajorSchedulingExtension = {
   active: boolean;
 };
 
-export type TermResolutionOutcomeType = "satisfied" | "rejected" | "blocked_by_major";
-
-export type TermResolutionOutcomeItem = {
-  responseId: number;
-  subjectCode: string | null;
-  setName: string | null;
-  outcome: TermResolutionOutcomeType;
-  reason: string | null;
-  moves: number;
-  creates: number;
-  drops: number;
-};
-
-export type TermResolutionStats = {
-  suggestionsTotal: number;
-  satisfied: number;
-  rejected: number;
-  blockedByMajor: number;
-  solverStatus?: string;
-  seconds?: number;
-};
-
-export type TermResolutionRun = {
-  id: number;
-  syId: number;
-  semesterNumber: number;
-  status: "pending" | "running" | "ready" | "failed";
-  committed: boolean;
-  stats?: TermResolutionStats;
-  error?: string | null;
-  createdAt?: string | null;
-  solvedAt?: string | null;
-  outcome?: TermResolutionOutcomeItem[];
-};
-
 export type DeadlinesUpdatePayload = {
   majorsDueAt?: string | null;
   suggestionsDueAt?: string | null;
@@ -252,28 +201,6 @@ export type TermAdvanceAction =
   | "resolve"
   | "forward_for_approval"
   | "finalize";
-
-export type TermPhaseStepResult = {
-  message: string;
-  term: TermPhaseResponse;
-  undone: string[];
-};
-
-/** Institution-wide policy plus Registrar-only usage counters for each Dean. */
-export type MajorEditRequestAttemptSummary = {
-  attemptLimit: number;
-  departments: {
-    submissionId: number;
-    departmentId: number;
-    departmentName: string;
-    departmentAbbrev: string;
-    submissionStatus: string;
-    attemptsUsed: number;
-    attemptsRemaining: number;
-    hasPendingRequest: boolean;
-    canRequestEdit: boolean;
-  }[];
-};
 
 export type TermResponseReadiness = {
   allResponded: boolean;

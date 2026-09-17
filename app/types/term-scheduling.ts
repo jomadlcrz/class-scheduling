@@ -168,14 +168,6 @@ export type SchedulingWindowPeriod = {
   closeReason: WindowCloseReason | null;
 };
 
-export type SchedulingWindowConfirmation = {
-  window: SchedulingWindowName;
-  counterpart: SchedulingWindowName;
-  title: string;
-  body: string;
-  confirmLabel: string;
-};
-
 export type TermDepartmentBlockReason =
   | "no_finalized_majors"
   | "no_sets"
@@ -304,8 +296,3 @@ export type TermAdvanceResult = {
   distributedSetIds?: number[];
   majors?: TermMajorLockReport;
 };
-
-export const TERM_PHASE_ORDER: TermSchedulingPhaseValue[] = [
-  "major_scheduling",
-  "suggestion_window",
-];

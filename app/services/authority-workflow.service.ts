@@ -7,10 +7,14 @@ import type {
   FloatingInstructorAssignment,
 } from "~/types/schedule-authority";
 import type {
+  AdvancedAnalysisResult,
   AssignmentAuditLog,
   HoursAdjustmentRequest,
+  InstructorAcceptanceSummary,
   InstructorResponseSummary,
   InstructorScheduleResponse,
+  InstructorScheduleReviewDetail,
+  InstructorScheduleReviewSummary,
   MajorSchedule,
   MajorScheduleConflict,
   MajorScheduleAuditLogResult,
@@ -19,7 +23,10 @@ import type {
   MajorScheduleEditRequestResult,
   MajorScheduleMeetingInput,
   MajorScheduleSubmission,
+  MajorScheduleSummary,
   ProposedScheduleMeeting,
+  SuggestionAttemptIndicator,
+  SuggestionDryRunAnalysis,
 } from "~/types/authority-workflow";
 
 type MessageResponse = { message?: string };
@@ -273,16 +280,16 @@ async function openMajorSubmission(
 }
 
 /** GET /instructors/schedule-reviews — list schedule releases open for instructor review. */
-async function listInstructorScheduleReviews(): Promise<import("~/types/authority-workflow").InstructorScheduleReviewSummary[]> {
-  const data = await apiGet<{ reviews: import("~/types/authority-workflow").InstructorScheduleReviewSummary[] }>(
+async function listInstructorScheduleReviews(): Promise<InstructorScheduleReviewSummary[]> {
+  const data = await apiGet<{ reviews: InstructorScheduleReviewSummary[] }>(
     "/instructors/schedule-reviews",
   );
   return data.reviews ?? [];
 }
 
 /** GET /instructors/schedule-reviews/{id} — instructor review detail with meetings. */
-async function getInstructorScheduleReview(releaseId: number): Promise<import("~/types/authority-workflow").InstructorScheduleReviewDetail> {
-  return apiGet<import("~/types/authority-workflow").InstructorScheduleReviewDetail>(
+async function getInstructorScheduleReview(releaseId: number): Promise<InstructorScheduleReviewDetail> {
+  return apiGet<InstructorScheduleReviewDetail>(
     `/instructors/schedule-reviews/${releaseId}`,
   );
 }
@@ -296,9 +303,9 @@ async function listInstructorScheduleReviewHistory(): Promise<unknown[]> {
 async function getInstructorAcceptanceSummary(
   syId: number,
   semesterNumber: number,
-): Promise<import("~/types/authority-workflow").InstructorAcceptanceSummary> {
+): Promise<InstructorAcceptanceSummary> {
   const query = new URLSearchParams({ syId: String(syId), semesterNumber: String(semesterNumber) });
-  return apiGet<import("~/types/authority-workflow").InstructorAcceptanceSummary>(
+  return apiGet<InstructorAcceptanceSummary>(
     `/instructor-schedule-responses/acceptance-summary?${query}`,
   );
 }
@@ -384,8 +391,8 @@ async function suggestInstructorScheduleChange(
 }
 
 /** POST /registrar/instructor-schedule-responses/{id}/analyses — dry-run analyze suggestion placement. */
-async function analyzeInstructorSuggestion(responseId: number): Promise<import("~/types/authority-workflow").SuggestionDryRunAnalysis> {
-  return apiPost<import("~/types/authority-workflow").SuggestionDryRunAnalysis>(
+async function analyzeInstructorSuggestion(responseId: number): Promise<SuggestionDryRunAnalysis> {
+  return apiPost<SuggestionDryRunAnalysis>(
     `/registrar/instructor-schedule-responses/${responseId}/analyses`,
   );
 }
@@ -415,8 +422,8 @@ async function previewRetention(responseId: number) {
 }
 
 /** POST /registrar/instructor-schedule-responses/{id}/advanced-analyses — progressive multi-level dry-run solver. */
-async function analyzeAdvancedAdjustment(responseId: number): Promise<import("~/types/authority-workflow").AdvancedAnalysisResult> {
-  return apiPost<import("~/types/authority-workflow").AdvancedAnalysisResult>(
+async function analyzeAdvancedAdjustment(responseId: number): Promise<AdvancedAnalysisResult> {
+  return apiPost<AdvancedAnalysisResult>(
     `/registrar/instructor-schedule-responses/${responseId}/advanced-analyses`,
   );
 }
@@ -434,11 +441,11 @@ async function applySuggestionWithAdjustments(responseId: number, note?: string)
 async function getSuggestionAttemptIndicators(
   syId?: number,
   semesterNumber?: number,
-): Promise<import("~/types/authority-workflow").SuggestionAttemptIndicator[]> {
+): Promise<SuggestionAttemptIndicator[]> {
   const query = new URLSearchParams();
   if (syId != null) query.set("syId", String(syId));
   if (semesterNumber != null) query.set("semesterNumber", String(semesterNumber));
-  const data = await apiGet<{ indicators: import("~/types/authority-workflow").SuggestionAttemptIndicator[] }>(
+  const data = await apiGet<{ indicators: SuggestionAttemptIndicator[] }>(
     `/instructor-schedule-responses/suggestion-attempt-indicators${query.size ? `?${query}` : ""}`,
   );
   return data.indicators ?? [];
@@ -448,11 +455,11 @@ async function getSuggestionAttemptIndicators(
 async function getMajorScheduleSummary(
   syId?: number,
   semesterNumber?: number,
-): Promise<import("~/types/authority-workflow").MajorScheduleSummary> {
+): Promise<MajorScheduleSummary> {
   const query = new URLSearchParams();
   if (syId != null) query.set("syId", String(syId));
   if (semesterNumber != null) query.set("semesterNumber", String(semesterNumber));
-  return apiGet<import("~/types/authority-workflow").MajorScheduleSummary>(
+  return apiGet<MajorScheduleSummary>(
     `/major-schedule-summary${query.size ? `?${query}` : ""}`,
   );
 }

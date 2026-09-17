@@ -18,9 +18,3 @@ export type UpdatePermissionInput = {
   description?: string;
 };
 
-/** Archived permission row from GET /archive?category=permissions. */
-export type DeletedPermission = {
-  id: number;
-  slug: string;
-  deactivatedAt: string | null;
-};

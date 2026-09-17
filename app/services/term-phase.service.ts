@@ -103,8 +103,8 @@ async function setMajorEditRequestPolicy(
 async function getMajorEditRequestAttempts(
   syId: number,
   semesterNumber: number,
-): Promise<import("~/types/term-phase").MajorEditRequestAttemptSummary> {
-  return apiGet<import("~/types/term-phase").MajorEditRequestAttemptSummary>(
+): Promise<import("~/types/term-scheduling").MajorEditRequestAttemptSummary> {
+  return apiGet<import("~/types/term-scheduling").MajorEditRequestAttemptSummary>(
     `/registrar/scheduling-terms/${syId}/${semesterNumber}/major-edit-request-attempts`,
   );
 }

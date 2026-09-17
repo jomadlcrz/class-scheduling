@@ -1,9 +1,6 @@
 import { z } from "zod";
 import { phoneNumberSchema } from "~/schemas/phone-number.schema";
 
-export const studentAccountSchema = z.object({
-  email: z.email("Enter a valid email address."),
-});
 
 export const studentSchema = z
   .object({

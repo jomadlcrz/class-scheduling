@@ -8,6 +8,13 @@ import {
 import type { YearLevel } from "~/types/subject";
 import type {
   DeanApprovalsInbox,
+  DeanProgramApprovalResult,
+  DeanProgramApprovalsResponse,
+  DeanProgramRejectResult,
+  DeanReviewProgress,
+  DeanSendAllToInstructorsResult,
+  ProgramPublishResult,
+  RegistrarRevisionWorkspace,
   ScheduleRelease,
   ScheduleReleaseStatus,
   SchedulePreview,
@@ -103,8 +110,8 @@ async function listApprovals(
 async function listProgramApprovals(
   syId: number,
   semesterNumber: number,
-): Promise<import("~/types/schedule-release").DeanProgramApprovalsResponse> {
-  return apiGet<import("~/types/schedule-release").DeanProgramApprovalsResponse>(
+): Promise<DeanProgramApprovalsResponse> {
+  return apiGet<DeanProgramApprovalsResponse>(
     `/deans/program-approvals/${syId}/${semesterNumber}`,
   );
 }
@@ -113,8 +120,8 @@ async function listProgramApprovals(
 async function sendAllToInstructors(
   syId: number,
   semesterNumber: number,
-): Promise<import("~/types/schedule-release").DeanSendAllToInstructorsResult> {
-  const data = await apiPost<import("~/types/schedule-release").DeanSendAllToInstructorsResult & { message?: string }>(
+): Promise<DeanSendAllToInstructorsResult> {
+  const data = await apiPost<DeanSendAllToInstructorsResult & { message?: string }>(
     `/deans/program-approvals/${syId}/${semesterNumber}/instructor-distributions`,
   );
   return {
@@ -131,8 +138,8 @@ async function sendProgramToInstructors(
   syId: number,
   semesterNumber: number,
   programId: number,
-): Promise<import("~/types/schedule-release").DeanProgramApprovalResult> {
-  const data = await apiPost<import("~/types/schedule-release").DeanProgramApprovalResult & { message?: string }>(
+): Promise<DeanProgramApprovalResult> {
+  const data = await apiPost<DeanProgramApprovalResult & { message?: string }>(
     `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/instructor-distributions`,
   );
   return {
@@ -150,8 +157,8 @@ async function rejectProgram(
   semesterNumber: number,
   programId: number,
   reason: string,
-): Promise<import("~/types/schedule-release").DeanProgramRejectResult & { message: string }> {
-  const data = await apiPost<import("~/types/schedule-release").DeanProgramRejectResult & { message?: string }>(
+): Promise<DeanProgramRejectResult & { message: string }> {
+  const data = await apiPost<DeanProgramRejectResult & { message?: string }>(
     `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/rejections`,
     { reason },
   );
@@ -169,7 +176,7 @@ async function returnProgramForRevision(
   semesterNumber: number,
   programId: number,
   reason: string,
-): Promise<import("~/types/schedule-release").DeanProgramRejectResult & { message: string }> {
+): Promise<DeanProgramRejectResult & { message: string }> {
   const data = await apiPost<{ message?: string; programAbbrev?: string; returnedSetIds?: number[] }>(
     `/deans/program-approvals/${syId}/${semesterNumber}/${programId}/revision-requests`,
     { reason },
@@ -206,8 +213,8 @@ async function getApproval(id: number): Promise<ScheduleRelease> {
 }
 
 /** POST /deans/schedule-approvals/{id}/suggestion-forwards — forwards instructor suggestions to registrar. */
-async function getReviewProgress(id: number): Promise<import("~/types/schedule-release").DeanReviewProgress> {
-  return apiGet<import("~/types/schedule-release").DeanReviewProgress>(
+async function getReviewProgress(id: number): Promise<DeanReviewProgress> {
+  return apiGet<DeanReviewProgress>(
     `/deans/schedule-approvals/${id}/review-progress`,
   );
 }
@@ -237,8 +244,8 @@ async function finalApprove(id: number): Promise<{ message: string; release?: Sc
 }
 
 /** GET /registrar/schedule-releases/{id}/revision-workspace — registrar review of forwarded suggestions. */
-async function getRevisionWorkspace(id: number): Promise<import("~/types/schedule-release").RegistrarRevisionWorkspace> {
-  return apiGet<import("~/types/schedule-release").RegistrarRevisionWorkspace>(
+async function getRevisionWorkspace(id: number): Promise<RegistrarRevisionWorkspace> {
+  return apiGet<RegistrarRevisionWorkspace>(
     `/registrar/schedule-releases/${id}/revision-workspace`,
   );
 }
@@ -256,7 +263,7 @@ async function publishProgramSchedule(
   syId: number,
   semesterNumber: number,
   programId: number,
-): Promise<import("~/types/schedule-release").ProgramPublishResult> {
+): Promise<ProgramPublishResult> {
   const data = await apiPost<{
     message?: string;
     programAbbrev: string;
