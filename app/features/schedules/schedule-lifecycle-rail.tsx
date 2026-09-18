@@ -37,6 +37,23 @@ export const SCHEDULE_LIFECYCLE_STEPS: StepDefinition[] = [
   { key: "term_publication", label: "Term Publication" },
 ];
 
+/**
+ * Per-audience step links — only steps with a role-accessible page distinct from the
+ * one the rail is currently rendered on get a link; the rest stay static labels.
+ */
+function lifecycleStepsFor(audience: Audience): StepDefinition[] {
+  return SCHEDULE_LIFECYCLE_STEPS.map((step) => {
+    if (step.key === "instructor_review") {
+      return { ...step, href: "/schedule-responses" };
+    }
+    if (audience === "registrar") {
+      if (step.key === "registrar_resolution") return { ...step, href: "/schedules/adjustment-board" };
+      if (step.key === "term_publication") return { ...step, href: "/schedules/term-calendar" };
+    }
+    return step;
+  });
+}
+
 /** Maps backend release status to the zero-based step index in the 6-stage lifecycle pipeline. */
 export function scheduleLifecycleStepIndex(release: ScheduleRelease): number {
   if (release.releaseStatus === "approved" && release.termFinalized) {
@@ -208,7 +225,7 @@ export function ScheduleLifecycleRail({
       <Stepper
         variant="snake"
         columns={3}
-        steps={SCHEDULE_LIFECYCLE_STEPS}
+        steps={lifecycleStepsFor(audience)}
         currentIndex={currentIndex}
         readOnly
       />

@@ -11,6 +11,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { PageHeader } from "~/layouts/page-header";
 import { instructorAvailabilityService } from "~/services/instructor-availability.service";
+import { termPhaseService } from "~/services/term-phase.service";
 import type { AvailabilityWindow } from "~/types/instructor-availability";
 
 const WEEK_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -58,17 +59,22 @@ export function MyAvailabilityPage() {
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [published, setPublished] = useState(false);
 
   const load = useCallback(async () => {
     if (selectedSyId == null || selectedSemester == null) return;
     setLoading(true);
     setLoadError(null);
     try {
-      const declaration = await instructorAvailabilityService.get(selectedSyId, selectedSemester);
+      const [declaration, phase] = await Promise.all([
+        instructorAvailabilityService.get(selectedSyId, selectedSemester),
+        termPhaseService.getTermPhase(selectedSyId, selectedSemester).catch(() => null),
+      ]);
       setDrafts(toDrafts(declaration.windows));
       setNote(declaration.note ?? "");
       setDeclared(declaration.declared);
       setUpdatedAt(declaration.updatedAt ?? declaration.submittedAt);
+      setPublished(phase?.phase === "finalized");
       setDirty(false);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Could not load your availability.");
@@ -332,14 +338,20 @@ export function MyAvailabilityPage() {
                 <div className="pt-2">
                   <Button
                     onClick={handleSave}
-                    disabled={saving || backwards.length > 0}
+                    disabled={saving || backwards.length > 0 || published}
                     className="w-full"
                   >
                     {saving ? "Submitting…" : declared ? "Update availability" : "Submit availability to dean"}
                   </Button>
                 </div>
 
-                {dirty && !saving && (
+                {published && (
+                  <p className="font-body text-center text-xs text-slate-500 dark:text-slate-400">
+                    This term's schedule is published — availability is locked.
+                  </p>
+                )}
+
+                {dirty && !saving && !published && (
                   <p className="font-body text-center text-xs text-amber-600 dark:text-gold-300">
                     You have unsaved changes.
                   </p>

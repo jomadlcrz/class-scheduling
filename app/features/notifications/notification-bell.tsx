@@ -4,10 +4,10 @@ import { BellIcon, CheckIcon } from "~/components/ui/icons";
 import { Popover } from "~/components/ui/popover";
 import { Spinner } from "~/components/ui/spinner";
 import { resolveNotificationTarget } from "~/features/notifications/notification-navigation";
+import { presentNotification } from "~/features/notifications/notification-presentation";
 import { useAuth } from "~/hooks/use-auth";
-import { programSetLabel } from "~/lib/section-label";
 import { notificationService } from "~/services/notification.service";
-import type { NotificationItem, NotificationPayload } from "~/types/notification";
+import type { NotificationItem } from "~/types/notification";
 
 const iconButtonClassName =
   "flex cursor-pointer items-center rounded-lg px-1 py-1 transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:hover:bg-white/8";
@@ -15,157 +15,17 @@ const iconButtonClassName =
 const itemClassName =
   "flex w-full cursor-pointer items-center justify-between gap-3 rounded-md p-2.5 text-left font-body text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-mist-100";
 
-const PHASE_LABELS: Record<string, string> = {
-  major_scheduling: "Major scheduling",
-  generation: "Generation",
-  suggestion_window: "Shift request",
-  resolution: "Resolution",
-  finalized: "Finalized",
-};
-
-/** Renders one notification's title/detail from its type + payload. */
+/**
+ * Renders one notification's title/detail from its type + payload.
+ * Delegates to `presentNotification` (the single source of truth for every
+ * NotificationType) instead of keeping a second switch — a second switch is
+ * exactly how types like `instructor_availability_declared` previously fell
+ * through to the generic "Notification" fallback here despite being fully
+ * handled there.
+ */
 export function notificationText(notification: NotificationItem): { title: string; detail: string } {
-  const p = notification.payload ?? {};
-  const label = programSetLabel(p.program_abbrev ?? null, p.year_level ?? null, p.set_code ?? null);
-  const period = [p.semester, p.school_year].filter(Boolean).join(", ");
-
-  switch (notification.type) {
-    case "schedule_published": {
-      const count = Array.isArray(p.sessions) ? p.sessions.length : 0;
-      return {
-        title: label ? `Schedule published for ${label}` : "Schedule published",
-        detail: [count > 0 ? `${count} session${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
-      };
-    }
-    case "schedule_published_summary": {
-      const count = typeof p.session_count === "number" ? p.session_count : 0;
-      return {
-        title: label ? `Schedule published for ${label}` : "Schedule published",
-        detail: [count > 0 ? `${count} sessions` : null, period].filter(Boolean).join(" · "),
-      };
-    }
-    case "schedule_rescheduled":
-    case "schedule_rescheduled_summary": {
-      const block = p.new as NotificationPayload["new"];
-      const when = block
-        ? [block.day, [block.start_time, block.end_time].filter(Boolean).join("–"), block.room]
-            .filter(Boolean)
-            .join(" · ")
-        : "";
-      return {
-        title: p.subject_code ? `${p.subject_code} rescheduled` : "Session rescheduled",
-        detail: [when, label].filter(Boolean).join(" · "),
-      };
-    }
-    case "schedule_approval_requested": {
-      const count = typeof p.session_count === "number" ? p.session_count : 0;
-      return {
-        title: label ? `Approval requested for ${label}` : "Schedule approval requested",
-        detail: [count > 0 ? `${count} session${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
-      };
-    }
-    case "schedule_approval_requested_summary": {
-      const count = typeof p.set_count === "number" ? p.set_count : 0;
-      return {
-        title: p.program_abbrev ? `Approval requested for ${p.program_abbrev}` : "Schedule approval requested",
-        detail: [count > 0 ? `${count} section${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
-      };
-    }
-    case "schedule_approval_rejected": {
-      return {
-        title: label ? `Schedule returned for ${label}` : "Schedule returned",
-        detail: p.rejection_reason ? p.rejection_reason : period,
-      };
-    }
-    case "schedule_approval_rejected_summary": {
-      const count = typeof p.set_count === "number" ? p.set_count : 0;
-      return {
-        title: p.program_abbrev ? `Schedules returned for ${p.program_abbrev}` : "Schedules returned",
-        detail: p.rejection_reason ?? (count > 0 ? `${count} section${count === 1 ? "" : "s"}` : period),
-      };
-    }
-    case "schedule_approval_approved_summary": {
-      const count = typeof p.set_count === "number" ? p.set_count : 0;
-      return {
-        title: p.program_abbrev ? `Schedules approved for ${p.program_abbrev}` : "Schedules approved",
-        detail: [count > 0 ? `${count} section${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
-      };
-    }
-    case "schedule_approval_returned_for_revision_summary": {
-      const count = typeof p.set_count === "number" ? p.set_count : 0;
-      return {
-        title: p.program_abbrev ? `Returned for revision — ${p.program_abbrev}` : "Returned for revision",
-        detail: [p.reason, count > 0 ? `${count} section${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
-      };
-    }
-    case "major_schedule_submitted":
-      return { title: "Major schedules submitted", detail: [p.department_abbrev, period].filter(Boolean).join(" · ") };
-    case "major_schedule_edit_requested":
-      return { title: "Major schedule edit requested", detail: p.reason ?? p.department_abbrev ?? "" };
-    case "major_schedule_edit_approved":
-      return { title: "Major schedule edit approved", detail: [p.department_abbrev, p.decision_note, period].filter(Boolean).join(" · ") };
-    case "major_schedule_edit_rejected":
-      return { title: "Major schedule edit rejected", detail: [p.department_abbrev, p.decision_note ?? p.reason, period].filter(Boolean).join(" · ") };
-    case "major_schedule_deleted":
-      return { title: p.subject_code ? `${p.subject_code} removed from Major schedules` : "Major meeting removed", detail: p.reason ?? period };
-    case "major_schedule_finalized":
-      return { title: "Major schedule finalized", detail: [p.department_abbrev, period].filter(Boolean).join(" · ") };
-    case "subject_assignment_changed": {
-      const codes = Array.isArray(p.subject_codes) ? p.subject_codes : [];
-      return {
-        title: p.action === "removed" ? "Subject(s) removed from your load" : "Subject(s) added to your load",
-        detail: codes.join(", "),
-      };
-    }
-    case "student_enrolled":
-      return { title: "You've been enrolled", detail: period };
-    case "account_reactivated":
-      return { title: "Account reactivated", detail: "Your account has been restored." };
-    case "major_scheduling_window_opened":
-      return {
-        title: "Major Scheduling window opened",
-        detail: [p.closing_at ? `Due ${new Date(p.closing_at).toLocaleDateString()}` : null, period].filter(Boolean).join(" · "),
-      };
-    case "major_scheduling_window_closed":
-      return { title: "Major Scheduling window closed", detail: period };
-    case "suggestion_window_opened":
-      return {
-        title: "Suggestion window opened",
-        detail: [p.closing_at ? `Due ${new Date(p.closing_at).toLocaleDateString()}` : null, period].filter(Boolean).join(" · "),
-      };
-    case "suggestion_window_closed":
-      return { title: "Suggestion window closed", detail: period };
-    case "schedule_approval_approved": {
-      const count = typeof p.session_count === "number" ? p.session_count : 0;
-      return {
-        title: label ? `Schedule approved for ${label}` : "Schedule approved",
-        detail: [count > 0 ? `${count} session${count === 1 ? "" : "s"}` : null, period].filter(Boolean).join(" · "),
-      };
-    }
-    case "major_schedule_reopened":
-      return { title: "Major schedule reopened", detail: [p.department_abbrev, period].filter(Boolean).join(" · ") };
-    case "subject_offering_updated":
-      return { title: "Subject offering updated", detail: [p.subject_code, period].filter(Boolean).join(" · ") };
-    case "schedule_review_distributed":
-      return {
-        title: label ? `Review distributed for ${label}` : "Schedule review distributed",
-        detail: period,
-      };
-    case "scheduling_deadline_updated":
-      return { title: "Scheduling deadline updated", detail: [PHASE_LABELS[p.phase as string] ?? p.phase, period].filter(Boolean).join(" · ") };
-    case "scheduling_phase_changed":
-      return { title: "Scheduling phase changed", detail: [PHASE_LABELS[p.phase as string] ?? p.phase, period].filter(Boolean).join(" · ") };
-    case "instructor_schedule_response":
-      return { title: "Schedule response received", detail: [p.subject_code, p.rejection_reason ?? period].filter(Boolean).join(" · ") };
-    case "instructor_suggestion_rejected":
-      return { title: "Suggestion not applied", detail: [p.subject_code, p.rejection_reason ?? period].filter(Boolean).join(" · ") };
-    case "suggestion_resolution_granted":
-      return { title: "Suggestion approved", detail: [p.subject_code, p.detail ?? period].filter(Boolean).join(" · ") };
-    case "suggestion_resolution_summary":
-      return { title: "Suggestion resolved", detail: [p.headline ?? p.detail, period].filter(Boolean).join(" · ") };
-    default:
-      return { title: "Notification", detail: period || "Update available" };
-  }
+  const { title, meta, body } = presentNotification(notification);
+  return { title, detail: [meta, body].filter(Boolean).join(" · ") };
 }
 
 function relativeTime(iso: string): string {

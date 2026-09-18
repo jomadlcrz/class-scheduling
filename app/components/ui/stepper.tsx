@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "motion/react";
+import { Link } from "react-router";
 import { CheckIcon } from "~/components/ui/icons";
 
 export type StepStatus = "completed" | "current" | "upcoming";
@@ -6,6 +7,8 @@ export type StepStatus = "completed" | "current" | "upcoming";
 export type StepDefinition = {
   key: string;
   label: string;
+  /** When set, the step label navigates here — shown even in readOnly rails. */
+  href?: string;
 };
 
 export type StepperProps = {
@@ -159,7 +162,9 @@ export function SnakeStepper({
             >
               {row.items.map((item, itemColIdx) => {
                 const status = statusFor(item.originalIndex, currentIndex);
-                const isClickable = !readOnly && onStepClick && item.originalIndex <= maxUnlockedIndex;
+                const href = item.step.href;
+                const isClickable =
+                  Boolean(href) || (!readOnly && Boolean(onStepClick) && item.originalIndex <= maxUnlockedIndex);
 
                 // Determine if connector from this step to next step is completed:
                 // In non-reversed row: last column is the turn point (Col = columns - 1)
@@ -211,7 +216,14 @@ export function SnakeStepper({
                     key={item.step.key}
                     className="relative flex items-center justify-center"
                   >
-                    {isClickable ? (
+                    {href ? (
+                      <Link
+                        to={href}
+                        className="w-full h-full cursor-pointer rounded-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 text-left"
+                      >
+                        {content}
+                      </Link>
+                    ) : isClickable && onStepClick ? (
                       <button
                         type="button"
                         onClick={() => onStepClick(item.originalIndex)}
@@ -350,7 +362,8 @@ export function Stepper({
         {steps.map((step, index) => {
           const status = statusFor(index, currentIndex);
           const isLast = index === steps.length - 1;
-          const isClickable = !readOnly && onStepClick && index <= maxUnlockedIndex;
+          const href = step.href;
+          const isClickable = Boolean(href) || (!readOnly && Boolean(onStepClick) && index <= maxUnlockedIndex);
 
           const content = (
             <>
@@ -375,7 +388,14 @@ export function Stepper({
               aria-current={status === "current" ? "step" : undefined}
               className={`flex min-w-0 items-center ${isLast ? "" : "flex-1"}`}
             >
-              {isClickable ? (
+              {href ? (
+                <Link
+                  to={href}
+                  className="flex shrink-0 cursor-pointer items-center gap-3 rounded-lg px-1 py-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+                >
+                  {content}
+                </Link>
+              ) : isClickable && onStepClick ? (
                 <button
                   type="button"
                   onClick={() => onStepClick(index)}
