@@ -104,49 +104,75 @@ async function createAccount(
   return apiMessage(data);
 }
 
-/** GET /super-admin/student-accounts — all student profiles. 404 → empty. */
-async function listAccounts(): Promise<StudentAccountRow[]> {
-  type StudentAccountResponse = {
-    student_profile_id: number;
-    student_id: string;
-    first_name: string;
-    mid_name: string | null;
-    last_name: string;
-    gender: string | null;
-    mobile: string | null;
-    email: string | null;
-    has_account: boolean;
-    account_active: boolean | null;
-    profile_photo_url: string | null;
-    academics: {
-      enrollment_id?: number;
-      student_academic_id: number;
-      year_level: number;
-      program: string;
-      set: string | null;
-      enrolled_status: string;
-      // Dropped from this endpoint's payload on 2026-08-08; kept optional for resilience.
-      student_type?: string | null;
-      school_year: string | null;
-      semester: string | null;
-      enrolled_subjects: {
-        subject_id: number;
-        subject_code: string;
-        descriptive_title: string;
-        units: number;
-      }[];
-    }[];
+export type StudentAccountQuery = {
+  search?: string;
+  program?: string;
+  year_level?: number;
+  set?: string;
+  student_type?: string;
+  enrollment_state?: string;
+  account_status?: string;
+};
+
+export type StudentSummaryCounts = {
+  students: number;
+  withAccount: number;
+  noAccount: number;
+  programs: number;
+};
+
+export type StudentAccountFacets = {
+  programs: string[];
+  yearLevels: number[];
+  sets: string[];
+};
+
+export type StudentAccountPage = {
+  items: StudentAccountRow[];
+  pagination: {
+    page: number;
+    perPage: number;
+    totalItems: number;
+    totalPages: number;
   };
+  summary: StudentSummaryCounts;
+  facets: StudentAccountFacets;
+};
 
-  let data: StudentAccountResponse[];
-  try {
-    data = await apiGet<StudentAccountResponse[]>("/super-admin/student-accounts");
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return [];
-    throw err;
-  }
+type StudentAccountResponse = {
+  student_profile_id: number;
+  student_id: string | null;
+  first_name: string;
+  mid_name: string | null;
+  last_name: string;
+  gender: string | null;
+  mobile: string | null;
+  email: string | null;
+  has_account: boolean;
+  account_active: boolean | null;
+  profile_photo_url: string | null;
+  academics: {
+    enrollment_id?: number;
+    student_academic_id: number;
+    year_level: number;
+    program: string;
+    set: string | null;
+    enrolled_status: string;
+    // Dropped from this endpoint's payload on 2026-08-08; kept optional for resilience.
+    student_type?: string | null;
+    school_year: string | null;
+    semester: string | null;
+    enrolled_subjects: {
+      subject_id: number;
+      subject_code: string;
+      descriptive_title: string;
+      units: number;
+    }[];
+  }[];
+};
 
-  return data.map((s) => ({
+function transformStudentAccount(s: StudentAccountResponse): StudentAccountRow {
+  return {
     studentProfileId: s.student_profile_id,
     studentId: s.student_id,
     firstName: s.first_name,
@@ -158,7 +184,7 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
     hasAccount: s.has_account,
     accountActive: s.account_active ?? null,
     profilePhotoUrl: s.profile_photo_url,
-    academics: s.academics.map((a) => ({
+    academics: (s.academics ?? []).map((a) => ({
       studentAcademicId: a.enrollment_id ?? a.student_academic_id,
       yearLevel: a.year_level,
       program: a.program,
@@ -167,14 +193,85 @@ async function listAccounts(): Promise<StudentAccountRow[]> {
       studentType: a.student_type ?? null,
       schoolYear: a.school_year,
       semester: a.semester,
-      enrolledSubjects: a.enrolled_subjects.map((es) => ({
+      enrolledSubjects: (a.enrolled_subjects ?? []).map((es) => ({
         subjectId: es.subject_id,
         subjectCode: es.subject_code,
         descriptiveTitle: es.descriptive_title,
         units: es.units,
       })),
     })),
-  }));
+  };
+}
+
+/** GET /super-admin/student-accounts — all student profiles. 404 → empty. */
+async function listAccounts(): Promise<StudentAccountRow[]> {
+  let data: StudentAccountResponse[];
+  try {
+    data = await apiGet<StudentAccountResponse[]>("/super-admin/student-accounts");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+
+  return data.map(transformStudentAccount);
+}
+
+/** GET /super-admin/student-accounts?page=...&per_page=... — server-side paginated & filtered student roster. */
+async function listAccountsPage(
+  query?: StudentAccountQuery,
+  pagination?: { page?: number; perPage?: number },
+): Promise<StudentAccountPage> {
+  const params = new URLSearchParams();
+  params.set("page", String(pagination?.page ?? 1));
+  params.set("per_page", String(pagination?.perPage ?? 10));
+
+  if (query?.search?.trim()) params.set("search", query.search.trim());
+  if (query?.program && query.program !== "all") params.set("program", query.program);
+  if (query?.year_level != null) params.set("year_level", String(query.year_level));
+  if (query?.set && query.set !== "all") params.set("set_name", query.set);
+  if (query?.account_status && query.account_status !== "all") {
+    params.set("account_status", query.account_status);
+  }
+
+  type PagedResponse = {
+    items: StudentAccountResponse[];
+    pagination: {
+      page: number;
+      perPage: number;
+      totalItems: number;
+      totalPages: number;
+    };
+    summary: {
+      students: number;
+      with_account: number;
+      no_account: number;
+      programs: number;
+    };
+    facets?: {
+      programs?: string[];
+      year_levels?: number[];
+      sets?: string[];
+    };
+  };
+
+  const qs = params.toString();
+  const data = await apiGet<PagedResponse>(`/super-admin/student-accounts?${qs}`);
+
+  return {
+    items: (data.items ?? []).map(transformStudentAccount),
+    pagination: data.pagination,
+    summary: {
+      students: data.summary?.students ?? 0,
+      withAccount: data.summary?.with_account ?? 0,
+      noAccount: data.summary?.no_account ?? 0,
+      programs: data.summary?.programs ?? 0,
+    },
+    facets: {
+      programs: data.facets?.programs ?? [],
+      yearLevels: data.facets?.year_levels ?? [],
+      sets: data.facets?.sets ?? [],
+    },
+  };
 }
 
 /** POST /enrollments — re-enrolls an existing student profile into a new term. Returns the backend message. */
@@ -458,6 +555,7 @@ export const studentService = {
   getProfilePhotoRaw,
   createAccount,
   listAccounts,
+  listAccountsPage,
   enroll,
   getEnrollments,
   getProfile,

@@ -20,8 +20,15 @@ export const EMPTY_STUDENT_ACCOUNT_FILTERS: StudentAccountFiltersState = {
 };
 
 type UseStudentAccountFiltersOptions = {
-  statusFilter: string;
-  onStatusFilterChange: (value: string) => void;
+  statusFilter?: string;
+  onStatusFilterChange?: (value: string) => void;
+  serverFiltered?: boolean;
+  facets?: {
+    programs?: string[];
+    yearLevels?: number[];
+    sets?: string[];
+  };
+  onFilterChange?: () => void;
 };
 
 export function useStudentAccountFilters(rows: StudentAccountRow[], options?: UseStudentAccountFiltersOptions) {
@@ -32,18 +39,32 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
 
   function resetFilters() {
     setFilters(EMPTY_STUDENT_ACCOUNT_FILTERS);
+    options?.onFilterChange?.();
   }
 
-  const programs = useMemo(
-    () => [...new Set(rows.map((r) => latest(r)?.program).filter((v): v is string => Boolean(v)))].sort(),
-    [rows],
-  );
-  const sets = useMemo(
-    () => [...new Set(rows.map((r) => latest(r)?.set).filter((v): v is string => Boolean(v)))].sort(),
-    [rows],
-  );
+  function updateFilter(key: keyof StudentAccountFiltersState, val: string) {
+    setFilters((prev) => ({ ...prev, [key]: val }));
+    options?.onFilterChange?.();
+  }
+
+  const programs = useMemo(() => {
+    if (options?.facets?.programs && options.facets.programs.length > 0) {
+      return options.facets.programs;
+    }
+    return [...new Set(rows.map((r) => latest(r)?.program).filter((v): v is string => Boolean(v)))].sort();
+  }, [rows, options?.facets?.programs]);
+
+  const sets = useMemo(() => {
+    if (options?.facets?.sets && options.facets.sets.length > 0) {
+      return options.facets.sets;
+    }
+    return [...new Set(rows.map((r) => latest(r)?.set).filter((v): v is string => Boolean(v)))].sort();
+  }, [rows, options?.facets?.sets]);
 
   const filtered = useMemo(() => {
+    if (options?.serverFiltered) {
+      return rows;
+    }
     return rows.filter((r) => {
       const academic = latest(r);
       if (filters.program !== "all" && academic?.program !== filters.program) return false;
@@ -54,7 +75,7 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
       if (statusFilter === "deactivated" && (r.hasAccount !== true || r.accountActive !== false)) return false;
       return true;
     });
-  }, [rows, filters, statusFilter]);
+  }, [rows, filters, statusFilter, options?.serverFiltered]);
 
   const filterBar = (
     <div className="flex flex-wrap items-end gap-2">
@@ -64,7 +85,7 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
         allLabel="All"
         options={programs.map((p) => ({ value: p, label: p }))}
         value={filters.program}
-        onChange={(v) => setFilters((f) => ({ ...f, program: v as string }))}
+        onChange={(v) => updateFilter("program", v as string)}
       />
       <FilterDropdown
         id="student-year-filter"
@@ -72,7 +93,7 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
         allLabel="All"
         options={yearLevelIds.map((y) => ({ value: String(y), label: yearLevelLabel(y) }))}
         value={filters.yearLevel}
-        onChange={(v) => setFilters((f) => ({ ...f, yearLevel: v as string }))}
+        onChange={(v) => updateFilter("yearLevel", v as string)}
       />
       <FilterDropdown
         id="student-set-filter"
@@ -80,7 +101,7 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
         allLabel="All"
         options={sets.map((s) => ({ value: s, label: s }))}
         value={filters.set}
-        onChange={(v) => setFilters((f) => ({ ...f, set: v as string }))}
+        onChange={(v) => updateFilter("set", v as string)}
       />
       <FilterDropdown
         id="student-status-filter"
@@ -92,10 +113,13 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
           { value: "no_account", label: "No account" },
         ]}
         value={statusFilter}
-        onChange={onStatusFilterChange}
+        onChange={(v) => {
+          onStatusFilterChange(v);
+          options?.onFilterChange?.();
+        }}
       />
     </div>
   );
 
-  return { filtered, filterBar, resetFilters };
+  return { filtered, filterBar, resetFilters, filters };
 }

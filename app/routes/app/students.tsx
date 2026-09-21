@@ -22,8 +22,8 @@ import { StudentDetailsModal } from "~/features/students/student-details-modal";
 import { PageHeader } from "~/layouts/page-header";
 import { irregularClassService, type IrregularStudent } from "~/services/irregular-class.service";
 import { regularClassService } from "~/services/regular-class.service";
-import { studentService } from "~/services/student.service";
-import { useCachedData } from "~/hooks/use-cached-data";
+import { studentService, type StudentAccountQuery } from "~/services/student.service";
+import { useDebounce } from "~/hooks/use-debounce";
 import { usePagination } from "~/hooks/use-pagination";
 import type {
   RegularStudentRow,
@@ -91,17 +91,25 @@ export function StudentsPage() {
   const syId = termContext?.selection.syId ?? null;
   const semesterNumber = termContext?.selection.semesterNumber ?? null;
 
-  // Admin-only account list (super-admin endpoint). Registrars use the
-  // term-scoped regular/irregular lists below instead, so this stays disabled.
-  const { data: studentList, error: loadError, reload: reloadAccounts } = useCachedData(
-    "student-accounts",
-    () => studentService.listAccounts(),
-    { enabled: isAdmin },
-  );
+  const [adminPage, setAdminPage] = useState(1);
+  const adminPageSize = 10;
+  const [adminTotalItems, setAdminTotalItems] = useState(0);
+  const [adminFacets, setAdminFacets] = useState<{ programs?: string[]; yearLevels?: number[]; sets?: string[] } | null>(null);
+  const [studentList, setStudentList] = useState<StudentAccountRow[] | null>(null);
+  const [allAccounts, setAllAccounts] = useState<StudentAccountRow[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminReloadKey, setAdminReloadKey] = useState(0);
 
   // Shared reference data for the create/enroll forms — cached under keys reused
   // across the app so revisits and reloads skip the loading state.
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    if (isAdmin) setAdminPage(1);
+  }, [debouncedSearch, isAdmin]);
+
   const [regularSearch, setRegularSearch] = useState("");
   const [irregularSearch, setIrregularSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -135,14 +143,16 @@ export function StudentsPage() {
 
   // Admin-only: lookup map from studentProfileId → account state (built from super-admin endpoint)
   const accountLookup = useMemo(() => {
-    if (!isAdmin || !studentList) return undefined;
+    if (!isAdmin) return undefined;
+    const source = allAccounts ?? studentList;
+    if (!source) return undefined;
     return Object.fromEntries(
-      studentList.map((s) => [
+      source.map((s) => [
         s.studentProfileId,
         { hasAccount: s.hasAccount, accountActive: s.accountActive ?? null },
       ]),
     );
-  }, [isAdmin, studentList]);
+  }, [isAdmin, allAccounts, studentList]);
 
   // For registrar: combine regular + irregular students into a unified list for "All" view
   const allStudentsForRegistrar = useMemo(() => {
@@ -228,13 +238,87 @@ export function StudentsPage() {
   // each fed that tab's own (unfiltered-by-search) row source.
   const allTabFilters = useStudentAccountFilters(
     isAdmin ? studentList ?? [] : allStudentsForRegistrar ?? [],
-    statusFilterOptions,
+    {
+      ...statusFilterOptions,
+      serverFiltered: isAdmin,
+      facets: isAdmin ? adminFacets ?? undefined : undefined,
+      onFilterChange: () => {
+        if (isAdmin) setAdminPage(1);
+      },
+    },
   );
   const regularTabFilters = useStudentAccountFilters(normalizedRegularStudents ?? [], statusFilterOptions);
   const irregularTabFilters = useStudentAccountFilters(normalizedIrregularStudents ?? [], statusFilterOptions);
 
   const activeTabFilters =
     activeView === "regular" ? regularTabFilters : activeView === "irregular" ? irregularTabFilters : allTabFilters;
+
+  // Server-side paginated fetch for admin All tab
+  useEffect(() => {
+    if (!isAdmin || activeView !== "all") return;
+    let cancelled = false;
+    setAdminLoading(true);
+
+    const query: StudentAccountQuery = {
+      search: debouncedSearch || undefined,
+      program: allTabFilters.filters.program !== "all" ? allTabFilters.filters.program : undefined,
+      year_level: allTabFilters.filters.yearLevel !== "all" ? Number(allTabFilters.filters.yearLevel) : undefined,
+      set: allTabFilters.filters.set !== "all" ? allTabFilters.filters.set : undefined,
+      account_status: statusFilter !== "all" ? statusFilter : undefined,
+    };
+
+    studentService
+      .listAccountsPage(query, { page: adminPage, perPage: adminPageSize })
+      .then((res) => {
+        if (cancelled) return;
+        setStudentList(res.items);
+        setAdminTotalItems(res.pagination.totalItems);
+        if (res.facets) {
+          setAdminFacets(res.facets);
+        }
+        setLoadError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setLoadError(err instanceof Error ? err.message : "Unable to load students.");
+        setStudentList([]);
+      })
+      .finally(() => {
+        if (!cancelled) setAdminLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAdmin,
+    activeView,
+    adminPage,
+    adminPageSize,
+    debouncedSearch,
+    allTabFilters.filters.program,
+    allTabFilters.filters.yearLevel,
+    allTabFilters.filters.set,
+    statusFilter,
+    adminReloadKey,
+  ]);
+
+  // Lazy-loaded all accounts for regular/irregular tabs when admin needs accountLookup
+  useEffect(() => {
+    if (!isAdmin || activeView === "all" || allAccounts !== null) return;
+    let cancelled = false;
+    studentService
+      .listAccounts()
+      .then((accounts) => {
+        if (!cancelled) setAllAccounts(accounts);
+      })
+      .catch(() => {
+        if (!cancelled) setAllAccounts([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, activeView, allAccounts]);
 
   // Reset per-tab filters and the bulk account-creation selection whenever the tab changes —
   // filter options are tab-specific and a selection from another tab shouldn't carry over.
@@ -248,24 +332,9 @@ export function StudentsPage() {
   }, [activeView]);
 
   const visibleStudents = useMemo(() => {
-    // For admin: use studentList from super-admin endpoint
+    // For admin: studentList is already filtered and paginated on the server
     if (isAdmin) {
-      if (!studentList) return [];
-      const query = search.trim().toLowerCase();
-      return allTabFilters.filtered
-        .filter((s) => {
-          if (
-            query &&
-            !(s.firstName ?? "").toLowerCase().includes(query) &&
-            !(s.lastName ?? "").toLowerCase().includes(query) &&
-            !(s.studentId ?? "").toLowerCase().includes(query) &&
-            !(s.email ?? "").toLowerCase().includes(query)
-          ) {
-            return false;
-          }
-          return true;
-        })
-        .sort((a, b) => (a.lastName ?? "").localeCompare(b.lastName ?? "") || (a.firstName ?? "").localeCompare(b.firstName ?? ""));
+      return studentList ?? [];
     }
     // For registrar: use combined list from regular + irregular endpoints
     if (!allStudentsForRegistrar) return [];
@@ -411,7 +480,10 @@ export function StudentsPage() {
   }, [irregularAccountIds]);
 
   function refreshStudentList() {
-    void reloadAccounts();
+    setAdminReloadKey((k) => k + 1);
+    if (allAccounts !== null) {
+      studentService.listAccounts().then(setAllAccounts).catch(() => {});
+    }
   }
 
   function toggleSelectForAccount(student: StudentAccountRow, checked: boolean) {
@@ -493,12 +565,40 @@ export function StudentsPage() {
     const message = await studentService.deactivateAccount(student.studentProfileId, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: false }));
+    setStudentList((current) =>
+      current?.map((s) =>
+        s.studentProfileId === student.studentProfileId
+          ? { ...s, accountActive: false }
+          : s,
+      ) ?? null,
+    );
+    setAllAccounts((current) =>
+      current?.map((s) =>
+        s.studentProfileId === student.studentProfileId
+          ? { ...s, accountActive: false }
+          : s,
+      ) ?? null,
+    );
   }
 
   async function handleReactivateAccount(student: StudentAccountRow, reason: string) {
     const message = await studentService.reactivateAccount(student.studentProfileId, reason);
     if (message) toast.success(message);
     setAccountActiveById((current) => ({ ...current, [student.studentProfileId]: true }));
+    setStudentList((current) =>
+      current?.map((s) =>
+        s.studentProfileId === student.studentProfileId
+          ? { ...s, accountActive: true }
+          : s,
+      ) ?? null,
+    );
+    setAllAccounts((current) =>
+      current?.map((s) =>
+        s.studentProfileId === student.studentProfileId
+          ? { ...s, accountActive: true }
+          : s,
+      ) ?? null,
+    );
   }
 
   const regularFetchingRef = useRef(false);
@@ -656,14 +756,14 @@ export function StudentsPage() {
               <ResultState tone="error" title="Unable to load">
                 {loadError}
               </ResultState>
-            ) : studentList === null ? (
+            ) : studentList === null || (adminLoading && studentList.length === 0) ? (
               <TableSkeleton columns={6} rows={8} />
             ) : visibleStudents.length === 0 ? (
               <StudentListEmptyState searchQuery={search} variant="all" />
             ) : (
               <>
                 <StudentAccountTable
-                  students={pagination.pageItems}
+                  students={visibleStudents}
                   accountActiveById={accountActiveById}
                   onView={setViewTarget}
                   onDeactivateAccount={setDeactivateAccountTarget}
@@ -673,10 +773,10 @@ export function StudentsPage() {
                   onSelectAll={selectAllForAccount}
                 />
                 <Pagination
-                  page={pagination.page}
-                  totalItems={pagination.totalItems}
-                  pageSize={pagination.pageSize}
-                  onPageChange={pagination.setPage}
+                  page={adminPage}
+                  totalItems={adminTotalItems}
+                  pageSize={adminPageSize}
+                  onPageChange={setAdminPage}
                 />
               </>
             )
