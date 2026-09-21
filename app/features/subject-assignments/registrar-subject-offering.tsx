@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { Card } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { EyeIcon } from "~/components/ui/icons";
 import { FieldChrome } from "~/components/ui/input";
 import { PageHeader } from "~/layouts/page-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
+import { deanService } from "~/services/dean.service";
+import type { TeachingTerm } from "~/types/faculty-load";
+import {
+  InstructorSubjectQuickLook,
+  quickLookInstructorsFromTeachingTerms,
+} from "./instructor-subject-quick-look";
 import { OfferingCoverageOverview, type CoverageDrillTarget } from "./offering-coverage-overview";
 import { SubjectAssignmentView } from "./subject-assignment-view";
 
@@ -89,6 +97,51 @@ export function RegistrarSubjectOffering() {
     };
   }, [searchParams]);
 
+  const [quickLookOpen, setQuickLookOpen] = useState(false);
+  const [quickLookTerms, setQuickLookTerms] = useState<TeachingTerm[]>([]);
+  const [quickLookLoading, setQuickLookLoading] = useState(false);
+  const [quickLookError, setQuickLookError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!quickLookOpen || !pageTerm.syId || !pageTerm.semesterNumber) return;
+    let cancelled = false;
+    setQuickLookLoading(true);
+    setQuickLookError(null);
+    deanService
+      .listTeachingTerms({
+        syId: pageTerm.syId,
+        semesterNumber: pageTerm.semesterNumber,
+      })
+      .then((terms) => {
+        if (!cancelled) setQuickLookTerms(terms);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setQuickLookError(
+            err instanceof Error ? err.message : "Unable to load instructor assignments.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setQuickLookLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [quickLookOpen, pageTerm.syId, pageTerm.semesterNumber]);
+
+  const quickLookInstructors = useMemo(
+    () => quickLookInstructorsFromTeachingTerms(quickLookTerms),
+    [quickLookTerms],
+  );
+
+  const quickLookTermLabel = useMemo(() => {
+    const schoolYear = schoolYears?.find((row) => row.id === pageTerm.syId)?.schoolYear;
+    const semester =
+      pageTerm.semesterNumber != null ? semesterLabel(pageTerm.semesterNumber) : null;
+    return [schoolYear, semester].filter(Boolean).join(" · ");
+  }, [pageTerm.semesterNumber, pageTerm.syId, schoolYears, semesterLabel]);
+
   const syncTerm = (syId: number, semesterNumber: number) => {
     setPageTerm({ syId, semesterNumber });
   };
@@ -121,7 +174,22 @@ export function RegistrarSubjectOffering() {
   // Level 1 — college-wide coverage overview.
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      <PageHeader title="Subject Offering" />
+      <PageHeader
+        title="Subject Offering"
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            block={false}
+            disabled={!pageTerm.syId || !pageTerm.semesterNumber}
+            onClick={() => setQuickLookOpen(true)}
+            className="w-full whitespace-nowrap sm:w-auto"
+          >
+            <EyeIcon />
+            Quick Look
+          </Button>
+        }
+      />
       <Card className="mt-4 grid gap-3 p-3 sm:grid-cols-2 sm:gap-4 sm:p-4">
         <FieldChrome id="registrar-subject-offering-sy" label="School year">
           <Select
@@ -182,6 +250,16 @@ export function RegistrarSubjectOffering() {
           onDrillIn={openDepartment}
         />
       </div>
+
+      <InstructorSubjectQuickLook
+        open={quickLookOpen}
+        onClose={() => setQuickLookOpen(false)}
+        instructors={quickLookInstructors}
+        loading={quickLookLoading}
+        error={quickLookError}
+        scopeLabel="All departments"
+        termLabel={quickLookTermLabel}
+      />
     </div>
   );
 }

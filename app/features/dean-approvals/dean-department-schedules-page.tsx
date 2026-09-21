@@ -19,6 +19,8 @@ import {
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { ScheduleLifecycleRail } from "~/features/schedules/schedule-lifecycle-rail";
 import { SchedulePreviewModal } from "~/features/schedules/schedule-preview-modal";
+import { PreApprovalReviewPanel } from "~/features/schedules/pre-approval-review-panel";
+import { RoomTransitionPanel } from "~/features/schedules/room-transition-panel";
 import { useSchoolYears } from "~/hooks/use-school-years";
 import { useSemesters } from "~/hooks/use-semesters";
 import { useYearLevels } from "~/hooks/use-year-levels";
@@ -94,6 +96,8 @@ function ProgramCard({
   onPreview,
   busy,
   yearLevelLabel,
+  syId,
+  semesterNumber,
 }: {
   group: DeanProgramApprovalItem;
   onAccept: (group: DeanProgramApprovalItem) => void;
@@ -104,6 +108,8 @@ function ProgramCard({
   onPreview: (release: ScheduleRelease) => void;
   busy: boolean;
   yearLevelLabel: (n: number) => string;
+  syId: number | null;
+  semesterNumber: number | null;
 }) {
   const [open, setOpen] = useState(group.pendingCount > 0 || group.awaitingFinalCount > 0);
   const rail = group.representative;
@@ -248,6 +254,26 @@ function ProgramCard({
             <div className="pb-4">
               <ScheduleLifecycleRail release={rail} audience="dean" />
             </div>
+          )}
+
+          {syId !== null && semesterNumber !== null && syId > 0 && semesterNumber > 0 && (
+            <>
+              <div className="pb-3">
+                <PreApprovalReviewPanel
+                  syId={syId}
+                  semesterNumber={semesterNumber}
+                  programId={group.programId}
+                />
+              </div>
+
+              <div className="pb-3">
+                <RoomTransitionPanel
+                  syId={syId}
+                  semesterNumber={semesterNumber}
+                  programId={group.programId}
+                />
+              </div>
+            </>
           )}
 
           <div className="flex flex-col gap-4">
@@ -640,6 +666,8 @@ export function DeanDepartmentSchedulesPage() {
                   onPreview={setPreviewTarget}
                   busy={busyId === group.programId}
                   yearLevelLabel={yearLevelLabel}
+                  syId={syNumber}
+                  semesterNumber={semNumber}
                 />
               ))}
             </div>

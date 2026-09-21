@@ -437,6 +437,20 @@ export function presentNotification(notification: NotificationItem): Notificatio
       };
     }
 
+    case "instructor_availability_reopened": {
+      const by = text(p.reopened_by);
+      return {
+        intent: "action",
+        tone: "amber",
+        icon: <CalendarCheckIcon />,
+        title: by
+          ? `${by} reopened your availability declaration`
+          : "Your Dean reopened your availability declaration",
+        meta: join(["You may update and resubmit your available hours", period]),
+        body: text(p.note),
+      };
+    }
+
     case "instructor_availability_widen_requested": {
       type WinRow = { day?: string; start_time?: string; end_time?: string };
       const windows = Array.isArray(p.windows) ? (p.windows as WinRow[]) : [];

@@ -92,6 +92,7 @@ export function resolveNotificationTarget(
     case "instructor_availability_widen_decided":
       return "/dean/instructor-availability";
     case "instructor_availability_configured":
+    case "instructor_availability_reopened":
       return "/faculty/my-availability";
     case "subject_assignment_changed":
       return role === "faculty" ? "/faculty/my-subjects" : "/faculty-schedule";

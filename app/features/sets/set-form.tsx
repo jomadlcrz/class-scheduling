@@ -87,8 +87,8 @@ export function SetForm({ set, programs, onSubmit, onCancel }: SetFormProps) {
         label="Year level"
         hint={
           yearLevelLocked
-            ? `${enrolledThisTerm} ${enrolledThisTerm === 1 ? "student is" : "students are"} enrolled in this section, so its year level is fixed. Only a section with no students and no schedules can be moved.`
-            : "Only a section with no students and no schedules can be moved to another year level."
+            ? `${enrolledThisTerm} ${enrolledThisTerm === 1 ? "student is" : "students are"} enrolled in this set this term, so its year level is fixed. A section can only move while no OPEN term holds students in it and it has no schedules.`
+            : "A section can only move to another year level while no open term has students in it and it has no schedules. A finished term does not hold it — those enrolments recorded their own year level and keep it."
         }
       >
         {yearLevelLocked ? (

@@ -7,6 +7,7 @@ import type {
   DepartmentAvailability,
   InstructorAvailabilityRow,
   SavedConfiguration,
+  ReopenedAvailabilityResponse,
   AvailabilityWidenRequest,
   WidenRequestInput,
   WidenRequestList,
@@ -47,11 +48,14 @@ type RawRow = {
   academic_rank?: string | null;
   review_state?: string;
   review_state_label?: string;
+  can_reopen?: boolean;
   declaration?: {
     declared?: boolean;
     note?: string | null;
     submitted_at?: string | null;
     updated_at?: string | null;
+    reopened_at?: string | null;
+    reopen_note?: string | null;
     windows?: RawWindow[];
     hours?: number | null;
   };
@@ -82,11 +86,14 @@ function mapRow(raw: RawRow): InstructorAvailabilityRow {
     academicRank: raw.academic_rank ?? null,
     reviewState: (raw.review_state ?? "no_declaration") as AvailabilityReviewState,
     reviewStateLabel: raw.review_state_label ?? "",
+    canReopen: raw.can_reopen === true,
     declaration: {
       declared: raw.declaration?.declared === true,
       note: raw.declaration?.note ?? null,
       submittedAt: raw.declaration?.submitted_at ?? null,
       updatedAt: raw.declaration?.updated_at ?? null,
+      reopenedAt: raw.declaration?.reopened_at ?? null,
+      reopenNote: raw.declaration?.reopen_note ?? null,
       windows: mapWindows(raw.declaration?.windows),
       hours: raw.declaration?.hours ?? null,
     },
@@ -138,6 +145,7 @@ async function list(
       notDeclared: raw.summary?.not_declared ?? 0,
       configured: raw.summary?.configured ?? 0,
       awaitingReview: raw.summary?.awaiting_review ?? 0,
+      awaitingResubmission: raw.summary?.awaiting_resubmission ?? 0,
       unconstrained: raw.summary?.unconstrained ?? 0,
       withShortfall: raw.summary?.with_shortfall ?? 0,
     },
@@ -258,10 +266,37 @@ async function decideWidenRequest(
   );
 }
 
+/**
+ * POST /deans/instructor-availability/{id}/reopenings
+ * Let this instructor send their availability one more time.
+ */
+async function reopenDeclaration(
+  instructorProfileId: number,
+  syId: number,
+  semesterNumber: number,
+  note?: string | null,
+): Promise<ReopenedAvailabilityResponse> {
+  const raw = await apiPost<Record<string, any>>(
+    `/deans/instructor-availability/${instructorProfileId}/reopenings${termScopeQuery(syId, semesterNumber)}`,
+    { note: note ?? null },
+  );
+  return {
+    instructorProfileId: raw.instructor_profile_id,
+    syId: raw.sy_id,
+    schoolYear: raw.school_year,
+    semesterNumber: raw.semester_number,
+    alreadyOpen: raw.already_open === true,
+    reopenedAt: raw.reopened_at,
+    reopenNote: raw.reopen_note ?? null,
+    reviewState: raw.review_state as AvailabilityReviewState,
+  };
+}
+
 export const deanAvailabilityService = {
   list,
   configure,
   clear,
+  reopenDeclaration,
   requestWiden,
   listWidenRequests,
   decideWidenRequest,

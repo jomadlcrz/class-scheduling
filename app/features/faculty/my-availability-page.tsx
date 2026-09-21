@@ -8,12 +8,15 @@ import { InfoCircleIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { DeanAvailabilityDecision } from "~/features/faculty/dean-availability-decision";
 import { useTermContext } from "~/features/academic-terms/term-context-provider";
 import { PageHeader } from "~/layouts/page-header";
 import { instructorAvailabilityService } from "~/services/instructor-availability.service";
-import type { AvailabilityWindow } from "~/types/instructor-availability";
-
-const WEEK_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+import {
+  AVAILABILITY_WEEK_DAYS as WEEK_DAYS,
+  type AvailabilityConfiguration,
+  type AvailabilityWindow,
+} from "~/types/instructor-availability";
 
 const DEFAULT_WINDOW = {
   startTime: "07:00",
@@ -59,22 +62,49 @@ export function MyAvailabilityPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
+  // What the Dean SET — its own record and endpoint, loaded beside the
+  // declaration so a failure of one never blanks the other.
+  const [configuration, setConfiguration] = useState<AvailabilityConfiguration | null>(null);
+  const [configurationError, setConfigurationError] = useState<string | null>(null);
+  const [submissionState, setSubmissionState] = useState<string | undefined>(undefined);
+  const [submissionStateLabel, setSubmissionStateLabel] = useState<string | undefined>(undefined);
+  const [canSubmit, setCanSubmit] = useState<boolean>(true);
+  const [reopenNote, setReopenNote] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     if (selectedSyId == null || selectedSemester == null) return;
     setLoading(true);
     setLoadError(null);
-    try {
-      const declaration = await instructorAvailabilityService.get(selectedSyId, selectedSemester);
+    setConfigurationError(null);
+    const [declarationResult, configurationResult] = await Promise.allSettled([
+      instructorAvailabilityService.get(selectedSyId, selectedSemester),
+      instructorAvailabilityService.getConfiguration(selectedSyId, selectedSemester),
+    ]);
+    if (declarationResult.status === "fulfilled") {
+      const declaration = declarationResult.value;
       setDrafts(toDrafts(declaration.windows));
       setNote(declaration.note ?? "");
       setDeclared(declaration.declared);
       setUpdatedAt(declaration.updatedAt ?? declaration.submittedAt);
+      setSubmissionState(declaration.submissionState);
+      setSubmissionStateLabel(declaration.submissionStateLabel);
+      setCanSubmit(declaration.canSubmit ?? true);
+      setReopenNote(declaration.reopenNote ?? null);
       setDirty(false);
-    } catch (err) {
+    } else {
+      const err = declarationResult.reason;
       setLoadError(err instanceof Error ? err.message : "Could not load your availability.");
-    } finally {
-      setLoading(false);
     }
+    if (configurationResult.status === "fulfilled") {
+      setConfiguration(configurationResult.value);
+    } else {
+      const err = configurationResult.reason;
+      setConfiguration(null);
+      setConfigurationError(
+        err instanceof Error ? err.message : "Could not load what your Dean set.",
+      );
+    }
+    setLoading(false);
   }, [selectedSemester, selectedSyId]);
 
   useEffect(() => {
@@ -214,6 +244,23 @@ export function MyAvailabilityPage() {
             </div>
           </Card>
 
+          <DeanAvailabilityDecision configuration={configuration} error={configurationError} />
+
+          {reopenNote && (
+            <Card className="flex items-start gap-3 border-amber-300 bg-amber-50/70 p-4 dark:border-amber-400/30 dark:bg-amber-400/10">
+              <span className="mt-0.5 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true">
+                <InfoCircleIcon size={18} />
+              </span>
+              <div className="font-body text-sm text-amber-950 dark:text-amber-100">
+                <p className="font-medium">Availability reopened by your Dean</p>
+                <p className="mt-1 leading-relaxed">{reopenNote}</p>
+                <p className="mt-1 text-xs text-amber-800 dark:text-amber-200">
+                  You may update and submit your availability again.
+                </p>
+              </div>
+            </Card>
+          )}
+
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <Card className="overflow-hidden p-0">
@@ -332,14 +379,26 @@ export function MyAvailabilityPage() {
                 <div className="pt-2">
                   <Button
                     onClick={handleSave}
-                    disabled={saving || backwards.length > 0}
+                    disabled={saving || backwards.length > 0 || !canSubmit}
                     className="w-full"
                   >
-                    {saving ? "Submitting…" : declared ? "Update availability" : "Submit availability to dean"}
+                    {saving
+                      ? "Submitting…"
+                      : !canSubmit
+                        ? (submissionStateLabel ?? "Submission locked")
+                        : declared
+                          ? "Update availability"
+                          : "Submit availability to dean"}
                   </Button>
                 </div>
 
-                {dirty && !saving && (
+                {!canSubmit && (
+                  <p className="font-body text-center text-xs text-slate-500 dark:text-slate-400">
+                    {submissionStateLabel ?? "Your availability cannot be modified right now."}
+                  </p>
+                )}
+
+                {dirty && !saving && canSubmit && (
                   <p className="font-body text-center text-xs text-amber-600 dark:text-gold-300">
                     You have unsaved changes.
                   </p>

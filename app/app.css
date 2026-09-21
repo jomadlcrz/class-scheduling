@@ -114,6 +114,12 @@ body {
   touch-action: manipulation;
 }
 
+/* Reserve scrollbar space so layout does not shift when overflow toggles. */
+html {
+  font-size: 14px;
+  scrollbar-gutter: stable;
+}
+
 ::selection {
   background-color: var(--color-gold-400);
   color: var(--color-navy-700);

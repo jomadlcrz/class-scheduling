@@ -43,6 +43,7 @@ export type NotificationType =
   | "suggestion_resolution_summary"
   | "instructor_availability_declared"
   | "instructor_availability_configured"
+  | "instructor_availability_reopened"
   | "instructor_availability_widen_requested"
   | "instructor_availability_widen_decided"
   | "major_scheduling_window_opened"

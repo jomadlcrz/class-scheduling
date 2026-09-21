@@ -5,6 +5,7 @@ export type { AvailabilityWindow };
 export type AvailabilityReviewState =
   | "no_declaration"
   | "awaiting_review"
+  | "awaiting_resubmission"
   | "declaration_changed"
   | "accepted_as_declared"
   | "configured";
@@ -14,6 +15,8 @@ export type InstructorDeclarationSummary = {
   note: string | null;
   submittedAt: string | null;
   updatedAt: string | null;
+  reopenedAt?: string | null;
+  reopenNote?: string | null;
   windows: AvailabilityWindow[];
   /** Null when nothing was declared — no hours stated, not zero hours. */
   hours: number | null;
@@ -49,6 +52,7 @@ export type InstructorAvailabilityRow = {
   academicRank: string | null;
   reviewState: AvailabilityReviewState;
   reviewStateLabel: string;
+  canReopen: boolean;
   declaration: InstructorDeclarationSummary;
   configuration: InstructorConfigurationSummary;
   load: AvailabilityLoad;
@@ -69,10 +73,22 @@ export type DepartmentAvailability = {
     notDeclared: number;
     configured: number;
     awaitingReview: number;
+    awaitingResubmission: number;
     unconstrained: number;
     withShortfall: number;
   };
   instructors: InstructorAvailabilityRow[];
+};
+
+export type ReopenedAvailabilityResponse = {
+  instructorProfileId: number;
+  syId: number;
+  schoolYear: string;
+  semesterNumber: number;
+  alreadyOpen: boolean;
+  reopenedAt: string;
+  reopenNote: string | null;
+  reviewState: AvailabilityReviewState;
 };
 
 export type AvailabilityConfigurationInput = {

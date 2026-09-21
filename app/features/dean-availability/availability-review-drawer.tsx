@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Drawer } from "~/components/ui/drawer";
 import { InfoCircleIcon, PlusIcon, TrashIcon } from "~/components/ui/icons";
+import { Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";
 import { WidenRequestForm } from "~/features/dean-availability/widen-request";
 import { deanAvailabilityService } from "~/services/dean-availability.service";
@@ -69,6 +70,9 @@ export function AvailabilityReviewDrawer({
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [reopenModalOpen, setReopenModalOpen] = useState(false);
+  const [reopenNote, setReopenNote] = useState("");
+  const [reopening, setReopening] = useState(false);
 
   useEffect(() => {
     if (!row) return;
@@ -148,6 +152,28 @@ export function AvailabilityReviewDrawer({
     setNote(row.declaration.note ?? "");
   }
 
+  async function handleReopen() {
+    if (!row) return;
+    setReopening(true);
+    try {
+      await deanAvailabilityService.reopenDeclaration(
+        row.instructorProfileId,
+        syId,
+        semesterNumber,
+        reopenNote.trim() || null,
+      );
+      toast.success(`Availability reopened for ${row.name}. The instructor may resubmit.`);
+      setReopenModalOpen(false);
+      setReopenNote("");
+      onSaved();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not reopen availability.");
+    } finally {
+      setReopening(false);
+    }
+  }
+
   return (
     <Drawer
       open={row !== null}
@@ -195,6 +221,23 @@ export function AvailabilityReviewDrawer({
             </Card>
           )}
 
+          {row.declaration.reopenedAt && (
+            <Card className="flex items-start gap-2.5 border-amber-300 bg-amber-50/70 p-3.5 dark:border-amber-400/30 dark:bg-amber-400/10">
+              <span className="mt-0.5 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true">
+                <InfoCircleIcon size={16} />
+              </span>
+              <div className="font-body text-xs leading-relaxed text-amber-900 dark:text-amber-100">
+                <p className="font-semibold">Reopened for resubmission</p>
+                <p className="mt-0.5">
+                  Reopened on {new Date(row.declaration.reopenedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}. The instructor may send their availability again.
+                </p>
+                {row.declaration.reopenNote && (
+                  <p className="mt-1 italic">Note: &ldquo;{row.declaration.reopenNote}&rdquo;</p>
+                )}
+              </div>
+            </Card>
+          )}
+
           {readOnly ? (
             <div className="flex flex-col gap-4">
               <Card className="p-4">
@@ -239,6 +282,17 @@ export function AvailabilityReviewDrawer({
                   {row.declaration.declared && (
                     <Button variant="outline" block={false} className="px-3 py-1.5 text-xs" onClick={acceptDeclaration}>
                       Use instructor&apos;s request
+                    </Button>
+                  )}
+                  {row.canReopen && (
+                    <Button
+                      variant="outline"
+                      block={false}
+                      className="px-3 py-1.5 text-xs"
+                      disabled={termClosed}
+                      onClick={() => setReopenModalOpen(true)}
+                    >
+                      Reopen for resubmission
                     </Button>
                   )}
                   {row.configuration.configured && (
@@ -346,6 +400,36 @@ export function AvailabilityReviewDrawer({
             </div>
           )}
         </div>
+      )}
+      {row && (
+        <Modal
+          open={reopenModalOpen}
+          onClose={() => setReopenModalOpen(false)}
+          title={`Reopen availability for ${row.name}`}
+        >
+          <div className="flex flex-col gap-4">
+            <p className="font-body text-sm text-slate-600 dark:text-slate-300">
+              This unlocks one more submission from {row.name}. They will be notified that their availability declaration has been reopened.
+            </p>
+            <Textarea
+              id="reopen-note-input"
+              label="Guidance note for instructor (optional)"
+              value={reopenNote}
+              onChange={(e) => setReopenNote(e.target.value)}
+              rows={3}
+              maxLength={500}
+              placeholder="e.g. Please add morning hours on Friday so we can fit your assigned lecture."
+            />
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-white/10">
+              <Button variant="outline" block={false} onClick={() => setReopenModalOpen(false)} disabled={reopening}>
+                Cancel
+              </Button>
+              <Button block={false} onClick={handleReopen} isLoading={reopening} disabled={reopening}>
+                Reopen availability
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </Drawer>
   );

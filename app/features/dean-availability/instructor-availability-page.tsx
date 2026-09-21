@@ -23,6 +23,7 @@ import type {
 
 const STATE_TONE: Record<string, "gold" | "blue" | "emerald" | "slate"> = {
   awaiting_review: "gold",
+  awaiting_resubmission: "gold",
   declaration_changed: "gold",
   accepted_as_declared: "emerald",
   configured: "blue",
@@ -156,13 +157,21 @@ export function DeanInstructorAvailabilityPage() {
         />
 
         {summary && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             <Card className="p-4">
               <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Awaiting Review
               </p>
               <p className="mt-1 font-display text-2xl tracking-wide text-amber-600 dark:text-gold-300">
                 {summary.awaitingReview}
+              </p>
+            </Card>
+            <Card className="p-4">
+              <p className="font-body text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Reopened
+              </p>
+              <p className="mt-1 font-display text-2xl tracking-wide text-sky-600 dark:text-sky-400">
+                {summary.awaitingResubmission}
               </p>
             </Card>
             <Card className="p-4">

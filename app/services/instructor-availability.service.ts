@@ -1,8 +1,10 @@
 import { apiGet, apiPut } from "~/lib/api";
 import { termScopeQuery } from "~/lib/term-scope";
 import type {
+  AvailabilityConfiguration,
   AvailabilityDeclaration,
   AvailabilityDeclarationInput,
+  AvailabilitySubmissionState,
   AvailabilityWindow,
 } from "~/types/instructor-availability";
 
@@ -18,8 +20,29 @@ type RawDeclaration = {
   note?: string | null;
   submitted_at?: string | null;
   updated_at?: string | null;
+  submission_state?: string;
+  submission_state_label?: string;
+  can_submit?: boolean;
+  reopened_at?: string | null;
+  reopen_note?: string | null;
   windows?: RawWindow[];
 };
+
+function mapWindows(raw: RawWindow[] | undefined): AvailabilityWindow[] {
+  return (raw ?? []).map((w) => ({
+    dayOfWeek: w.day_of_week ?? "",
+    startTime: w.start_time ?? "",
+    endTime: w.end_time ?? "",
+  }));
+}
+
+function toRawWindows(windows: AvailabilityWindow[]): RawWindow[] {
+  return windows.map((w) => ({
+    day_of_week: w.dayOfWeek,
+    start_time: w.startTime,
+    end_time: w.endTime,
+  }));
+}
 
 function mapDeclaration(raw: RawDeclaration): AvailabilityDeclaration {
   return {
@@ -30,20 +53,39 @@ function mapDeclaration(raw: RawDeclaration): AvailabilityDeclaration {
     note: raw.note ?? null,
     submittedAt: raw.submitted_at ?? null,
     updatedAt: raw.updated_at ?? null,
-    windows: (raw.windows ?? []).map((w) => ({
-      dayOfWeek: w.day_of_week ?? "",
-      startTime: w.start_time ?? "",
-      endTime: w.end_time ?? "",
-    })),
+    submissionState: (raw.submission_state as AvailabilitySubmissionState) ?? undefined,
+    submissionStateLabel: raw.submission_state_label,
+    canSubmit: raw.can_submit,
+    reopenedAt: raw.reopened_at ?? null,
+    reopenNote: raw.reopen_note ?? null,
+    windows: mapWindows(raw.windows),
   };
 }
 
-function toRawWindows(windows: AvailabilityWindow[]): RawWindow[] {
-  return windows.map((w) => ({
-    day_of_week: w.dayOfWeek,
-    start_time: w.startTime,
-    end_time: w.endTime,
-  }));
+type RawConfiguration = {
+  configured?: boolean;
+  windows?: RawWindow[];
+  hours?: number | null;
+  note?: string | null;
+  configured_by?: string | null;
+  updated_at?: string | null;
+  matches_declaration?: boolean | null;
+  decision?: string;
+  decision_label?: string;
+};
+
+function mapConfiguration(raw: RawConfiguration): AvailabilityConfiguration {
+  return {
+    configured: raw.configured === true,
+    windows: mapWindows(raw.windows),
+    hours: raw.hours ?? null,
+    note: raw.note ?? null,
+    configuredBy: raw.configured_by ?? null,
+    updatedAt: raw.updated_at ?? null,
+    matchesDeclaration: raw.matches_declaration ?? null,
+    decision: raw.decision ?? "not_configured",
+    decisionLabel: raw.decision_label ?? "",
+  };
 }
 
 /** GET /instructor/availability — mine for one term; never 404s when unset. */
@@ -70,4 +112,20 @@ async function save(
   );
 }
 
-export const instructorAvailabilityService = { get, save };
+/**
+ * GET /instructor/availability/configuration — what my Dean SET my
+ * availability to (read-only). A separate record from what I sent; never
+ * 404s — `configured: false` means no restriction.
+ */
+async function getConfiguration(
+  syId: number,
+  semesterNumber: number,
+): Promise<AvailabilityConfiguration> {
+  return mapConfiguration(
+    await apiGet<RawConfiguration>(
+      `/instructor/availability/configuration${termScopeQuery(syId, semesterNumber)}`,
+    ),
+  );
+}
+
+export const instructorAvailabilityService = { get, save, getConfiguration };
