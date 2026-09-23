@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { FilterDropdown } from "~/components/ui/dropdown-menu";
+import { SearchIcon } from "~/components/ui/icons";
+import { inputClassName } from "~/components/ui/input";
 import { useYearLevels } from "~/hooks/use-year-levels";
 import type { StudentAccountRow } from "~/types/student";
 
@@ -29,6 +31,11 @@ type UseStudentAccountFiltersOptions = {
     sets?: string[];
   };
   onFilterChange?: () => void;
+  search?: string;
+  onSearchChange?: (value: string) => void;
+  searchId?: string;
+  searchLabel?: string;
+  searchPlaceholder?: string;
 };
 
 export function useStudentAccountFilters(rows: StudentAccountRow[], options?: UseStudentAccountFiltersOptions) {
@@ -78,7 +85,7 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
   }, [rows, filters, statusFilter, options?.serverFiltered]);
 
   const filterBar = (
-    <div className="flex flex-wrap items-end gap-2">
+    <div className="flex flex-wrap items-end gap-3">
       <FilterDropdown
         id="student-program-filter"
         label="Program"
@@ -118,6 +125,22 @@ export function useStudentAccountFilters(rows: StudentAccountRow[], options?: Us
           options?.onFilterChange?.();
         }}
       />
+      {options?.onSearchChange && (
+        <div className="relative order-first w-full sm:order-0 sm:ml-auto sm:w-64">
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+            <SearchIcon />
+          </span>
+          <input
+            id={options.searchId ?? "student-search"}
+            type="search"
+            placeholder={options.searchPlaceholder ?? "Search..."}
+            value={options.search ?? ""}
+            onChange={(e) => options.onSearchChange!(e.target.value)}
+            aria-label={options.searchLabel ?? "Search students"}
+            className={`${inputClassName} pl-9 pr-4`}
+          />
+        </div>
+      )}
     </div>
   );
 

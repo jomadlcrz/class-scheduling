@@ -8,8 +8,7 @@ import { Button } from "~/components/ui/button";
 import { EmptyState } from "~/components/feedback/empty-state";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { ResultState } from "~/components/feedback/result-state";
-import { AlertTriangleIcon, SearchIcon, UserCheckIcon } from "~/components/ui/icons";
-import { inputClassName } from "~/components/ui/input";
+import { AlertTriangleIcon, UserCheckIcon } from "~/components/ui/icons";
 import { ConfirmDialog, Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";
 import { DeactivateConfirmInput, DeactivateReasonSelect, STUDENT_DEACTIVATE_REASONS } from "~/features/deactivate-reason-select";
@@ -245,10 +244,26 @@ export function StudentsPage() {
       onFilterChange: () => {
         if (isAdmin) setAdminPage(1);
       },
+      search,
+      onSearchChange: setSearch,
+      searchId: "student-search",
+      searchLabel: "Search students",
     },
   );
-  const regularTabFilters = useStudentAccountFilters(normalizedRegularStudents ?? [], statusFilterOptions);
-  const irregularTabFilters = useStudentAccountFilters(normalizedIrregularStudents ?? [], statusFilterOptions);
+  const regularTabFilters = useStudentAccountFilters(normalizedRegularStudents ?? [], {
+    ...statusFilterOptions,
+    search: regularSearch,
+    onSearchChange: setRegularSearch,
+    searchId: "regular-student-search",
+    searchLabel: "Search regular students",
+  });
+  const irregularTabFilters = useStudentAccountFilters(normalizedIrregularStudents ?? [], {
+    ...statusFilterOptions,
+    search: irregularSearch,
+    onSearchChange: setIrregularSearch,
+    searchId: "irregular-student-search",
+    searchLabel: "Search irregular students",
+  });
 
   const activeTabFilters =
     activeView === "regular" ? regularTabFilters : activeView === "irregular" ? irregularTabFilters : allTabFilters;
@@ -752,20 +767,6 @@ export function StudentsPage() {
 
       {activeView === "all" ? (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="relative">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-              <SearchIcon />
-            </span>
-            <input
-              id="student-search"
-              type="search" placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search students"
-              className={`${inputClassName} pl-9 pr-4`}
-            />
-          </div>
-
           {activeTabFilters.filterBar}
 
           {isAdmin ? (
@@ -840,20 +841,6 @@ export function StudentsPage() {
         </div>
       ) : activeView === "regular" ? (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="relative">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-              <SearchIcon />
-            </span>
-            <input
-              id="regular-student-search"
-              type="search" placeholder="Search..."
-              value={regularSearch}
-              onChange={(e) => setRegularSearch(e.target.value)}
-              aria-label="Search regular students"
-              className={`${inputClassName} pl-9 pr-4`}
-            />
-          </div>
-
           {activeTabFilters.filterBar}
 
           {regularLoadError ? (
@@ -887,20 +874,6 @@ export function StudentsPage() {
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="relative">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-              <SearchIcon />
-            </span>
-            <input
-              id="irregular-student-search"
-              type="search" placeholder="Search..."
-              value={irregularSearch}
-              onChange={(e) => setIrregularSearch(e.target.value)}
-              aria-label="Search irregular students"
-              className={`${inputClassName} pl-9 pr-4`}
-            />
-          </div>
-
           {activeTabFilters.filterBar}
 
           {irregularLoadError ? (
