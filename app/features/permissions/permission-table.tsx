@@ -26,15 +26,13 @@ export function PermissionTable({ roles, onAssign }: PermissionTableProps) {
                 {role.permissions.length}{" "}
                 {role.permissions.length === 1 ? "permission" : "permissions"}
               </Badge>
-              <div className="lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
-                <IconButton
-                  onClick={() => onAssign(role)}
-                  label={`Assign permissions to ${role.name}`}
-                  title="Assign permissions"
-                >
-                  <ShieldUserIcon />
-                </IconButton>
-              </div>
+              <IconButton
+                onClick={() => onAssign(role)}
+                label={`Assign permissions to ${role.name}`}
+                title="Assign permissions"
+              >
+                <ShieldUserIcon />
+              </IconButton>
             </div>
           </div>
         </div>

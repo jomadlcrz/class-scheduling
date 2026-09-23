@@ -150,6 +150,7 @@ function PermissionsPage() {
         open={assignTarget !== null}
         onClose={() => setAssignTarget(null)}
         title={assignTarget ? `Assign Permissions — ${assignTarget.name}` : "Assign Permissions"}
+        wide
       >
         {assignTarget && (
           <RolePermissionsForm
