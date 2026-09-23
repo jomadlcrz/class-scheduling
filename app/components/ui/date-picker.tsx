@@ -148,7 +148,7 @@ export function DatePicker({
               align: "shift",
               fallbackAxisSide: "none",
             }}
-            className="z-70 outline-none"
+            className="z-[120] outline-none"
           >
             <Popover.Popup className="rounded-lg border border-slate-200 bg-white shadow-[0_0_0_1px_#d1d9e080,0_6px_12px_-3px_#25292e0a,0_6px_18px_0_#25292e1f] outline-none dark:border-white/10 dark:bg-surface-raised dark:shadow-[0_0_0_1px_#ffffff14,0_6px_12px_-3px_#0000005c,0_6px_18px_0_#00000080]">
               <Calendar
@@ -249,7 +249,7 @@ export function FilterDatePicker({
             sideOffset={6}
             collisionPadding={8}
             collisionAvoidance={{ side: "flip", align: "shift", fallbackAxisSide: "none" }}
-            className="z-70 outline-none"
+            className="z-[120] outline-none"
           >
             <Popover.Popup className="rounded-lg border border-slate-200 bg-white shadow-[0_0_0_1px_#d1d9e080,0_6px_12px_-3px_#25292e0a,0_6px_18px_0_#25292e1f] outline-none dark:border-white/10 dark:bg-surface-raised dark:shadow-[0_0_0_1px_#ffffff14,0_6px_12px_-3px_#0000005c,0_6px_18px_0_#00000080]">
               <Calendar

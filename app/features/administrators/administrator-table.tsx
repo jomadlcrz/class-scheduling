@@ -103,16 +103,20 @@ export function AdministratorTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
-                    <IconButton
-                      onClick={() => onEdit(admin)}
-                      label={`Edit ${admin.firstName} ${admin.lastName}`}
-                      title="Edit"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    {admin.roleName !== "Super Admin" &&
-                      (isActive ? (
+                  {admin.roleName === "Super Admin" ? (
+                    <div className="flex justify-end">
+                      <Badge tone="slate">Protected</Badge>
+                    </div>
+                  ) : (
+                    <div className="flex justify-end gap-1 lg:opacity-0 lg:transition-opacity lg:duration-150 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
+                      <IconButton
+                        onClick={() => onEdit(admin)}
+                        label={`Edit ${admin.firstName} ${admin.lastName}`}
+                        title="Edit"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      {isActive ? (
                         <IconButton
                           variant="dangerSoft"
                           onClick={() => onDeactivate(admin)}
@@ -130,8 +134,9 @@ export function AdministratorTable({
                         >
                           <UserCheckIcon />
                         </IconButton>
-                      ))}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             );

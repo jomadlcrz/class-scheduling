@@ -86,7 +86,7 @@ export default function StudentsRoute() {
 export function StudentsPage() {
   const location = useLocation();
   const { user } = useAuth();
-  const { context: termContext } = useTermContext();
+  const { context: termContext, loading: termLoading } = useTermContext();
   const isAdmin = user?.role === "admin";
   const syId = termContext?.selection.syId ?? null;
   const semesterNumber = termContext?.selection.semesterNumber ?? null;
@@ -156,7 +156,7 @@ export function StudentsPage() {
 
   // For registrar: combine regular + irregular students into a unified list for "All" view
   const allStudentsForRegistrar = useMemo(() => {
-    if (isAdmin || !regularStudents || !irregularStudents) return null;
+    if (isAdmin || regularStudents === null || irregularStudents === null) return null;
     // Map regular students to a common shape
     const regularMapped: StudentAccountRow[] = regularStudents.map((s) => ({
       studentProfileId: s.studentProfileId,
@@ -617,7 +617,13 @@ export function StudentsPage() {
 
   // Lazy-loaded: only fetched once the Regular Students view is opened.
   useEffect(() => {
-    if (!isAdmin || activeView !== "regular" || regularStudents !== null || regularFetchingRef.current || syId == null || semesterNumber == null) return;
+    if (termLoading) return;
+    if (!isAdmin || activeView !== "regular") return;
+    if (syId == null || semesterNumber == null) {
+      if (regularStudents === null) setRegularStudents([]);
+      return;
+    }
+    if (regularStudents !== null || regularFetchingRef.current) return;
     let cancelled = false;
     regularFetchingRef.current = true;
     regularClassService
@@ -636,11 +642,17 @@ export function StudentsPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeView, isAdmin, regularStudents, semesterNumber, syId]);
+  }, [activeView, isAdmin, regularStudents, semesterNumber, syId, termLoading]);
 
   // Lazy-loaded: only fetched once the Irregular Students view is opened.
   useEffect(() => {
-    if (!isAdmin || activeView !== "irregular" || irregularStudents !== null || irregularFetchingRef.current || syId == null || semesterNumber == null) return;
+    if (termLoading) return;
+    if (!isAdmin || activeView !== "irregular") return;
+    if (syId == null || semesterNumber == null) {
+      if (irregularStudents === null) setIrregularStudents([]);
+      return;
+    }
+    if (irregularStudents !== null || irregularFetchingRef.current) return;
     let cancelled = false;
     irregularFetchingRef.current = true;
     irregularClassService
@@ -659,11 +671,17 @@ export function StudentsPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeView, irregularStudents, isAdmin, semesterNumber, syId]);
+  }, [activeView, irregularStudents, isAdmin, semesterNumber, syId, termLoading]);
 
   // For registrar: fetch both regular and irregular on mount for the "All" view.
   useEffect(() => {
-    if (isAdmin || syId == null || semesterNumber == null) return;
+    if (termLoading) return;
+    if (isAdmin) return;
+    if (syId == null || semesterNumber == null) {
+      if (regularStudents === null) setRegularStudents([]);
+      if (irregularStudents === null) setIrregularStudents([]);
+      return;
+    }
     let cancelled = false;
     if (regularStudents === null && !regularFetchingRef.current) {
       regularFetchingRef.current = true;
@@ -700,7 +718,7 @@ export function StudentsPage() {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, irregularStudents, regularStudents, semesterNumber, syId]);
+  }, [isAdmin, irregularStudents, regularStudents, semesterNumber, syId, termLoading]);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8">

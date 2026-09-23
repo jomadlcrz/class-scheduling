@@ -66,9 +66,9 @@ function SelectContent({
         positionMethod="fixed"
         sideOffset={sideOffset}
         collisionPadding={8}
-        // Above the modal dialog (z-60) and drawer panel (z-50) so the popup
+        // Above nested modal dialogs (z-80/100) and drawer panels (z-50) so the popup
         // isn't hidden behind them when a Select is used inside an overlay.
-        className="z-70 outline-none"
+        className="z-[120] outline-none"
       >
         <SelectPrimitive.Popup
           data-slot="select-content"

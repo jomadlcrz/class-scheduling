@@ -34,7 +34,7 @@ export function ImageViewer({ open, onClose, src, alt }: ImageViewerProps) {
       role="dialog"
       aria-modal="true"
       aria-label={alt}
-      className="fixed inset-0 z-70 flex items-center justify-center bg-black/80 p-4"
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4"
       onClick={onClose}
     >
       <button

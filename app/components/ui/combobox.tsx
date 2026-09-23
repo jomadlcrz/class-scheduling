@@ -79,7 +79,7 @@ function ComboboxContent({
         alignOffset={alignOffset}
         anchor={anchor}
         collisionPadding={8}
-        className="z-70 outline-none"
+        className="z-[120] outline-none"
       >
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"
